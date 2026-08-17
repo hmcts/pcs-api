@@ -9,6 +9,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -215,7 +216,7 @@ public class DefendantResponseService {
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)
             .party(partyRef)
-            .status(DefendantResponseStatus.SUBMITTED)
+            .status(resolveInitialStatus(responses))
             .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
             .possessionNoticeReceived(responses.getPossessionNoticeReceived())
@@ -241,6 +242,16 @@ public class DefendantResponseService {
         claimRef.getPcsCase().addDefendantResponse(defendantResponse);
 
         return defendantResponse;
+    }
+
+    private static DefendantResponseStatus resolveInitialStatus(DefendantResponses responses) {
+        LanguageUsed languageUsed = responses.getLanguageUsed();
+        boolean translationRequired = (languageUsed == LanguageUsed.WELSH
+            || languageUsed == LanguageUsed.ENGLISH_AND_WELSH)
+            && !CollectionUtils.isEmpty(responses.getDefendantDocuments());
+
+        return translationRequired ? DefendantResponseStatus.PENDING_REVIEW
+            : DefendantResponseStatus.SUBMITTED;
     }
 
     private void buildAndLinkChildEntities(

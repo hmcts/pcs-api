@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -142,7 +143,7 @@ class DefencePackSelectorTest {
             .id(UUID.randomUUID())
             .type(DocumentType.COUNTERCLAIM)
             .party(defendant)
-            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.AWAITING_CASEWORKER_REVIEW).build())
+            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_REVIEW).build())
             .build();
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
@@ -151,6 +152,28 @@ class DefencePackSelectorTest {
         assertThat(result).hasSize(2);
         assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm);
         assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
+    }
+
+    @Test
+    @DisplayName("Excludes a defence form still awaiting caseworker review")
+    void shouldExcludeDefenceFormAwaitingReview() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        DocumentEntity pendingDefenceForm = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.DEFENDANT_RESPONSE)
+            .defendantResponse(DefendantResponseEntity.builder()
+                .party(defendant)
+                .status(DefendantResponseStatus.PENDING_REVIEW)
+                .build())
+            .build();
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
+            caseWith(List.of(pendingDefenceForm, counterClaim), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(counterClaim);
+        assertThat(candidateFor(result, claimant).documents()).containsExactly(counterClaim);
     }
 
     @Test
@@ -203,7 +226,10 @@ class DefencePackSelectorTest {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .type(DocumentType.DEFENDANT_RESPONSE)
-            .defendantResponse(DefendantResponseEntity.builder().party(owner).build())
+            .defendantResponse(DefendantResponseEntity.builder()
+                .party(owner)
+                .status(DefendantResponseStatus.SUBMITTED)
+                .build())
             .build();
     }
 

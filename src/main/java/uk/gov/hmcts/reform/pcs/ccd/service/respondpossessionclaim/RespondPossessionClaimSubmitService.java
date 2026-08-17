@@ -5,17 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
@@ -36,6 +39,7 @@ public class RespondPossessionClaimSubmitService {
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
     private final TranslationWAService translationWAService;
+    private final PreIssueChecklistService preIssueChecklistService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -67,7 +71,7 @@ public class RespondPossessionClaimSubmitService {
             && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
         if (counterClaimEntity != null && !paymentRequired) {
-            counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
+            counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
         }
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
@@ -103,11 +107,19 @@ public class RespondPossessionClaimSubmitService {
             .filter(document -> isDefendantResponseDocument(document, savedResponse))
             .toList();
 
+        if (!documents.isEmpty()) {
+            preIssueChecklistService.save(PreIssueChecklistEntity.builder()
+                .code(PreIssueChecklistCode.TRANSLATION)
+                .allowManualCompletion(true)
+                .response(savedResponse)
+                .build());
+        }
+
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
-    private static boolean isDefendantResponseDocument(DocumentEntity document,
-                                                        DefendantResponseEntity savedResponse) {
+    private boolean isDefendantResponseDocument(DocumentEntity document,
+                                                DefendantResponseEntity savedResponse) {
         return document.getDefendantResponse() != null
             && document.getDefendantResponse().getId().equals(savedResponse.getId());
     }

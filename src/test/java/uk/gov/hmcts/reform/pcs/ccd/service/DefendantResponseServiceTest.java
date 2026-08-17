@@ -892,6 +892,58 @@ class DefendantResponseServiceTest {
         );
     }
 
+    @Test
+    void shouldSetPendingReviewStatusWhenWelshLanguageAndDocumentsUploaded() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder().filename("evidence.pdf").build())
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .languageUsed(LanguageUsed.WELSH)
+            .defendantDocuments(uploadedDocs)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatus()).isEqualTo(DefendantResponseStatus.PENDING_REVIEW);
+    }
+
+    @Test
+    void shouldSetSubmittedStatusWhenWelshLanguageButNoDocumentsUploaded() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
+    }
+
     @ParameterizedTest(name = "otherConsiderations={0}")
     @MethodSource("otherConsiderationsPersistenceScenarios")
     void shouldPersistOtherConsiderations(VerticalYesNo otherConsiderations) {

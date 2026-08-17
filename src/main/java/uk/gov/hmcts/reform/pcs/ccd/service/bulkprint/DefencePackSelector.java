@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -90,6 +91,7 @@ public class DefencePackSelector {
         return pcsCase.getDocuments().stream()
             .filter(document -> document.getType() == DocumentType.DEFENDANT_RESPONSE)
             .filter(document -> belongsToDefendant(document, defendant))
+            .filter(document -> document.getDefendantResponse().getStatus() == DefendantResponseStatus.SUBMITTED)
             .findFirst()
             .orElse(null);
     }

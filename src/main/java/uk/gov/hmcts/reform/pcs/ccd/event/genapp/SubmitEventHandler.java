@@ -10,13 +10,16 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.MakeAnApplicationResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -60,6 +64,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final SchedulerClient schedulerClient;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
+    private final PreIssueChecklistService preIssueChecklistService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -86,18 +91,33 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
+        GenAppState finalState = initialState;
+
         if (!paymentRequired) {
-            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+            List<DocumentEntity> documentsRequiringTranslation =
+                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+
+            if (!documentsRequiringTranslation.isEmpty()) {
+                finalState = GenAppState.PENDING_REVIEW;
+                genAppEntity.setState(finalState);
+                preIssueChecklistService.save(PreIssueChecklistEntity.builder()
+                    .code(PreIssueChecklistCode.TRANSLATION)
+                    .allowManualCompletion(true)
+                    .genApp(genAppEntity)
+                    .build());
+            }
         }
 
         if (isXuiJourney(createGenAppRequest)) {
-            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
+            return handleXuiSubmit(paymentRequired, finalState, caseReference, createGenAppRequest, genAppEntity,
+                feeDetails);
         } else {
-            return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
+            return handleCuiSubmit(paymentRequired, finalState, caseReference, genAppEntity, feeDetails);
         }
     }
 
     private SubmitResponse<State> handleXuiSubmit(boolean paymentRequired,
+                                                  GenAppState finalState,
                                                   long caseReference,
                                                   GenAppRequest genAppRequest,
                                                   GenAppEntity genAppEntity,
@@ -105,7 +125,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+            if (finalState == GEN_APP_ISSUED) {
+                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+            }
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -115,17 +137,20 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     }
 
     private SubmitResponse<State> handleCuiSubmit(boolean paymentRequired,
+                                                  GenAppState finalState,
                                                   long caseReference,
                                                   GenAppEntity genAppEntity,
-                                                  GenAppState initialState,
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-            notificationService.sendGenAppReceivedEmail(genAppEntity);
-            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+
+            if (finalState == GEN_APP_ISSUED) {
+                notificationService.sendGenAppReceivedEmail(genAppEntity);
+                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+            }
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
-                .state(initialState)
+                .state(finalState)
                 .build();
 
             return SubmitResponse.<State>builder()
@@ -137,7 +162,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             String serviceRequestReference = createPaymentServiceRequest(genAppEntity, caseReference, feeDetails);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
-                .state(initialState)
+                .state(finalState)
                 .serviceRequestReference(serviceRequestReference)
                 .feeAmount(feeDetails.getFeeAmount())
                 .build();

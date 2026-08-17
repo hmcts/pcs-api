@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.Possession
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
@@ -114,6 +115,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private TranslationWAService translationWAService;
+
+    @Mock
+    private PreIssueChecklistService preIssueChecklistService;
 
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
@@ -198,7 +202,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             feeCalculator,
             documentService,
             draftCaseDataService,
-            translationWAService
+            translationWAService,
+            preIssueChecklistService
         );
 
         lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))

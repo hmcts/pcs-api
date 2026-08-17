@@ -18,9 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -60,6 +62,8 @@ class RespondPossessionClaimSubmitServiceTest {
     @Mock
     private TranslationWAService translationWAService;
     @Mock
+    private PreIssueChecklistService preIssueChecklistService;
+    @Mock
     private PartyEntity partyEntity;
 
     private RespondPossessionClaimSubmitService underTest;
@@ -73,7 +77,8 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimFeeCalculator,
             documentService,
             draftCaseDataService,
-            translationWAService
+            translationWAService,
+            preIssueChecklistService
         );
 
         when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
@@ -212,7 +217,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.counterClaimEntity().getStatus())
-            .isEqualTo(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
+            .isEqualTo(CounterClaimState.PENDING_REVIEW);
         assertThat(result.paymentRequired()).isFalse();
     }
 
@@ -328,6 +333,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, partyEntity, List.of(activeDocument));
+        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
     }
 
     @Test
@@ -405,6 +411,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         verify(translationWAService)
             .createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, partyEntity, List.of());
+        verifyNoInteractions(preIssueChecklistService);
     }
 
 }

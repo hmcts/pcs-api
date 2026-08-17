@@ -407,7 +407,7 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldTriggerTranslationTasksForOtherDefendantsWhenWelshCommsFlagActivates() {
+    void shouldTriggerDefendantsDocumentTranslationTaskWhenWelshCommsFlagActivates() {
         // Given
         UUID flaggingPartyId = UUID.randomUUID();
         UUID otherDefendant1Id = UUID.randomUUID();
@@ -461,7 +461,7 @@ class CaseFlagServiceTest {
 
         CounterClaimEntity otherDefendant2PendingCounterClaim = CounterClaimEntity.builder()
             .party(otherDefendant2)
-            .status(CounterClaimState.AWAITING_CASEWORKER_REVIEW)
+            .status(CounterClaimState.PENDING_REVIEW)
             .build();
         DocumentEntity otherDefendant2PendingDocument = DocumentEntity.builder()
             .fileName("defendant2-pending-counterclaim.pdf")
@@ -501,7 +501,7 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldNotTriggerTranslationTaskForOtherDefendantWithNoDocuments() {
+    void shouldNotTriggerDefendantDocumentTranslationTaskWithNoDocuments() {
         // Given
         UUID flaggingPartyId = UUID.randomUUID();
         UUID otherDefendantId = UUID.randomUUID();

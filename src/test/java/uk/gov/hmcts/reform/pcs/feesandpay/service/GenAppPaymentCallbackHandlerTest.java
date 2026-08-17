@@ -6,22 +6,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -43,17 +48,50 @@ class GenAppPaymentCallbackHandlerTest {
     private NotificationService notificationService;
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
+    @Mock
+    private PreIssueChecklistService preIssueChecklistService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
-                                                     notificationService, genAppWaTaskService);
+                                                     notificationService, genAppWaTaskService,
+                                                     preIssueChecklistService);
     }
 
     @Test
-    void shouldIssueGenAppIfNotAlreadyIssued() {
+    void shouldIssueGenAppIfNotAlreadyIssuedAndNoTranslationRequired() {
+        // Given
+        UUID genAppId = UUID.randomUUID();
+
+        FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
+        when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
+
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+        when(genAppEntity.getState()).thenReturn(GenAppState.PENDING_GEN_APP_ISSUED);
+        when(genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity)).thenReturn(List.of());
+
+        when(feePaymentEntity.getRelatedEntityId()).thenReturn(genAppId);
+        when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+        // When
+        underTest.handle(paymentStatusCallback, feePaymentEntity);
+
+        // Then
+        verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verify(genAppEntity).setState(GenAppState.GEN_APP_ISSUED);
+        verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+        verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
+        verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+        verifyNoInteractions(preIssueChecklistService);
+    }
+
+    @Test
+    void shouldMoveToPendingReviewWhenTranslationRequired() {
         // Given
         UUID genAppId = UUID.randomUUID();
 
@@ -66,6 +104,10 @@ class GenAppPaymentCallbackHandlerTest {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
         when(genAppEntity.getState()).thenReturn(GenAppState.PENDING_GEN_APP_ISSUED);
 
+        DocumentEntity documentRequiringTranslation = DocumentEntity.builder().fileName("evidence.pdf").build();
+        when(genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity))
+            .thenReturn(List.of(documentRequiringTranslation));
+
         when(feePaymentEntity.getRelatedEntityId()).thenReturn(genAppId);
         when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
 
@@ -74,9 +116,10 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
-        verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
-        verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
-        verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+        verify(genAppEntity).setState(GenAppState.PENDING_REVIEW);
+        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
+        verifyNoInteractions(notificationService);
+        verify(genAppWaTaskService, never()).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
     }
 
     @Test
@@ -98,7 +141,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
-        verifyNoInteractions(notificationService, genAppWaTaskService);
+        verifyNoInteractions(notificationService, genAppWaTaskService, preIssueChecklistService);
     }
 
     @Test

@@ -6,14 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -35,6 +38,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     private final SchedulerClient schedulerClient;
     private final CounterClaimFormScheduler counterClaimFormScheduler;
     private final TranslationWAService translationWAService;
+    private final PreIssueChecklistService preIssueChecklistService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
@@ -43,12 +47,14 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                                               CounterClaimFormScheduler counterClaimFormScheduler,
                                               TranslationWAService
                                                   translationWAService,
+                                              PreIssueChecklistService preIssueChecklistService,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
         this.counterClaimFormScheduler = counterClaimFormScheduler;
         this.translationWAService = translationWAService;
+        this.preIssueChecklistService = preIssueChecklistService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -82,7 +88,12 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
 
             if (!documentsRequiringTranslation.isEmpty()) {
-                counterClaimEntity.setStatus(CounterClaimState.AWAITING_CASEWORKER_REVIEW);
+                counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
+                preIssueChecklistService.save(PreIssueChecklistEntity.builder()
+                    .code(PreIssueChecklistCode.TRANSLATION)
+                    .allowManualCompletion(true)
+                    .counterClaim(counterClaimEntity)
+                    .build());
                 translationWAService.createTranslateDefendantSubmittedDocumentTask(
                     counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
             } else {

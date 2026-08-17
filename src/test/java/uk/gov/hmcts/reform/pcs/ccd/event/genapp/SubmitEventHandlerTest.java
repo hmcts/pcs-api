@@ -27,10 +27,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.MakeAnApplicationResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
@@ -46,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -99,6 +103,8 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
     @Mock
+    private PreIssueChecklistService preIssueChecklistService;
+    @Mock
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
@@ -113,7 +119,7 @@ class SubmitEventHandlerTest {
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            legalRepresentativeRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper
+                                           genAppWaTaskService, preIssueChecklistService, objectMapper
         );
     }
 
@@ -332,6 +338,43 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+        }
+
+        @Test
+        void shouldMoveGenAppToPendingReviewWhenTranslationRequired() {
+            // Given
+            final PartyEntity applicantParty = mock(PartyEntity.class);
+
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .clientReference("some reference")
+                .build();
+
+            UUID currentUserId = UUID.randomUUID();
+            given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
+
+            when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
+
+            GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty);
+
+            DocumentEntity documentRequiringTranslation = DocumentEntity.builder().fileName("evidence.pdf").build();
+            when(genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity))
+                .thenReturn(List.of(documentRequiringTranslation));
+
+            PCSCase caseData = PCSCase.builder()
+                .citizenGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            underTest.submit(eventPayload(caseData));
+
+            // Then
+            verify(genAppEntity).setState(GenAppState.PENDING_REVIEW);
+            verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
+            verify(genAppDocumentGenerator).createSubmissionDocument(TEST_CASE_REFERENCE, genAppEntity);
+            verifyNoInteractions(notificationService);
+            verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
         }
 
         @Test
