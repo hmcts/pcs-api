@@ -11,11 +11,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
@@ -43,7 +43,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
     private final DraftCaseDataService draftCaseDataService;
     private final PartyService partyService;
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeRepository;
+    private final OrganisationRepository organisationRepository;
     private final PcsCaseService pcsCaseService;
     private final SelectedPartyRetriever selectedPartyRetriever;
     private final SubmitResponseFactory submitResponseFactory;
@@ -93,9 +93,9 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
             .persistFinalSubmit(caseReference, responseDraftData, defendantParty, JourneyType.LEGAL_REPRESENTATIVE);
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            legalRepresentativeRepository
-                .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(representedPartyId)
+        OrganisationEntity legalRepresentativeOrganisationEntity =
+            organisationRepository
+                .findByPartyLinkedToOrganisationAndActive(representedPartyId)
                 .orElseThrow();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -118,7 +118,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         return isBlank(counterClaim.getHwfReferenceNumber());
     }
 
-    private void sendNoCounterClaimNotification(LegalRepresentativeOrganisationEntity
+    private void sendNoCounterClaimNotification(OrganisationEntity
                                                     legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
                                                 DefendantResponseEntity defendantResponse) {
         notificationService
@@ -130,7 +130,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private void sendCounterClaimNoPaymentRequiredNotification(
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
@@ -138,14 +138,14 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private void sendCounterClaimPaymentRequiredNotification(
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity legalRepresentativeOrganisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
                 legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
     }
 
-    private void sendNotification(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity,
+    private void sendNotification(OrganisationEntity legalRepresentativeOrganisationEntity,
                                   PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         Optional<CounterClaimEntity> counterClaimEntityOptional = pcsCaseEntity.getCounterClaims().stream().findFirst();
 
@@ -163,7 +163,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private void sendCounterClaimNotification(CounterClaimEntity counterClaimEntity,
-                                              LegalRepresentativeOrganisationEntity
+                                              OrganisationEntity
                                                   legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
                                               DefendantResponseEntity defendantResponse) {
         if (counterClaimEntity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {

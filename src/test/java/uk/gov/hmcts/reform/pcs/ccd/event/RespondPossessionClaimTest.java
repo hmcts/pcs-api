@@ -10,8 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -160,7 +160,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private OrganisationService organisationService;
 
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
 
     @Mock
     private NotificationService notificationService;
@@ -228,7 +228,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
                     partyService,
-                    legalRepresentativeOrganisationRepository,
+                    organisationRepository,
                     pcsCaseService,
                     selectedPartyRetriever,
                     submitResponseFactory,
@@ -1062,8 +1062,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
-        when(legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
-            any())).thenReturn(Optional.of(new LegalRepresentativeOrganisationEntity()));
+        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(
+            any())).thenReturn(Optional.of(new OrganisationEntity()));
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(new PcsCaseEntity());
 
         // when

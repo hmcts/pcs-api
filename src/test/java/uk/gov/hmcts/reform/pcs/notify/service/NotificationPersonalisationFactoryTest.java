@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -294,7 +294,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            LegalRepresentativeOrganisationEntity legalRepParty = stubLegalRepParty();
+            OrganisationEntity legalRepParty = stubLegalRepParty();
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -374,8 +374,8 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private LegalRepresentativeOrganisationEntity stubLegalRepParty() {
-        LegalRepresentativeOrganisationEntity legalRepParty = createLegalRep("HMCTS");
+    private OrganisationEntity stubLegalRepParty() {
+        OrganisationEntity legalRepParty = createLegalRep("HMCTS");
         legalRepParty.setId(1);
 
         return legalRepParty;
@@ -390,8 +390,8 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private LegalRepresentativeOrganisationEntity createLegalRep(String organisationName) {
-        LegalRepresentativeOrganisationEntity legalRep = new LegalRepresentativeOrganisationEntity();
+    private OrganisationEntity createLegalRep(String organisationName) {
+        OrganisationEntity legalRep = new OrganisationEntity();
         legalRep.setId(1);
         legalRep.setOrganisationName(organisationName);
         return legalRep;

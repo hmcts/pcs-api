@@ -15,11 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -60,7 +60,7 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private PartyService partyService;
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -86,7 +86,7 @@ class LegalRepSubmissionEventStrategyTest {
         underTest = new LegalRepSubmissionEventStrategy(
             draftCaseDataService,
             partyService,
-            legalRepresentativeOrganisationRepository,
+            organisationRepository,
             pcsCaseService,
             selectedPartyRetriever,
             submitResponseFactory,
@@ -140,12 +140,10 @@ class LegalRepSubmissionEventStrategyTest {
             .thenReturn(Optional.of(caseData));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-        // when(submitResponseFactory.success()).thenReturn(submitResponse);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
-        when(legalRepresentativeOrganisationRepository
-                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(representedPartyId))
+        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(representedPartyId))
             .thenReturn(legalRepresentativeOrganisationEntity());
 
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
@@ -283,8 +281,8 @@ class LegalRepSubmissionEventStrategyTest {
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
 
-    private Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity() {
-        return Optional.of(LegalRepresentativeOrganisationEntity.builder().build());
+    private Optional<OrganisationEntity> legalRepresentativeOrganisationEntity() {
+        return Optional.of(OrganisationEntity.builder().build());
     }
 
     private PcsCaseEntity pcsCaseEntity(UUID representedPartyId) {
