@@ -36,6 +36,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private Long caseReference;
+    private Long solicitor2CaseReference;
     private static final String caseType = CaseType.getCaseType();
 
     @BeforeAll
@@ -44,6 +45,12 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
         String accessCode = apiSteps.accessCodeIsFetched(caseReference);
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
+
+        solicitor2CaseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
+        String defendantId = apiSteps.getDefendantIdFromLastCase();
+        if (defendantId != null) {
+            apiSteps.linkDefendantSolicitorToParty(solicitor2CaseReference, defendantId);
+        }
     }
 
     @Title("makeAnApplication start event callback test (citizen user) - returns 200")
@@ -87,6 +94,55 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsIdempotencyKeyHeader();
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
+        apiSteps.theRequestContainsBody(submitApplicationRequestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
+        apiSteps.checkStatusCode(200);
+    }
+
+    @Title("makeAnApplication start event callback test (solicitor user 2) - returns 200")
+    @Test
+    @Order(3)
+    void makeAnApplicationStartEventCallbackSolicitor2Test() {
+        String makeApplicationRequestBody = PayloadLoader.load(
+            "/payloads/makeAnApplication-startEventCallbackRequest.json",
+            Map.of(
+                "caseId", solicitor2CaseReference,
+                "caseTypeId", caseType
+            )
+        );
+
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser2);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
+        apiSteps.theRequestContainsBody(makeApplicationRequestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
+        apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "/responses/makeAnApplication-startEventCallbackResponse.json"
+        );
+    }
+
+    @Title("makeAnApplication submit event callback test (solicitor user 2) - returns 200")
+    @Test
+    @Order(4)
+    void makeAnApplicationSubmitEventCallbackSolicitor2Test() {
+        String decodedCaseId = apiSteps.getInternalCaseId(solicitor2CaseReference);
+
+        String submitApplicationRequestBody = PayloadLoader.load(
+            "/payloads/makeAnApplication-submitEventCallbackRequest.json",
+            Map.of(
+                "caseId", String.valueOf(solicitor2CaseReference),
+                "internalCaseId", decodedCaseId,
+                "caseTypeId", caseType
+            )
+        );
+
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser2);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
