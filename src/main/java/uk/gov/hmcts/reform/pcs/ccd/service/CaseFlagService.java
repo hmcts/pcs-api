@@ -65,34 +65,6 @@ public class CaseFlagService {
 
             mergePartyFlagCollections(incomingParty, partyEntity);
 
-//            if (incomingParty.getDefendantFlags() != null
-//                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-//                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
-//
-//                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
-//                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new);
-//
-//                partyEntity.getDefendantFlags().clear();
-//                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
-//
-//                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
-//                if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
-//                    long caseReference = partyEntity.getPcsCase().getCaseReference();
-//                    ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-//                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
-//                        .filter(document -> !document.isRemoved()
-//                            && document.getClaim() != null
-//                            && document.getClaim().getId().equals(mainClaim.getId()))
-//                        .toList();
-//
-//                    if (!documents.isEmpty()) {
-//                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-//                            caseReference, documents);
-//                        camundaService.createTask(
-//                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
-//                    }
-//                }
-//            }
         }
     }
 
@@ -112,8 +84,32 @@ public class CaseFlagService {
         mergedFlags.addAll(
             mergeOrRetainPartyFlags(incomingExternalFlags, FlagVisibility.EXTERNAL, existingFlags, partyEntity));
 
+        boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
         partyEntity.getDefendantFlags().clear();
         partyEntity.getDefendantFlags().addAll(mergedFlags);
+
+        fireOnActiveWelshFlags(partyEntity, mergedFlags, welshCommsAlreadyActive);
+    }
+
+    private void fireOnActiveWelshFlags(PartyEntity partyEntity, List<CasePartyFlagEntity> mergedFlags,
+                                        boolean welshCommsAlreadyActive) {
+        // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
+        if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedFlags)) {
+            long caseReference = partyEntity.getPcsCase().getCaseReference();
+            ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
+            List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
+                .filter(document -> !document.isRemoved()
+                    && document.getClaim() != null
+                    && document.getClaim().getId().equals(mainClaim.getId()))
+                .toList();
+
+            if (!documents.isEmpty()) {
+                String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
+                    caseReference, documents);
+                camundaService.createTask(
+                    caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
+            }
+        }
     }
 
     private List<CasePartyFlagEntity> mergeOrRetainPartyFlags(Flags incomingFlags, FlagVisibility visibility,
@@ -204,7 +200,7 @@ public class CaseFlagService {
 
 
     private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {
-        return flags.stream().anyMatch(flag -> isWelshCommunicationsPreference(flag));
+        return flags.stream().anyMatch(this::isWelshCommunicationsPreference);
     }
 
     private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {

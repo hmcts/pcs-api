@@ -40,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -269,7 +268,7 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null, "PF0026",
-                                      "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -306,7 +305,7 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null, "PF0026",
-                                      "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -362,7 +361,7 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(null, "PF0026",
-                                      "I want to receive communications and documents in Welsh", "Welsh comms", "Inactive"))
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Inactive"))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -397,7 +396,7 @@ class CaseFlagServiceTest {
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
             .details(createFlagDetail(existingWelshFlag.getId().toString(), "PF0026",
-                                      "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
