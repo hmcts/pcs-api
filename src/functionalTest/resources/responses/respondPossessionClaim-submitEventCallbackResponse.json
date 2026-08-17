@@ -38,13 +38,13 @@
           "defendantNameConfirmation": "YES",
           "correspondenceAddressConfirmation": "YES",
           "householdCircumstances": {
-            "dependantChildren": "NO",
-            "shareAdditionalCircumstances": "NO",
-            "exceptionalHardship": "NO",
-            "otherDependants": "NO",
-            "otherTenants": "NO",
+            "dependantChildren": "No",
+            "shareAdditionalCircumstances": "No",
+            "exceptionalHardship": "No",
+            "otherDependants": "No",
+            "otherTenants": "No",
             "alternativeAccommodation": "NO",
-            "shareIncomeExpenseDetails": "NO"
+            "shareIncomeExpenseDetails": "No"
           },
           "paymentAgreement": {
             "anyPaymentsMade": "NO",

@@ -23,56 +23,55 @@
       },
       "legislativeCountry": "England",
         "possessionClaimResponse": {
-            "defendantResponses": {
+          "claimantOrganisations": [
+            {
+              "id": "6ec6b2f2-926f-4756-8250-9726b2d03f8f",
+              "value": "Possession Claims Solicitor Org"
+            }
+          ],
+          "claimantServiceAddress": {
+            "AddressLine1": "Ministry Of Justice",
+            "AddressLine2": "Seventh Floor 102 Petty France",
+            "PostTown": "London",
+            "PostCode": "SW1H 9AJ",
+            "Country": "United Kingdom"
+          },
+          "defendantContactDetails": {
+            "party": {
+              "firstName": "Jane",
+              "lastName": "Doe",
+              "address": {
 
-                "hasSolicitor": "NO",
-                "languageUsed": "ENGLISH",
-                "contactByPost": "NO",
-                "contactByEmail": "YES",
-                "contactByPhone": "NO",
-                "freeLegalAdvice": "NO",
-                "makeCounterClaim": "NO",
-                "paymentAgreement": {
-                    "anyPaymentsMade": "NO",
-                    "repaymentPlanAgreed": "NO",
-                    "repayArrearsInstalments": "NO"
-                },
-                "completedSections": [
-                    "START_NOW_AND_DETAILS",
-                    "PERSONAL_DETAILS",
-                    "DISPUTE_AND_TENANCY",
-                    "PAYMENTS",
-                    "SITUATION_AND_CIRCUMSTANCES",
-                    "INCOME_AND_EXPENDITURE",
-                    "UPLOAD_FILES"
-                ],
-                "defendantDocuments": [],
-                "otherConsiderations": "NO",
-                "householdCircumstances": {
-                    "otherTenants": "NO",
-                    "otherDependants": "NO",
-                    "dependantChildren": "NO",
-                    "exceptionalHardship": "NO",
-                    "alternativeAccommodation": "NO",
-                    "shareIncomeExpenseDetails": "NO",
-                    "shareAdditionalCircumstances": "NO"
-                },
-                "tenancyTypeConfirmation": "YES",
-                "possessionNoticeReceived": "YES",
-                "defendantNameConfirmation": "YES",
-                "rentArrearsAmountConfirmation": "YES",
-                "correspondenceAddressConfirmation": "YES"
-
+              }
+            }
+          },
+          "defendantResponses": {
+            "tenancyTypeConfirmation": "YES",
+            "rentArrearsAmountConfirmation": "YES",
+            "contactByPhone": "NO",
+            "contactByEmail": "YES",
+            "contactByPost": "NO",
+            "freeLegalAdvice": "NO",
+            "defendantNameConfirmation": "YES",
+            "correspondenceAddressConfirmation": "YES",
+            "householdCircumstances": {
+              "dependantChildren": "No",
+              "shareAdditionalCircumstances": "No",
+              "exceptionalHardship": "No",
+              "otherDependants": "No",
+              "otherTenants": "No",
+              "alternativeAccommodation": "NO",
+              "shareIncomeExpenseDetails": "No"
             },
-             "defendantContactDetails": {
-                    "party": {
-                    "address": {},
-                    "lastName": "Doe",
-                    "firstName": "Jane",
-                    "nameKnown": "YES",
-                    "addressKnown": "NO"
-                    }
-                }
+            "paymentAgreement": {
+              "anyPaymentsMade": "NO",
+              "repaymentPlanAgreed": "NO",
+              "repayArrearsInstalments": "NO"
+            },
+            "languageUsed": "ENGLISH",
+            "otherConsiderations": "NO",
+            "makeCounterClaim": "NO"
+          }
         }
 
       }
