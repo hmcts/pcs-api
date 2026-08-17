@@ -21,8 +21,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
-import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
+import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
+import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
+import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
+import uk.gov.hmcts.reform.pcs.service.*;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
@@ -49,7 +55,22 @@ public class DataTest extends CftlibTest {
     private CaseCreationService caseCreationService;
 
     @Autowired
+    private ResponseCreationService responseCreationService;
+
+    @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private CaseStateService caseStateService;
+    @Autowired
+    private FeePaymentService feePaymentService;
+    @Autowired
+    private AccessCodeService accessCodeService;
+    @Autowired
+    private TestingSupportClient testingSupportClient;
+
+    private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
+    private String citizenToken;
 
     private String solicitorToken;
     private long caseReference;
@@ -84,15 +105,55 @@ public class DataTest extends CftlibTest {
                                     """))
         );
 
+//        try {
+//            solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+//            caseReference = caseCreationService.createMaximalCase(solicitorToken);
+//            responseCreationService.createDefendantResponse();
+//            System.out.println("==============================================");
+//            System.out.println("DATA TEST CREATED CASE REF: " + caseReference);
+//            System.out.println("RESPONSE TEST CREATED");
+//            System.out.println("==============================================");
+//        } catch (FeignException e) {
+//            System.err.println("===================ERROR CREATING CASE===================");
+//            System.err.println("Status: " + e.status());
+//            System.err.println("Response Body: " + e.contentUTF8());
+//            System.err.println("=============================================================");
+//            throw e;
+//        }
+
         try {
             solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+            citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
+
             caseReference = caseCreationService.createMaximalCase(solicitorToken);
+
+            List<FeePaymentSummary> feePaymentSummaries =
+                feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
+            feePaymentService.simulatePayments(caseReference, feePaymentSummaries);
+
+            caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
+
+            List<PartyAccessCode> partyAccessCodes = accessCodeService.waitForAccessCodes(caseReference);
+            PartyAccessCode partyAccessCode = partyAccessCodes.getFirst();
+            accessCodeService.linkUserToCase(caseReference, partyAccessCode.getAccessCode(), citizenToken);
+
+            PartyEmail partyEmail = PartyEmail.builder()
+                .partyId(partyAccessCode.getPartyId())
+                .emailAddress(CITIZEN_EMAIL_ADDRESS)
+                .build();
+            testingSupportClient.setPartyEmail(partyEmail, citizenToken);
+
+            responseCreationService.createDefendantResponse(caseReference, citizenToken);
+
             System.out.println("==============================================");
+            System.out.println("CITIZEN TOKEN VALUE: " + citizenToken);
             System.out.println("DATA TEST CREATED CASE REF: " + caseReference);
+            System.out.println("RESPONSE SUBMITTED FOR SAME CASE");
             System.out.println("==============================================");
         } catch (FeignException e) {
-            System.err.println("===================ERROR CREATING MAX CASE===================");
+            System.err.println("===================ERROR CREATING CASE===================");
             System.err.println("Status: " + e.status());
+            System.out.println("CITIZEN TOKEN VALUE: " + citizenToken);
             System.err.println("Response Body: " + e.contentUTF8());
             System.err.println("=============================================================");
             throw e;
@@ -391,7 +452,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("document validations",
                                                    () -> assertHasColumns("public.document", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(2, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validDocument,  msgValidDocument)
         );
     }
