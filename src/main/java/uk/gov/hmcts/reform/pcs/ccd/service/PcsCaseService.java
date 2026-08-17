@@ -40,7 +40,8 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
 
-    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
+    public PcsCaseEntity createCase(long caseReference,
+                                    AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
