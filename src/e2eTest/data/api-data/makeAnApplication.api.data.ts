@@ -89,7 +89,7 @@ export const makeAnApplicationApiData = {
       xui_genapp_SotPositionHeld: 'Solicitor'
     }),
 
-    makeAnApplicationAdjournWalesPayload: (defendantId: string, defendantName: string) => (
+  makeAnApplicationAdjournWalesPayload: (defendantId: string, defendantName: string) => (
     {
       currentRepresentedPartyId: defendantId,
       currentRepresentedPartyName: defendantName,
