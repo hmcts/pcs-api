@@ -47,8 +47,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
@@ -202,7 +203,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> saveForLater() {
         return SubmitResponse.<State>builder()
             .confirmationBody(getClaimSavedMarkdown())
-            .state(State.AWAITING_SUBMISSION_TO_HMCTS)
+            .state(AWAITING_SUBMISSION_TO_HMCTS)
             .build();
     }
 
