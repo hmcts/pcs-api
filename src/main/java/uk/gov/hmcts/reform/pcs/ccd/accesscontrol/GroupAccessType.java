@@ -111,8 +111,13 @@ public enum GroupAccessType implements CCDAccessGroup {
         return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
     }
 
+    /**
+     * Cannot be left blank: the definition reader parses this column unconditionally and an empty
+     * value fails the import with DateTimeParseException. Far future so it is not a live expiry -
+     * every access type stops working on this date, so move it rather than let it arrive.
+     */
     @Override
     public String getLiveTo() {
-        return "01/01/2029";
+        return "01/01/2099";
     }
 }
