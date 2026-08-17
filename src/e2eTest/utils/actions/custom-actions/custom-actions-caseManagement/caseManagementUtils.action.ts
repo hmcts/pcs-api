@@ -41,60 +41,6 @@ export class CaseManagementCommonUtils {
     return Number(amount.toFixed(2));
   }
 
-
-  // public static inputDOB(inputArray: string[]): string {
-  //   return inputArray.map((item) => item + " - " + CaseManagementCommonUtils.getRandomDate(18, 30)).join('\n');
-  // }
-
-
-  // public static getRandomDate(type: string, format?: string): string {
-
-  //   if (type === 'invalid') {
-  //     return '32/13/9999';
-  //   }
-
-  //   const today = new Date();
-
-  //   if (type === 'present') {
-  //     const day = String(today.getDate()).padStart(2, '0');
-  //     const month = String(today.getMonth() + 1).padStart(2, '0');
-  //     const year = today.getFullYear();
-
-  //     return `${day}/${month}/${year}`;
-  //   }
-
-  //   let minDate: Date;
-  //   let maxDate: Date;
-
-  //   if (type === 'future') {
-  //     minDate = today;
-  //     maxDate = new Date(
-  //       today.getFullYear() + 10,
-  //       today.getMonth(),
-  //       today.getDate()
-  //     );
-  //   } else {
-  //     minDate = new Date(
-  //       today.getFullYear() - 10,
-  //       today.getMonth(),
-  //       today.getDate()
-  //     );
-  //     maxDate = today;
-  //   }
-
-  //   const randomTime =
-  //     minDate.getTime() +
-  //     Math.random() * (maxDate.getTime() - minDate.getTime());
-
-  //   const randomDate = new Date(randomTime);
-
-  //   const day = String(randomDate.getDate()).padStart(2, '0');
-  //   const month = String(randomDate.getMonth() + 1).padStart(2, '0');
-  //   const year = randomDate.getFullYear();
-
-  //   return `${day}/${month}/${year}`;
-  // }
-
   public static getRandomDate(type: string, format?: string): string {
     const formatDate = (date: Date): string => {
       const day = String(date.getDate()).padStart(2, '0');

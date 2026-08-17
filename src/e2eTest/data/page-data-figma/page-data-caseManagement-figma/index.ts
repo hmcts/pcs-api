@@ -18,10 +18,13 @@ export * from './confirmAmend.page.data';
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
 export * from './enterGenAppPreferApplicationToJudge.page.data'
+export * from './enterGenAppuploadGeneralApplication.page.data';
+export * from './manageHearing.page.data';
+export * from './addHearing.page.data';
+export * from './checkYourAnswersManageHearing.page.data';
 export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
-export * from './manageHearing.page.data'
+export * from './confirmAddHearing.page.data';
 export * from './editHearing.page.data';
 export * from './checkYourAnswersEditHearing.page.data';
 export * from './confirmEditHearing.page.data';
-

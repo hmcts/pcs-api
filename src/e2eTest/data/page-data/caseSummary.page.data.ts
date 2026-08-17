@@ -21,5 +21,5 @@ export const caseSummary = {
   addReviewDates: 'Add review date',
   changeCaseState: 'Change case state',
   enterAGenApp: 'Enter a general application',
-  manageHearing: 'Manage hearing',
+  manageHearing: 'Manage hearing'
 }
