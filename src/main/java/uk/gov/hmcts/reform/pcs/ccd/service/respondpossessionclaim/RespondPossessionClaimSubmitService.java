@@ -72,6 +72,7 @@ public class RespondPossessionClaimSubmitService {
 
         if (counterClaimEntity != null && !paymentRequired) {
             counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
+            createTranslationTaskForCounterClaim(counterClaimEntity, savedResponse, defendantParty);
         }
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
@@ -122,6 +123,35 @@ public class RespondPossessionClaimSubmitService {
                                                 DefendantResponseEntity savedResponse) {
         return document.getDefendantResponse() != null
             && document.getDefendantResponse().getId().equals(savedResponse.getId());
+    }
+
+    private void createTranslationTaskForCounterClaim(CounterClaimEntity counterClaimEntity,
+                                                       DefendantResponseEntity savedResponse,
+                                                       PartyEntity defendantParty) {
+
+        LanguageUsed languageUsed = savedResponse.getLanguageUsed();
+        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+            return;
+        }
+
+        PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
+        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+            .filter(document -> !document.isRemoved()
+                && document.getCounterClaim() != null
+                && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
+            .toList();
+
+        if (documents.isEmpty()) {
+            return;
+        }
+
+        preIssueChecklistService.save(PreIssueChecklistEntity.builder()
+            .code(PreIssueChecklistCode.TRANSLATION)
+            .allowManualCompletion(true)
+            .counterClaim(counterClaimEntity)
+            .build());
+
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
 }

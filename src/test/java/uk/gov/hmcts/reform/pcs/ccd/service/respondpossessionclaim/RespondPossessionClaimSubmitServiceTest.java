@@ -222,6 +222,57 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
+    void shouldCreateCounterClaimTranslationTaskWhenHelpWithFeesAppliesAndWelshDocumentsExist() {
+        JourneyType journeyType = JourneyType.CITIZEN;
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+        when(partyEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("HWF-123-456")
+            .build();
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        DocumentEntity counterClaimDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .counterClaim(savedCounterClaim)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(counterClaimDocument));
+
+        when(defendantResponseService.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedResponse);
+        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
+            .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimState.PENDING_REVIEW);
+        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            pcsCaseEntity, partyEntity, List.of(counterClaimDocument));
+    }
+
+    @Test
     void shouldSaveCounterClaimDocumentsWhenPresent() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
