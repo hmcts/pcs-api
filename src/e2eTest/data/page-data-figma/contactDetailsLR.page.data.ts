@@ -33,5 +33,5 @@ export const contactDetailsLR = {
   enterPhoneNumberTextInput: '07654567345',
   saveAndReturnLink: 'I want to save this application and return to it later',
   previousButton: 'Previous',
-  saveAndContinueButton: 'Save and continue'
+  saveAndContinueButton: 'Submit'
 };
