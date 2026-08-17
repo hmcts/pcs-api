@@ -14,14 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationContactDetailsRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -64,11 +64,11 @@ class LegalRepresentativePartyLinkServiceTest {
     private OrganisationDetailsService organisationDetailsService;
 
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
 
     @Mock
-    private LegalRepresentativeOrganisationContactDetailsRepository
-        legalRepresentativeOrganisationContactDetailsRepository;
+    private ClaimPartyContactDetailsRepository
+        claimPartyContactDetailsRepository;
 
     @Mock
     private AddressMapper addressMapper;
@@ -86,7 +86,7 @@ class LegalRepresentativePartyLinkServiceTest {
     private OrganisationDetailsResponse organisationDetails;
 
     @Captor
-    private ArgumentCaptor<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntityCaptor;
+    private ArgumentCaptor<OrganisationEntity> legalRepresentativeOrganisationEntityCaptor;
 
     private static final String ORG_PROFILE_ID = "SOLICITOR_PROFILE";
 
@@ -97,8 +97,8 @@ class LegalRepresentativePartyLinkServiceTest {
     void setUp() {
         legalRepresentativePartyLinkService = new LegalRepresentativePartyLinkService(
             pcsCaseService,
-            legalRepresentativeOrganisationRepository,
-            legalRepresentativeOrganisationContactDetailsRepository,
+            organisationRepository,
+            claimPartyContactDetailsRepository,
             organisationDetailsService,
             addressMapper,
             caseRoleAssignmentService,
@@ -134,7 +134,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
-        when(legalRepresentativeOrganisationRepository.findByOrganisationId(organisationId))
+        when(organisationRepository.findByOrganisationId(organisationId))
             .thenReturn(Optional.empty());
 
         // when
@@ -145,19 +145,19 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
-        LegalRepresentativeOrganisationContactDetailsEntity actualContactDetails =
-            actual.getLegalRepresentativeOrganisationContactDetails().getFirst();
+        ClaimPartyContactDetailsEntity actualContactDetails =
+            actual.getClaimPartyContactDetails().getFirst();
 
         assertThat(actual.getCreatedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         assertEquals(addressEntity, actualContactDetails.getAddress());
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
     }
 
@@ -191,7 +191,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
         when(addressMapper.toAddressEntityAndNormalise(addressUK)).thenReturn(addressEntity);
-        when(legalRepresentativeOrganisationRepository
+        when(organisationRepository
                  .findByOrganisationId(organisationId)).thenReturn(Optional.empty());
 
         // when
@@ -235,27 +235,27 @@ class LegalRepresentativePartyLinkServiceTest {
             )).build();
 
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            ClaimPartyLegalRepresentativeOrganisationEntity
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
-            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+        OrganisationEntity legalRepresentative = OrganisationEntity.builder()
+            .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
 
-        LegalRepresentativeOrganisationContactDetailsEntity contactDetails =
-            LegalRepresentativeOrganisationContactDetailsEntity.builder().build();
+        ClaimPartyContactDetailsEntity contactDetails =
+            ClaimPartyContactDetailsEntity.builder().build();
 
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
         when(organisationDetails.getName()).thenReturn(organisationName);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(legalRepresentativeOrganisationRepository
+        when(organisationRepository
                  .findByOrganisationId(organisationId))
             .thenReturn(Optional.of(legalRepresentative));
-        when(legalRepresentativeOrganisationContactDetailsRepository
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
             .thenReturn(Optional.of(contactDetails));
 
@@ -267,16 +267,16 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
 
         verify(organisationDetailsService, never()).getOrganisationAddress(organisationDetails);
         verify(addressMapper, never()).toAddressEntityAndNormalise(addressUK);
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -305,15 +305,15 @@ class LegalRepresentativePartyLinkServiceTest {
             )).build();
 
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            ClaimPartyLegalRepresentativeOrganisationEntity
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
-            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+        OrganisationEntity legalRepresentative = OrganisationEntity.builder()
+            .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
 
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
@@ -322,7 +322,7 @@ class LegalRepresentativePartyLinkServiceTest {
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
         when(organisationDetails.getName()).thenReturn(organisationName);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(legalRepresentativeOrganisationRepository
+        when(organisationRepository
                  .findByOrganisationId(organisationId))
             .thenReturn(Optional.of(legalRepresentative));
 
@@ -334,19 +334,19 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
 
         verify(organisationDetailsService).getOrganisationAddress(organisationDetails);
         verify(addressMapper).toAddressEntityAndNormalise(addressUK);
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
 
-        LegalRepresentativeOrganisationContactDetailsEntity actualContactDetails =
-            actual.getLegalRepresentativeOrganisationContactDetails().getFirst();
+        ClaimPartyContactDetailsEntity actualContactDetails =
+            actual.getClaimPartyContactDetails().getFirst();
 
         assertEquals(pcsCaseEntity, actualContactDetails.getPcsCase());
         assertEquals(addressEntity, actualContactDetails.getAddress());
@@ -375,22 +375,22 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            ClaimPartyLegalRepresentativeOrganisationEntity
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentative = LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity legalRepresentative = OrganisationEntity.builder()
             .organisationName(organisationName)
             .organisationId(organisationId)
-            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+            .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
 
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(legalRepresentativeOrganisationRepository
+        when(organisationRepository
                  .findByOrganisationId(organisationId))
             .thenReturn(Optional.of(legalRepresentative));
 
@@ -402,14 +402,14 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
         verify(addressMapper, never()).toAddressEntityAndNormalise(addressUK);
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -435,23 +435,23 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        ClaimPartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisation =
-            ClaimPartyLegalRepresentativeOrganisationEntity
+        ClaimPartyOrganisationEntity partyLegalRepresentativeOrganisation =
+            ClaimPartyOrganisationEntity
                 .builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-            LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity legalRepresentativeOrganisation =
+            OrganisationEntity.builder()
             .organisationName(organisationName)
             .organisationId(organisationId)
-            .claimPartyLegalRepresentativeOrganisationList(List.of(partyLegalRepresentativeOrganisation))
+            .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
 
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(legalRepresentativeOrganisationRepository
+        when(organisationRepository
                  .findByOrganisationId(organisationId))
             .thenReturn(Optional.of(legalRepresentativeOrganisation));
 
@@ -463,14 +463,14 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
         verify(addressMapper, never()).toAddressEntityAndNormalise(addressUK);
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -481,7 +481,7 @@ class LegalRepresentativePartyLinkServiceTest {
         String organisationId = "ORG-123";
 
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(organisationId);
-        when(legalRepresentativeOrganisationRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
+        when(organisationRepository.isOrganisationLinkedToPartyAndActive(
             organisationId,
             partyId
         )).thenReturn(true);
@@ -495,7 +495,7 @@ class LegalRepresentativePartyLinkServiceTest {
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeOrganisationRepository, never()).save(any());
+        verify(organisationRepository, never()).save(any());
     }
 
     @Test
@@ -528,7 +528,7 @@ class LegalRepresentativePartyLinkServiceTest {
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeOrganisationRepository, never()).save(any());
+        verify(organisationRepository, never()).save(any());
 
     }
 
@@ -562,7 +562,7 @@ class LegalRepresentativePartyLinkServiceTest {
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeOrganisationRepository, never()).save(any());
+        verify(organisationRepository, never()).save(any());
     }
 
     @Test
@@ -595,25 +595,25 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeEntity =
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyOrganisationEntity claimPartyLegalRepresentativeEntity =
+            ClaimPartyOrganisationEntity.builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity)
                 .build();
 
-        ClaimPartyLegalRepresentativeOrganisationEntity claimPartyLegalRepresentativeEntity2 =
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyOrganisationEntity claimPartyLegalRepresentativeEntity2 =
+            ClaimPartyOrganisationEntity.builder()
                 .active(YesOrNo.YES)
                 .party(partyEntity2)
                 .build();
 
-        LegalRepresentativeOrganisationEntity existingLinkedLegalRep = LegalRepresentativeOrganisationEntity.builder()
-            .claimPartyLegalRepresentativeOrganisationList(List.of(claimPartyLegalRepresentativeEntity,
-                                                                   claimPartyLegalRepresentativeEntity2))
+        OrganisationEntity existingLinkedLegalRep = OrganisationEntity.builder()
+            .claimPartyOrganisationList(List.of(claimPartyLegalRepresentativeEntity,
+                                                claimPartyLegalRepresentativeEntity2))
             .build();
 
-        when(legalRepresentativeOrganisationRepository
-                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(partyId))
+        when(organisationRepository
+                 .findByPartyLinkedToOrganisationAndActive(partyId))
             .thenReturn(Optional.of(existingLinkedLegalRep));
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
@@ -626,33 +626,33 @@ class LegalRepresentativePartyLinkServiceTest {
                                                                            organisationDetails);
 
         // then
-        verify(legalRepresentativeOrganisationRepository, times(2))
+        verify(organisationRepository, times(2))
             .save(legalRepresentativeOrganisationEntityCaptor.capture());
 
-        List<LegalRepresentativeOrganisationEntity> actualList = legalRepresentativeOrganisationEntityCaptor
+        List<OrganisationEntity> actualList = legalRepresentativeOrganisationEntityCaptor
             .getAllValues();
 
-        LegalRepresentativeOrganisationEntity unlinked = actualList.getFirst();
-        ClaimPartyLegalRepresentativeOrganisationEntity unlinkedClaimParty =
-            unlinked.getClaimPartyLegalRepresentativeOrganisationList().getFirst();
+        OrganisationEntity unlinked = actualList.getFirst();
+        ClaimPartyOrganisationEntity unlinkedClaimParty =
+            unlinked.getClaimPartyOrganisationList().getFirst();
 
         assertEquals(YesOrNo.NO, unlinkedClaimParty.getActive());
         assertNotNull(unlinkedClaimParty.getEndDate());
 
-        ClaimPartyLegalRepresentativeOrganisationEntity unAffectedClaimParty =
-            unlinked.getClaimPartyLegalRepresentativeOrganisationList().get(1);
+        ClaimPartyOrganisationEntity unAffectedClaimParty =
+            unlinked.getClaimPartyOrganisationList().get(1);
 
         assertEquals(YesOrNo.YES, unAffectedClaimParty.getActive());
         assertNull(unAffectedClaimParty.getEndDate());
 
-        LegalRepresentativeOrganisationEntity actual = actualList.get(1);
-        LegalRepresentativeOrganisationContactDetailsEntity actualContactDetails =
-            actual.getLegalRepresentativeOrganisationContactDetails().getFirst();
+        OrganisationEntity actual = actualList.get(1);
+        ClaimPartyContactDetailsEntity actualContactDetails =
+            actual.getClaimPartyContactDetails().getFirst();
 
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(addressEntity, actualContactDetails.getAddress());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
     @Test
@@ -677,8 +677,8 @@ class LegalRepresentativePartyLinkServiceTest {
                                 .build()
             )).build();
 
-        when(legalRepresentativeOrganisationRepository
-                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(partyId))
+        when(organisationRepository
+                 .findByPartyLinkedToOrganisationAndActive(partyId))
             .thenReturn(Optional.empty());
 
         when(organisationDetails.getName()).thenReturn(organisationName);
@@ -692,17 +692,17 @@ class LegalRepresentativePartyLinkServiceTest {
                                                                            organisationDetails);
 
         // then
-        verify(legalRepresentativeOrganisationRepository, times(1))
+        verify(organisationRepository, times(1))
             .save(legalRepresentativeOrganisationEntityCaptor.capture());
 
-        LegalRepresentativeOrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
-        LegalRepresentativeOrganisationContactDetailsEntity actualContactDetails =
-            actual.getLegalRepresentativeOrganisationContactDetails().getFirst();
+        OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
+        ClaimPartyContactDetailsEntity actualContactDetails =
+            actual.getClaimPartyContactDetails().getFirst();
 
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(addressEntity, actualContactDetails.getAddress());
-        assertEquals(partyEntity, actual.getClaimPartyLegalRepresentativeOrganisationList().getFirst().getParty());
+        assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
 }

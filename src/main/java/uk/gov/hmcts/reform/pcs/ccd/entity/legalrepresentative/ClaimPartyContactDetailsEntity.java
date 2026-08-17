@@ -26,13 +26,13 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "legal_rep_org_contact_details")
+@Table(name = "claim_party_contact_details")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LegalRepresentativeOrganisationContactDetailsEntity {
+public class ClaimPartyContactDetailsEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,9 +44,9 @@ public class LegalRepresentativeOrganisationContactDetailsEntity {
     private PcsCaseEntity pcsCase;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "legal_rep_org_id")
+    @JoinColumn(name = "organisation_id")
     @JsonBackReference
-    private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
+    private OrganisationEntity organisation;
 
     private String emailAddress;
 
