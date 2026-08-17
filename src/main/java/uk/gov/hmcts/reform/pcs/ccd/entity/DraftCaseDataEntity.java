@@ -41,6 +41,6 @@ public class DraftCaseDataEntity {
 
     private UUID partyId;
 
-    private String legalRepresentativeOrganisationId;
+    private String organisationId;
 
 }
