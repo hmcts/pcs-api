@@ -22,4 +22,9 @@ export default {
   'managePartiesupdatePartyDetails': 'updatePartyDetails',
   'manageParties/submit': 'checkYourAnswersUpdatePartyDetails',
   'manageParties/confirm': 'confirmPartyDetailsUpdated',
+  'managePartiesmanagePartyOptions': 'managePartyOptions',
+  'managePartiesaddClaimantOrDefendantDetails': 'partyDetails',
+  'manageParties/submit': 'managePartiesCheckYourAnswers',
+  'manageParties/confirm': 'confirmManageParties',
+  'managePartiesaddLitigationParty': 'addAParty',
 };

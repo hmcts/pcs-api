@@ -24,7 +24,8 @@ export * from './manageParties.page.data';
 export * from './updatePartyDetails.page.data';
 export * from './checkYourAnswersUpdatePartyDetails.page.data';
 export * from './confirmPartyDetailsUpdated.page.data';
-
-
-
-
+export * from './managePartyOptions.page.data';
+export * from './partyDetails.page.data';
+export * from './managePartiesCheckYourAnswers.page.data';
+export * from './confirmManageParties.page.data';
+export * from './addAParty.page.data';
