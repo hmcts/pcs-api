@@ -8,7 +8,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -17,6 +21,8 @@ public class CaseReviewDateService {
 
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final SecurityContextService securityContextService;
+    private final Clock utcClock;
 
     public void addCaseReviewDate(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
@@ -29,7 +35,11 @@ public class CaseReviewDateService {
     }
 
     private CaseReviewDateEntity createCaseReviewDateEntity(ReviewDate reviewDate) {
+        UserInfo userInfo = securityContextService.getCurrentUserDetails();
+
         return CaseReviewDateEntity.builder()
+            .createdBy(userInfo.getName())
+            .createdOn(Instant.now(utcClock))
             .date(reviewDate.getDate())
             .reason(reviewDate.getReason())
             .description(reviewDate.getDescription())
