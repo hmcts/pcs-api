@@ -5,14 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -33,10 +31,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -232,8 +228,6 @@ public class CaseFlagService {
 
             if (ownPartyOnly && !ownedByUser) {
                 Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
-                log.info("TVR: Existing Flag amount: {}", existingExternalFlags.size());
-                log.info("TVR: IncomingSupportFlags: {}", incomingPartySupport.size());
                 if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
                     log.error("Changing support for the party.");
                     // Removing this for the time being as it prevents a solicitor from adding CaseFlags to a defendant
@@ -252,28 +246,19 @@ public class CaseFlagService {
 
     private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity,
                                            Map<String, CasePartyFlagEntity> existingExternalFlags) {
-
-        List<ListValue<FlagDetail>> incomingDetails = hasNoFlagDetails(incomingSupportFlags)
-            ? List.of()
+        List<ListValue<FlagDetail>> incomingDetails = hasNoFlagDetails(incomingSupportFlags) ? List.of()
             : incomingSupportFlags.getDetails();
-
-        log.info("TVR: incomingDetails = {}", incomingDetails.size());
 
         if (existingExternalFlags.isEmpty()) {
             return false;
         }
-
         if (incomingDetails.size() != existingExternalFlags.size()) {
-            log.info("TVR: size difference");
             return true;
         }
-
         boolean anyMatch = incomingDetails.stream().anyMatch(incomingDetail -> {
             CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
             return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
         });
-
-        log.info("TVR: anyMatch = {}", anyMatch);
         return anyMatch;
     }
 
