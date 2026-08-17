@@ -21,7 +21,10 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
-import {DocumentsAction} from "@utils/actions/custom-actions";
+import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
+import {RecordAnswers} from "@utils/actions/custom-actions";
+
+
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -175,6 +178,10 @@ export class ActionRegistry {
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['recordUserEntry', new RecordAnswers()],
+    ['retrieveCYATableDataLR', new DocumentsAction()],
+    ['validateCYAForLR', new DocumentsAction()],
+    ['readDocumentsSubmit', new DocumentsAction()],
   ]);
 
   static getAction(actionName: string): IAction {
