@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -46,9 +47,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
@@ -71,6 +72,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MoneyFormatter moneyFormatter;
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     private final NotificationService notificationService;
+    private final FeatureFlagView featureFlagView;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -94,6 +96,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
+        featureFlagView.setCaseFields(caseData);
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
