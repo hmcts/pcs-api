@@ -12,21 +12,13 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 
 import java.time.LocalDateTime;
@@ -54,15 +46,13 @@ class CaseFlagServiceTest {
     private FlagRefDataRepository flagRefDataRepository;
     @Mock
     private TranslationWAService translationWAService;
-    @Mock
-    private PartyService partyService;
 
     @InjectMocks
     private CaseFlagService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository, translationWAService, partyService);
+        underTest = new CaseFlagService(flagRefDataRepository, translationWAService);
     }
 
     @Test
@@ -476,20 +466,10 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldCreateTranslationTaskWhenWelshCommunicationsFlagActiveOnDefendant() {
+    void shouldTriggerTranslationTasksWhenWelshCommunicationsFlagBecomesActive() {
         // Given
         UUID partyId = UUID.randomUUID();
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        DocumentEntity claimDocument = DocumentEntity.builder()
-            .fileName("claim-form.pdf")
-            .claim(mainClaim)
-            .build();
-        DocumentEntity removedDocument = DocumentEntity.builder().claim(mainClaim).removed(true).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234L)
-            .claims(List.of(mainClaim))
-            .documents(List.of(claimDocument, removedDocument))
-            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .pcsCase(pcsCaseEntity)
@@ -509,38 +489,7 @@ class CaseFlagServiceTest {
         underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
 
         // Then
-        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(1234L, List.of(claimDocument));
-    }
-
-    @Test
-    void shouldNotCreateTranslationTaskWhenNoClaimantDocumentsExist() {
-        // Given
-        UUID partyId = UUID.randomUUID();
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234L)
-            .claims(List.of(mainClaim))
-            .build();
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .pcsCase(pcsCaseEntity)
-            .build();
-        pcsCaseEntity.setParties(new HashSet<>(List.of(partyEntity)));
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
-            .build();
-
-        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
-
-        // When
-        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
-
-        // Then
-        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(1234L, List.of());
+        verify(translationWAService).triggerTranslationTasksForFlaggingParty(partyEntity);
     }
 
     @Test
@@ -633,124 +582,6 @@ class CaseFlagServiceTest {
 
         // Then
         verifyNoInteractions(translationWAService);
-    }
-
-    @Test
-    void shouldTriggerDefendantsDocumentTranslationTaskWhenWelshCommsFlagActivates() {
-        // Given
-        UUID flaggingPartyId = UUID.randomUUID();
-        UUID otherDefendant1Id = UUID.randomUUID();
-        UUID otherDefendant2Id = UUID.randomUUID();
-        UUID claimantId = UUID.randomUUID();
-
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234L)
-            .claims(List.of(mainClaim))
-            .build();
-
-        PartyEntity flaggingParty = PartyEntity.builder().id(flaggingPartyId).pcsCase(pcsCaseEntity).build();
-        PartyEntity otherDefendant1 = PartyEntity.builder().id(otherDefendant1Id).pcsCase(pcsCaseEntity).build();
-        PartyEntity otherDefendant2 = PartyEntity.builder().id(otherDefendant2Id).pcsCase(pcsCaseEntity).build();
-        PartyEntity claimant = PartyEntity.builder().id(claimantId).pcsCase(pcsCaseEntity).build();
-        pcsCaseEntity.setParties(new HashSet<>(
-            List.of(flaggingParty, otherDefendant1, otherDefendant2, claimant)));
-
-        DefendantResponseEntity otherDefendant1Response = DefendantResponseEntity.builder()
-            .party(otherDefendant1)
-            .build();
-        DocumentEntity otherDefendant1Document = DocumentEntity.builder()
-            .fileName("defendant1-response.pdf")
-            .party(otherDefendant1)
-            .defendantResponse(otherDefendant1Response)
-            .build();
-        DocumentEntity otherDefendant1RemovedDocument = DocumentEntity.builder()
-            .party(otherDefendant1)
-            .defendantResponse(otherDefendant1Response)
-            .removed(true)
-            .build();
-
-        GenAppEntity otherDefendant1GenApp = GenAppEntity.builder()
-            .party(otherDefendant1)
-            .build();
-        DocumentEntity otherDefendant1GenAppDocument = DocumentEntity.builder()
-            .fileName("defendant1-genapp.pdf")
-            .generalApplication(otherDefendant1GenApp)
-            .build();
-
-        CounterClaimEntity otherDefendant2CounterClaim = CounterClaimEntity.builder()
-            .party(otherDefendant2)
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .build();
-        DocumentEntity otherDefendant2Document = DocumentEntity.builder()
-            .fileName("defendant2-counterclaim.pdf")
-            .party(otherDefendant2)
-            .counterClaim(otherDefendant2CounterClaim)
-            .build();
-
-        DocumentEntity claimantDocument = DocumentEntity.builder()
-            .fileName("claimant-document.pdf")
-            .party(claimant)
-            .build();
-
-        pcsCaseEntity.setDocuments(
-            List.of(otherDefendant1Document, otherDefendant1RemovedDocument, otherDefendant1GenAppDocument,
-                otherDefendant2Document, claimantDocument));
-
-        when(partyService.getPartyRole(otherDefendant1)).thenReturn(PartyRole.DEFENDANT);
-        when(partyService.getPartyRole(otherDefendant2)).thenReturn(PartyRole.DEFENDANT);
-        when(partyService.getPartyRole(claimant)).thenReturn(PartyRole.CLAIMANT);
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
-            .build();
-        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(flaggingPartyId.toString(), incomingParty));
-
-        // When
-        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
-
-        // Then
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, otherDefendant1, List.of(otherDefendant1Document, otherDefendant1GenAppDocument));
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document));
-    }
-
-    @Test
-    void shouldNotTriggerDefendantDocumentTranslationTaskWithNoDocuments() {
-        // Given
-        UUID flaggingPartyId = UUID.randomUUID();
-        UUID otherDefendantId = UUID.randomUUID();
-
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234L)
-            .claims(List.of(mainClaim))
-            .build();
-
-        PartyEntity flaggingParty = PartyEntity.builder().id(flaggingPartyId).pcsCase(pcsCaseEntity).build();
-        PartyEntity otherDefendant = PartyEntity.builder().id(otherDefendantId).pcsCase(pcsCaseEntity).build();
-        pcsCaseEntity.setParties(new HashSet<>(List.of(flaggingParty, otherDefendant)));
-
-        when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
-            .build();
-        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(flaggingPartyId.toString(), incomingParty));
-
-        // When
-        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
-
-        // Then
-        verify(translationWAService)
-            .createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, otherDefendant, List.of());
     }
 
     private PcsCaseEntity createPcsCaseEntity(UUID id) {
