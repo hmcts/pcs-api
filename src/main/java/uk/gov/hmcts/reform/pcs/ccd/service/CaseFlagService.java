@@ -261,7 +261,6 @@ public class CaseFlagService {
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
         if (incomingFlagDetail.getPath() != null) {
-            // Flags raised outside CCD arrive with path values but no ids
             String paths = incomingFlagDetail.getPath().stream()
                 .map(pathListValue -> requireNonNullElse(pathListValue.getId(), "")
                     + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
