@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -733,13 +734,15 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldSetCaseDetailsTabFieldsForWales() {
+    void shouldSetCaseDetailsTabFieldsForWalesWithExemptLandlordQuestion() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
         AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .exemptLandlordQuestionEnabled(VerticalYesNo.YES).build())
             .claimantType(
                 DynamicStringList.builder().value(
                         DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
@@ -1009,6 +1012,318 @@ class CaseDetailsTabViewTest {
             .isEqualTo("defendant circumstances");
         assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails().getIsExemptLandlord())
             .isEqualTo("No");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviourDetails())
+            .isEqualTo("antisocial");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegally()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getPropertyUsedIllegallyDetails())
+            .isEqualTo("illegalPurposesUse");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConduct()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getAntisocialAndConductDetails().getOtherProhibitedConductDetails())
+            .isEqualTo("otherProhibitedConduct");
+        assertThat(
+            caseDetailsTab.getProhibitedConductStandardContractDetails().getSeekingProhibitedConductStandardContract()
+        ).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getWhyMakingClaim())
+            .isEqualTo("prohibitedConductWalesClaim");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getAgreedTerms())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getProhibitedConductStandardContractDetails().getTermDetails())
+            .isEqualTo("agreedTermsOfPeriodicContract");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasEnergyPerformanceCertificate()).isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasElectricalInstallationConditionReport())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoGasSafetyReportReason())
+            .isEqualTo("noGasReportReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoEnergyPerformanceCertificateReason())
+            .isEqualTo("noEpcReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getNoElectricalInstallationConditionReportReason())
+            .isEqualTo("noEicrReason");
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getGasSafetyReports()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).isNull();
+        assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).isNull();
+        assertThat(caseDetailsTab.getTenancyLicenceDetails()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseDetailsTabFieldsForWalesWithoutExemptLandlordQuestion() {
+        AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
+        AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
+        AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
+        AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .exemptLandlordQuestionEnabled(VerticalYesNo.NO).build())
+            .claimantType(
+                DynamicStringList.builder().value(
+                        DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
+                    .build())
+            .claimAgainstTrespassers(VerticalYesNo.YES)
+            .propertyAddress(propertyAddress)
+            .dateSubmitted(LocalDateTime.of(2026, 1, 11, 17, 2, 31))
+            .claimGroundSummaries(List.of(
+                listValue(ClaimGroundSummary.builder()
+                              .label("Rent arrears (ground 10)")
+                              .reason("Ground 10 reason")
+                              .code("ABSOLUTE_GROUNDS")
+                              .build()),
+                listValue(ClaimGroundSummary.builder()
+                              .label("Condition 1 of Section 84A of the Housing Act 1985")
+                              .reason("Condition 1 reason")
+                              .code("ABSOLUTE_GROUNDS")
+                              .build())
+            ))
+            .additionalReasonsForPossession(AdditionalReasons.builder()
+                                                .hasReasons(VerticalYesNo.YES)
+                                                .reasons("Additional reasons")
+                                                .build())
+            .allClaimants(
+                List.of(listValue(
+                    Party.builder()
+                        .orgName("Claimant")
+                        .address(claimantAddress)
+                        .emailAddress("claimant@email.com")
+                        .phoneNumberProvided(VerticalYesNo.YES)
+                        .phoneNumber("phone number")
+                        .build()
+                ))
+            )
+            .claimantCircumstances(
+                ClaimantCircumstances.builder()
+                    .claimantCircumstancesSelect(VerticalYesNo.YES)
+                    .claimantCircumstancesDetails("claimant circumstances")
+                    .build()
+            )
+            .allDefendants(List.of(
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("One")
+                              .addressKnown(VerticalYesNo.YES)
+                              .build()),
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.YES)
+                              .firstName("Defendant")
+                              .lastName("Two")
+                              .addressKnown(VerticalYesNo.YES)
+                              .address(defendantAddress)
+                              .build()),
+                listValue(Party.builder()
+                              .nameKnown(VerticalYesNo.NO)
+                              .addressKnown(VerticalYesNo.NO)
+                              .build())
+            ))
+            .defendantCircumstances(
+                DefendantCircumstances.builder()
+                    .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
+                    .defendantCircumstancesInfo("defendant circumstances")
+                    .build()
+            )
+            .rentDetails(RentDetails.builder()
+                             .currentRent(new BigDecimal("100.00"))
+                             .frequency(RentPaymentFrequency.OTHER)
+                             .otherFrequency("Every 4 weeks")
+                             .perDayCorrect(VerticalYesNo.NO)
+                             .amendedDailyCharge(new BigDecimal("12.30"))
+                             .build())
+            .rentArrears(RentArrearsSection.builder()
+                             .total(new BigDecimal("450.75"))
+                             .build())
+            .arrearsJudgmentWanted(VerticalYesNo.YES)
+            .occupationLicenceDetailsWales(
+                OccupationLicenceDetailsWales.builder()
+                    .occupationLicenceTypeWales(OccupationLicenceTypeWales.OTHER)
+                    .otherLicenceTypeDetails("other licence details")
+                    .licenceStartDate(LocalDate.of(2024, 4, 16))
+                    .build()
+            )
+            .walesNoticeDetails(
+                WalesNoticeDetails.builder()
+                    .noticeServed(YesOrNo.YES)
+                    .typeOfNoticeServed("notice type")
+                    .noticeStatement("notice statement")
+                    .build()
+            )
+            .noticeServedDetails(NoticeServedDetails.builder()
+                                     .serviceMethod(NoticeServiceMethod.EMAIL)
+                                     .emailSentDateTime(LocalDateTime.of(2026, 5, 11, 17, 2))
+                                     .build())
+            .preActionProtocolCompleted(VerticalYesNo.NO)
+            .mediationAttempted(VerticalYesNo.YES)
+            .settlementAttempted(VerticalYesNo.YES)
+            .applicationWithClaim(VerticalYesNo.YES)
+            .allUnderlesseeOrMortgagees(List.of(
+                listValue(
+                    Party.builder()
+                        .nameKnown(VerticalYesNo.YES)
+                        .orgName("underlessee name")
+                        .addressKnown(VerticalYesNo.YES)
+                        .address(underlesseeAddress)
+                        .build()
+                )
+            ))
+            .alternativesToPossession(Set.of(DEMOTION_OF_TENANCY, SUSPENSION_OF_RIGHT_TO_BUY))
+            .showASBQuestionsPageWales(YesOrNo.YES)
+            .asbQuestionsWales(
+                ASBQuestionsDetailsWales.builder()
+                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviourDetails("antisocial")
+                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUseDetails("illegalPurposesUse")
+                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConductDetails("otherProhibitedConduct")
+                    .build()
+            )
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
+            .prohibitedConductWalesClaimDetails("prohibitedConductWalesClaim")
+            .periodicContractTermsWales(
+                PeriodicContractTermsWales.builder()
+                    .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
+                    .detailsOfTerms("agreedTermsOfPeriodicContract")
+                    .build()
+            )
+            .requiredDocumentsWales(
+                WalesDocuments.builder()
+                    .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+                    .hasGasSafetyReport(VerticalYesNo.NO)
+                    .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+                    .noEpcReason("noEpcReason")
+                    .noGasReportReason("noGasReportReason")
+                    .noEicrReason("noEicrReason")
+                    .build()
+            )
+            .build();
+
+        when(groundsBuilder.getGrounds(pcsCase)).thenReturn(
+            "Rent arrears (ground 10)\n"
+                + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+        );
+
+        when(rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, false)).thenReturn(
+            RentArrearsTabDetails.builder()
+                .rentAmount("£100")
+                .calculationFrequency("Every 4 weeks")
+                .dailyRate("£12.30")
+                .arrearsTotal("£450.75")
+                .judgmentRequested("Yes")
+                .build()
+        );
+
+        when(reasonsForPossessionTabDetailsBuilder.buildDetailsReasonsForPossession(pcsCase)).thenReturn(
+            ReasonsForPossessionTabDetails.builder()
+                .ground10("Ground 10 reason")
+                .condition1OfSection84A("Condition 1 reason")
+                .hasAdditionalReasons("Yes")
+                .additionalReasonsDetails("Additional reasons")
+                .build()
+        );
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Claimant")
+                .build()
+        );
+
+        when(defendantInformationTabDetailsBuilder.buildDetailedDefendantDetails(pcsCase)).thenReturn(
+            DefendantInformationTabDetails.builder()
+                .nameKnown("Yes")
+                .firstName("Defendant")
+                .lastName("One")
+                .addressKnown("Yes")
+                .addressForService(propertyAddress)
+                .build()
+        );
+
+        when(additionalDefendantInformationTabDetailsBuilder.buildDetailedAdditionalDefendantsDetails(pcsCase))
+            .thenReturn(
+                List.of(
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .nameKnown("Yes")
+                            .firstName("Defendant")
+                            .lastName("Two")
+                            .addressKnown("Yes")
+                            .addressForService(defendantAddress)
+                            .build()
+                    ),
+                    listValue(
+                        AdditionalDefendantInformationTabDetails.builder()
+                            .nameKnown("No")
+                            .addressKnown("No")
+                            .build()
+                    )
+                )
+            );
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getPropertyAddress()).isEqualTo(propertyAddress);
+        assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds())
+            .isEqualTo(
+                "Rent arrears (ground 10)\n"
+                    + "Antisocial behaviour: Condition 1 of Section 84A of the Housing Act 1985"
+            );
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getGround10())
+            .isEqualTo("Ground 10 reason");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getCondition1OfSection84A())
+            .isEqualTo("Condition 1 reason");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getHasAdditionalReasons()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getReasonsForPossessionDetails().getAdditionalReasonsDetails())
+            .isEqualTo("Additional reasons");
+        assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
+        assertThat(caseDetailsTab.getClaimantInformation().getClaimantName()).isEqualTo("Claimant");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getFirstName()).isEqualTo("Defendant");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getLastName()).isEqualTo("One");
+        assertThat(caseDetailsTab.getDefendantInformationDetails().getAddressForService()).isEqualTo(propertyAddress);
+        assertThat(caseDetailsTab.getAdditionalDefendants()).hasSize(2);
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getFirstName())
+            .isEqualTo("Defendant");
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getLastName()).isEqualTo("Two");
+        assertThat(caseDetailsTab.getAdditionalDefendants().getFirst().getValue().getAddressForService())
+            .isEqualTo(defendantAddress);
+        assertThat(caseDetailsTab.getAdditionalDefendants().get(1).getValue().getNameKnown())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getAdditionalDefendants().get(1).getValue().getAddressKnown())
+            .isEqualTo("No");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getRentAmount()).isEqualTo("£100");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getCalculationFrequency()).isEqualTo("Every 4 weeks");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getDailyRate()).isEqualTo("£12.30");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getArrearsTotal()).isEqualTo("£450.75");
+        assertThat(caseDetailsTab.getRentArrearsDetails().getJudgmentRequested()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType())
+            .isEqualTo("Other");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription())
+            .isEqualTo("other licence details");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementStartDate())
+            .isEqualTo("16 April 2024");
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocumentsPlaceholder()).isEqualTo(noAnswer);
+        assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isNull();
+        assertThat(caseDetailsTab.getApplicationsDetails().getPlanToMakeGeneralApplication()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getPreactionProtocolFollowed()).isEqualTo("No");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getMediationAttempted()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getActionsTakenDetails().getSettlementAttempted()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
+        assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getName()).isEqualTo("underlessee name");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddressKnown()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getMortgageOneDetails().getAddress()).isEqualTo(underlesseeAddress);
+        assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
+        assertThat(caseDetailsTab.getClaimantContactDetails().getEmailAddress()).isEqualTo("claimant@email.com");
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumberProvided()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getClaimantContactDetails().getPhoneNumber()).isEqualTo("phone number");
+        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesGiven()).isEqualTo("Yes");
+        assertThat(caseDetailsTab.getClaimantCircumstances().getClaimantCircumstancesDetails())
+            .isEqualTo("claimant circumstances");
+        assertThat(caseDetailsTab.getDefendantCircumstanceDetails().getDefendantCircumstancesGiven())
+            .isEqualTo("Yes");
+        assertThat(caseDetailsTab.getDefendantCircumstanceDetails().getDefendantCircumstances())
+            .isEqualTo("defendant circumstances");
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails())
+            .isNull();
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo("Yes");
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviourDetails())
             .isEqualTo("antisocial");
