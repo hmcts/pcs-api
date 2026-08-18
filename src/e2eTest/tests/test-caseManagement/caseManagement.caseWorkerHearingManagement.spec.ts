@@ -7,8 +7,10 @@ import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import {manageHearingApiData} from "@data/api-data/manageHearing.api.data";
 import {
+  addHearing,
   cancelHearing, checkYourAnswersCancelHearing,
   manageHearing
 } from "@data/page-data-figma/page-data-caseManagement-figma";

@@ -17,9 +17,14 @@ export * from './checkYourAnswersAmendDocuments.page.data';
 export * from './confirmAmend.page.data';
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
-export * from './enterGenAppPreferApplicationToJudge.page.data';
+export * from './enterGenAppPreferApplicationToJudge.page.data'
+export * from './enterGenAppuploadGeneralApplication.page.data';
+export * from './manageHearing.page.data';
+export * from './addHearing.page.data';
+export * from './checkYourAnswersManageHearing.page.data';
 export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
+export * from './confirmAddHearing.page.data';
 export * from './manageHearing.page.data';
 export * from './cancelHearing.page.data';
 export * from './checkYourAnswersCancelHearing.page.data';
