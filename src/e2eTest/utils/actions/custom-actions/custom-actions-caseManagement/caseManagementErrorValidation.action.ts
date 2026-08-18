@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  addHearing,
+  addHearing, cancelHearing, manageHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication
@@ -23,6 +23,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
       ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
+      ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
+      ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -281,7 +283,7 @@ export class ErrorValidationAction implements IAction {
         label3: addHearing.yearTextLabel,
         button: addHearing.continueButton
       });
-      
+
 
       await performAction('inputErrorValidation', {
         validationType: addHearing.errorValidationType.two,
@@ -301,6 +303,31 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+  private async errorValidationManageHearing(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: manageHearing.errorValidationType.two,
+        inputArray: manageHearing.errorValidationField.errorRadioOption,
+        question: manageHearing.doYouWantToAddQuestion,
+        option: manageHearing.addAHearingRadioOption,
+        button: manageHearing.continueButton
+      });
+    }
+  }
+
+  private async errorValidationCancelHearing(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: cancelHearing.errorValidationType.one,
+        inputArray: cancelHearing.errorValidationField.errorTextField,
+        header: cancelHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label: cancelHearing.enterReasonForCancellationLabel,
+        button: cancelHearing.continueButton
+
+      });
+    }
+  }
+
   private async errorValidationUploadGenAppsFile(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -310,5 +337,4 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
-
 }
