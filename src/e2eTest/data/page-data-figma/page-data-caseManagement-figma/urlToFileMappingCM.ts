@@ -21,9 +21,6 @@ export default {
   'manageHearing/submit': 'checkYourAnswersManageHearing',
   'manageHearing/confirm': 'confirmHearing',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
-  'manageHearingmanageHearing': 'manageHearing',
   'manageHearinghearingDetails': 'editHearing',
-  'manageHearing/submit': 'checkYourAnswersEditHearing',
-  'manageHearing/confirm': 'confirmEditHearing',
   'enterGenApp/confirm': 'enterGenAppConfirmation'
 };

@@ -296,7 +296,8 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.seven,
         inputArray: addHearing.errorValidationField.errorMoneyField,
         // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
-        label: addHearing.hourTextLabel,
+        label1: addHearing.daysTextLabel,
+        label: addHearing.hoursTextLabel,
         labelMulti :addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });

@@ -29,6 +29,11 @@ test.beforeEach(async ({ page, context },testInfo ) => {
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+  });
 
   if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')){
     await performAction('manageHearingAPI', {
@@ -103,7 +108,8 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
       whenIsHearingLabel: addHearing.whenIsTheHearingQuestion,
       date: date,
-      hourLabel: addHearing.hourTextLabel,
+      daysLabel: addHearing.daysTextLabel,
+      hoursLabel: addHearing.hoursTextLabel,
       minsLabel: addHearing.minutesTextLabel,
       hearingNotesLabel: addHearing.hearingNotesTextLabel,
       hearingNotesInput: addHearing.hearingNotesTextInput,
@@ -120,17 +126,18 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
 
   test('Case management - Case Worker Add a hearing without Notice @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput,'dateTime');
-    let party = allPartyDetails[0]
-    let typeOfHearing = addHearing.typeOfHearingOption[1]
+    let party = allPartyDetails[0];
+    console.log('party is'+party)
+    let typeOfHearing = addHearing.typeOfHearingOption[1];
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
-    await performAction('errorValidationEnterAddAHearingPage', addHearing.errorValidation);
     await performAction('addAHearing', {
       hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,
       wordingQuestion: addHearing.wordingForHearingNoticeTextLabel, option1: addHearing.wordingForHearingHiddenOption,
       whenIsHearingLabel: addHearing.whenIsTheHearingQuestion,
       date: date,
-      hourLabel: addHearing.hourTextLabel,
+      daysLabel: addHearing.daysTextLabel,
+      hoursLabel: addHearing.hoursTextLabel,
       minsLabel: addHearing.minutesTextLabel,
       hearingNotesLabel: addHearing.hearingNotesTextLabel,
       hearingNotesInput: addHearing.hearingNotesTextInput,

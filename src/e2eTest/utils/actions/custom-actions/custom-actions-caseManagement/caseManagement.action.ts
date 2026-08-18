@@ -455,7 +455,8 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    await performAction('inputText', { textLabel: addAHearing.hourLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
+    await performAction('inputText', { textLabel: addAHearing.daysLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', { textLabel: addAHearing.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
     await performAction('inputText', { textLabel: addAHearing.minsLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
     await performAction('inputText', addAHearing.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(addAHearing.hearingNotesInput as number));
     await performAction('clickRadioButton', {
@@ -667,6 +668,7 @@ export class CaseManagementAction implements IAction {
           case 'moneyField':
             if (item.index && validationArr.labelMulti) {
               await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label1, index: item.index }, item.input2);
               await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
             } else if (item.index) {
               await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
@@ -679,7 +681,10 @@ export class CaseManagementAction implements IAction {
               //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
               if (item.errMessage1) {
                 await performValidation('inputError', validationArr.labelMulti, item.errMessage1);
-              } else {
+              } else if (item.errMessage2) {
+                await performValidation('inputError', validationArr.label1, item.errMessage2);
+              }
+              else {
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }
             }).toPass({
