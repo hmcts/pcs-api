@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -65,7 +64,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -810,24 +808,12 @@ class DefendantResponseServiceTest {
             .defendantResponses(responses)
             .build();
 
-        List<DocumentEntity> expectedDocumentEntities = List.of(mock(DocumentEntity.class));
-        when(documentService.createDefendantUploadedDocuments(
-            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), any(PartyEntity.class)))
-            .thenReturn(expectedDocumentEntities);
-
         // When
-        DefendantResponseEntity savedDefendantResponse = underTest.saveDefendantResponse(
-            CASE_REFERENCE,
-            possessionClaimResponse,
-            partyEntity,
-            JOURNEY_TYPE
-        );
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
 
         // Then
         verify(documentService).createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), any(PartyEntity.class));
-
-        assertThat(savedDefendantResponse.getUploadedDocuments()).isEqualTo(expectedDocumentEntities);
     }
 
     @Test

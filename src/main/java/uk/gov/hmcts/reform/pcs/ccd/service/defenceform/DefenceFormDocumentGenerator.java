@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 @Service
 public class DefenceFormDocumentGenerator {
 
-    public static final String OUTPUT_FILENAME_PREFIX = "Defence";
     static final String TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form.docx";
+    static final String OUTPUT_FILENAME_PREFIX = "Defence - Defendant ";
 
     private final DocAssemblyService docAssemblyService;
 
@@ -33,7 +33,7 @@ public class DefenceFormDocumentGenerator {
             payload,
             TEMPLATE_ID,
             OutputType.PDF,
-            OUTPUT_FILENAME_PREFIX + " - Defendant " + defendantNumber
+            OUTPUT_FILENAME_PREFIX + defendantNumber
         );
     }
 

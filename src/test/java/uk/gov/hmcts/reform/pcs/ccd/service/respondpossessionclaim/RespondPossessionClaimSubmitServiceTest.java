@@ -18,11 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
@@ -218,25 +216,12 @@ class RespondPossessionClaimSubmitServiceTest {
             .pcsCase(pcsCaseEntity)
             .build();
 
-        DefendantResponseEntity defendantResponseEntity = mock(DefendantResponseEntity.class);
-
-        when(defendantResponseService
-                 .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
-            .thenReturn(defendantResponseEntity);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
+        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
 
         FeeDetails feeDetails = FeeDetails.builder().build();
-        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
         when(counterClaimFeeCalculator.getFeeDetails(counterClaim)).thenReturn(feeDetails);
-
-        List<DocumentEntity> counterClaimDocumentEntities = List.of(mock(DocumentEntity.class));
-        when(documentService.createCounterClaimUploadedDocuments(
-            counterClaimDocuments,
-            savedCounterClaim,
-            pcsCaseEntity,
-            partyEntity
-        )).thenReturn(counterClaimDocumentEntities);
 
         String expectedDescription = "some description";
         when(taskDescriptionService
