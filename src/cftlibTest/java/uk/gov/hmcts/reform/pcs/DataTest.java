@@ -1,16 +1,8 @@
 package uk.gov.hmcts.reform.pcs;
 
-/*
- * Instructions to run:
- * Run this test using "./gradlew cftlibTest --tests uk.gov.hmcts.reform.pcs.DataTest"
- * (this test now populates AND checks the data in one run — no separate
- * CreatePossessionClaimTest run needed first)
- *
- * View test results by running "open build/reports/tests/cftlibTest/index.html"
- * */
-
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -75,7 +67,7 @@ public class DataTest extends CftlibTest {
     private String solicitorToken;
     private long caseReference;
 
-    @BeforeEach
+    @BeforeAll
     void setUpAndPopulate() {
         WireMock wireMock8083 = new WireMock("localhost", 8083);
         wireMock8083.register(
@@ -105,22 +97,6 @@ public class DataTest extends CftlibTest {
                                     """))
         );
 
-//        try {
-//            solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-//            caseReference = caseCreationService.createMaximalCase(solicitorToken);
-//            responseCreationService.createDefendantResponse();
-//            System.out.println("==============================================");
-//            System.out.println("DATA TEST CREATED CASE REF: " + caseReference);
-//            System.out.println("RESPONSE TEST CREATED");
-//            System.out.println("==============================================");
-//        } catch (FeignException e) {
-//            System.err.println("===================ERROR CREATING CASE===================");
-//            System.err.println("Status: " + e.status());
-//            System.err.println("Response Body: " + e.contentUTF8());
-//            System.err.println("=============================================================");
-//            throw e;
-//        }
-
         try {
             solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
             citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
@@ -145,17 +121,11 @@ public class DataTest extends CftlibTest {
 
             responseCreationService.createDefendantResponse(caseReference, citizenToken);
 
-            System.out.println("==============================================");
-            System.out.println("CITIZEN TOKEN VALUE: " + citizenToken);
-            System.out.println("DATA TEST CREATED CASE REF: " + caseReference);
-            System.out.println("RESPONSE SUBMITTED FOR SAME CASE");
-            System.out.println("==============================================");
+            System.out.println("CASE + RESPONSE CREATED - CASE REF: " + caseReference);
         } catch (FeignException e) {
-            System.err.println("===================ERROR CREATING CASE===================");
+            System.err.println("ERROR CREATING CASE/RESPONSE");
             System.err.println("Status: " + e.status());
-            System.out.println("CITIZEN TOKEN VALUE: " + citizenToken);
             System.err.println("Response Body: " + e.contentUTF8());
-            System.err.println("=============================================================");
             throw e;
         }
     }
@@ -615,12 +585,117 @@ public class DataTest extends CftlibTest {
     }
 
     // defendant_response table validation
+    @Test
+    @DisplayName("validate public.defendant_response - schema, completeness, and relationship rules")
+    void validateDefendantResponseTable() {
+        List<String> expectedCols = List.of(
+            "id", "claim_id", "party_id", "pcs_case_id", "free_legal_advice",
+            "tenancy_start_date_confirmation", "defendant_name_confirmation",
+            "correspondence_address_confirmation", "dispute_claim", "make_counter_claim",
+            "status", "language_used", "tenancy_type_confirmation", "exempt_landlord",
+            "written_terms"
+        );
 
-    // general_application table validation
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.defendant_response");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.defendant_response dr "
+                + "JOIN public.pcs_case c ON dr.pcs_case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        int validDefendantResponse = runCountQuery(
+            "SELECT COUNT(*) FROM public.defendant_response dr "
+                + "JOIN public.pcs_case c ON dr.pcs_case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND dr.free_legal_advice = 'NO' "
+                + "AND dr.defendant_name_confirmation = 'YES' "
+                + "AND dr.dispute_claim = 'NO' "
+                + "AND dr.make_counter_claim = 'NO' "
+                + "AND dr.language_used = 'ENGLISH' "
+        );
+
+        String msgCount = "Expected defendant_response table to have rows";
+        String msgCasePresent = "Expected defendant_response case_reference " + caseReference + " to exist";
+        String msgValidResponse = "Defendant response detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("defendant_response validations",
+                                                   () -> assertHasColumns("public.defendant_response", expectedCols),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validDefendantResponse, msgValidResponse)
+        );
+    }
 
     // regular_income table validation
+    @Test
+    @DisplayName("validate public.regular_income - schema, completeness, and relationship rules")
+    void validateRegularIncomeTable() {
+        List<String> expectedCols = List.of(
+            "id", "hc_id", "other_income_details", "created_at", "updated_at"
+        );
 
-    // contact_preferences validation
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.regular_income");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.regular_income ri "
+                + "JOIN public.household_circumstances hc ON ri.hc_id = hc.id "
+                + "JOIN public.defendant_response dr ON hc.defendant_response_id = dr.id "
+                + "JOIN public.pcs_case c ON dr.pcs_case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        String msgCount = "Expected regular_income table to have rows";
+        String msgCasePresent = "Expected regular_income case_reference " + caseReference + " to exist";
+
+        org.junit.jupiter.api.Assertions.assertAll("regular_income validations",
+                                                   () -> assertHasColumns("public.regular_income", expectedCols),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent)
+        );
+    }
+
+    // contact_preferences table validation
+    @Test
+    @DisplayName("validate public.contact_preferences - schema, completeness, and relationship rules")
+    void validateContactPreferencesTable() {
+        List<String> expectedColumns = List.of(
+            "id", "contact_by_text", "contact_by_phone", "preference_type",
+            "contact_by_email", "contact_by_post"
+        );
+
+        int totalRows = runCountQuery("SELECT COUNT(*) FROM public.contact_preferences");
+
+        int createdCasePresent = runCountQuery(
+            "SELECT COUNT(*) FROM public.contact_preferences cp "
+                + "JOIN public.party p ON p.contact_preferences_id = cp.id "
+                + "JOIN public.pcs_case c ON p.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference
+        );
+
+        int validContactPreferences = runCountQuery(
+            "SELECT COUNT(*) FROM public.contact_preferences cp "
+                + "JOIN public.party p ON p.contact_preferences_id = cp.id "
+                + "JOIN public.pcs_case c ON p.case_id = c.id "
+                + "WHERE c.case_reference = " + caseReference + " "
+                + "AND cp.contact_by_text = 'YES' "
+                + "AND cp.contact_by_phone = 'YES' "
+                + "AND cp.contact_by_email = 'YES' "
+                + "AND cp.contact_by_post = 'YES' "
+                + "AND cp.preference_type IS NULL"
+        );
+
+        String msgCount = "Expected contact_preferences table to have rows";
+        String msgCasePresent = "Expected contact_preferences case_reference " + caseReference + " to exist";
+        String msgValidPrefs = "Contact preferences detail fields linked to case are incorrectly populated";
+
+        org.junit.jupiter.api.Assertions.assertAll("contact_preferences validations",
+                                                   () -> assertHasColumns("public.contact_preferences", expectedColumns),
+                                                   () -> assertTrue(totalRows > 0, msgCount),
+                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(1, validContactPreferences, msgValidPrefs)
+        );
+    }
 
     // helper
 
