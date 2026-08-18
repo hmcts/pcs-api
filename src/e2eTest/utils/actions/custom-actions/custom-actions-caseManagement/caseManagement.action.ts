@@ -406,19 +406,6 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
   }
 
-  private async selectManageHearing(manageHearingOption: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-    });
-    await performAction('clickRadioButton', {
-      question: manageHearingOption.question,
-      option: manageHearingOption.option,
-    });
-    await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
-  }
-
   private async addAHearing(addAHearing: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
