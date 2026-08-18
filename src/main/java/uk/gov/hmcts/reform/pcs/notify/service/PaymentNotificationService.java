@@ -6,12 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class PaymentNotificationService {
     private final NotificationService notificationService;
     private final CounterClaimRepository counterClaimRepository;
     private final SecurityContextService securityContextService;
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final OrganisationRepository organisationRepository;
 
     @Transactional
     public void sendCounterClaimPaymentSuccessNotification(UUID counterClaimId, String paymentReference) {
@@ -47,8 +48,8 @@ public class PaymentNotificationService {
 
         // UUID userUUID = securityContextService.getCurrentUserId();
         List<String> userRole = securityContextService.getCurrentUserDetails().getRoles();
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            legalRepresentativeOrganisationRepository.findByPartyLinkedToLegalRepresentativeOrganisationAndActive(
+        OrganisationEntity legalRepresentativeOrganisationEntity =
+            organisationRepository.findByPartyLinkedToOrganisationAndActive(
                 defendantResponse.getParty().getId()).orElse(null);
 
         log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());

@@ -7,12 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -36,7 +36,7 @@ class PaymentNotificationServiceTest {
     private CounterClaimRepository counterClaimRepository;
 
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository legalRepresentativeOrganisationRepository;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -91,7 +91,7 @@ class PaymentNotificationServiceTest {
         UUID defendantId = UUID.randomUUID();
         // UUID legalRepId = UUID.randomUUID();
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        LegalRepresentativeOrganisationEntity legalRep = mock(LegalRepresentativeOrganisationEntity.class);
+        OrganisationEntity legalRep = mock(OrganisationEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
@@ -109,7 +109,7 @@ class PaymentNotificationServiceTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(legalRepresentativeOrganisationRepository
-                 .findByPartyLinkedToLegalRepresentativeOrganisationAndActive(defendantId))
+                 .findByPartyLinkedToOrganisationAndActive(defendantId))
             .thenReturn(Optional.of(legalRep));
 
         String paymentReference = "PAY-1234";

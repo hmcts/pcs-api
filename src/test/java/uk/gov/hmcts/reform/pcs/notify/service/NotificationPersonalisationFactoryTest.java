@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -295,7 +295,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            LegalRepresentativeOrganisationEntity legalRepParty = stubLegalRepParty();
+            OrganisationEntity legalRepParty = stubLegalRepParty();
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -344,7 +344,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should include base legal rep fields, organisationName, and paymentReferenceNumber")
         void shouldIncludePaymentReferenceNumberforLegalRep() {
-            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = stubLegalRepParty();
+            OrganisationEntity legalRepresentativeOrganisationEntity = stubLegalRepParty();
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
@@ -398,8 +398,8 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private LegalRepresentativeOrganisationEntity stubLegalRepParty() {
-        LegalRepresentativeOrganisationEntity legalRepOrganisationEntity = createLegalRep("HMCTS");
+    private OrganisationEntity stubLegalRepParty() {
+        OrganisationEntity legalRepOrganisationEntity = createLegalRep("HMCTS");
         String id = UUID.randomUUID().toString();
         legalRepOrganisationEntity.setOrganisationId(id);
 
@@ -415,9 +415,9 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private LegalRepresentativeOrganisationEntity createLegalRep(String organisationName) {
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = new
-            LegalRepresentativeOrganisationEntity();
+    private OrganisationEntity createLegalRep(String organisationName) {
+        OrganisationEntity legalRepresentativeOrganisationEntity = new
+            OrganisationEntity();
         //   legalRepresentativeOrganisationEntity.setId();
         legalRepresentativeOrganisationEntity.setOrganisationName(organisationName);
         return legalRepresentativeOrganisationEntity;

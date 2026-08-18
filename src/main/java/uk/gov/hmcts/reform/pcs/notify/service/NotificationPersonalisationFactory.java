@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -65,7 +65,7 @@ public class NotificationPersonalisationFactory {
     }
 
     public LegalRepresentativeBasePersonalisation forLegalRepresentative(
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
+        OrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
 
         return buildPersonalisation(pcsCaseEntity,legalRepresentativeOrganisationEntity);
     }
@@ -81,7 +81,7 @@ public class NotificationPersonalisationFactory {
 
     public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessLegalRep(
         DefendantResponseEntity defendantResponse, String paymentReference,
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity
+        OrganisationEntity legalRepresentativeOrganisationEntity
     ) {
 
         return  CounterclaimPaymentSuccessPersonalisationLegalRep.builder()
@@ -91,7 +91,7 @@ public class NotificationPersonalisationFactory {
     }
 
     private LegalRepresentativeBasePersonalisation buildPersonalisation(
-        PcsCaseEntity pcsCaseEntity, LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity
+        PcsCaseEntity pcsCaseEntity, OrganisationEntity legalRepresentativeOrganisationEntity
     ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
