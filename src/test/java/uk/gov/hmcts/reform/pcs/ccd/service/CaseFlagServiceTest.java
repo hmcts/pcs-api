@@ -726,7 +726,7 @@ class CaseFlagServiceTest {
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, otherDefendant1, List.of(otherDefendant1Document, otherDefendant1GenAppDocument));
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document));
+            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document, otherDefendant2PendingDocument));
     }
 
     @Test

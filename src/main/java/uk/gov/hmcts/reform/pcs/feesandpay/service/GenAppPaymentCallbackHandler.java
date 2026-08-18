@@ -51,7 +51,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 if (!documentsRequiringTranslation.isEmpty()) {
                     genAppEntity.setState(GenAppState.PENDING_REVIEW);
                     preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                        .code(PreIssueChecklistCode.TRANSLATION)
+                        .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
                         .allowManualCompletion(true)
                         .genApp(genAppEntity)
                         .build());

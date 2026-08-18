@@ -70,7 +70,8 @@ public class DocumentsView {
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
         if (counterClaim != null) {
-            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED;
+            return counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED
+                || counterClaim.getStatus() == CounterClaimState.PENDING_REVIEW;
         }
 
         return true;

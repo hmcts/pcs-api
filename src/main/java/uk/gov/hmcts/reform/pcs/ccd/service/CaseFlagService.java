@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -30,9 +31,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -257,7 +258,13 @@ public class CaseFlagService {
 
     private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
         CounterClaimEntity counterClaim = document.getCounterClaim();
-        if (counterClaim != null && counterClaim.getStatus() != CounterClaimState.COUNTER_CLAIM_ISSUED) {
+        if (counterClaim != null
+            && counterClaim.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
+            return false;
+        }
+
+        GenAppEntity generalApplication = document.getGeneralApplication();
+        if (generalApplication != null && document.equals(generalApplication.getSubmissionDocument())) {
             return false;
         }
 

@@ -101,7 +101,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                 finalState = GenAppState.PENDING_REVIEW;
                 genAppEntity.setState(finalState);
                 preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                    .code(PreIssueChecklistCode.TRANSLATION)
+                    .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
                     .allowManualCompletion(true)
                     .genApp(genAppEntity)
                     .build());

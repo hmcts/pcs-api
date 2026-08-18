@@ -29,7 +29,8 @@ public class CounterClaimEntityListener {
 
     @PostPersist
     public void onPostPersist(CounterClaimEntity entity) {
-        if (entity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
+        if (entity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED
+            || entity.getStatus() == CounterClaimState.PENDING_REVIEW) {
             schedulePendingCounterClaimIssuedNotification(entity);
         }
     }

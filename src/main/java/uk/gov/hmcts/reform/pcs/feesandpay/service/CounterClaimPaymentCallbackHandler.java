@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -90,7 +91,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             if (!documentsRequiringTranslation.isEmpty()) {
                 counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
                 preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                    .code(PreIssueChecklistCode.TRANSLATION)
+                    .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
                     .allowManualCompletion(true)
                     .counterClaim(counterClaimEntity)
                     .build());
@@ -152,6 +153,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
         return counterClaimEntity.getPcsCase().getDocuments().stream()
             .filter(document -> !document.isRemoved()
+                && document.getType() != DocumentType.COUNTERCLAIM
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList();

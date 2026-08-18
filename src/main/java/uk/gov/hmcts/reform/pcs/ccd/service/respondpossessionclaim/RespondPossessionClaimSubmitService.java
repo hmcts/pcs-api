@@ -57,12 +57,14 @@ public class RespondPossessionClaimSubmitService {
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        ));
+        List<DocumentEntity> counterClaimDocuments = savedCounterClaim
+            .map(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+                defendantResponses.getCounterClaimDocuments(),
+                counterClaimEntity,
+                counterClaimEntity.getPcsCase(),
+                counterClaimEntity.getParty()
+            ))
+            .orElse(List.of());
 
         createTranslationTaskForResponse(savedResponse, defendantParty);
 
@@ -72,7 +74,8 @@ public class RespondPossessionClaimSubmitService {
 
         if (counterClaimEntity != null && !paymentRequired) {
             counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
-            createTranslationTaskForCounterClaim(counterClaimEntity, savedResponse, defendantParty);
+            createTranslationTaskForCounterClaim(
+                counterClaimEntity, counterClaimDocuments, savedResponse, defendantParty);
         }
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
@@ -110,7 +113,7 @@ public class RespondPossessionClaimSubmitService {
 
         if (!documents.isEmpty()) {
             preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                .code(PreIssueChecklistCode.TRANSLATION)
+                .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
                 .allowManualCompletion(true)
                 .response(savedResponse)
                 .build());
@@ -126,6 +129,7 @@ public class RespondPossessionClaimSubmitService {
     }
 
     private void createTranslationTaskForCounterClaim(CounterClaimEntity counterClaimEntity,
+                                                       List<DocumentEntity> counterClaimDocuments,
                                                        DefendantResponseEntity savedResponse,
                                                        PartyEntity defendantParty) {
 
@@ -134,11 +138,8 @@ public class RespondPossessionClaimSubmitService {
             return;
         }
 
-        PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
-        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getCounterClaim() != null
-                && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
+        List<DocumentEntity> documents = counterClaimDocuments.stream()
+            .filter(document -> !document.isRemoved())
             .toList();
 
         if (documents.isEmpty()) {
@@ -146,12 +147,13 @@ public class RespondPossessionClaimSubmitService {
         }
 
         preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-            .code(PreIssueChecklistCode.TRANSLATION)
+            .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
             .allowManualCompletion(true)
             .counterClaim(counterClaimEntity)
             .build());
 
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(defendantParty.getPcsCase(), defendantParty,
+                                                                           documents);
     }
 
 }

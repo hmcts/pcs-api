@@ -243,6 +243,8 @@ class RespondPossessionClaimSubmitServiceTest {
 
         CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
             .id(UUID.randomUUID())
+            .party(partyEntity)
+            .pcsCase(pcsCaseEntity)
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
@@ -255,13 +257,15 @@ class RespondPossessionClaimSubmitServiceTest {
             .fileName("counterclaim-evidence.pdf")
             .counterClaim(savedCounterClaim)
             .build();
-        pcsCaseEntity.setDocuments(List.of(counterClaimDocument));
 
         when(defendantResponseService.saveDefendantResponse(
             CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
             .thenReturn(savedResponse);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
+        when(documentService.createCounterClaimUploadedDocuments(
+            defendantResponses.getCounterClaimDocuments(), savedCounterClaim, pcsCaseEntity, partyEntity))
+            .thenReturn(List.of(counterClaimDocument));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
