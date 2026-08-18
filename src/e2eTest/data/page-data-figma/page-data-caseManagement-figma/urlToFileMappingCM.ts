@@ -18,9 +18,10 @@ export default {
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
   'manageHearingmanageHearing': 'manageHearing',
   'manageHearingaddHearing': 'addHearing',
+  'manageHearingcancelHearing': 'cancelHearing',
+  'manageHearinghearingDetails': 'editHearing',
   'manageHearing/submit': 'checkYourAnswersManageHearing',
   'manageHearing/confirm': 'confirmHearing',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
-  'manageHearinghearingDetails': 'editHearing',
   'enterGenApp/confirm': 'enterGenAppConfirmation'
 };

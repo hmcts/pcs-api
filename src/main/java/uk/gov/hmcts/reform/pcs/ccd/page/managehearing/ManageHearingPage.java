@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -11,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -27,13 +28,19 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
         pageBuilder
             .page(pageKey, this::midEvent)
             .pageLabel("Manage hearing")
+            .readonly(PCSCase::getShowManageHearingPage, NEVER_SHOW)
             .showCondition("showManageHearingPage=\"YES\"")
             .label("manageHearingSeparator", "---")
             .mandatory(PCSCase::getManageHearingOption)
-            .readonly(PCSCase::getShowManageHearingPage, NEVER_SHOW)
             .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
+            .complex(PCSCase::getHearing)
+                .readonly(Hearing::getHearingId, ShowConditions.NEVER_SHOW, true)
+                .readonly(Hearing::getHearingSummaryMarkdown, ShowConditions.NEVER_SHOW, true)
+            .done()
             .complex(PCSCase::getManageHearingDraft)
+                .readonly(Hearing::getHearingId, NEVER_SHOW, true)
+                .readonly(Hearing::getHearingSummaryMarkdown, NEVER_SHOW, true)
                 .readonly(Hearing::getType, NEVER_SHOW, true)
                 .readonly(Hearing::getOtherHearingType, NEVER_SHOW, true)
                 .readonly(Hearing::getNoticeWording, NEVER_SHOW, true)
@@ -45,6 +52,7 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
                 .readonly(Hearing::getIssueNotice, NEVER_SHOW, true)
                 .readonly(Hearing::getIsWithoutNotice, NEVER_SHOW, true)
                 .readonly(Hearing::getAdditionalInformation, NEVER_SHOW, true)
+                .readonly(Hearing::getCancellationReason, NEVER_SHOW, true)
             .done();
     }
 

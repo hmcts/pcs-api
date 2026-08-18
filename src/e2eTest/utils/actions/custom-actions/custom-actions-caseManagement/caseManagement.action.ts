@@ -8,6 +8,7 @@ import { caseSummary, home } from '@data/page-data';
 import {
   addReviewDates,
   confirmReviewDatesAdded,
+  cancelHearing,
   changeCaseState,
   confirmCaseStateChange,
   editHearing,
@@ -22,7 +23,8 @@ import {
   confirmEditHearing, confirmAmend, confirmUpload,
   uploadADocument,
   addHearing,
-  confirmHearing
+  confirmHearing,
+  confirmCancelHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -55,15 +57,15 @@ export class CaseManagementAction implements IAction {
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['editHearing', () => this.editHearing(fieldName as actionRecord)],
-      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
-      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['confirmHearingEdited', () => this.confirmHearingEdited(fieldName as actionRecord)],
-      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
-      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
+      ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
+      ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
+      ['confirmHearingCancelled', () => this.confirmHearingCancelled()],
+      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -332,7 +334,6 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', manageHearing.continueButton, manageHearingOption.nextPage as string);
   }
 
-
   private async editHearing(editHearingData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
@@ -379,6 +380,7 @@ export class CaseManagementAction implements IAction {
 
   private async confirmHearingEdited(confirmEdit: actionRecord): Promise<void> {
     let submitPayLoad = confirmEdit.submitPayload as Record<string, any>;
+
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -393,6 +395,31 @@ export class CaseManagementAction implements IAction {
     await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async cancelHearing(cancelHearingData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
+    await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
+  }
+
+  private async confirmHearingCancelled(): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmCancelHearing.mainHeader);
+    await performAction('clickButton', confirmCancelHearing.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {

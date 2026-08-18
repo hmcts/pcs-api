@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -34,15 +37,18 @@ public class HearingService {
 
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final HearingRepository hearingRepository;
     private final PartyService partyService;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
                           PcsCaseRepository pcsCaseRepository,
+                          HearingRepository hearingRepository,
                           PartyService partyService,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
         this.pcsCaseRepository = pcsCaseRepository;
+        this.hearingRepository = hearingRepository;
         this.partyService = partyService;
         this.ukClock = ukClock;
     }
@@ -70,6 +76,16 @@ public class HearingService {
 
         populateHearingEntity(hearingEntity, pcsCase);
         pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    public void cancelHearing(Hearing hearing) {
+        int hearingId = Objects.requireNonNull(hearing.getHearingId(), "Hearing ID must be set");
+
+        HearingEntity hearingEntity = hearingRepository.findById(hearingId)
+            .orElseThrow(() -> new HearingNotFoundException("Hearing not found with ID " + hearingId));
+
+        hearingEntity.setCancelled(true);
+        hearingEntity.setCancellationReason(hearing.getCancellationReason());
     }
 
     public void clearHearingForm(PCSCase pcsCase) {
@@ -101,6 +117,32 @@ public class HearingService {
         pcsCase.setMhDraftPartyList(pcsCase.getPartyMultiSelectionList());
     }
 
+    public void prepopulateEditableHearing(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        prepopulateEditableHearing(pcsCase, pcsCaseEntity);
+    }
+
+    public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
+        Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
+            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
+
+        List<DynamicStringListElement> partyElementList = new ArrayList<>();
+
+        partyRoleListMap.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
+
+        partyRoleListMap.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
+            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
+            .forEach(partyElementList::add);
+
+        return DynamicMultiSelectStringList.builder()
+            .value(new ArrayList<>())
+            .listItems(partyElementList)
+            .build();
+    }
+
     private void restoreDraftHearingForm(PCSCase pcsCase) {
         if (pcsCase.getManageHearingDraft() != null) {
             pcsCase.setHearing(copyHearing(pcsCase.getManageHearingDraft()));
@@ -108,11 +150,6 @@ public class HearingService {
         if (pcsCase.getMhDraftPartyList() != null) {
             pcsCase.setPartyMultiSelectionList(pcsCase.getMhDraftPartyList());
         }
-    }
-
-    public void prepopulateEditableHearing(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        prepopulateEditableHearing(pcsCase, pcsCaseEntity);
     }
 
     private void prepopulateEditableHearing(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -166,27 +203,6 @@ public class HearingService {
         return buildPartyList(pcsCaseEntity);
     }
 
-    public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
-        ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
-        Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
-            .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
-
-        List<DynamicStringListElement> partyElementList = new ArrayList<>();
-
-        partyRoleListMap.getOrDefault(PartyRole.CLAIMANT, List.of()).stream()
-            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
-            .forEach(partyElementList::add);
-
-        partyRoleListMap.getOrDefault(PartyRole.DEFENDANT, List.of()).stream()
-            .map(claimPartyEntity -> mapToPartyListElement(mainClaim, claimPartyEntity.getParty()))
-            .forEach(partyElementList::add);
-
-        return DynamicMultiSelectStringList.builder()
-            .value(new ArrayList<>())
-            .listItems(partyElementList)
-            .build();
-    }
-
     private DynamicStringListElement mapToPartyListElement(ClaimEntity mainClaim, PartyEntity partyEntity) {
         String partyName = partyService.getPartyName(partyEntity);
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
@@ -224,6 +240,7 @@ public class HearingService {
 
         List<HearingEntity> hearingsByDate = pcsCaseEntity.getHearings().stream()
             .filter(hearing -> hearing != null && hearing.getHearingDate() != null)
+            .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
             .toList();
 
         LocalDateTime now = LocalDateTime.now(ukClock);
@@ -238,6 +255,7 @@ public class HearingService {
 
     private Hearing mapToHearing(HearingEntity hearing) {
         return Hearing.builder()
+            .hearingId(hearing.getId())
             .type(hearing.getType())
             .otherHearingType(hearing.getOtherHearingType())
             .noticeWording(hearing.getNoticeWording())
@@ -249,6 +267,7 @@ public class HearingService {
             .issueNotice(hearing.getIssueNotice())
             .isWithoutNotice(hearing.getIsWithoutNotice())
             .additionalInformation(hearing.getAdditionalInformation())
+            .cancellationReason(hearing.getCancellationReason())
             .build();
     }
 
@@ -258,6 +277,8 @@ public class HearingService {
         }
 
         return Hearing.builder()
+            .hearingId(hearing.getHearingId())
+            .hearingSummaryMarkdown(hearing.getHearingSummaryMarkdown())
             .type(hearing.getType())
             .otherHearingType(hearing.getOtherHearingType())
             .noticeWording(hearing.getNoticeWording())
@@ -269,6 +290,7 @@ public class HearingService {
             .issueNotice(hearing.getIssueNotice())
             .isWithoutNotice(hearing.getIsWithoutNotice())
             .additionalInformation(hearing.getAdditionalInformation())
+            .cancellationReason(hearing.getCancellationReason())
             .build();
     }
 

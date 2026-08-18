@@ -78,6 +78,10 @@ public class HearingEntity {
     @JdbcTypeCode(SqlTypes.ARRAY)
     private List<UUID> noticeParties = new ArrayList<>();
 
+    private Boolean cancelled;
+
+    private String cancellationReason;
+
     public void addParty(UUID partyId) {
         noticeParties.add(partyId);
     }

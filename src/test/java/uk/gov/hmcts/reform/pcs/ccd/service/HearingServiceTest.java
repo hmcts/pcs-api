@@ -19,18 +19,23 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
@@ -48,6 +53,8 @@ public class HearingServiceTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private HearingRepository hearingRepository;
 
     @Mock
     private PartyService partyService;
@@ -56,7 +63,13 @@ public class HearingServiceTest {
 
     @BeforeEach
     void setUp() {
-        hearingService = new HearingService(pcsCaseService, pcsCaseRepository, partyService, FIXED_UK_CLOCK);
+        hearingService = new HearingService(
+            pcsCaseService,
+            pcsCaseRepository,
+            hearingRepository,
+            partyService,
+            FIXED_UK_CLOCK
+        );
     }
 
     @Test
@@ -524,6 +537,7 @@ public class HearingServiceTest {
         assertThat(pcsCase.getSelectedHearingId()).isEqualTo("1");
         assertThat(pcsCase.getHearing()).usingRecursiveComparison().isEqualTo(
             Hearing.builder()
+                .hearingId(1)
                 .type(HearingType.OTHER)
                 .otherHearingType("case management")
                 .noticeWording(HearingNoticeWording.RES)
@@ -741,5 +755,47 @@ public class HearingServiceTest {
         // Then
         assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getNoticeParties())
             .containsExactly(partyId);
+    }
+
+    @Test
+    void shouldCancelHearing() {
+        // Given
+        int hearingId = 5678;
+        String expectedCancellationReason = "some cancellation reason";
+
+        Hearing hearing = Hearing.builder()
+            .hearingId(hearingId)
+            .cancellationReason(expectedCancellationReason)
+            .build();
+        HearingEntity hearingEntity = HearingEntity.builder().build();
+
+        when(hearingRepository.findById(hearingId)).thenReturn(Optional.of(hearingEntity));
+
+        // When
+        hearingService.cancelHearing(hearing);
+
+        // Then
+        assertThat(hearingEntity.getCancelled()).isTrue();
+        assertThat(hearingEntity.getCancellationReason()).isEqualTo(expectedCancellationReason);
+    }
+
+    @Test
+    void shouldThrowHearingNotFoundExceptionWhenCancellingMissingHearing() {
+        // Given
+        int hearingId = 5678;
+
+        Hearing hearing = Hearing.builder()
+            .hearingId(hearingId)
+            .build();
+
+        when(hearingRepository.findById(hearingId)).thenReturn(Optional.empty());
+
+        // When
+        Throwable throwable = catchThrowable(() -> hearingService.cancelHearing(hearing));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(HearingNotFoundException.class)
+            .hasMessage("Hearing not found with ID " + hearingId);
     }
 }
