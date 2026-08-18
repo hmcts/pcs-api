@@ -544,6 +544,12 @@ public class CaseDetailsTabView {
             return null;
         }
 
+        // tab view is now hidden behind a feature flag, so if the flag is not enabled, return null
+        if (pcsCase.getFeatureFlags() == null
+            || pcsCase.getFeatureFlags().getExemptLandlordQuestionEnabled() != VerticalYesNo.YES) {
+            return null;
+        }
+
         VerticalYesNo isExemptLandlord = pcsCase.getIsExemptLandlord();
 
         return ClaimantRegistrationAndLicensingTabDetails.builder()
