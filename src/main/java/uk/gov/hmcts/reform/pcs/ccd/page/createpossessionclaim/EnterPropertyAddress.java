@@ -29,6 +29,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Slf4j
 public class EnterPropertyAddress implements CcdPageConfiguration {
 
+    private static final String HELPER_TEXT = """
+        <p class="govuk-body">You must enter the correct address.</p>
+        <p class="govuk-body">We will ask you to check it on the next page.</p>
+        <p class="govuk-body">After that, you will not be able to change it again.</p>
+        <p class="govuk-body">The property must be located in England or Wales.</p>
+        """;
+
     private final EligibilityService eligibilityService;
     private final AddressValidator addressValidator;
 
@@ -38,6 +45,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you’re claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
+            .label("enterPropertyAddress-helperText", HELPER_TEXT)
             .complex(PCSCase::getPropertyAddress)
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
