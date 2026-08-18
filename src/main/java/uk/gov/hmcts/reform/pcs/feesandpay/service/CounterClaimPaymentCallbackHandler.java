@@ -6,17 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
-import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -38,23 +35,19 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
     private final SchedulerClient schedulerClient;
     private final CounterClaimFormScheduler counterClaimFormScheduler;
     private final TranslationWAService translationWAService;
-    private final PreIssueChecklistService preIssueChecklistService;
     private final ObjectMapper objectMapper;
     private final Clock utcClock;
 
     public CounterClaimPaymentCallbackHandler(CounterClaimRepository counterClaimRepository,
                                               SchedulerClient schedulerClient,
                                               CounterClaimFormScheduler counterClaimFormScheduler,
-                                              TranslationWAService
-                                                  translationWAService,
-                                              PreIssueChecklistService preIssueChecklistService,
+                                              TranslationWAService translationWAService,
                                               ObjectMapper objectMapper,
                                               @Qualifier("utcClock") Clock utcClock) {
         this.counterClaimRepository = counterClaimRepository;
         this.schedulerClient = schedulerClient;
         this.counterClaimFormScheduler = counterClaimFormScheduler;
         this.translationWAService = translationWAService;
-        this.preIssueChecklistService = preIssueChecklistService;
         this.objectMapper = objectMapper;
         this.utcClock = utcClock;
     }
@@ -83,24 +76,15 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 return;
             }
 
-            List<DocumentEntity> documentsRequiringTranslation =
-                getDocumentsRequiringTranslation(counterClaimEntity);
+            counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
+            counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+            scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
 
-            if (!documentsRequiringTranslation.isEmpty()) {
-                counterClaimEntity.setStatus(CounterClaimState.PENDING_REVIEW);
-                preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                    .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
-                    .allowManualCompletion(true)
-                    .counterClaim(counterClaimEntity)
-                    .build());
-                translationWAService.createTranslateDefendantSubmittedDocumentTask(
-                    counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
-            } else {
-                counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
-                counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-                scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
-            }
+            List<DocumentEntity> documentsRequiringTranslation =
+                getDocumentsRequiringTranslation(counterClaimEntity);
+            translationWAService.createTranslateDefendantSubmittedDocumentTask(
+                counterClaimEntity.getPcsCase(), counterClaimEntity.getParty(), documentsRequiringTranslation);
             return;
         }
 

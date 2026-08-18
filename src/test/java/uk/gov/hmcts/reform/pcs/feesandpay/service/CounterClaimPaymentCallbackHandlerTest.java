@@ -19,14 +19,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -50,9 +48,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
@@ -70,8 +66,6 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private TranslationWAService translationWAService;
     @Mock
-    private PreIssueChecklistService preIssueChecklistService;
-    @Mock
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimStatusChangeTaskData>> taskInstanceCaptor;
@@ -87,7 +81,6 @@ class CounterClaimPaymentCallbackHandlerTest {
         underTest = new CounterClaimPaymentCallbackHandler(counterClaimRepository,
                                                            schedulerClient, counterClaimFormScheduler,
                                                            translationWAService,
-                                                           preIssueChecklistService,
                                                            objectMapper, FIXED_UTC_CLOCK);
     }
 
@@ -270,12 +263,11 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         underTest.handle(callback, feePaymentEntity);
 
-        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.PENDING_REVIEW);
+        assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, party, List.of(activeDocument));
-        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
-        verifyNoInteractions(schedulerClient);
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     @Test
@@ -313,8 +305,8 @@ class CounterClaimPaymentCallbackHandlerTest {
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
 
         underTest.handle(callback, feePaymentEntity);
-        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
-        verifyNoInteractions(preIssueChecklistService);
+
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
     }
 
     @Test
@@ -342,19 +334,20 @@ class CounterClaimPaymentCallbackHandlerTest {
             .build();
 
         FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
+
+        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
             .paymentStatus(PaymentStatus.PAID)
             .taskData("task-data")
             .build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
 
-        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-
         underTest.handle(callback, feePaymentEntity);
 
-        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
-        verifyNoInteractions(preIssueChecklistService);
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
     }
 
     @Test

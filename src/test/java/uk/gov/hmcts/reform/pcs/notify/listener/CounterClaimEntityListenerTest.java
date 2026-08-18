@@ -63,28 +63,6 @@ class CounterClaimEntityListenerTest {
     }
 
     @Test
-    void shouldScheduleNotificationOnPostPersistWhenStatusIsPendingReview() {
-        UUID counterClaimId = UUID.randomUUID();
-        CounterClaimEntity entity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(CounterClaimState.PENDING_REVIEW)
-            .build();
-
-        underTest.onPostPersist(entity);
-
-        ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
-
-        SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
-        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
-        assertEquals(PendingCounterClaimIssuedNotificationTaskComponent.PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR
-                         .getTaskName(),
-                     taskInstance.getTaskName());
-        CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
-        assertEquals(counterClaimId, data.getCounterClaimId());
-    }
-
-    @Test
     void shouldNotScheduleNotificationOnPostPersistWhenStatusIsNotPendingCounterClaimIssued() {
         CounterClaimEntity entity = new CounterClaimEntity();
         entity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);

@@ -18,11 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -38,7 +36,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -62,8 +59,6 @@ class RespondPossessionClaimSubmitServiceTest {
     @Mock
     private TranslationWAService translationWAService;
     @Mock
-    private PreIssueChecklistService preIssueChecklistService;
-    @Mock
     private PartyEntity partyEntity;
 
     private RespondPossessionClaimSubmitService underTest;
@@ -77,8 +72,7 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimFeeCalculator,
             documentService,
             draftCaseDataService,
-            translationWAService,
-            preIssueChecklistService
+            translationWAService
         );
 
         when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
@@ -189,7 +183,7 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldMoveCounterClaimToAwaitingCaseworkerReviewWhenHelpWithFeesApplies() {
+    void shouldNotIssueCounterClaimWhenHelpWithFeesApplies() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
         CounterClaim counterClaim = CounterClaim.builder()
@@ -217,7 +211,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(counterClaimService, never()).issueCounterClaim(any());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.counterClaimEntity().getStatus())
-            .isEqualTo(CounterClaimState.PENDING_REVIEW);
+            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(result.paymentRequired()).isFalse();
     }
 
@@ -271,8 +265,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimState.PENDING_REVIEW);
-        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
+        assertThat(savedCounterClaim.getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, partyEntity, List.of(counterClaimDocument));
     }
@@ -390,7 +383,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, partyEntity, List.of(activeDocument));
-        verify(preIssueChecklistService).save(any(PreIssueChecklistEntity.class));
     }
 
     @Test
@@ -470,7 +462,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
         verify(translationWAService)
             .createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, partyEntity, List.of());
-        verifyNoInteractions(preIssueChecklistService);
     }
 
 }

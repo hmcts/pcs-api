@@ -25,8 +25,7 @@ public class GenAppVisibilityService {
             return false;
         }
 
-        if (genAppEntity.getState() != GenAppState.GEN_APP_ISSUED
-            && genAppEntity.getState() != GenAppState.PENDING_REVIEW) {
+        if (genAppEntity.getState() != GenAppState.GEN_APP_ISSUED) {
             return false;
         }
 

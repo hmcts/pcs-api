@@ -42,7 +42,7 @@ class GenAppVisibilityServiceTest {
 
     @ParameterizedTest
     @NullSource
-    @EnumSource(value = GenAppState.class, mode = EnumSource.Mode.EXCLUDE, names = {"GEN_APP_ISSUED", "PENDING_REVIEW"})
+    @EnumSource(value = GenAppState.class, mode = EnumSource.Mode.EXCLUDE, names = "GEN_APP_ISSUED")
     void shouldTreatGenAppsWithNoticeAsVisible(GenAppState state) {
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
@@ -63,20 +63,6 @@ class GenAppVisibilityServiceTest {
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
         when(genAppEntity.getWithoutNotice()).thenReturn(isWithoutNotice);
-
-        // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
-
-        // Then
-        assertThat(genAppVisibleToUser).isTrue();
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = GenAppState.class, names = {"GEN_APP_ISSUED", "PENDING_REVIEW"})
-    void shouldTreatIssuedOrPendingReviewGenAppsAsVisible(GenAppState state) {
-        // Given
-        GenAppEntity genAppEntity = mock(GenAppEntity.class);
-        when(genAppEntity.getState()).thenReturn(state);
 
         // When
         boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);

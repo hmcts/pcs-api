@@ -37,14 +37,14 @@ public class GenAppWaTaskService {
         camundaService.createTask(caseReference, taskType, description);
     }
 
-    public List<DocumentEntity> createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
+    public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
         PartyEntity party = genAppEntity.getParty();
         if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
-            return List.of();
+            return;
         }
 
         if (!translationWAService.isTranslationRequired(genAppEntity.getLanguageUsed())) {
-            return List.of();
+            return;
         }
 
         List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
@@ -53,7 +53,6 @@ public class GenAppWaTaskService {
 
         PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
-        return documents;
     }
 
 }

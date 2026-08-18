@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum DefendantResponseStatus implements HasLabel {
 
     CREATED("Created"),
-    PENDING_REVIEW("Pending review"),
     SUBMITTED("Submitted");
 
     private final String label;

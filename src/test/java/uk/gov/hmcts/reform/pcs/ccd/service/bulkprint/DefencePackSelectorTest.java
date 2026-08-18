@@ -135,48 +135,6 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Excludes a counter-claim that has not been issued yet")
-    void shouldExcludeCounterClaimNotYetIssued() {
-        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-
-        DocumentEntity pendingCounterClaim = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(DocumentType.COUNTERCLAIM)
-            .party(defendant)
-            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.PENDING_REVIEW).build())
-            .build();
-
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
-            caseWith(List.of(defenceForm, pendingCounterClaim), claimant, defendant));
-
-        assertThat(result).hasSize(2);
-        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm);
-        assertThat(candidateFor(result, claimant).documents()).containsExactly(defenceForm);
-    }
-
-    @Test
-    @DisplayName("Excludes a defence form still awaiting caseworker review")
-    void shouldExcludeDefenceFormAwaitingReview() {
-        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-
-        DocumentEntity pendingDefenceForm = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(DocumentType.DEFENDANT_RESPONSE)
-            .defendantResponse(DefendantResponseEntity.builder()
-                .party(defendant)
-                .status(DefendantResponseStatus.PENDING_REVIEW)
-                .build())
-            .build();
-
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
-            caseWith(List.of(pendingDefenceForm, counterClaim), claimant, defendant));
-
-        assertThat(result).hasSize(2);
-        assertThat(candidateFor(result, defendant).documents()).containsExactly(counterClaim);
-        assertThat(candidateFor(result, claimant).documents()).containsExactly(counterClaim);
-    }
-
-    @Test
     @DisplayName("Returns nothing when every document has already been sent to every recipient")
     void shouldReturnNothingWhenAllSent() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(

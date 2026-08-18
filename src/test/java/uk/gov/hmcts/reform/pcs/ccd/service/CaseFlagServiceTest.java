@@ -688,16 +688,6 @@ class CaseFlagServiceTest {
             .counterClaim(otherDefendant2CounterClaim)
             .build();
 
-        CounterClaimEntity otherDefendant2PendingCounterClaim = CounterClaimEntity.builder()
-            .party(otherDefendant2)
-            .status(CounterClaimState.PENDING_REVIEW)
-            .build();
-        DocumentEntity otherDefendant2PendingDocument = DocumentEntity.builder()
-            .fileName("defendant2-pending-counterclaim.pdf")
-            .party(otherDefendant2)
-            .counterClaim(otherDefendant2PendingCounterClaim)
-            .build();
-
         DocumentEntity claimantDocument = DocumentEntity.builder()
             .fileName("claimant-document.pdf")
             .party(claimant)
@@ -705,7 +695,7 @@ class CaseFlagServiceTest {
 
         pcsCaseEntity.setDocuments(
             List.of(otherDefendant1Document, otherDefendant1RemovedDocument, otherDefendant1GenAppDocument,
-                otherDefendant2Document, otherDefendant2PendingDocument, claimantDocument));
+                otherDefendant2Document, claimantDocument));
 
         when(partyService.getPartyRole(otherDefendant1)).thenReturn(PartyRole.DEFENDANT);
         when(partyService.getPartyRole(otherDefendant2)).thenReturn(PartyRole.DEFENDANT);
@@ -726,7 +716,7 @@ class CaseFlagServiceTest {
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
             pcsCaseEntity, otherDefendant1, List.of(otherDefendant1Document, otherDefendant1GenAppDocument));
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document, otherDefendant2PendingDocument));
+            pcsCaseEntity, otherDefendant2, List.of(otherDefendant2Document));
     }
 
     @Test

@@ -3,22 +3,17 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PreIssueChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
-import uk.gov.hmcts.reform.pcs.ccd.service.preissuechecklist.PreIssueChecklistService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -30,7 +25,6 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
-    private final PreIssueChecklistService preIssueChecklistService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -42,24 +36,12 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
         if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
             GenAppEntity genAppEntity = findGenAppEntity(genAppId);
             if (genAppEntity.getState() == GenAppState.PENDING_GEN_APP_ISSUED) {
+                genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();
                 genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-
-                List<DocumentEntity> documentsRequiringTranslation =
-                    genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
-
-                if (!documentsRequiringTranslation.isEmpty()) {
-                    genAppEntity.setState(GenAppState.PENDING_REVIEW);
-                    preIssueChecklistService.save(PreIssueChecklistEntity.builder()
-                        .code(PreIssueChecklistCode.TRANSLATE_DEFENDANT_DOCUMENT)
-                        .allowManualCompletion(true)
-                        .genApp(genAppEntity)
-                        .build());
-                } else {
-                    genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
-                    notificationService.sendGenAppReceivedEmail(genAppEntity);
-                    genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-                }
+                notificationService.sendGenAppReceivedEmail(genAppEntity);
+                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }
