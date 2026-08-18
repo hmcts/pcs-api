@@ -81,6 +81,7 @@ export class ActionCMRegistry {
     ['errorValidationCancelHearing', new ErrorValidationAction()],
     ['errorValidationManageHearing', new ErrorValidationAction()],
     ['errorValidationUploadGenAppsFile', new ErrorValidationAction()],
+    ['errorValidationEnterAddAHearingPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['getAddressInfo', new CaseManagementAction()],
