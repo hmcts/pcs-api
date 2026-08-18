@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -208,18 +208,18 @@ class CaseAccessGroupsUtilTest {
     private PartyEntity defendantEntity(String organisationId, String organisationProfileId, YesOrNo active) {
         PartyEntity defendant = PartyEntity.builder()
             .id(UUID.randomUUID())
-            .claimPartyLegalRepresentativeOrganisationList(new ArrayList<>())
+            .claimPartyOrganisationList(new ArrayList<>())
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepOrganisation = LegalRepresentativeOrganisationEntity.builder()
+        OrganisationEntity legalRepOrganisation = OrganisationEntity.builder()
             .organisationId(organisationId)
             .organisationProfileId(organisationProfileId)
             .build();
 
-        defendant.getClaimPartyLegalRepresentativeOrganisationList().add(
-            ClaimPartyLegalRepresentativeOrganisationEntity.builder()
+        defendant.getClaimPartyOrganisationList().add(
+            ClaimPartyOrganisationEntity.builder()
                 .party(defendant)
-                .legalRepresentativeOrganisation(legalRepOrganisation)
+                .organisation(legalRepOrganisation)
                 .active(active)
                 .build());
 

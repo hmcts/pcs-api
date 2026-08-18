@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
@@ -88,7 +88,7 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppFeeCalculator genAppFeeCalculator;
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
     @Mock
@@ -114,9 +114,10 @@ class SubmitEventHandlerTest {
 
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
-                                           legalRepresentativeOrganisationRepository, confirmationScreenFactory,
+                                           organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper, organisationService);
+                                           genAppWaTaskService, objectMapper, organisationService
+        );
     }
 
     @Nested
@@ -271,8 +272,8 @@ class SubmitEventHandlerTest {
             String organisationId = "Org";
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-            when(legalRepresentativeOrganisationRepository
-                     .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
                 .thenReturn(false);
 
             // When
@@ -287,11 +288,20 @@ class SubmitEventHandlerTest {
             String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
-            when(legalRepresentativeOrganisationRepository
-                     .isRepresentativeOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
                 .thenReturn(true);
         }
 
+    }
+
+    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
+        BigDecimal applicationFee = new BigDecimal("55.00");
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(applicationFee)
+            .build();
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
+        return feeDetails;
     }
 
     @Nested
@@ -514,15 +524,6 @@ class SubmitEventHandlerTest {
 
     private void stubNoApplicationFee(GenAppRequest genAppRequest) {
         when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
-    }
-
-    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
-        BigDecimal applicationFee = new BigDecimal("55.00");
-        FeeDetails feeDetails = FeeDetails.builder()
-            .feeAmount(applicationFee)
-            .build();
-        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
-        return feeDetails;
     }
 
     private GenAppEntity stubCreateGenAppEntity(GenAppRequest genAppRequest,

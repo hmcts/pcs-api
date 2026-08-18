@@ -35,8 +35,7 @@ class LegalRepresentativeContactDetailsTest extends BaseEventTest {
         LegalRepresentativeContactDetails legalRepresentativeContactDetails = new LegalRepresentativeContactDetails(
             legalRepresentativeContactDetailsPage,
             organisationService,
-            legalRepresentativePageService
-        );
+            legalRepresentativePageService);
         setEventUnderTest(legalRepresentativeContactDetails);
     }
 

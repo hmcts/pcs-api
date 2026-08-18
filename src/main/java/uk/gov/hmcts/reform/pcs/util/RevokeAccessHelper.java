@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.util;
 
 
-import static java.lang.String.valueOf;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 import lombok.RequiredArgsConstructor;
@@ -10,13 +9,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 
 import java.time.Instant;
@@ -26,7 +25,7 @@ import java.time.Instant;
 @Slf4j
 public class RevokeAccessHelper {
 
-    private final ClaimPartyLegalRepresentativeOrganisationRepository claimPartyLegalRepOrgRepository;
+    private final ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
     private final DraftCaseDataRepository draftCaseDataRepository;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
@@ -37,24 +36,25 @@ public class RevokeAccessHelper {
      * - but only if the organisation does not represent any other defendant for the case
      * 3. deactivate the party legal representative organisation entities linked to the defendant to the LRO
      */
-    public void revokeOrgAccessToRespondToClaim(PcsCaseEntity caseEntity,
-                                                LegalRepresentativeOrganisationEntity legalRepOrg,
-                                                PartyEntity defendantParty) {
-
-        this.draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
-                caseEntity.getCaseReference(),
-                respondPossessionClaim,
-                valueOf(legalRepOrg.getOrganisationId()),
-                defendantParty.getId()
+    public void revokeOrganisationAccessToRespondToClaim(
+        PcsCaseEntity caseEntity,
+        OrganisationEntity organisationEntity,
+        PartyEntity defendantParty
+    ) {
+        this.draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            caseEntity.getCaseReference(),
+            EventId.respondPossessionClaim,
+            String.valueOf(organisationEntity.getOrganisationId()),
+            defendantParty.getId()
         );
 
-        var claimPartyLegalRepOrgEntities = claimPartyLegalRepOrgRepository
+        var claimPartyLegalRepOrgEntities = claimPartyOrganisationRepository
             .findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
-                    defendantParty.getId(), legalRepOrg.getId(), caseEntity.getCaseReference());
+                    defendantParty.getId(), organisationEntity.getId(), caseEntity.getCaseReference());
 
         if (!claimPartyLegalRepOrgEntities.isEmpty()) {
             claimPartyLegalRepOrgEntities.forEach(this::invalidatePartyLegalRepresentativeOrganisation);
-            claimPartyLegalRepOrgRepository.saveAll(claimPartyLegalRepOrgEntities);
+            claimPartyOrganisationRepository.saveAll(claimPartyLegalRepOrgEntities);
         }
     }
 
@@ -76,8 +76,7 @@ public class RevokeAccessHelper {
         defendantParty.setIdamId(null);
     }
 
-    private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyLegalRepresentativeOrganisationEntity
-                                                                    partyLegalRepOrg) {
+    private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyOrganisationEntity partyLegalRepOrg) {
         partyLegalRepOrg.setActive(YesOrNo.NO);
         partyLegalRepOrg.setEndDate(Instant.now());
     }

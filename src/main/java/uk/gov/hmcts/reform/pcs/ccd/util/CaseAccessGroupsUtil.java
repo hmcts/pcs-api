@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -57,13 +57,13 @@ public final class CaseAccessGroupsUtil {
             .map(ListValue::getId)
             .map(partyId -> partyEntitiesMap.get(UUID.fromString(partyId)))
             .map(partyEntity ->
-                partyEntity.getClaimPartyLegalRepresentativeOrganisationList()
+                partyEntity.getClaimPartyOrganisationList()
                     .stream()
                     .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
                     .findFirst())
             .filter(Optional::isPresent)
             .map(Optional::get)
-            .map(ClaimPartyLegalRepresentativeOrganisationEntity::getLegalRepresentativeOrganisation)
+            .map(ClaimPartyOrganisationEntity::getOrganisation)
             .map(legalRepOrg -> forProfileAndRole(
                 legalRepOrg.getOrganisationProfileId(), PartyRole.DEFENDANT, legalRepOrg.getOrganisationId()))
             .forEach(caseAccessGroupId ->
