@@ -99,7 +99,8 @@ class ShowConditionsTest {
     @ParameterizedTest
     @EnumSource(
         value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
+            "EXEMPT_LANDLORD_QUESTION"},
         mode = EXCLUDE
     )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
