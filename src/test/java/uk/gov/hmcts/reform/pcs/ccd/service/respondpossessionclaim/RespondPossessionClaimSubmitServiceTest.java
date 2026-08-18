@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -314,100 +313,20 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldNotCreateTranslateTaskWhenResponseLanguageIsEnglish() {
+    void shouldNotCreateCounterClaimTranslationTaskWhenLanguageIsEnglish() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
-        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
-            .id(1)
-            .languageUsed(LanguageUsed.ENGLISH)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().build())
-            .build();
-
-        when(defendantResponseService.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
-            .thenReturn(savedResponse);
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
-
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
-
-        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
-    }
-
-    @Test
-    void shouldCreateTranslateTaskWhenLanguageIsEnglishAndWelsh() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
-            .claims(List.of(mainClaim))
-            .build();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
-
-        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
-            .id(1)
-            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
-            .build();
-        DefendantResponseEntity otherResponse = DefendantResponseEntity.builder().id(2).build();
-
-        DocumentEntity activeDocument = DocumentEntity.builder()
-            .fileName("evidence.pdf")
-            .defendantResponse(savedResponse)
-            .build();
-        DocumentEntity removedDocument = DocumentEntity.builder()
-            .defendantResponse(savedResponse)
-            .removed(true)
-            .build();
-        DocumentEntity unrelatedResponseDocument = DocumentEntity.builder()
-            .defendantResponse(otherResponse)
-            .build();
-        DocumentEntity noResponseDocument = DocumentEntity.builder().build();
-        pcsCaseEntity.setDocuments(
-            List.of(activeDocument, removedDocument, unrelatedResponseDocument, noResponseDocument));
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
-        when(defendantResponseService.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
-            .thenReturn(savedResponse);
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
-        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
-
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
-
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, partyEntity, List.of(activeDocument));
-    }
-
-    @Test
-    void shouldExcludeCounterClaimDocumentsFromResponseTranslationTask() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .claims(List.of(mainClaim))
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .hwfReferenceNumber("HWF-123-456")
             .build();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
-
-        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
-            .id(1)
-            .languageUsed(LanguageUsed.WELSH)
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .counterClaim(counterClaim)
             .build();
-        DocumentEntity responseDocument = DocumentEntity.builder()
-            .fileName("response-evidence.pdf")
-            .defendantResponse(savedResponse)
-            .build();
-        pcsCaseEntity.setDocuments(List.of(responseDocument));
-
-        CounterClaim counterClaim = CounterClaim.builder().claimType(CounterClaimType.SOMETHING_ELSE).build();
-        DefendantResponses defendantResponses = DefendantResponses.builder().counterClaim(counterClaim).build();
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(defendantResponses)
             .build();
@@ -419,49 +338,31 @@ class RespondPossessionClaimSubmitServiceTest {
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
+        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
+            .id(1)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .build();
+
+        DocumentEntity counterClaimDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .counterClaim(savedCounterClaim)
+            .build();
+
         when(defendantResponseService.saveDefendantResponse(
             CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
             .thenReturn(savedResponse);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
-        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+        when(documentService.createCounterClaimUploadedDocuments(
+            defendantResponses.getCounterClaimDocuments(), savedCounterClaim, pcsCaseEntity, partyEntity))
+            .thenReturn(List.of(counterClaimDocument));
+        when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, partyEntity, List.of(responseDocument));
+        verify(translationWAService, never())
+            .createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
-    @Test
-    void shouldNotCreateTranslateTaskWhenWelshButNoDocumentsExist() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
-        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .claims(List.of(mainClaim))
-            .build();
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
-
-        DefendantResponseEntity savedResponse = DefendantResponseEntity.builder()
-            .id(1)
-            .languageUsed(LanguageUsed.WELSH)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(DefendantResponses.builder().build())
-            .build();
-
-        when(defendantResponseService.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
-            .thenReturn(savedResponse);
-        when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
-        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
-
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
-
-        verify(translationWAService)
-            .createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, partyEntity, List.of());
-    }
 
 }

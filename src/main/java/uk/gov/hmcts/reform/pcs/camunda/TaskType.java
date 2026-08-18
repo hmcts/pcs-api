@@ -70,7 +70,7 @@ public enum TaskType {
     ),
     TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT(
         "TranslateDefendantSubmittedDocument",
-        "Translate defendant submitted document",
+        "Translate Defendant Submitted Document",
         """
             Review the defendant submitted document in Case File View and arrange translation where required.
             Upload or record the translated document on the case file and take any further action needed.
