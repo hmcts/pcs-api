@@ -25,6 +25,7 @@ public enum EventId {
     reviewSupportRequest,
     claimIssuePayment,
     changeCaseState,
+    manageHearing,
     enterGenApp,
     caseworkerUploadDocuments,
     removeDocument,

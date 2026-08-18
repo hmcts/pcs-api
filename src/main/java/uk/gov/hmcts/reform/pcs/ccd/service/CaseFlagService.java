@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -32,12 +33,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.requireNonNullElse;
 import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
 @Service
@@ -47,6 +50,7 @@ public class CaseFlagService {
 
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
     private static final String ACTIVE_STATUS = "Active";
+    private static final String RA_FLAG_CODE_PREFIX = "RA";
 
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
@@ -56,7 +60,44 @@ public class CaseFlagService {
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
         return mergeFlagDetails(incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
-                                CaseFlagEntity::new);
+                                CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
+    }
+
+    /**
+     * Applies the reasonable adjustment flags a defendant supplied via the cui-ra microsite to their
+     * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
+     * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
+     */
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+        if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
+            return;
+        }
+
+        List<ListValue<FlagDetail>> reasonableAdjustmentDetails = incomingFlags.getDetails().stream()
+            .filter(detail -> isReasonableAdjustmentCode(detail.getValue().getFlagCode()))
+            .toList();
+
+        int ignored = incomingFlags.getDetails().size() - reasonableAdjustmentDetails.size();
+        if (ignored > 0) {
+            log.warn("Ignoring {} supplied flag(s) for party {} that are not reasonable adjustments",
+                     ignored, partyEntity.getId());
+        }
+
+        if (reasonableAdjustmentDetails.isEmpty()) {
+            return;
+        }
+
+        Flags reasonableAdjustmentFlags = Flags.builder()
+            .visibility(incomingFlags.getVisibility())
+            .details(reasonableAdjustmentDetails)
+            .build();
+
+        List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
+            reasonableAdjustmentFlags, null, null, partyEntity, CasePartyFlagEntity::new,
+            RefDataPolicy.CREATE_IF_ABSENT);
+
+        partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
+        partyEntity.getDefendantFlags().addAll(casePartyFlags);
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, Set<PartyEntity> existingParties) {
@@ -122,7 +163,8 @@ public class CaseFlagService {
                 .toList();
         }
 
-        return mergeFlagDetails(incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new);
+        return mergeFlagDetails(incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new,
+                                RefDataPolicy.UPDATE_FROM_PAYLOAD);
     }
 
     private boolean hasNoFlagDetails(Flags flags) {
@@ -131,15 +173,23 @@ public class CaseFlagService {
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
                                                                PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
-                                                               Supplier<T> flagEntitySupplier) {
+                                                               Supplier<T> flagEntitySupplier,
+                                                               RefDataPolicy refDataPolicy) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
         Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
 
+        // Caseworker events state the visibility explicitly; flags supplied from outside CCD carry it
+        // on the payload instead, and default to internal when absent.
+        FlagVisibility effectiveVisibility = visibility != null
+            ? visibility
+            : requireNonNullElse(incomingCaseFlags.getVisibility(), FlagVisibility.INTERNAL);
+
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity = mergeFlagRefData(incomingFlagDetail);
+            FlagRefDataEntity flagRefDataEntity =
+                mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy);
             flagRefDataEntities.add(flagRefDataEntity);
 
             T flagEntity = flagEntitySupplier.get();
@@ -159,7 +209,7 @@ public class CaseFlagService {
             flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
-            flagEntity.setVisibility(visibility.getValue());
+            flagEntity.setVisibility(effectiveVisibility.getValue());
 
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
@@ -173,14 +223,25 @@ public class CaseFlagService {
         return mergedFlagDetails;
     }
 
-    private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail) {
+    private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail,
+                                               String visibility,
+                                               RefDataPolicy refDataPolicy) {
 
-        FlagRefDataEntity flagRefDataEntity = flagRefDataRepository.findByFlagCode(
-            incomingFlagDetail.getFlagCode()).orElse(new FlagRefDataEntity());
+        Optional<FlagRefDataEntity> existingFlagRefData =
+            flagRefDataRepository.findByFlagCode(incomingFlagDetail.getFlagCode());
+
+        // Reference data is shared by every case using this flag code, so a party-supplied flag
+        // references the existing row as it stands rather than rewriting it from the payload.
+        if (existingFlagRefData.isPresent() && refDataPolicy == RefDataPolicy.CREATE_IF_ABSENT) {
+            return existingFlagRefData.get();
+        }
+
+        FlagRefDataEntity flagRefDataEntity = existingFlagRefData.orElseGet(FlagRefDataEntity::new);
 
         flagRefDataEntity.setFlagCode(incomingFlagDetail.getFlagCode());
         flagRefDataEntity.setFlagName(incomingFlagDetail.getName());
         flagRefDataEntity.setFlagNameWelsh(incomingFlagDetail.getNameCy());
+        flagRefDataEntity.setVisibility(visibility);
         flagRefDataEntity.setHearingRelevant(YesOrNoConverter.toBoolean(incomingFlagDetail.getHearingRelevant()));
         flagRefDataEntity.setAvailableExternally(YesOrNoConverter.toBoolean(
             incomingFlagDetail.getAvailableExternally()));
@@ -188,11 +249,22 @@ public class CaseFlagService {
         return flagRefDataEntity;
     }
 
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && isReasonableAdjustmentCode(flag.getFlagRefData().getFlagCode());
+    }
+
+    private static boolean isReasonableAdjustmentCode(String flagCode) {
+        return flagCode != null && flagCode.startsWith(RA_FLAG_CODE_PREFIX);
+    }
+
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
         if (incomingFlagDetail.getPath() != null) {
+            // Flags raised outside CCD arrive with path values but no ids
             String paths = incomingFlagDetail.getPath().stream()
-                .map(pathListValue -> pathListValue.getId() + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
+                .map(pathListValue -> requireNonNullElse(pathListValue.getId(), "")
+                    + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
                 .collect(Collectors.joining(CaseFlagsView.PATHS_DELIMITER));
 
             flagEntity.setPaths(paths);
@@ -336,4 +408,13 @@ public class CaseFlagService {
             ));
     }
 
+    /**
+     * Whether the shared {@code flag_ref_data} row for a flag code may be rewritten from the incoming
+     * payload. Caseworker events own that reference data; party-supplied flags may only reference it,
+     * or create it where the code has not been seen before.
+     */
+    private enum RefDataPolicy {
+        UPDATE_FROM_PAYLOAD,
+        CREATE_IF_ABSENT
+    }
 }
