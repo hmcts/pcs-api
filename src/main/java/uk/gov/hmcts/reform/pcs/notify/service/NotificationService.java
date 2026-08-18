@@ -426,22 +426,18 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
-        PartyEntity party = recipient.party();
-
-        if (party == null) {
-            if (recipient.email() == null) {
-                log.info("Skipping email notification because both party and recipient email are null");
-                return null;
-            }
-        } else if (recipient.recipientRole() == null) {
-            if (isBlank(recipient.email())) {
-                log.info("Skipping email notification because no recipient email address is recorded");
-                return null;
-            }
-        } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
-            log.info("Skipping email notification to user: {}", party.getId());
+        if (recipient.email() == null || recipient.email().isBlank()) {
+            log.info("Skipping email notification because recipient email is blank");
             return null;
         }
+
+        PartyEntity party = recipient.party();
+        if (party != null
+            && recipient.recipientRole() != null
+            && !partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+                log.info("Skipping email notification to user: {}", party.getId());
+                return null;
+            }
 
         return scheduleEmailNotification(
             buildRequest(
