@@ -3,10 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.document;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
@@ -50,6 +52,7 @@ public class CaseFileDocumentDeduplicationService {
             pcsCase.getOccupationLicenceDetailsWales(),
             documentReferences
         );
+        addDocumentReferencesFromGenApps(pcsCase.getGenApps(), documentReferences);
         addDocumentReferencesFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentReferences);
         return documentReferences;
     }
@@ -94,6 +97,26 @@ public class CaseFileDocumentDeduplicationService {
         if (occupationLicenceDetailsWales != null) {
             addDocumentReferences(occupationLicenceDetailsWales.getLicenceDocuments(), documentReferences);
         }
+    }
+
+    private void addDocumentReferencesFromGenApps(List<ListValue<GeneralApplication>> genApps,
+                                                  Set<String> documentReferences) {
+        if (genApps == null) {
+            return;
+        }
+
+        genApps.stream()
+            .map(ListValue::getValue)
+            .forEach(genApp -> addDocumentReferencesFromGenApp(genApp, documentReferences));
+    }
+
+    private void addDocumentReferencesFromGenApp(GeneralApplication genApp, Set<String> documentReferences) {
+        if (genApp == null) {
+            return;
+        }
+
+        addDocumentReferences(genApp.getSubmissionDocument(), documentReferences);
+        addDocumentReferences(genApp.getSupportingDocuments(), documentReferences);
     }
 
     private void addDocumentReferencesFromCaseDetailsTab(CaseDetailsTab caseDetailsTab,
@@ -172,6 +195,15 @@ public class CaseFileDocumentDeduplicationService {
     private void addDocumentReferences(Document document, Set<String> documentReferences) {
         documentReferences(document)
             .forEach(reference -> addDocumentReference(reference, documentReferences));
+    }
+
+    private void addDocumentReferences(DocumentWithId documentWithId, Set<String> documentReferences) {
+        if (documentWithId == null) {
+            return;
+        }
+
+        addDocumentReference(documentWithId.getId(), documentReferences);
+        addDocumentReferences(documentWithId.getDocument(), documentReferences);
     }
 
     private Stream<String> documentReferences(ListValue<Document> document) {

@@ -111,7 +111,7 @@ public class ClaimView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isEnergyPerformanceCertificate)
-            .filter(ClaimView::isClaimDocument)
+            .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
@@ -125,7 +125,7 @@ public class ClaimView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isGasSafetyReport)
-            .filter(ClaimView::isClaimDocument)
+            .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
@@ -139,7 +139,7 @@ public class ClaimView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(ClaimView::isElectricalInstallationCondition)
-            .filter(ClaimView::isClaimDocument)
+            .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
             .map(ClaimView::toDocument)
@@ -156,10 +156,6 @@ public class ClaimView {
 
     private static boolean isElectricalInstallationCondition(DocumentEntity documentEntity) {
         return documentEntity.getType() == DocumentType.EICR_REPORT;
-    }
-
-    private static boolean isClaimDocument(DocumentEntity documentEntity) {
-        return documentEntity.getGeneralApplication() == null;
     }
 
     private static ListValue<Document> toDocument(DocumentEntity documentEntity) {

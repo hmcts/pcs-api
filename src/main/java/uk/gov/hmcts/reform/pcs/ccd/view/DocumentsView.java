@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 public class DocumentsView {
 
     private final SecurityContextService securityContextService;
-    private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
@@ -64,7 +62,7 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return false;
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
@@ -87,5 +85,9 @@ public class DocumentsView {
 
     public static boolean isNotRemoved(DocumentEntity documentEntity) {
         return !documentEntity.isRemoved();
+    }
+
+    public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
+        return documentEntity.getGeneralApplication() == null;
     }
 }

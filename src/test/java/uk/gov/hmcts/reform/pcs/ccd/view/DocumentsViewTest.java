@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -38,8 +37,6 @@ class DocumentsViewTest {
     @Mock
     private SecurityContextService securityContextService;
     @Mock
-    private GenAppVisibilityService genAppVisibilityService;
-    @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     private PCSCase pcsCase;
@@ -50,7 +47,7 @@ class DocumentsViewTest {
     void setUp() {
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(securityContextService, genAppVisibilityService);
+        underTest = new DocumentsView(securityContextService);
     }
 
     @Test
@@ -198,17 +195,12 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+    void shouldExcludeGenAppDocumentsFromAllDocuments() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
 
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_ID))
-            .thenReturn(true);
-
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_ID))
-            .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
         DocumentEntity documentEntity1 = DocumentEntity.builder()
@@ -249,7 +241,7 @@ class DocumentsViewTest {
         assertThat(allDocuments)
             .extracting(ListValue::getValue)
             .extracting(Document::getUrl)
-            .containsExactly("url1", "url3", "url4");
+            .containsExactly("url4");
     }
 
     @ParameterizedTest(name = "[{index}] description={0} => isEmpty={1}")
