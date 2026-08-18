@@ -34,7 +34,8 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
             <strong class="govuk-warning-text__text">
                 <span class="govuk-visually-hidden">Warning</span>
-                You must enter the correct address. We'll ask you to check it on the next page.
+                You must enter the correct address.<br>
+                We will ask you to check it on the next page.<br>
                 After that, you will not be able to change it again.
             </strong>
         </div>
