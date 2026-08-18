@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -54,6 +55,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -584,6 +588,9 @@ public class PCSCase {
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 
+    @JsonUnwrapped
+    private LegalRepDocumentUploadDetails legalRepDocumentUploadDetails;
+
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;
 
@@ -818,6 +825,30 @@ public class PCSCase {
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
 
+
+    @CCD(
+        label = "Do you want to add, edit or cancel a hearing?",
+        searchable = false
+    )
+    private ManageHearingOption manageHearingOption;
+
+    @JsonUnwrapped(prefix = "hearing_")
+    @CCD(searchable = false)
+    private Hearing hearing;
+
+    @CCD(searchable = false)
+    private List<ListValue<Hearing>> hearingList;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showManageHearingPage;
+
+    @CCD(searchable = false)
+    private String hearingLocation;
+
+    @CCD(searchable = false)
+    private DynamicMultiSelectList partyMultiSelectionList;
+
+
     /**
      * The legal representative for a defendant on the case.
      */
@@ -827,4 +858,3 @@ public class PCSCase {
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
 }
-

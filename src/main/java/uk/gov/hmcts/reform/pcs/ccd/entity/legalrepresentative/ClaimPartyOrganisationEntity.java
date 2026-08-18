@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,46 +18,40 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import static jakarta.persistence.CascadeType.ALL;
+import java.time.Instant;
+
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "legal_rep_org_contact_details")
+@Table(name = "claim_party_organisation")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LegalRepresentativeOrganisationContactDetailsEntity {
+public class ClaimPartyOrganisationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "case_id")
+    @JoinColumn(name = "party_id", nullable = false)
     @JsonBackReference
-    private PcsCaseEntity pcsCase;
+    private PartyEntity party;
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "legal_rep_org_id")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "organisation_id", nullable = false)
     @JsonBackReference
-    private LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
-
-    private String emailAddress;
-
-    private String phoneNumber;
-
-    private String contactReference;
-
-    @OneToOne(cascade = ALL,orphanRemoval = true)
-    private AddressEntity address;
+    private OrganisationEntity organisation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo confirmedContactDetails;
+    private YesOrNo active;
 
+    private Instant startDate;
+
+    private Instant endDate;
 }
