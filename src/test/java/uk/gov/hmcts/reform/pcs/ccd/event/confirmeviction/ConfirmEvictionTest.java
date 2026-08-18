@@ -8,6 +8,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmEvictionConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mockStatic;
@@ -61,6 +63,23 @@ class ConfirmEvictionTest extends BaseEventTest {
             underTest.configureDecentralised(mockConfigBuilder());
 
             verifyNoInteractions(confirmEvictionConfigurer);
+        }
+    }
+
+    /**
+     * This event is gated on the environment, so it is absent from a locally generated definition
+     * and the group access grant cannot be checked there.
+     */
+    @Test
+    void shouldGrantTheEventToTheClaimantSolicitorCapacity() {
+        try (MockedStatic<TestSupportEnvironment> mocked = mockStatic(TestSupportEnvironment.class)) {
+            mocked.when(TestSupportEnvironment::isDev).thenReturn(true);
+            setEventUnderTest(underTest);
+
+            assertThat(configuredEvent.getGrants().get(UserRole.GA_CLAIMANT_SOLICITOR))
+                .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
+            assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR))
+                .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
         }
     }
 

@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -431,5 +433,17 @@ class EnforceTheOrderTest extends BaseEventTest {
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
             )
         );
+    }
+
+    /**
+     * This event is gated on the environment, so it is absent from a locally generated definition
+     * and the group access grant cannot be checked there.
+     */
+    @Test
+    void shouldGrantTheEventToTheClaimantSolicitorCapacity() {
+        assertThat(configuredEvent.getGrants().get(UserRole.GA_CLAIMANT_SOLICITOR))
+            .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
+        assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR))
+            .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
     }
 }
