@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -31,13 +31,13 @@ class GenAppVisibilityServiceTest {
     private static final String ORG_ID = "org";
 
     @Mock(strictness = Mock.Strictness.LENIENT)
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
 
     private GenAppVisibilityService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppVisibilityService(legalRepresentativeOrganisationRepository);
+        underTest = new GenAppVisibilityService(organisationRepository);
     }
 
     @ParameterizedTest
@@ -87,8 +87,8 @@ class GenAppVisibilityServiceTest {
         when(applicantParty.getId()).thenReturn(applicantPartyId);
         when(applicantParty.getOrganisationId()).thenReturn(organisationId);
 
-        when(legalRepresentativeOrganisationRepository
-                 .isRepresentativeOrganisationLinkedToPartyAndActive(ORG_ID, applicantPartyId))
+        when(organisationRepository
+                 .isOrganisationLinkedToPartyAndActive(ORG_ID, applicantPartyId))
                 .thenReturn(isLegalRepresentativeLinkedToPartyAndActive);
 
         // When

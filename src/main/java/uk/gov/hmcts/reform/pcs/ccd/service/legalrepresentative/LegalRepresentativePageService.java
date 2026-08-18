@@ -9,9 +9,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -25,22 +24,23 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 @AllArgsConstructor
 public class LegalRepresentativePageService {
 
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final ClaimPartyContactDetailsRepository
+        claimPartyContactDetailsRepository;
     private final AddressMapper addressMapper;
     private final SecurityContextService securityContextService;
     private final AddressFormatter addressFormatter;
 
     @Transactional
     public void save(long caseReference, LegalRepresentativeDetails legalRepresentativeDetails) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisation =
-            legalRepresentativeOrganisationRepository
-                .findByOrganisationIdAndCaseReference(legalRepresentativeDetails.getOrganisationId(), caseReference);
+        Optional<ClaimPartyContactDetailsEntity> contactDetails =
+            claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
+                legalRepresentativeDetails.getOrganisationId(),
+            caseReference
+        );
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity = legalRepresentativeOrganisation
-                .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
-
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails =
-            legalRepresentativeOrganisationEntity.getLegalRepresentativeOrganisationContactDetails();
+        ClaimPartyContactDetailsEntity organisationContactDetails = contactDetails
+                .orElseThrow(() -> new IllegalStateException("Cannot find "
+                                                                 + "LegalRepresentativeOrganisationContactDetails"));
 
         if (legalRepresentativeDetails.getDifferentPostalAddress() != null
             && legalRepresentativeDetails.getDifferentPostalAddress().equals(VerticalYesNo.YES)) {
@@ -60,27 +60,25 @@ public class LegalRepresentativePageService {
                 .setContactReference(legalRepresentativeDetails.getReference());
         }
 
-        if (legalRepresentativeDetails.getUseEmailAddress() != null
-            && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
-            organisationContactDetails.setEmailAddress(legalRepresentativeDetails.getEmailAddress());
-        }
+        updateEmail(legalRepresentativeDetails.getUseEmailAddress(), organisationContactDetails,
+                    legalRepresentativeDetails.getEmailAddress(), legalRepresentativeDetails.getOriginalEmailAddress());
 
-        organisationContactDetails.setConfirmedContactDetails(YesOrNo.YES);
+        organisationContactDetails.setContactDetailsCorrectConfirmation(YesOrNo.YES);
 
-        legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisationEntity);
+        claimPartyContactDetailsRepository.save(organisationContactDetails);
     }
 
     public LegalRepresentativeDetails retrieveLegalRepresentativeDetails(String organisationId,
                                                                          long caseReference,
                                                                          LegalRepresentativeDetails details) {
-        Optional<LegalRepresentativeOrganisationEntity> legalRepOrganisation = legalRepresentativeOrganisationRepository
-            .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+        Optional<ClaimPartyContactDetailsEntity> contactDetails =
+            claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
+            organisationId,
+            caseReference
+        );
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = legalRepOrganisation
-            .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisation"));
-
-        LegalRepresentativeOrganisationContactDetailsEntity organisationContactDetails =
-            legalRepresentativeOrganisation.getLegalRepresentativeOrganisationContactDetails();
+        ClaimPartyContactDetailsEntity organisationContactDetails = contactDetails
+            .orElseThrow(() -> new IllegalStateException("Cannot find LegalRepresentativeOrganisationContactDetails"));
 
 
         if (details == null) {
@@ -124,5 +122,15 @@ public class LegalRepresentativePageService {
     private AddressUK mapAddressEntityToAddressUk(AddressEntity address) {
         return address != null
             ? addressMapper.toAddressUK(address) : null;
+    }
+
+    private void updateEmail(VerticalYesNo useEmail, ClaimPartyContactDetailsEntity contactDetails,
+                             String newEmail, String originalEmail) {
+        if (useEmail == null || contactDetails == null) {
+            return;
+        }
+
+        String targetEmail = (useEmail == VerticalYesNo.NO) ? newEmail : originalEmail;
+        contactDetails.setEmailAddress(targetEmail);
     }
 }
