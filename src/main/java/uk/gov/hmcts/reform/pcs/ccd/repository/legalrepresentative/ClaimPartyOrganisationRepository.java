@@ -4,48 +4,47 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationPartyId;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PartyLegalRepresentativeOrganisationRepository
-    extends JpaRepository<PartyLegalRepresentativeOrganisationEntity, LegalRepresentativeOrganisationPartyId> {
+public interface ClaimPartyOrganisationRepository
+    extends JpaRepository<ClaimPartyOrganisationEntity, Integer> {
 
     @Query("""
-        SELECT plro
-        FROM PartyLegalRepresentativeOrganisationEntity plro
-        JOIN plro.party p
+        SELECT cpo
+        FROM ClaimPartyOrganisationEntity cpo
+        JOIN cpo.party p
         JOIN p.pcsCase pcsCase
         WHERE p.id = :partyId
-        AND plro.legalRepresentativeOrganisation.id = :legalRepresentativeOrganisationId
+        AND cpo.organisation.id = :organisationId
         AND pcsCase.caseReference = :caseReference
-        AND plro.active = 'YES'
+        AND cpo.active = 'YES'
         """)
-    List<PartyLegalRepresentativeOrganisationEntity> findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
+    List<ClaimPartyOrganisationEntity> findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
         @Param("partyId") UUID partyId,
-        @Param("legalRepresentativeOrganisationId") UUID legalRepresentativeOrganisationId,
+        @Param("organisationId") Integer organisationId,
         @Param("caseReference") long caseReference
     );
 
     @Query("""
-        SELECT COUNT(plro)
-        FROM PartyLegalRepresentativeOrganisationEntity plro
-        JOIN plro.party p
+        SELECT COUNT(cpo)
+        FROM ClaimPartyOrganisationEntity cpo
+        JOIN cpo.party p
         JOIN p.claimParties cp
         JOIN cp.claim c
         JOIN c.pcsCase pcsCase
         WHERE pcsCase.caseReference = :caseReference
-          AND plro.legalRepresentativeOrganisation.id = :lroId
+          AND cpo.organisation.id = :organisationId
           AND p.id <> :excludedPartyId
           AND cp.role = :role
-          AND plro.active = 'YES'
+          AND cpo.active = 'YES'
         """)
     long countOtherDefendantsRepresentedByOrganisation(
-        @Param("lroId") UUID legalRepresentativeOrganisationId,
+        @Param("organisationId") Integer organisationId,
         @Param("caseReference") long caseReference,
         @Param("excludedPartyId") UUID excludedPartyId,
         @Param("role") PartyRole role

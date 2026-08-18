@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -20,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -32,6 +32,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class OrganisationEntity {
 
     @Id
@@ -60,16 +61,16 @@ public class OrganisationEntity {
 
     public void addParty(PartyEntity party) {
         // if we have an existing inactive plroe that is inactive, then reactivate as it was previously linked
-        Optional<PartyLegalRepresentativeOrganisationEntity> existingEntity =
-            this.partyLegalRepresentativeOrganisationList
+        Optional<ClaimPartyOrganisationEntity> existingEntity =
+            this.claimPartyOrganisationList
                 .stream()
                 .filter(e -> e.getParty().getId().equals(party.getId()))
                 .findFirst();
         if (existingEntity.isPresent() && YesOrNo.NO.equals(existingEntity.get().getActive())) {
-            PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationEntity = existingEntity
+            ClaimPartyOrganisationEntity claimPartyOrganisationEntity = existingEntity
                 .get();
-            partyLegalRepresentativeOrganisationEntity.setActive(YesOrNo.YES);
-            partyLegalRepresentativeOrganisationEntity.setStartDate(Instant.now());
+            claimPartyOrganisationEntity.setActive(YesOrNo.YES);
+            claimPartyOrganisationEntity.setStartDate(Instant.now());
             return;
         } else if (existingEntity.isPresent() && YesOrNo.YES.equals(existingEntity.get().getActive())) {
             log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
@@ -77,30 +78,13 @@ public class OrganisationEntity {
             return;
         }
 
-        PartyLegalRepresentativeOrganisationEntity partyLegalRepresentativeOrganisationEntity =
-            PartyLegalRepresentativeOrganisationEntity.builder()
-                .legalRepresentativeOrganisation(this)
+        ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
+            ClaimPartyOrganisationEntity.builder()
+                .organisation(this)
                 .party(party)
                 .startDate(Instant.now())
                 .active(YesOrNo.YES)
                 .build();
-        partyLegalRepresentativeOrganisationList.add(partyLegalRepresentativeOrganisationEntity);
-        party.getPartyLegalRepresentativeOrganisationList().add(partyLegalRepresentativeOrganisationEntity);
-    }
-
-    public void addParty(PartyEntity party) {
-        if (this.claimPartyOrganisationList.stream().anyMatch(e ->
-                                                                         e.getParty().getId().equals(party.getId()))) {
-            return;
-        }
-
-        ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
-            ClaimPartyOrganisationEntity.builder()
-            .organisation(this)
-            .party(party)
-            .startDate(Instant.now())
-            .active(YesOrNo.YES)
-            .build();
         claimPartyOrganisationList.add(claimPartyOrganisationEntity);
         party.getClaimPartyOrganisationList().add(claimPartyOrganisationEntity);
     }

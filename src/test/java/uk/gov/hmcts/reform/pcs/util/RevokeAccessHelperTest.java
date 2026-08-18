@@ -10,17 +10,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.PartyLegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.PartyLegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
 import java.util.List;
@@ -42,7 +40,7 @@ class RevokeAccessHelperTest {
     private RevokeAccessHelper revokeAccessHelper;
 
     @Mock
-    private PartyLegalRepresentativeOrganisationRepository partyLegalRepresentativeOrganisationRepository;
+    private ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
 
     @Mock
     private DraftCaseDataRepository draftCaseDataRepository;
@@ -54,7 +52,7 @@ class RevokeAccessHelperTest {
     private PartyAccessCodeRepository partyAccessCodeRepository;
 
     @Captor
-    private ArgumentCaptor<List<PartyLegalRepresentativeOrganisationEntity>> saveAllCaptor;
+    private ArgumentCaptor<List<ClaimPartyOrganisationEntity>> saveAllCaptor;
 
     @Test
     void revokeOrganisationAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
@@ -62,38 +60,36 @@ class RevokeAccessHelperTest {
         long caseReference = 123L;
         UUID partyId = UUID.randomUUID();
 
-        UserInfo user = UserInfo.builder().uid(UUID.randomUUID().toString()).build();
-
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(caseReference).build();
 
-        LegalRepresentativeOrganisationEntity lro = LegalRepresentativeOrganisationEntity.builder()
-            .id(UUID.randomUUID())
+        OrganisationEntity lro = OrganisationEntity.builder()
+            .id(Integer.valueOf(1))
             .build();
 
         PartyEntity defendant = PartyEntity.builder().id(partyId).build();
 
-        PartyLegalRepresentativeOrganisationEntity plro = PartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyOrganisationEntity plro = ClaimPartyOrganisationEntity.builder()
             .party(defendant)
-            .legalRepresentativeOrganisation(lro)
+            .organisation(lro)
             .active(YesOrNo.YES)
             .startDate(Instant.now())
             .build();
 
         // organisation represents other defendants -> count > 0
-        when(partyLegalRepresentativeOrganisationRepository.countOtherDefendantsRepresentedByOrganisation(
+        when(claimPartyOrganisationRepository.countOtherDefendantsRepresentedByOrganisation(
             eq(lro.getId()), eq(caseReference), eq(defendant.getId()), eq(PartyRole.DEFENDANT)
         )).thenReturn(1L);
 
-        when(partyLegalRepresentativeOrganisationRepository
+        when(claimPartyOrganisationRepository
             .findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
                 defendant.getId(), lro.getId(), caseReference))
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant, user);
+        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion always called
-        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             eq(caseReference),
             eq(EventId.respondPossessionClaim),
             eq(String.valueOf(lro.getOrganisationId())),
@@ -105,11 +101,11 @@ class RevokeAccessHelperTest {
             eq(caseReference), anyString(), eq(UserRole.DEFENDANT_SOLICITOR));
 
         // entities should be invalidated and saved
-        verify(partyLegalRepresentativeOrganisationRepository).saveAll(saveAllCaptor.capture());
-        List<PartyLegalRepresentativeOrganisationEntity> saved = saveAllCaptor.getValue();
+        verify(claimPartyOrganisationRepository).saveAll(saveAllCaptor.capture());
+        List<ClaimPartyOrganisationEntity> saved = saveAllCaptor.getValue();
         assertNotNull(saved);
         assertEquals(1, saved.size());
-        PartyLegalRepresentativeOrganisationEntity savedEntity = saved.getFirst();
+        ClaimPartyOrganisationEntity savedEntity = saved.getFirst();
         assertEquals(YesOrNo.NO, savedEntity.getActive());
         assertNotNull(savedEntity.getEndDate());
     }
@@ -125,58 +121,46 @@ class RevokeAccessHelperTest {
         UUID lrId1 = UUID.randomUUID();
         UUID lrId2 = UUID.randomUUID();
 
-        UserInfo user = UserInfo.builder().uid(UUID.randomUUID().toString()).build();
-
-        LegalRepresentativeEntity lr1 = LegalRepresentativeEntity.builder().idamId(lrId1).build();
-        LegalRepresentativeEntity lr2 = LegalRepresentativeEntity.builder().idamId(lrId2).build();
-
-        LegalRepresentativeOrganisationEntity lro = LegalRepresentativeOrganisationEntity.builder()
-            .id(UUID.randomUUID())
-            .legalRepresentativeList(List.of(lr1, lr2))
+        OrganisationEntity lro = OrganisationEntity.builder()
+            .id(Integer.valueOf(1))
             .build();
 
         PartyEntity defendant = PartyEntity.builder().id(partyId).build();
 
-        PartyLegalRepresentativeOrganisationEntity plro = PartyLegalRepresentativeOrganisationEntity.builder()
+        ClaimPartyOrganisationEntity plro = ClaimPartyOrganisationEntity.builder()
             .party(defendant)
-            .legalRepresentativeOrganisation(lro)
+            .organisation(lro)
             .active(YesOrNo.YES)
             .startDate(Instant.now())
             .build();
 
         // organisation does not represent other defendants -> count == 0
-        when(partyLegalRepresentativeOrganisationRepository.countOtherDefendantsRepresentedByOrganisation(
+        when(claimPartyOrganisationRepository.countOtherDefendantsRepresentedByOrganisation(
             eq(lro.getId()), eq(caseReference), eq(defendant.getId()), eq(PartyRole.DEFENDANT)
         )).thenReturn(0L);
 
-        when(partyLegalRepresentativeOrganisationRepository
+        when(claimPartyOrganisationRepository
             .findAllActiveByPartyIdLegalRepresentativeOrganisationIdAndCase(
                 defendant.getId(), lro.getId(), caseReference))
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant, user);
+        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion called
-        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             eq(caseReference),
             eq(EventId.respondPossessionClaim),
             eq(String.valueOf(lro.getOrganisationId())),
             eq(defendant.getId())
         );
 
-        // revokeRasRole should be called for both legal representatives
-        verify(caseRoleAssignmentService).revokeRasRole(
-            eq(caseReference), eq(lrId1.toString()), eq(UserRole.DEFENDANT_SOLICITOR));
-        verify(caseRoleAssignmentService).revokeRasRole(
-            eq(caseReference), eq(lrId2.toString()), eq(UserRole.DEFENDANT_SOLICITOR));
-
         // entities should be invalidated and saved
-        verify(partyLegalRepresentativeOrganisationRepository).saveAll(saveAllCaptor.capture());
-        List<PartyLegalRepresentativeOrganisationEntity> saved = saveAllCaptor.getValue();
+        verify(claimPartyOrganisationRepository).saveAll(saveAllCaptor.capture());
+        List<ClaimPartyOrganisationEntity> saved = saveAllCaptor.getValue();
         assertNotNull(saved);
         assertEquals(1, saved.size());
-        PartyLegalRepresentativeOrganisationEntity savedEntity = saved.getFirst();
+        ClaimPartyOrganisationEntity savedEntity = saved.getFirst();
         assertEquals(YesOrNo.NO, savedEntity.getActive());
         assertNotNull(savedEntity.getEndDate());
     }
