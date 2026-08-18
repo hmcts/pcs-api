@@ -1,0 +1,336 @@
+package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class LegalRepDocumentUploadTest extends BaseEventTest {
+
+    @Mock
+    private LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
+    @Mock
+    private PcsCaseService pcsCaseService;
+
+    @Mock
+    private DocumentService documentService;
+
+    @Mock
+    private SecurityContextService securityContextService;
+
+    @Mock
+    private GenAppVisibilityService genAppVisibilityService;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+
+    @InjectMocks
+    private LegalRepDocumentUpload legalRepDocumentUpload;
+
+    @BeforeEach
+    void setUp() {
+        setEventUnderTest(legalRepDocumentUpload);
+    }
+
+    @Test
+    void shouldConfigurePages() {
+        PCSCase caseData = PCSCase.builder().build();
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder()
+                            .build());
+
+        callStartHandler(caseData);
+
+        verify(legalRepDocumentUploadConfigurer).configurePages(any());
+    }
+
+    @Test
+    void shouldBuildValidCategoriesWhenGenAppDatesExist() {
+        LocalDateTime laterDate = LocalDateTime.of(2026, 4, 25, 10, 0);
+        LocalDateTime earlierDate = LocalDateTime.of(2026, 4, 20, 10, 0);
+
+        UUID earlierAdjournId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        UUID laterAdjournId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        UUID generalId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+
+        GenAppEntity earlierAdjournApp = GenAppEntity.builder()
+            .id(earlierAdjournId)
+            .type(GenAppType.ADJOURN)
+            .applicationSubmittedDate(earlierDate)
+            .build();
+
+        GenAppEntity laterAdjournApp = GenAppEntity.builder()
+            .id(laterAdjournId)
+            .type(GenAppType.ADJOURN)
+            .applicationSubmittedDate(laterDate)
+            .build();
+
+        GenAppEntity generalApp = GenAppEntity.builder()
+            .id(generalId)
+            .type(GenAppType.SOMETHING_ELSE)
+            .applicationSubmittedDate(laterDate)
+            .build();
+
+        GenAppEntity generalAppWithNullDate = GenAppEntity.builder()
+            .id(UUID.fromString("44444444-4444-4444-4444-444444444444"))
+            .type(GenAppType.SOMETHING_ELSE)
+            .applicationSubmittedDate(null)
+            .build();
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder().build());
+
+        when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            .thenReturn(List.of(earlierAdjournApp, laterAdjournApp, generalApp, generalAppWithNullDate));
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
+
+        DynamicStringList categories =
+            result.getLegalRepDocumentUploadDetails().getValidCategories();
+
+        assertThat(categories).isNotNull();
+        assertThat(categories.getListItems()).hasSize(4);
+
+        assertThat(categories.getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactlyInAnyOrder(
+                DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name(),
+                earlierAdjournId.toString(),
+                laterAdjournId.toString(),
+                generalId.toString()
+            );
+
+        assertThat(categories.getListItems())
+            .filteredOn(item -> item.getLabel().contains("adjourn the hearing"))
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactlyInAnyOrder(
+                "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    + "hearing - submitted on Monday 20 April 2026",
+                "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    + "hearing - submitted on Saturday 25 April 2026"
+            );
+
+        assertThat(categories.getListItems())
+            .filteredOn(item -> item.getLabel().equals(
+                "Yes, the documents I’m uploading relate to an application submitted on "
+                    + "Saturday 25 April 2026"))
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(generalId.toString());
+
+        assertThat(categories.getListItems())
+            .filteredOn(item ->
+                            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name()
+                                .equals(item.getCode()))
+            .extracting(DynamicStringListElement::getLabel)
+            .containsExactly(
+                "No, the documents I’m uploading relate to the main claim or counterclaim"
+            );
+
+        assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage())
+            .isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldKeepOnlyMainClaimOrCounterclaimWhenNoGenAppDatesAvailable() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder().build());
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
+        DynamicStringList categories = result.getLegalRepDocumentUploadDetails().getValidCategories();
+        assertThat(categories).isNotNull();
+        assertThat(categories.getListItems()).hasSize(1);
+        assertThat(categories.getListItems().getFirst().getCode())
+            .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+    }
+
+    @Test
+    void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
+            .thenReturn(PcsCaseEntity.builder()
+                .genApps(null)
+                .build());
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
+        DynamicStringList categories = result.getLegalRepDocumentUploadDetails().getValidCategories();
+        assertThat(categories).isNotNull();
+        assertThat(categories.getListItems()).hasSize(1);
+        assertThat(categories.getListItems().getFirst().getCode())
+            .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+    }
+
+    @Test
+    void shouldReturnNullForUnmappedCategoryType() {
+        assertThat(legalRepDocumentUpload.mapCategoryToGenAppType(
+            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
+            .isNull();
+    }
+
+    @Test
+    void shouldReturnEmptyForUnmappedCategory() {
+        assertThat(legalRepDocumentUpload.findGenAppsForCategory(
+            PcsCaseEntity.builder().build(),
+            UUID.randomUUID(),
+            DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
+            .isEmpty();
+    }
+
+    @Test
+    void shouldUploadLegalRepDocumentCorrectly() {
+        // Given
+        String description = "test description";
+        UUID selectedId = UUID.randomUUID();
+        UUID currentUserId = UUID.randomUUID();
+
+        Document document = Document.builder()
+            .filename("test filename")
+            .url("test url")
+            .binaryUrl("test binary url")
+            .build();
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .document(document)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description(description)
+            .build();
+
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
+            .validCategories(DynamicStringList.builder()
+                .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
+                .build())
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
+            .build();
+
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+        PartyEntity currentUserParty = mock(PartyEntity.class);
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        when(selectedGenApp.getId()).thenReturn(selectedId);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
+        List<GenAppEntity> mockGenAppList = List.of(selectedGenApp);
+        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), currentUserId))
+            .thenReturn(mockGenAppList);
+        when(selectedGenApp.getParty()).thenReturn(currentUserParty);
+
+        given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(documentService, times(1))
+            .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,pcsCaseEntity,currentUserParty,selectedGenApp);
+    }
+
+    @Test
+    void shouldReturnErrorWhenGetDocumentIsNull() {
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .description("test description")
+            .document(null)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .build();
+
+        PartyEntity party = mock(PartyEntity.class);
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, eq(any())))
+            .thenReturn(List.of(party));
+
+        SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+        assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
+    }
+
+
+    @Test
+    void shouldReturnErrorWhenLegalRepDocumentIsNull() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        LegalRepDocument nullLegalRepDocument = null;
+        LegalRepDocument validLegalRepDocument = LegalRepDocument.builder()
+            .description("test description")
+            .document(new Document())
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .build();
+
+        List<LegalRepDocument> legalRepDocList = Stream.of(nullLegalRepDocument,
+                                                           validLegalRepDocument).toList();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .build();
+
+        PartyEntity party = mock(PartyEntity.class);
+
+        when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, eq(any())))
+            .thenReturn(List.of(party));
+
+        SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+        assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
+    }
+}

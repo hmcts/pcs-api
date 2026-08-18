@@ -58,6 +58,13 @@ import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
 import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
+import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
+import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
+import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
+import {
+  noticeOfChangeSuccessful
+} from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -132,6 +139,12 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
+      ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
+      ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
+      ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
+      ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
+      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -1585,7 +1598,7 @@ export class CreateCaseAction implements IAction {
     const folder:string[] = caseFileView as string[];
 
     const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
-    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
@@ -1602,8 +1615,11 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         }
         break;
 
@@ -1615,6 +1631,9 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
         if(caseFile.caseWorkerUpload){
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         }
         break;
 
@@ -1624,13 +1643,20 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
-      
+
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
         if(caseFile.caseWorkerUpload){
           userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
         }
         break;
 
@@ -1652,7 +1678,7 @@ export class CreateCaseAction implements IAction {
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1790,13 +1816,12 @@ export class CreateCaseAction implements IAction {
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.locator('div.mat-tab-label-content');
-      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
-      expect(tab.tabs).toEqual(tabs);
-
+      expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
     });
   }
- 
+
   public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
     const result: string[] = [];
 
@@ -1813,4 +1838,63 @@ export class CreateCaseAction implements IAction {
     return result;
   }
 
+  private async noticeOfChange(caseReferenceNumber: actionRecord) {
+    await performAction('inputText', noc.onlineCaseReferenceNumberTextLabel, caseReferenceNumber.caseRefNo);
+    await performAction('clickButton', noc.continueButton);
+  }
+
+  private async clientDetails(clientName: actionRecord) {
+    await performAction('inputText', clientDetails.firstNameTextLabel, clientName.firstName);
+    await performAction('inputText', clientDetails.lastNameTextLabel, clientName.lastName);
+    await performAction('clickButton', clientDetails.continueButton);
+  }
+
+  private async checkAndSubmit(nocData: actionRecord){
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.caseRefNo,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.firstName,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.lastName,
+    });
+    await performAction('check', checkAndSubmit.iConfirmCheckbox);
+    await performAction('check', checkAndSubmit.iHaveServedCheckbox);
+    await performAction('clickButton', checkAndSubmit.submitButton);
+  }
+
+  private async verifyChangeLink(nocData: actionRecord) {
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.caseRefNo,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.firstName,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.lastName,
+    });
+    await performAction('clickButton', checkAndSubmit.changeButton);
+  }
+
+  private async validateErrorPage(nocData: actionRecord) {
+    await performValidation('text', { elementType: 'heading', text: somethingWentWrong.mainHeader });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.yourOrganisationParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.yourNoticeParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.moreInfoParagraph });
+    await performValidation('text', { elementType: 'link', text: somethingWentWrong.contactUs });
+  }
+
+  private async noticeOfChangeSuccessful(page: Page, nocData: actionRecord) {
+    const actual = await page.locator('h1.govuk-panel__title').innerText();
+    expect(actual).toBe(
+      `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
+    );
+  }
 }

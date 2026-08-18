@@ -11,9 +11,15 @@ export default {
   'enterGenAppconsentAndNotice': 'enterGenAppconsentAndNotice',
   'caseworkerUploadDocumentsuploadADocument': 'uploadADocument',
   'caseworkerUploadDocuments/confirm' : 'confirmUpload',
+  'amendDocuments/confirm': 'confirmAmend',
+  'amendDocumentsamendDocumentDetails': 'amendDocumentDetails',
   'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+  'manageHearingmanageHearing': 'manageHearing',
+  'manageHearingaddHearing': 'addHearing',
+  'manageHearing/submit': 'checkYourAnswersManageHearing',
+  'manageHearing/confirm': 'confirmHearing',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
-  'enterGenApp/confirm': 'enterGenAppConfirmation'
+  'enterGenApp/confirm': 'enterGenAppConfirmation',
 };

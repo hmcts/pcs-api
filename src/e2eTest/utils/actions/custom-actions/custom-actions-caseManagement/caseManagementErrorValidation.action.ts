@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
+  addHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication
@@ -21,6 +22,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+      ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -34,14 +36,14 @@ export class ErrorValidationAction implements IAction {
         validationType: selectDocument.errorValidationType.four,
         inputArray: selectDocument.errorValidationField.errorDropDown,
         dropQn: selectDocument.whichFolderQuestion,
-        option: selectDocument.docFolderHiddenOption,
+        option: (selectDocument.docFolderHiddenOption)[0],
         button: selectDocument.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: selectDocument.errorValidationType.two,
         inputArray: selectDocument.errorValidationField.errorRadioOption,
         question: selectDocument.documentToAmendHiddenQuestion,
-        option: selectDocument.typeOfDocumentHiddenRadioOption,
+        option: (selectDocument.typeOfDocumentHiddenRadioOption)[0],
         button: selectDocument.continueButton
       });
     }
@@ -248,6 +250,54 @@ export class ErrorValidationAction implements IAction {
         question: enterGenAppConsentAndNotice.hasApplicantMadeWithoutNoticeHiddenQuestion,
         option: enterGenAppConsentAndNotice.noHiddenRadioOption,
         button: enterGenAppConsentAndNotice.continueButton
+      });
+    }
+  };
+
+  private async errorValidationEnterAddAHearingPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption1,
+        question: addHearing.typeOfHearingQuestion,
+        option:  addHearing.typeOfHearingOption[0],
+        button: addHearing.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.four,
+        inputArray: addHearing.errorValidationField.errorDropDown,
+        dropQn: addHearing.wordingForHearingNoticeTextLabel,
+        option: addHearing.wordingForHearingHiddenOption,
+        button: addHearing.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.five,
+        inputArray: addHearing.errorValidationField.errorDateField,
+        header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: addHearing.thereIsProbErrorMessageHeader,
+        question: addHearing.whenIsTheHearingQuestion,
+        label1: addHearing.dayTextLabel,
+        label2: addHearing.monthTextLabel,
+        label3: addHearing.yearTextLabel,
+        button: addHearing.continueButton
+      });
+      
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption2,
+        question: addHearing.hearingNoticeQuestion,
+        option:  addHearing.hearingNoticeNoRadioOption,
+        button: addHearing.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.seven,
+        inputArray: addHearing.errorValidationField.errorMoneyField,
+        // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addHearing.hourTextLabel,
+        labelMulti :addHearing.minutesTextLabel,
+        button: addHearing.continueButton
       });
     }
   }
