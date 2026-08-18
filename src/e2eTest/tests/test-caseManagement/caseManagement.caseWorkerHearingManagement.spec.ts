@@ -75,5 +75,3 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 });
-
-
