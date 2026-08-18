@@ -18,17 +18,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.math.BigDecimal;
@@ -50,8 +49,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
 
-    @Mock
-    private PcsCaseService pcsCaseService;
     @Mock
     private ClaimResponseService claimResponseService;
     @Mock
@@ -76,7 +73,6 @@ class RespondPossessionClaimSubmitServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new RespondPossessionClaimSubmitService(
-            pcsCaseService,
             claimResponseService,
             defendantResponseService,
             counterClaimService,
@@ -86,14 +82,6 @@ class RespondPossessionClaimSubmitServiceTest {
             taskDescriptionService,
             camundaService
         );
-    }
-
-    private ClaimEntity stubMainClaim() {
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
-        return mainClaim;
     }
 
     @Test
@@ -153,6 +141,8 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(false);
+        FeeDetails expectedFeeDetails = mock(FeeDetails.class);
+        when(counterClaimFeeCalculator.getFeeDetails(counterClaim)).thenReturn(expectedFeeDetails);
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -160,6 +150,7 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isTrue();
+        assertThat(result.feeDetails()).isEqualTo(expectedFeeDetails);
         verify(camundaService, never())
             .createTask(eq(CASE_REFERENCE), eq(TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM), any());
     }
@@ -188,6 +179,8 @@ class RespondPossessionClaimSubmitServiceTest {
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(false);
+        FeeDetails expectedFeeDetails = mock(FeeDetails.class);
+        when(counterClaimFeeCalculator.getFeeDetails(counterClaim)).thenReturn(expectedFeeDetails);
 
         RespondPossessionClaimSubmitPersistenceResult result =
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -196,6 +189,7 @@ class RespondPossessionClaimSubmitServiceTest {
             CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isTrue();
+        assertThat(result.feeDetails()).isEqualTo(expectedFeeDetails);
     }
 
     @ParameterizedTest
@@ -231,7 +225,10 @@ class RespondPossessionClaimSubmitServiceTest {
             .thenReturn(defendantResponseEntity);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
+
+        FeeDetails feeDetails = FeeDetails.builder().build();
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
+        when(counterClaimFeeCalculator.getFeeDetails(counterClaim)).thenReturn(feeDetails);
 
         List<DocumentEntity> counterClaimDocumentEntities = List.of(mock(DocumentEntity.class));
         when(documentService.createCounterClaimUploadedDocuments(
@@ -242,16 +239,9 @@ class RespondPossessionClaimSubmitServiceTest {
         )).thenReturn(counterClaimDocumentEntities);
 
         String expectedDescription = "some description";
-        ClaimEntity mainClaim = stubMainClaim();
         when(taskDescriptionService
-                 .createReviewResponseAndCounterClaimDescription(
-                     CASE_REFERENCE,
-                     mainClaim,
-                     defendantResponseEntity,
-                     counterClaimDocumentEntities
-                 ))
+                 .createReviewResponseAndCounterClaimDescription(CASE_REFERENCE, savedCounterClaim, feeDetails))
             .thenReturn(expectedDescription);
-
 
         // When
         RespondPossessionClaimSubmitPersistenceResult result =
@@ -262,6 +252,7 @@ class RespondPossessionClaimSubmitServiceTest {
         assertThat(result.counterClaimEntity().getStatus())
             .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(result.paymentRequired()).isFalse();
+        assertThat(result.feeDetails()).isEqualTo(feeDetails);
         verify(camundaService)
             .createTask(CASE_REFERENCE, TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM, expectedDescription);
     }

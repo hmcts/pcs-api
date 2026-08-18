@@ -1,15 +1,20 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -17,9 +22,18 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@ExtendWith(MockitoExtension.class)
 class CounterClaimFeeCalculatorTest {
 
-    private final CounterClaimFeeCalculator underTest = new CounterClaimFeeCalculator();
+    @Mock
+    private FeeService feeService;
+
+    private CounterClaimFeeCalculator underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new CounterClaimFeeCalculator(feeService);
+    }
 
     @Test
     void shouldUseFlatFeeWhenClaimTypeIsSomethingElse() {

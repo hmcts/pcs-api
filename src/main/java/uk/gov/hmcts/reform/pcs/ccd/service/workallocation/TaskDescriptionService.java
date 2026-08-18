@@ -8,20 +8,20 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.OUTPUT_FILENAME_PREFIX;
 
 @Service
 @RequiredArgsConstructor
@@ -81,22 +81,18 @@ public class TaskDescriptionService {
     }
 
     public String createReviewResponseAndCounterClaimDescription(long caseReference,
-                                                                 ClaimEntity mainClaim,
-                                                                 DefendantResponseEntity defendantResponseEntity,
-                                                                 List<DocumentEntity> counterClaimDocumentEntities) {
+                                                                 CounterClaimEntity counterClaimEntity,
+                                                                 FeeDetails feeDetails) {
 
-        String partyLabel = partyService.getPartyLabel(mainClaim, defendantResponseEntity.getParty().getId());
+        String partyLabel = getPartyLabel(counterClaimEntity.getParty(), caseReference);
 
-        String responseSubmissionFilename = OUTPUT_FILENAME_PREFIX + " - " + partyLabel + ".pdf";
-        List<String> responseDocumentFilenames = extractFilenames(defendantResponseEntity.getUploadedDocuments());
-        List<String> counterClaimDocumentFilenames = extractFilenames(counterClaimDocumentEntities);
+        String hwfReference = counterClaimEntity.getHwfReferenceNumber();
+        BigDecimal feeAmount = feeDetails.getFeeAmount();
 
         Map<String, Object> context = Map.of(
-            "caseReference", caseReference,
             "partyLabel", partyLabel,
-            "responseSubmissionFilename", responseSubmissionFilename,
-            "responseDocumentFilenames", responseDocumentFilenames,
-            "counterClaimDocumentFilenames", counterClaimDocumentFilenames
+            "hwfReference", hwfReference,
+            "feeAmount", feeAmount
         );
 
         String templateName = "review-response-and-counterclaim";

@@ -107,6 +107,7 @@ class LegalRepSubmissionEventStrategyTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
+                null,
                 false
             );
 

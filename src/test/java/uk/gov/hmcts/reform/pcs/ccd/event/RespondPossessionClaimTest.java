@@ -184,9 +184,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
         );
 
-        CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator();
+        CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator(feeService);
         RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
-            pcsCaseService,
             claimResponseService,
             defendantResponseService,
             counterClaimService,
@@ -199,9 +198,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
             partyService,
-            feeService,
             paymentService,
-            feeCalculator,
             objectMapper
         );
 

@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -28,10 +31,12 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +55,8 @@ class CounterClaimServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private CounterClaimRepository counterClaimRepository;
+    @Mock
+    private CounterClaimFeeCalculator counterClaimFeeCalculator;
 
     @Mock
     private PartyEntity partyEntity;
@@ -69,14 +76,14 @@ class CounterClaimServiceTest {
             partyRepository,
             claimRepository,
             counterClaimRepository,
+            counterClaimFeeCalculator,
             FIXED_UTC_CLOCK
         );
     }
 
     @Test
     void shouldSaveCounterClaimWithAllFields() {
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubClaimRepository();
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
         when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenAnswer(invocation -> {
             CounterClaimEntity entity = invocation.getArgument(0);
@@ -104,6 +111,36 @@ class CounterClaimServiceTest {
         assertThat(captured.getParty()).isEqualTo(partyEntity);
         assertThat(captured.getPcsCase()).isEqualTo(pcsCaseEntity);
     }
+
+    @ParameterizedTest
+    @MethodSource("hwfStateScenarios")
+    void shouldSetStateToPendingReviewWhenHwFReferenceProvided(boolean hwfReferenceProvided,
+                                                                CounterClaimState expectedState) {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(hwfReferenceProvided);
+
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        CounterClaimEntity savedCounterClaimEntity = counterClaimCaptor.getValue();
+
+        assertThat(savedCounterClaimEntity.getStatus()).isEqualTo(expectedState);
+    }
+
+    private static Stream<Arguments> hwfStateScenarios() {
+        return Stream.of(
+            Arguments.argumentSet("HwF reference provided", true, CounterClaimState.PENDING_REVIEW),
+            Arguments.argumentSet("HwF reference not provided", false, CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+        );
+    }
+
 
     @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
@@ -176,13 +213,17 @@ class CounterClaimServiceTest {
     }
 
     private void stubSaveDependencies() {
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubClaimRepository();
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
         when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenAnswer(invocation -> {
             CounterClaimEntity entity = invocation.getArgument(0);
             entity.setId(COUNTER_CLAIM_ID);
             return entity;
         });
+    }
+
+    private void stubClaimRepository() {
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
     }
 }
