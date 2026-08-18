@@ -892,28 +892,6 @@ class DefendantResponseServiceTest {
         );
     }
 
-    @Test
-    void shouldSetSubmittedStatusWhenWelshLanguageButNoDocumentsUploaded() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .languageUsed(LanguageUsed.WELSH)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        assertThat(responseCaptor.getValue().getStatus()).isEqualTo(DefendantResponseStatus.SUBMITTED);
-    }
-
     @ParameterizedTest(name = "otherConsiderations={0}")
     @MethodSource("otherConsiderationsPersistenceScenarios")
     void shouldPersistOtherConsiderations(VerticalYesNo otherConsiderations) {

@@ -386,7 +386,7 @@ class RespondPossessionClaimSubmitServiceTest {
     }
 
     @Test
-    void shouldExcludeCounterClaimDocumentsFromTranslationTask() {
+    void shouldExcludeCounterClaimDocumentsFromResponseTranslationTask() {
         JourneyType journeyType = JourneyType.CITIZEN;
 
         ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();

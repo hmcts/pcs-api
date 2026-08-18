@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -23,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
@@ -184,20 +181,13 @@ class DefencePackSelectorTest {
         return DocumentEntity.builder()
             .id(UUID.randomUUID())
             .type(DocumentType.DEFENDANT_RESPONSE)
-            .defendantResponse(DefendantResponseEntity.builder()
-                .party(owner)
-                .status(DefendantResponseStatus.SUBMITTED)
-                .build())
+            .defendantResponse(DefendantResponseEntity.builder().party(owner).build())
             .build();
     }
 
     private DocumentEntity counterClaim(PartyEntity owner) {
         return DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(DocumentType.COUNTERCLAIM)
-            .party(owner)
-            .counterClaim(CounterClaimEntity.builder().status(CounterClaimState.COUNTER_CLAIM_ISSUED).build())
-            .build();
+            .id(UUID.randomUUID()).type(DocumentType.COUNTERCLAIM).party(owner).build();
     }
 
     private PartyEntity party() {
