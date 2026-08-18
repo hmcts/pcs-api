@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -97,6 +99,7 @@ class GenAppWaTaskServiceTest {
             .build();
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
@@ -136,7 +139,7 @@ class GenAppWaTaskServiceTest {
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
-        verifyNoInteractions(translationWAService);
+        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
     @Test
@@ -152,6 +155,7 @@ class GenAppWaTaskServiceTest {
             .build();
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
+        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);

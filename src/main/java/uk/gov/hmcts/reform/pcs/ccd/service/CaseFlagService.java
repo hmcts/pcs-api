@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
@@ -257,6 +258,11 @@ public class CaseFlagService {
     }
 
     private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
+        if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
+            || document.getType() == DocumentType.COUNTERCLAIM) {
+            return false;
+        }
+
         CounterClaimEntity counterClaim = document.getCounterClaim();
         if (counterClaim != null
             && counterClaim.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {

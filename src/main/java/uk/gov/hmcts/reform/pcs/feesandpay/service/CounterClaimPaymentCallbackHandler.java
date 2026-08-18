@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -146,8 +145,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             return List.of();
         }
 
-        LanguageUsed languageUsed = defendantResponse.getLanguageUsed();
-        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+        if (!translationWAService.isTranslationRequired(defendantResponse.getLanguageUsed())) {
             return List.of();
         }
 

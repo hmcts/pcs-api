@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PreIssueChecklistCode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -100,8 +99,7 @@ public class RespondPossessionClaimSubmitService {
     private void createTranslationTaskForResponse(DefendantResponseEntity savedResponse,
                                                   PartyEntity defendantParty) {
 
-        LanguageUsed languageUsed = savedResponse.getLanguageUsed();
-        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+        if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
             return;
         }
 
@@ -133,8 +131,7 @@ public class RespondPossessionClaimSubmitService {
                                                        DefendantResponseEntity savedResponse,
                                                        PartyEntity defendantParty) {
 
-        LanguageUsed languageUsed = savedResponse.getLanguageUsed();
-        if (languageUsed != LanguageUsed.WELSH && languageUsed != LanguageUsed.ENGLISH_AND_WELSH) {
+        if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
             return;
         }
 
@@ -152,8 +149,8 @@ public class RespondPossessionClaimSubmitService {
             .counterClaim(counterClaimEntity)
             .build());
 
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(defendantParty.getPcsCase(), defendantParty,
-                                                                           documents);
+        PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
 }

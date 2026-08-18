@@ -267,6 +267,7 @@ class RespondPossessionClaimSubmitServiceTest {
             defendantResponses.getCounterClaimDocuments(), savedCounterClaim, pcsCaseEntity, partyEntity))
             .thenReturn(List.of(counterClaimDocument));
         when(counterClaimFeeCalculator.isPaymentRequired(counterClaim)).thenReturn(false);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
@@ -340,7 +341,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
-        verifyNoInteractions(translationWAService);
+        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
     @Test
@@ -383,6 +384,7 @@ class RespondPossessionClaimSubmitServiceTest {
             CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
             .thenReturn(savedResponse);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
+        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
@@ -430,6 +432,7 @@ class RespondPossessionClaimSubmitServiceTest {
             .thenReturn(savedResponse);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
@@ -461,6 +464,7 @@ class RespondPossessionClaimSubmitServiceTest {
             CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
             .thenReturn(savedResponse);
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).thenReturn(Optional.empty());
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
