@@ -642,6 +642,21 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldPatchReviewedSupportFlags() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder()
+            .supportReviewFlags(new ArrayList<>())
+            .build();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService).applyReviewedSupportFlags(any(), any());
+    }
+
+    @Test
     void shouldHandleNoFlagsWhenCallingPatchReviewedSupportFlags() {
         // Given
         stubFindCase();
