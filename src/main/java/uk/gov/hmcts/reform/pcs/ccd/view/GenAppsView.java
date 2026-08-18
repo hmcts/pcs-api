@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -28,8 +27,6 @@ import java.util.stream.Stream;
 @Component
 @AllArgsConstructor
 public class GenAppsView {
-
-    private static final String FILENAME_REFERENCE_PREFIX = "filename:";
 
     private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
@@ -135,13 +132,8 @@ public class GenAppsView {
         String documentEntityId = Optional.ofNullable(documentEntity.getId())
             .map(UUID::toString)
             .orElse(null);
-        String filename = Optional.ofNullable(documentEntity.getFileName())
-            .map(String::trim)
-            .filter(fileName -> !fileName.isEmpty())
-            .map(fileName -> FILENAME_REFERENCE_PREFIX + fileName.toLowerCase(Locale.ROOT))
-            .orElse(null);
 
-        return Stream.of(documentEntityId, documentEntity.getUrl(), documentEntity.getBinaryUrl(), filename)
+        return Stream.of(documentEntityId, documentEntity.getUrl(), documentEntity.getBinaryUrl())
             .filter(Objects::nonNull);
     }
 

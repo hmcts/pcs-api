@@ -312,7 +312,7 @@ class GenAppsViewTest {
     }
 
     @Test
-    void shouldNotDuplicateSupportingDocumentsWithSameFilenameInGenAppSupportingDocuments() {
+    void shouldKeepSupportingDocumentsWithSameFilenameAndDifferentDocumentReferences() {
         // Given
         LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
@@ -348,10 +348,12 @@ class GenAppsViewTest {
             .getValue()
             .getSupportingDocuments();
 
-        assertThat(actualSupportingDocuments).hasSize(1);
+        assertThat(actualSupportingDocuments).hasSize(2);
         assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
         assertThat(actualSupportingDocuments.getFirst().getValue().getFilename())
             .isEqualTo("genApps GA1 - Defendant 1.docx");
+        assertThat(actualSupportingDocuments.get(1).getValue().getFilename())
+            .isEqualTo(" GENAPPS GA1 - DEFENDANT 1.DOCX ");
     }
 
     private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
