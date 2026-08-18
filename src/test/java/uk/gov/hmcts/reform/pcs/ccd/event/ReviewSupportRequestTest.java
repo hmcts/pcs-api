@@ -131,6 +131,12 @@ class ReviewSupportRequestTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR)).isEmpty();
     }
 
+    @Test
+    void shouldNotAllowJudicialUsersToUpdateFlags() {
+        assertThat(configuredEvent.getGrants().get(UserRole.JUDGE))
+            .containsExactly(Permission.R);
+    }
+
     private List<ListValue<FlagDetail>> createMixedStatusFlagDetails() {
 
         return List.of(
