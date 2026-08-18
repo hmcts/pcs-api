@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -20,7 +21,9 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -31,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -50,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -360,7 +365,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
@@ -580,6 +585,9 @@ public class PCSCase {
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 
+    @JsonUnwrapped
+    private LegalRepDocumentUploadDetails legalRepDocumentUploadDetails;
+
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;
 
@@ -704,25 +712,25 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class, CaseLinkingAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class, WAAccess.class}
     )
     private String caseNameHmctsInternal;
 
     @CCD(
         label = "CaseNamePublic",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private String caseNamePublic;
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class, RasValidationAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class, WAAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
     @CCD(
         label = "CaseManagementCategory",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
 
@@ -809,6 +817,11 @@ public class PCSCase {
     )
     private Document uploadSingleDocument;
 
+
+
+    @CCD(access = {AcaSystemUserAccess.class})
+    private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
+
     /**
      * The legal representative for a defendant on the case.
      */
@@ -818,3 +831,4 @@ public class PCSCase {
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
 }
+

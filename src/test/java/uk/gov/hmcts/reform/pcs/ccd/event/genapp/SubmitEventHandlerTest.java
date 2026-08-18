@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
@@ -88,7 +88,7 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppFeeCalculator genAppFeeCalculator;
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private OrganisationRepository organisationRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
     @Mock
@@ -97,6 +97,8 @@ class SubmitEventHandlerTest {
     private NotificationService notificationService;
     @Mock
     private SchedulerClient schedulerClient;
+    @Mock
+    private GenAppWaTaskService genAppWaTaskService;
     @Mock
     private ObjectMapper objectMapper;
     @Mock
@@ -112,9 +114,9 @@ class SubmitEventHandlerTest {
 
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
-                                           legalRepresentativeOrganisationRepository, confirmationScreenFactory,
-                                           paymentService, schedulerClient, notificationService, objectMapper,
-                                           organisationService
+                                           organisationRepository, confirmationScreenFactory,
+                                           paymentService, schedulerClient, notificationService,
+                                           genAppWaTaskService, objectMapper, organisationService
         );
     }
 
@@ -211,8 +213,10 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getResponsiblePartyName()).isEqualTo(CURRENT_USER_FULL_NAME);
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
+                verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
+                verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
             }
         }
 
@@ -268,8 +272,8 @@ class SubmitEventHandlerTest {
             String organisationId = "Org";
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-            when(legalRepresentativeOrganisationRepository
-                     .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
                 .thenReturn(false);
 
             // When
@@ -284,8 +288,8 @@ class SubmitEventHandlerTest {
             String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
-            when(legalRepresentativeOrganisationRepository
-                     .isRepresentativeOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
                 .thenReturn(true);
         }
 
@@ -332,6 +336,7 @@ class SubmitEventHandlerTest {
             verify(genAppService)
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
         }
 
         @Test

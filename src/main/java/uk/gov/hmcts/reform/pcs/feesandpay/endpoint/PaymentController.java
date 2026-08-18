@@ -123,7 +123,7 @@ public class PaymentController {
                     value = """
                     {
                         "amount": 300.99,
-                        "accountNumber": "PBA123",
+                        "pbaAccount": "PBA123",
                         "customerReference": "abc"
                     }
                     """

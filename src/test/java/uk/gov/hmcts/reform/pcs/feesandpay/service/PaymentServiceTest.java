@@ -114,6 +114,8 @@ class PaymentServiceTest {
     private ArgumentCaptor<CreateServiceRequestDTO> createServiceRequestCaptor;
     @Captor
     private ArgumentCaptor<CardPaymentServiceRequestDTO> cardPaymentRequestCaptor;
+    @Captor
+    private ArgumentCaptor<PBAServiceRequestDTO> pbaPaymentRequestCaptor;
 
     @InjectMocks
     private PaymentService underTest;
@@ -617,7 +619,13 @@ class PaymentServiceTest {
             verify(organisationDetailsService).getOrganisationName(uid);
             verify(paymentsClient).createPbaPayment(eq(serviceRequestReference),
                                                                   eq(SYSTEM_TOKEN),
-                                                                  any(PBAServiceRequestDTO.class));
+                                                                  pbaPaymentRequestCaptor.capture());
+            PBAServiceRequestDTO capturedPaymentRequest = pbaPaymentRequestCaptor.getValue();
+            assertThat(capturedPaymentRequest.getAccountNumber()).isEqualTo(pbaPaymentRequest.getPbaAccount());
+            assertThat(capturedPaymentRequest.getAmount()).isEqualTo(pbaPaymentRequest.getAmount());
+            assertThat(capturedPaymentRequest.getCustomerReference())
+                .isEqualTo(pbaPaymentRequest.getCustomerReference());
+            assertThat(capturedPaymentRequest.getIdempotencyKey()).isEqualTo(serviceRequestReference);
             assertThat(response.getPaymentReference()).isEqualTo(paymentReference);
             assertThat(response.getStatus()).isEqualTo(status);
             assertThat(response.getDateCreated()).isEqualTo(dateCreated);
@@ -651,6 +659,9 @@ class PaymentServiceTest {
             // Then
             verify(organisationDetailsService, never()).getOrganisationName(anyString());
             assertThat(throwable).isInstanceOf(IllegalStateException.class);
+            assertThat(throwable).hasMessage(
+                "Service request " + serviceRequestReference + " already has a completed status"
+            );
         }
 
         @Test

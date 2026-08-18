@@ -39,7 +39,6 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -180,7 +179,7 @@ public class PaymentService {
             .accountNumber(pbaPaymentRequest.getPbaAccount())
             .amount(pbaPaymentRequest.getAmount())
             .customerReference(pbaPaymentRequest.getCustomerReference())
-            .idempotencyKey(UUID.randomUUID().toString())
+            .idempotencyKey(serviceRequestReference)
             .organisationName(organisationName)
             .build();
 
@@ -278,7 +277,8 @@ public class PaymentService {
 
     private void verifyNotPaidFee(PaymentStatus paymentStatus, String serviceRequestReference) {
         if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.PARTIALLY_PAID) {
-            throw new IllegalStateException("Service request " + serviceRequestReference);
+            throw new IllegalStateException("Service request " + serviceRequestReference
+                                                + " already has a completed status");
 
         }
     }

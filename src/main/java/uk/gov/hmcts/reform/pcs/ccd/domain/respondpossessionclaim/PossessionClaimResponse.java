@@ -53,6 +53,9 @@ public class PossessionClaimResponse {
     @CCD(access = {DefendantAccess.class})
     private String currentDefendantPartyId;
 
+    @CCD(access = {DefendantAccess.class})
+    private String responseDocumentId;
+
     @CCD(access = {CitizenAccess.class}, label = "Date issued")
     private LocalDate claimIssuedDate;
 
