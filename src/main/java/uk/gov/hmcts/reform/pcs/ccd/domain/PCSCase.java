@@ -141,7 +141,6 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        label = "",
         access = {DefendantAccess.class}
     )
     @External
