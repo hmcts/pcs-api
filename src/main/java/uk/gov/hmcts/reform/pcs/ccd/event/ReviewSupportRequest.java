@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.SupportReviewService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SupportReviewRoles.SUPPORT_REVIEW_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
@@ -38,8 +37,7 @@ public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole>
                             .description("To review requested support")
                             .showSummary()
                             .endButtonLabel("Submit")
-                            .grant(Permission.CRU, SUPPORT_REVIEW_ROLES)
-                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
+                            .grant(Permission.CRU, SUPPORT_REVIEW_ROLES))
             .page("caseworkerCaseFlag")
             .pageLabel("Review support request")
             .label("caseworkerCaseFlag-lineSeparator", "---")
