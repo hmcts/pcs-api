@@ -39,6 +39,7 @@ import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generat
 
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -126,11 +127,14 @@ public class ResponseCreationService extends CftlibTest {
             .defendantNameConfirmation(VerticalYesNo.YES)
             .correspondenceAddressConfirmation(VerticalYesNo.YES)
             .contactByEmail(VerticalYesNo.YES)
-            .contactByPhone(VerticalYesNo.NO)
+            .contactByPhone(VerticalYesNo.YES)
+            .contactByPost(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.YES)
 
             .exemptLandlord(YesNoNotSure.NOT_SURE)
             .writtenTerms(YesNoNotSure.NOT_SURE)
-            .tenancyTypeConfirmation(YesNoNotSure.NOT_SURE)
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
+            .tenancyStartDate(LocalDate.of(2026, 1, 1))
             .disputeClaim(VerticalYesNo.NO)
             .makeCounterClaim(VerticalYesNo.NO)
 

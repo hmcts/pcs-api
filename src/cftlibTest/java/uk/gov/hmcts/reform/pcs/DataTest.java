@@ -161,7 +161,6 @@ public class DataTest extends CftlibTest {
     }
 
     // pcs_case table validation
-
     @Test
     @DisplayName("validate public.pcs_case - schema, completeness, and data quality rules")
     void validatePcsCaseTable() {
@@ -231,7 +230,6 @@ public class DataTest extends CftlibTest {
     }
 
     // address table validation
-
     @Test
     @DisplayName("validate public.address - schema, completeness and data value rules")
     void validateAddressTable() {
@@ -278,7 +276,6 @@ public class DataTest extends CftlibTest {
     }
 
     // tenancy_licence table validation
-
     @Test
     @DisplayName("validate public.tenancy_licence - schema, completeness, and relationship rules")
     void validateTenancyLicenceTable() {
@@ -319,7 +316,6 @@ public class DataTest extends CftlibTest {
     }
 
     // claim table validation
-
     @Test
     @DisplayName("validate public.claim - schema, flags, and relationship rules")
     void validateClaimTable() {
@@ -362,7 +358,6 @@ public class DataTest extends CftlibTest {
     }
 
     // party table validation
-
     @Test
     @DisplayName("validate public.party - schema, names, and relationship rules")
     void validatePartyTable() {
@@ -414,8 +409,7 @@ public class DataTest extends CftlibTest {
         );
     }
 
-    // document table validation
-
+    // document table validation - add type
     @Test
     @DisplayName("validate public.document - schema, URLs, and relationship rules")
     void validateDocumentTable() {
@@ -619,6 +613,14 @@ public class DataTest extends CftlibTest {
                                                    () -> assertEquals(1, validNoticeOfPossession, msgValidNotice)
         );
     }
+
+    // defendant_response table validation
+
+    // general_application table validation
+
+    // regular_income table validation
+
+    // contact_preferences validation
 
     // helper
 
