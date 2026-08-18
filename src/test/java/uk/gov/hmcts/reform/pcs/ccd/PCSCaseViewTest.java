@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -131,6 +132,8 @@ class PCSCaseViewTest {
     private DefendantResponseView defendantResponseView;
     @Mock
     private FeatureFlagView featureFlagView;
+    @Mock
+    private HearingView hearingView;
 
     private PCSCaseView underTest;
 
@@ -146,7 +149,7 @@ class PCSCaseViewTest {
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    defendantResponseView, featureFlagView
+                                    defendantResponseView, featureFlagView, hearingView
         );
     }
 
@@ -321,6 +324,7 @@ class PCSCaseViewTest {
         verify(caseListView).setCaseFields(pcsCase);
         verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(featureFlagView).setCaseFields(pcsCase);
+        verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     @Test
