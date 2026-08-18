@@ -1,20 +1,21 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -25,21 +26,42 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
+import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class LegalRepresentativePartyLinkService {
 
     private final PcsCaseService pcsCaseService;
-    private final LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private final OrganisationRepository organisationRepository;
+    private final ClaimPartyContactDetailsRepository legalRepOrganisationContactDetailsRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final RevokeAccessHelper revokeAccessHelper;
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final Clock utcClock;
+
+    public LegalRepresentativePartyLinkService(PcsCaseService pcsCaseService,
+                                               OrganisationRepository
+                                                   organisationRepository,
+                                               ClaimPartyContactDetailsRepository
+                                                   legalRepOrganisationContactDetailsRepository,
+                                               OrganisationDetailsService organisationDetailsService,
+                                               AddressMapper addressMapper,
+                                               CaseRoleAssignmentService caseRoleAssignmentService,
+                                               @Qualifier("utcClock") Clock utcClock) {
+        this.pcsCaseService = pcsCaseService;
+        this.organisationRepository = organisationRepository;
+        this.legalRepOrganisationContactDetailsRepository = legalRepOrganisationContactDetailsRepository;
+        this.organisationDetailsService = organisationDetailsService;
+        this.addressMapper = addressMapper;
+        this.caseRoleAssignmentService = caseRoleAssignmentService;
+        this.utcClock = utcClock;
+    }
 
     // TODO: Retrieve actual organisation profile id from group access
     private static final String ORG_PROFILE_ID = "SOLICITOR_PROFILE";
@@ -60,16 +82,31 @@ public class LegalRepresentativePartyLinkService {
 
         unlinkExistingRepresentation(caseEntity, defendantPartyEntity, user);
 
-        Optional<LegalRepresentativeOrganisationEntity> legalRepresentativeOrganisationEntity =
-            findExistingRepresentativeOrganisation(organisationId, caseReference);
+        Optional<OrganisationEntity> legalRepresentativeOrganisationEntity =
+            findExistingRepresentativeOrganisation(organisationId);
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation;
+        OrganisationEntity legalRepresentativeOrganisation;
 
         if (legalRepresentativeOrganisationEntity.isPresent()) {
 
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
 
             backfillOrganisationMetadata(legalRepresentativeOrganisation, organisationDetails);
+
+            Optional<ClaimPartyContactDetailsEntity> existingContactDetails =
+                legalRepOrganisationContactDetailsRepository
+                    .findByOrganisationIdAndCaseReference(organisationId, caseReference);
+
+            if (existingContactDetails.isEmpty()) {
+                ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+                    buildLegalRepresentativeOrganisationContactDetails(caseEntity, legalRepresentativeOrganisation,
+                                                                       organisationDetails);
+
+                legalRepresentativeOrganisation
+                    .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
+
+            }
+
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(
                 organisationId,
@@ -79,7 +116,7 @@ public class LegalRepresentativePartyLinkService {
 
         legalRepresentativeOrganisation.addParty(defendantPartyEntity);
 
-        legalRepresentativeOrganisationRepository.save(legalRepresentativeOrganisation);
+        organisationRepository.save(legalRepresentativeOrganisation);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
     }
 
@@ -95,27 +132,23 @@ public class LegalRepresentativePartyLinkService {
         );
     }
 
-    private LegalRepresentativeOrganisationEntity createNewLegalRepresentative(String id,
-                                                                               OrganisationDetailsResponse orgDetails,
-                                                                               PcsCaseEntity pcsCase) {
+    private OrganisationEntity createNewLegalRepresentative(String id,
+                                                            OrganisationDetailsResponse orgDetails,
+                                                            PcsCaseEntity pcsCase) {
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
+        OrganisationEntity legalRepresentativeOrganisation = OrganisationEntity
             .builder()
             .organisationId(id)
             .organisationName(orgDetails.getName())
             .organisationProfileId(ORG_PROFILE_ID)
+            .createdDate(LocalDateTime.now(utcClock))
             .build();
 
-        LegalRepresentativeOrganisationContactDetailsEntity legalRepresentativeOrganisationContactDetails =
-            LegalRepresentativeOrganisationContactDetailsEntity.builder()
-                .pcsCase(pcsCase)
-                .legalRepresentativeOrganisation(legalRepresentativeOrganisation)
-                .address(addressMapper.toAddressEntityAndNormalise(
-                    organisationDetailsService.getOrganisationAddress(orgDetails)))
-                .build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            buildLegalRepresentativeOrganisationContactDetails(pcsCase, legalRepresentativeOrganisation, orgDetails);
 
         legalRepresentativeOrganisation
-            .setLegalRepresentativeOrganisationContactDetails(legalRepresentativeOrganisationContactDetails);
+            .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
 
         return legalRepresentativeOrganisation;
     }
@@ -123,17 +156,18 @@ public class LegalRepresentativePartyLinkService {
     private boolean isAlreadyLinkedToParty(String partyId, String organisationId) {
         UUID targetPartyId = UUID.fromString(partyId);
 
-        return legalRepresentativeOrganisationRepository
-            .isRepresentativeOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
+        return organisationRepository
+            .isOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
     }
 
-    private Optional<LegalRepresentativeOrganisationEntity> findExistingRepresentativeOrganisation(
-        String organisationId, long caseReference) {
-        return legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(organisationId,
-                                                                                              caseReference);
+    private Optional<OrganisationEntity> findExistingRepresentativeOrganisation(
+        String organisationId) {
+        return organisationRepository.findByOrganisationId(organisationId);
     }
 
-    private void backfillOrganisationMetadata(LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+
+
+    private void backfillOrganisationMetadata(OrganisationEntity legalRepresentativeOrganisation,
                                               OrganisationDetailsResponse organisationDetails) {
         if (legalRepresentativeOrganisation.getOrganisationId() == null) {
             legalRepresentativeOrganisation.setOrganisationId(organisationDetails.getOrganisationIdentifier());
@@ -154,6 +188,30 @@ public class LegalRepresentativePartyLinkService {
                 log.error("Unable to find Party [{}]", partyId);
                 return new PartyNotFoundException("Unable to find Party with Id [" + partyId + "]");
             });
+    }
+
+    private void unlinkExistingRepresentation(UUID partyId) {
+        Optional<OrganisationEntity> partyLinkedToLegalRepresentativeOrganisationAndActive =
+            organisationRepository
+                .findByPartyLinkedToOrganisationAndActive(partyId);
+
+        if (partyLinkedToLegalRepresentativeOrganisationAndActive.isPresent()) {
+            OrganisationEntity existingLegalRepresentativeOrganisation =
+                partyLinkedToLegalRepresentativeOrganisationAndActive.get();
+
+            existingLegalRepresentativeOrganisation.getClaimPartyOrganisationList().stream()
+                .filter(partyLegalRepresentativeOrganisation ->
+                            partyLegalRepresentativeOrganisation.getParty().getId().equals(partyId))
+                .forEach(this::invalidatePartyLegalRepresentativeOrganisation);
+
+            organisationRepository.save(existingLegalRepresentativeOrganisation);
+        }
+    }
+
+    private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyOrganisationEntity
+                                                                    partyLegalRepOrg) {
+        partyLegalRepOrg.setActive(YesOrNo.NO);
+        partyLegalRepOrg.setEndDate(Instant.now());
     }
 
     private void unlinkExistingRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty, UserInfo user) {
@@ -190,6 +248,20 @@ public class LegalRepresentativePartyLinkService {
             throw new ConflictOfInterestException(
                 "Organisation cannot represent both claimant and defendant in the same case");
         }
+    }
+
+    private ClaimPartyContactDetailsEntity buildLegalRepresentativeOrganisationContactDetails(
+        PcsCaseEntity pcsCase,
+        OrganisationEntity legalRepresentativeOrganisation,
+        OrganisationDetailsResponse orgDetails) {
+
+        return
+            ClaimPartyContactDetailsEntity.builder()
+                .pcsCase(pcsCase)
+                .organisation(legalRepresentativeOrganisation)
+                .address(addressMapper.toAddressEntityAndNormalise(
+                    organisationDetailsService.getOrganisationAddress(orgDetails)))
+                .build();
     }
 
 }
