@@ -258,7 +258,7 @@ public class ManageHearingTest extends BaseEventTest {
             PCSCase response = callStartHandler(pcsCase);
 
             // Then
-            assertThat(response.getHearing().getHearingId()).isEqualTo(1002L);
+            assertThat(response.getHearing().getHearingId()).isEqualTo(1002);
         }
 
         @Test
