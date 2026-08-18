@@ -419,9 +419,9 @@ public class NotificationService {
         if (party != null
             && recipient.recipientRole() != null
             && !partyService.canSendEmailNotification(party, recipient.recipientRole())) {
-                log.info("Skipping email notification to user: {}", party.getId());
-                return null;
-            }
+            log.info("Skipping email notification to user: {}", party.getId());
+            return null;
+        }
 
         return scheduleEmailNotification(
             buildRequest(
