@@ -30,7 +30,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
@@ -115,7 +114,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
     await performAction('confirmHearingCancelled');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
-  })
+  });
 
   test('Case management - Case Worker Add a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
