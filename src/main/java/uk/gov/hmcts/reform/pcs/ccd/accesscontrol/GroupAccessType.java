@@ -60,6 +60,9 @@ public enum GroupAccessType implements CCDAccessGroup {
      */
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
+    private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
+
+    private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
     /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
     private final PartyRole partyRole;
@@ -112,31 +115,27 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.caseAssignedRoleField = caseAssignedRoleField;
     }
 
-    private static final Map<Key, GroupAccessType> BY_PROFILE_AND_ROLE = buildIndex();
-
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
     private static Map<Key, GroupAccessType> buildIndex() {
         Map<Key, GroupAccessType> index = new HashMap<>();
         for (GroupAccessType accessType : values()) {
-            if (accessType.partyRole == null) {
-                continue;
-            }
-            GroupAccessType clash = index.put(
-                new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
-            if (clash != null) {
-                throw new IllegalStateException(
-                    "Two access types declared for the same organisation profile and party role: "
-                        + clash + " and " + accessType);
+            if (accessType.partyRole != null) {
+                index.put(new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
             }
         }
         return Map.copyOf(index);
     }
 
-    public static String forProfileAndRole(String organisationProfileId, PartyRole partyRole, String orgId) {
-        return BY_PROFILE_AND_ROLE.get(new Key(organisationProfileId, partyRole))
-            .getCaseAccessGroupIdTemplate()
-            .replace("$ORGID$", orgId);
+    /**
+     * The group ID template for an organisation profile acting in a party role, empty where the
+     * combination has no access type. Keyed lookup, so selection does not depend on the order these
+     * constants are declared in.
+     */
+    public static String caseAccessGroupIdFor(String organisationProfileId,
+                                                        PartyRole partyRole, String organisationId) {
+        return CASE_ACCESS_GROUP_MAP.get(new Key(organisationProfileId, partyRole))
+            .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
     }
 
     /**

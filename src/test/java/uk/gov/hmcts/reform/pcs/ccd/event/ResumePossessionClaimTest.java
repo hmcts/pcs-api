@@ -451,7 +451,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData, orgId);
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test

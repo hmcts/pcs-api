@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -152,7 +151,7 @@ public class LegalRepresentativePartyLinkService {
         }
         if (legalRepOrg.getOrganisationName() == null) {
             legalRepOrg.setOrganisationName(orgDetails.getName());
-            }
+        }
         if (isNull(legalRepOrg.getOrganisationProfileId())) {
             legalRepOrg.setOrganisationProfileId(orgDetails.getOrgProfileId());
         }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -31,11 +32,10 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
-import static java.util.Objects.requireNonNullElseGet;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PartyService {
@@ -46,11 +46,11 @@ public class PartyService {
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
 
-    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
-                                 String organisationIdForCurrentUser) {
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
         String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
-        PartyEntity claimant = findInitialisedClaimant(pcsCaseEntity).orElseGet(PartyEntity::new);
-        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
+        PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
+        populateClaimant(claimant, pcsCase, organisationId, orgProfileId);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -160,33 +160,34 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a case is created with, so CaseAccessGroups derive during the draft phase.
-     * Both organisation values are required: without them the case derives no group, and once CREATOR
-     * is revoked at submit nobody can open it.
+     * The claimant party a shell case is created with, marked as the claim creator so CaseAccessGroups
+     * derive during the draft phase, before there is a claim role to read. Both organisation values are
+     * required: without them the case derives no group, and group access is the only way in, so nobody
+     * could open it.
      */
-    public void initialiseClaimant(PcsCaseEntity pcsCaseEntity, String organisationId,
-                                   String organisationProfileId) {
-        requireNonNullElseGet(organisationId, () -> {
-            throw new IllegalArgumentException("Organisation must be provided to create a case");
-        });
-        requireNonNullElseGet(organisationProfileId, () -> {
-            throw new IllegalArgumentException("Organisation profile ID must be provided to create a case");
-        });
+    public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
+
+        requireNonNull(organisationId, "Organisation must be provided to create a case");
+        if (StringUtils.isBlank(organisationProfileId)) {
+            throw new IllegalArgumentException(
+                "Organisation profile ID must be provided to create a case for organisation " + organisationId);
+        }
         PartyEntity claimantParty = new PartyEntity();
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
+        claimantParty.setClaimCreator(true);
         pcsCaseEntity.addParty(claimantParty);
     }
 
-    /** An organisation with no claim link is the party the case was created with, not a new one. */
-    private Optional<PartyEntity> findInitialisedClaimant(PcsCaseEntity pcsCaseEntity) {
+    private Optional<PartyEntity> findClaimantStub(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getParties().stream()
-            .filter(party -> party.getOrganisationId() != null)
-            .filter(party -> party.getClaimParties().isEmpty())
+            .filter(PartyEntity::isClaimCreator)
             .findFirst();
     }
 
-    private PartyEntity populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
+    private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
                                   String organisationIdForCurrentUser, String orgProfileId) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
@@ -213,16 +214,27 @@ public class PartyService {
             claimantParty.setPhoneNumber(claimantContactPreferences.getClaimantContactPhoneNumber());
         }
 
-        return partyRepository.save(claimantParty);
+        partyRepository.save(claimantParty);
     }
 
+    /**
+     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
+     * assigning unconditionally would wipe the organisation on a transient blip, and group access is
+     * the only way in, so the case would be left with nobody able to open it.
+     */
     private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
                                          String orgProfileId) {
-        if (nonNull(organisationId)) {
+        if (organisationId != null) {
             claimantParty.setOrganisationId(organisationId);
+        } else {
+            log.warn("No organisation ID returned for the current user, keeping the one stored at case "
+                         + "creation for party {}", claimantParty.getId());
         }
-        if (nonNull(orgProfileId)) {
+        if (StringUtils.isNotBlank(orgProfileId)) {
             claimantParty.setOrganisationProfileId(orgProfileId);
+        } else {
+            log.warn("No organisation profile ID returned for the current user, keeping the one stored "
+                         + "at case creation for party {}", claimantParty.getId());
         }
     }
 

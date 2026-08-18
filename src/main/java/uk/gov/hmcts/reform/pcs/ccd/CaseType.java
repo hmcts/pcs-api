@@ -31,11 +31,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
-        // Fallback for a creator whose case derives no CaseAccessGroups; the organisation's
-        // capacities cover every other case, including drafts.
-        AccessProfile.CREATOR,
         AccessProfile.DEFENDANT,
         AccessProfile.GA_CLAIMANT,
+        AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
@@ -122,7 +120,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         builder.searchResultFields()
             .caseReferenceField();
 
-
         buildCaseListView(builder);
 
         builder.tab("nextSteps", "Next steps")
@@ -177,7 +174,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         configureCaseFileCategories(builder);
     }
-
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {

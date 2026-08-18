@@ -22,8 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -85,12 +83,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                // The organisations that are the claimant themselves - local authority and the
-                // "other" profiles - hold this capacity rather than claimant-solicitor
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                // The organisation's capacity covers the draft; CREATOR is the fallback for a
-                // case that derives no CaseAccessGroups.
-                .grant(Permission.CRUD, UserRole.CREATOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
@@ -190,9 +183,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
-        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase, organisationIdForCurrentUser);
-
-        scheduleCreatorRoleRevocation(caseReference);
+        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
@@ -220,23 +211,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
-    }
-
-    private void scheduleCreatorRoleRevocation(long caseReference) {
-        String userId = securityContextService.getCurrentUserDetails().getUid();
-
-        RoleAssignmentTaskData taskData = RoleAssignmentTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .userId(userId)
-            .action(RoleAssignmentTaskData.RoleAssignmentAction.REVOKE_CREATOR)
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
-                .instance(UUID.randomUUID().toString())
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, PartyEntity claimantParty) {

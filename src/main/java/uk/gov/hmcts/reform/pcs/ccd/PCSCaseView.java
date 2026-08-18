@@ -130,13 +130,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        var caseAccessGroups = deriveCaseAccessGroups(
-            pcsCase.getAllClaimants(), pcsCase.getAllDefendants(), submittedCase.pcsCaseEntity().getParties()
+        pcsCase.setCaseAccessGroups(
+            deriveCaseAccessGroups(submittedCase.pcsCaseEntity().getParties(), pcsCase.getAllDefendants())
         );
-        pcsCase.setCaseAccessGroups(caseAccessGroups);
 
-
-        // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
