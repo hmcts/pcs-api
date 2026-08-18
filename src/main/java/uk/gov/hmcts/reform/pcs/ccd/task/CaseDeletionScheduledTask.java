@@ -113,7 +113,9 @@ public class CaseDeletionScheduledTask {
             ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
             ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
         } catch (CcdCaseNotFoundException e) {
-            log.error("Case not found in main ccd datastore for reference: {}", caseRef, e);
+            log.error("Case not found in main ccd datastore for reference: {}. "
+                    + "Will proceed to delete from decentralised schemas", caseRef, e);
+            caseDeletionService.deleteCaseData(caseRef);
         } catch (Exception e) {
             log.error("Unexpected error occurred while performing ccd case deletion events for case: {}", caseRef, e);
             throw new CcdCaseDeletionEventException(caseRef);

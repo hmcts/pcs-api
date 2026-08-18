@@ -107,7 +107,7 @@ class CaseDeletionScheduledTaskTest {
         }
 
         @Test
-        void shouldAbortWhenEventThrowsCcdCaseNotFoundException() {
+        void shouldDeleteCaseWhenEventThrowsCcdCaseNotFoundException() {
             // Given
             List<Long> caseRefs = new ArrayList<>();
             caseRefs.add(case1);
@@ -123,6 +123,7 @@ class CaseDeletionScheduledTaskTest {
             // Then
             verify(ccdCaseDataDeletionService).markCaseForDeletion(case1);
             verify(ccdCaseDataDeletionService, never()).confirmCaseDisposal(case1);
+            verify(caseDeletionService).deleteCaseData(case1);
         }
 
         @Test
