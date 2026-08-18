@@ -64,7 +64,7 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['selectManageHearing', () => this.selectManageHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
-      ['confirmHearingCancelled', () => this.confirmHearingCancelled()],
+      ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -407,7 +407,8 @@ export class CaseManagementAction implements IAction {
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
 
-  private async confirmHearingCancelled(): Promise<void> {
+  private async confirmHearingCancelled(confirmCancel: actionRecord) {
+    let submitPayLoad = confirmCancel.submitPayload as Record<string, any>;
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
@@ -419,6 +420,7 @@ export class CaseManagementAction implements IAction {
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', confirmCancelHearing.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performAction('clickButton', confirmCancelHearing.closeAndReturnToCaseOverviewButton);
   }
 
@@ -495,7 +497,7 @@ export class CaseManagementAction implements IAction {
         question: addAHearing.withoutNoticeQuestion,
         option: addAHearing.option3,
       });
-    };
+    }
     if (addAHearing.option2 === 'Yes' && addAHearing.option3 === 'Yes') {
       await performAction('clickRadioButton', {
         question: addAHearing.whoShouldReceiveNoticeQuestion,
