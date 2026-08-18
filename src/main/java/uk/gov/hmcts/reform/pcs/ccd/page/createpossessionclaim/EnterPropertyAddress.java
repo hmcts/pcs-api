@@ -30,9 +30,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private static final String HELPER_TEXT = """
-        <p class="govuk-body">You must enter the correct address.</p>
-        <p class="govuk-body">We will ask you to check it on the next page.</p>
-        <p class="govuk-body">After that, you will not be able to change it again.</p>
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">Warning</span>
+                You must enter the correct address. We'll ask you to check it on the next page.
+                After that, you will not be able to change it again.
+            </strong>
+        </div>
         <p class="govuk-body">The property must be located in England or Wales.</p>
         """;
 
