@@ -25,7 +25,7 @@ import {
   partyDetails,
   checkYourAnswersManageParties,
   manageParty,
-  confirmManageParties
+  confirmManageParties,
   addHearing,
   manageHearing,
   confirmHearing
