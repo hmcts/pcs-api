@@ -9,7 +9,6 @@ import static ch.qos.logback.core.CoreConstants.EMPTY_STRING;
 import static ch.qos.logback.core.CoreConstants.LINE_SEPARATOR;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.REDACTED;
 import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.isDebugEnabled;
-import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.showFullLogs;
 
 public final class RedactingThrowableConverter extends ThrowableProxyConverter {
 
