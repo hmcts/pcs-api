@@ -60,10 +60,8 @@ public class LegalRepresentativePageService {
                 .setContactReference(legalRepresentativeDetails.getReference());
         }
 
-        if (legalRepresentativeDetails.getUseEmailAddress() != null
-            && legalRepresentativeDetails.getUseEmailAddress().equals(VerticalYesNo.NO)) {
-            organisationContactDetails.setEmailAddress(legalRepresentativeDetails.getEmailAddress());
-        }
+        updateEmail(legalRepresentativeDetails.getUseEmailAddress(), organisationContactDetails,
+                    legalRepresentativeDetails.getEmailAddress(), legalRepresentativeDetails.getOriginalEmailAddress());
 
         organisationContactDetails.setContactDetailsCorrectConfirmation(YesOrNo.YES);
 
@@ -124,5 +122,15 @@ public class LegalRepresentativePageService {
     private AddressUK mapAddressEntityToAddressUk(AddressEntity address) {
         return address != null
             ? addressMapper.toAddressUK(address) : null;
+    }
+
+    private void updateEmail(VerticalYesNo useEmail, ClaimPartyContactDetailsEntity contactDetails,
+                             String newEmail, String originalEmail) {
+        if (useEmail == null || contactDetails == null) {
+            return;
+        }
+
+        String targetEmail = (useEmail == VerticalYesNo.NO) ? newEmail : originalEmail;
+        contactDetails.setEmailAddress(targetEmail);
     }
 }
