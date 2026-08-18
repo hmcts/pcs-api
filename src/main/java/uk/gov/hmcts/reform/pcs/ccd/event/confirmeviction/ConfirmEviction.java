@@ -42,6 +42,9 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                // The organisations that are the claimant themselves - local authority and the
+                // "other" profiles - hold this capacity rather than claimant-solicitor
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));

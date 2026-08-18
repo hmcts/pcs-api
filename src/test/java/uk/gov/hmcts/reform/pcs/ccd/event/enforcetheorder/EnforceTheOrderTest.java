@@ -440,8 +440,10 @@ class EnforceTheOrderTest extends BaseEventTest {
      * and the group access grant cannot be checked there.
      */
     @Test
-    void shouldGrantTheEventToTheClaimantSolicitorCapacity() {
+    void shouldGrantTheEventToBothClaimantCapacities() {
         assertThat(configuredEvent.getGrants().get(UserRole.GA_CLAIMANT_SOLICITOR))
+            .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
+        assertThat(configuredEvent.getGrants().get(UserRole.CLAIMANT))
             .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
         assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR))
             .containsExactlyInAnyOrderElementsOf(Permission.CRUD);
