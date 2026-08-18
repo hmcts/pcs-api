@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -370,8 +370,8 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-                LegalRepresentativeOrganisationEntity.builder()
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
                     .organisationName("Test Solicitors LLP")
                     .build();
 
@@ -389,8 +389,8 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-                LegalRepresentativeOrganisationEntity.builder().build();
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder().build();
 
             assertThat(factory.noticeOfChangeNoLongerRepresenting(
                 legalRepresentativeOrganisation, pcsCaseEntity).toMap())
@@ -408,8 +408,8 @@ class NotificationPersonalisationFactoryTest {
             stubClaimantParty();
             stubDefendantParty();
 
-            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-                LegalRepresentativeOrganisationEntity.builder()
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
                     .organisationName("Test Solicitors LLP")
                     .build();
 

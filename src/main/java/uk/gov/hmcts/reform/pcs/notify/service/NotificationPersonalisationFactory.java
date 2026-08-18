@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -89,7 +89,7 @@ public class NotificationPersonalisationFactory {
     }
 
     public NoticeOfChangeNoLongerRepresentingPersonalisation noticeOfChangeNoLongerRepresenting(
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+        OrganisationEntity legalRepresentativeOrganisation,
         PcsCaseEntity pcsCaseEntity
     ) {
         String organisationName = legalRepresentativeOrganisation.getOrganisationName();
@@ -101,7 +101,7 @@ public class NotificationPersonalisationFactory {
     }
 
     public NoticeOfChangeCompleteLegalRepPersonalisation noticeOfChangeCompleteLegalRep(
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation,
+        OrganisationEntity legalRepresentativeOrganisation,
         PartyEntity representedDefendant
     ) {
         String organisationName = legalRepresentativeOrganisation.getOrganisationName();

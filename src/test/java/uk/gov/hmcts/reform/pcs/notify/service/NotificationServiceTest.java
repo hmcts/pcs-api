@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationContactDetailsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -953,14 +953,14 @@ class NotificationServiceTest {
                 .build();
         }
 
-        private LegalRepresentativeOrganisationEntity legalRepresentative(String email) {
-            LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation =
-                LegalRepresentativeOrganisationEntity.builder()
+        private OrganisationEntity legalRepresentative(String email) {
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
                     .organisationName("Test Solicitors LLP")
                     .build();
 
-            legalRepresentativeOrganisation.setLegalRepresentativeOrganisationContactDetails(
-                LegalRepresentativeOrganisationContactDetailsEntity.builder()
+            legalRepresentativeOrganisation.addClaimPartyContactDetails(
+                ClaimPartyContactDetailsEntity.builder()
                     .emailAddress(email)
                     .build());
 
