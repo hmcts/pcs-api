@@ -58,15 +58,14 @@ public class RespondPossessionClaimSubmitService {
         ));
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
 
         boolean paymentRequired = false;
-
         FeeDetails feeDetails = null;
 
         if (counterClaimEntity != null) {
             feeDetails = counterClaimFeeCalculator.getFeeDetails(counterClaim);
 
+            boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
             if (hwfReferencePresent) {
                 createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
             } else {
