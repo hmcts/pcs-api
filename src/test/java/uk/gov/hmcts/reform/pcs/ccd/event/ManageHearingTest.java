@@ -36,6 +36,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.time.Month.JULY;
@@ -126,7 +127,15 @@ public class ManageHearingTest extends BaseEventTest {
                 .build();
 
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getHearings()).thenReturn(hearingEntities);
+            if (expectedShowManageHearingPage == VerticalYesNo.YES) {
+                when(hearingService.findEditableHearing(pcsCaseEntity))
+                    .thenReturn(Optional.of(hearingEntities.stream()
+                                        .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+                                        .findFirst()
+                                        .orElseThrow()));
+            } else {
+                when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.empty());
+            }
 
             // When
             PCSCase response = callStartHandler(pcsCase);
@@ -200,8 +209,7 @@ public class ManageHearingTest extends BaseEventTest {
             HearingEntity hearingEntity4 = createHearing(FIXED_TEST_TIME.plusSeconds(3));
             hearingEntity4.setId(1004);
 
-            when(pcsCaseEntity.getHearings())
-                .thenReturn(List.of(hearingEntity1, hearingEntity2, hearingEntity3, hearingEntity4));
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity2));
 
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
@@ -216,6 +224,27 @@ public class ManageHearingTest extends BaseEventTest {
         }
 
         @Test
+        void shouldNotSetSelectedHearingIdOnStart() {
+            // Given
+            HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
+            hearingEntity.setId(1002);
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .selectedHearingId("stale-selected-id")
+                .hearing(new Hearing())
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getHearing().getHearingId()).isEqualTo(1002);
+            assertThat(response.getSelectedHearingId()).isNull();
+        }
+
+        @Test
         void shouldSetHearingSummaryMarkdown() {
             // Given
             final String hearingLocation = "Hearing location name";
@@ -226,8 +255,8 @@ public class ManageHearingTest extends BaseEventTest {
             HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
 
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getHearings()).thenReturn(List.of(hearingEntity));
             hearingEntity.setId(1001);
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
             when(hearingSummaryRenderer.renderMarkdown(hearingEntity, hearingLocation))
                 .thenReturn(expectedHearingSummaryMarkdown);
 

@@ -11,8 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -21,6 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
 
     private final HearingService hearingService;
+    private final HearingSummaryRenderer hearingSummaryRenderer;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -70,10 +73,25 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
         } else if (caseData.getManageHearingOption() == ManageHearingOption.EDIT) {
             String previouslySelectedHearingId = caseData.getSelectedHearingId();
             hearingService.initialiseEditableHearing(details.getId(), caseData, previouslySelectedHearingId);
+        } else if (caseData.getManageHearingOption() == ManageHearingOption.CANCEL) {
+            initialiseCancellableHearing(details.getId(), caseData);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
+    }
+
+    private void initialiseCancellableHearing(long caseReference, PCSCase caseData) {
+        hearingService.findEditableHearing(caseReference).ifPresent(hearingEntity -> {
+            Hearing hearing = caseData.getHearing() == null ? Hearing.builder().build() : caseData.getHearing();
+            hearing.setHearingId(hearingEntity.getId());
+            hearing.setHearingSummaryMarkdown(renderSummary(hearingEntity, caseData));
+            caseData.setHearing(hearing);
+        });
+    }
+
+    private String renderSummary(HearingEntity hearingEntity, PCSCase caseData) {
+        return hearingSummaryRenderer.renderMarkdown(hearingEntity, caseData.getHearingLocation());
     }
 }

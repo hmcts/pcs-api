@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.hearing;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -30,9 +29,8 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -77,6 +75,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Manage hearing")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -92,21 +91,22 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setPartyMultiSelectionList(hearingService.buildPartyList(pcsCaseEntity));
         setHearingLocation(eventPayload, pcsCase);
 
-        List<HearingEntity> futureHearings = getFutureHearings(pcsCaseEntity);
+        Optional<HearingEntity> editableHearing = hearingService.findEditableHearing(pcsCaseEntity);
 
-        if (futureHearings.isEmpty()) {
+        if (editableHearing.isEmpty()) {
             hearingService.clearHearingForm(pcsCase);
             pcsCase.setShowManageHearingPage(VerticalYesNo.NO);
             pcsCase.setManageHearingOption(ManageHearingOption.ADD);
             pcsCase.setSelectedHearingId(null);
         } else {
-            HearingEntity nextHearingEntity = futureHearings.getFirst();
+            HearingEntity nextHearingEntity = editableHearing.get();
             String hearingLocation = pcsCase.getHearingLocation();
             Hearing hearing = pcsCase.getHearing() == null ? Hearing.builder().build() : pcsCase.getHearing();
             hearing.setHearingId(nextHearingEntity.getId());
-            hearing.setHearingSummaryMarkdown(hearingSummaryRenderer.renderMarkdown(nextHearingEntity, hearingLocation));
+            hearing.setHearingSummaryMarkdown(
+                hearingSummaryRenderer.renderMarkdown(nextHearingEntity, hearingLocation));
             pcsCase.setHearing(hearing);
-            pcsCase.setSelectedHearingId(nextHearingEntity.getId().toString());
+            pcsCase.setSelectedHearingId(null);
             pcsCase.setShowManageHearingPage(VerticalYesNo.YES);
         }
 
@@ -173,15 +173,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder()
             .confirmationBody(confirmationBody)
             .build();
-    }
-
-    private List<HearingEntity> getFutureHearings(PcsCaseEntity pcsCaseEntity) {
-        LocalDateTime now = LocalDateTime.now(ukClock);
-        return pcsCaseEntity.getHearings().stream()
-            .filter(hearingEntity -> hearingEntity.getHearingDate().isAfter(now))
-            .filter(hearingEntity -> BooleanUtils.isNotTrue(hearingEntity.getCancelled()))
-            .sorted(Comparator.comparing(HearingEntity::getHearingDate))
-            .toList();
     }
 
 }

@@ -96,19 +96,28 @@ public class HearingService {
     }
 
     public void setSelectedEditableHearingId(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        editableHearing(pcsCaseEntity, null).ifPresent(selectedHearing ->
+        findEditableHearing(pcsCaseEntity).ifPresent(selectedHearing ->
             pcsCase.setSelectedHearingId(selectedHearing.getId().toString())
         );
+    }
+
+    public Optional<HearingEntity> findEditableHearing(PcsCaseEntity pcsCaseEntity) {
+        return editableHearing(pcsCaseEntity, null);
+    }
+
+    public Optional<HearingEntity> findEditableHearing(long caseReference) {
+        return findEditableHearing(pcsCaseService.loadCase(caseReference));
     }
 
     public void initialiseEditableHearing(long caseReference, PCSCase pcsCase, String previouslySelectedHearingId) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         setSelectedEditableHearingId(pcsCase, pcsCaseEntity);
-        if (!Objects.equals(previouslySelectedHearingId, pcsCase.getSelectedHearingId())) {
-            prepopulateEditableHearing(pcsCase, pcsCaseEntity);
-        } else {
+        if (Objects.equals(previouslySelectedHearingId, pcsCase.getSelectedHearingId())
+            && hasEditableHearingDetails(pcsCase.getManageHearingDraft())) {
             restoreDraftHearingForm(pcsCase);
+        } else {
+            prepopulateEditableHearing(pcsCase, pcsCaseEntity);
         }
     }
 
@@ -120,6 +129,21 @@ public class HearingService {
     public void prepopulateEditableHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         prepopulateEditableHearing(pcsCase, pcsCaseEntity);
+    }
+
+    private void prepopulateEditableHearing(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        editableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId()).ifPresent(selectedHearing -> {
+            Hearing currentHearing = pcsCase.getHearing();
+            String hearingSummaryMarkdown = currentHearing == null ? null : currentHearing.getHearingSummaryMarkdown();
+            pcsCase.setSelectedHearingId(selectedHearing.getId().toString());
+            Hearing hearing = mapToHearing(selectedHearing);
+            hearing.setHearingSummaryMarkdown(hearingSummaryMarkdown);
+            pcsCase.setHearing(hearing);
+            pcsCase.setPartyMultiSelectionList(preselectNoticeRecipients(
+                partyListForPrepopulation(pcsCase, pcsCaseEntity),
+                selectedHearing.getNoticeParties()
+            ));
+        });
     }
 
     public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
@@ -152,15 +176,17 @@ public class HearingService {
         }
     }
 
-    private void prepopulateEditableHearing(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        editableHearing(pcsCaseEntity, pcsCase.getSelectedHearingId()).ifPresent(selectedHearing -> {
-            pcsCase.setSelectedHearingId(selectedHearing.getId().toString());
-            pcsCase.setHearing(mapToHearing(selectedHearing));
-            pcsCase.setPartyMultiSelectionList(preselectNoticeRecipients(
-                partyListForPrepopulation(pcsCase, pcsCaseEntity),
-                selectedHearing.getNoticeParties()
-            ));
-        });
+    private boolean hasEditableHearingDetails(Hearing hearing) {
+        return hearing != null
+            && (hearing.getType() != null
+                || hearing.getNoticeWording() != null
+                || hearing.getDate() != null
+                || hearing.getDurationDays() != null
+                || hearing.getDurationHours() != null
+                || hearing.getDurationMinutes() != null
+                || hearing.getIssueNotice() != null
+                || hearing.getNotes() != null
+                || hearing.getAdditionalInformation() != null);
     }
 
     private HearingEntity populateHearingEntity(HearingEntity hearingEntity, PCSCase pcsCase) {
