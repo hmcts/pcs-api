@@ -55,6 +55,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
@@ -70,6 +72,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -828,4 +831,42 @@ public class PCSCase {
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
 
+
+    @CCD(
+        label = "Do you want to add, edit or cancel a hearing?",
+        searchable = false
+    )
+    private ManageHearingOption manageHearingOption;
+
+    @JsonUnwrapped(prefix = "hearing_")
+    @CCD(searchable = false)
+    private Hearing hearing;
+
+    @JsonUnwrapped(prefix = "mhDraft_")
+    @CCD(searchable = false)
+    private Hearing manageHearingDraft;
+
+    @CCD(searchable = false)
+    private List<ListValue<Hearing>> hearingList;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showManageHearingPage;
+
+    @CCD(searchable = false)
+    private String selectedHearingId;
+
+    @CCD(searchable = false)
+    private String hearingLocation;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList partyMultiSelectionList;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList mhDraftPartyList;
 }
