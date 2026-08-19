@@ -14,27 +14,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ConfirmationBodyRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ManageHearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
@@ -42,7 +36,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.time.Month.JULY;
@@ -71,15 +65,11 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private PartyService partyService;
-    @Mock
     private HearingSummaryRenderer hearingSummaryRenderer;
     @Mock
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
-    @Mock
-    private ClaimEntity mainClaim;
     @Mock(strictness = LENIENT)
     private Clock ukClock;
 
@@ -92,8 +82,7 @@ public class ManageHearingTest extends BaseEventTest {
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
-                                      pcsCaseService, partyService, hearingSummaryRenderer, confirmationBodyRenderer,
-                                      ukClock);
+                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer, ukClock);
         setEventUnderTest(underTest);
     }
 
@@ -119,7 +108,10 @@ public class ManageHearingTest extends BaseEventTest {
         @BeforeEach
         void setUp() {
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
+            when(hearingService.buildPartyList(pcsCaseEntity)).thenReturn(DynamicMultiSelectStringList.builder()
+                .value(List.of())
+                .listItems(List.of())
+                .build());
             when(caseLocation.getBaseLocation()).thenReturn(Integer.toString(BASE_LOCATION_ID));
         }
 
@@ -135,7 +127,15 @@ public class ManageHearingTest extends BaseEventTest {
                 .build();
 
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getHearings()).thenReturn(hearingEntities);
+            if (expectedShowManageHearingPage == VerticalYesNo.YES) {
+                when(hearingService.findEditableHearing(pcsCaseEntity))
+                    .thenReturn(Optional.of(hearingEntities.stream()
+                                        .filter(hearing -> !Boolean.TRUE.equals(hearing.getCancelled()))
+                                        .findFirst()
+                                        .orElseThrow()));
+            } else {
+                when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.empty());
+            }
 
             // When
             PCSCase response = callStartHandler(pcsCase);
@@ -177,43 +177,6 @@ public class ManageHearingTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSetPartyList() {
-            // Given
-            UUID claimantId = UUID.randomUUID();
-            PartyEntity claimantParty = createParty(claimantId);
-            when(partyService.getPartyName(claimantParty)).thenReturn("claimant name");
-            when(partyService.getPartyLabel(mainClaim, claimantId)).thenReturn("claimant label");
-
-            UUID defendantId = UUID.randomUUID();
-            PartyEntity defendantParty = createParty(defendantId);
-            when(partyService.getPartyName(defendantParty)).thenReturn("defendant name");
-            when(partyService.getPartyLabel(mainClaim, defendantId)).thenReturn("defendant label");
-
-            when(mainClaim.getClaimParties()).thenReturn(List.of(
-                createClaimParty(PartyRole.CLAIMANT, claimantParty),
-                createClaimParty(PartyRole.DEFENDANT, defendantParty)
-            ));
-
-            PCSCase pcsCase = PCSCase.builder()
-                .caseManagementLocation(caseLocation)
-                .build();
-
-            // When
-            PCSCase response = callStartHandler(pcsCase);
-
-            // Then
-            DynamicMultiSelectList partyMultiSelectionList = response.getPartyMultiSelectionList();
-            assertThat(partyMultiSelectionList).isNotNull();
-
-            List<DynamicListElement> listItems = partyMultiSelectionList.getListItems();
-            assertThat(listItems).hasSize(2);
-            assertThat(listItems.getFirst().getCode()).isEqualTo(claimantId);
-            assertThat(listItems.getFirst().getLabel()).isEqualTo("claimant name - claimant label");
-            assertThat(listItems.getLast().getCode()).isEqualTo(defendantId);
-            assertThat(listItems.getLast().getLabel()).isEqualTo("defendant name - defendant label");
-        }
-
-        @Test
         void shouldSetHearingLocation() {
             // Given
             String expectedHearingLocation = "Hearing location name";
@@ -246,8 +209,7 @@ public class ManageHearingTest extends BaseEventTest {
             HearingEntity hearingEntity4 = createHearing(FIXED_TEST_TIME.plusSeconds(3));
             hearingEntity4.setId(1004);
 
-            when(pcsCaseEntity.getHearings())
-                .thenReturn(List.of(hearingEntity1, hearingEntity2, hearingEntity3, hearingEntity4));
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity2));
 
             PCSCase pcsCase = PCSCase.builder()
                 .caseManagementLocation(caseLocation)
@@ -262,6 +224,27 @@ public class ManageHearingTest extends BaseEventTest {
         }
 
         @Test
+        void shouldNotSetSelectedHearingIdOnStart() {
+            // Given
+            HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
+            hearingEntity.setId(1002);
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
+
+            PCSCase pcsCase = PCSCase.builder()
+                .caseManagementLocation(caseLocation)
+                .selectedHearingId("stale-selected-id")
+                .hearing(new Hearing())
+                .build();
+
+            // When
+            PCSCase response = callStartHandler(pcsCase);
+
+            // Then
+            assertThat(response.getHearing().getHearingId()).isEqualTo(1002);
+            assertThat(response.getSelectedHearingId()).isNull();
+        }
+
+        @Test
         void shouldSetHearingSummaryMarkdown() {
             // Given
             final String hearingLocation = "Hearing location name";
@@ -272,7 +255,8 @@ public class ManageHearingTest extends BaseEventTest {
             HearingEntity hearingEntity = createHearing(FIXED_TEST_TIME.plusSeconds(1));
 
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-            when(pcsCaseEntity.getHearings()).thenReturn(List.of(hearingEntity));
+            hearingEntity.setId(1001);
+            when(hearingService.findEditableHearing(pcsCaseEntity)).thenReturn(Optional.of(hearingEntity));
             when(hearingSummaryRenderer.renderMarkdown(hearingEntity, hearingLocation))
                 .thenReturn(expectedHearingSummaryMarkdown);
 
@@ -335,6 +319,7 @@ public class ManageHearingTest extends BaseEventTest {
 
         private static HearingEntity createHearing(LocalDateTime hearingDate) {
             return HearingEntity.builder()
+                .id(1)
                 .hearingDate(hearingDate)
                 .build();
         }
@@ -422,18 +407,48 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             verify(hearingService, never()).addHearing(TEST_CASE_REFERENCE, pcsCase);
         }
+
+        @Test
+        void shouldUpdateHearingOnSubmitWhenManageHearingOptionIsEdit() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.EDIT)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .build();
+
+            String expectedConfirmationBody = "confirmation body";
+            when(confirmationBodyRenderer.renderHearingEditedConfirmationBody(pcsCase, TEST_CASE_REFERENCE))
+                .thenReturn(expectedConfirmationBody);
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingService).updateHearing(TEST_CASE_REFERENCE, pcsCase);
+            assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
+        }
+
+        @Test
+        void shouldCancelHearingOnSubmitWhenManageHearingOptionIsCancel() {
+            // Given
+            Hearing hearing = Hearing.builder().build();
+            PCSCase pcsCase = PCSCase.builder()
+                .hearing(hearing)
+                .manageHearingOption(ManageHearingOption.CANCEL)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .build();
+
+            String expectedConfirmationBody = "confirmation body";
+            when(confirmationBodyRenderer.renderHearingCancelledConfirmationBody(pcsCase, TEST_CASE_REFERENCE))
+                .thenReturn(expectedConfirmationBody);
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingService).cancelHearing(hearing);
+            assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
+        }
     }
 
-    private static PartyEntity createParty(UUID partyId) {
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyEntity.getId()).thenReturn(partyId);
-        return partyEntity;
-    }
-
-    private static ClaimPartyEntity createClaimParty(PartyRole role, PartyEntity partyEntity) {
-        return ClaimPartyEntity.builder()
-            .role(role)
-            .party(partyEntity)
-            .build();
-    }
 }
