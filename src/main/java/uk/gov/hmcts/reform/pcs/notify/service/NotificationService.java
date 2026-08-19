@@ -572,7 +572,9 @@ public class NotificationService {
         }
 
         var contactDetails = legalRepresentativeOrganisationEntity.getClaimPartyContactDetails();
-        String emailAddress = contactDetails != null ? contactDetails.stream().findFirst().map(
+        String emailAddress = contactDetails != null ? contactDetails.stream()
+            .filter(details -> pcsCaseEntity.getId().equals(details.getPcsCase().getId()))
+            .findFirst().map(
             ClaimPartyContactDetailsEntity::getEmailAddress).orElse(null) : null;
 
         return new LegalRepresentativeNotificationRecipient(
