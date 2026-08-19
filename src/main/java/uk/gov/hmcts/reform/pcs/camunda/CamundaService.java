@@ -109,7 +109,7 @@ public class CamundaService {
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
 
         // Note: A few fields are stripped out by wa-task-monitor before the task attributes are passed
-        // to the configuation DMN, so should be not used as a custom field if that field is going to be
+        // to the configuration DMN, so should be not used as a custom field if that field is going to be
         // referenced in the configuration DMN
         // The fields that are removed are: dueDate, assignee, priorityDate, description, name
 
