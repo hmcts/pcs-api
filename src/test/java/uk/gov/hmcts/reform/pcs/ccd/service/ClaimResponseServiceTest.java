@@ -432,7 +432,6 @@ class ClaimResponseServiceTest {
         );
 
         AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
 
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
@@ -472,7 +471,6 @@ class ClaimResponseServiceTest {
         );
 
         AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When

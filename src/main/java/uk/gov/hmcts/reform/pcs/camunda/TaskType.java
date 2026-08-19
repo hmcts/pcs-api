@@ -59,6 +59,23 @@ public enum TaskType {
             Only mark the task as complete once the application has been reviewed and any required action
             has been completed.
             """
+    ),
+    TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT(
+        "TranslateClaimantSubmittedDocument",
+        "Translate Claimant Submitted Document",
+        """
+            Review the claimant submitted document in Case File View and arrange translation. Email the translated
+            document to the court. Only mark the task as complete once the translation has been completed.
+            """
+    ),
+    REVIEW_ADDITIONAL_DOCS_CLAIM(
+        "ReviewAdditionalDocumentsClaim",
+        "Review additional documents - claim",
+        """
+            Review the additional documents submitted on the claim, check whether any further case action is required,
+            and take the appropriate action. Only mark the task as complete once the documents have been reviewed
+            and any required action has been completed.
+            """
     );
 
     private final String id;
