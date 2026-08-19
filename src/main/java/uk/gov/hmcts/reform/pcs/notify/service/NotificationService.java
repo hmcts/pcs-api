@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -168,10 +167,11 @@ public class NotificationService {
 
     public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
         OrganisationEntity legalRepresentativeOrganisation,
-        PartyEntity representedDefendant
+        PartyEntity representedDefendant,
+        String legalRepEmail
     ) {
         return sendEmail(
-            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant),
+            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant, legalRepEmail),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
@@ -487,17 +487,13 @@ public class NotificationService {
 
     private NotificationRecipient legalRepresentativeRecipient(
         OrganisationEntity legalRepresentativeOrganisation,
-        PartyEntity representedDefendant
+        PartyEntity representedDefendant,   
+        String legalRepEmail
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
-        ClaimPartyContactDetailsEntity contactDetails =
-            legalRepresentativeOrganisation.getClaimPartyContactDetails() == null
-                || legalRepresentativeOrganisation.getClaimPartyContactDetails().isEmpty()
-                ? null
-                : legalRepresentativeOrganisation.getClaimPartyContactDetails().getFirst();
 
         return new NotificationRecipient(
-            contactDetails != null ? contactDetails.getEmailAddress() : null,
+            legalRepEmail,
             representedDefendant,
             pcsCase,
             pcsCase.getClaims().getFirst(),

@@ -169,7 +169,8 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
-        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, partyEntity);
+        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, 
+            partyEntity, LEGAL_REP_EMAIL);
     }
 
     @Test
