@@ -538,8 +538,9 @@ public class NotificationService {
         }
 
         ClaimPartyContactDetailsEntity contactDetails = organisation.getClaimPartyContactDetails().stream()
-            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null &&
-                Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst().orElse(null);
+            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
+                && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst()
+            .orElse(null);
 
         String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
