@@ -16,4 +16,6 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
     @Query("SELECT c.id FROM ClaimEntity c WHERE c.pcsCase.caseReference = :caseReference")
     Optional<UUID> findIdByCaseReference(@Param("caseReference") long caseReference);
 
+    @Query("SELECT c FROM ClaimEntity c WHERE c.pcsCase.caseReference = :caseReference")
+    Optional<ClaimEntity> findClaimByCaseReference(@Param("caseReference") long caseReference);
 }

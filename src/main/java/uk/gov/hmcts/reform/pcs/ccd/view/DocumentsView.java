@@ -101,6 +101,10 @@ public class DocumentsView {
         return !documentEntity.isRemoved();
     }
 
+    public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
+        return documentEntity.getGeneralApplication() == null;
+    }
+
     private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
         List<DocumentType> caseDetailsDocuments = List.of(
             DocumentType.TENANCY_AGREEMENT,
@@ -120,5 +124,4 @@ public class DocumentsView {
         // Is not an additional document
         return !isDescriptionEmpty(documentEntity);
     }
-
 }

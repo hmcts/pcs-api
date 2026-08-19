@@ -202,7 +202,7 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shoulFilterGenAppDocumentsBasedOnVisibilitty() {
+    void shouldFilterGenAppDocumentsBasedOnVisibility() {
         // Given
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
         when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
@@ -343,11 +343,12 @@ class DocumentsViewTest {
 
     @ParameterizedTest
     @MethodSource("caseDetailsTabDocuments")
-    void shouldFilterOutDocumentsThatAppearInCaseDetailsTab(DocumentType documentType) {
+    void shouldFilterOutCaseDetailsTabDocumentsWithoutDescription(DocumentType documentType) {
         // Given
         UUID document1Id = UUID.randomUUID();
         DocumentEntity documentEntity = DocumentEntity.builder()
             .id(document1Id)
+            .fileName("filename")
             .type(documentType)
             .build();
 
@@ -358,7 +359,7 @@ class DocumentsViewTest {
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).hasSize(0);
+        assertThat(allDocuments).isEmpty();
     }
 
     @ParameterizedTest
