@@ -84,10 +84,12 @@ public class CaseFlagsView {
             .toList();
     }
 
+    // The limit of 2 keeps a value containing the path delimiter intact
     private List<ListValue<String>> getPaths(String entityPaths) {
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
-                .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .map(pathPairs -> pathPairs.split(PATH_DELIMITER, 2))
+                .filter(paths -> paths.length > 1)
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])
                     .value(paths[1])
