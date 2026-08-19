@@ -67,16 +67,16 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
+        GenAppRequest genAppRequest = getGenAppRequest(caseData);
+
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData);
+        PartyEntity applicantParty = getApplicantParty(caseReference, caseData, genAppRequest);
 
-        GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
-
-        if (isDuplicateRequest(createGenAppRequest, pcsCaseEntity)) {
+        if (isDuplicateRequest(genAppRequest, pcsCaseEntity)) {
             return errorResponse("Application already exists for client reference");
         }
 
-        FeeDetails feeDetails = genAppFeeCalculator.getApplicationFeeDetails(createGenAppRequest)
+        FeeDetails feeDetails = genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)
             .orElse(null);
 
         boolean paymentRequired = feeDetails != null;
@@ -84,10 +84,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         GenAppState initialState = paymentRequired ? PENDING_GEN_APP_ISSUED : GEN_APP_ISSUED;
 
         GenAppEntity genAppEntity = genAppService
-            .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
+            .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, initialState);
 
-        if (isXuiJourney(createGenAppRequest)) {
-            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
+        if (isXuiJourney(genAppRequest)) {
+            return handleXuiSubmit(paymentRequired, caseReference, genAppRequest, genAppEntity, feeDetails);
         } else {
             return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
         }
@@ -178,7 +178,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
+    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData, GenAppRequest genAppRequest) {
+        if (genAppRequest.getApplicantPartyId() != null) {
+            UUID applicantPartyId = UUID.fromString(genAppRequest.getApplicantPartyId());
+            return partyService.getPartyEntityById(applicantPartyId, caseReference);
+        }
+
         UUID currentUserId = securityContextService.getCurrentUserId();
 
         if (caseData.getCurrentRepresentedPartyId() != null) {
