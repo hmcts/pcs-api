@@ -73,12 +73,8 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-<<<<<<< HEAD
 
   if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument' || action === 'selectDocumentToAmend' || action ==='addAHearing' || action === 'cancelHearing' ) {
-=======
-  if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument' || action === 'selectDocumentToAmend') {
->>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
     captureDataForCYAPage = true;
   }
 
@@ -96,7 +92,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   const actionInstance = ActionCMRegistry.getAction(action);
 
   captureDataForCYA(action, fieldName, value);
-  
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 

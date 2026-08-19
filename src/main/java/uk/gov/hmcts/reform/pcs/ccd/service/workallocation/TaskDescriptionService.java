@@ -4,6 +4,7 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
@@ -20,6 +21,8 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -63,25 +66,26 @@ public class TaskDescriptionService {
                                                              GenAppEntity genAppEntity,
                                                              List<DocumentEntity> documentEntities) {
 
-        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
-
-        List<String> filenames = documentEntities.stream()
-            .map(DocumentEntity::getFileName)
-            .toList();
-
-        Map<String, Object> context = Map.of(
-            "caseReference", caseReference,
-            "partyLabel", partyLabel,
-            "genAppRank", genAppEntity.getRank(),
-            "filenames", filenames
-        );
+        Map<String, Object> customFields = Map.of("genAppRank", genAppEntity.getRank());
 
         String templateName = "gen-app-review-additional-docs";
-        return renderTemplate(templateName, context);
+        return createDocumentDescription(caseReference, mainClaim, partyEntity,
+                                         documentEntities, templateName, customFields);
+    }
+
+    public String createClaimAdditionalDocumentsDescription(long caseReference,
+                                                             ClaimEntity mainClaim,
+                                                             PartyEntity partyEntity,
+                                                             List<DocumentEntity> documentEntities) {
+
+
+
+        String templateName = "claim-review-additional-docs";
+        return createDocumentDescription(caseReference, mainClaim, partyEntity, documentEntities, templateName, null);
     }
 
     public String createTranslateClaimantDocumentDescription(long caseReference,
-                                                              List<DocumentEntity> documentEntities) {
+                                                             List<DocumentEntity> documentEntities) {
 
         List<String> filenames = documentEntities.stream()
             .map(DocumentEntity::getFileName)
@@ -93,6 +97,33 @@ public class TaskDescriptionService {
         );
 
         String templateName = "translate-claimant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
+    private String createDocumentDescription(long caseReference,
+                                           ClaimEntity mainClaim,
+                                           PartyEntity partyEntity,
+                                           List<DocumentEntity> documentEntities,
+                                           String templateName,
+                                           Map<String, Object> customFields) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "filenames", filenames
+        );
+
+        if (!CollectionUtils.isEmpty(customFields)) {
+            context = Stream.concat(context.entrySet().stream(), customFields.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
         return renderTemplate(templateName, context);
     }
 

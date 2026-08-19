@@ -34,6 +34,7 @@ export class ActionCMRegistry {
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
+    ['manageHearingAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
@@ -51,12 +52,9 @@ export class ActionCMRegistry {
     ['confirmAmend', new CaseManagementAction()],
     ['enterApplicationConsentAndNotice', new CaseManagementAction()],
     ['verifyReferToJudge', new CaseManagementAction()],
-<<<<<<< HEAD
     ['selectManageHearing', new CaseManagementAction()],
     ['cancelHearing', new CaseManagementAction()],
     ['confirmHearingCancelled', new CaseManagementAction()],
-=======
->>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
     ['verifyGenAppConfirm', new CaseManagementAction()],
     ['uploadRelativeEvidence', new CaseManagementAction()],
     ['uploadADocument', new CaseManagementAction()],
@@ -65,18 +63,18 @@ export class ActionCMRegistry {
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['addReviewDates', new CaseManagementAction()],
     ['confirmReviewDatesAdded', new CaseManagementAction()],
+    ['addAHearing', new CaseManagementAction()],
+    ['confirmAddHearing', new CaseManagementAction()],
     ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
     ['errorValidationEnterGeneralAppPage', new ErrorValidationAction()],
     ['errorValidationHearingDatePage', new ErrorValidationAction()],
     ['errorValidationApplicationFeePage', new ErrorValidationAction()],
     ['errorValidationUploadADocumentPage', new ErrorValidationAction()],
     ['errorValidationApplicationConsentAndNotice', new ErrorValidationAction()],
-<<<<<<< HEAD
     ['errorValidationCancelHearing', new ErrorValidationAction()],
     ['errorValidationManageHearing', new ErrorValidationAction()],
-=======
->>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
     ['errorValidationUploadGenAppsFile', new ErrorValidationAction()],
+    ['errorValidationEnterAddAHearingPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['getAddressInfo', new CaseManagementAction()],
