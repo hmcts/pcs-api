@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentWithId;
@@ -17,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +35,7 @@ class GenAppsViewTest {
 
     private static final String ORG_ID = "org";
     @Mock
-    private ModelMapper modelMapper;
+    private OrganisationService organisationService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -46,12 +47,14 @@ class GenAppsViewTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
         when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(ORG_ID)))
             .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(modelMapper, genAppVisibilityService);
+        underTest = new GenAppsView(organisationService, genAppVisibilityService);
     }
 
     @Test
@@ -75,7 +78,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -116,7 +119,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -155,7 +158,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -191,7 +194,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -216,20 +219,21 @@ class GenAppsViewTest {
         DocumentEntity documentEntity1 = mock(DocumentEntity.class);
         DocumentEntity documentEntity2 = mock(DocumentEntity.class);
 
-        final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1);
-        final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2);
+        final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1, "document1.pdf");
+        final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2, "document2.pdf");
 
         genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORG_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
 
         assertThat(genApps).hasSize(1);
 
-        List<ListValue<Document>> actualSupportingDocuments = genApps.getFirst().getValue().getSupportingDocuments();
+        List<ListValue<Document>> actualSupportingDocuments =
+            genApps.getFirst().getValue().getSupportingDocuments();
 
         assertThat(actualSupportingDocuments).hasSize(2);
         assertThat(actualSupportingDocuments.get(0).getId()).isEqualTo(pcsDocumentId1.toString());
@@ -240,12 +244,136 @@ class GenAppsViewTest {
 
     }
 
-    private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
-        when(documentEntity.getId()).thenReturn(pcsDocumentId);
+    @Test
+    void shouldNotDuplicateSubmissionDocumentOrSupportingDocumentsInGenAppSupportingDocuments() {
+        // Given
+        LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
 
-        Document document = mock(Document.class);
-        when(modelMapper.map(documentEntity, Document.class)).thenReturn(document);
-        return document;
+        DocumentEntity submissionDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            submissionDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/submission",
+            "http://dm-store/documents/submission/binary"
+        );
+
+        DocumentEntity duplicateSubmissionDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSubmissionDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/submission",
+            "http://dm-store/documents/submission/binary"
+        );
+
+        DocumentEntity supportingDocument = mock(DocumentEntity.class);
+        UUID supportingDocumentId = UUID.randomUUID();
+        stubDocumentReferences(
+            supportingDocument,
+            supportingDocumentId,
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+
+        DocumentEntity duplicateSupportingDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSupportingDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+
+        Document expectedSupportingDocument = Document.builder()
+            .filename("supporting.docx")
+            .url("http://dm-store/documents/supporting")
+            .binaryUrl("http://dm-store/documents/supporting/binary")
+            .build();
+        when(supportingDocument.getFileName()).thenReturn(expectedSupportingDocument.getFilename());
+
+        genAppEntity.setSubmissionDocument(submissionDocument);
+        genAppEntity.setDocuments(List.of(
+            duplicateSubmissionDocument,
+            supportingDocument,
+            duplicateSupportingDocument
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+            .getFirst()
+            .getValue()
+            .getSupportingDocuments();
+
+        assertThat(actualSupportingDocuments).hasSize(1);
+        assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue()).isEqualTo(expectedSupportingDocument);
+    }
+
+    @Test
+    void shouldKeepSupportingDocumentsWithSameFilenameAndDifferentDocumentReferences() {
+        // Given
+        LocalDateTime genAppSubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity = createGenAppEntity(UUID.randomUUID(), genAppSubmittedDate);
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
+
+        DocumentEntity supportingDocument = mock(DocumentEntity.class);
+        UUID supportingDocumentId = UUID.randomUUID();
+        stubDocumentReferences(
+            supportingDocument,
+            supportingDocumentId,
+            "http://dm-store/documents/supporting",
+            "http://dm-store/documents/supporting/binary"
+        );
+        when(supportingDocument.getFileName()).thenReturn("genApps GA1 - Defendant 1.docx");
+
+        DocumentEntity duplicateSupportingDocument = mock(DocumentEntity.class);
+        stubDocumentReferences(
+            duplicateSupportingDocument,
+            UUID.randomUUID(),
+            "http://dm-store/documents/duplicate-supporting",
+            "http://dm-store/documents/duplicate-supporting/binary"
+        );
+        when(duplicateSupportingDocument.getFileName()).thenReturn(" GENAPPS GA1 - DEFENDANT 1.DOCX ");
+
+        genAppEntity.setDocuments(List.of(supportingDocument, duplicateSupportingDocument));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
+            .getFirst()
+            .getValue()
+            .getSupportingDocuments();
+
+        assertThat(actualSupportingDocuments).hasSize(2);
+        assertThat(actualSupportingDocuments.getFirst().getId()).isEqualTo(supportingDocumentId.toString());
+        assertThat(actualSupportingDocuments.getFirst().getValue().getFilename())
+            .isEqualTo("genApps GA1 - Defendant 1.docx");
+        assertThat(actualSupportingDocuments.get(1).getValue().getFilename())
+            .isEqualTo(" GENAPPS GA1 - DEFENDANT 1.DOCX ");
+    }
+
+    private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId) {
+        return stubDocument(documentEntity, pcsDocumentId, "document.pdf");
+    }
+
+    private Document stubDocument(DocumentEntity documentEntity, UUID pcsDocumentId, String filename) {
+        when(documentEntity.getId()).thenReturn(pcsDocumentId);
+        when(documentEntity.getFileName()).thenReturn(filename);
+
+        return Document.builder()
+            .filename(filename)
+            .build();
+    }
+
+    private void stubDocumentReferences(DocumentEntity documentEntity, UUID id, String url, String binaryUrl) {
+        when(documentEntity.getId()).thenReturn(id);
+        when(documentEntity.getUrl()).thenReturn(url);
+        when(documentEntity.getBinaryUrl()).thenReturn(binaryUrl);
     }
 
     private static PartyEntity createPartyEntity() {
