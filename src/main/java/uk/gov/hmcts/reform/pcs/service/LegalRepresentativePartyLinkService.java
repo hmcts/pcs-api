@@ -109,7 +109,7 @@ public class LegalRepresentativePartyLinkService {
                     .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
 
             } else {
-                backfillContactEmail(existingContactDetails.get(), legalRepEmail);
+                updateContactEmail(existingContactDetails.get(), legalRepEmail);
             }
 
         } else {
@@ -128,7 +128,7 @@ public class LegalRepresentativePartyLinkService {
         outgoingRepresentative.ifPresent(outgoing -> notificationService
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));
         notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
-            legalRepresentativeOrganisation, defendantPartyEntity);
+            legalRepresentativeOrganisation, defendantPartyEntity, legalRepEmail);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
@@ -188,8 +188,8 @@ public class LegalRepresentativePartyLinkService {
         }
     }
 
-    private void backfillContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
-        if (contactDetails.getEmailAddress() == null && isNotBlank(legalRepEmail)) {
+    private void updateContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
+        if (isNotBlank(legalRepEmail)) {
             contactDetails.setEmailAddress(legalRepEmail);
         }
     }
