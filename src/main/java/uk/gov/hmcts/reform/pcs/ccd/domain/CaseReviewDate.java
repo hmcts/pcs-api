@@ -20,7 +20,7 @@ public class CaseReviewDate {
     @CCD(label = "Created by")
     private String createdBy;
 
-    @CCD(label = "Created on")
+    @CCD(label = "Created date")
     private LocalDateTime createdDate;
 
     @CCD(label = "Date of review")
