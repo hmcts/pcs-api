@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseReviewDate;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @Component
 @AllArgsConstructor
@@ -40,7 +40,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
-                .showCondition(ShowConditions.featureFlagsEnabled(CASEWORKER_EVENTS, RELEASE_1_DOT_3))
+                .showCondition(ShowConditions.featureFlagsEnabled(CASEWORKER_EVENTS, RELEASE_1_DOT_2))
                 .endButtonLabel("Submit");
         addCaseReviewDateConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
