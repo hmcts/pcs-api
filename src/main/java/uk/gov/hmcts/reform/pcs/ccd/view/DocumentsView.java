@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 public class DocumentsView {
 
     private final SecurityContextService securityContextService;
-    private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
@@ -40,7 +38,6 @@ public class DocumentsView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
-            .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -65,7 +62,7 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return false;
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
@@ -90,24 +87,7 @@ public class DocumentsView {
         return !documentEntity.isRemoved();
     }
 
-    private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
-        List<DocumentType> caseDetailsDocuments = List.of(
-            DocumentType.TENANCY_AGREEMENT,
-            DocumentType.POSSESSION_NOTICE,
-            DocumentType.RENT_STATEMENT,
-            DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
-            DocumentType.EICR_REPORT,
-            DocumentType.GAS_SAFETY_CERTIFICATE,
-            DocumentType.OCCUPATION_LICENCE
-        );
-
-        DocumentType type = documentEntity.getType();
-        if (type == null || !caseDetailsDocuments.contains(type)) {
-            return true;
-        }
-
-        // Is not an additional document
-        return !isDescriptionEmpty(documentEntity);
+    public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
+        return documentEntity.getGeneralApplication() == null;
     }
-
 }
