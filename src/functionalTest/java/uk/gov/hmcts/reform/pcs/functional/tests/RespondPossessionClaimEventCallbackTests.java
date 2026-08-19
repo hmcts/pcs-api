@@ -66,7 +66,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     void respondToPossessionClaimStartEventCallbackWithoutAccessCodeAuthTest() {
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
-            Map.of("caseTypeId", "PCS", "caseId", caseReference)
+            Map.of("caseTypeId", caseType, "caseId", caseReference)
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -87,7 +87,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-startEventCallbackRequest.json",
-            Map.of("caseTypeId", "PCS", "caseId", caseReference)
+            Map.of("caseTypeId", caseType, "caseId", caseReference)
         );
         apiSteps.validateAccessCode(caseReference.toString(), accessCode);
 
@@ -110,7 +110,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-submitEventCallbackRequest.json",
             Map.of(
-                "caseTypeId", "PCS",
+                "caseTypeId", caseType,
                 "caseId", caseReference,
                 "internalCaseId", caseInternalDetails.get("case-id"),
                 "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version"))

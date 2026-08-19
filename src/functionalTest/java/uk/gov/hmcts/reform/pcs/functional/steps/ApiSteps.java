@@ -32,13 +32,13 @@ public class ApiSteps {
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
+    private static final String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
     public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
     public static String solicitorUserIdamToken;
-    Long caseId;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -313,7 +313,6 @@ public class ApiSteps {
 
     @Step("retrieving internal details from ccd data store")
     public Map<String,String> getInternalCaseDetails(Long caseReference) {
-        String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
         //NB: event permissions don't apply for this call, any valid IDAM token can be used
         Response response = SerenityRest.given()
             .baseUri(dataStoreUrl)
@@ -345,7 +344,6 @@ public class ApiSteps {
             case citizenUser -> citizenUserIdamToken;
             case solicitorUser -> solicitorUserIdamToken;
         };
-        String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
         String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
 
         Callable<String> validateCode = () -> {

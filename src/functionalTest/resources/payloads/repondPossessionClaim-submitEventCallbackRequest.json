@@ -3,7 +3,7 @@
   "case_details": {
     "id": "${caseId}",
     "jurisdiction": "PCS",
-    "case_type_id": "PCS",
+    "case_type_id": "${caseTypeId}",
     "state": "CASE_ISSUED",
     "security_classification": "PUBLIC",
     "version": "${caseVersion}",

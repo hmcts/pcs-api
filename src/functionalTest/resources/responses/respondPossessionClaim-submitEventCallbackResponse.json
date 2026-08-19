@@ -3,7 +3,7 @@
     "jurisdiction": "PCS",
     "state": "CASE_ISSUED",
     "version": 3,
-    "case_type_id": "PCS",
+    "case_type_id": "[[IGNORE_VALUE]]",
     "security_classification": "PUBLIC",
     "case_data": {
       "possessionClaimResponse": {
