@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs;
 
 import feign.FeignException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,11 @@ import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.PartyAccessCode;
-import uk.gov.hmcts.reform.pcs.service.*;
+import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
+import uk.gov.hmcts.reform.pcs.service.ResponseCreationService;
+import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
+import uk.gov.hmcts.reform.pcs.service.CaseStateService;
+import uk.gov.hmcts.reform.pcs.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -659,7 +662,7 @@ public class DataTest extends CftlibTest {
     @Test
     @DisplayName("validate public.contact_preferences - schema, completeness, and relationship rules")
     void validateContactPreferencesTable() {
-        List<String> expectedColumns = List.of(
+        List<String> expectedCols = List.of(
             "id", "contact_by_text", "contact_by_phone", "preference_type",
             "contact_by_email", "contact_by_post"
         );
@@ -690,7 +693,7 @@ public class DataTest extends CftlibTest {
         String msgValidPrefs = "Contact preferences detail fields linked to case are incorrectly populated";
 
         org.junit.jupiter.api.Assertions.assertAll("contact_preferences validations",
-                                                   () -> assertHasColumns("public.contact_preferences", expectedColumns),
+                                                   () -> assertHasColumns("public.contact_preferences", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(1, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validContactPreferences, msgValidPrefs)
