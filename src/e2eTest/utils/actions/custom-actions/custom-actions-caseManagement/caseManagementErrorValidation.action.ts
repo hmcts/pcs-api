@@ -2,7 +2,10 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
+<<<<<<< HEAD
   addHearing, cancelHearing, manageHearing,
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication
@@ -22,9 +25,12 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+<<<<<<< HEAD
       ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -254,6 +260,7 @@ export class ErrorValidationAction implements IAction {
         button: enterGenAppConsentAndNotice.continueButton
       });
     }
+<<<<<<< HEAD
   };
 
   private async errorValidationEnterAddAHearingPage(validationReq: string) {
@@ -302,32 +309,9 @@ export class ErrorValidationAction implements IAction {
         button: addHearing.continueButton
       });
     }
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   }
-  private async errorValidationManageHearing(validationReq: string) {
-    if (validationReq === 'YES') {
-      await performAction('inputErrorValidation', {
-        validationType: manageHearing.errorValidationType.two,
-        inputArray: manageHearing.errorValidationField.errorRadioOption,
-        question: manageHearing.doYouWantToAddQuestion,
-        option: manageHearing.addAHearingRadioOption,
-        button: manageHearing.continueButton
-      });
-    }
-  }
-
-  private async errorValidationCancelHearing(validationReq: string) {
-    if (validationReq === 'YES') {
-      await performAction('inputErrorValidation', {
-        validationType: cancelHearing.errorValidationType.one,
-        inputArray: cancelHearing.errorValidationField.errorTextField,
-        header: cancelHearing.eventCouldNotBeCreatedErrorMessageHeader,
-        label: cancelHearing.enterReasonForCancellationLabel,
-        button: cancelHearing.continueButton
-
-      });
-    }
-  }
-
   private async errorValidationUploadGenAppsFile(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -337,4 +321,5 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
+
 }

@@ -10,7 +10,6 @@ import {performActions} from "@utils/controller";
 import {
   addReviewDates,
   confirmReviewDatesAdded,
-  cancelHearing,
   changeCaseState,
   confirmCaseStateChange,
   confirmAmend,
@@ -22,11 +21,15 @@ import {
   enterGenAppPreferApplicationToJudge,
   selectDocument,
   uploadADocument,
+<<<<<<< HEAD
   enterGenAppConfirmation,
   addHearing,
   manageHearing,
   confirmHearing,
   confirmCancelHearing
+=======
+  enterGenAppConfirmation
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -57,6 +60,7 @@ export class CaseManagementAction implements IAction {
       ['uploadADocument',() => this.uploadADocument(page, fieldName as actionRecord)],
       ['verifyReferToJudge', () => this.verifyReferToJudge(fieldName as actionRecord)],
       ['uploadRelativeEvidence', () => this.uploadRelativeEvidence(fieldName as actionRecord)],
+<<<<<<< HEAD
       ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
       ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
       ['addAHearing', () => this.addAHearing(fieldName as actionRecord)],
@@ -65,6 +69,11 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled()],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+=======
+      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
+      ['getAddressInfo', () => this.getAddressInfo(fieldName as actionRecord)],
+      ['verifyGenAppConfirm', () => this.verifyGenAppConfirm()],
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -310,6 +319,14 @@ export class CaseManagementAction implements IAction {
   }
 
   private async verifyGenAppConfirm(): Promise<void> {
+<<<<<<< HEAD
+=======
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
     await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
@@ -320,6 +337,7 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
+<<<<<<< HEAD
   private async selectManageHearing(manageHearingOption: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
@@ -358,6 +376,8 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmCancelHearing.closeAndReturnToCaseOverviewButton);
   }
 
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -406,6 +426,7 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmUpload.closeAndReturnToCaseOverviewButton);
   }
 
+<<<<<<< HEAD
   private async addAHearing(addAHearing: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
@@ -458,6 +479,8 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmHearing.closeAndReturnToCaseOverviewButton);
   }
 
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   private async getDefendantClaimDetails(defendantsDetails: actionRecord): Promise<string> {
 
     let originalDefendantDetails: string[] = [];
@@ -525,7 +548,7 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmAmend.closeAndReturnToCaseOverviewButton);
   }
 
- private async inputErrorValidation(page: Page, validationArr: actionRecord) {
+  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
       for (const item of validationArr.inputArray) {
 
@@ -535,7 +558,7 @@ export class CaseManagementAction implements IAction {
             await performAction('clickButton', validationArr.button);
             await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
             await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-            await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+            await performAction('clickRadioButton', {question: validationArr.question, option: validationArr.option});
             break;
 
           case 'checkBox':
@@ -596,7 +619,7 @@ export class CaseManagementAction implements IAction {
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', validationArr.header1, item.errMessage);
-            } else if (item.type === 'past' || item.type === 'validFuture') {
+            } else if (item.type === 'past') {
               await enterDate();
             } else if (item.type === 'invalid') {
               await enterDate();
@@ -605,11 +628,11 @@ export class CaseManagementAction implements IAction {
             } else {
               await enterDate();
               await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+              await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
             }
             break;
 
-          case 'dateRadioOption':
+          case 'dateRadioOption' :
             let dateOfReview: string = CaseManagementCommonUtils.getRandomDate(item.type as string);
             const enterDateOfReview = () =>
               performActions(
@@ -625,10 +648,11 @@ export class CaseManagementAction implements IAction {
             });
             await performAction('inputText', validationArr.label, generateRandomString(Number(item.input)));
             await performAction('clickButton', validationArr.button);
-            await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+            await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
             break;
 
           case 'moneyField':
+<<<<<<< HEAD
             if (item.index && validationArr.labelMulti) {
               await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
               await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
@@ -646,6 +670,13 @@ export class CaseManagementAction implements IAction {
               } else {
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }
+=======
+            await performAction('inputText', validationArr.label, item.input);
+            await expect(async () => {
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
+              await performValidation('inputError', validationArr.label, item.errMessage);
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
             }).toPass({
               timeout: VERY_LONG_TIMEOUT,
             });

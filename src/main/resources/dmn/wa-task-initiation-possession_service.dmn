@@ -231,7 +231,7 @@ else
       </rule>
       <rule id="DecisionRule_0g14gbs">
         <inputEntry id="UnaryTests_00o2b5b">
-          <text>"uploadDocuments"</text>
+          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1majuv9">
           <text></text>
@@ -275,7 +275,7 @@ else
       </rule>
       <rule id="DecisionRule_1ko9g24">
         <inputEntry id="UnaryTests_0elw9dw">
-          <text>"uploadDocuments"</text>
+          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1it4om8">
           <text></text>

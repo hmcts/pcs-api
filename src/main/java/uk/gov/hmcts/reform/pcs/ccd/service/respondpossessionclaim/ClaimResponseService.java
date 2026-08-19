@@ -13,13 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 
 import java.util.Optional;
 
 /**
- * Applies a submitted defendant response to their party record: contact preferences, contact
- * details, date of birth, and the reasonable adjustment flags supplied through the cui-ra microsite.
+ * Service for managing defendant contact preferences.
+ * Handles saving contact preferences and updating party contact details.
  */
 @Service
 @Slf4j
@@ -27,11 +26,9 @@ import java.util.Optional;
 public class ClaimResponseService {
 
     private final ModelMapper modelMapper;
-    private final CaseFlagService caseFlagService;
 
     /**
-     * Saves the defendant's contact preferences, contact details and reasonable adjustment flags
-     * against the given defendant party.
+     * Saves defendant's contact preferences and contact details for the given defendant party.
      *
      * @throws IllegalStateException if no party is found
      */
@@ -44,8 +41,6 @@ public class ClaimResponseService {
         saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
-
-        caseFlagService.saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags());
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {

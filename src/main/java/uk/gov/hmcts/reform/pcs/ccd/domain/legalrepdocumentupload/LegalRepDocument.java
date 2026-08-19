@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 
 @Data
@@ -37,10 +36,4 @@ public class LegalRepDocument {
         max = 60
     )
     private String description;
-
-    @CCD(showCondition = ShowConditions.NEVER_SHOW)
-    private String contentType;
-
-    @CCD(showCondition = ShowConditions.NEVER_SHOW)
-    private Long sizeInBytes;
 }

@@ -13,7 +13,7 @@ export class signOutAction implements IAction {
         await performAction('clickButton', home.signOutButton);
       }
 
-      await expect(page.locator('input#email')).toBeVisible();
+      await expect(page.locator('input#username')).toBeVisible();
     }).toPass({
       timeout: MEDIUM_TIMEOUT,
     });

@@ -16,11 +16,14 @@ export default {
   'enterGenAppuploadGeneralApplication': 'enterGenAppuploadGeneralApplication',
   'enterGenAppuploadRelatedEvidence': 'enterGenAppUploadRelatedEvidence',
   'enterGenAppreferApplicationToJudge': 'enterGenAppPreferApplicationToJudge',
+<<<<<<< HEAD
   'manageHearingmanageHearing': 'manageHearing',
   'manageHearingaddHearing': 'addHearing',
   'manageHearingcancelHearing': 'cancelHearing',
   'manageHearing/submit': 'checkYourAnswersManageHearing',
   'manageHearing/confirm': 'confirmHearing',
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
   'enterGenApp/confirm': 'enterGenAppConfirmation',
 };

@@ -1,7 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -30,8 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -39,8 +39,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @AllArgsConstructor
 @Slf4j
 public class PartyService {
-
-    private static final String PERSON_UNKNOWN_NAME = "Person unknown";
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
@@ -84,17 +82,10 @@ public class PartyService {
     }
 
     public String getPartyName(PartyEntity partyEntity) {
-        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
-            return PERSON_UNKNOWN_NAME;
-        }
         if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
             return partyEntity.getOrgName();
         } else {
-            String partyName = Stream.of(partyEntity.getFirstName(), partyEntity.getLastName())
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.joining(" "));
-
-            return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
+            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
         }
     }
 

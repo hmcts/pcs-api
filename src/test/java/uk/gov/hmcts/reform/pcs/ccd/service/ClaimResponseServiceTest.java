@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
@@ -23,7 +22,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,8 +37,6 @@ class ClaimResponseServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
-    @Mock
-    private CaseFlagService caseFlagService;
 
     private ClaimResponseService underTest;
 
@@ -52,7 +48,7 @@ class ClaimResponseServiceTest {
         testParty.setId(TEST_PARTY_ID);
         testParty.setIdamId(TEST_IDAM_ID);
 
-        underTest = new ClaimResponseService(modelMapper, caseFlagService);
+        underTest = new ClaimResponseService(modelMapper);
     }
 
     @Test
@@ -412,106 +408,12 @@ class ClaimResponseServiceTest {
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
     }
 
-    @Test
-    void saveDraftDataForParty_WithPartyId() {
-        // Given
-        PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .phoneNumber("07123456789")
-                .emailAddress("defendant@example.com")
-                .address(TEST_ADDRESS)
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .contactByPost(VerticalYesNo.NO)
-                .contactByPhone(VerticalYesNo.YES)
-                .contactByText(VerticalYesNo.YES)
-                .propertyAddressConfirmation(VerticalYesNo.YES)
-                .build()
-        );
-
-        AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
-
-        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
-
-        // When
-        underTest.saveDraftDataForParty(response, testParty);
-
-        // Then
-        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
-
-        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
-    void saveDraftDataForParty_WithPartyIdAndDateOfBirth() {
-        // Given
-        LocalDate dob = LocalDate.now();
-        PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .phoneNumber("07123456789")
-                .emailAddress("defendant@example.com")
-                .address(TEST_ADDRESS)
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(VerticalYesNo.YES)
-                .contactByPost(VerticalYesNo.NO)
-                .contactByPhone(VerticalYesNo.YES)
-                .contactByText(VerticalYesNo.YES)
-                .dateOfBirth(dob)
-                .propertyAddressConfirmation(VerticalYesNo.YES)
-                .build()
-        );
-
-        AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
-        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
-
-        // When
-        underTest.saveDraftDataForParty(response, testParty);
-
-        // Then
-        assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
-        assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
-        assertThat(testParty.getAddress()).isEqualTo(addressEntity);
-        assertThat(testParty.getDateOfBirth()).isEqualTo(dob);
-
-        ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
-    void shouldSaveDefendantFlagsAgainstParty() {
-        // Given
-        Flags defendantFlags = Flags.builder().partyName("Jack Smith").roleOnCase("Defendant").build();
-        PossessionClaimResponse response = buildResponse(
-            Party.builder().build(),
-            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
-        ).toBuilder()
-            .defendantFlags(defendantFlags)
-            .build();
-
-        // When
-        underTest.saveDraftDataForParty(response, testParty);
-
-        // Then
-        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags);
-    }
-
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
         return PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
             .defendantResponses(defendantResponses)
             .build();
     }
+
+
 }

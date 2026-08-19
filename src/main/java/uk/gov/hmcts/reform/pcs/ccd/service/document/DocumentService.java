@@ -303,14 +303,6 @@ public class DocumentService {
             );
 
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
-        } else {
-            String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
-                caseReference,
-                mainClaim,
-                party,
-                documentEntities
-            );
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
         }
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
@@ -567,9 +559,7 @@ public class DocumentService {
 
     public void createDocumentEntitiesFromLegalRepDocuments(
         List<LegalRepDocument> legalRepDocuments,
-        PcsCaseEntity pcsCaseEntity,
-        PartyEntity party,
-        GenAppEntity selectedGenApp
+        PcsCaseEntity pcsCaseEntity
     ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> {
@@ -580,25 +570,11 @@ public class DocumentService {
                     .map(CaseFileCategory::getId)
                     .orElse(null);
 
-                ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-
-                String documentUrl = legalRepDoc.getDocument().getUrl();
-                String originalFilename = legalRepDoc.getDocument().getFilename();
-                String renamed = (selectedGenApp != null)
-                    ? documentNameService.appendGenAppPostfix(
-                    originalFilename, selectedGenApp, mainClaim, party.getId())
-                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
-
                 return DocumentEntity.builder()
                 .pcsCase(pcsCaseEntity)
-                .url(documentUrl)
-                .documentId(documentIdExtractor.extractDocumentId(documentUrl))
-                .generalApplication(selectedGenApp)
-                .fileName(renamed)
-                .party(party)
+                .url(legalRepDoc.getDocument().getUrl())
+                .fileName(legalRepDoc.getDocument().getFilename())
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
-                .contentType(legalRepDoc.getContentType())
-                .size(legalRepDoc.getSizeInBytes())
                 .description(legalRepDoc.getDescription())
                 .type(resolvedDocumentType)
                 .categoryId(categoryId)

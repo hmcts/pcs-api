@@ -56,8 +56,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
@@ -831,6 +829,7 @@ public class PCSCase {
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
 
+<<<<<<< HEAD
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
@@ -853,4 +852,6 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private DynamicMultiSelectList partyMultiSelectionList;
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
 }

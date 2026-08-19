@@ -32,8 +32,6 @@ export class CreateCaseAPIAction implements IAction {
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
-      ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
-
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -457,6 +455,7 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
+<<<<<<< HEAD
   private async manageHearingAPI(caseData: actionRecord): Promise<void> {
     await this.getAccessToken(caseData.email as string, caseData.password as string);
     const manageHearingApi = Axios.create(manageHearingEventTokenApiData.manageHearingEventTokenApiInstance());
@@ -496,6 +495,8 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
+=======
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)
   private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
     const maxRetries = actionRetries + actionRetries;

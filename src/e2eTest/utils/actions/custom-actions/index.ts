@@ -6,4 +6,5 @@ export * from "@utils/actions/custom-actions/login.action";
 export * from "@utils/actions/custom-actions/navigateToUrl.action";
 export * from "@utils/actions/custom-actions/searchCase.action";
 export * from "@utils/actions/custom-actions/signOut.action";
-export * from "@utils/actions/custom-actions/recordAnsweredFields.action";
+export * from "@utils/actions/custom-actions/documentsLR.action";
+

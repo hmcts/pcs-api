@@ -17,6 +17,7 @@ export * from './checkYourAnswersAmendDocuments.page.data';
 export * from './confirmAmend.page.data';
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './enterGenAppUploadRelatedEvidence.page.data';
+<<<<<<< HEAD
 export * from './enterGenAppPreferApplicationToJudge.page.data'
 export * from './enterGenAppuploadGeneralApplication.page.data';
 export * from './manageHearing.page.data';
@@ -29,3 +30,8 @@ export * from './manageHearing.page.data';
 export * from './cancelHearing.page.data';
 export * from './checkYourAnswersCancelHearing.page.data';
 export * from './confirmCancelHearing.page.data'
+=======
+export * from './enterGenAppPreferApplicationToJudge.page.data';
+export * from './genAppsCheckYourAnswers.page.data';
+export * from './enterGenAppConfirmation.page.data';
+>>>>>>> parent of 29ac8c32c4 (Merge branch 'master' into Test-GA-Automation)

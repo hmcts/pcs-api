@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.util.List;
@@ -42,11 +41,5 @@ public class LegalRepDocumentUploadDetails {
 
     @CCD(searchable = false)
     private  YesOrNo isWales;
-
-    @CCD(
-        access = {DefendantAccess.class},
-        searchable = false
-    )
-    private String selectedLegalRepRelatedApplicationId;
 
 }
