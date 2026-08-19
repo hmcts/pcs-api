@@ -9,8 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +59,35 @@ class OrganisationServiceTest {
         assertThat(result).isEqualTo(ORGANISATION_NAME);
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationName(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should retrieve organisation profile ids skipping the generic profile")
+    void shouldRetrieveOrgProfileIdsSkippingGenericProfile() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
+                            .build());
+
+        String result = organisationService.getOrgProfileIdForCurrentUser();
+
+        assertThat(result).isEqualTo("LOCALAUTH_PROFILE");
+    }
+
+    @Test
+    @DisplayName("Should return null profile ids when absent from the organisation details")
+    void shouldReturnNullWhenProfileIdsAbsent() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
+
+        String result = organisationService.getOrgProfileIdForCurrentUser();
+
+        assertThat(result).isNull();
     }
 
     @Test

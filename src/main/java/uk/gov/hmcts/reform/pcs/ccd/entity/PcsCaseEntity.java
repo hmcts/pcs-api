@@ -53,6 +53,7 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     private LegislativeCountry legislativeCountry;
 
+
     @Enumerated(EnumType.STRING)
     @Column(name = "claimant_type")
     private ClaimantType claimantType;
