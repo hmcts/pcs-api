@@ -23,6 +23,7 @@ public class HearingView {
                 .otherHearingType(hearingEntity.getOtherHearingType())
                 .noticeWording(hearingEntity.getNoticeWording())
                 .date(hearingEntity.getHearingDate())
+                .durationDays(hearingEntity.getDurationDays())
                 .durationHours(hearingEntity.getDurationHours().floatValue())
                 .durationMinutes(hearingEntity.getDurationMinutes().floatValue())
                 .notes(hearingEntity.getNotes())
