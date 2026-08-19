@@ -16,9 +16,4 @@ public interface CounterClaimRepository extends JpaRepository<CounterClaimEntity
         UUID partyId,
         CounterClaimState status
     );
-
-    Optional<CounterClaimEntity> findFirstByPcsCaseCaseReferenceAndPartyIdOrderByClaimSubmittedDateDesc(
-        long caseReference,
-        UUID partyId
-    );
 }

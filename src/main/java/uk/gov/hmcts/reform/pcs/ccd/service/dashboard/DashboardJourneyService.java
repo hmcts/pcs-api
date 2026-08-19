@@ -19,10 +19,15 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.TaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -32,6 +37,8 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class DashboardJourneyService {
+
+    public static final String COUNTER_CLAIM_FEE_UNPAID_TEMPLATE_ID = "Defendant.CounterClaimFeeUnpaid";
 
     private static final List<TaskGroupId> TASK_GROUP_ORDER = List.of(
         TaskGroupId.CLAIM,
@@ -45,14 +52,20 @@ public class DashboardJourneyService {
     private final List<TaskGroupEvaluator> evaluatorsInOrder;
     private final DraftCaseDataService draftCaseDataService;
     private final DefendantResponseService defendantResponseService;
+    private final OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
+    private final FeatureToggleService featureToggleService;
 
     public DashboardJourneyService(
         DraftCaseDataService draftCaseDataService,
         DefendantResponseService defendantResponseService,
+        OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService,
+        FeatureToggleService featureToggleService,
         List<TaskGroupEvaluator> evaluators
     ) {
         this.draftCaseDataService = draftCaseDataService;
         this.defendantResponseService = defendantResponseService;
+        this.outstandingCounterClaimPaymentService = outstandingCounterClaimPaymentService;
+        this.featureToggleService = featureToggleService;
         this.evaluatorsInOrder = evaluators.stream()
             .sorted(Comparator.comparingInt(e -> orderIndex(e.groupId())))
             .toList();
@@ -83,7 +96,7 @@ public class DashboardJourneyService {
 
         ResponseStatus responseStatus = getResponseStatus(hasDraftResponse, hasSubmittedResponse);
 
-        List<ListValue<DashboardNotification>> notifications = computeNotifications(responseStatus);
+        List<ListValue<DashboardNotification>> notifications = computeNotifications(responseStatus, ctx);
         List<ListValue<TaskGroup>> taskGroups = computeTaskGroups(ctx);
         List<ListValue<RelatedApplication>> relatedApplications = computeRelatedApplications(ctx);
 
@@ -99,12 +112,28 @@ public class DashboardJourneyService {
             .build();
     }
 
-    private List<ListValue<DashboardNotification>> computeNotifications(ResponseStatus responseStatus) {
-        String responseTemplateId = switch (responseStatus) {
-            case NOT_STARTED -> "Defendant.ResponseNotStarted";
-            case IN_PROGRESS -> "Defendant.ResponseInProgress";
-            case SUBMITTED -> "Defendant.ResponseSubmitted";
-        };
+    private List<ListValue<DashboardNotification>> computeNotifications(
+        ResponseStatus responseStatus,
+        DashboardContext ctx
+    ) {
+        Optional<OutstandingCounterClaimPayment> unpaidCounterClaimPayment =
+            findUnpaidCounterClaimPayment(responseStatus, ctx);
+
+        String responseTemplateId;
+        Map<String, String> responseTemplateValues = Map.of();
+
+        if (unpaidCounterClaimPayment.isPresent()) {
+            responseTemplateId = COUNTER_CLAIM_FEE_UNPAID_TEMPLATE_ID;
+            responseTemplateValues = Map.of(
+                "feeAmount", unpaidCounterClaimPayment.get().getFeeAmount().toPlainString()
+            );
+        } else {
+            responseTemplateId = switch (responseStatus) {
+                case NOT_STARTED -> "Defendant.ResponseNotStarted";
+                case IN_PROGRESS -> "Defendant.ResponseInProgress";
+                case SUBMITTED -> "Defendant.ResponseSubmitted";
+            };
+        }
 
         return ListValueUtils.wrapListItems(List.of(
             DashboardNotification.builder()
@@ -113,9 +142,30 @@ public class DashboardJourneyService {
                 .build(),
             DashboardNotification.builder()
                 .templateId(responseTemplateId)
-                .templateValues(toTemplateValues(Map.of()))
+                .templateValues(toTemplateValues(responseTemplateValues))
                 .build()
         ));
+    }
+
+    private Optional<OutstandingCounterClaimPayment> findUnpaidCounterClaimPayment(
+        ResponseStatus responseStatus,
+        DashboardContext ctx
+    ) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)) {
+            return Optional.empty();
+        }
+
+        if (responseStatus != ResponseStatus.SUBMITTED
+            || ctx == null
+            || ctx.defendant() == null
+            || ctx.defendant().getId() == null) {
+            return Optional.empty();
+        }
+
+        return outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(
+            ctx.caseReference(),
+            ctx.defendant().getId()
+        );
     }
 
     private List<ListValue<TaskGroup>> computeTaskGroups(DashboardContext ctx) {
