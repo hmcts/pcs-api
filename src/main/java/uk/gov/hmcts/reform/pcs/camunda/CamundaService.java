@@ -132,11 +132,10 @@ public class CamundaService {
             List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
             String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
                 courtVenues.getFirst().courtName();
-            Integer region = pcsCaseEntity.getRegionId() != null ? pcsCaseEntity.getRegionId() : 1;
 
             processVariables.put("taskLocationId", dmnIntegerValue(locationId));
             processVariables.put("taskLocationName", dmnStringValue(locationName));
-            processVariables.put("taskRegion", dmnIntegerValue(region));
+            processVariables.put("taskRegion", dmnIntegerValue(pcsCaseEntity.getRegionId()));
         } catch (Exception e) {
             log.error("Failed to get location and region data", e);
             processVariables.put("taskLocationId", dmnIntegerValue(1));
