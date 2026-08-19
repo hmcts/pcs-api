@@ -386,6 +386,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    await performValidation('text', { elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
     await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
@@ -414,6 +415,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    await performValidation('text', { elementType: 'inlineText', text: confirmCancelHearing.hearingCancelledText });
     await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
@@ -515,6 +517,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    await performValidation('text', { elementType: 'inlineText', text: confirmHearing.addHearingText });
     await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',

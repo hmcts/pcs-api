@@ -44,7 +44,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
       email: user.hearingCenterAdmin.email,
       password: user.hearingCenterAdmin.password
     });
-    console.log(`Case has been associated with hearing`);
   }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -112,7 +111,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: manageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
-    await performAction('confirmHearingCancelled');
+    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 
@@ -146,7 +145,6 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
   test('Case management - Case Worker Add a hearing without Notice @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
     let party = allPartyDetails[0];
-    console.log('party is' + party)
     let typeOfHearing = addHearing.typeOfHearingOption[1];
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);

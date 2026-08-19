@@ -485,6 +485,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = hearingResponse.data.id;
       caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = hearingResponse.data.state;
+      console.log(`\n✅ NEW HEARING DATE ADDED SUCCESSFUL : STATUS ${hearingResponse.status}`);
     }
     catch (error: any) {
       const status = error?.response?.status;
