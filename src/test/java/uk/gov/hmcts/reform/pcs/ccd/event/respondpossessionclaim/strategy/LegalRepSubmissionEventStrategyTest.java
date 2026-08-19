@@ -166,7 +166,7 @@ class LegalRepSubmissionEventStrategyTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.empty());
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
 
@@ -216,9 +216,13 @@ class LegalRepSubmissionEventStrategyTest {
             new RespondPossessionClaimSubmitPersistenceResult(possessionClaimResponse, CounterClaimEntity.builder()
                 .build(), true);
 
+        String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
-        when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId))
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+                                                         organisationId))
             .thenReturn(Optional.of(caseData));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
