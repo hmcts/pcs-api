@@ -29,7 +29,7 @@ import {
   uploadADocument,
   addHearing,
   confirmHearing,
-  updatePartyDetails
+  updatePartyDetails,
   confirmCancelHearing
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
