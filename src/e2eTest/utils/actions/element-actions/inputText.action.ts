@@ -4,9 +4,11 @@ import { actionRecord, IAction } from '../../interfaces/action.interface';
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
 
+
     let locator;
     if (typeof fieldParams !== 'string' && fieldParams.index !== null) {
-      locator = page.locator(`//span[text()="${fieldParams.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+      const labelText = fieldParams.textLabel ?? fieldParams.text;
+      locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
 
       locator = (await locator.count()) > 1
         ? locator.nth(Number(fieldParams.index))
@@ -14,7 +16,7 @@ export class InputTextAction implements IAction {
     } else {
       locator = typeof fieldParams === 'string'
         ? await this.getStringFieldLocator(page, fieldParams)
-        : page.locator(`fieldset:has(h2:has-text("${fieldParams.textLabel}")) textarea:visible:enabled,
+        : page.locator(`fieldset:has(h2:has-text("${fieldParams.text}")) textarea:visible:enabled,
       :has-text("${fieldParams.text}") ~ input:visible:enabled,
       label:has-text("${fieldParams.text}") ~ textarea,
       :has-text("${fieldParams.text}") ~ textarea:visible:enabled`).first();
