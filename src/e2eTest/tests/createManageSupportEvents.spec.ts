@@ -55,6 +55,12 @@ test.afterEach(async () => {
   }
 });
 
+test.describe('test run', async () => {
+   test('Create support - check that support can be created @smoke', async ({page}) => {
+    console.log(`Running test with case number: ${caseNumber} and case type ID: ${getCaseTypeId()}`);
+});
+});
+
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
   test('Create support - check that support can be created @smoke', async ({page}) => {
