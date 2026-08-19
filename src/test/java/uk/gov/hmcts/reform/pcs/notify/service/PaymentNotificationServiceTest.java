@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -60,7 +59,6 @@ class PaymentNotificationServiceTest {
     void shouldSendCounterClaimPaymentSuccessEmail() {
         UUID counterClaimId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
-        UUID defendantIdamId = UUID.randomUUID();
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
@@ -74,8 +72,6 @@ class PaymentNotificationServiceTest {
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
 
         String paymentReference = "PAY-1234";
 
@@ -91,7 +87,7 @@ class PaymentNotificationServiceTest {
         UUID defendantId = UUID.randomUUID();
         // UUID legalRepId = UUID.randomUUID();
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
-        OrganisationEntity legalRep = mock(OrganisationEntity.class);
+        OrganisationEntity legalRepOrganisation = mock(OrganisationEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
@@ -106,18 +102,18 @@ class PaymentNotificationServiceTest {
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
         when(legalRepresentativeOrganisationRepository
                  .findByPartyLinkedToOrganisationAndActive(defendantId))
-            .thenReturn(Optional.of(legalRep));
+            .thenReturn(Optional.of(legalRepOrganisation));
 
         String paymentReference = "PAY-1234";
 
         underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(legalRep, paymentReference,pcsCase,
+            .sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(legalRepOrganisation,
+                                                                                  paymentReference,
+                                                                                  pcsCase,
                                                                                   defendantResponse);
     }
 
