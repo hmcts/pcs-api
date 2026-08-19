@@ -98,7 +98,7 @@ public class LegalRepresentativeSummaryService {
     }
 
     private boolean displaySummaryLegalRepresentativeMarkdown(boolean isPartyLink, State state) {
-        return isPartyLink && state == State.CASE_ISSUED;
+        return isPartyLink && state == State.CASE_ISSUED && !isFeatureDisabled();
     }
 
     private boolean isFeatureDisabled() {
