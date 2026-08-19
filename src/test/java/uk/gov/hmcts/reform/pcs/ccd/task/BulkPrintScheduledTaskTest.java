@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -42,6 +43,8 @@ class BulkPrintScheduledTaskTest {
     private ClaimPackSender claimPackSender;
     @Mock
     private DefencePackSender defencePackSender;
+    @Mock
+    private GenAppPackSender genAppPackSender;
 
     @Test
     @DisplayName("Builds the task with the nightly default schedule")
@@ -63,7 +66,7 @@ class BulkPrintScheduledTaskTest {
 
         runSweep(null);
 
-        verifyNoInteractions(claimActivityLogRepository, claimPackSender, defencePackSender);
+        verifyNoInteractions(claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender);
     }
 
     @Test
@@ -72,6 +75,7 @@ class BulkPrintScheduledTaskTest {
         UUID caseA = UUID.randomUUID();
         UUID caseB = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
             ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseA, caseB));
 
@@ -81,8 +85,10 @@ class BulkPrintScheduledTaskTest {
             .findCaseIdsByActivityTypeAndStatusCreatedAfter(any(), any(), any());
         verify(claimPackSender).sendClaimPacks(caseA);
         verify(defencePackSender).sendDefencePacks(caseA);
+        verify(genAppPackSender).sendGenAppPacks(caseA);
         verify(claimPackSender).sendClaimPacks(caseB);
         verify(defencePackSender).sendDefencePacks(caseB);
+        verify(genAppPackSender).sendGenAppPacks(caseB);
     }
 
     @Test
@@ -90,6 +96,7 @@ class BulkPrintScheduledTaskTest {
     void shouldApplyLookbackCutoffWhenConfigured() {
         UUID caseId = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatusCreatedAfter(
             eq(ClaimActivityType.DOCUMENTS_CREATED), eq(ClaimActivityStatus.SUCCESS), any(LocalDateTime.class)))
             .thenReturn(List.of(caseId));
@@ -101,6 +108,7 @@ class BulkPrintScheduledTaskTest {
         verify(claimActivityLogRepository, never()).findCaseIdsByActivityTypeAndStatus(any(), any());
         verify(claimPackSender).sendClaimPacks(caseId);
         verify(defencePackSender).sendDefencePacks(caseId);
+        verify(genAppPackSender).sendGenAppPacks(caseId);
     }
 
     @Test
@@ -109,6 +117,7 @@ class BulkPrintScheduledTaskTest {
         UUID failingCase = UUID.randomUUID();
         UUID healthyCase = UUID.randomUUID();
         when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
             ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS))
             .thenReturn(List.of(failingCase, healthyCase));
@@ -117,8 +126,43 @@ class BulkPrintScheduledTaskTest {
         assertThatCode(() -> runSweep(null)).doesNotThrowAnyException();
 
         verify(defencePackSender).sendDefencePacks(failingCase);
+        verify(genAppPackSender).sendGenAppPacks(failingCase);
         verify(claimPackSender).sendClaimPacks(healthyCase);
         verify(defencePackSender).sendDefencePacks(healthyCase);
+        verify(genAppPackSender).sendGenAppPacks(healthyCase);
+    }
+
+    @Test
+    @DisplayName("Skips the gen-app phase when Release 1.3 is off")
+    void shouldSkipGenAppPhaseWhenRelease13Off() {
+        UUID caseId = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseId));
+
+        runSweep(null);
+
+        verify(claimPackSender).sendClaimPacks(caseId);
+        verify(defencePackSender).sendDefencePacks(caseId);
+        verify(genAppPackSender, never()).sendGenAppPacks(any());
+    }
+
+    @Test
+    @DisplayName("A gen-app pack failure isolates to that phase; claim and defence still run")
+    void shouldIsolateFailingGenAppPhaseAndContinue() {
+        UUID failingCase = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(failingCase));
+        doThrow(new RuntimeException("boom")).when(genAppPackSender).sendGenAppPacks(failingCase);
+
+        assertThatCode(() -> runSweep(null)).doesNotThrowAnyException();
+
+        verify(claimPackSender).sendClaimPacks(failingCase);
+        verify(defencePackSender).sendDefencePacks(failingCase);
+        verify(genAppPackSender).sendGenAppPacks(failingCase);
     }
 
     private void runSweep(Integer lookbackHours) {
@@ -128,7 +172,7 @@ class BulkPrintScheduledTaskTest {
 
     private BulkPrintScheduledTask component(String schedule, Integer lookbackHours) {
         return new BulkPrintScheduledTask(
-            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender,
+            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender,
             schedule, lookbackHours);
     }
 }

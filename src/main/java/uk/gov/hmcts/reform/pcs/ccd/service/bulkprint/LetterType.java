@@ -14,7 +14,8 @@ public enum LetterType {
 
     CLAIMANT_CLAIM_PACK("CPC-01-IN1"),
     DEFENDANT_CLAIM_PACK("CPD-01-IN1"),
-    DEFENCE_PACK("DEF-01-IN1");
+    DEFENCE_PACK("DEF-01-IN1"),
+    GEN_APP_PACK("GEN-00-IN0");
 
     private final String code;
 }

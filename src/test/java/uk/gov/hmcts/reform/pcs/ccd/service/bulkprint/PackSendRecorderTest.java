@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.FailureReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -145,5 +146,32 @@ class PackSendRecorderTest {
         assertThat(details.terminal()).isTrue();
         assertThat(details.failureReason()).isEqualTo(FailureReason.MISSING_ADDRESS);
         assertThat(details.errorDetail()).isEqualTo("MissingPostalAddressException: no usable address");
+    }
+
+    @Test
+    @DisplayName("Marks the GA submission document self=true for the applicant")
+    void shouldResolveGenAppOwnershipToApplicant() {
+        PartyEntity applicant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity otherParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        DocumentEntity gaForm = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.GENERAL_APPLICATION)
+            .generalApplication(GenAppEntity.builder().party(applicant).build())
+            .build();
+
+        underTest.sendAndRecord(pcsCase, applicant, LetterType.GEN_APP_PACK, List.of(gaForm), UUID::randomUUID);
+        underTest.sendAndRecord(pcsCase, otherParty, LetterType.GEN_APP_PACK, List.of(gaForm), UUID::randomUUID);
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(pcsCase), eq(applicant), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).singleElement().satisfies(ref -> {
+            assertThat(ref.self()).isTrue();
+            assertThat(ref.type()).isEqualTo(DocumentType.GENERAL_APPLICATION);
+        });
+
+        verify(accessCodeActivityLogService)
+            .recordPackSent(eq(pcsCase), eq(otherParty), packDetailsCaptor.capture());
+        assertThat(packDetailsCaptor.getValue().documents()).singleElement().satisfies(ref ->
+            assertThat(ref.self()).isFalse());
     }
 }
