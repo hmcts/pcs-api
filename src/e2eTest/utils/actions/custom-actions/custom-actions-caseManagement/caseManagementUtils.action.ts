@@ -147,9 +147,9 @@ export class CaseManagementCommonUtils {
     const baseName = fileName.replace(/\.pdf$/i, '');
     const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
-        const [day, month, year] = fileDate.split('/');
-        return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-      })(): '';
+      const [day, month, year] = fileDate.split('/');
+      return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    })(): '';
     const parts = [baseName];
 
     if (formattedDate) {
