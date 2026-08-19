@@ -187,7 +187,7 @@ public class CamundaService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables ){
+    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables) {
         try {
             PcsCaseEntity pcsCaseEntity = loadCase(caseId);
             Integer locationId = pcsCaseEntity.getBaseLocation();
