@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -47,18 +45,12 @@ public class PaymentNotificationService {
         }
 
         // UUID userUUID = securityContextService.getCurrentUserId();
-        List<String> userRole = securityContextService.getCurrentUserDetails().getRoles();
+        // List<String> userRole = securityContextService.getCurrentUserDetails().getRoles();
         OrganisationEntity legalRepresentativeOrganisationEntity =
             organisationRepository.findByPartyLinkedToOrganisationAndActive(
                 defendantResponse.getParty().getId()).orElse(null);
 
-        log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
-
-        if (userRole.contains(UserRole.CITIZEN.getRole())) {
-            log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
-            notificationService
-                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
-        } else if (legalRepresentativeOrganisationEntity != null && !userRole.contains(UserRole.CITIZEN.getRole())) {
+        if (legalRepresentativeOrganisationEntity != null) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",
                      pcsCase.getCaseReference());
             notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
@@ -67,7 +59,9 @@ public class PaymentNotificationService {
                 defendantResponse.getPcsCase(),
                 defendantResponse);
         } else {
-            throw new RuntimeException("Current user does not match defendant or legal representative");
+            log.info("Sending counterclaim payment success email case reference {}", pcsCase.getCaseReference());
+            notificationService
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse, paymentReference);
         }
     }
 }
