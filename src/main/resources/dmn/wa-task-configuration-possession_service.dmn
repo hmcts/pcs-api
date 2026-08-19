@@ -79,7 +79,7 @@
           <text>"region"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0w92hli">
-          <text>if(caseData!=null and caseData.caseManagementLocation!=null and caseData.caseManagementLocation.region!=null) then caseData.caseManagementLocation.region else "1"</text>
+          <text>taskAttributes.taskRegion</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0nud1yw">
           <text>true</text>

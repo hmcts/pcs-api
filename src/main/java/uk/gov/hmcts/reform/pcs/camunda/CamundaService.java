@@ -106,7 +106,8 @@ public class CamundaService {
         // Note: A few fields are stripped out by wa-task-monitor before the task attributes are passed
         // to the configuration DMN, so should be not used as a custom field if that field is going to be
         // referenced in the configuration DMN
-        // The fields that are removed are: dueDate, assignee, priorityDate, description, name, location, locationName
+        // The fields that are removed are: dueDate, assignee, priorityDate, description, name, location, locationName,
+        // region
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
@@ -131,12 +132,16 @@ public class CamundaService {
             List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
             String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
                 courtVenues.getFirst().courtName();
+            Integer region = pcsCaseEntity.getRegionId() != null ? pcsCaseEntity.getRegionId() : 1;
 
             processVariables.put("taskLocationId", dmnIntegerValue(locationId));
             processVariables.put("taskLocationName", dmnStringValue(locationName));
+            processVariables.put("taskRegion", dmnIntegerValue(region));
         } catch (Exception e) {
-            log.error("Failed to get court location", e);
+            log.error("Failed to get location and region data", e);
+            processVariables.put("taskLocationId", dmnIntegerValue(1));
             processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
+            processVariables.put("taskRegion", dmnIntegerValue(1));
         }
 
         SendMessageRequest request = SendMessageRequest.builder()
