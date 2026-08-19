@@ -181,7 +181,8 @@ public class CaseFlagService {
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
-                                                               PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity, Supplier<T> flagEntitySupplier,
+                                                               PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
+                                                               Supplier<T> flagEntitySupplier,
                                                                RefDataPolicy refDataPolicy,
                                                                List<T> existingFlags) {
 
@@ -244,7 +245,7 @@ public class CaseFlagService {
         }
     }
 
- private void applyEditedFlagFields(BaseCaseFlag flagEntity, FlagDetail incomingFlagDetail) {
+    private void applyEditedFlagFields(BaseCaseFlag flagEntity, FlagDetail incomingFlagDetail) {
         flagEntity.setDefaultStatus(incomingFlagDetail.getStatus());
         flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
         flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
