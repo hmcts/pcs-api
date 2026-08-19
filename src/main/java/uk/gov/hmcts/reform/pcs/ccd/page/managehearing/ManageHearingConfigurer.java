@@ -10,14 +10,16 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 public class ManageHearingConfigurer implements PageConfigurer {
 
     private final ManageHearingPage manageHearingPage;
-    private final HearingDetailsPage hearingDetailsPage;
+    private final AddHearingPage addHearingPage;
+    private final EditHearingPage editHearingPage;
     private final CancelHearingPage cancelHearingPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(manageHearingPage)
-            .add(hearingDetailsPage)
+            .add(addHearingPage)
+            .add(editHearingPage)
             .add(cancelHearingPage);
     }
 }

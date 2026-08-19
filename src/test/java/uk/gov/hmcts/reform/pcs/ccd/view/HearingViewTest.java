@@ -33,7 +33,6 @@ public class HearingViewTest {
             .otherHearingType("other type")
             .noticeWording(HearingNoticeWording.ADJ)
             .hearingDate(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
-            .durationDays(1)
             .durationMinutes(30)
             .durationHours(1)
             .notes("notes")
@@ -60,7 +59,6 @@ public class HearingViewTest {
         assertThat(hearing.getOtherHearingType()).isEqualTo("other type");
         assertThat(hearing.getNoticeWording()).isEqualTo(HearingNoticeWording.ADJ);
         assertThat(hearing.getDate()).isEqualTo(LocalDateTime.of(2026, 2, 1, 9, 0, 0));
-        assertThat(hearing.getDurationDays()).isEqualTo(1);
         assertThat(hearing.getDurationMinutes()).isEqualTo(30);
         assertThat(hearing.getDurationHours()).isEqualTo(1);
         assertThat(hearing.getNotes()).isEqualTo("notes");

@@ -73,14 +73,8 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState'
-    || action === 'enterApplicationDetails'
-    || action === 'uploadADocument'
-    || action === 'selectDocumentToAmend'
-    || action === 'addAHearing'
-    || action === 'selectManageHearing'
-    || action === 'editHearing'
-    || action === 'cancelHearing') {
+
+  if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument' || action === 'selectDocumentToAmend' || action ==='addAHearing' || action === 'cancelHearing' ) {
     captureDataForCYAPage = true;
   }
 

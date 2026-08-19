@@ -2,9 +2,9 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  addHearing, cancelHearing,
+  addHearing, cancelHearing, manageHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
@@ -22,7 +22,6 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
-      ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
@@ -298,8 +297,7 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.seven,
         inputArray: addHearing.errorValidationField.errorMoneyField,
         // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
-        label1: addHearing.daysTextLabel,
-        label: addHearing.hoursTextLabel,
+        label: addHearing.hourTextLabel,
         labelMulti :addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });

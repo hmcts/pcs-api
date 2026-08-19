@@ -4,7 +4,6 @@ import { actionRecord, IAction } from '../../interfaces/action.interface';
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
 
-
     let locator;
     if (typeof fieldParams !== 'string' && fieldParams.index !== null) {
       const labelText = fieldParams.textLabel ?? fieldParams.text;

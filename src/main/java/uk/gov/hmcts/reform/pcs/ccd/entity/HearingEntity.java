@@ -56,8 +56,6 @@ public class HearingEntity {
 
     private LocalDateTime hearingDate;
 
-    private Integer durationDays;
-
     private Integer durationHours;
 
     private Integer durationMinutes;
@@ -75,7 +73,6 @@ public class HearingEntity {
     private String additionalInformation;
 
     @Builder.Default
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private List<UUID> noticeParties = new ArrayList<>();
 
     private Boolean cancelled;

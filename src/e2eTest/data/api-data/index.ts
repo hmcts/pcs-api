@@ -12,5 +12,3 @@ export * from '@data/api-data/backDateTheCasePayment.api.data';
 export * from '@data/api-data/makeAnApplication.api.data';
 export * from '@data/api-data/makeAnApplicationEventToken.api.data';
 export * from '@data/api-data/payment.api.data';
-export * from '@data/api-data/manageHearing.api.data';
-export * from '@data/api-data/manageHearingEventToken.api.data'
