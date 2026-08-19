@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -537,9 +537,11 @@ public class NotificationService {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        List<ClaimPartyContactDetailsEntity> contactDetails = organisation.getClaimPartyContactDetails();
-        String emailAddress = contactDetails != null ? contactDetails.stream().findFirst().map(
-            ClaimPartyContactDetailsEntity::getEmailAddress).orElse(null) : null;
+        ClaimPartyContactDetailsEntity contactDetails = organisation.getClaimPartyContactDetails().stream()
+            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null &&
+                Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst().orElse(null);
+
+        String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
         return new LegalRepresentativeNotificationRecipient(
             emailAddress,
