@@ -41,7 +41,7 @@ public class CaseReviewDateService {
 
         return CaseReviewDateEntity.builder()
             .createdBy(userInfo.getName())
-            .createdOn(LocalDateTime.now(ukClock))
+            .createdDate(LocalDateTime.now(ukClock))
             .date(reviewDate.getDate())
             .reason(reviewDate.getReason())
             .description(reviewDate.getDescription())

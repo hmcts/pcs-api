@@ -91,7 +91,7 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("review description 1");
         assertThat(caseReviewDateEntity.getCreatedBy()).isEqualTo("Case Worker");
-        assertThat(caseReviewDateEntity.getCreatedOn()).isEqualTo(FIXED_UK_DATE_TIME);
+        assertThat(caseReviewDateEntity.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
     }
 
     @Test
@@ -140,7 +140,7 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity1.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity1.getDescription()).isEqualTo("review description 1");
         assertThat(caseReviewDateEntity1.getCreatedBy()).isEqualTo("Case Worker");
-        assertThat(caseReviewDateEntity1.getCreatedOn()).isEqualTo(FIXED_UK_DATE_TIME);
+        assertThat(caseReviewDateEntity1.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
 
         CaseReviewDateEntity caseReviewDateEntity2 = persistedCaseEntity.getReviewDates().getLast();
         assertThat(caseReviewDateEntity2.getPcsCase()).isEqualTo(persistedCaseEntity);
@@ -148,6 +148,6 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity2.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity2.getDescription()).isEqualTo("review description 2");
         assertThat(caseReviewDateEntity2.getCreatedBy()).isEqualTo("Case Worker");
-        assertThat(caseReviewDateEntity2.getCreatedOn()).isEqualTo(FIXED_UK_DATE_TIME);
+        assertThat(caseReviewDateEntity2.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
     }
 }

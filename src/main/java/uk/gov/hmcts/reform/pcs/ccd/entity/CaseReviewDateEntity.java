@@ -44,7 +44,7 @@ public class CaseReviewDateEntity {
     private String createdBy;
 
     @Column(updatable = false)
-    private LocalDateTime createdOn;
+    private LocalDateTime createdDate;
 
     private LocalDate date;
 

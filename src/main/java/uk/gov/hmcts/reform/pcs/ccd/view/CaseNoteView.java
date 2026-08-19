@@ -41,7 +41,7 @@ public class CaseNoteView {
     private void setReviewDateFields(PCSCase pcsCase, List<CaseReviewDateEntity> reviewDateEntities) {
         List<CaseReviewDateEntity> orderedReviewDateEntities = reviewDateEntities.stream()
             .sorted(Comparator.comparing(
-                CaseReviewDateEntity::getCreatedOn,
+                CaseReviewDateEntity::getCreatedDate,
                 Comparator.nullsLast(Comparator.reverseOrder())
             ))
             .toList();
@@ -56,7 +56,7 @@ public class CaseNoteView {
     private ListValue<CaseReviewDate> toListValue(CaseReviewDateEntity reviewDateEntity, int index) {
         CaseReviewDate reviewDate = CaseReviewDate.builder()
             .createdBy(reviewDateEntity.getCreatedBy())
-            .createdOn(reviewDateEntity.getCreatedOn())
+            .createdDate(reviewDateEntity.getCreatedDate())
             .date(reviewDateEntity.getDate())
             .reason(reviewDateEntity.getReason())
             .description(reviewDateEntity.getDescription())
