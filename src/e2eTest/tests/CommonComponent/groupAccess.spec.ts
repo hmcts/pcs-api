@@ -77,7 +77,6 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
-  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async () => {
@@ -136,7 +135,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('resumePartialClaim');
   });
 
-  test('Users belonging to Different Org are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+  test('Users belonging to Different Org [Solicitor - Solicitor And Solicitor- localAuthority]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
     //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
     await performAction('login', user.claimantSolicitor);
     await performAction('clickTab', home.createCaseTab);
@@ -160,5 +159,52 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performValidation('mainHeader', noResultFound.mainHeader);
    });
    
+  test('Users belonging to Different Org [LocalAuthority - LocalAuthority And LocalAuthority- otherRealEstateActivities]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+    //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
+    await performAction('login', user.localAuthorityOrg1Usr1);
+    await performAction('clickTab', home.createCaseTab);
+    await performAction('selectJurisdictionCaseTypeEvent');
+    await performAction('housingPossessionClaim');
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('signOut');
+    //Login as user2 belonging to different org of same type.
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg2Usr1);
+    await performValidation('mainHeader', noResultFound.mainHeader);
+    await performAction('signOut');
+    //Login as user belonging to different type of org.
+    await performAction('reloginAndFindTheCase', user.otherRealEstateActivitiesOrg1Usr1);
+    await performValidation('mainHeader', noResultFound.mainHeader);
+   });
+
+  test('Users belonging to Different Org [Other-Not for profit - LocalAuthority And Other-Not for profit- Solicitor ]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
+    //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
+    await performAction('login', user.otherNotForProfitOrg1Usr1);
+    await performAction('clickTab', home.createCaseTab);
+    await performAction('selectJurisdictionCaseTypeEvent');
+    await performAction('housingPossessionClaim');
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('signOut');
+    //Login as user2 belonging to different org of same type.
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
+    await performValidation('mainHeader', noResultFound.mainHeader);
+    await performAction('signOut');
+    //Login as user belonging to different type of org.
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor1);
+    await performValidation('mainHeader', noResultFound.mainHeader);
+   });
 });
 
