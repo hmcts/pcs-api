@@ -15,7 +15,6 @@ import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.FlagLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
@@ -73,6 +72,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -741,7 +741,7 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
@@ -842,6 +842,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private Hearing hearing;
 
+    @JsonUnwrapped(prefix = "mhDraft_")
+    @CCD(searchable = false)
+    private Hearing manageHearingDraft;
+
     @CCD(searchable = false)
     private List<ListValue<Hearing>> hearingList;
 
@@ -849,8 +853,20 @@ public class PCSCase {
     private VerticalYesNo showManageHearingPage;
 
     @CCD(searchable = false)
-    private String hearingLocation;
+    private String selectedHearingId;
 
     @CCD(searchable = false)
-    private DynamicMultiSelectList partyMultiSelectionList;
+    private String hearingLocation;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList partyMultiSelectionList;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList mhDraftPartyList;
 }
