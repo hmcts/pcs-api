@@ -26,4 +26,15 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
 
     Optional<PartyEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 
+    @Query("""
+        SELECT p FROM PartyEntity p
+        JOIN p.claimPartyOrganisationList cpo
+        JOIN cpo.organisation o
+        WHERE p.pcsCase.caseReference = :caseReference and cpo.active = 'YES'
+        AND o.organisationId = :organisationId
+        """
+        )
+    List<PartyEntity> findAllPartiesByOrganisationIdAndCaseReference(@Param("organisationId") String organisationId,
+                                                                         @Param("caseReference") long caseReference);
+
 }
