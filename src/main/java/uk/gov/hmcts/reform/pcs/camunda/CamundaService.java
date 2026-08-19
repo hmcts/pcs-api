@@ -126,22 +126,7 @@ public class CamundaService {
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
 
-        try {
-            PcsCaseEntity pcsCaseEntity = loadCase(caseId);
-            Integer locationId = pcsCaseEntity.getBaseLocation();
-            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
-            String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
-                courtVenues.getFirst().courtName();
-
-            processVariables.put("taskLocationId", dmnIntegerValue(locationId));
-            processVariables.put("taskLocationName", dmnStringValue(locationName));
-            processVariables.put("taskRegion", dmnIntegerValue(pcsCaseEntity.getRegionId()));
-        } catch (Exception e) {
-            log.error("Failed to get location and region data", e);
-            processVariables.put("taskLocationId", dmnIntegerValue(1));
-            processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
-            processVariables.put("taskRegion", dmnIntegerValue(1));
-        }
+        addLocationDataToTask(caseId, processVariables);
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -200,6 +185,25 @@ public class CamundaService {
     private PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables ) {
+        try {
+            PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+            Integer locationId = pcsCaseEntity.getBaseLocation();
+            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
+            String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
+                courtVenues.getFirst().courtName();
+
+            processVariables.put("taskLocationId", dmnIntegerValue(locationId));
+            processVariables.put("taskLocationName", dmnStringValue(locationName));
+            processVariables.put("taskRegion", dmnIntegerValue(pcsCaseEntity.getRegionId()));
+        } catch (Exception e) {
+            log.error("Failed to get location and region data", e);
+            processVariables.put("taskLocationId", dmnIntegerValue(1));
+            processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
+            processVariables.put("taskRegion", dmnIntegerValue(1));
+        }
     }
 
 }
