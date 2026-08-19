@@ -1,11 +1,4 @@
 java:
-  secrets:
-    AZURE_SERVICE_BUS_CONNECTION_STRING:
-      secretRef: pcs-sb-preview
-      key: connectionString
-    AZURE_SERVICE_BUS_PREVIEW_CONNECTION_STRING:
-      secretRef: pcs-sb-preview
-      key: connectionString
   environment:
     CAMUNDA_BASE_URL: http://pcs-api-pr-${CHANGE_ID}-camunda/engine-rest
 

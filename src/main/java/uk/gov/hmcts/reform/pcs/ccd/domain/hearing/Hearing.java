@@ -1,0 +1,111 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.hearing;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.time.LocalDateTime;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.ALWAYS)
+public class Hearing {
+
+    @CCD(ignore = true)
+    public static final String NOTES_LABEL = "Hearing notes";
+    @CCD(ignore = true)
+    public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
+    @CCD(ignore = true)
+    public static final String DAY_LABEL = "Days";
+    @CCD(ignore = true)
+    public static final String HOUR_LABEL = "Hours";
+    @CCD(ignore = true)
+    public static final String MINUTE_LABEL = "Minutes";
+    @CCD(ignore = true)
+    public static final String CANCELLATION_REASON_LABEL = "Enter reason for cancellation";
+
+    private Integer hearingId;
+
+    @CCD(label = "Which type of hearing is this?")
+    private HearingType type;
+
+    @CCD(
+        label = "Enter the type of hearing this is",
+        max = 100
+    )
+    private String otherHearingType;
+
+    @CCD(
+        label = "Wording for hearing notice",
+        typeOverride = FixedList,
+        typeParameterOverride = "HearingNoticeWording"
+    )
+    private HearingNoticeWording noticeWording;
+
+    @CCD(
+        label = "When is the hearing?",
+        hint = "Enter date and time"
+    )
+    private LocalDateTime date;
+
+    @CCD(
+        label = DAY_LABEL,
+        min = 0,
+        max = 100
+    )
+    private Integer durationDays;
+
+    @CCD(
+        label = HOUR_LABEL,
+        min = 0,
+        max = 23
+    )
+    private Float durationHours;
+
+    @CCD(
+        label = MINUTE_LABEL,
+        min = 0,
+        max = 59
+    )
+    private Float durationMinutes;
+
+    @CCD(
+        label = NOTES_LABEL,
+        typeOverride = TextArea
+    )
+    private String notes;
+
+    @CCD(label = "Does a hearing notice need to be issued?")
+    private VerticalYesNo issueNotice;
+
+    @CCD(label = "Is the hearing without notice?")
+    private VerticalYesNo isWithoutNotice;
+
+    @CCD(
+        label = ADDITIONAL_INFORMATION_LABEL,
+        hint = "This information will be displayed on the hearing notice",
+        typeOverride = TextArea
+    )
+    private String additionalInformation;
+
+    @CCD(
+        label = CANCELLATION_REASON_LABEL,
+        hint = "This will be included in the notice sent to parties, if one is required",
+        typeOverride = TextArea
+    )
+    private String cancellationReason;
+
+    private String hearingSummaryMarkdown;
+}
