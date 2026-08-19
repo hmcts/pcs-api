@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -69,10 +69,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
+    private final OrganisationRepository organisationRepository;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
@@ -114,7 +114,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         PartyEntity matchedParty = matches.getFirst();
         OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
 
-        if (legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
+        if (organisationRepository.isOrganisationLinkedToPartyAndActive(
             organisation.getOrganisationIdentifier(),
             matchedParty.getId()
         )) {

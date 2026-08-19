@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -52,6 +53,8 @@ class RespondPossessionClaimSubmitServiceTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PartyEntity partyEntity;
+    @Mock
+    OrganisationService organisationService;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -63,7 +66,8 @@ class RespondPossessionClaimSubmitServiceTest {
             counterClaimService,
             counterClaimFeeCalculator,
             documentService,
-            draftCaseDataService
+            draftCaseDataService,
+            organisationService
         );
     }
 
@@ -75,11 +79,13 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistResponseWithoutCounterClaimLegalRepresentative() {
+        String organisationId = "org";
         when(partyEntity.getId()).thenReturn(UUID.randomUUID());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         this.shouldPersistResponseWithoutCounterClaim(JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService)
-            .deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+            .deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, partyEntity.getId(), organisationId);
     }
 
     void shouldPersistResponseWithoutCounterClaim(JourneyType journeyType) {
@@ -138,7 +144,8 @@ class RespondPossessionClaimSubmitServiceTest {
     @Test
     void shouldPersistCounterClaimAndCreatePaymentWhenFeeIsRequiredForLegalRepJourney() {
         JourneyType journeyType = JourneyType.LEGAL_REPRESENTATIVE;
-
+        String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
@@ -165,7 +172,7 @@ class RespondPossessionClaimSubmitServiceTest {
 
         verify(counterClaimService, never()).issueCounterClaim(any());
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
-            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId(), organisationId);
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isTrue();
     }

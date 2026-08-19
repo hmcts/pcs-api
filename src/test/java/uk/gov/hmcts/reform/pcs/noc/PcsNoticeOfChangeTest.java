@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -85,7 +85,7 @@ public class PcsNoticeOfChangeTest {
     private PcsCaseRepository pcsCaseRepository;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private OrganisationRepository organisationRepository;
 
     @Mock
     private OrganisationDetailsService organisationDetailsService;
@@ -104,8 +104,8 @@ public class PcsNoticeOfChangeTest {
 
     @BeforeEach
     void setUp() {
-        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, legalRepresentativeRepository,
-                                                  organisationDetailsService, schedulerClient, featureToggleService);
+        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, organisationDetailsService, schedulerClient,
+                                                  featureToggleService, organisationRepository);
     }
 
     @Test
@@ -472,8 +472,8 @@ public class PcsNoticeOfChangeTest {
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
-        when(legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(orgId, partyId))
-            .thenReturn(true);
+        when(organisationRepository
+                 .isOrganisationLinkedToPartyAndActive(orgId, partyId)).thenReturn(true);
 
         // when
         NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);

@@ -199,8 +199,6 @@ class CaseTabViewTest {
         AddressUK address1 = AddressUK.builder().build();
         AddressUK address2 = AddressUK.builder().build();
         LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
-            .firstName("legal1")
-            .lastName("representative1")
             .telephoneNumber("telephone1")
             .emailAddress("rep1@email.com")
             .organisationName("org1")
@@ -219,8 +217,6 @@ class CaseTabViewTest {
         AddressUK address3 = AddressUK.builder().build();
         AddressUK address4 = AddressUK.builder().build();
         LegalRepresentative legalRepresentative2 = LegalRepresentative.builder()
-            .firstName("legal2")
-            .lastName("representative2")
             .telephoneNumber("telephone2")
             .emailAddress("rep2@email.com")
             .organisationName("org2")
@@ -264,8 +260,6 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
 
         RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
-        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
-        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
         assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
         assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
         assertThat(representativeTabDetails1.getOrganisation().getName())
@@ -281,8 +275,6 @@ class CaseTabViewTest {
         assertThat(defendant2TabDetails.getServiceAddress()).isEqualTo(address3);
 
         RepresentativeTabDetails representativeTabDetails2 = defendant2TabDetails.getRepresentative();
-        assertThat(representativeTabDetails2.getFirstName()).isEqualTo(legalRepresentative2.getFirstName());
-        assertThat(representativeTabDetails2.getLastName()).isEqualTo(legalRepresentative2.getLastName());
         assertThat(representativeTabDetails2.getTelephoneNumber()).isEqualTo(legalRepresentative2.getTelephoneNumber());
         assertThat(representativeTabDetails2.getEmailAddress()).isEqualTo(legalRepresentative2.getEmailAddress());
         assertThat(representativeTabDetails2.getOrganisation().getName())
@@ -297,8 +289,6 @@ class CaseTabViewTest {
         String defendant1LastName = "one";
         AddressUK address1 = AddressUK.builder().build();
         LegalRepresentative legalRepresentative1 = LegalRepresentative.builder()
-            .firstName("legal1")
-            .lastName("representative1")
             .telephoneNumber("telephone1")
             .emailAddress("rep1@email.com")
             .build();
@@ -333,8 +323,6 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address1);
 
         RepresentativeTabDetails representativeTabDetails1 = defendant1TabDetails.getRepresentative();
-        assertThat(representativeTabDetails1.getFirstName()).isEqualTo(legalRepresentative1.getFirstName());
-        assertThat(representativeTabDetails1.getLastName()).isEqualTo(legalRepresentative1.getLastName());
         assertThat(representativeTabDetails1.getTelephoneNumber()).isEqualTo(legalRepresentative1.getTelephoneNumber());
         assertThat(representativeTabDetails1.getEmailAddress()).isEqualTo(legalRepresentative1.getEmailAddress());
         assertThat(representativeTabDetails1.getOrganisation()).isNull();

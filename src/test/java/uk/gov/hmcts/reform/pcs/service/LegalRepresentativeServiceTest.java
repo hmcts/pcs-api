@@ -8,13 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,33 +23,34 @@ class LegalRepresentativeServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private PartyRepository partyRepository;
 
     private LegalRepresentativeService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepresentativeService(legalRepresentativeRepository);
+        underTest = new LegalRepresentativeService(partyRepository);
     }
 
     @Test
-    void shouldReturnOptionalEmptyWhenIdamIdIsNotLegalRep() {
+    void shouldReturnOptionalEmptyWhenOrgIdIsNotLegalRep() {
         // Given
-        UUID idamId = UUID.randomUUID();
-        when(legalRepresentativeRepository.findByIdamId(idamId, CASE_REFERENCE)).thenReturn(Optional.empty());
+        String orgId = "org";
+        when(partyRepository.findAllPartiesByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
+            .thenReturn(List.of());
 
         // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
+        DynamicList dynamicList = underTest.getRepresentedPartiesDynamicList(orgId, CASE_REFERENCE);
 
         // Then
-        assertThat(dynamicListOptional).isEmpty();
+        assertThat(dynamicList.getListItems()).isEmpty();
     }
 
     @Test
     void shouldReturnDynamicListWithRepresentedPartyNamesForSpecifiedCase() {
         // Given
         UUID partyEntityId = UUID.randomUUID();
-        UUID idamId = UUID.randomUUID();
+        String orgId = "org";
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
         PartyEntity casePartyEntity = PartyEntity.builder()
@@ -61,18 +59,12 @@ class LegalRepresentativeServiceTest {
             .firstName("Richard")
             .lastName("Represented")
             .build();
-        ClaimPartyLegalRepresentativeEntity caseClaimPartyEntity = ClaimPartyLegalRepresentativeEntity.builder()
-            .party(casePartyEntity)
-            .build();
-        LegalRepresentativeEntity legalRepEntity = LegalRepresentativeEntity.builder()
-            .claimPartyLegalRepresentativeList(List.of(caseClaimPartyEntity))
-            .build();
 
-        when(legalRepresentativeRepository.findByIdamId(idamId, CASE_REFERENCE))
-            .thenReturn(Optional.of(legalRepEntity));
+        when(partyRepository.findAllPartiesByOrganisationIdAndCaseReference(orgId, CASE_REFERENCE))
+            .thenReturn(List.of(casePartyEntity));
 
         // When
-        Optional<DynamicList> dynamicListOptional = underTest.getRepresentedPartiesDynamicList(idamId, CASE_REFERENCE);
+        DynamicList dynamicList = underTest.getRepresentedPartiesDynamicList(orgId, CASE_REFERENCE);
 
         // Then
         DynamicListElement expectedListValue = DynamicListElement.builder()
@@ -80,12 +72,9 @@ class LegalRepresentativeServiceTest {
             .label("Richard Represented")
             .build();
 
-        assertThat(dynamicListOptional)
-            .hasValueSatisfying(
-                dynamicList -> assertThat(dynamicList.getListItems())
+        assertThat(dynamicList.getListItems())
                     .usingRecursiveFieldByFieldElementComparator()
-                    .containsExactly(expectedListValue)
-            );
+                    .containsExactly(expectedListValue);
     }
 
 }

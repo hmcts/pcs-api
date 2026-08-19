@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final OrganisationService organisationService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -59,7 +61,8 @@ public class RespondPossessionClaimSubmitService {
             draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference,
                 respondPossessionClaim,
-                defendantParty.getId()
+                defendantParty.getId(),
+                organisationService.getOrganisationIdForCurrentUser()
             );
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
