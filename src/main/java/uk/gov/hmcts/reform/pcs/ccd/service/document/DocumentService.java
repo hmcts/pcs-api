@@ -287,7 +287,7 @@ public class DocumentService {
             );
 
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
-        } else {
+        } else if (selectedCounterClaim == null) {
             String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
                 caseReference,
                 mainClaim,
@@ -296,6 +296,7 @@ public class DocumentService {
             );
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
         }
+        // No review task for counterclaim documents until HDPI-6591 defines it
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
         log.info("Saved {} additional documents for case {} and party {}",
