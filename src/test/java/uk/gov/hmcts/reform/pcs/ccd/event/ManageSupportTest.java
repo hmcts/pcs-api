@@ -55,7 +55,7 @@ class ManageSupportTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase, true);
+        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test

@@ -94,7 +94,7 @@ public class PcsCaseService {
         }
     }
 
-    public void patchSupportFlags(long caseReference, PCSCase pcsCase, boolean ownPartySupportOnly) {
+    public void patchSupportFlags(long caseReference, PCSCase pcsCase) {
         if (pcsCase == null) {
             throw new IllegalArgumentException("PCSCase cannot be null");
         }
@@ -102,7 +102,7 @@ public class PcsCaseService {
 
         if (pcsCase.getPartySupport() != null) {
             caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
-                                                  securityContextService.getCurrentUserId(), ownPartySupportOnly);
+                                                  securityContextService.getCurrentUserId());
         }
     }
 

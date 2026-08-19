@@ -191,6 +191,84 @@ class PartySupportOwnershipResolverTest {
         verifyNoInteractions(organisationService);
     }
 
+    @Test
+    void shouldAllowClaimantSolicitorForTheClaimantTheirFirmIssuedTheClaimFor() {
+        // Given
+        PartyEntity claimant = claimantRepresentedBy(ORG_ID);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(claimant, USER_ID)).isTrue();
+    }
+
+    @Test
+    void shouldRejectClaimantSolicitorForADefendantRepresentedByAnotherFirm() {
+        // Given
+        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", UUID.randomUUID());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isFalse();
+    }
+
+    @Test
+    void shouldRejectClaimantSolicitorForAnUnrepresentedDefendant() {
+        // Given
+        PartyEntity defendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID())
+            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .build();
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isFalse();
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldAllowDefendantSolicitorForTheDefendantTheyRepresent() {
+        // Given
+        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", USER_ID);
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isTrue();
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldRejectDefendantSolicitorForTheClaimant() {
+        // Given
+        PartyEntity claimant = claimantRepresentedBy("CLAIMANT-FIRM");
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("DEFENDANT-FIRM");
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(claimant, USER_ID)).isFalse();
+    }
+
+    @Test
+    void shouldAllowAPartyActingForThemselvesRegardlessOfRepresentation() {
+        // Given
+        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", UUID.randomUUID());
+        defendant.setIdamId(USER_ID);
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isTrue();
+        verifyNoInteractions(organisationService);
+    }
+
+    private PartyEntity claimantRepresentedBy(String organisationId) {
+        return PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .idamId(UUID.randomUUID())
+            .organisationId(organisationId)
+            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .build();
+    }
+
+    private PartyEntity defendantRepresentedBy(String organisationId, UUID legalRepIdamId) {
+        return partyWithLegalRep(legalRepIdamId, organisationId, YesOrNo.YES);
+    }
+
     private PartyEntity partyWithLegalRep(UUID legalRepIdamId, String organisationId, YesOrNo active) {
         LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
             .id(UUID.randomUUID())

@@ -55,7 +55,7 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("External user requested support for {}", caseReference);
 
-        pcsCaseService.patchSupportFlags(caseReference, pcsCase, true);
+        pcsCaseService.patchSupportFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
