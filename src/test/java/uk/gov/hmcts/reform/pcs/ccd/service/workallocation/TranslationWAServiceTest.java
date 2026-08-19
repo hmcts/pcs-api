@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -221,6 +222,93 @@ class TranslationWAServiceTest {
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDefendant1Description);
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDefendant2Description);
+    }
+
+    @Test
+    void shouldExcludeAccessCodeAndCounterclaimFormDocumentsFromDefendantTranslationTask() {
+        UUID flaggingPartyId = UUID.randomUUID();
+        UUID otherDefendantId = UUID.randomUUID();
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+
+        PartyEntity flaggingParty = PartyEntity.builder().id(flaggingPartyId).pcsCase(pcsCaseEntity).build();
+        PartyEntity otherDefendant = PartyEntity.builder().id(otherDefendantId).pcsCase(pcsCaseEntity).build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(flaggingParty, otherDefendant)));
+
+        DocumentEntity accessCodeDocument = DocumentEntity.builder()
+            .fileName("access-code.pdf")
+            .party(otherDefendant)
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        DocumentEntity counterClaimFormDocument = DocumentEntity.builder()
+            .fileName("counterclaim-form.pdf")
+            .party(otherDefendant)
+            .type(DocumentType.COUNTERCLAIM)
+            .build();
+        DocumentEntity evidenceDocument = DocumentEntity.builder()
+            .fileName("evidence.pdf")
+            .party(otherDefendant)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(accessCodeDocument, counterClaimFormDocument, evidenceDocument));
+
+        when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
+
+        String expectedDescription = "Defendant 1 has uploaded the following documents";
+        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+            CASE_REFERENCE, mainClaim, otherDefendant, List.of(evidenceDocument)))
+            .thenReturn(expectedDescription);
+
+        underTest.triggerTranslationTasksForFlaggingParty(flaggingParty);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
+    }
+
+    @Test
+    void shouldExcludeGenAppSubmissionDocumentFromDefendantTranslationTask() {
+        UUID flaggingPartyId = UUID.randomUUID();
+        UUID otherDefendantId = UUID.randomUUID();
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+
+        PartyEntity flaggingParty = PartyEntity.builder().id(flaggingPartyId).pcsCase(pcsCaseEntity).build();
+        PartyEntity otherDefendant = PartyEntity.builder().id(otherDefendantId).pcsCase(pcsCaseEntity).build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(flaggingParty, otherDefendant)));
+
+        GenAppEntity otherDefendantGenApp = GenAppEntity.builder()
+            .party(otherDefendant)
+            .build();
+        DocumentEntity genAppSubmissionDocument = DocumentEntity.builder()
+            .fileName("genapp-form.pdf")
+            .generalApplication(otherDefendantGenApp)
+            .build();
+        otherDefendantGenApp.setSubmissionDocument(genAppSubmissionDocument);
+
+        DocumentEntity evidenceDocument = DocumentEntity.builder()
+            .fileName("evidence.pdf")
+            .party(otherDefendant)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(genAppSubmissionDocument, evidenceDocument));
+
+        when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
+
+        String expectedDescription = "Defendant 1 has uploaded the following documents";
+        when(taskDescriptionService.createTranslateDefendantDocumentDescription(
+            CASE_REFERENCE, mainClaim, otherDefendant, List.of(evidenceDocument)))
+            .thenReturn(expectedDescription);
+
+        underTest.triggerTranslationTasksForFlaggingParty(flaggingParty);
+
+        verify(camundaService).createTask(
+            CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
     }
 
     @Test
