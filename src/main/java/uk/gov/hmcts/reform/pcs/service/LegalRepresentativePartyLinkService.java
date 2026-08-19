@@ -108,7 +108,7 @@ public class LegalRepresentativePartyLinkService {
                     .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
 
             } else {
-                backfillContactEmail(existingContactDetails.get(), legalRepEmail);
+                updateContactEmail(existingContactDetails.get(), legalRepEmail);
             }
 
         } else {
@@ -185,8 +185,8 @@ public class LegalRepresentativePartyLinkService {
         }
     }
 
-    private void backfillContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
-        if (contactDetails.getEmailAddress() == null && isNotBlank(legalRepEmail)) {
+    private void updateContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
+        if (isNotBlank(legalRepEmail)) {
             contactDetails.setEmailAddress(legalRepEmail);
         }
     }
