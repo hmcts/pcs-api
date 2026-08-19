@@ -10,24 +10,18 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @ExtendWith(MockitoExtension.class)
 class CreateFlagsTest extends  BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private FeatureToggleService featureToggleService;
 
 
     @InjectMocks
@@ -35,21 +29,12 @@ class CreateFlagsTest extends  BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(true);
         setEventUnderTest(underTest);
     }
 
     @Test
     void shouldBeConfiguredForEventStates() {
         assertConfiguredForStates(EventStates.createFlags());
-    }
-
-    @Test
-    void shouldBeConfiguredForPreRelease1dot3EventStatesWhenFeatureFlagDisabled() {
-        when(featureToggleService.isEnabled(RELEASE_1_DOT_3)).thenReturn(false);
-        setEventUnderTest(underTest);
-
-        assertConfiguredForStates(State.PENDING_CASE_ISSUED);
     }
 
     @Test

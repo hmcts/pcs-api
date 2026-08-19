@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
@@ -30,13 +29,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER
 public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.maintainCaseLink.name(), this::submit)
-                            .forStates(EventStates.maintainCaseLink(featureToggleService))
+                            .forStates(EventStates.maintainCaseLink())
                             .name("Manage case links")
                             .description("To manage link related cases")
                             .grant(Permission.CRUD, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,

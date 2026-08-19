@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.addcasenote.AddCaseNoteConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseNote;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -25,14 +24,13 @@ public class AddCaseNote implements CCDConfig<PCSCase, State, UserRole> {
 
     private final AddCaseNoteConfigurer addCaseNoteConfigurer;
     private final CaseNoteService caseNoteService;
-    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                         .decentralisedEvent(addCaseNote.name(), this::submit)
-                        .forStates(EventStates.addCaseNote(featureToggleService))
+                        .forStates(EventStates.addCaseNote())
                         .name("Add a case note")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
