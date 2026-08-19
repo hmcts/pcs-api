@@ -11,6 +11,7 @@ export const caseSummary = {
   makeAnApplication: 'Make an application',
   uploadAdditionalDocuments: 'Upload additional documents',
   addCaseNote: 'Add a case note',
+  requestSupportEvent: 'Request support',
   go: "Go",
   HistoryTab: 'History',
   serviceRequestTab: 'Service Request',
