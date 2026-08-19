@@ -21,10 +21,7 @@ public class ManageHearingConfigurerTest extends BasePageTest {
     private ManageHearingPage manageHearingPage;
 
     @Mock
-    private AddHearingPage addHearingPage;
-
-    @Mock
-    private EditHearingPage editHearingPage;
+    private HearingDetailsPage hearingDetailsPage;
 
     @Mock
     private CancelHearingPage cancelHearingPage;
@@ -40,10 +37,9 @@ public class ManageHearingConfigurerTest extends BasePageTest {
 
         // When
         manageHearingConfigurer.configurePages(pageBuilder);
-        verify(pageBuilder, times(4)).add(any());
+        verify(pageBuilder, times(3)).add(any());
         verify(pageBuilder).add(manageHearingPage);
-        verify(pageBuilder).add(addHearingPage);
-        verify(pageBuilder).add(editHearingPage);
+        verify(pageBuilder).add(hearingDetailsPage);
         verify(pageBuilder).add(cancelHearingPage);
     }
 }

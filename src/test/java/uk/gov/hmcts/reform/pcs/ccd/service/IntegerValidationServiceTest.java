@@ -54,4 +54,5 @@ public class IntegerValidationServiceTest {
         assertThat(errors.getFirst())
             .isEqualTo("In ‘Test Label’, you have entered a value that is not a whole number.");
     }
+
 }
