@@ -27,23 +27,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
@@ -56,17 +57,18 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -438,7 +440,7 @@ public class TestingSupportController {
     }
 
     @GetMapping("/fee-payment-info/{caseReference}")
-    public ResponseEntity<List<FeePaymentEntity>> getFeePaymentInfo(
+    public ResponseEntity<List<FeePaymentInfo>> getFeePaymentInfo(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -457,17 +459,41 @@ public class TestingSupportController {
 
             PcsCaseEntity pcsCaseEntity = maybeCase.get();
 
-            List<FeePaymentEntity> feePayments = pcsCaseEntity.getClaims().stream()
-                .map(ClaimEntity::getFeePayments)
-                .filter(Objects::nonNull)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-            return ResponseEntity.ok(feePayments);
+            List<FeePaymentInfo> feePaymentInfo = new ArrayList<>();
+
+            for (ClaimEntity claim : pcsCaseEntity.getClaims()) {
+                if (claim.getFeePayments() == null) {
+                    continue;
+                }
+
+                for (FeePaymentEntity feePayment : claim.getFeePayments()) {
+                    FeePaymentInfo minimalFeePayment = new FeePaymentInfo(
+                        feePayment.getId(),
+                        feePayment.getServiceRequestReference(),
+                        feePayment.getRequestDate(),
+                        feePayment.getAmount(),
+                        feePayment.getPaymentStatus()
+                    );
+
+                    feePaymentInfo.add(minimalFeePayment);
+                }
+            }
+
+            return ResponseEntity.ok(feePaymentInfo);
 
         } catch (Exception e) {
             log.error("Failed to get Fee Payment details for case reference {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private record FeePaymentInfo(
+        Integer id,
+        String serviceRequestReference,
+        java.time.LocalDateTime requestDate,
+        BigDecimal amount,
+        PaymentStatus paymentStatus
+    ) {
     }
 
     @Operation(
@@ -507,5 +533,4 @@ public class TestingSupportController {
 
         return ResponseEntity.ok().build();
     }
-
 }
