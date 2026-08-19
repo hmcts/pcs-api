@@ -46,7 +46,6 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -98,7 +97,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
-    private final OrganisationService organisationService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -184,9 +182,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
-        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           organisationIdForCurrentUser, state);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
