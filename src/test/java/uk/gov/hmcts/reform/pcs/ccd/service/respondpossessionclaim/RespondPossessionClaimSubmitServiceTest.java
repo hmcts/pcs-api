@@ -208,13 +208,7 @@ class RespondPossessionClaimSubmitServiceTest {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(defendantResponses)
             .build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-        CounterClaimEntity savedCounterClaim = CounterClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .party(partyEntity)
-            .pcsCase(pcsCaseEntity)
-            .build();
+        CounterClaimEntity savedCounterClaim = mock(CounterClaimEntity.class);
 
         when(counterClaimService.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity))
             .thenReturn(Optional.of(savedCounterClaim));
@@ -234,8 +228,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
         // Then
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
-        assertThat(result.counterClaimEntity().getStatus())
-            .isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(result.paymentRequired()).isFalse();
         assertThat(result.feeDetails()).isEqualTo(feeDetails);
         verify(camundaService)

@@ -193,7 +193,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
+          <text>"PENDING_REVIEW"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
@@ -220,7 +220,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>
