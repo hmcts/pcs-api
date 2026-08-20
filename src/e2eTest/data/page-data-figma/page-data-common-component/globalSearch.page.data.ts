@@ -25,7 +25,7 @@ export const globalSearch =
     postCodeLabel: 'Postcode',
     postcodeInputText: 'W3 7RX',
     emailAddressLabel: 'Email address',
-    emailAddressInputText: 'pcs.solicitor.org1@hmcts.net',
+    emailAddressInputText: 'pcs.solicitor.orguser3@hmcts.net',
     dateOfBirthLabel: 'Date of birth',
     dateOfBirthDayLabel: 'Day',
     dateOfBirthMonthLabel: 'Month',

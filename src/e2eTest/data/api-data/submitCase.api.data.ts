@@ -31,9 +31,9 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    claimantName: 'PCS_Solicitor_Org_Testing',
+    claimantName: 'PCS_Solicitor_Org_Testing', //
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net', //
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -128,7 +128,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -199,7 +199,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     formattedClaimantContactAddress: '2 Second Avenue<br>London<br>W3 7RX',
     isCorrectClaimantContactAddress: 'YES',
@@ -291,7 +291,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -402,7 +402,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -532,7 +532,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
@@ -952,7 +952,7 @@ export const submitCaseApiData = {
     claimAgainstTrespassers: 'NO',
     claimantName: 'PCS_Solicitor_Org_Testing',
     isClaimantNameCorrect: 'YES',
-    claimantContactEmail: 'pcs.solicitor.org1@hmcts.net',
+    claimantContactEmail: 'pcs.solicitor.orguser3@hmcts.net',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
     organisationAddress: {
