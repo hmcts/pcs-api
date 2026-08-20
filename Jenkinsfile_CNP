@@ -348,4 +348,3 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
 }
 
 
-

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.hearing;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -19,12 +20,15 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class Hearing {
 
     @CCD(ignore = true)
     public static final String NOTES_LABEL = "Hearing notes";
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
+    @CCD(ignore = true)
+    public static final String DAY_LABEL = "Days";
     @CCD(ignore = true)
     public static final String HOUR_LABEL = "Hours";
     @CCD(ignore = true)
@@ -55,6 +59,13 @@ public class Hearing {
         hint = "Enter date and time"
     )
     private LocalDateTime date;
+
+    @CCD(
+        label = DAY_LABEL,
+        min = 0,
+        max = 100
+    )
+    private Integer durationDays;
 
     @CCD(
         label = HOUR_LABEL,

@@ -1,7 +1,22 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData, paymentApiData } from '@data/api-data';
+import {
+  createCaseApiData,
+  createCaseEventTokenApiData,
+  submitCaseApiData,
+  submitCaseEventTokenApiData,
+  caseUserRoleDeletionApiData,
+  enforceOrderEventTokenApiData,
+  enforceWarrantApiData,
+  getCaseApiData,
+  submitCaseEventTokenDynamicApiData,
+  createCaseEventTokenDynamicApiData,
+  makeAnApplicationEventTokenApiData,
+  makeAnApplicationApiData,
+  paymentApiData,
+  manageHearingEventTokenApiData, manageHearingApiData
+} from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -9,8 +24,6 @@ import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.ap
 import { formatDateTimeBST } from '@utils/common/string.utils';
 import { IdamUtils } from '@hmcts/playwright-common';
 import { actionRetries, VERY_SHORT_TIMEOUT } from 'playwright.config';
-import {manageHearingEventTokenApiData} from "@data/api-data/manageHearingEventToken.api.data";
-import {manageHearingApiData} from "@data/api-data/manageHearing.api.data";
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -472,6 +485,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = hearingResponse.data.id;
       caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = hearingResponse.data.state;
+      console.log(`\n✅ NEW HEARING DATE ADDED SUCCESSFUL : STATUS ${hearingResponse.status}`);
     }
     catch (error: any) {
       const status = error?.response?.status;

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -14,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.List;
@@ -33,6 +37,8 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final TaskDescriptionService taskDescriptionService;
+    private final CamundaService camundaService;
     private final TranslationWAService translationWAService;
 
     @Transactional
@@ -42,7 +48,7 @@ public class RespondPossessionClaimSubmitService {
         PartyEntity defendantParty,
         JourneyType journeyType
     ) {
-        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
         DefendantResponseEntity savedResponse = defendantResponseService.saveDefendantResponse(
             caseReference, responseDraftData, defendantParty, journeyType);
 
@@ -61,11 +67,20 @@ public class RespondPossessionClaimSubmitService {
             .orElse(List.of());
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean paymentRequired = counterClaimEntity != null
-            && counterClaimFeeCalculator.isPaymentRequired(counterClaim);
 
-        if (counterClaimEntity != null && !paymentRequired) {
-            createTranslationTaskForCounterClaim(counterClaimDocuments, savedResponse, defendantParty);
+        boolean paymentRequired = false;
+        FeeDetails feeDetails = null;
+
+        if (counterClaimEntity != null) {
+            feeDetails = counterClaimFeeCalculator.getFeeDetails(counterClaim);
+
+            boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
+            if (hwfReferencePresent) {
+                createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
+                createTranslationTaskForCounterClaim(counterClaimDocuments, savedResponse, defendantParty);
+            } else {
+                paymentRequired = true;
+            }
         }
 
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
@@ -83,8 +98,25 @@ public class RespondPossessionClaimSubmitService {
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
+            feeDetails,
             paymentRequired
         );
+    }
+
+    private void createCounterClaimReviewWaTask(long caseReference,
+                                                CounterClaimEntity counterClaimEntity,
+                                                FeeDetails feeDetails) {
+
+        String taskDescription = taskDescriptionService.createReviewResponseAndCounterClaimDescription(
+            caseReference,
+            counterClaimEntity,
+            feeDetails
+        );
+
+        camundaService.createTask(
+            caseReference,
+            TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
+            taskDescription);
     }
 
     private void createTranslationTaskForCounterClaim(List<DocumentEntity> counterClaimDocuments,

@@ -9,9 +9,11 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -315,6 +317,7 @@ public class DefendantResponseService {
                 .accepted(YesOrNo.YES)
                 .fullName(fullName)
                 .completedDate(LocalDateTime.now(utcClock))
+                .claim(defendantResponse.getClaim())
                 .build()
         );
     }
@@ -327,7 +330,13 @@ public class DefendantResponseService {
             .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
             .fullName(responses.getStatementOfTruth().getFullName())
             .completedDate(LocalDateTime.now(utcClock))
+            .positionHeld(responses.getStatementOfTruth().getPositionHeld())
+            .firmName(responses.getStatementOfTruth().getNameOfFirm())
+            .claim(responseEntity.getClaim())
             .build();
+        if (VerticalYesNo.YES.equals(responses.getStatementOfTruth().getHasLegalRepresentation())) {
+            sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        }
         responseEntity.setStatementOfTruth(sot);
     }
 

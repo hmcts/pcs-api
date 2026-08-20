@@ -99,7 +99,7 @@ export class CYAStore {
       case 'uploadADocument':
         if (typeof fieldName === 'object' && fieldName.label && fieldName.file) {
           qaObject = { question: this.getMappedQuestion(fieldName.label), answer: fieldName.file };
-        } 
+        }
         break;
       case 'inputDate':
         if (typeof fieldName === 'object' && fieldName.label && fieldName.date) {
@@ -114,7 +114,7 @@ export class CYAStore {
           qaObject = { question: qn, answer: this.formatDate(value) };
         }
         break;
-        
+
     }
 
     if (qaObject) {
@@ -502,8 +502,9 @@ export class CYAPageValidation {
     pageAnswer: string;
     extractedQuestion: string;
   } {
+   
+   
     const cleanQuestion = this.normalizeText(question);
-
     for (const qa of extractedQA) {
       const pageQuestion = this.normalizeText(qa.question);
       if (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion)) {

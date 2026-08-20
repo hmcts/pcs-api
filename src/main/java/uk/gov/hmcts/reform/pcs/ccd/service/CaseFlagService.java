@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
@@ -16,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +48,8 @@ public class CaseFlagService {
     private static final String RA_FLAG_CODE_PREFIX = "RA";
 
     private FlagRefDataRepository flagRefDataRepository;
+    private CamundaService camundaService;
+    private TaskDescriptionService taskDescriptionService;
     private TranslationWAService translationWAService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
@@ -57,7 +63,7 @@ public class CaseFlagService {
      * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
      * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
      */
-    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
             return;
         }
@@ -74,6 +80,18 @@ public class CaseFlagService {
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
         }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
@@ -223,6 +241,10 @@ public class CaseFlagService {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**
