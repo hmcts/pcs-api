@@ -1056,7 +1056,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // then
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, representedParty);
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, representedParty, 1234L);
         verify(defendantResponseService).saveDefendantResponse(
             TEST_CASE_REFERENCE, possessionClaimResponse, representedParty, JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,

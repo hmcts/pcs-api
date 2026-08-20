@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -97,6 +98,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
+    private final OrganisationService organisationService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -162,9 +164,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
 
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
-        documentsView.setCaseFields(pcsCase, pcsCaseEntity);
+        documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -174,7 +178,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
-        genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -182,7 +186,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state,
+                                                                           organisationId);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 

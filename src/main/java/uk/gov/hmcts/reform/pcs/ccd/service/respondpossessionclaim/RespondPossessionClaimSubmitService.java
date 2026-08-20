@@ -38,7 +38,7 @@ public class RespondPossessionClaimSubmitService {
         PartyEntity defendantParty,
         JourneyType journeyType
     ) {
-        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
