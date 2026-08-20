@@ -57,9 +57,8 @@ withPipeline(type, product, component) {
   // WA DMN/BPMN upload for demo/ithc/perftest. Those branches never run sectionDeployToAKS,
   // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
-    def subscription = 'nonprod'
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
-      withSubscription(subscription) {
+      withSubscription('nonprod') {
         uploadDmnDiagrams()
         uploadBpmnDiagram()
       }
