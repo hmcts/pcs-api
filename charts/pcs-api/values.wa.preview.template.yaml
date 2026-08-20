@@ -13,6 +13,10 @@ postgresql:
       - name: "pr-${CHANGE_ID}-camunda"
       - name: "pr-${CHANGE_ID}-cft_task_db"
       - name: "pr-${CHANGE_ID}-wa_workflow_api"
+      # Helm replaces list values wholesale, so when the wa label loads after ccd this list
+      # wins and must carry the ccd entries too, or WA PRs lose these databases (HDPI-8439).
+      - name: "pr-${CHANGE_ID}-role-assignment"
+      - name: "pr-${CHANGE_ID}-org-role-mapping"
 
 global:
   postgresUsername: hmcts
