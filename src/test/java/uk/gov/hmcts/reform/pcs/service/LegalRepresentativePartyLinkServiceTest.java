@@ -55,6 +55,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LegalRepresentativePartyLinkServiceTest {
 
+    private static final String LEGAL_REP_EMAIL = "solicitor@example.com";
+
     @InjectMocks
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
@@ -146,6 +148,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -159,12 +162,15 @@ class LegalRepresentativePartyLinkServiceTest {
 
         assertThat(actual.getCreatedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         assertEquals(addressEntity, actualContactDetails.getAddress());
+        assertEquals(LEGAL_REP_EMAIL, actualContactDetails.getEmailAddress());
         assertEquals(organisationId, actual.getOrganisationId());
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
+        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, 
+            partyEntity, LEGAL_REP_EMAIL);
     }
 
     @Test
@@ -204,6 +210,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -269,6 +276,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -336,6 +344,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -356,6 +365,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         assertEquals(pcsCaseEntity, actualContactDetails.getPcsCase());
         assertEquals(addressEntity, actualContactDetails.getAddress());
+        assertEquals(LEGAL_REP_EMAIL, actualContactDetails.getEmailAddress());
     }
 
     @Test
@@ -404,6 +414,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -465,6 +476,7 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         );
 
@@ -496,6 +508,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
@@ -530,6 +543,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
@@ -564,6 +578,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId.toString(),
+            LEGAL_REP_EMAIL,
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
@@ -630,7 +645,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(),
-                                                                           organisationDetails);
+                                                                           LEGAL_REP_EMAIL, organisationDetails);
 
         // then
         verify(organisationRepository, times(2))
@@ -696,7 +711,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // when
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(caseReference, partyId.toString(),
-                                                                           organisationDetails);
+                                                                           LEGAL_REP_EMAIL, organisationDetails);
 
         // then
         verify(organisationRepository, times(1))

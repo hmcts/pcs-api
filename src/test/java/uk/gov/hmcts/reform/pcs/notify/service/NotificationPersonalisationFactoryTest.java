@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -356,6 +357,37 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity partyEntity = createParty("Another", "Party");
             assertThat(factory.noticeOfChangeCompleted(partyEntity, pcsCaseEntity).toMap())
                 .containsEntry("address", "");
+        }
+    }
+
+    @Nested
+    @DisplayName("noticeOfChangeCompleteLegalRep")
+    class NoticeOfChangeCompleteLegalRepTests {
+
+        @Test
+        @DisplayName("Should address the organisation and name the party it now represents")
+        void shouldAddressTheOrganisationAndNameTheRepresentedParty() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
+
+            assertThat(factory.noticeOfChangeCompleteLegalRep(
+                legalRepresentativeOrganisation, createRepresentedDefendant("Sam", "Jones")).toMap())
+                .containsEntry("organisationName", "Test Solicitors LLP")
+                .containsEntry("partyName", "SAM JONES")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        private PartyEntity createRepresentedDefendant(String firstName, String lastName) {
+            PartyEntity representedDefendant = createParty(firstName, lastName);
+            representedDefendant.setPcsCase(pcsCaseEntity);
+            return representedDefendant;
         }
     }
 

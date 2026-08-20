@@ -379,9 +379,11 @@ class TestingSupportControllerTest {
         String partyId = "abc";
         String authToken = "testAuth";
         UUID userUid = UUID.randomUUID();
+        String legalRepEmail = "solicitor@example.com";
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(userInfo.getSub()).thenReturn(legalRepEmail);
         when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
@@ -399,7 +401,7 @@ class TestingSupportControllerTest {
                                                         UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, organisationDetails);
+            .linkLegalRepresentativeToParty(caseReference, partyId, legalRepEmail, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }

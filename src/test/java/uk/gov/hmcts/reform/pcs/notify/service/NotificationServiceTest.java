@@ -825,6 +825,7 @@ class NotificationServiceTest {
             when(genAppEntity.getParty()).thenReturn(applicantParty);
             when(applicantParty.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+            when(applicantParty.getEmailAddress()).thenReturn("applicant@example.com");
             when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 

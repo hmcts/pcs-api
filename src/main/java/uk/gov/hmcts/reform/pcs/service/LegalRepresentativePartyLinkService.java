@@ -31,6 +31,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Service
 @Slf4j
 public class LegalRepresentativePartyLinkService {
@@ -69,6 +71,7 @@ public class LegalRepresentativePartyLinkService {
 
     @Transactional
     public void linkLegalRepresentativeToParty(long caseReference, String partyId,
+                                               String legalRepEmail,
                                                OrganisationDetailsResponse organisationDetails) {
         String organisationId = organisationDetails.getOrganisationIdentifier();
         if (isAlreadyLinkedToParty(partyId, organisationId)) {
@@ -99,16 +102,19 @@ public class LegalRepresentativePartyLinkService {
             if (existingContactDetails.isEmpty()) {
                 ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
                     buildLegalRepresentativeOrganisationContactDetails(caseEntity, legalRepresentativeOrganisation,
-                                                                       organisationDetails);
+                                                                       legalRepEmail, organisationDetails);
 
                 legalRepresentativeOrganisation
                     .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
 
+            } else {
+                updateContactEmail(existingContactDetails.get(), legalRepEmail);
             }
 
         } else {
             legalRepresentativeOrganisation = createNewLegalRepresentative(
                 organisationId,
+                legalRepEmail,
                 organisationDetails,
                 caseEntity);
         }
@@ -118,6 +124,8 @@ public class LegalRepresentativePartyLinkService {
         organisationRepository.save(legalRepresentativeOrganisation);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
+        notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
+            legalRepresentativeOrganisation, defendantPartyEntity, legalRepEmail);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
@@ -133,6 +141,7 @@ public class LegalRepresentativePartyLinkService {
     }
 
     private OrganisationEntity createNewLegalRepresentative(String id,
+                                                            String legalRepEmail,
                                                             OrganisationDetailsResponse orgDetails,
                                                             PcsCaseEntity pcsCase) {
 
@@ -145,7 +154,8 @@ public class LegalRepresentativePartyLinkService {
             .build();
 
         ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
-            buildLegalRepresentativeOrganisationContactDetails(pcsCase, legalRepresentativeOrganisation, orgDetails);
+            buildLegalRepresentativeOrganisationContactDetails(pcsCase, legalRepresentativeOrganisation,
+                                                               legalRepEmail, orgDetails);
 
         legalRepresentativeOrganisation
             .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
@@ -165,8 +175,6 @@ public class LegalRepresentativePartyLinkService {
         return organisationRepository.findByOrganisationId(organisationId);
     }
 
-
-
     private void backfillOrganisationMetadata(OrganisationEntity legalRepresentativeOrganisation,
                                               OrganisationDetailsResponse organisationDetails) {
         if (legalRepresentativeOrganisation.getOrganisationId() == null) {
@@ -174,6 +182,12 @@ public class LegalRepresentativePartyLinkService {
         }
         if (legalRepresentativeOrganisation.getOrganisationName() == null) {
             legalRepresentativeOrganisation.setOrganisationName(organisationDetails.getName());
+        }
+    }
+
+    private void updateContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
+        if (isNotBlank(legalRepEmail)) {
+            contactDetails.setEmailAddress(legalRepEmail);
         }
     }
 
@@ -217,12 +231,14 @@ public class LegalRepresentativePartyLinkService {
     private ClaimPartyContactDetailsEntity buildLegalRepresentativeOrganisationContactDetails(
         PcsCaseEntity pcsCase,
         OrganisationEntity legalRepresentativeOrganisation,
+        String legalRepEmail,
         OrganisationDetailsResponse orgDetails) {
 
         return
             ClaimPartyContactDetailsEntity.builder()
                 .pcsCase(pcsCase)
                 .organisation(legalRepresentativeOrganisation)
+                .emailAddress(legalRepEmail)
                 .address(addressMapper.toAddressEntityAndNormalise(
                     organisationDetailsService.getOrganisationAddress(orgDetails)))
                 .build();

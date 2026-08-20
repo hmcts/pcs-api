@@ -62,10 +62,12 @@ class NocAccessChangeTaskComponentTest {
         // given
         String partyId = UUID.randomUUID().toString();
         String userId = UUID.randomUUID().toString();
+        String email = "solicitor@example.com";
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .partyId(partyId)
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .caseReference("1")
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
@@ -77,6 +79,7 @@ class NocAccessChangeTaskComponentTest {
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(caseRoleAssignmentService).assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR);
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
+                                                                                   email,
                                                                                    organisationDetailsResponse);
     }
 

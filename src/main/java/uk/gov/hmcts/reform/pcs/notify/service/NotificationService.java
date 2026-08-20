@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -161,6 +162,20 @@ public class NotificationService {
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleted(defendant, defendant.getPcsCase())
+        );
+    }
+
+    public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant,
+        String legalRepEmail
+    ) {
+        return sendEmail(
+            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant, legalRepEmail),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
+                legalRepresentativeOrganisation, representedDefendant)
         );
     }
 
@@ -395,14 +410,15 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
-        PartyEntity party = recipient.party();
+        if (recipient.email() == null || recipient.email().isBlank()) {
+            log.info("Skipping email notification because recipient email is blank");
+            return null;
+        }
 
-        if (party == null) {
-            if (recipient.email() == null) {
-                log.info("Skipping email notification because both party and recipient email are null");
-                return null;
-            }
-        } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+        PartyEntity party = recipient.party();
+        if (party != null
+            && recipient.recipientRole() != null
+            && !partyService.canSendEmailNotification(party, recipient.recipientRole())) {
             log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
@@ -466,6 +482,22 @@ public class NotificationService {
             claim.getPcsCase(),
             claim,
             PartyRole.CLAIMANT
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant,   
+        String legalRepEmail
+    ) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        return new NotificationRecipient(
+            legalRepEmail,
+            representedDefendant,
+            pcsCase,
+            pcsCase.getClaims().getFirst(),
+            null
         );
     }
 
