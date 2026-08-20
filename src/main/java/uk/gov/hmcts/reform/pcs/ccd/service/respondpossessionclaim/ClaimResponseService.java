@@ -35,7 +35,8 @@ public class ClaimResponseService {
      *
      * @throws IllegalStateException if no party is found
      */
-    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty,
+                                      long caseReference) {
 
         if (defendantParty == null) {
             throw new IllegalStateException("defendant party is null");
@@ -45,7 +46,8 @@ public class ClaimResponseService {
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
 
-        caseFlagService.saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags());
+        caseFlagService
+            .saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags(), caseReference);
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {

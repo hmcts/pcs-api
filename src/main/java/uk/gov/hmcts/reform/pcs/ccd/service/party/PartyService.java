@@ -172,7 +172,8 @@ public class PartyService {
             : claimantContactPreferences.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
-
+        claimantParty.setNameKnown(VerticalYesNo.YES);
+        
         VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);

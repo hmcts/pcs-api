@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -38,6 +39,20 @@ public abstract class BaseEventTest {
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
         Submit<PCSCase, State> submitHandler = getConfiguredEvent().getSubmitHandler();
         return submitHandler.submit(eventPayload);
+    }
+
+    protected void assertConfiguredForStates(State... expectedStates) {
+        assertThat(getConfiguredEvent().getPreState())
+            .containsExactlyInAnyOrder(expectedStates);
+    }
+
+    protected void assertConfiguredForAllStates() {
+        assertThat(getConfiguredEvent().getPreState()).isEmpty();
+    }
+
+    protected void assertConfiguredAsNeverShow() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.NEVER_SHOW);
     }
 
     private ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
