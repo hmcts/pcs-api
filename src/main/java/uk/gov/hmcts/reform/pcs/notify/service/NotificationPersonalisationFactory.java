@@ -16,8 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 
 import java.util.Locale;
@@ -64,7 +64,7 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(
+    public OrganisationBasePersonalisation forLegalRepresentative(
         OrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
 
         return buildPersonalisation(pcsCaseEntity,legalRepresentativeOrganisationEntity);
@@ -79,7 +79,7 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessLegalRep(
+    public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessOrganisation(
         DefendantResponseEntity defendantResponse, String paymentReference,
         OrganisationEntity legalRepresentativeOrganisationEntity
     ) {
@@ -90,7 +90,7 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    private LegalRepresentativeBasePersonalisation buildPersonalisation(
+    private OrganisationBasePersonalisation buildPersonalisation(
         PcsCaseEntity pcsCaseEntity, OrganisationEntity legalRepresentativeOrganisationEntity
     ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
@@ -107,7 +107,7 @@ public class NotificationPersonalisationFactory {
 
         String organisationName = legalRepresentativeOrganisationEntity.getOrganisationName();
 
-        return LegalRepresentativeBasePersonalisation.builder()
+        return OrganisationBasePersonalisation.builder()
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)

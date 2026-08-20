@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-public record LegalRepresentativeNotificationRecipient(
+public record OrganisationNotificationRecipient(
                                                       String email,
                                                       PartyEntity party,
                                                       PcsCaseEntity pcsCase,

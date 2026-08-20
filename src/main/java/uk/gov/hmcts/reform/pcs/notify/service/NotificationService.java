@@ -23,15 +23,15 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.LegalRepresentativeNotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
@@ -100,14 +100,14 @@ public class NotificationService {
         );
     }
 
-    public EmailNotificationResponse sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
+    public EmailNotificationResponse sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(
         OrganisationEntity organisation,
         String paymentReference,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
-        return sendEmailForLegalRepresentative(
-            legalRepresentativeRecipient(
+        return sendEmailForOrganisation(
+            organisationRecipient(
                 organisation,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
@@ -115,7 +115,7 @@ public class NotificationService {
             ),
             EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.counterclaimSuccessLegalRep(defendantResponse,
+            notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponse,
                                                                            paymentReference,
                                                                            organisation));
     }
@@ -406,8 +406,8 @@ public class NotificationService {
         }
     }
 
-    public EmailNotificationResponse sendEmailForLegalRepresentative(
-        LegalRepresentativeNotificationRecipient recipient,
+    public EmailNotificationResponse sendEmailForOrganisation(
+        OrganisationNotificationRecipient recipient,
         EmailTemplate template,
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
@@ -527,7 +527,7 @@ public class NotificationService {
         );
     }
 
-    private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(
+    private OrganisationNotificationRecipient organisationRecipient(
         OrganisationEntity organisation,
         PcsCaseEntity pcsCaseEntity,
         PartyEntity defendantParty,
@@ -544,7 +544,7 @@ public class NotificationService {
 
         String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
-        return new LegalRepresentativeNotificationRecipient(
+        return new OrganisationNotificationRecipient(
             emailAddress,
             defendantParty,
             pcsCaseEntity,

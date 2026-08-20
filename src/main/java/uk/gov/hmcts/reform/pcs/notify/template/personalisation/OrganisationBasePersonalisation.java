@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.Map;
 
 @Builder
-public class LegalRepresentativeBasePersonalisation implements TemplatePersonalisation {
+public class OrganisationBasePersonalisation implements TemplatePersonalisation {
 
     private final String caseNumber;
     private final String claimantName;

@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,9 +37,6 @@ class PaymentNotificationServiceTest {
     private OrganisationRepository legalRepresentativeOrganisationRepository;
 
     @Mock
-    private SecurityContextService securityContextService;
-
-    @Mock
     private UserInfo userInfo;
 
     private PaymentNotificationService underTest;
@@ -50,7 +46,6 @@ class PaymentNotificationServiceTest {
         underTest = new PaymentNotificationService(
             notificationService,
             counterClaimRepository,
-            securityContextService,
             legalRepresentativeOrganisationRepository
         );
     }
@@ -85,14 +80,12 @@ class PaymentNotificationServiceTest {
     void shouldSendCounterClaimPaymentSuccessEmailToLegalRep() {
         UUID counterClaimId = UUID.randomUUID();
         UUID defendantId = UUID.randomUUID();
-        // UUID legalRepId = UUID.randomUUID();
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
         OrganisationEntity legalRepOrganisation = mock(OrganisationEntity.class);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PartyEntity defendant = mock(PartyEntity.class);
         when(defendant.getId()).thenReturn(defendantId);
-        // when(legalRep.getId()).thenReturn(legalRepId);
         when(counterClaim.getParty()).thenReturn(defendant);
         when(counterClaim.getPcsCase()).thenReturn(pcsCase);
 
@@ -111,7 +104,7 @@ class PaymentNotificationServiceTest {
         underTest.sendCounterClaimPaymentSuccessNotification(counterClaimId, paymentReference);
 
         verify(notificationService)
-            .sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(legalRepOrganisation,
+            .sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(legalRepOrganisation,
                                                                                   paymentReference,
                                                                                   pcsCase,
                                                                                   defendantResponse);

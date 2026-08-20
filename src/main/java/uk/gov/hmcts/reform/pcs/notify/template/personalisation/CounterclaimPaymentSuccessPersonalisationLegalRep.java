@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Builder
 public class CounterclaimPaymentSuccessPersonalisationLegalRep implements TemplatePersonalisation {
-    private final LegalRepresentativeBasePersonalisation base;
+    private final OrganisationBasePersonalisation base;
     private final String paymentReferenceNumber;
 
     @Override

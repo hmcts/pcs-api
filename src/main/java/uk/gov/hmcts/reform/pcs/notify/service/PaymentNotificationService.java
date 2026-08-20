@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
@@ -23,7 +22,6 @@ public class PaymentNotificationService {
 
     private final NotificationService notificationService;
     private final CounterClaimRepository counterClaimRepository;
-    private final SecurityContextService securityContextService;
     private final OrganisationRepository organisationRepository;
 
     @Transactional
@@ -44,8 +42,6 @@ public class PaymentNotificationService {
             return;
         }
 
-        // UUID userUUID = securityContextService.getCurrentUserId();
-        // List<String> userRole = securityContextService.getCurrentUserDetails().getRoles();
         OrganisationEntity legalRepresentativeOrganisationEntity =
             organisationRepository.findByPartyLinkedToOrganisationAndActive(
                 defendantResponse.getParty().getId()).orElse(null);
@@ -53,7 +49,7 @@ public class PaymentNotificationService {
         if (legalRepresentativeOrganisationEntity != null) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",
                      pcsCase.getCaseReference());
-            notificationService.sendDefendantResponseCounterclaimToLegalRepresentativePaymentSuccess(
+            notificationService.sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(
                 legalRepresentativeOrganisationEntity,
                 paymentReference,
                 defendantResponse.getPcsCase(),
