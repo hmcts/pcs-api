@@ -24,6 +24,15 @@ public enum TaskType {
             been completed.
             """
     ),
+    REVIEW_DATE_DUE(
+        "ReviewDateDue",
+        "Review Date Due",
+        """
+            Review the case note about the date due, check whether any follow-up action is required, and take the
+            appropriate action. Only mark the task as complete once the date due has been reviewed and any required
+            action has been completed.
+            """
+    ),
     REVIEW_ADDITIONAL_DOCS_GEN_APP(
         "ReviewAdditionalDocumentsGenApp",
         "Review additional documents – gen app",

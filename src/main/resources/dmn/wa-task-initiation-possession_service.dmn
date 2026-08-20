@@ -950,7 +950,7 @@ else
       </rule>
       <rule id="DecisionRule_0isk9qq">
         <inputEntry id="UnaryTests_1aysune">
-          <text>"Add review date"</text>
+          <text>"addCaseReviewDate"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1r9ux5s">
           <text></text>
