@@ -203,6 +203,19 @@ withPipeline(type, product, component) {
     uploadBpmnDiagram()
   }
 
+  // HDPI-8441: demo/ithc/perftest receive app deployments from the master branch sync, but the
+  // WA Camunda diagrams were only uploaded for preview/AAT/prod, so DMN changes never reached
+  // those environments (perf-test genApps journeys failed on stale decision tables). Upload on
+  // each environment branch build, before its smoke test. CAMUNDA_BASE_URL must be explicit:
+  // import-dmn-diagrams.sh silently defaults to AAT when it is unset.
+  ['demo', 'ithc', 'perftest'].each { deployEnv ->
+    before("smoketest:${deployEnv}") {
+      env.CAMUNDA_BASE_URL = "http://camunda-api-${deployEnv}.service.core-compute-${deployEnv}.internal"
+      uploadDmnDiagrams()
+      uploadBpmnDiagram()
+    }
+  }
+
 
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
