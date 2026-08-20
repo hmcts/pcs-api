@@ -46,6 +46,7 @@ public class CaseFlagService {
 
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
     private static final String ACTIVE_STATUS = "Active";
+    private static final String REQUESTED_STATUS = "Requested";
     private static final String RA_FLAG_CODE_PREFIX = "RA";
 
     private FlagRefDataRepository flagRefDataRepository;
@@ -80,6 +81,18 @@ public class CaseFlagService {
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        List<String> requestedFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagRequested)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(requestedFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagRequestDescription(caseReference, requestedFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG_REQUEST, taskDescription);
         }
 
         List<String> activeFlags = reasonableAdjustmentDetails.stream()
@@ -258,7 +271,11 @@ public class CaseFlagService {
     }
 
     private static boolean isCaseFlagActive(FlagDetail flagDetail) {
-        return Objects.equals(flagDetail.getStatus(), "Active");
+        return Objects.equals(flagDetail.getStatus(), ACTIVE_STATUS);
+    }
+
+    private static boolean isCaseFlagRequested(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), REQUESTED_STATUS);
     }
 
     /**
@@ -271,4 +288,3 @@ public class CaseFlagService {
         CREATE_IF_ABSENT
     }
 }
-

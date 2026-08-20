@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -220,6 +221,39 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldCreateOneReviewCaseFlagRequestTaskForMultipleRequestedReasonableAdjustments() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        List<ListValue<FlagDetail>> details = new ArrayList<>();
+        details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter", "Requested"));
+        details.addAll(createFlagDetailsWithoutIds("RA0012", "Braille documents", "Requested"));
+
+        List<String> requestedFlags = List.of("Sign language interpreter", "Braille documents");
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(CASE_REFERENCE, requestedFlags))
+            .thenReturn("request description");
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("RA0033", "RA0012");
+
+        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(CASE_REFERENCE, requestedFlags);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_CASE_FLAG_REQUEST,
+            "request description"
+        );
+        verifyNoMoreInteractions(camundaService);
+    }
+
+    @Test
     void shouldRetainExistingFlagsWhenNoReasonableAdjustmentsSupplied() {
         // Given
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
@@ -270,7 +304,7 @@ class CaseFlagServiceTest {
                                             .flagCode("RA0035")
                                             .name("Overwritten name")
                                             .nameCy("Overwritten welsh name")
-                                            .status("Requested")
+                                            .status("Inactive")
                                             .hearingRelevant(YesOrNo.NO)
                                             .availableExternally(YesOrNo.NO)
                                             .build())
@@ -389,11 +423,15 @@ class CaseFlagServiceTest {
     }
 
     private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
+        return createFlagDetailsWithoutIds(flagCode, name, "Active");
+    }
+
+    private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name, String status) {
         return List.of(ListValue.<FlagDetail>builder()
                            .value(FlagDetail.builder()
                                       .flagCode(flagCode)
                                       .name(name)
-                                      .status("Active")
+                                      .status(status)
                                       .hearingRelevant(YesOrNo.YES)
                                       .availableExternally(YesOrNo.YES)
                                       .dateTimeCreated(LocalDateTime.now())
