@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -9,12 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 
 import java.util.Locale;
 
@@ -24,6 +28,10 @@ import java.util.Locale;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
+
+    // TODO: temporary
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -46,7 +54,8 @@ public class NotificationPersonalisationFactory {
         String primaryDefendantName = getDefendantName(
             isNameKnown,
             primaryDefendantDetails.getFirstName(),
-            primaryDefendantDetails.getLastName());
+            primaryDefendantDetails.getLastName()
+        );
 
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
@@ -60,12 +69,68 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
+    public OrganisationBasePersonalisation forOrganisation(
+        OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity) {
+
+        return buildPersonalisation(pcsCaseEntity, organisationEntity);
+    }
+
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
                                                                          String paymentReference) {
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
+        OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity
+    ) {
+        String caseRef = pcsCaseEntity.getCaseReference().toString();
+        String paymentUrl = String.format(
+            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+            frontendUrl,
+            caseRef
+        );
+
+        return CounterclaimPaymentRequiredPersonalisation.builder()
+            .base(forOrganisation(organisationEntity, pcsCaseEntity))
+            .paymentUrl(paymentUrl)
+            .build();
+    }
+
+    public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
+        DefendantResponseEntity defendantResponse
+    ) {
+        String caseRef = defendantResponse.getPcsCase().getCaseReference().toString();
+        String paymentUrl = String.format(
+            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+            frontendUrl,
+            caseRef
+        );
+
+        return CounterclaimPaymentRequiredPersonalisation.builder()
+            .base(forDefendant(defendantResponse))
+            .paymentUrl(paymentUrl)
+            .build();
+    }
+
+    private OrganisationBasePersonalisation buildPersonalisation(
+        PcsCaseEntity pcsCaseEntity,
+        OrganisationEntity organisationEntity
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = getClaimantName(primaryClaimant);
+        String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
+
+        return OrganisationBasePersonalisation.builder()
+            .organisationName(organisationEntity.getOrganisationName())
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
             .build();
     }
 
@@ -76,14 +141,8 @@ public class NotificationPersonalisationFactory {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
 
-        String claimantName = primaryClaimant.getOrgName() != null
-            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-
-        String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
-            primaryDefendant.getFirstName(),
-            primaryDefendant.getLastName());
+        String claimantName = getClaimantName(primaryClaimant);
+        String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
 
         return BasePersonalisation.builder()
             .firstName(emailRecipient.getFirstName() != null
@@ -94,6 +153,13 @@ public class NotificationPersonalisationFactory {
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
+    }
+
+
+    private String getClaimantName(PartyEntity primaryClaimant) {
+        return primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
     }
 
     private static String getClaimantName(ClaimantInformation claimantInformation) {
@@ -107,6 +173,14 @@ public class NotificationPersonalisationFactory {
         return isNameKnown && firstName != null && lastName != null
             ? formatNameUpperForNotification(firstName, lastName)
             : "PERSONS UNKNOWN";
+    }
+
+    private String getPrimaryDefendantName(PartyEntity primaryDefendant) {
+        return getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName()
+        );
     }
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {

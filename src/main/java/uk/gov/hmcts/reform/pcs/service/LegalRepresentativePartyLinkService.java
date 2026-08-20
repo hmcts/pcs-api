@@ -83,9 +83,7 @@ public class LegalRepresentativePartyLinkService {
         OrganisationEntity legalRepresentativeOrganisation;
 
         if (legalRepresentativeOrganisationEntity.isPresent()) {
-
             legalRepresentativeOrganisation = legalRepresentativeOrganisationEntity.get();
-
             backfillOrganisationMetadata(legalRepresentativeOrganisation, organisationDetails);
 
             Optional<ClaimPartyContactDetailsEntity> existingContactDetails =

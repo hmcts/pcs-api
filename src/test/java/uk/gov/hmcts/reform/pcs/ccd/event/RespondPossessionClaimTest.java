@@ -11,6 +11,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -66,9 +70,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -157,6 +161,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private OrganisationRepository organisationRepository;
+
+    @Mock
+    private NotificationService notificationService;
+
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
 
@@ -223,13 +233,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 ),
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
+                    partyService,
+                    organisationRepository,
+                    pcsCaseService,
                     selectedPartyRetriever,
                     submitResponseFactory,
-                    partyService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    organisationService
+                    organisationService,
+                    notificationService
                 )
             ),
             securityContextService
@@ -1056,6 +1069,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
+        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(
+            any())).thenReturn(Optional.of(new OrganisationEntity()));
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(new PcsCaseEntity());
 
         // when
         callSubmitHandler(caseData);

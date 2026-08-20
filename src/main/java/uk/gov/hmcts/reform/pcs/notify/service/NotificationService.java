@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -20,13 +22,15 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
+import uk.gov.hmcts.reform.pcs.notify.model.LegalRepresentativeNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
@@ -35,6 +39,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 @Slf4j
@@ -66,7 +72,7 @@ public class NotificationService {
             defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forDefendant(defendantResponse)
+            notificationPersonalisationFactory.counterclaimPaymentRequired(defendantResponse)
         );
     }
 
@@ -91,6 +97,61 @@ public class NotificationService {
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
+    }
+
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForLegalRepresentative(
+            legalRepresentativeRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_NO_COUNTERCLAIM_LEGAL_REP,
+            NotificationClaimType.NO_COUNTER_CLAIM,
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForLegalRepresentative(
+            legalRepresentativeRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity,
+                                                               pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForLegalRepresentative(
+            legalRepresentativeRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -379,6 +440,31 @@ public class NotificationService {
         }
     }
 
+    public EmailNotificationResponse sendEmailForLegalRepresentative(
+        LegalRepresentativeNotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType,
+        TemplatePersonalisation personalisation
+    ) {
+
+        if (isBlank(recipient.email())) {
+            log.info("Skipping email notification because recipient email is null");
+            return null;
+        }
+
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(template),
+                recipient.email(),
+                claimType,
+                personalisation
+            ),
+            recipient.pcsCase(),
+            recipient.claim(),
+            recipient.party()
+        );
+    }
+
     public EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
@@ -472,6 +558,30 @@ public class NotificationService {
             response.getPcsCase(),
             response.getClaim(),
             PartyRole.DEFENDANT
+        );
+    }
+
+    private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity defendantParty,
+        DefendantResponseEntity defendantResponse) {
+
+        if (organisationEntity == null) {
+            throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
+        }
+
+        var contactDetails = organisationEntity.getClaimPartyContactDetails();
+        String emailAddress = contactDetails != null ? contactDetails.stream()
+            .filter(details -> pcsCaseEntity.getId().equals(details.getPcsCase().getId()))
+            .findFirst().map(
+            ClaimPartyContactDetailsEntity::getEmailAddress).orElse(null) : null;
+
+        return new LegalRepresentativeNotificationRecipient(
+            emailAddress,
+            defendantParty,
+            pcsCaseEntity,
+            defendantResponse.getClaim()
         );
     }
 }
