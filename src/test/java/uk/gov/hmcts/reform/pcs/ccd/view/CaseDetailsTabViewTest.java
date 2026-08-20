@@ -1063,6 +1063,25 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
+    void shouldNotSetClaimantRegistrationAndLicensingDetailsWhenFeatureFlagsAreNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Claimant")
+                .build()
+        );
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+    }
+
+    @Test
     void shouldSetCaseDetailsTabFieldsWithNoDataWales() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
