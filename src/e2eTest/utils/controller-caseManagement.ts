@@ -77,6 +77,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'enterApplicationDetails'
     || action === 'uploadADocument'
     || action === 'selectDocumentToAmend'
+    || action === 'selectManageParty'
     || action === 'addAHearing'
     || action === 'selectManageHearing'
     || action === 'editHearing'

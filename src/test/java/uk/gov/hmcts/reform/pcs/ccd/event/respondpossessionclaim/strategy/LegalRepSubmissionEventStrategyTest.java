@@ -23,15 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRe
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.*;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -134,6 +131,7 @@ class LegalRepSubmissionEventStrategyTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
+                null,
                 false
             );
 
@@ -233,9 +231,11 @@ class LegalRepSubmissionEventStrategyTest {
 
         PartyEntity defendantResponse = PartyEntity.builder().build();
 
+        FeeDetails feeDetails = FeeDetails.builder().build();
+
         RespondPossessionClaimSubmitPersistenceResult respondPossessionClaimSubmitPersistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(possessionClaimResponse, CounterClaimEntity.builder()
-                .build(), true);
+                .build(), feeDetails, true);
 
         String organisationId = "org";
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
