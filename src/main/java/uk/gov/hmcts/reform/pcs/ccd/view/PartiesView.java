@@ -87,6 +87,7 @@ public class PartiesView {
         Party party = shouldRedact
             ? toPartialParty(partyEntity)
             : toParty(partyEntity);
+        party.setRank(claimPartyEntity.getRank());
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
