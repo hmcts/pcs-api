@@ -267,6 +267,45 @@ class GenAppPackSelectorTest {
         assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
     }
 
+    @Test
+    @DisplayName("Returns nothing when the claim has no parties")
+    void shouldReturnNothingWhenClaimHasNoParties() {
+        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of()).build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID)
+            .caseReference(CASE_REF)
+            .claims(List.of(claim))
+            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .build();
+
+        assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Returns nothing when genApps is null")
+    void shouldReturnNothingWhenGenAppsNull() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID).caseReference(CASE_REF).claims(List.of(claim)).genApps(null).build();
+
+        assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Excludes issued with-notice GAs that have no applicant party")
+    void shouldExcludeGenAppsWithNullApplicant() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity noApplicant = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        noApplicant.setParty(null);
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(noApplicant), claimant, defendant))).isEmpty();
+    }
+
     private GenAppPackCandidate candidateFor(List<GenAppPackCandidate> result, PartyEntity recipient) {
         return candidatesFor(result, recipient).stream().findFirst()
             .orElseThrow(() -> new AssertionError("no candidate for recipient " + recipient.getId()));
