@@ -8,9 +8,11 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseStateOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -42,13 +44,39 @@ class ChangeCaseStateTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(changeCaseState);
-        when(addressFormatter.formatShortAddress(isNull(), eq(COMMA_DELIMITER)))
-            .thenReturn(FORMATTED_ADDRESS);
+    }
+
+    @Test
+    void shouldConfigureCaseworkerEventAccessAndStates() {
+        assertThat(configuredEvent.getPreState()).containsExactlyInAnyOrder(
+            State.CASE_ISSUED,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME,
+            State.CASE_PROGRESSION,
+            State.ALL_FINAL_ORDERS_ISSUED,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE
+        );
+        assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_TEAM_LEADER))
+            .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U, Permission.D);
+        assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_ADMIN))
+            .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U, Permission.D);
+        assertThat(configuredEvent.getGrants().get(UserRole.CTSC_ADMIN)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.CTSC_TEAM_LEADER)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.CIRCUIT_JUDGE)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.FEE_PAID_JUDGE)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.JUDGE)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.LEADERSHIP_JUDGE)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.WLU_ADMIN)).containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.WLU_TEAM_LEADER)).containsExactly(Permission.R);
     }
 
     @ParameterizedTest
     @EnumSource(CaseStateOption.class)
     void shouldTransitionToSelectedTargetState(CaseStateOption targetStateOption) {
+        stubFormattedAddress();
         PCSCase pcsCase = PCSCase.builder()
             .targetState(targetStateOption)
             .build();
@@ -67,6 +95,7 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @Test
     void shouldIncludeCaseReferenceInConfirmationBody() {
+        stubFormattedAddress();
         PCSCase pcsCase = PCSCase.builder()
             .targetState(CaseStateOption.JUDICIAL_REFERRAL)
             .build();
@@ -79,6 +108,7 @@ class ChangeCaseStateTest extends BaseEventTest {
 
     @Test
     void shouldIncludeFormattedAddressInConfirmationBody() {
+        stubFormattedAddress();
         PCSCase pcsCase = PCSCase.builder()
             .targetState(CaseStateOption.HEARING_READINESS)
             .build();
@@ -86,5 +116,10 @@ class ChangeCaseStateTest extends BaseEventTest {
         SubmitResponse<State> response = callSubmitHandler(pcsCase);
 
         assertThat(response.getConfirmationBody()).contains(FORMATTED_ADDRESS);
+    }
+
+    private void stubFormattedAddress() {
+        when(addressFormatter.formatShortAddress(isNull(), eq(COMMA_DELIMITER)))
+            .thenReturn(FORMATTED_ADDRESS);
     }
 }
