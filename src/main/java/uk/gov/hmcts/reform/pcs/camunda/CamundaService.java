@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -38,17 +39,31 @@ public class CamundaService {
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription());
+        createTask(caseId, taskType, taskType.getDefaultDescription(), null);
+    }
+
+    public void createTask(long caseId, TaskType taskType, Duration delay) {
+        createTask(caseId, taskType, taskType.getDefaultDescription(), delay);
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
+        createTask(caseId, taskType, taskDescription, null);
+    }
+
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Duration delay) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .build();
-        scheduleCamundaRequest(taskData);
+
+        Instant scheduledTo = Instant.now(utcClock);
+        if (delay != null) {
+            scheduledTo = scheduledTo.plus(delay);
+        }
+
+        scheduleCamundaRequest(taskData, scheduledTo);
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
@@ -57,7 +72,7 @@ public class CamundaService {
             .caseReference(caseId)
             .taskType(taskType)
             .build();
-        scheduleCamundaRequest(taskData);
+        scheduleCamundaRequest(taskData, Instant.now(utcClock));
     }
 
     void handleRequest(CamundaRequestTaskData taskData) {
@@ -69,7 +84,7 @@ public class CamundaService {
         }
     }
 
-    private void scheduleCamundaRequest(CamundaRequestTaskData taskData) {
+    private void scheduleCamundaRequest(CamundaRequestTaskData taskData, Instant scheduledTo) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped scheduling Camunda request for {}", taskData.getCaseReference());
             return;
@@ -79,7 +94,7 @@ public class CamundaService {
             CAMUNDA_REQUEST_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now(utcClock)));
+                .scheduledTo(scheduledTo));
     }
 
     private void requestTaskCreation(Long caseId, TaskType taskType, String taskDescription) {
@@ -94,7 +109,7 @@ public class CamundaService {
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
 
         // Note: A few fields are stripped out by wa-task-monitor before the task attributes are passed
-        // to the configuation DMN, so should be not used as a custom field if that field is going to be
+        // to the configuration DMN, so should be not used as a custom field if that field is going to be
         // referenced in the configuration DMN
         // The fields that are removed are: dueDate, assignee, priorityDate, description, name
 

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,17 +29,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-
-//import static org.assertj.core.api.Assertions.assertE;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -57,10 +57,7 @@ class CaseFlagServiceTest {
     @InjectMocks
     private CaseFlagService underTest;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository, camundaService, taskDescriptionService);
-    }
+    private static final long CASE_REFERENCE = 1234L;
 
     @Test
     void shouldMergeNewCaseFlags() {
@@ -159,6 +156,263 @@ class CaseFlagServiceTest {
         assertThat(savedFlags.getFlagComment()).isEqualTo("Complicated case");
         assertThat(savedFlags.getDefaultStatus()).isEqualTo("Active");
 
+    }
+
+    @Test
+    void shouldReplaceOnlyReasonableAdjustmentFlagsOnParty() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+        existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .partyName("Jack Smith")
+            .roleOnCase("Defendant")
+            .details(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"))
+            .build();
+
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("PF0015", "RA0033");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
+    }
+
+    @Test
+    void shouldIgnoreSuppliedFlagsThatAreNotReasonableAdjustments() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
+
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        List<ListValue<FlagDetail>> details = new ArrayList<>();
+        details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter"));
+        details.addAll(createFlagDetailsWithoutIds("CF0002", "Complex case"));
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("PF0015", "RA0033");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
+    }
+
+    @Test
+    void shouldRetainExistingFlagsWhenNoReasonableAdjustmentsSupplied() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetailsWithoutIds("CF0002", "Complex case"))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactly("RA0012");
+        // The non reasonable adjustment flag is dropped before any reference data is touched
+        verifyNoInteractions(flagRefDataRepository);
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
+    }
+
+    @Test
+    void shouldNotRewriteSharedReferenceDataFromASuppliedFlag() {
+        // Given reference data already describing this flag code
+        FlagRefDataEntity existingRefData = FlagRefDataEntity.builder()
+            .flagCode("RA0035")
+            .flagName("Video hearing")
+            .flagNameWelsh("Gwrandawiad fideo")
+            .hearingRelevant(true)
+            .availableExternally(true)
+            .visibility(FlagVisibility.INTERNAL.getValue())
+            .build();
+        when(flagRefDataRepository.findByFlagCode("RA0035")).thenReturn(Optional.of(existingRefData));
+
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        // and a payload claiming something different about it
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.EXTERNAL)
+            .details(List.of(ListValue.<FlagDetail>builder()
+                                 .value(FlagDetail.builder()
+                                            .flagCode("RA0035")
+                                            .name("Overwritten name")
+                                            .nameCy("Overwritten welsh name")
+                                            .status("Requested")
+                                            .hearingRelevant(YesOrNo.NO)
+                                            .availableExternally(YesOrNo.NO)
+                                            .build())
+                                 .build()))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then the flag is stored against the party, but the shared reference data is untouched
+        assertThat(partyEntity.getDefendantFlags()).hasSize(1);
+        assertThat(partyEntity.getDefendantFlags().getFirst().getFlagRefData()).isSameAs(existingRefData);
+        assertThat(existingRefData.getFlagName()).isEqualTo("Video hearing");
+        assertThat(existingRefData.getFlagNameWelsh()).isEqualTo("Gwrandawiad fideo");
+        assertThat(existingRefData.getHearingRelevant()).isTrue();
+        assertThat(existingRefData.getAvailableExternally()).isTrue();
+        assertThat(existingRefData.getVisibility()).isEqualTo(FlagVisibility.INTERNAL.getValue());
+
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
+    }
+
+    @Test
+    void shouldCreateReferenceDataForAnUnseenSuppliedFlagCode() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetailsWithoutIds("RA0099", "Newly published adjustment"))
+            .build();
+
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then
+        FlagRefDataEntity createdRefData = partyEntity.getDefendantFlags().getFirst().getFlagRefData();
+        assertThat(createdRefData.getFlagCode()).isEqualTo("RA0099");
+        assertThat(createdRefData.getFlagName()).isEqualTo("Newly published adjustment");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
+    }
+
+    @Test
+    void shouldUpdateSharedReferenceDataFromCaseworkerFlags() {
+        // Given reference data a caseworker is correcting
+        FlagRefDataEntity existingRefData = FlagRefDataEntity.builder()
+            .flagCode("CF0002")
+            .flagName("Complex Case")
+            .build();
+        when(flagRefDataRepository.findByFlagCode("CF0002")).thenReturn(Optional.of(existingRefData));
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null, "CF0002", "Complex case - renamed",
+                                      "Complicated case", "Active"))
+            .build();
+
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        // Then
+        assertThat(existingRefData.getFlagName()).isEqualTo("Complex case - renamed");
+    }
+
+    @Test
+    void shouldStorePathsWhenPathValuesHaveNoIds() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        Flags incomingFlags = Flags.builder()
+            .details(createFlagDetailsWithoutIds("RA0012", "Braille documents"))
+            .build();
+
+        when(taskDescriptionService.createReviewCaseFlagDescription(eq(CASE_REFERENCE), any()))
+            .thenReturn("description");
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags().getFirst().getPaths())
+            .isEqualTo(":Party_:Reasonable adjustment");
+
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG, "description");
+    }
+
+    @Test
+    void shouldRetainExistingPartyFlagsWhenNoFlagsSupplied() {
+        // Given
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        existingFlags.add(createPartyFlagEntity("RA0012", "Braille documents"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, null, CASE_REFERENCE);
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity, Flags.builder().details(new ArrayList<>()).build(), CASE_REFERENCE
+        );
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags()).hasSize(1);
+        assertThat(partyEntity.getDefendantFlags().getFirst().getFlagComment()).isEqualTo("Braille documents");
+        // The method returns before doing anything else - no reference data is looked up or written
+        verifyNoInteractions(flagRefDataRepository);
+        verifyNoInteractions(taskDescriptionService);
+        verifyNoInteractions(camundaService);
+    }
+
+    private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
+        return List.of(ListValue.<FlagDetail>builder()
+                           .value(FlagDetail.builder()
+                                      .flagCode(flagCode)
+                                      .name(name)
+                                      .status("Active")
+                                      .hearingRelevant(YesOrNo.YES)
+                                      .availableExternally(YesOrNo.YES)
+                                      .dateTimeCreated(LocalDateTime.now())
+                                      .path(List.of(
+                                          ListValue.<String>builder().value("Party").build(),
+                                          ListValue.<String>builder().value("Reasonable adjustment").build()))
+                                      .build())
+                           .build());
+    }
+
+    private CasePartyFlagEntity createPartyFlagEntity(String flagCode, String flagComment) {
+        CasePartyFlagEntity casePartyFlagEntity = new CasePartyFlagEntity();
+        casePartyFlagEntity.setId(UUID.randomUUID());
+        casePartyFlagEntity.setDefaultStatus("Active");
+        casePartyFlagEntity.setFlagRefData(FlagRefDataEntity.builder().flagCode(flagCode).build());
+        casePartyFlagEntity.setFlagComment(flagComment);
+        casePartyFlagEntity.setPaths(":Party");
+
+        return casePartyFlagEntity;
     }
 
     private Set<PartyEntity> createPartyEntities(UUID partyId) {

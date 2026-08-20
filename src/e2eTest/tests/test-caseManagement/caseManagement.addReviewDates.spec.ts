@@ -22,7 +22,7 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.staffAdmin);
+  await performAction('login', user.hearingCenterAdmin);
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToSummaryPage');
 });
