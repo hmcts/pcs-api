@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-@Slf4j
 @Service
 @AllArgsConstructor
 @Slf4j
