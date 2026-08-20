@@ -66,10 +66,31 @@ class ManageFlagsTest extends BaseEventTest {
             .contains("defendantFlags", "defendantFlagsExternal");
     }
 
+    /**
+     * Managing flags before the case is issued is a confirmed requirement, so it is asserted in its own
+     * right rather than only through the state helper the event happens to call.
+     */
     @Test
-    void shouldBeAvailableInTheConfiguredManageFlagStates() {
+    void shouldBeAvailableBeforeTheCaseIsIssued() {
         assertThat(configuredEvent.getPreState())
-            .containsExactlyInAnyOrder(EventStates.amendFlags())
+            .contains(State.PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    void shouldBeAvailableInEveryPostIssueStateAndNeverInDraft() {
+        assertThat(configuredEvent.getPreState())
+            .containsExactlyInAnyOrder(
+                State.PENDING_CASE_ISSUED,
+                State.CASE_ISSUED,
+                State.CASE_PROGRESSION,
+                State.CASE_STAYED,
+                State.BREATHING_SPACE,
+                State.JUDICIAL_REFERRAL,
+                State.HEARING_READINESS,
+                State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+                State.DECISION_OUTCOME,
+                State.ALL_FINAL_ORDERS_ISSUED,
+                State.CLOSED)
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 

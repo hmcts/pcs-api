@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +37,7 @@ class CreateFlagsTest extends  BaseEventTest {
 
     @Test
     void shouldBeConfiguredForEventStates() {
-        assertConfiguredForStates(EventStates.createFlags());
+        assertConfiguredForStates(ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED));
     }
 
     @Test
@@ -68,10 +69,31 @@ class CreateFlagsTest extends  BaseEventTest {
             .contains("defendantFlags", "defendantFlagsExternal");
     }
 
+    /**
+     * Creating flags before the case is issued is a confirmed requirement, so it is asserted in its own
+     * right rather than only through the state helper the event happens to call.
+     */
     @Test
-    void shouldBeAvailableInTheConfiguredCreateFlagStates() {
+    void shouldBeAvailableBeforeTheCaseIsIssued() {
         assertThat(configuredEvent.getPreState())
-            .containsExactlyInAnyOrder(EventStates.createFlags())
+            .contains(State.PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    void shouldBeAvailableInEveryPostIssueStateAndNeverInDraft() {
+        assertThat(configuredEvent.getPreState())
+            .containsExactlyInAnyOrder(
+                State.PENDING_CASE_ISSUED,
+                State.CASE_ISSUED,
+                State.CASE_PROGRESSION,
+                State.CASE_STAYED,
+                State.BREATHING_SPACE,
+                State.JUDICIAL_REFERRAL,
+                State.HEARING_READINESS,
+                State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+                State.DECISION_OUTCOME,
+                State.ALL_FINAL_ORDERS_ISSUED,
+                State.CLOSED)
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 
