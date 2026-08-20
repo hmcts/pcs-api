@@ -254,6 +254,203 @@ class TaskDescriptionServiceTest {
     }
 
     @Nested
+    @DisplayName("Get description for Translate Claimant Document task")
+    class TranslateClaimantDocumentTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            List<DocumentEntity> documentEntityList = List.of(
+                DocumentEntity.builder().fileName("filename1.pdf").build(),
+                DocumentEntity.builder().fileName("filename2.csv").build()
+            );
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "translate-claimant-submitted-document",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest.createTranslateClaimantDocumentDescription(
+                CASE_REFERENCE, documentEntityList);
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "translate-claimant-submitted-document",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createTranslateClaimantDocumentDescription(
+                    CASE_REFERENCE, List.of()));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+
+    }
+
+    @Nested
+    @DisplayName("Get description for Claim Additional Documents task")
+    class ClaimAdditionalDocumentsTests {
+        @Mock
+        private ClaimEntity mainClaim;
+        @Mock
+        private PartyEntity partyEntity;
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+
+            List<DocumentEntity> documentEntityList = List.of(
+                DocumentEntity.builder().fileName("filename1.pdf").build(),
+                DocumentEntity.builder().fileName("filename2.csv").build()
+            );
+
+            String expectedPartyLabel = "some party label";
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "claim-review-additional-docs",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createClaimAdditionalDocumentsDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity,
+                    documentEntityList
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("partyLabel", expectedPartyLabel)
+                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "claim-review-additional-docs",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createClaimAdditionalDocumentsDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
+    @Nested
+    @DisplayName("Get description for Review Case Flags task")
+    class ReviewCaseFlagTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            List<String> flags = List.of("Flag 1", "Flag 2");
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
+                    flags
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("flags", flags);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+
+    }
+
+    @Nested
     @DisplayName("Get description for Review Due Date task")
     class ReviewDueDateTest {
 

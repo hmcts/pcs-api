@@ -282,7 +282,7 @@ else
       </rule>
       <rule id="DecisionRule_0g14gbs">
         <inputEntry id="UnaryTests_00o2b5b">
-          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+          <text>"uploadDocuments"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1majuv9">
           <text></text>
@@ -326,7 +326,7 @@ else
       </rule>
       <rule id="DecisionRule_1ko9g24">
         <inputEntry id="UnaryTests_0elw9dw">
-          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+          <text>"uploadDocuments"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1it4om8">
           <text></text>
@@ -862,7 +862,7 @@ else
       </rule>
       <rule id="DecisionRule_0g1qchi">
         <inputEntry id="UnaryTests_122k3nu">
-          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+          <text>"respondPossessionClaim"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1nts3e0">
           <text></text>
@@ -1038,10 +1038,10 @@ else
       </rule>
       <rule id="DecisionRule_1dxqrjr">
         <inputEntry id="UnaryTests_1hv7g4o">
-          <text>Submit Claim</text>
+          <text>Claimant submits claim or gen app</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0x5a2l7">
-          <text>"PENDING_CASE_ISSUED"</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0fbkyvu">
           <text></text>
@@ -1050,7 +1050,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xs29rz">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Claimant selects claim completed in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0eloawb">
           <text></text>

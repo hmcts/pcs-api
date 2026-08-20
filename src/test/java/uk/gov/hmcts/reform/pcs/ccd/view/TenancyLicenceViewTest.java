@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -232,6 +233,11 @@ class TenancyLicenceViewTest {
                         DocumentEntity.builder()
                                 .id(UUID.randomUUID())
                                 .type(DocumentType.TENANCY_AGREEMENT)
+                                .generalApplication(GenAppEntity.builder().build())
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.TENANCY_AGREEMENT)
                                 .description("Non-empty description")
                                 .build(),
                         DocumentEntity.builder()
@@ -277,6 +283,11 @@ class TenancyLicenceViewTest {
                     DocumentEntity.builder()
                         .id(tenancyLicenceDocumentId)
                         .type(DocumentType.OCCUPATION_LICENCE)
+                        .build(),
+                    DocumentEntity.builder()
+                        .id(UUID.randomUUID())
+                        .type(DocumentType.OCCUPATION_LICENCE)
+                        .generalApplication(GenAppEntity.builder().build())
                         .build(),
                     DocumentEntity.builder()
                         .id(UUID.randomUUID())
