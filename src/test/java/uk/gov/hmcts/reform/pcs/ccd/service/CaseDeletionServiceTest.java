@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,7 +102,21 @@ class CaseDeletionServiceTest {
         verify(pcsCaseService).deleteCase(caseRef);
         verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
         verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
+    }
 
+    @Test
+    void shouldDeleteCaseData() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock();
+        when(pcsCaseEntity.getCaseReference()).thenReturn(caseRef);
+
+        // When
+        underTest.deleteCaseData(pcsCaseEntity);
+
+        // Then
+        verify(pcsCaseService).deleteCase(pcsCaseEntity);
+        verify(draftCaseDataService).deleteUnsubmittedCaseDataBySystemUser(caseRef, resumePossessionClaim);
+        verify(ccdCaseDataDeletionService).deleteCcdCaseData(caseRef);
     }
 
     @Test

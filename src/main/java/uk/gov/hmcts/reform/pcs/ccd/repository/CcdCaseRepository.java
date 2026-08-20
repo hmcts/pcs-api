@@ -16,18 +16,21 @@ public class CcdCaseRepository {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public List<Long> findExpiredDraftCases(int discardAfterDays) {
+    public List<Long> findExpiredDraftCases(int discardAfterDays, int limit) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("discardDaysAfter", discardAfterDays);
+            .addValue("discardDaysAfter", discardAfterDays)
+            .addValue("limit", limit);
         return namedParameterJdbcTemplate.query(
-                """
-                   SELECT cd.reference
-                   FROM ccd.case_data cd
-                   WHERE cd.created_date < now()::date - :discardDaysAfter
-                   AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
-                """,
-                namedParameters,
-                (rs, rowNum) -> rs.getLong("reference")
+            """
+                SELECT cd.reference
+                FROM ccd.case_data cd
+                WHERE cd.created_date < now()::date - :discardDaysAfter
+                AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
+                ORDER BY cd.created_date ASC
+                LIMIT :limit
+            """,
+            namedParameters,
+            (rs, rowNum) -> rs.getLong("reference")
         );
     }
 

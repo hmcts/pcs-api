@@ -90,6 +90,6 @@ public class DocumentImportService {
             documentId,
             true
         );
-        log.debug("Deleting document at url: " + documentUrl);
+        log.debug("Deleting document at url: {}", documentUrl);
     }
 }

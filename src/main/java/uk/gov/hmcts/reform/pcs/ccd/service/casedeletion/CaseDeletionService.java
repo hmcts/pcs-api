@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -42,7 +43,7 @@ public class CaseDeletionService {
         }
     }
 
-    private void deleteDocumentsFromCdam(List<String> documentUrls, long caseReference) {
+    public void deleteDocumentsFromCdam(List<String> documentUrls, long caseReference) {
         if (!CollectionUtils.isEmpty(documentUrls)) {
             try {
                 pcsCaseService.deleteDocumentsFromCdam(documentUrls, caseReference);
@@ -59,6 +60,13 @@ public class CaseDeletionService {
         deleteCcdCase(caseReference);
     }
 
+    @Transactional
+    public void deleteCaseData(PcsCaseEntity pcsCaseEntity) {
+        deletePcsCase(pcsCaseEntity);
+        deleteDraftData(pcsCaseEntity.getCaseReference());
+        deleteCcdCase(pcsCaseEntity.getCaseReference());
+    }
+
     public void deletePcsCase(long caseReference) {
         try {
             pcsCaseService.deleteCase(caseReference);
@@ -67,6 +75,18 @@ public class CaseDeletionService {
         } catch (Exception e) {
             log.error("Unexpected Error occurred while deleting PcsCase with reference: {}", caseReference, e);
             throw new PcsCaseDeletionException(caseReference);
+        }
+    }
+
+    public void deletePcsCase(PcsCaseEntity pcsCaseEntity) {
+        try {
+            pcsCaseService.deleteCase(pcsCaseEntity);
+        } catch (CaseNotFoundException e) {
+            log.error("Case not found with reference: {} when deleting PcsCase", pcsCaseEntity.getCaseReference(), e);
+        } catch (Exception e) {
+            log.error("Unexpected Error occurred while deleting PcsCase with reference: {}",
+                      pcsCaseEntity.getCaseReference(), e);
+            throw new PcsCaseDeletionException(pcsCaseEntity.getCaseReference());
         }
     }
 

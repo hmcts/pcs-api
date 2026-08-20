@@ -40,8 +40,8 @@ public class CcdCaseDataDeletionService {
     private final ObjectMapper objectMapper;
     private final CcdCaseRepository ccdCaseRepository;
 
-    public List<Long> findExpiredDraftCases(int discardAfterDays) {
-        return ccdCaseRepository.findExpiredDraftCases(discardAfterDays);
+    public List<Long> findExpiredDraftCasesBatch(int discardAfterDays, int limit) {
+        return ccdCaseRepository.findExpiredDraftCases(discardAfterDays, limit);
     }
 
     public List<Long> findExpiredDraftCasesInDraftDiscardedState() {

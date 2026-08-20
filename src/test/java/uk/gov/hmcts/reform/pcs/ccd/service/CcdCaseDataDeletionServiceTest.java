@@ -74,9 +74,10 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnEmptyListWhenNoExpiredCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays)).thenReturn(List.of());
+        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays, 10)).thenReturn(List.of());
+
         // When
-        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays);
+        List<Long> result = underTest.findExpiredDraftCasesBatch(discardAfterDays, 10);
 
         // Then
         assertThat(result).isEmpty();
@@ -85,10 +86,11 @@ class CcdCaseDataDeletionServiceTest {
     @Test
     void shouldReturnValidListWhenExpiredCasesFound() {
         // Given
-        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays))
+        when(ccdCaseRepository.findExpiredDraftCases(discardAfterDays, 10))
                 .thenReturn(List.of(caseRef, caseRef2));
+
         // When
-        List<Long> result = underTest.findExpiredDraftCases(discardAfterDays);
+        List<Long> result = underTest.findExpiredDraftCasesBatch(discardAfterDays, 10);
 
         // Then
         assertThat(result).hasSize(2);
