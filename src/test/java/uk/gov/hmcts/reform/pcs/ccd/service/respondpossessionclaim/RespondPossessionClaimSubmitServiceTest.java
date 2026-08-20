@@ -35,10 +35,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -149,8 +149,7 @@ class RespondPossessionClaimSubmitServiceTest {
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isTrue();
         assertThat(result.feeDetails()).isEqualTo(expectedFeeDetails);
-        verify(camundaService, never())
-            .createTask(eq(CASE_REFERENCE), eq(TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM), any());
+        verifyNoInteractions(camundaService);
     }
 
     @Test
