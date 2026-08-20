@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,12 +45,14 @@ public class LegalRepresentativeSummaryService {
         """;
 
     private final DefendantPartyExtractor defendantPartyExtractor;
+    private final OrganisationService organisationService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
-                                                 String organisationIdForCurrentUser, State state) {
+    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, State state) {
+
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
         Optional<ClaimPartyOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
 
