@@ -153,8 +153,11 @@ notify:
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
   templates:
     response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
+    response-no-counterclaim-legal-rep: 0abc7358-20a7-4d96-b0ab-95c2e40879de
     counterclaim-payment-required: 258081b1-786d-4c20-9793-b45c0a1b029b
+    counterclaim-payment-required-legal-rep: 996d9bd4-7000-4537-a2b4-925baf2e5d6f
     counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
+    counterclaim-payment-success-legal-rep: fee05cad-6832-41b7-94ce-b7cd89bcdaff
     counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
     make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
     make-a-claim-defendant-made-counterclaim: 6f583b02-6857-4207-a7ae-8c73d2310a80

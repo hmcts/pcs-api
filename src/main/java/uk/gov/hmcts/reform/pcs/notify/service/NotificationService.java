@@ -112,7 +112,7 @@ public class NotificationService {
                 defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
+            EmailTemplate.RESPONSE_NO_COUNTERCLAIM_LEGAL_REP,
             NotificationClaimType.NO_COUNTER_CLAIM,
             notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
                                                                       pcsCaseEntity));
@@ -130,7 +130,7 @@ public class NotificationService {
                 defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP,
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
                                                                       pcsCaseEntity));

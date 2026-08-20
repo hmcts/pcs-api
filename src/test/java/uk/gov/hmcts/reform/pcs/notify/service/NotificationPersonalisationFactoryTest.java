@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 
 import java.util.Map;
 import java.util.UUID;
@@ -302,8 +302,8 @@ class NotificationPersonalisationFactoryTest {
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
-            LegalRepresentativeBasePersonalisation result = factory.forLegalRepresentative(legalRepParty,
-                                                                                           pcsCaseEntity);
+            OrganisationBasePersonalisation result = factory.forLegalRepresentative(legalRepParty,
+                                                                                    pcsCaseEntity);
             Map<String, Object> map = result.toMap();
             assertThat(map)
                 .containsEntry("caseNumber", "1234-5678-90")

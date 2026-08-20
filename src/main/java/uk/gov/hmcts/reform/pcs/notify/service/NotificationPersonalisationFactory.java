@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.LegalRepresentativeBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 
 import java.util.Locale;
 
@@ -63,7 +63,7 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
-    public LegalRepresentativeBasePersonalisation forLegalRepresentative(
+    public OrganisationBasePersonalisation forLegalRepresentative(
         OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity) {
 
         return buildPersonalisation(pcsCaseEntity, organisationEntity);
@@ -78,7 +78,7 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
-    private LegalRepresentativeBasePersonalisation buildPersonalisation(
+    private OrganisationBasePersonalisation buildPersonalisation(
         PcsCaseEntity pcsCaseEntity,
         OrganisationEntity organisationEntity
     ) {
@@ -88,17 +88,8 @@ public class NotificationPersonalisationFactory {
         String claimantName = getClaimantName(primaryClaimant);
         String primaryDefendantName = getPrimaryDefendantName(primaryDefendant);
 
-        // hacky but works — live Notify templates expect firstName/lastName (same as defendant emails).
-        // LR org doesn't have a person name so stuffing org name into firstName for now.
-        // TODO: check if we should be pulling a solicitor name from somewhere instead
-        String firstName = organisationEntity.getOrganisationName();
-        if (firstName == null) {
-            firstName = "";
-        }
-
-        return LegalRepresentativeBasePersonalisation.builder()
-            .firstName(firstName)
-            .lastName("") // Notify still wants the key present
+        return OrganisationBasePersonalisation.builder()
+            .organisationName(organisationEntity.getOrganisationName())
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
