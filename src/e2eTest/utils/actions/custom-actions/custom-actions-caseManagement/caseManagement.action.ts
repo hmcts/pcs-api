@@ -1,11 +1,11 @@
 
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { formatWord, generateRandomString } from "@utils/common/string.utils";
+import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -946,7 +946,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-
+      
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -989,7 +989,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();
+    const claimant = new Map<string, string>();  
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);
