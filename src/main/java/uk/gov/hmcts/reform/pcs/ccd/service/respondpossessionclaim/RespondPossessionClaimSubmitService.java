@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -15,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.Instant;
@@ -35,6 +39,8 @@ public class RespondPossessionClaimSubmitService {
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
     private final SchedulerClient schedulerClient;
+    private final TaskDescriptionService taskDescriptionService;
+    private final CamundaService camundaService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -43,7 +49,7 @@ public class RespondPossessionClaimSubmitService {
         PartyEntity defendantParty,
         JourneyType journeyType
     ) {
-        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
         defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
@@ -58,6 +64,21 @@ public class RespondPossessionClaimSubmitService {
             counterClaimEntity.getParty()
         ));
 
+        CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
+
+        boolean paymentRequired = false;
+        FeeDetails feeDetails = null;
+
+        if (counterClaimEntity != null) {
+            feeDetails = counterClaimFeeCalculator.getFeeDetails(counterClaim);
+            schedulePendingCounterClaimIssuedNotification(counterClaimEntity);
+            if (counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)) {
+                createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
+            } else {
+                paymentRequired = true;
+            }
+        }
+
         if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference,
@@ -68,19 +89,12 @@ public class RespondPossessionClaimSubmitService {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
         }
 
-        boolean paymentRequired = false;
-
-        CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        if (counterClaimEntity != null) {
-            paymentRequired = counterClaimFeeCalculator.isPaymentRequired(counterClaim);
-            schedulePendingCounterClaimIssuedNotification(counterClaimEntity);
-        }
-
         log.info("Successfully saved defendant response for case: {}", caseReference);
 
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
+            feeDetails,
             paymentRequired
         );
     }
@@ -105,4 +119,21 @@ public class RespondPossessionClaimSubmitService {
             );
         }
     }
+  
+    private void createCounterClaimReviewWaTask(long caseReference,
+                                                CounterClaimEntity counterClaimEntity,
+                                                FeeDetails feeDetails) {
+
+        String taskDescription = taskDescriptionService.createReviewResponseAndCounterClaimDescription(
+            caseReference,
+            counterClaimEntity,
+            feeDetails
+        );
+
+        camundaService.createTask(
+            caseReference,
+            TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
+            taskDescription);
+    }
+
 }

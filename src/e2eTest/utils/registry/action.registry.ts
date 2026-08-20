@@ -66,6 +66,7 @@ export class ActionRegistry {
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['manageHearingAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],

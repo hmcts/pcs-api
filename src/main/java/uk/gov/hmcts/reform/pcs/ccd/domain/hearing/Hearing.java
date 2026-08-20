@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.hearing;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.ALWAYS)
 public class Hearing {
 
     @CCD(ignore = true)
@@ -26,9 +28,15 @@ public class Hearing {
     @CCD(ignore = true)
     public static final String ADDITIONAL_INFORMATION_LABEL = "Enter any additional information";
     @CCD(ignore = true)
+    public static final String DAY_LABEL = "Days";
+    @CCD(ignore = true)
     public static final String HOUR_LABEL = "Hours";
     @CCD(ignore = true)
     public static final String MINUTE_LABEL = "Minutes";
+    @CCD(ignore = true)
+    public static final String CANCELLATION_REASON_LABEL = "Enter reason for cancellation";
+
+    private Integer hearingId;
 
     @CCD(label = "Which type of hearing is this?")
     private HearingType type;
@@ -51,6 +59,13 @@ public class Hearing {
         hint = "Enter date and time"
     )
     private LocalDateTime date;
+
+    @CCD(
+        label = DAY_LABEL,
+        min = 0,
+        max = 100
+    )
+    private Integer durationDays;
 
     @CCD(
         label = HOUR_LABEL,
@@ -84,4 +99,13 @@ public class Hearing {
         typeOverride = TextArea
     )
     private String additionalInformation;
+
+    @CCD(
+        label = CANCELLATION_REASON_LABEL,
+        hint = "This will be included in the notice sent to parties, if one is required",
+        typeOverride = TextArea
+    )
+    private String cancellationReason;
+
+    private String hearingSummaryMarkdown;
 }

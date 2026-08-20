@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +63,7 @@ public class CaseFlagService {
      * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
      * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
      */
-    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
             return;
         }
@@ -79,6 +80,18 @@ public class CaseFlagService {
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
         }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
@@ -242,6 +255,10 @@ public class CaseFlagService {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**

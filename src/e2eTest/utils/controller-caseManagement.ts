@@ -73,8 +73,15 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  
-  if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument' || action === 'selectDocumentToAmend' || action ==='addAHearing') {
+  if (action === 'changeCaseState'
+    || action === 'enterApplicationDetails'
+    || action === 'uploadADocument'
+    || action === 'selectDocumentToAmend'
+    || action === 'selectManageParty'
+    || action === 'addAHearing'
+    || action === 'selectManageHearing'
+    || action === 'editHearing'
+    || action === 'cancelHearing') {
     captureDataForCYAPage = true;
   }
 
@@ -92,7 +99,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   const actionInstance = ActionCMRegistry.getAction(action);
 
   captureDataForCYA(action, fieldName, value);
-  
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 
