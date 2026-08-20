@@ -207,8 +207,8 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
-                                                                           State.PENDING_CASE_ISSUED);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.PENDING_CASE_ISSUED, organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
