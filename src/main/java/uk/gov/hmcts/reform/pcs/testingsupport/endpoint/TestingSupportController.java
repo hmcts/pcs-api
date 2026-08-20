@@ -56,6 +56,8 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
@@ -69,6 +71,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -505,6 +508,68 @@ public class TestingSupportController {
         partyRepository.save(partyEntity);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+        summary = "Reschedule Camunda request",
+        description = "Reschedules all scheduled Camunda requests within the specified window from now to be "
+            + "triggered immediately"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/reschedule-camunda-requests")
+    public ResponseEntity<String> rescheduleCamundaRequest(
+        @Parameter(
+            description = "Days to add to current time (default: 0)",
+            example = "1"
+        )
+        @RequestParam(value = "days", defaultValue = "0") int days,
+        @Parameter(
+            description = "Hours to add to current time (default: 0)",
+            example = "2"
+        )
+        @RequestParam(value = "hours", defaultValue = "0") int hours,
+        @Parameter(
+            description = "Minutes to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+        try {
+
+            Instant taskTriggerTime = Instant.now().plus(Duration.ofDays(days)
+                                   .plusHours(hours)
+                                   .plusMinutes(minutes));
+
+            List<String> taskIds = jdbcTemplate.query(
+                """
+                    SELECT task_instance
+                    FROM scheduled_tasks
+                    WHERE task_name = 'camunda-request-task' and execution_time <= ?
+                """,
+                (rs, rowNum) -> rs.getString("task_instance"),
+                Timestamp.from(taskTriggerTime)
+            );
+
+            for (String taskId : taskIds) {
+                schedulerClient.reschedule(
+                    CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
+                    Instant.now()
+                );
+
+                log.info("Rescheduled Camunda request task with ID: {}", taskId);
+            }
+
+            return ResponseEntity.ok("Camunda request rescheduled successfully");
+        } catch (Exception e) {
+            log.error("Failed to reschedule Camunda request task", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to reschedule Camunda request task: " + e.getMessage());
+        }
     }
 
 }
