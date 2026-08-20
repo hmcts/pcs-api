@@ -126,6 +126,16 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createReviewCaseFlagDescription(long caseReference, List<String> flags) {
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "flags", flags
+        );
+
+        String templateName = "review-case-flag";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
@@ -136,7 +146,9 @@ public class TaskDescriptionService {
             throw new TemplateRenderingException("Failed to render template", e);
         }
 
-        return writer.toString();
+        return writer.toString()
+            .replace("(", "&#40;")
+            .replace(")", "&#41;");
     }
 
     private String getPartyLabel(PartyEntity partyEntity, long caseReference) {
