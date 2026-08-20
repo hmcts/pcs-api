@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,9 +91,11 @@ public class CamundaServiceTest {
         .atTime(12, 51, 19);
 
     @Test
-    void shouldScheduleCamundaCreateRequestTask() {
-        // When
+    void shouldScheduleCamundaCreateRequestTaskWithDefaultDescription() {
+        // Given
         stubWaFeatureFlag(true);
+
+        // When
         camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -104,14 +107,43 @@ public class CamundaServiceTest {
         assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
         assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(taskData.getTaskDescription())
+            .isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING.getDefaultDescription());
+
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
+    }
+
+    @Test
+    void shouldScheduleCamundaCreateRequestTaskWithCustomDescription() {
+        // Given
+        stubWaFeatureFlag(true);
+        String expectedDescription = "some description";
+
+        // When
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, expectedDescription);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(taskData.getTaskDescription()).isEqualTo(expectedDescription);
+
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     @Test
     void shouldScheduleCamundaCancelRequestTask() {
-        // When
+        // Given
         stubWaFeatureFlag(true);
+
+        // When
         camundaService.cancelTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -129,8 +161,10 @@ public class CamundaServiceTest {
 
     @Test
     void shouldNotScheduleCamundaCreateRequestTaskWhenWaNotEnabled() {
-        // When
+        // Given
         stubWaFeatureFlag(false);
+
+        // When
         camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -139,8 +173,10 @@ public class CamundaServiceTest {
 
     @Test
     void shouldNotScheduleCamundaCancelRequestTaskWhenWaNotEnabled() {
-        // When
+        // Given
         stubWaFeatureFlag(false);
+
+        // When
         camundaService.cancelTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
 
         // Then
@@ -155,7 +191,8 @@ public class CamundaServiceTest {
         when(authTokenGenerator.generate()).thenReturn("authToken");
         stubWaFeatureFlag(true);
 
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
+        String expectedDescription = "some description";
+        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, expectedDescription);
 
         // When
         camundaService.handleRequest(taskData);
@@ -182,6 +219,8 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("jurisdiction").getType()).isEqualTo("String");
         assertThat(processVariables.get("name").getValue()).isEqualTo("New Claim – Create new hearing");
         assertThat(processVariables.get("name").getType()).isEqualTo("String");
+        assertThat(processVariables.get("taskDescription").getValue()).isEqualTo(expectedDescription);
+        assertThat(processVariables.get("taskDescription").getType()).isEqualTo("String");
         assertThat(processVariables.get("taskId").getValue()).isEqualTo("NewClaimCreateNewHearing");
         assertThat(processVariables.get("taskId").getType()).isEqualTo("String");
         assertThat(processVariables.get("caseId").getValue()).isEqualTo(Long.toString(CASE_REFERENCE));
@@ -201,7 +240,7 @@ public class CamundaServiceTest {
 
         stubWaFeatureFlag(false);
 
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
+        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, "some description");
 
         // When
         camundaService.handleRequest(taskData);
@@ -224,7 +263,7 @@ public class CamundaServiceTest {
         stubWaFeatureFlag(true);
         doThrow(new RuntimeException()).when(camundaApi).sendMessage(any(), any());
 
-        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType);
+        CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, "some description");
 
         // When
         assertThatThrownBy(() -> camundaService.handleRequest(taskData)).isInstanceOf(RuntimeException.class);
@@ -290,11 +329,51 @@ public class CamundaServiceTest {
         verify(camundaApi, never()).sendMessage(any(), any());
     }
 
-    private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType) {
+    @Test
+    void shouldScheduleCamundaCreateRequestTaskWithDelay() {
+        // When
+        stubWaFeatureFlag(true);
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, Duration.ofDays(1));
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-28T12:51:19Z"));
+    }
+
+    @Test
+    void shouldScheduleCamundaCreateRequestTaskAtSpecificDateTime() {
+        // When
+        stubWaFeatureFlag(true);
+        Instant instant = Instant.parse("2026-08-28T12:51:19Z");
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, "description", instant);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
+        assertThat(taskData.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(instant);
+    }
+
+    private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {
         return CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(CASE_REFERENCE)
             .taskType(taskType)
+            .taskDescription(taskDescription)
             .build();
     }
 

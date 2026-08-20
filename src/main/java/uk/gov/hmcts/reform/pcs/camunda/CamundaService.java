@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -38,40 +39,60 @@ public class CamundaService {
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
-        scheduleCamundaRequest(Action.CREATE, caseId, taskType);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
+    }
+
+    public void createTask(long caseId, TaskType taskType, Duration delay) {
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay));
+    }
+
+    public void createTask(long caseId, TaskType taskType, String taskDescription) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock));
+    }
+
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CREATE)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .taskDescription(taskDescription)
+            .build();
+
+        scheduleCamundaRequest(taskData, scheduledTo);
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
-        scheduleCamundaRequest(Action.CANCEL, caseId, taskType);
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CANCEL)
+            .caseReference(caseId)
+            .taskType(taskType)
+            .build();
+        scheduleCamundaRequest(taskData, Instant.now(utcClock));
     }
 
     void handleRequest(CamundaRequestTaskData taskData) {
         switch (taskData.getAction()) {
-            case CREATE -> requestTaskCreation(taskData.getCaseReference(), taskData.getTaskType());
-            case CANCEL -> requestTaskCancellation(taskData.getCaseReference(), taskData.getTaskType());
+            case CREATE ->
+                requestTaskCreation(taskData.getCaseReference(), taskData.getTaskType(), taskData.getTaskDescription());
+            case CANCEL ->
+                requestTaskCancellation(taskData.getCaseReference(), taskData.getTaskType());
         }
     }
 
-    private void scheduleCamundaRequest(Action action, long caseId, TaskType taskType) {
+    private void scheduleCamundaRequest(CamundaRequestTaskData taskData, Instant scheduledTo) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
-            log.info("Skipped scheduling Camunda request for {}", caseId);
+            log.info("Skipped scheduling Camunda request for {}", taskData.getCaseReference());
             return;
         }
-
-        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
-            .action(action)
-            .caseReference(caseId)
-            .taskType(taskType)
-            .build();
 
         schedulerClient.scheduleIfNotExists(
             CAMUNDA_REQUEST_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
                 .data(taskData)
-                .scheduledTo(Instant.now(utcClock)));
+                .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(Long caseId, TaskType taskType) {
+    private void requestTaskCreation(Long caseId, TaskType taskType, String taskDescription) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -82,10 +103,16 @@ public class CamundaService {
 
         LocalDateTime delayUntil = LocalDateTime.now(utcClock);
 
+        // Note: A few fields are stripped out by wa-task-monitor before the task attributes are passed
+        // to the configuration DMN, so should be not used as a custom field if that field is going to be
+        // referenced in the configuration DMN
+        // The fields that are removed are: dueDate, assignee, priorityDate, description, name
+
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
         processVariables.put("jurisdiction", dmnStringValue(CaseType.getJurisdictionId()));
         processVariables.put("name", dmnStringValue(taskType.getName()));
+        processVariables.put("taskDescription", dmnStringValue(taskDescription));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
         processVariables.put("caseId", dmnStringValue(caseId.toString()));
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
@@ -151,4 +178,5 @@ public class CamundaService {
     private DmnValue<Boolean> dmnBooleanValue(Boolean value) {
         return DmnValue.<Boolean>builder().value(value).type("Boolean").build();
     }
+
 }

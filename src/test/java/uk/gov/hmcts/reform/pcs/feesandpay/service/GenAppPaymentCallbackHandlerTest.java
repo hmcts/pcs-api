@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
@@ -40,12 +41,15 @@ class GenAppPaymentCallbackHandlerTest {
     private PaymentStatusCallback paymentStatusCallback;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private GenAppWaTaskService genAppWaTaskService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator, notificationService);
+        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
+                                                     notificationService, genAppWaTaskService);
     }
 
     @Test
@@ -71,6 +75,7 @@ class GenAppPaymentCallbackHandlerTest {
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+        verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
     }
 
     @Test

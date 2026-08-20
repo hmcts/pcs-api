@@ -1,7 +1,22 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData, paymentApiData } from '@data/api-data';
+import {
+  createCaseApiData,
+  createCaseEventTokenApiData,
+  submitCaseApiData,
+  submitCaseEventTokenApiData,
+  caseUserRoleDeletionApiData,
+  enforceOrderEventTokenApiData,
+  enforceWarrantApiData,
+  getCaseApiData,
+  submitCaseEventTokenDynamicApiData,
+  createCaseEventTokenDynamicApiData,
+  makeAnApplicationEventTokenApiData,
+  makeAnApplicationApiData,
+  paymentApiData,
+  manageHearingEventTokenApiData, manageHearingApiData
+} from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -30,6 +45,8 @@ export class CreateCaseAPIAction implements IAction {
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
+      ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -450,6 +467,46 @@ export class CreateCaseAPIAction implements IAction {
         throw new Error('Make an application: no response from server.');
       }
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+
+  private async manageHearingAPI(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const manageHearingApi = Axios.create(manageHearingEventTokenApiData.manageHearingEventTokenApiInstance());
+    let manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    try {
+      process.env.Hearing_EVENT_TOKEN = (await manageHearingApi.get(manageHearingEventTokenApiData.manageHearingEventTokenApiEndPoint())).data.token;
+      manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const hearingResponse = await manageHearingApi.post(manageHearingApiData.manageHearingApiEndPoint(), {
+        data: manageHearingPayloadData,
+        event: {id: manageHearingApiData.manageHearingEventName},
+        event_token: process.env.Hearing_EVENT_TOKEN,
+      });
+      caseInfo.id = hearingResponse.data.id;
+      caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = hearingResponse.data.state;
+      console.log(`\n✅ NEW HEARING DATE ADDED SUCCESSFUL : STATUS ${hearingResponse.status}`);
+    }
+    catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(manageHearingPayloadData);
+        throw new Error(`Add a hearing: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Add a hearing: no response from server.');
+      }
+      throw new Error(`Add a hearing failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 

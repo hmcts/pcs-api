@@ -9,6 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -412,6 +415,44 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(savedHousehold.getMoneyFromElsewhere()).isEqualTo(YesOrNo.YES);
         assertThat(savedHousehold.getMoneyFromElsewhereDetails())
             .isEqualTo("Child maintenance payments of £100 per week");
+    }
+
+    @Test
+    void shouldSaveDefendantFlagsInDraft() {
+        //Given
+        // As supplied by the cui-ra microsite: no visibility, and no ids on the list values or paths
+        Flags defendantFlags = Flags.builder()
+            .partyName("Jack Smith")
+            .roleOnCase("Defendant")
+            .details(List.of(ListValue.<FlagDetail>builder()
+                                 .value(FlagDetail.builder()
+                                            .name("Video hearing")
+                                            .nameCy("Gwrandawiad fideo")
+                                            .flagCode("RA0035")
+                                            .status("Requested")
+                                            .hearingRelevant(YesOrNo.YES)
+                                            .availableExternally(YesOrNo.YES)
+                                            .path(List.of(
+                                                ListValue.<String>builder().value("Party").build(),
+                                                ListValue.<String>builder().value("Reasonable adjustment").build()))
+                                            .build())
+                                 .build()))
+            .build();
+
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantFlags(defendantFlags)
+                                             .build());
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+        verify(draftCaseDataService).saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantFlags()).isEqualTo(defendantFlags);
     }
 
     @Test

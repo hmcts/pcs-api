@@ -99,7 +99,7 @@ export class CYAStore {
       case 'uploadADocument':
         if (typeof fieldName === 'object' && fieldName.label && fieldName.file) {
           qaObject = { question: this.getMappedQuestion(fieldName.label), answer: fieldName.file };
-        } 
+        }
         break;
       case 'inputDate':
         if (typeof fieldName === 'object' && fieldName.label && fieldName.date) {
@@ -114,7 +114,7 @@ export class CYAStore {
           qaObject = { question: qn, answer: this.formatDate(value) };
         }
         break;
-        
+
     }
 
     if (qaObject) {
@@ -210,11 +210,55 @@ export class CYAStore {
   }
 
   // convert date from eg: 23/07,2026 to 23 july 2026
+  // private formatDate(date: string): string {
+  //   const [day, month, year] = date.split('/');
+  //   const monthName = new Date(Number(year),Number(month) - 1,Number(day)).toLocaleString('en-GB', { month: 'long' }).substring(0,3);
+  //   return `${day} ${monthName} ${year}`;
+  // }
+
   private formatDate(date: string): string {
-    const [day, month, year] = date.split('/');
-    const monthName = new Date(Number(year),Number(month) - 1,Number(day)).toLocaleString('en-GB', { month: 'long' }).substring(0,3);
-    return `${day} ${monthName} ${year}`;
+  const parts = date.split('/');
+
+  const day = parts[0];
+  const month = parts[1];
+  const year = parts[2];
+
+  const monthName = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  )
+    .toLocaleString('en-GB', { month: 'long' })
+    .substring(0, 3);
+
+  // Format: dd/MM/yyyy/HH/mm/ss
+  if (parts.length === 6) {
+    const hours = Number(parts[3]);
+    const minutes = parts[4];
+    const seconds = parts[5];
+
+    const dateObj = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      hours,
+      Number(minutes),
+      Number(seconds)
+    );
+
+    const time = dateObj.toLocaleTimeString('en-GB', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    }).toUpperCase();
+
+    return `${Number(day)} ${monthName} ${year}, ${time}`;
   }
+
+  return `${Number(day)} ${monthName} ${year}`;
+}
+
 
   private getMappedQuestion(input: string): string {
     return input ? (actionMapQuestions[input.trim().toLowerCase()] ?? input) : input;
@@ -458,8 +502,9 @@ export class CYAPageValidation {
     pageAnswer: string;
     extractedQuestion: string;
   } {
+   
+   
     const cleanQuestion = this.normalizeText(question);
-
     for (const qa of extractedQA) {
       const pageQuestion = this.normalizeText(qa.question);
       if (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion)) {

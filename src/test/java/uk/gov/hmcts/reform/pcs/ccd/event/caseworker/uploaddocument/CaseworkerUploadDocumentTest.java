@@ -95,4 +95,11 @@ class CaseworkerUploadDocumentTest extends BaseEventTest {
         verify(submitHandler).submit(eventPayloadCaptor.capture());
         assertThat(eventPayloadCaptor.getValue().caseData()).isEqualTo(caseData);
     }
+
+    @Test
+    void shouldOnlyShowEventWhenReleaseAndCaseworkerEventsFeatureFlagsAreEnabled() {
+        assertThat(configuredEvent.getShowCondition())
+            .isEqualTo("featureFlags.release1dot3Enabled=\"YES\" "
+                + "AND featureFlags.caseWorkerEventsEnabled=\"YES\"");
+    }
 }

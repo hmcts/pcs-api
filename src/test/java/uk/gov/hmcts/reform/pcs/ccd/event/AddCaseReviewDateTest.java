@@ -102,7 +102,7 @@ public class AddCaseReviewDateTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
         // Then
-        verify(caseReviewDateService).addCaseReviewDate(TEST_CASE_REFERENCE, pcsCase);
+        verify(caseReviewDateService).addCaseReviewDates(TEST_CASE_REFERENCE, pcsCase);
         assertThat(submitResponse.getConfirmationBody()).isEqualTo(
             """
             ---

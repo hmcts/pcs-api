@@ -50,7 +50,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseId = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        caseReviewDateService.addCaseReviewDate(caseId, caseData);
+        caseReviewDateService.addCaseReviewDates(caseId, caseData);
         String address = addressFormatter
             .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
         return SubmitResponse.<State>builder()

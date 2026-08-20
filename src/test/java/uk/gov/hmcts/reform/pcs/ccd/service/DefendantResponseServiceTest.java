@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreemen
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.ReasonableAdjustmentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseReadMapper;
@@ -82,6 +84,8 @@ class DefendantResponseServiceTest {
     private DefendantResponseRepository defendantResponseRepository;
     @Mock
     private DefendantResponseReadMapper defendantResponseReadMapper;
+    @Mock
+    private PartyRepository partyRepository;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -196,6 +200,8 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getStatementOfTruth()).isNotNull();
         assertThat(savedResponse.getStatementOfTruth().getCompletedBy()).isNull();
         assertThat(savedResponse.getStatementOfTruth().getFullName()).isEqualTo("Test Defendant");
+        assertThat(savedResponse.getStatementOfTruth().getFirmName()).isNull();
+        assertThat(savedResponse.getStatementOfTruth().getPositionHeld()).isNull();
     }
 
     @Test
@@ -1029,6 +1035,76 @@ class DefendantResponseServiceTest {
         assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
         assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("John Doe");
         assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+        assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
+    }
+
+    @Test
+    void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .nameOfFirm("Smith & Co Solicitors")
+                .positionHeld("Solicitor")
+                .hasLegalRepresentation(VerticalYesNo.YES)
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When — legal rep path (passes party ID explicitly)
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
+                                        JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getCompletedBy())
+            .isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        assertThat(saved.getStatementOfTruth().getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(saved.getStatementOfTruth().getFullName()).isEqualTo("Jane Smith");
+        assertThat(saved.getStatementOfTruth().getFirmName()).isEqualTo("Smith & Co Solicitors");
+        assertThat(saved.getStatementOfTruth().getPositionHeld()).isEqualTo("Solicitor");
+        assertThat(saved.getStatementOfTruth().getCompletedDate()).isEqualTo("2026-04-22T21:00");
+    }
+
+    @Test
+    void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .nameOfFirm("Smith & Co Solicitors")
+                .positionHeld("Solicitor")
+                // hasLegalRepresentation intentionally omitted
+                .build())
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CITIZEN);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity saved = responseCaptor.getValue();
+
+        assertThat(saved.getStatementOfTruth()).isNotNull();
+        assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
     }
 
     @Test
