@@ -27,5 +27,6 @@ public enum EventId {
     enterGenApp,
     caseworkerUploadDocuments,
     removeDocument,
-    legalRepDocumentUpload
+    legalRepDocumentUpload,
+    manageParties
 }
