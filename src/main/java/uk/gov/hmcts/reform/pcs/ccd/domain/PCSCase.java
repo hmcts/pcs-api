@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
@@ -371,6 +372,12 @@ public class PCSCase {
      */
     @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
     private List<ListValue<Party>> allDefendants;
+
+    /**
+     * Combined list of all litigation friends in the case.
+     */
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<Party>> allLitigationFriends;
 
     @JsonUnwrapped(prefix = "tenancy_")
     @CCD
@@ -831,9 +838,11 @@ public class PCSCase {
     private Document uploadSingleDocument;
 
 
-
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
+
+    @JsonUnwrapped
+    private AddPartyDetails addPartyDetails;
 
 
     @CCD(

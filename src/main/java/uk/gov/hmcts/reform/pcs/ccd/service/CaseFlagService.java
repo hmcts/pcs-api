@@ -73,7 +73,7 @@ public class CaseFlagService {
      * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
      * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
      */
-    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
             return;
         }
@@ -90,6 +90,18 @@ public class CaseFlagService {
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
         }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
@@ -409,6 +421,10 @@ public class CaseFlagService {
                 PartyEntity::getId,
                 Function.identity()
             ));
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**
