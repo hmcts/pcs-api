@@ -50,6 +50,8 @@ public class Party {
 
     private LegalRepresentative legalRepresentative;
 
+    private String actingForPartyId;
+
     @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Party Flags",
