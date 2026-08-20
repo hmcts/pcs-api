@@ -21,7 +21,6 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
-import {DocumentsAction} from "@utils/actions/custom-actions";
 import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
