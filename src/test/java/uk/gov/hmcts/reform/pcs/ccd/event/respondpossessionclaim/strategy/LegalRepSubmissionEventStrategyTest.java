@@ -18,15 +18,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +51,6 @@ class LegalRepSubmissionEventStrategyTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
-    @Mock
-    private ClaimResponseService claimResponseService;
-    @Mock
-    private DefendantResponseService defendantResponseService;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
@@ -113,6 +108,7 @@ class LegalRepSubmissionEventStrategyTest {
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
                 counterClaimEntity,
+                null,
                 false
             );
 
@@ -203,9 +199,11 @@ class LegalRepSubmissionEventStrategyTest {
 
         PartyEntity defendantResponse = PartyEntity.builder().build();
 
+        FeeDetails feeDetails = FeeDetails.builder().build();
+
         RespondPossessionClaimSubmitPersistenceResult respondPossessionClaimSubmitPersistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(possessionClaimResponse, CounterClaimEntity.builder()
-                .build(), true);
+                .build(), feeDetails, true);
 
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
         when(selectedPartyRetriever.getSelectedPartyId(CASE_REFERENCE)).thenReturn(Optional.of(representedPartyId));
