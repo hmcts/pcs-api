@@ -161,6 +161,8 @@ notify:
     make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
     make-a-claim-claim-issued: 0ea3d807-8ebb-484e-8cd5-72364c9b527f
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
+    counterclaim-not-submitted-yet: 1fb10077-f302-4159-abce-18a861518d24
+    counterclaim-payment-success-legal-rep: fee05cad-6832-41b7-94ce-b7cd89bcdaff
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}

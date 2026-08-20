@@ -9,12 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
 import java.util.Locale;
 
@@ -60,12 +64,54 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
+    public OrganisationBasePersonalisation forLegalRepresentative(
+        OrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
+
+        return buildPersonalisation(pcsCaseEntity,legalRepresentativeOrganisationEntity);
+    }
+
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
                                                                          String paymentReference) {
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessOrganisation(
+        DefendantResponseEntity defendantResponse, String paymentReference,
+        OrganisationEntity legalRepresentativeOrganisationEntity
+    ) {
+
+        return  CounterclaimPaymentSuccessPersonalisationLegalRep.builder()
+            .base(buildPersonalisation(defendantResponse.getPcsCase(),legalRepresentativeOrganisationEntity))
+            .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    private OrganisationBasePersonalisation buildPersonalisation(
+        PcsCaseEntity pcsCaseEntity, OrganisationEntity legalRepresentativeOrganisationEntity
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            YesOrNoConverter.toBoolean(primaryDefendant.getNameKnown()),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        String organisationName = legalRepresentativeOrganisationEntity.getOrganisationName();
+
+        return OrganisationBasePersonalisation.builder()
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
+            .organisationName(organisationName)
             .build();
     }
 
