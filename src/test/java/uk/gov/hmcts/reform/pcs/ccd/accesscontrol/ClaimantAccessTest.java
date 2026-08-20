@@ -21,5 +21,8 @@ class ClaimantAccessTest {
         assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.CLAIMANT)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
+        // The blanket IDAM role must not stand in for a capacity, or a broken group access
+        // configuration still reads as working.
+        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEmpty();
     }
 }
