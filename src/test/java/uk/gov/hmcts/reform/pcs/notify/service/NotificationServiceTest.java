@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -451,7 +452,19 @@ class NotificationServiceTest {
                     .claimantName("JANE SMITH")
                     .primaryDefendantName("JOHN DOE")
                     .build());
-
+            lenient().when(notificationPersonalisationFactory.counterclaimPaymentRequired(any()))
+                .thenReturn(CounterclaimPaymentRequiredPersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                              .firstName("John")
+                              .lastName("Doe")
+                              .caseNumber("1234567890")
+                              .claimantName("JANE SMITH")
+                              .primaryDefendantName("JOHN DOE")
+                              .build())
+                    .paymentUrl(
+                        "http://localhost:3209/case/1234567890/respond-to-claim/counter-claim-application-fee-amount"
+                    )
+                    .build());
             lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any(), any()))
                 .thenReturn(CounterclaimPaymentSuccessPersonalisation.builder()
                     .base(BasePersonalisation.builder()

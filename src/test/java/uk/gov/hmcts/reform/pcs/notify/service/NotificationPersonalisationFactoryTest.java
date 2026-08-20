@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 
 import java.util.Map;
@@ -46,6 +48,7 @@ class NotificationPersonalisationFactoryTest {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         factory = new NotificationPersonalisationFactory(partyService);
+        ReflectionTestUtils.setField(factory, "frontendUrl", "http://localhost:3209");
     }
 
     @Nested
@@ -307,6 +310,31 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
 
+    }
+
+    @Nested
+    @DisplayName("counterclaimPaymentRequired")
+    class CounterclaimPaymentRequiredTests {
+        @Test
+        @DisplayName("Should include base fields and paymentReferenceNumber")
+        void shouldIncludePaymentUrl() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            String paymentUrl = "http://localhost:3209/case/1234567890/"
+                + "respond-to-claim/counter-claim-application-fee-amount";
+
+            CounterclaimPaymentRequiredPersonalisation result = factory.counterclaimPaymentRequired(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("paymentUrl", paymentUrl)
+                .containsEntry("firstName", "John")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("caseNumber", "1234-5678-90");
+        }
     }
 
     @Nested
