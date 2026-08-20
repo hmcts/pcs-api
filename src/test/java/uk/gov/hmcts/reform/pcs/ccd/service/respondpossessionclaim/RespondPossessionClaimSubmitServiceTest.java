@@ -289,7 +289,7 @@ class RespondPossessionClaimSubmitServiceTest {
         when(documentService.createCounterClaimUploadedDocuments(
             defendantResponses.getCounterClaimDocuments(), savedCounterClaim, pcsCaseEntity, partyEntity))
             .thenReturn(List.of(counterClaimDocument));
-        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(false);
+        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
@@ -386,7 +386,7 @@ class RespondPossessionClaimSubmitServiceTest {
         when(documentService.createCounterClaimUploadedDocuments(
             defendantResponses.getCounterClaimDocuments(), savedCounterClaim, pcsCaseEntity, partyEntity))
             .thenReturn(List.of(counterClaimDocument));
-        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(false);
+        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(true);
 
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
