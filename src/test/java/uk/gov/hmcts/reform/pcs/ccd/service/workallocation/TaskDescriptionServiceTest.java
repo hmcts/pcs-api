@@ -388,6 +388,65 @@ class TaskDescriptionServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Get description for Review Case Flags task")
+    class ReviewCaseFlagTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            List<String> flags = List.of("Flag 1", "Flag 2");
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
+                    flags
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("flags", flags);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag",
+                expectedRenderedContent
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewCaseFlagDescription(
+                    CASE_REFERENCE,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
         PebbleTemplate pebbleTemplate = mock(PebbleTemplate.class, withSettings().strictness(Strictness.LENIENT));
         when(pebbleEngine.getTemplate("workallocation/" + templateName)).thenReturn(pebbleTemplate);
