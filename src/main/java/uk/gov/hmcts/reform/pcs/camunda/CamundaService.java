@@ -39,29 +39,24 @@ public class CamundaService {
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), null);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), delay);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay));
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, null);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock));
     }
 
-    public void createTask(long caseId, TaskType taskType, String taskDescription, Duration delay) {
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .build();
-
-        Instant scheduledTo = Instant.now(utcClock);
-        if (delay != null) {
-            scheduledTo = scheduledTo.plus(delay);
-        }
 
         scheduleCamundaRequest(taskData, scheduledTo);
     }
