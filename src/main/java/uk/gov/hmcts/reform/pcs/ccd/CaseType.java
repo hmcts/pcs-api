@@ -32,7 +32,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
-        AccessProfile.GA_CLAIMANT,
+        AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,

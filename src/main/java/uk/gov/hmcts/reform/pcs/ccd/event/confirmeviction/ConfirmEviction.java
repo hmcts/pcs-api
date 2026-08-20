@@ -40,6 +40,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(confirmEviction.name(), this::submit)
                 .forState(State.CASE_ISSUED)
                 .name("Confirm the eviction details")
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();

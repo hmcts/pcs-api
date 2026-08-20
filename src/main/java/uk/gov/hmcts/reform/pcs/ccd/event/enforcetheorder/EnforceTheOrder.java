@@ -72,6 +72,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
                 .forState(State.CASE_ISSUED)
                 .name("Enforce the order")
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();

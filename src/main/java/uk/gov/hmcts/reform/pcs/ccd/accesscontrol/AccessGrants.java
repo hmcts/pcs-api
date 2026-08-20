@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
@@ -62,6 +63,8 @@ final class AccessGrants {
         grants.putAll(PCS_SOLICITOR, Permission.CR);
         grants.putAll(CITIZEN, Permission.CR);
         grants.putAll(DEFENDANT, Permission.CR);
+        grants.putAll(CLAIMANT, Permission.CR);
+        grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
