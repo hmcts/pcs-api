@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -18,12 +19,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @Component
 @Slf4j
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
+
+    /**
+     * Case flags may also be created before the case is issued. The shared
+     * {@link EventStates#createFlags()} set is not extended for this, because Make an application shares
+     * it and is only available once the case has been issued.
+     */
+    static final State[] CREATE_FLAG_STATES =
+        ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED);
 
     private  final PcsCaseService pcsCaseService;
 
@@ -31,7 +39,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forStates(CASE_FLAG_STATES)
+                .forStates(CREATE_FLAG_STATES)
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
