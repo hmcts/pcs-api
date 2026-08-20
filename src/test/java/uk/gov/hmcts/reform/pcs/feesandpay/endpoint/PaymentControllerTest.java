@@ -7,12 +7,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.math.BigDecimal;
@@ -113,13 +113,13 @@ class PaymentControllerTest {
             .pbaAccount("PBA1234567")
             .customerReference("customer-reference")
             .build();
-        PBAServiceRequestResponse pbaServiceRequestResponse = mock(PBAServiceRequestResponse.class);
+        PbaPaymentResponse pbaServiceRequestResponse = mock(PbaPaymentResponse.class);
 
         when(paymentService.createPbaPaymentRequest(AUTH_TOKEN, serviceRequestReference, pbaPaymentRequest))
             .thenReturn(pbaServiceRequestResponse);
 
         // When
-        ResponseEntity<PBAServiceRequestResponse> response = underTest.createPbaPaymentRequest(
+        ResponseEntity<PbaPaymentResponse> response = underTest.createPbaPaymentRequest(
             S2S_TOKEN,
             AUTH_TOKEN,
             serviceRequestReference,

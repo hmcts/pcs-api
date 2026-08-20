@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -136,13 +136,13 @@ public class PaymentController {
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<PBAServiceRequestResponse> createPbaPaymentRequest(
+    public ResponseEntity<PbaPaymentResponse> createPbaPaymentRequest(
         @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @PathVariable("serviceRequestReference") String serviceRequestReference,
         @RequestBody @Valid PbaPaymentRequest pbaPaymentRequest) {
 
-        PBAServiceRequestResponse pbaPaymentResponse = paymentService.createPbaPaymentRequest(
+        PbaPaymentResponse pbaPaymentResponse = paymentService.createPbaPaymentRequest(
             authorization,
             serviceRequestReference,
             pbaPaymentRequest
