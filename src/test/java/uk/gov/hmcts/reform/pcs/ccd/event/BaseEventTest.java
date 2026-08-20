@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -51,6 +52,11 @@ public abstract class BaseEventTest {
     protected void assertConfiguredForStates(State... expectedStates) {
         assertThat(getConfiguredEvent().getPreState())
             .containsExactlyInAnyOrder(expectedStates);
+    }
+
+    protected void assertConfiguredAsNeverShow() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.NEVER_SHOW);
     }
 
     protected void assertGrants(UserRole userRole, Set<Permission> permissions) {
