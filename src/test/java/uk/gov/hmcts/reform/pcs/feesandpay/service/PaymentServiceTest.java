@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -609,7 +610,7 @@ class PaymentServiceTest {
             when(paymentsClient.createPbaPayment(any(), anyString(), any())).thenReturn(pbaServiceRequestResponse);
 
             // When
-            PBAServiceRequestResponse response = underTest.createPbaPaymentRequest(
+            PbaPaymentResponse response = underTest.createPbaPaymentRequest(
                 authToken,
                 serviceRequestReference,
                 pbaPaymentRequest

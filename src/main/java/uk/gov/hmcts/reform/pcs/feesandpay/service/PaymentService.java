@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -166,7 +167,7 @@ public class PaymentService {
             .build();
     }
 
-    public PBAServiceRequestResponse createPbaPaymentRequest(String authToken, String serviceRequestReference,
+    public PbaPaymentResponse createPbaPaymentRequest(String authToken, String serviceRequestReference,
                                                              PbaPaymentRequest pbaPaymentRequest) {
         User user = idamAuthenticator.validateAuthToken(authToken);
 
@@ -189,7 +190,7 @@ public class PaymentService {
             paymentRequest
         );
 
-        return PBAServiceRequestResponse.builder()
+        return PbaPaymentResponse.builder()
             .paymentReference(pbaPaymentResponse.getPaymentReference())
             .status(pbaPaymentResponse.getStatus())
             .dateCreated(pbaPaymentResponse.getDateCreated())
