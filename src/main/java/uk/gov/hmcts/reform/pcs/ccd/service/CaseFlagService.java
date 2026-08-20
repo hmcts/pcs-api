@@ -393,10 +393,33 @@ public class CaseFlagService {
     }
 
     private boolean differs(FlagDetail incomingFlagDetail, CasePartyFlagEntity existingFlag) {
-        return incomingFlagDetail == null
-            || !Objects.equals(incomingFlagDetail.getStatus(), existingFlag.getDefaultStatus())
-            || !Objects.equals(incomingFlagDetail.getFlagComment(), existingFlag.getFlagComment())
-            || !Objects.equals(incomingFlagDetail.getFlagUpdateComment(), existingFlag.getFlagUpdateComment());
+        if (incomingFlagDetail == null) {
+            return true;
+        }
+
+        boolean editedFieldsDiffer =
+            !Objects.equals(incomingFlagDetail.getStatus(), existingFlag.getDefaultStatus())
+                || !Objects.equals(incomingFlagDetail.getFlagComment(), existingFlag.getFlagComment())
+                || !Objects.equals(incomingFlagDetail.getFlagCommentCy(), existingFlag.getFlagCommentWelsh())
+                || !Objects.equals(incomingFlagDetail.getFlagUpdateComment(), existingFlag.getFlagUpdateComment());
+
+        return editedFieldsDiffer
+            || suppliedAndDiffers(incomingFlagDetail.getFlagCode(), existingFlagCode(existingFlag))
+            || suppliedAndDiffers(incomingFlagDetail.getOtherDescription(), existingFlag.getOtherDescription())
+            || suppliedAndDiffers(incomingFlagDetail.getOtherDescriptionCy(),
+                                  existingFlag.getOtherDescriptionWelsh())
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeKey(), existingFlag.getSubTypeKey())
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeValue(), existingFlag.getSubTypeValue())
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeValueCy(), existingFlag.getSubTypeValueWelsh());
+    }
+
+    private static String existingFlagCode(CasePartyFlagEntity existingFlag) {
+        return existingFlag.getFlagRefData() == null ? null : existingFlag.getFlagRefData().getFlagCode();
+    }
+
+    private static boolean suppliedAndDiffers(String incomingValue, String existingValue) {
+        return incomingValue != null && !incomingValue.isBlank()
+            && !Objects.equals(incomingValue, existingValue);
     }
 
     private PartyEntity resolveSupportParty(String incomingPartyId, Map<UUID, PartyEntity> existingPartiesMap) {

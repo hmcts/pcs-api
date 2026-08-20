@@ -1507,6 +1507,117 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldRejectAnUnrepresentedPartysFlagBeingReusedForADifferentFlagType() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        PartySupport differentFlagType = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of(ListValue.<FlagDetail>builder()
+                                  .id(existingFlag.getId().toString())
+                                  .value(FlagDetail.builder()
+                                      .flagCode("RA0042")
+                                      .name("A different flag type")
+                                      .status(existingFlag.getDefaultStatus())
+                                      .flagComment(existingFlag.getFlagComment())
+                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                      .build())
+                                  .build()))
+                              .build())
+            .build();
+
+        // When
+        Throwable throwable = submissionForUnrepresentedParty(existingFlag, differentFlagType);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldRejectOtherDescriptionChangeToAnUnrepresentedPartysSupport() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        existingFlag.setOtherDescription("Stored other description");
+        PartySupport descriptionChanged = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of(ListValue.<FlagDetail>builder()
+                                  .id(existingFlag.getId().toString())
+                                  .value(FlagDetail.builder()
+                                      .flagCode("PF00015")
+                                      .status(existingFlag.getDefaultStatus())
+                                      .flagComment(existingFlag.getFlagComment())
+                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                      .otherDescription("Rewritten without authority")
+                                      .build())
+                                  .build()))
+                              .build())
+            .build();
+
+        // When
+        Throwable throwable = submissionForUnrepresentedParty(existingFlag, descriptionChanged);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+        assertThat(existingFlag.getOtherDescription()).isEqualTo("Stored other description");
+    }
+
+    @Test
+    void shouldRejectSubTypeOrDescriptionChangesToAnUnrepresentedPartysSupport() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        existingFlag.setSubTypeValue("Stored sub type");
+        PartySupport subTypeChanged = PartySupport.builder()
+            .supportFlags(Flags.builder()
+                              .visibility(FlagVisibility.EXTERNAL)
+                              .details(List.of(ListValue.<FlagDetail>builder()
+                                  .id(existingFlag.getId().toString())
+                                  .value(FlagDetail.builder()
+                                      .flagCode("PF00015")
+                                      .status(existingFlag.getDefaultStatus())
+                                      .flagComment(existingFlag.getFlagComment())
+                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                      .subTypeValue("Changed without authority")
+                                      .build())
+                                  .build()))
+                              .build())
+            .build();
+
+        // When
+        Throwable throwable = submissionForUnrepresentedParty(existingFlag, subTypeChanged);
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User cannot change support for this party on this case");
+    }
+
+    @Test
+    void shouldStillTolerateAnEchoedFlagThatOmitsCarriedThroughFields() {
+        // Given
+        CasePartyFlagEntity existingFlag = existingExternalFlag();
+        existingFlag.setSubTypeValue("Stored sub type");
+        existingFlag.setOtherDescription("Stored other description");
+        PartySupport echoedWithoutCarriedFields = echoedSupport(existingFlag.getId().toString(),
+                                                               FlagDetail.builder()
+                                                                   .status(existingFlag.getDefaultStatus())
+                                                                   .flagComment(existingFlag.getFlagComment())
+                                                                   .flagUpdateComment(
+                                                                       existingFlag.getFlagUpdateComment())
+                                                                   .build());
+
+        // When
+        Throwable throwable = submissionForUnrepresentedParty(existingFlag, echoedWithoutCarriedFields);
+
+        // Then
+        assertThat(throwable).isNull();
+    }
+
+    @Test
     void shouldRejectCommentChangeToAnUnrepresentedPartysSupport() {
         // Given
         CasePartyFlagEntity existingFlag = existingExternalFlag();
@@ -1827,6 +1938,56 @@ class CaseFlagServiceTest {
             assertThat(savedFlag.getId()).isEqualTo(existing.getId());
             assertThat(savedFlag.getOtherDescription()).isEqualTo("Stored other description");
             assertThat(savedFlag.getDefaultStatus()).isEqualTo("Inactive");
+        }
+
+        /**
+         * The sequence QA reported: a claimant solicitor is refused for a defendant, the defendant's own
+         * solicitor then raises support, and the claimant solicitor must still be refused afterwards —
+         * whether they add another flag or reuse the stored flag's id for a different flag type.
+         */
+        @Test
+        void shouldKeepRefusingAClaimantSolicitorAfterTheDefendantSolicitorHasRaisedSupport() {
+            PartyEntity defendant = defendantRepresentedBy(DEFENDANT_FIRM);
+
+            // The defendant has no support yet: the claimant solicitor is refused
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CLAIMANT_FIRM);
+            assertRejected(catchThrowable(() -> merge(defendant, supportRequest(), SOLICITOR_USER_ID)));
+            assertThat(defendant.getDefendantFlags()).isEmpty();
+
+            // The defendant's own solicitor raises support, which is allowed
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(DEFENDANT_FIRM);
+            merge(defendant, supportRequest(), SOLICITOR_USER_ID);
+            assertThat(defendant.getDefendantFlags()).hasSize(1);
+
+            CasePartyFlagEntity raisedFlag = defendant.getDefendantFlags().getFirst();
+            raisedFlag.setId(UUID.randomUUID());               // stands in for the id assigned on flush
+            final String raisedFlagCode = raisedFlag.getFlagRefData().getFlagCode();
+
+            // Back as the claimant solicitor: adding a second flag is still refused
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CLAIMANT_FIRM);
+            assertRejected(catchThrowable(() -> merge(defendant, supportRequest(), SOLICITOR_USER_ID)));
+
+            // ...and so is reusing the stored flag's id for a different flag type
+            PartySupport reusedId = PartySupport.builder()
+                .supportFlags(Flags.builder()
+                                  .visibility(FlagVisibility.EXTERNAL)
+                                  .details(List.of(ListValue.<FlagDetail>builder()
+                                      .id(raisedFlag.getId().toString())
+                                      .value(FlagDetail.builder()
+                                          .flagCode("PF0026")
+                                          .name("A different flag type")
+                                          .status(raisedFlag.getDefaultStatus())
+                                          .flagComment(raisedFlag.getFlagComment())
+                                          .flagUpdateComment(raisedFlag.getFlagUpdateComment())
+                                          .build())
+                                      .build()))
+                                  .build())
+                .build();
+            assertRejected(catchThrowable(() -> merge(defendant, reusedId, SOLICITOR_USER_ID)));
+
+            // Neither refusal touched the defendant's stored support
+            assertThat(defendant.getDefendantFlags()).containsExactly(raisedFlag);
+            assertThat(raisedFlag.getFlagRefData().getFlagCode()).isEqualTo(raisedFlagCode);
         }
 
         @Test
