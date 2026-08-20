@@ -1,0 +1,15 @@
+export const manageParty = {
+  mainHeader: `Update, add or remove`,
+  whatChangeQuestion: `What change do you want to make?`,
+  updatePartyRadioOption: `Update party details`,
+  addPartyRadioOption: `Add a party`,
+  removePartyRadioOption: `Remove a party`,
+  removeLRRadioOption: `Remove a legal representative`,
+  typeOfPartyHiddenQuestion: `Which type of party are you adding?`,
+  claimantHiddenRadioOption: `Claimant`,
+  defendantHiddenRadioOption: `Defendant`,
+  litigationFriendHiddenRadioOption: `Litigation friend`,
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
+};

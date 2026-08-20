@@ -46,6 +46,8 @@ public class PartiesView {
         pcsCase.setAllDefendants(mapPartiesByRole(claimParties, PartyRole.DEFENDANT, isCitizen, currentUserId));
         pcsCase.setAllUnderlesseeOrMortgagees(mapPartiesByRole(claimParties, PartyRole.UNDERLESSEE_OR_MORTGAGEE,
                                                                isCitizen, currentUserId));
+        pcsCase.setAllLitigationFriends(mapPartiesByRole(claimParties, PartyRole.LITIGATION_FRIEND,
+                                                          isCitizen, currentUserId));
 
         Optional.ofNullable(pcsCase.getAllDefendants())
             .ifPresent(defendants -> defendants
@@ -87,6 +89,10 @@ public class PartiesView {
         Party party = shouldRedact
             ? toPartialParty(partyEntity)
             : toParty(partyEntity);
+
+        //Only populated for litigation friends
+        PartyEntity actingForParty = claimPartyEntity.getActingForParty();
+        party.setActingForPartyId(actingForParty != null ? actingForParty.getId().toString() : null);
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
