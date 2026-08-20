@@ -223,11 +223,6 @@ class CaseFlagServiceTest {
     @Test
     void shouldCreateOneReviewCaseFlagRequestTaskForMultipleRequestedReasonableAdjustments() {
         // Given
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .defendantFlags(new ArrayList<>())
-            .build();
-
         List<ListValue<FlagDetail>> details = new ArrayList<>();
         details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter", "Requested"));
         details.addAll(createFlagDetailsWithoutIds("RA0012", "Braille documents", "Requested"));
@@ -235,6 +230,10 @@ class CaseFlagServiceTest {
         List<String> requestedFlags = List.of("Sign language interpreter", "Braille documents");
         when(taskDescriptionService.createReviewCaseFlagRequestDescription(CASE_REFERENCE, requestedFlags))
             .thenReturn("request description");
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
 
         // When
         underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
