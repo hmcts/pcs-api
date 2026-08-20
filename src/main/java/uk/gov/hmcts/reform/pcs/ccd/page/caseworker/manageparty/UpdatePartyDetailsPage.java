@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.FieldValidation;
@@ -78,12 +77,12 @@ public class UpdatePartyDetailsPage implements CcdPageConfiguration {
             FieldValidation.of(updatePartyDetails.getEmail(), EMAIL_ADDRESS_LABEL, EXTRA_SHORT_TEXT_LIMIT)
         );
 
-        Optional<LocalDate> dateOfBirth = updatePartyDetails.getDateOfBirth();
-        LocalDate dob = dateOfBirth == null ? null : dateOfBirth.orElse(null);
-        if (dob != null && !dob.isBefore(LocalDate.now(ukClock))) {
-            validationErrors.add(DATE_OF_BIRTH_PAST_ERROR_MESSAGE);
+        if (updatePartyDetails.getPartyType() == PartyType.DEFENDANT) {
+            LocalDate dob =  updatePartyDetails.getDateOfBirth().orElse(null);
+            if (dob != null && !dob.isBefore(LocalDate.now(ukClock))) {
+                validationErrors.add(DATE_OF_BIRTH_PAST_ERROR_MESSAGE);
+            }
         }
-
         validationErrors.addAll(addressValidator.validateAddressFields(updatePartyDetails.getAddress()));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);

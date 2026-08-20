@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
@@ -88,6 +89,7 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
     void shouldAcceptDateOfBirthInThePast() {
         // Given
         UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .partyType(PartyType.DEFENDANT)
             .address(VALID_ADDRESS)
             .dateOfBirth(Optional.of(FIXED_CURRENT_DATE.minusDays(1)))
             .build();
@@ -104,6 +106,7 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
     void shouldRejectDateOfBirthNotInThePast() {
         // Given
         UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .partyType(PartyType.DEFENDANT)
             .address(VALID_ADDRESS)
             .dateOfBirth(Optional.of(FIXED_CURRENT_DATE))
             .build();
@@ -114,6 +117,23 @@ class UpdatePartyDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrorMessageOverride()).isEqualTo("Date of birth must be in the past");
+    }
+
+    @Test
+    void shouldNotValidateDateOfBirthForClaimant() {
+        // Given
+        UpdatePartyDetails updatePartyDetails = UpdatePartyDetails.builder()
+            .partyType(PartyType.CLAIMANT)
+            .address(VALID_ADDRESS)
+            .dateOfBirth(Optional.of(FIXED_CURRENT_DATE))
+            .build();
+        PCSCase caseData = PCSCase.builder().updatePartyDetails(updatePartyDetails).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
     }
 
     @Test
