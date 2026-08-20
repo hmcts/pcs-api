@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -20,8 +19,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @Slf4j
 @AllArgsConstructor
 public class OrganisationService {
-
-    private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
