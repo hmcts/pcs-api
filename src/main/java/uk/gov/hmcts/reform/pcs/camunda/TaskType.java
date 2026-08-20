@@ -67,6 +67,15 @@ public enum TaskType {
             and take the appropriate action. Only mark the task as complete once the documents have been reviewed
             and any required action has been completed.
             """
+    ),
+    REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM(
+        "ReviewAdditionalDocumentsCounterclaim",
+        "Review additional documents - counterclaim",
+        """
+            Review the additional documents submitted on the counterclaim, check whether any further case action is
+            required, and take the appropriate action. Only mark the task as complete once the documents have been
+            reviewed and any required action has been completed.
+            """
     );
 
     private final String id;
