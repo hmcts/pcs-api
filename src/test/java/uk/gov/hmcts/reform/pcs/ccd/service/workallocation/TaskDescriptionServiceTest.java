@@ -20,12 +20,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,25 +78,20 @@ class TaskDescriptionServiceTest {
     class ReviewAdjournGenAppTests {
 
         @Mock
-        private PartyEntity partyEntity;
-        @Mock
         private GenAppEntity genAppEntity;
 
         @ParameterizedTest
         @MethodSource("genAppTypeToTemplateNameScenarios")
         void shouldRenderTaskDescription(GenAppType genAppType, String expectedTemplateName) throws IOException {
             // Given
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
+            String expectedPartyLabel = "some party label";
+            PartyEntity partyEntity = stubParty(expectedPartyLabel);
 
             when(genAppEntity.getType()).thenReturn(genAppType);
             when(genAppEntity.getParty()).thenReturn(partyEntity);
             when(genAppEntity.getSubmissionDocument()).thenReturn(
                 DocumentEntity.builder().fileName("submission-document.pdf").build()
             );
-
-            String expectedPartyLabel = "some party label";
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
 
             when(genAppEntity.getDocuments()).thenReturn(List.of(
                 DocumentEntity.builder().fileName("filename1.pdf").build(),
@@ -131,8 +129,7 @@ class TaskDescriptionServiceTest {
         @Test
         void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
             // Given
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
+            PartyEntity partyEntity = stubParty("some party label");
 
             when(genAppEntity.getParty()).thenReturn(partyEntity);
             when(genAppEntity.getType()).thenReturn(GenAppType.ADJOURN);
@@ -144,8 +141,6 @@ class TaskDescriptionServiceTest {
                 "review-adjourn-gen-app",
                 "some content"
             );
-
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
 
             IOException pebbleException = mock(IOException.class);
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
@@ -168,26 +163,19 @@ class TaskDescriptionServiceTest {
     class GenAppAdditionalDocumentsTests {
 
         @Mock
-        private PartyEntity partyEntity;
-        @Mock
         private GenAppEntity genAppEntity;
 
         @Test
         void shouldRenderTaskDescription() throws IOException {
             // Given
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
+            String expectedPartyLabel = "some party label";
+            PartyEntity partyEntity = stubParty(expectedPartyLabel);
 
             int expectedGenAppRank = 4;
             when(genAppEntity.getRank()).thenReturn(expectedGenAppRank);
 
-            List<DocumentEntity> documentEntityList = List.of(
-                DocumentEntity.builder().fileName("filename1.pdf").build(),
-                DocumentEntity.builder().fileName("filename2.csv").build()
-            );
-
-            String expectedPartyLabel = "some party label";
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+            List<String> expectedFilenames = List.of("filename1.pdf", "filename2.csv");
+            List<DocumentEntity> documentEntityList = createDocumentEntities(expectedFilenames);
 
             String expectedRenderedContent = "some rendered content";
             PebbleTemplate pebbleTemplate = stubPebbleTemplate(
@@ -214,7 +202,7 @@ class TaskDescriptionServiceTest {
                 .containsEntry("caseReference", CASE_REFERENCE)
                 .containsEntry("partyLabel", expectedPartyLabel)
                 .containsEntry("genAppRank", expectedGenAppRank)
-                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+                .containsEntry("filenames", expectedFilenames);
         }
 
         @Test
@@ -228,9 +216,7 @@ class TaskDescriptionServiceTest {
             IOException pebbleException = mock(IOException.class);
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
-            UUID partyId = UUID.randomUUID();
-            when(partyEntity.getId()).thenReturn(partyId);
-            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
+            PartyEntity partyEntity = stubParty("some party label");
 
             // When
             Throwable throwable = catchThrowable(
@@ -386,6 +372,100 @@ class TaskDescriptionServiceTest {
                 .hasMessage("Failed to render template")
                 .hasCause(pebbleException);
         }
+
+    }
+
+    @Nested
+    @DisplayName("Get description for Review Response and Counterclaim task")
+    class ReviewResponseAndCounterclaimTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            String expectedPartyLabel = "some party label";
+
+            PartyEntity partyEntity = stubParty(expectedPartyLabel);
+
+            String expectedHwfReference = "HWF-123-456";
+            CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+                .party(partyEntity)
+                .hwfReferenceNumber(expectedHwfReference)
+                .build();
+
+            BigDecimal expectedFeeAmount = new BigDecimal("123.45");
+            FeeDetails feeDetails = FeeDetails.builder()
+                .feeAmount(expectedFeeAmount)
+                .build();
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest.createReviewResponseAndCounterClaimDescription(
+                CASE_REFERENCE,
+                counterClaimEntity,
+                feeDetails
+            );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("partyLabel", expectedPartyLabel)
+                .containsEntry("hwfReference", expectedHwfReference)
+                .containsEntry("feeAmount", expectedFeeAmount);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PartyEntity partyEntity = stubParty("some party label");
+
+            CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+                .party(partyEntity)
+                .hwfReferenceNumber("some HwF reference")
+                .build();
+
+            BigDecimal expectedFeeAmount = new BigDecimal("123.45");
+            FeeDetails feeDetails = FeeDetails.builder()
+                .feeAmount(expectedFeeAmount)
+                .build();
+
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-response-and-counterclaim",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createReviewResponseAndCounterClaimDescription(
+                    CASE_REFERENCE,
+                    counterClaimEntity,
+                    feeDetails
+                )
+            );
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
+    private PartyEntity stubParty(String expectedPartyLabel) {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+        return partyEntity;
     }
 
     @Nested
@@ -458,4 +538,11 @@ class TaskDescriptionServiceTest {
 
         return pebbleTemplate;
     }
+
+    private List<DocumentEntity> createDocumentEntities(List<String> filenames) {
+        return filenames.stream()
+            .map(filename -> DocumentEntity.builder().fileName(filename).build())
+            .toList();
+    }
+
 }
