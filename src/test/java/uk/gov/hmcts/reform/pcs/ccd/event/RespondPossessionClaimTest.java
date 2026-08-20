@@ -156,13 +156,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private RentArrearsView rentArrearsView;
 
+    private StartEventHandler startEventHandler;
+    private SubmitEventHandler submitEventHandler;
+
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // Create handlers with real dependencies
 
-        StartEventHandler startEventHandler = new StartEventHandler(
+        startEventHandler = new StartEventHandler(
             securityContextService,
             List.of(new CitizenStartEventStrategy(pcsCaseService,
                                                   securityContextService,
@@ -206,7 +209,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             objectMapper
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
+        submitEventHandler = new SubmitEventHandler(
             List.of(
                 new CitizenSubmissionEventStrategy(
                     draftCaseDataService,
@@ -237,6 +240,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         // Mock existing draft with claimantProvided for save operations
         setupDefaultExistingDraft();
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.respondPossessionClaim());
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     private void setupDefaultExistingDraft() {
