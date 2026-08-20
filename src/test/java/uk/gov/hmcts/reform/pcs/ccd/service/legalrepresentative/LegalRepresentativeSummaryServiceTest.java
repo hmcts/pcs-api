@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactD
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -33,6 +34,9 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
+
+    @Mock
+    private OrganisationService organisationService;
 
     @Mock
     private FeatureToggleService featureToggleService;
@@ -63,7 +67,8 @@ class LegalRepresentativeSummaryServiceTest {
     @BeforeEach
     void setUp() {
         legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
-                                                                                 featureToggleService);
+                                                                                  organisationService,
+                                                                                  featureToggleService);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
@@ -99,12 +104,13 @@ class LegalRepresentativeSummaryServiceTest {
                                                     .build()))
                                             .build());
 
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -140,13 +146,13 @@ class LegalRepresentativeSummaryServiceTest {
                                                       .build()))
                                               .build());
 
-
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -182,13 +188,13 @@ class LegalRepresentativeSummaryServiceTest {
                                                         .build()))
                                                 .build());
 
-
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.PENDING_CASE_ISSUED);
 
         // then
@@ -214,11 +220,11 @@ class LegalRepresentativeSummaryServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .build();
-
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -243,13 +249,13 @@ class LegalRepresentativeSummaryServiceTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .build();
-
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -274,13 +280,13 @@ class LegalRepresentativeSummaryServiceTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .build();
-
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, organisationId,
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -292,11 +298,25 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
 
+        String organisationId = "org";
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
+                                                      .active(YesOrNo.YES)
+                                                      .organisation(OrganisationEntity.builder()
+                                                                        .organisationId(organisationId)
+                                                                        .build())
+                                                      .build()))
+                                              .build());
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, "org",
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
@@ -308,11 +328,25 @@ class LegalRepresentativeSummaryServiceTest {
         // given
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
 
+        String organisationId = "org";
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                              .claimPartyOrganisationList(List.of(
+                                                  ClaimPartyOrganisationEntity.builder()
+                                                      .active(YesOrNo.YES)
+                                                      .organisation(OrganisationEntity.builder()
+                                                                        .organisationId(organisationId)
+                                                                        .build())
+                                                      .build()))
+                                              .build());
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
         PCSCase pcsCase = PCSCase.builder().build();
 
         // when
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, "org",
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
                                                                            State.CASE_ISSUED);
 
         // then
