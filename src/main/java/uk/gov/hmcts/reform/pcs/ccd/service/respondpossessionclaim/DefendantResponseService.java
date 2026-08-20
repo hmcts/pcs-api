@@ -9,7 +9,9 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesSelection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -320,6 +323,18 @@ public class DefendantResponseService {
             return false;
         }
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+
+    private ClaimEntity getClaimEntity(long caseReference) {
+        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
+            .orElseThrow(() -> {
+                log.error("No claim found for case: {}", caseReference);
+                return new IllegalStateException(
+                    String.format("No claim found for case: %d", caseReference)
+                );
+            });
+
+        return claimRepository.getReferenceById(claimId);
     }
 
     @Transactional(readOnly = true)
