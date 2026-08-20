@@ -26,7 +26,7 @@ public class WhatOrderWanted implements CcdPageConfiguration {
         """;
 
     private static final String SET_ASIDE_INFO = """
-        <p class="govuk-body">Tell the court why you want an order to set-aside a previous decision.</p>
+        <p class="govuk-body">Tell the court why you want an order to set aside a previous decision.</p>
         """;
 
     private static final String SOMETHING_ELSE_EXAMPLES = """
