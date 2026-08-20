@@ -76,6 +76,15 @@ public enum TaskType {
             and take the appropriate action. Only mark the task as complete once the documents have been reviewed
             and any required action has been completed.
             """
+    ),
+    REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM(
+        "ReviewDefendantResponseAndCounterclaim",
+        "Review Defendant response and counterclaim",
+        """
+            Review the defendant’s response and counterclaim, check whether any further case action is required, and
+            take the appropriate action before closing the task. Only mark the task as complete once the review is
+            finished and any required action has been completed.
+            """
     );
 
     private final String id;
