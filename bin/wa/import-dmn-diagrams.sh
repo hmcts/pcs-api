@@ -6,13 +6,8 @@ env=${2}
 tenant_id=${3}
 product=${4}
 
-# No default: silently uploading to AAT because a caller forgot to set this would be worse than
-# failing. Every environment block in Jenkinsfile_CNP sets it.
-: "${CAMUNDA_BASE_URL:?CAMUNDA_BASE_URL must be set}"
-
 # pcs-api leases an S2S token from the service-auth-provider testing-support endpoint
-# (see bin/s2s-token.sh, which honours S2S_URL_BASE so each environment uses its own S2S).
-# The Camunda engine-rest API expects a Bearer-prefixed token.
+# (see bin/s2s-token.sh). The Camunda engine-rest API expects a Bearer-prefixed token.
 serviceToken=$($(realpath "$workspace")/bin/s2s-token.sh pcs_api)
 
 dmnFilepath="$(realpath "$workspace")/src/main/resources/dmn"
@@ -26,26 +21,25 @@ failed=0
 
 for file in $(find "${dmnFilepath}" -name '*.dmn')
 do
-  # No -v: it echoes the ServiceAuthorization header into the build log.
-  uploadResponse=$(curl --insecure --silent -w "\n%{http_code}" --show-error -X POST \
-    "${CAMUNDA_BASE_URL}/engine-rest/deployment/create" \
+  uploadResponse=$(curl --insecure -v --silent -w "\n%{http_code}" --show-error -X POST \
+    "${CAMUNDA_BASE_URL:-http://camunda-api-aat.service.core-compute-aat.internal}/engine-rest/deployment/create" \
     -H "Accept: application/json" \
     -H "ServiceAuthorization: Bearer ${serviceToken}" \
     -F "deployment-name=$(basename "${file}")" \
     -F "deploy-changed-only=true" \
     -F "deployment-source=$product" \
     ${tenant_id:+'-F' "tenant-id=$tenant_id"} \
-    -F "file=@${file}")
+    -F "file=@${dmnFilepath}/$(basename "${file}")")
 
 upload_http_code=$(echo "$uploadResponse" | tail -n1)
 upload_response_content=$(echo "$uploadResponse" | sed '$d')
 
 if [[ "${upload_http_code}" == '200' ]]; then
-  echo "$(basename "${file}") diagram uploaded successfully to ${env} (${upload_response_content})"
+  echo "$(basename "${file}") diagram uploaded successfully (${upload_response_content})"
   continue;
 fi
 
-echo "$(basename "${file}") upload to ${env} failed with http code ${upload_http_code} and response (${upload_response_content})" >&2
+echo "$(basename "${file}") upload failed with http code ${upload_http_code} and response (${upload_response_content})"
 failed=1
 
 done

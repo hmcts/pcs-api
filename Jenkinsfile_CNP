@@ -54,9 +54,8 @@ withPipeline(type, product, component) {
   //skipping sync with demo/perftest during SIT testing/DB migration
   syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
-  // WA DMN/BPMN upload for the auto-deployed environments. Those branches never run
-  // sectionDeployToAKS, so there is no smoketest:/functionalTest: stage to hang this off —
-  // 'checkout' is the earliest stage that exists on them. Same shape as sptribs-case-api.
+  // WA DMN/BPMN upload for demo/ithc/perftest. Those branches never run sectionDeployToAKS,
+  // so there is no smoketest:/functionalTest: stage to hang this off.
   afterSuccess('checkout') {
     def subscription = 'nonprod'
     if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
@@ -208,9 +207,6 @@ withPipeline(type, product, component) {
   }
 
   // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
-  // S2S_URL_BASE is deliberately left on AAT: prod does not expose /testing-support/lease, and
-  // the real /lease endpoint needs a TOTP from the prod vault that this pipeline doesn't hold.
-  // The shared Camunda engines run with CAMUNDA_API_AUTH_ENABLED=false, so the token is not checked.
   afterSuccess('functionalTest:aat') {
     env.ENVIRONMENT = "prod"
     env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
