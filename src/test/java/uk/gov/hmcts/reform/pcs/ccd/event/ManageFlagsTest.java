@@ -18,7 +18,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @ExtendWith(MockitoExtension.class)
 class ManageFlagsTest extends BaseEventTest {
@@ -31,6 +30,11 @@ class ManageFlagsTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         setEventUnderTest(underTest);
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.amendFlags());
     }
 
     @Test
@@ -63,9 +67,9 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeAvailableFromPendingCaseIssuedOnwards() {
+    void shouldBeAvailableInTheConfiguredManageFlagStates() {
         assertThat(configuredEvent.getPreState())
-            .containsExactlyInAnyOrder(CASE_FLAG_STATES)
+            .containsExactlyInAnyOrder(EventStates.amendFlags())
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 
