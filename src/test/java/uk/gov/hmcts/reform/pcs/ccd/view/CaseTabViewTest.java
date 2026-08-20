@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.LitigationFriendTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
@@ -90,6 +91,50 @@ class CaseTabViewTest {
     }
 
     @Test
+    void shouldSetMultipleClaimantDetailsInCasePartiesTab() {
+        // Given
+        String claimant1Name = "claimant1";
+        AddressUK address1 = AddressUK.builder().build();
+        Party claimant1 = Party.builder()
+            .orgName(claimant1Name)
+            .address(address1)
+            .build();
+
+        String claimant2Name = "claimant2";
+        AddressUK address2 = AddressUK.builder().build();
+        Party claimant2 = Party.builder()
+            .orgName(claimant2Name)
+            .address(address2)
+            .build();
+
+        List<ListValue<Party>> claimants = new ArrayList<>();
+        claimants.add(ListValue.<Party>builder().value(claimant1).build());
+        claimants.add(ListValue.<Party>builder().value(claimant2).build());
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allClaimants(claimants)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        ClaimantTabDetails claimant1TabDetails = pcsCase.getCasePartiesTab().getClaimantDetails();
+        List<ListValue<ClaimantTabDetails>> additionalClaimantsTabDetails =
+            pcsCase.getCasePartiesTab().getClaimantsDetails();
+
+        assertThat(claimant1TabDetails.getName()).isEqualTo(claimant1Name);
+        assertThat(claimant1TabDetails.getServiceAddress()).isEqualTo(address1);
+        assertThat(additionalClaimantsTabDetails).isNotNull();
+        assertThat(additionalClaimantsTabDetails).hasSize(1);
+
+        ClaimantTabDetails claimant2TabDetails = additionalClaimantsTabDetails.getFirst().getValue();
+        assertThat(claimant2TabDetails.getName()).isEqualTo(claimant2Name);
+        assertThat(claimant2TabDetails.getServiceAddress()).isEqualTo(address2);
+    }
+
+    @Test
     void shouldSetDefendantOneDetailsInCasePartiesTab() {
         // Given
         String firstName = "defendant";
@@ -127,6 +172,106 @@ class CaseTabViewTest {
         assertThat(defendant1TabDetails.getServiceAddress()).isEqualTo(address);
         assertThat(defendant1TabDetails.getRepresentative()).isNull();
         assertThat(additionalDefendantsTabDetails).isNull();
+    }
+
+    @Test
+    void shouldSetLitigationFriendDetailsInCasePartiesTab() {
+        // Given
+        String firstName = "Bob";
+        String lastName = "Jones";
+        AddressUK address = AddressUK.builder().build();
+        String telephoneNumber = "telephone number";
+        String emailAddress = "email@test.com";
+        Party litigationFriend = Party.builder()
+            .firstName(firstName)
+            .lastName(lastName)
+            .orgName("Litigation Friends Ltd")
+            .address(address)
+            .phoneNumber(telephoneNumber)
+            .emailAddress(emailAddress)
+            .build();
+
+        List<ListValue<Party>> litigationFriends = List.of(
+            ListValue.<Party>builder().value(litigationFriend).build()
+        );
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allLitigationFriends(litigationFriends)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab()).isNotNull();
+        LitigationFriendTabDetails litigationFriendTabDetails =
+            pcsCase.getCasePartiesTab().getLfDetails();
+        assertThat(litigationFriendTabDetails).isNotNull();
+        assertThat(litigationFriendTabDetails.getName()).isEqualTo(firstName + " " + lastName);
+        assertThat(litigationFriendTabDetails.getServiceAddress()).isEqualTo(address);
+        assertThat(litigationFriendTabDetails.getEmailAddress()).isEqualTo(emailAddress);
+        assertThat(litigationFriendTabDetails.getTelephoneNumber()).isEqualTo(telephoneNumber);
+        assertThat(litigationFriendTabDetails.getActingFor()).isNull();
+        assertThat(pcsCase.getCasePartiesTab().getLfsDetails()).isNull();
+    }
+
+    @Test
+    void shouldResolveActingForPartyNameOnLitigationFriend() {
+        // Given
+        String claimantId = "claimant-id";
+        Party claimant = Party.builder().orgName("Acme Ltd").build();
+        List<ListValue<Party>> claimants = List.of(
+            ListValue.<Party>builder().id(claimantId).value(claimant).build()
+        );
+
+        Party litigationFriend = Party.builder()
+            .firstName("Bob")
+            .lastName("Jones")
+            .actingForPartyId(claimantId)
+            .build();
+        List<ListValue<Party>> litigationFriends = List.of(
+            ListValue.<Party>builder().value(litigationFriend).build()
+        );
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allClaimants(claimants)
+            .allLitigationFriends(litigationFriends)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getCasePartiesTab().getLfDetails().getActingFor()).isEqualTo("Acme Ltd");
+    }
+
+    @Test
+    void shouldSetMultipleLitigationFriendDetailsInCasePartiesTab() {
+        // Given
+        Party litigationFriend1 = Party.builder().firstName("Bob").lastName("Jones").build();
+        Party litigationFriend2 = Party.builder().firstName("Carol").lastName("Smith").build();
+
+        List<ListValue<Party>> litigationFriends = new ArrayList<>();
+        litigationFriends.add(ListValue.<Party>builder().value(litigationFriend1).build());
+        litigationFriends.add(ListValue.<Party>builder().value(litigationFriend2).build());
+
+        PCSCase pcsCase = PCSCase.builder()
+            .allLitigationFriends(litigationFriends)
+            .build();
+
+        // When
+        underTest.setCaseTabFields(pcsCase);
+
+        // Then
+        LitigationFriendTabDetails litigationFriend1TabDetails =
+            pcsCase.getCasePartiesTab().getLfDetails();
+        List<ListValue<LitigationFriendTabDetails>> additionalLitigationFriendsTabDetails =
+            pcsCase.getCasePartiesTab().getLfsDetails();
+
+        assertThat(litigationFriend1TabDetails.getName()).isEqualTo("Bob Jones");
+        assertThat(additionalLitigationFriendsTabDetails).hasSize(1);
+        assertThat(additionalLitigationFriendsTabDetails.getFirst().getValue().getName())
+            .isEqualTo("Carol Smith");
     }
 
     @Test
@@ -418,8 +563,11 @@ class CaseTabViewTest {
         // Then
         assertThat(pcsCase.getCasePartiesTab()).isNotNull();
         assertThat(pcsCase.getCasePartiesTab().getClaimantDetails()).isNull();
+        assertThat(pcsCase.getCasePartiesTab().getClaimantsDetails()).isNull();
         assertThat(pcsCase.getCasePartiesTab().getDefendantOneDetails()).isNull();
         assertThat(pcsCase.getCasePartiesTab().getDefendantsDetails()).isNull();
+        assertThat(pcsCase.getCasePartiesTab().getLfDetails()).isNull();
+        assertThat(pcsCase.getCasePartiesTab().getLfsDetails()).isNull();
     }
 
     @Test
