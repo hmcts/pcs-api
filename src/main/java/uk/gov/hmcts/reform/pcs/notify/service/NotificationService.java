@@ -101,56 +101,56 @@ public class NotificationService {
 
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeOrganisationEntity,
+                organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM,
             NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
                                                                       pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeOrganisationEntity,
+                organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
                                                                       pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
         return sendEmailForLegalRepresentative(
             legalRepresentativeRecipient(
-                legalRepresentativeOrganisationEntity,
+                organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
                 defendantResponse
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(legalRepresentativeOrganisationEntity,
+            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
                                                                       pcsCaseEntity));
     }
 
@@ -562,16 +562,16 @@ public class NotificationService {
     }
 
     private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity,
         PartyEntity defendantParty,
         DefendantResponseEntity defendantResponse) {
 
-        if (legalRepresentativeOrganisationEntity == null) {
+        if (organisationEntity == null) {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        var contactDetails = legalRepresentativeOrganisationEntity.getClaimPartyContactDetails();
+        var contactDetails = organisationEntity.getClaimPartyContactDetails();
         String emailAddress = contactDetails != null ? contactDetails.stream()
             .filter(details -> pcsCaseEntity.getId().equals(details.getPcsCase().getId()))
             .findFirst().map(

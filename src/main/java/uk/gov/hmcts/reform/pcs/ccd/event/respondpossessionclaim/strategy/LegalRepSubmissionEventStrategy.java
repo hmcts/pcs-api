@@ -93,7 +93,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
             .persistFinalSubmit(caseReference, responseDraftData, defendantParty, JourneyType.LEGAL_REPRESENTATIVE);
 
-        OrganisationEntity legalRepresentativeOrganisationEntity =
+        OrganisationEntity organisationEntity =
             organisationRepository
                 .findByPartyLinkedToOrganisationAndActive(representedPartyId)
                 .orElseThrow();
@@ -109,7 +109,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
 
         // Schedule this as a task
-        sendNotification(legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
+        sendNotification(organisationEntity, pcsCaseEntity, defendantResponse);
 
         return submitResponse;
     }
@@ -119,33 +119,33 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private void sendNoCounterClaimNotification(OrganisationEntity
-                                                    legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
+                                                    organisationEntity, PcsCaseEntity pcsCaseEntity,
                                                 DefendantResponseEntity defendantResponse) {
         notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
-                legalRepresentativeOrganisationEntity,
+                organisationEntity,
                 pcsCaseEntity,
                 defendantResponse
         );
     }
 
     private void sendCounterClaimNoPaymentRequiredNotification(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
-                legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
+                organisationEntity, pcsCaseEntity, defendantResponse);
     }
 
     private void sendCounterClaimPaymentRequiredNotification(
-        OrganisationEntity legalRepresentativeOrganisationEntity,
+        OrganisationEntity organisationEntity,
         PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         notificationService
             .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
-                legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse);
+                organisationEntity, pcsCaseEntity, defendantResponse);
     }
 
-    private void sendNotification(OrganisationEntity legalRepresentativeOrganisationEntity,
+    private void sendNotification(OrganisationEntity organisationEntity,
                                   PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
         Optional<CounterClaimEntity> counterClaimEntityOptional = pcsCaseEntity.getCounterClaims().stream().findFirst();
 
@@ -153,32 +153,32 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .ifPresentOrElse(
                 counterClaimEntity -> sendCounterClaimNotification(
                     counterClaimEntity,
-                    legalRepresentativeOrganisationEntity,
+                    organisationEntity,
                     pcsCaseEntity, defendantResponse
                 ),
                 () ->
                     sendNoCounterClaimNotification(
-                        legalRepresentativeOrganisationEntity, pcsCaseEntity, defendantResponse)
+                        organisationEntity, pcsCaseEntity, defendantResponse)
         );
     }
 
     private void sendCounterClaimNotification(CounterClaimEntity counterClaimEntity,
                                               OrganisationEntity
-                                                  legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity,
+                                                  organisationEntity, PcsCaseEntity pcsCaseEntity,
                                               DefendantResponseEntity defendantResponse) {
         if (counterClaimEntity.getStatus() == CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED) {
             if (!isHwfBlank(counterClaimEntity)) {
                 // email notification for the “Response and counterclaim submitted"
                 // RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED
                 sendCounterClaimNoPaymentRequiredNotification(
-                    legalRepresentativeOrganisationEntity,
+                    organisationEntity,
                     pcsCaseEntity, defendantResponse
                 );
             } else {
                 //  email notification for "Response submitted - payment required for your counterclaim"
                 //  RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED
                 sendCounterClaimPaymentRequiredNotification(
-                    legalRepresentativeOrganisationEntity,
+                    organisationEntity,
                     pcsCaseEntity, defendantResponse
                 );
             }

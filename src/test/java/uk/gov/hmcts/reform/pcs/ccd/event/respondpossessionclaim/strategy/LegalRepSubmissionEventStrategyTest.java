@@ -144,7 +144,7 @@ class LegalRepSubmissionEventStrategyTest {
         when(eventPayload.caseData()).thenReturn(caseData);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
         when(organisationRepository.findByPartyLinkedToOrganisationAndActive(representedPartyId))
-            .thenReturn(legalRepresentativeOrganisationEntity());
+            .thenReturn(organisationEntity());
 
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
@@ -281,7 +281,7 @@ class LegalRepSubmissionEventStrategyTest {
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
     }
 
-    private Optional<OrganisationEntity> legalRepresentativeOrganisationEntity() {
+    private Optional<OrganisationEntity> organisationEntity() {
         return Optional.of(OrganisationEntity.builder().build());
     }
 

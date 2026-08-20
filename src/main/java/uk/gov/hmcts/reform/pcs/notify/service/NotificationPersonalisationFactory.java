@@ -64,9 +64,9 @@ public class NotificationPersonalisationFactory {
     }
 
     public LegalRepresentativeBasePersonalisation forLegalRepresentative(
-        OrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
+        OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity) {
 
-        return buildPersonalisation(pcsCaseEntity, legalRepresentativeOrganisationEntity);
+        return buildPersonalisation(pcsCaseEntity, organisationEntity);
     }
 
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
@@ -80,7 +80,7 @@ public class NotificationPersonalisationFactory {
 
     private LegalRepresentativeBasePersonalisation buildPersonalisation(
         PcsCaseEntity pcsCaseEntity,
-        OrganisationEntity legalRepresentativeOrganisationEntity
+        OrganisationEntity organisationEntity
     ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
@@ -91,7 +91,7 @@ public class NotificationPersonalisationFactory {
         // hacky but works — live Notify templates expect firstName/lastName (same as defendant emails).
         // LR org doesn't have a person name so stuffing org name into firstName for now.
         // TODO: check if we should be pulling a solicitor name from somewhere instead
-        String firstName = legalRepresentativeOrganisationEntity.getOrganisationName();
+        String firstName = organisationEntity.getOrganisationName();
         if (firstName == null) {
             firstName = "";
         }

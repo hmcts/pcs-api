@@ -33,8 +33,8 @@ public class LegalRepresentativeService {
         return organisationRepository.findByOrganisationIdAndCaseReference(legalRepOrgId,
                                                                                               caseReference)
             .map(
-                legalRepresentativeOrganisationEntity -> {
-                    List<PartyEntity> partyEntities = legalRepresentativeOrganisationEntity
+                organisationEntity -> {
+                    List<PartyEntity> partyEntities = organisationEntity
                         .getClaimPartyOrganisationList()
                         .stream()
                         .map(ClaimPartyOrganisationEntity::getParty)
