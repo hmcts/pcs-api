@@ -48,10 +48,11 @@ public class LegalRepresentativeSummaryService {
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
-                                                 String organisationIdForCurrentUser, State state) {
+    public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, State state,
+                                                 String organisationId) {
+
         Optional<ClaimPartyOrganisationEntity> partyLink =
-            isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationIdForCurrentUser);
+            isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
 
         if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
             setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());

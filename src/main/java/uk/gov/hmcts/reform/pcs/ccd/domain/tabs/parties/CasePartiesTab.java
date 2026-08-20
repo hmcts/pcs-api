@@ -21,9 +21,18 @@ public class CasePartiesTab {
     @CCD(label = "Claimant")
     private ClaimantTabDetails claimantDetails;
 
+    @CCD(label = "Additional claimant")
+    private List<ListValue<ClaimantTabDetails>> claimantsDetails;
+
     @CCD(label = "Defendant")
     private DefendantTabDetails defendantOneDetails;
 
     @CCD(label = "Additional defendant")
     private List<ListValue<DefendantTabDetails>> defendantsDetails;
+
+    @CCD(label = "Litigation friend")
+    private LitigationFriendTabDetails lfDetails;
+
+    @CCD(label = "Additional litigation friend")
+    private List<ListValue<LitigationFriendTabDetails>> lfsDetails;
 }
