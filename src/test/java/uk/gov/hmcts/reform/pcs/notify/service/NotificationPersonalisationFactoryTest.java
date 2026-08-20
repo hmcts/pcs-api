@@ -302,8 +302,8 @@ class NotificationPersonalisationFactoryTest {
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
-            OrganisationBasePersonalisation result = factory.forLegalRepresentative(legalRepParty,
-                                                                                    pcsCaseEntity);
+            OrganisationBasePersonalisation result = factory.forOrganisation(legalRepParty,
+                                                                             pcsCaseEntity);
             Map<String, Object> map = result.toMap();
             assertThat(map)
                 .containsEntry("caseNumber", "1234-5678-90")

@@ -72,7 +72,7 @@ public class NotificationService {
             defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forDefendant(defendantResponse)
+            notificationPersonalisationFactory.counterclaimPaymentRequired(defendantResponse)
         );
     }
 
@@ -114,8 +114,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_NO_COUNTERCLAIM_LEGAL_REP,
             NotificationClaimType.NO_COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
-                                                                      pcsCaseEntity));
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
@@ -132,8 +132,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
-                                                                      pcsCaseEntity));
+            notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity,
+                                                               pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
@@ -150,8 +150,8 @@ public class NotificationService {
             ),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forLegalRepresentative(organisationEntity,
-                                                                      pcsCaseEntity));
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
