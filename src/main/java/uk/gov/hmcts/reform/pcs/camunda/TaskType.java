@@ -15,6 +15,15 @@ public enum TaskType {
             have been completed.
             """
     ),
+    REVIEW_CASE_FLAG(
+        "ReviewCaseFlag",
+        "Review Case Flag",
+        """
+            Review the case flags on the case flags tab, check whether any action is required, and take the appropriate
+            action. Only mark the task as complete once the case flags have been reviewed and any required action has
+            been completed.
+            """
+    ),
     REVIEW_ADDITIONAL_DOCS_GEN_APP(
         "ReviewAdditionalDocumentsGenApp",
         "Review additional documents – gen app",
