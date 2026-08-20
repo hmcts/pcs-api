@@ -27,5 +27,6 @@ public enum EventId {
     caseworkerUploadDocuments,
     removeDocument,
     legalRepDocumentUpload,
+    manageParties,
     legalRepresentativeContactDetails
 }
