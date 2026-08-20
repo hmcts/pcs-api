@@ -1,27 +1,38 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class CounterClaimFeeCalculator {
 
     private static final BigDecimal RANGED_FEE_UPPER_BOUND_POUNDS = new BigDecimal("5000");
 
-    public boolean isPaymentRequired(CounterClaim counterClaim) {
+    private final FeeService feeService;
+
+    public boolean isHwfReferencePresent(CounterClaim counterClaim) {
         if (counterClaim == null) {
             return false;
         }
         String hwfReference = counterClaim.getHwfReferenceNumber();
-        return hwfReference == null || hwfReference.trim().isEmpty();
+        return hwfReference != null && !hwfReference.trim().isEmpty();
     }
 
-    public FeeType resolveFeeType(CounterClaim counterClaim) {
+    public FeeDetails getFeeDetails(CounterClaim counterClaim) {
+        FeeType feeType = resolveFeeType(counterClaim);
+        return feeService.getFee(feeType, resolveFeeLookupAmountInPounds(counterClaim));
+    }
+
+    FeeType resolveFeeType(CounterClaim counterClaim) {
         if (counterClaim == null || counterClaim.getClaimType() == null) {
             throw new IllegalStateException("Counterclaim fee type cannot be determined without claim type");
         }
