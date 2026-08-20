@@ -244,14 +244,14 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .description(description)
             .build();
 
+        final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
         final LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
             .validCategories(DynamicStringList.builder()
                 .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
                 .build())
-            .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+            .legalRepDocuments(wrapListItems(legalRepDocList))
             .build();
-
-        final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
         GenAppEntity selectedGenApp = mock(GenAppEntity.class);
         PartyEntity currentUserParty = mock(PartyEntity.class);
