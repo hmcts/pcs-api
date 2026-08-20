@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +20,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DefendantPaperResponseRequest {
 
     @CCD(label = "Has the defendant had any free legal advice")
@@ -37,7 +40,8 @@ public class DefendantPaperResponseRequest {
 
     @CCD(
         label = "How does the defendant want to receive updates about their case?",
-        typeOverride = FieldType.MultiSelectList
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "ContactPreferencesSelection"
     )
     private Set<ContactPreferencesSelection> contactPreferences;
 
@@ -53,7 +57,7 @@ public class DefendantPaperResponseRequest {
         regex = "^\\s*0\\d{10}\\s*$",
         max = 60
     )
-    private String telephoneNumber;
+    private String phoneNumber;
 
     @CCD(
         label = "15.1 Has the defendant made a counterclaim against the claimant?"

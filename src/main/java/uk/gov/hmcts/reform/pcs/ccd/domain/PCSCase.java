@@ -642,7 +642,7 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
-    @CCD
+    @JsonUnwrapped(prefix = "paperResponse_")
     private DefendantPaperResponseRequest defendantPaperResponse;
 
     @CCD(
@@ -852,6 +852,12 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String hearingLocation;
+
+    @CCD(
+        label = "Which defendant submitted this response?",
+        typeOverride = FieldType.DynamicRadioList
+    )
+    private DynamicList defendantRadioList;
 
     @CCD(
         searchable = false,

@@ -11,6 +11,8 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -24,14 +26,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseReque
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.DisputingOtherParts;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.FreeLegalAdvice;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.SelectDefendant;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
+import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -44,13 +56,16 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 @Component
 public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final DefendantResponseService defendantResponseService;
+    private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
     private final ClaimResponseService claimResponseService;
+    private final DefendantResponseService defendantResponseService;
+    private final AddressMapper addressMapper;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
-            .decentralisedEvent(defendantPaperResponse.name(), this::submit)
+            .decentralisedEvent(defendantPaperResponse.name(), this::submit, this::start)
             .forStates(State.CASE_ISSUED)
             .name("Paper response - Defence")
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
@@ -60,37 +75,72 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             .showSummary();
 
         new PageBuilder(eventBuilder)
+            .add(new SelectDefendant())
             .add(new FreeLegalAdvice())
             .add(new DefendantDetails())
             .add(new ContactPreferences())
             .add(new DisputingOtherParts());
     }
 
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
+        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+
+        caseData.setDefendantRadioList(buildDefendantPartyList(claimEntity));
+
+        return caseData;
+    }
+
+    private DynamicList buildDefendantPartyList(ClaimEntity claimEntity) {
+        List<DynamicListElement> listItems = claimEntity.getClaimParties().stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.DEFENDANT)
+            .map(claimPartyEntity -> DynamicListElement.builder()
+                .code(claimPartyEntity.getParty().getId())
+                .label("%s - %s".formatted(
+                    buildPartyDisplayName(claimPartyEntity.getParty()),
+                    partyService.getPartyLabel(claimEntity, claimPartyEntity.getParty().getId())
+                ))
+                .build())
+            .toList();
+
+        return DynamicList.builder().listItems(listItems).build();
+    }
+
+    private String buildPartyDisplayName(PartyEntity partyEntity) {
+        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
+            return "Person unknown";
+        }
+        return partyService.getPartyName(partyEntity);
+    }
+
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
-        // TODO - update with defendant party entity
-        PartyEntity defendantParty = PartyEntity.builder().build();
+        long caseReference = eventPayload.caseReference();
 
-        PossessionClaimResponse possessionClaimResponse = buildPossessionClaimResponse(pcsCase, defendantParty);
+        DefendantPaperResponseRequest defendantPaperResponse = pcsCase.getDefendantPaperResponse();
+        PartyEntity defendantParty = partyService
+            .getPartyEntityByEntityId(pcsCase.getDefendantRadioList().getValueCode(), caseReference);
+
+        PossessionClaimResponse possessionClaimResponse = buildPossessionClaimResponse(defendantPaperResponse, defendantParty);
         claimResponseService.saveDraftDataForParty(possessionClaimResponse, defendantParty);
+        defendantResponseService.saveDefendantResponse(
+            caseReference,
+            possessionClaimResponse,
+            defendantParty,
+            JourneyType.CASEWORKER
+        );
 
         return SubmitResponse.<State>builder()
             .confirmationBody(buildConfirmationMarkdown(eventPayload.caseReference()))
             .build();
     }
 
-    private String buildConfirmationMarkdown(long caseReference) {
-        return """
-            ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-            <span class="govuk-panel__title govuk-!-font-size-36">Response submitted</span><br>
-            <span class="govuk-panel__body">Case number: %s</span><br>
-            </div>
-            """.formatted(caseReference);
-    }
-
-    private PossessionClaimResponse buildPossessionClaimResponse(PCSCase pcsCase, PartyEntity defendantParty) {
-        DefendantPaperResponseRequest defendantPaperResponse = pcsCase.getDefendantPaperResponse();
+    private PossessionClaimResponse buildPossessionClaimResponse(
+        DefendantPaperResponseRequest defendantPaperResponse,
+        PartyEntity defendantParty
+    ) {
         AddressUK address = defendantPaperResponse.getAddress();
         String firstName = defendantPaperResponse.getFirstName();
         String lastName = defendantPaperResponse.getLastName();
@@ -100,7 +150,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             address,
             firstName,
             lastName,
-            defendantPaperResponse.getTelephoneNumber(),
+            defendantPaperResponse.getPhoneNumber(),
             defendantPaperResponse.getContactPreferences(),
             defendantPaperResponse.getFreeLegalAdvice(),
             defendantPaperResponse.getHasMadeCounterClaim(),
@@ -128,15 +178,15 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         AddressUK address,
         String firstName,
         String lastName,
-        String telephoneNumber,
+        String phoneNumber,
         Set<ContactPreferencesSelection> contactPreferences,
         YesNoPreferNotToSay freeLegalAdvice,
         VerticalYesNo hasMadeCounterClaim,
         PartyEntity defendantParty
     ) {
-        VerticalYesNo addressConfirmed = address != null ? VerticalYesNo.NO : null;
+        VerticalYesNo addressConfirmed = isAddressConfirmed(address, defendantParty);
         VerticalYesNo nameConfirmed = isNameConfirmed(firstName, lastName, defendantParty);
-        VerticalYesNo contactByPhone = telephoneNumber != null ? VerticalYesNo.YES : VerticalYesNo.NO;
+        VerticalYesNo contactByPhone = phoneNumber != null ? VerticalYesNo.YES : VerticalYesNo.NO;
 
         VerticalYesNo contactByEmail;
         VerticalYesNo contactByPost;
@@ -168,13 +218,36 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
 
         String partyFirstName = partyEntity.getFirstName();
         String partyLastName = partyEntity.getLastName();
+
         boolean firstNameMatch = StringUtils.isNotBlank(firstName)
             && StringUtils.isNotBlank(partyFirstName)
-            && !firstName.equalsIgnoreCase(partyFirstName);
+            && firstName.equalsIgnoreCase(partyFirstName);
+
         boolean lastNameMatch = StringUtils.isNotBlank(lastName)
             && StringUtils.isNotBlank(partyLastName)
-            && !lastName.equalsIgnoreCase(partyLastName);
+            && lastName.equalsIgnoreCase(partyLastName);
 
         return firstNameMatch && lastNameMatch ? VerticalYesNo.YES : VerticalYesNo.NO;
+    }
+
+    private VerticalYesNo isAddressConfirmed(AddressUK newAddress, PartyEntity partyEntity) {
+        if (newAddress == null) {
+            return null;
+        }
+
+        AddressEntity addressEntity = partyEntity.getAddress();
+        AddressUK currentAddress = addressEntity != null ? addressMapper.toAddressUK(addressEntity) : null;
+
+        return newAddress.equals(currentAddress) ? VerticalYesNo.YES : VerticalYesNo.NO;
+    }
+
+    private String buildConfirmationMarkdown(long caseReference) {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">Response submitted</span><br>
+            <span class="govuk-panel__body">Case number: %s</span><br>
+            </div>
+            """.formatted(caseReference);
     }
 }

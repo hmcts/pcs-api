@@ -19,7 +19,10 @@ public class ContactPreferences implements CcdPageConfiguration {
             .optional(DefendantPaperResponseRequest::getContactPreferences)
             .optional(
                 DefendantPaperResponseRequest::getEmailAddress,
-                ShowConditions.fieldContains("contactPreferences", ContactPreferencesSelection.BY_EMAIL)
+                ShowConditions.fieldContains(
+                    "paperResponse_ContactPreferences",
+                    ContactPreferencesSelection.BY_EMAIL
+                )
             )
             .done();
     }
