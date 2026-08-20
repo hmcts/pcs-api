@@ -35,6 +35,10 @@ public class ShowConditions {
         return String.join(" AND ", conditions);
     }
 
+    public static String or(String... conditions) {
+        return String.join(" OR ", conditions);
+    }
+
     public static String featureFlagsEnabled(FeatureFlag... featureFlags) {
         return Arrays.stream(featureFlags)
             .map(featureFlag -> {
