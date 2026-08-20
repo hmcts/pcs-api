@@ -67,16 +67,16 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        GenAppRequest genAppRequest = getGenAppRequest(caseData);
+        GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData, genAppRequest);
+        PartyEntity applicantParty = getApplicantParty(caseReference, caseData, createGenAppRequest);
 
-        if (isDuplicateRequest(genAppRequest, pcsCaseEntity)) {
+        if (isDuplicateRequest(createGenAppRequest, pcsCaseEntity)) {
             return errorResponse("Application already exists for client reference");
         }
 
-        FeeDetails feeDetails = genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)
+        FeeDetails feeDetails = genAppFeeCalculator.getApplicationFeeDetails(createGenAppRequest)
             .orElse(null);
 
         boolean paymentRequired = feeDetails != null;
@@ -84,10 +84,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         GenAppState initialState = paymentRequired ? PENDING_GEN_APP_ISSUED : GEN_APP_ISSUED;
 
         GenAppEntity genAppEntity = genAppService
-            .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, initialState);
+            .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
-        if (isXuiJourney(genAppRequest)) {
-            return handleXuiSubmit(paymentRequired, caseReference, genAppRequest, genAppEntity, feeDetails);
+        if (isXuiJourney(createGenAppRequest)) {
+            return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
         } else {
             return handleCuiSubmit(paymentRequired, caseReference, genAppEntity, initialState, feeDetails);
         }
