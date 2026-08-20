@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
-import lombok.AllArgsConstructor;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -8,25 +9,32 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Service
-@AllArgsConstructor
 public class GenAppVisibilityService {
 
+    private static final Duration ORG_ID_CACHE_TTL = Duration.of(10, SECONDS);
+
     private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final OrganisationDetailsService organisationDetailsService;
+    private final Cache<UUID, Optional<String>> orgIdCache;
 
     private static final Set<String> INTERNAL_ROLES = Stream.concat(
         Arrays.stream(CASEWORKER_ROLES),
@@ -35,8 +43,15 @@ public class GenAppVisibilityService {
     private static final String PCS_CASEWORKER_ROLE = UserRole.PCS_CASE_WORKER.getRole();
     private static final String PCS_SOLICITOR_ROLE = UserRole.PCS_SOLICITOR.getRole();
 
-    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity, UUID currentUserId) {
-        return isGenAppVisibleToUser(genAppEntity, currentUserId, List.of());
+    public GenAppVisibilityService(LegalRepresentativeRepository legalRepresentativeRepository,
+                                   OrganisationDetailsService organisationDetailsService) {
+
+        this.legalRepresentativeRepository = legalRepresentativeRepository;
+        this.organisationDetailsService = organisationDetailsService;
+
+        this.orgIdCache = Caffeine.newBuilder()
+            .expireAfterWrite(ORG_ID_CACHE_TTL)
+            .build();
     }
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
@@ -57,23 +72,38 @@ public class GenAppVisibilityService {
         return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), currentUserId, currentUserRoles);
     }
 
-    public boolean isWithoutNoticeVisibleToUser(PartyEntity party,
+    public boolean isWithoutNoticeVisibleToUser(PartyEntity applicantParty,
                                                 UUID currentUserId,
                                                 Collection<String> currentUserRoles) {
         if (isInternalUser(currentUserRoles)) {
             return true;
         }
 
-        if (party == null || currentUserId == null) {
+        if (applicantParty == null || currentUserId == null) {
             return false;
         }
 
-        if (currentUserId.equals(party.getIdamId())) {
+        if (currentUserId.equals(applicantParty.getIdamId())) {
+            return true;
+        }
+
+        // TODO: Test
+        String organisationId = getOrganisationId(currentUserId);
+        if (organisationId != null && organisationId.equals(applicantParty.getOrganisationId())) {
             return true;
         }
 
         return legalRepresentativeRepository
-            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, party.getId());
+            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, applicantParty.getId());
+    }
+
+    private String getOrganisationId(UUID userId) {
+        return orgIdCache.get(userId, this::fetchOrganisationId)
+            .orElse(null);
+    }
+
+    private Optional<String> fetchOrganisationId(UUID userId) {
+        return Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(userId.toString()));
     }
 
     public boolean isGenAppDocumentVisibleToUser(GenAppEntity genAppEntity,

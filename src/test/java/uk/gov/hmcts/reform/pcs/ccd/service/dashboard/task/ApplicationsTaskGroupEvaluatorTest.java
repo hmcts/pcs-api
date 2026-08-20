@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.List;
 import java.util.Set;
@@ -37,8 +38,10 @@ class ApplicationsTaskGroupEvaluatorTest {
     private final UserRoleService userRoleService = mock(UserRoleService.class);
     private final LegalRepresentativeRepository legalRepresentativeRepository =
         mock(LegalRepresentativeRepository.class);
+    private final OrganisationDetailsService organisationDetailsService =
+        mock(OrganisationDetailsService.class);
     private final GenAppVisibilityService genAppVisibilityService =
-        new GenAppVisibilityService(legalRepresentativeRepository);
+        new GenAppVisibilityService(legalRepresentativeRepository, organisationDetailsService);
     private final ApplicationsTaskGroupEvaluator underTest =
         new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService);
 

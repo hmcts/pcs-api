@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.util.Arrays;
 import java.time.LocalDateTime;
@@ -39,12 +40,14 @@ class GenAppVisibilityServiceTest {
 
     @Mock(strictness = Mock.Strictness.LENIENT)
     private LegalRepresentativeRepository legalRepresentativeRepository;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
 
     private GenAppVisibilityService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppVisibilityService(legalRepresentativeRepository);
+        underTest = new GenAppVisibilityService(legalRepresentativeRepository, organisationDetailsService);
     }
 
     @ParameterizedTest
@@ -56,7 +59,7 @@ class GenAppVisibilityServiceTest {
         when(genAppEntity.getState()).thenReturn(state);
 
         // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
 
         // Then
         assertThat(genAppVisibleToUser).isFalse();
@@ -72,7 +75,7 @@ class GenAppVisibilityServiceTest {
         when(genAppEntity.getWithoutNotice()).thenReturn(isWithoutNotice);
 
         // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
 
         // Then
         assertThat(genAppVisibleToUser).isTrue();
@@ -99,7 +102,7 @@ class GenAppVisibilityServiceTest {
                 .thenReturn(isLegalRepresentativeLinkedToPartyAndActive);
 
         // When
-        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID);
+        boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
 
         // Then
         assertThat(genAppVisibleToUser).isEqualTo(expectedIsVisible);

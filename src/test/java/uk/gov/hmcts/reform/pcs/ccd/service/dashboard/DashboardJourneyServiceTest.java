@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvalu
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,12 +62,18 @@ class DashboardJourneyServiceTest {
 
     @Mock
     private LegalRepresentativeRepository legalRepresentativeRepository;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
 
     private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
+        genAppVisibilityService = new GenAppVisibilityService(
+            legalRepresentativeRepository,
+            organisationDetailsService
+        );
+
         underTest = new DashboardJourneyService(
             draftCaseDataService, defendantResponseService, List.of(
                 new ClaimTaskGroupEvaluator(),

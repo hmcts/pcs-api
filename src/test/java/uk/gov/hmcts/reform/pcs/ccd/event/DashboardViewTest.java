@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -52,6 +53,8 @@ class DashboardViewTest extends BaseEventTest {
 
     @Mock
     private LegalRepresentativeRepository legalRepresentativeRepository;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
 
     @Mock
     private UserRoleService userRoleService;
@@ -68,7 +71,11 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
+        genAppVisibilityService = new GenAppVisibilityService(
+            legalRepresentativeRepository,
+            organisationDetailsService
+        );
+
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,
             defendantResponseService,
