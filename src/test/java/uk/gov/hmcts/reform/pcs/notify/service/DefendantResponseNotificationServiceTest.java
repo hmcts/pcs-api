@@ -148,7 +148,7 @@ class DefendantResponseNotificationServiceTest {
         Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
-        when(counterClaimFeeCalculator.isPaymentRequired(any()))
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
             .thenReturn(false);
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -186,7 +186,7 @@ class DefendantResponseNotificationServiceTest {
         Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
-        when(counterClaimFeeCalculator.isPaymentRequired(any()))
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
             .thenReturn(true);
 
         when(defendantResponseRepository.findById(defendantResponseId))
@@ -224,7 +224,7 @@ class DefendantResponseNotificationServiceTest {
         Integer defendantResponseId = 1;
         UUID partyId = UUID.randomUUID();
 
-        when(counterClaimFeeCalculator.isPaymentRequired(any()))
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
             .thenReturn(true);
 
         when(defendantResponseRepository.findById(defendantResponseId))

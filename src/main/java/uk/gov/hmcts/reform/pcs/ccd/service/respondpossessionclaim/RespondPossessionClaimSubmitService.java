@@ -119,7 +119,7 @@ public class RespondPossessionClaimSubmitService {
             );
         }
     }
-  
+
     private void createCounterClaimReviewWaTask(long caseReference,
                                                 CounterClaimEntity counterClaimEntity,
                                                 FeeDetails feeDetails) {

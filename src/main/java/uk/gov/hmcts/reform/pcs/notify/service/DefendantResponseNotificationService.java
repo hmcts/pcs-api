@@ -59,7 +59,7 @@ public class DefendantResponseNotificationService {
         }
 
         CounterClaim counterClaim = toCounterClaim(counterClaimEntity);
-        boolean paymentRequired = counterClaimFeeCalculator.isPaymentRequired(counterClaim);
+        boolean paymentRequired = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
         if (paymentRequired) {
             log.info("Sending counterclaim payment required email for defendant response {}",
                      defendantResponse.getId());
