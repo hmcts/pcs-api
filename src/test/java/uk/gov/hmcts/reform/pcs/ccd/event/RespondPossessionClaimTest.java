@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -162,6 +164,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
@@ -209,7 +213,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             taskDescriptionService,
             camundaService,
             translationWAService,
-            organisationService
+            organisationService,
+            schedulerClient
         );
 
         lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
@@ -451,10 +456,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
-
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
 
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
@@ -1066,6 +1072,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().status(DefendantResponseStatus.SUBMITTED).build());
 
         // when
         callSubmitHandler(caseData);
@@ -1077,6 +1085,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                                representedPartyId, orgId);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
+        verify(schedulerClient).scheduleIfNotExists(any());
 
         // counterclaim
         verify(counterClaimService).saveCounterClaim(
