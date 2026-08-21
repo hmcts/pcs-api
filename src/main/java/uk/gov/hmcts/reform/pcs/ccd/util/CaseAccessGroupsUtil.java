@@ -9,6 +9,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -27,6 +28,7 @@ import java.util.UUID;
  * Builds the CaseAccessGroups the data store matches against users' role assignments. The id must be
  * byte-identical to the one PRM builds from the same AccessTypeRole template; a mismatch fails closed.
  */
+@Slf4j
 public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
@@ -45,6 +47,7 @@ public final class CaseAccessGroupsUtil {
             .ifPresent(party -> {
                 var caseAccessGroup =
                     caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId());
+                log.info("Found claimant case access group: {}", caseAccessGroup);
                 caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroup));
             });
 
@@ -65,6 +68,7 @@ public final class CaseAccessGroupsUtil {
             .map(legalRepOrg ->
                      caseAccessGroupIdFor(legalRepOrg.getOrganisationProfileId(),
                                           DEFENDANT, legalRepOrg.getOrganisationId()))
+            .peek(caseAccessGroupId -> log.info("Found defendant case access group: {}", caseAccessGroupId))
             .forEach(caseAccessGroupId ->
                          caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));;
 
