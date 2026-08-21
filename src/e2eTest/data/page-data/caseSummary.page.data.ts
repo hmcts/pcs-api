@@ -11,10 +11,11 @@ export const caseSummary = {
   makeAnApplication: 'Make an application',
   uploadAdditionalDocuments: 'Upload additional documents',
   addCaseNote: 'Add a case note',
-  requestSupportEvent: 'Request support',
   go: "Go",
   HistoryTab: 'History',
   serviceRequestTab: 'Service Request',
+  requestSupport: 'Request support',
+  manageSupport: 'Manage support',
   manageDocuments:{
     amend : 'Manage documents: Amend',
     upload : 'Manage documents: Upload'

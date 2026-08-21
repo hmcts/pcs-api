@@ -1,26 +1,12 @@
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
-import {test, expect} from '@utils/test-fixtures';
+import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
-import {caseSummary} from '@data/page-data';
-import {staff, staffUsers, refundAndRemission} from '@data/user-data/staff.user.data';
-import {getCaseTypeId} from '@utils/common/caseType.utils';
-import {VERY_LONG_TIMEOUT} from 'playwright.config';
-import {history} from '@data/page-data/history.page.data';
-import {judicial, judicialUsers} from '@data/user-data/judicial.user.data';
-import {
-  addCommentsForFlag,
-  manageCaseFlags,
-  reviewFlagDetails,
-  selectFlagType,
-  specialMeasureForFlag,
-  updateFlagComments,
-  viewCaseFlag,
-} from '@data/page-data-figma';
+import {caseSummary, user} from '@data/page-data';
+import {staff} from '@data/user-data/staff.user.data';
 import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
-import {logUserTestResultsAndAssert, recordUserTestFailure, UserTestResult} from '@utils/common/userTestResults.utils';
 
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
@@ -55,51 +41,21 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('test run', async () => {
-   test('Create support - check that support can be created @smoke', async ({page}) => {
-    console.log(`Running test with case number: ${caseNumber} and case type ID: ${getCaseTypeId()}`);
-});
-});
-
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
-  test('Create support - check that support can be created @smoke', async ({page}) => {
+  test('Create and manage support events @smoke', async ({page}) => {
     //Email needs changing to solicitor user to create support event
-    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
     await dismissCookieBanner(page, 'analytics');
-    //Search for specific case by reference and open it
-    await performAction('searchCase', '1786-7044-3814-8301'); // Temporary hardcoded case number for testing\
-    await performAction('clickLink', 'View');
-
-
-
-    // const caseUrl = 'https://xui-pcs-api-pr-2379.preview.platform.hmcts.net/cases/case-details/PCS/PCS/1786619985498604#Service%20Request';
-    // await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
-    // await performAction('navigateToUrl', caseUrl);
-
-    // Open the Service Request tab on the case summary
-    await performAction('clickTab', caseSummary.serviceRequestTab);
-    // Open the payment flow via the Pay Now link
-    // await performAction('clickPayNowLink', serviceRequest.payNowLink);
-    // await performAction('selectPaymentTypePBA', {
-    //   amountLabel: serviceRequest.amountToPayLabel,
-    //   expectedAmount: serviceRequest.amount415,
-    //   payByOption: serviceRequest.payByAccountRadioOption,
-    //   pbaLabel: serviceRequest.selectPBALabel,
-    //   pbaValue: serviceRequest.pbaIndex1,
-    //   referenceLabel: serviceRequest.pbaReferenceLable,
-    //   referenceText: serviceRequest.pbaReferenceInputText,
-    //   confirmButton: serviceRequest.confirmPaymentButton,
-    // });
-    // await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     
     // Create RequestSupport Event
     await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupportEvent);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    // Select the TVR (Claimant) radio option
-    await performAction('clickRadioButton', { option: 'TVR (Claimant)' });
+    // Select the Possession Claims Solicitor Org (Claimant) radio option
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant)' });
+    await performAction('clickButton', createAndManageSupport.continueButton);
     // Select 'Reasonable adjustment' and continue
     await performAction('clickRadioButton', { option: 'Reasonable adjustment' });
     await performAction('clickButton', createAndManageSupport.continueButton);
@@ -110,32 +66,22 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickRadioButton', { option: 'Friend or family with me' });
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Enter support details and continue
-    await performAction('inputText', 'Details', 'Chan Test Create Support');
+    await performAction('inputText', 'Details', 'Claimant Test Create Support');
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Submit the request
     await performAction('clickButton', 'Submit');
     // Validate success header after submission
-    await performValidation('mainHeader', 'Case #1786-7044-3814-8301 has been updated with event: Request support');
+    await performValidation('mainHeader', `Case #.* has been updated with event: Request support`);
 
-  });
-  
-  test('Manage support - check that support can be managed @smoke', async ({page}) => {
-    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
-    await dismissCookieBanner(page, 'analytics');
-    // Search for specific case and open it
-    await performAction('searchCase', '1786-7044-3814-8301');
-    await performAction('clickLink', 'View');
-
-    // Select Manage Support from Next step and Go
-    await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, 'Manage support');
+    // Now create ManageSupport Event
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
 
     // Validate Manage Support header
     await performValidation('mainHeader', 'Manage Support');
 
-    // Select TVR claimant option with Reasonable adjustment and Friend or family, then continue
-    await performAction('clickRadioButton', { option: 'TVR (Claimant) - **Reasonable adjustment, Friend or family with me** (Test)' });
+    // Select Possession Claims Solicitor Org (Claimant) option with Reasonable adjustment and Friend or family, then continue
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - **Reasonable adjustment, Friend or family with me** (Test)' });
     await performAction('clickButton', createAndManageSupport.continueButton);
 
     // Add comments and continue
@@ -144,7 +90,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     // Submit and validate success message
     await performAction('clickButton', 'Submit');
-    await performValidation('mainHeader', 'Case #1786-7044-3814-8301 has been updated with event: Manage support');
+    await performValidation('mainHeader', 'Case #.* has been updated with event: Manage support');
   });
 
 });
