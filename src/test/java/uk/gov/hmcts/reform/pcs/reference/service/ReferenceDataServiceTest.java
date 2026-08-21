@@ -23,7 +23,7 @@ class ReferenceDataServiceTest {
     private ReferenceDataService referenceDataService;
 
     private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
-    private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
+    private static final String ORGANISATION_NAME = "PCS_Solicitor_Org_Testing";
     private static final String ORGANISATION_IDENTIFIER = "ORG123456";
 
     @BeforeEach
