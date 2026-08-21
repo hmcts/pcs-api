@@ -20,7 +20,7 @@ class OrganisationEntityTest {
     }
 
     @Test
-    void addParty_ShouldNotAddPartyIfAlreadyPresent() {
+    void addParty_ShouldReactivatePartyIfAlreadyPresent() {
         // given
         UUID partyId = UUID.randomUUID();
         PartyEntity party = PartyEntity.builder()
@@ -39,6 +39,7 @@ class OrganisationEntityTest {
             underTest.getClaimPartyOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
+        assertThat(partyLegalRepresentativeOrganisation.getActive()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
