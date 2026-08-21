@@ -2,19 +2,24 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -23,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -50,8 +56,16 @@ class DefencePackSelectorTest {
     @Spy
     private SentPackDocuments sentPackDocuments = new SentPackDocuments(new ObjectMapper());
 
-    @InjectMocks
     private DefencePackSelector underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new DefencePackSelector(
+            claimActivityLogRepository,
+            sentPackDocuments,
+            featureToggleService,
+            new PackSkipRules(featureToggleService));
+    }
 
     private final PartyEntity claimant = party();
     private final PartyEntity defendant = party();
@@ -248,6 +262,119 @@ class DefencePackSelectorTest {
 
         assertThat(underTest.findDefencePackCandidates(
             caseWith(List.of(defenceForm, counterClaim), claimant, defendant))).isEmpty();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    @DisplayName("Does not send defence packs when a submitted defence requires translation")
+    void shouldSkipDefencePackWhenSubmittedDefenceNeedsTranslation(LanguageUsed languageUsed) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence), claimant, postalDefendant, postalCoDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, languageUsed)));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send defence packs when an issued counterclaim requires translation")
+    void shouldSkipDefencePackWhenIssuedCounterClaimNeedsTranslation() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        DocumentEntity postalCounterClaim = counterClaim(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence, postalCounterClaim), claimant, postalDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.WELSH)));
+        pcsCase.setCounterClaims(List.of(issuedCounterClaim(postalDefendant, LanguageUsed.WELSH, null)));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send defence packs when an issued counterclaim has an HWF reference")
+    void shouldSkipDefencePackWhenIssuedCounterClaimHasHwf() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        DocumentEntity postalCounterClaim = counterClaim(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence, postalCounterClaim), claimant, postalDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.ENGLISH)));
+        pcsCase.setCounterClaims(List.of(issuedCounterClaim(postalDefendant, LanguageUsed.ENGLISH, "HWF-123")));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send defence packs when translation and issued-counterclaim HWF both apply")
+    void shouldSkipDefencePackWhenTranslationAndHwf() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        DocumentEntity postalCounterClaim = counterClaim(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence, postalCounterClaim), claimant, postalDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.WELSH)));
+        pcsCase.setCounterClaims(List.of(issuedCounterClaim(postalDefendant, LanguageUsed.WELSH, "HWF-123")));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Still sends an English postal defence with no HWF when the rollout flag is on")
+    void shouldStillSendEnglishDefenceWithoutHwfWhenRolloutFlagOn() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence), claimant, postalDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.ENGLISH)));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Sends a Welsh defence to all parties when the rollout flag is off")
+    void shouldSendWelshDefenceWhenRolloutFlagOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(List.of(defenceForm), claimant, defendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(defendant, LanguageUsed.WELSH)));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Skips every defence candidate, including an English postal co-defendant")
+    void shouldSkipAllDefenceCandidatesIncludingEnglishCoDefendant() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PartyEntity englishCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence), claimant, postalDefendant, englishCoDefendant);
+        pcsCase.setDefendantResponses(List.of(
+            submittedDefence(postalDefendant, LanguageUsed.WELSH),
+            submittedDefence(englishCoDefendant, LanguageUsed.ENGLISH)));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    private DefendantResponseEntity submittedDefence(PartyEntity party, LanguageUsed languageUsed) {
+        return DefendantResponseEntity.builder()
+            .party(party)
+            .status(DefendantResponseStatus.SUBMITTED)
+            .languageUsed(languageUsed)
+            .build();
+    }
+
+    private CounterClaimEntity issuedCounterClaim(PartyEntity party, LanguageUsed languageUsed,
+                                                  String hwfReferenceNumber) {
+        return CounterClaimEntity.builder()
+            .party(party)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .languageUsed(languageUsed)
+            .hwfReferenceNumber(hwfReferenceNumber)
+            .build();
     }
 
     private DefencePackCandidate candidateFor(List<DefencePackCandidate> result, PartyEntity recipient) {
