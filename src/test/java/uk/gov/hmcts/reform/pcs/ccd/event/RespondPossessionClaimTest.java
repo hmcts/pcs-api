@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -32,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
@@ -59,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -78,6 +81,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
@@ -105,6 +109,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DefendantAccessValidator accessValidator;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private TranslationWAService translationWAService;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
     @Mock
@@ -153,13 +159,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private RentArrearsView rentArrearsView;
 
+    private StartEventHandler startEventHandler;
+    private SubmitEventHandler submitEventHandler;
+
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // Create handlers with real dependencies
 
-        StartEventHandler startEventHandler = new StartEventHandler(
+        startEventHandler = new StartEventHandler(
             securityContextService,
             List.of(new CitizenStartEventStrategy(pcsCaseService,
                                                   securityContextService,
@@ -193,8 +202,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
             documentService,
             draftCaseDataService,
             taskDescriptionService,
-            camundaService
+            camundaService,
+            translationWAService
         );
+
+        lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().languageUsed(LanguageUsed.ENGLISH).build());
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
             partyService,
@@ -202,7 +215,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             objectMapper
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
+        submitEventHandler = new SubmitEventHandler(
             List.of(
                 new CitizenSubmissionEventStrategy(
                     draftCaseDataService,
@@ -233,6 +246,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         // Mock existing draft with claimantProvided for save operations
         setupDefaultExistingDraft();
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.respondPossessionClaim());
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     private void setupDefaultExistingDraft() {

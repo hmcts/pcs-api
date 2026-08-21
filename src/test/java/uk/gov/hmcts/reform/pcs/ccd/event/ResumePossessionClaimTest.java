@@ -123,6 +123,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
         setEventUnderTest(underTest);
     }
 
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(State.AWAITING_SUBMISSION_TO_HMCTS);
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
+    }
+
     @Nested
     @DisplayName("Start callback tests")
     class StartCallbackTests {
