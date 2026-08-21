@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -187,27 +188,51 @@ public class ApiSteps {
 
     private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
         final int maxAttempts = 3;
+        Throwable lastFailure = null;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            var response = SerenityRest.given()
-                .baseUri(baseUrl)
-                .contentType(ContentType.JSON)
-                .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
-                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                .pathParam("legislativeCountry", legislativeCountry)
-                .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
-                .when()
-                .post(Endpoints.CreateTestCase.getResource());
+            try {
+                // Plain RestAssured rather than SerenityRest: SerenityRest records a failed step on the
+                // event bus for every failed call, and Serenity then skips subsequent @Step calls and
+                // returns Mockito mocks from them. That would mask a retry we successfully recovered from.
+                Response response = RestAssured.given()
+                    .baseUri(baseUrl)
+                    .contentType(ContentType.JSON)
+                    .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+                    .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                    .pathParam("legislativeCountry", legislativeCountry)
+                    .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
+                    .when()
+                    .post(Endpoints.CreateTestCase.getResource());
 
-            if (response.statusCode() == 201) {
-                return response.then().extract().path("caseId");
-            }
+                if (response.statusCode() == 201) {
+                    return response.then().extract().path("caseId");
+                }
 
-            if (attempt == maxAttempts) {
-                response.then().statusCode(201);
+                lastFailure = new AssertionError(
+                    "Create test case returned HTTP " + response.statusCode() + " - " + summarise(response)
+                );
+            } catch (Exception | AssertionError e) {
+                lastFailure = e;
             }
         }
-        throw new IllegalStateException("Unexpected retry failure");
+
+        throw new IllegalStateException(
+            "Failed to create test case for " + legislativeCountry + " after " + maxAttempts + " attempts",
+            lastFailure
+        );
+    }
+
+    private static String summarise(Response response) {
+        try {
+            String body = response.getBody().asString();
+            if (body == null || body.isBlank()) {
+                return "<empty body>";
+            }
+            return body.length() > 500 ? body.substring(0, 500) + "..." : body;
+        } catch (Exception e) {
+            return "<unreadable body: " + e + ">";
+        }
     }
 
     @Step("a pin is fetched")
