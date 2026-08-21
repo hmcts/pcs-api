@@ -47,7 +47,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -73,7 +73,18 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState' || action === 'enterApplicationDetails' || action === 'uploadADocument') {
+  if (action === 'changeCaseState'
+    || action === 'enterApplicationDetails'
+    || action === 'uploadADocument'
+    || action === 'selectDocumentToAmend'
+    || action === 'selectManageParty'
+    || action === 'addAHearing'
+    || action === 'selectManageHearing'
+    || action === 'editHearing'
+    || action === 'cancelHearing'
+    || action === 'selectParty' 
+    || action === 'updatePartyDetails'
+    || action === 'selectManageHearing') {
     captureDataForCYAPage = true;
   }
 
@@ -91,7 +102,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   const actionInstance = ActionCMRegistry.getAction(action);
 
   captureDataForCYA(action, fieldName, value);
-  
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 

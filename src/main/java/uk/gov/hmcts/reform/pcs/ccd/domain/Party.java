@@ -7,8 +7,11 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationPolicyAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 import java.time.LocalDate;
 
@@ -46,6 +49,8 @@ public class Party {
 
     private LegalRepresentative legalRepresentative;
 
+    private String actingForPartyId;
+
     @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Party Flags",
@@ -53,4 +58,9 @@ public class Party {
     )
     private Flags defendantFlags;
 
+
+    @CCD(
+        access = {OrganisationPolicyAccess.class}
+    )
+    private OrganisationPolicy<UserRole> organisationPolicy;
 }

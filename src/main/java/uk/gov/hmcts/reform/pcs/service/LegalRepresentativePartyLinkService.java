@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
@@ -42,10 +41,10 @@ public class LegalRepresentativePartyLinkService {
     private final CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Transactional
-    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UserInfo user,
+    public void linkLegalRepresentativeToParty(long caseReference, String partyId, UUID idamId,
                                                OrganisationDetailsResponse organisationDetails) {
         String organisationId = organisationDetails.getOrganisationIdentifier();
-        if (isAlreadyLinkedToParty(user, partyId, organisationId)) {
+        if (isAlreadyLinkedToParty(idamId, partyId, organisationId)) {
             throw new LegalRepresentativeAlreadyLinkedToPartyException(
                 "Legal Representative or organisation already linked to Party [" + partyId + "]");
         }
@@ -54,8 +53,6 @@ public class LegalRepresentativePartyLinkService {
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
         unlinkExistingRepresentation(UUID.fromString(partyId));
-
-        UUID idamId = UUID.fromString(user.getUid());
 
         Optional<LegalRepresentativeEntity> legalRepresentativeEntity = findExistingRepresentative(idamId,
                                                                                                    organisationId,
@@ -120,8 +117,7 @@ public class LegalRepresentativePartyLinkService {
             .build();
     }
 
-    private boolean isAlreadyLinkedToParty(UserInfo user, String partyId, String organisationId) {
-        UUID userId = UUID.fromString(user.getUid());
+    private boolean isAlreadyLinkedToParty(UUID userId, String partyId, String organisationId) {
         UUID targetPartyId = UUID.fromString(partyId);
 
         if (isNotBlank(organisationId)) {

@@ -1,26 +1,6 @@
 java:
-  secrets:
-    AZURE_SERVICE_BUS_CONNECTION_STRING:
-      secretRef: pcs-sb-preview
-      key: connectionString
-    AZURE_SERVICE_BUS_PREVIEW_CONNECTION_STRING:
-      secretRef: pcs-sb-preview
-      key: connectionString
   environment:
-    SPRING_JMS_SERVICEBUS_ENABLED: true
-    AZURE_SERVICE_BUS_TOPIC_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-    AZURE_SERVICE_BUS_SUBSCRIPTION_NAME: ${SERVICE_NAME}-asb-ccd-case-events
-
-servicebus:
-  enabled: true
-  releaseNameOverride: ${SERVICE_NAME}-asb
-  resourceGroup: pcs-aso-preview-rg
-  sbNamespace: pcs-servicebus-preview
-  setup:
-    topics:
-      - name: ccd-case-events
-        subscriptionNeeded: yes
-        requiresSession: true
+    CAMUNDA_BASE_URL: http://pcs-api-pr-${CHANGE_ID}-camunda/engine-rest
 
 postgresql:
   enabled: true
@@ -57,8 +37,9 @@ wa:
     java:
       ingressHost: wa-task-management-api-${SERVICE_FQDN}
       environment:
-        ALLOWED_CASE_TYPES: pcs-${CHANGE_ID}
+        ALLOWED_CASE_TYPES: pcs
         ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
         SPRING_DATASOURCE_MAXIMUM_POOL_SIZE: "4"
         SPRING_DATASOURCE_MINIMUM_IDLE: "1"
       keyVaults:
@@ -117,6 +98,8 @@ wa:
   wa-initiation-batch:
     job:
       schedule: "*/1 * * * *"
+      disableActiveClusterCheck: true
+      suspend: false
 
   wa-reconfiguration-batch:
     job:
@@ -125,6 +108,8 @@ wa:
   wa-termination-batch:
     job:
       schedule: "*/1 * * * *"
+      disableActiveClusterCheck: true
+      suspend: false
 
   #disable wa db as we are using the postgres flexible server
   wa:
@@ -134,7 +119,7 @@ wa:
       enabled: false
     messageCron:
       enabled: false
-      
+
 xui-webapp:
   nodejs:
     environment:

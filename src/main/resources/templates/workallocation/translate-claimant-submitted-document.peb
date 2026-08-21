@@ -1,0 +1,15 @@
+### Translate Documents
+
+Claimant 1 has uploaded documents to the claim that require translation.
+
+Review the claimant submitted document in
+<a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a> and arrange
+translation. Email the translated document to the court. Only mark the task as complete once the translation
+has been completed.
+
+Documents:
+<ul class="govuk-list govuk-list--bullet">
+  {% for filename in filenames %}
+  <li class="govuk-!-font-size-19">{{filename}}</li>
+  {% endfor %}
+</ul>

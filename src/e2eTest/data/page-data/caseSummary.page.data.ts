@@ -9,6 +9,7 @@ export const caseSummary = {
   manageFlagsEvent: 'Manage case flags',
   confirmEvictionEvent: 'Confirm the eviction details',
   makeAnApplication: 'Make an application',
+  uploadAdditionalDocuments: 'Upload additional documents',
   addCaseNote: 'Add a case note',
   go: "Go",
   HistoryTab: 'History',
@@ -19,5 +20,7 @@ export const caseSummary = {
   },
   addReviewDates: 'Add review date',
   changeCaseState: 'Change case state',
-  enterAGenApp: 'Enter a general application'
+  enterAGenApp: 'Enter a general application',
+  manageParties: 'Manage parties',
+  manageHearing: 'Manage hearing'
 }

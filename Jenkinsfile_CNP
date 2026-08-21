@@ -54,6 +54,16 @@ withPipeline(type, product, component) {
   //skipping sync with demo/perftest during SIT testing/DB migration
   syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
+  // WA DMN/BPMN upload for demo/ithc/perftest. Those branches never run sectionDeployToAKS,
+  // so there is no smoketest:/functionalTest: stage to hang this off.
+  afterSuccess('checkout') {
+    if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
+      withSubscription('nonprod') {
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+      }
+    }
+  }
 
   onPR() {
     enablePactAs([
@@ -89,6 +99,9 @@ withPipeline(type, product, component) {
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
       env.E2E_SUITE = "caseManagement"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
+      env.E2E_SUITE = "noticeOfChange"
     }
   }
 
@@ -252,14 +265,20 @@ def setProdEnvVars() {
 
 def setDemoEnvVars() {
   env.ENVIRONMENT= "demo"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-demo.service.core-compute-demo.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
 }
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
 }
 
 def generateDefinitions(builder) {
@@ -343,6 +362,5 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
-
 
 
