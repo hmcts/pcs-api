@@ -13,7 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.time.Duration;
 import java.util.List;
@@ -31,8 +33,9 @@ public class FeePaymentNotificationService {
     @Transactional
     public void sendClaimantPaidCaseIssuedNotification(Integer feePaymentId) {
         FeePaymentEntity feePayment = feePaymentRepository.findById(feePaymentId)
-            .orElseThrow(() -> new FeePaymentNotFoundException(ErrorCode.FEE_PAYMENT_NOTIFICATION,
-                                    RedactionContext.of("Fee payment not found: ", feePaymentId)));
+            .orElseThrow(() -> new FeePaymentNotFoundException(
+                ErrorCode.FEE_PAYMENT_NOTIFICATION,
+                RedactionContext.of("Fee payment not found: ", feePaymentId)));
 
         log.info("Sending claimant paid case issued notification for fee payment: {}", feePaymentId);
 
