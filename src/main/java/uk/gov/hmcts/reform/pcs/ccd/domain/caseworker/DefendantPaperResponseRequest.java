@@ -35,7 +35,7 @@ public class DefendantPaperResponseRequest {
     @CCD(label = "1.2 What is the defendant’s date of birth?")
     private LocalDate dateOfBirth;
 
-    @CCD(label = "1.3 what is the defendant’s address for service?")
+    @CCD(label = "1.3 What is the defendant’s address for service?")
     private AddressUK address;
 
     @CCD(

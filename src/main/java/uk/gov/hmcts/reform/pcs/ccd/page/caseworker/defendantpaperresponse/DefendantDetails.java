@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse;
 
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,7 +19,15 @@ public class DefendantDetails implements CcdPageConfiguration {
             .optional(DefendantPaperResponseRequest::getFirstName)
             .optional(DefendantPaperResponseRequest::getLastName)
             .optional(DefendantPaperResponseRequest::getDateOfBirth)
-            .optional(DefendantPaperResponseRequest::getAddress)
+            .complex(DefendantPaperResponseRequest::getAddress)
+                .optional(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .optional(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .optionalWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
             .done();
     }
 
