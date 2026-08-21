@@ -64,7 +64,9 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantContactDetails,
                                            DefendantResponses defendantResponses) {
-        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() != VerticalYesNo.YES;
+        // HDPI-7686 VERIFICATION ONLY - reverted to the pre-#2114 condition to confirm it causes the reported
+        // coversheet names. Do not merge.
+        boolean nameNotConfirmed = defendantResponses.getDefendantNameConfirmation() == null;
 
         if (nameNotConfirmed && StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())) {
             party.setFirstName(defendantContactDetails.getParty().getFirstName());
@@ -76,11 +78,8 @@ public class ClaimResponseService {
             log.debug("Updated last name for party ID: {}", party.getId());
         }
 
-        if (nameNotConfirmed
-            && (StringUtils.isNotBlank(defendantContactDetails.getParty().getFirstName())
-                || StringUtils.isNotBlank(defendantContactDetails.getParty().getLastName()))) {
-            party.setNameKnown(VerticalYesNo.YES);
-        }
+        // HDPI-7686 VERIFICATION ONLY - #2114 added a setNameKnown(YES) here; removed to reproduce the
+        // "Persons unknown" coversheet. Do not merge.
 
         if (defendantContactDetails.getParty().getDateOfBirth() != null) {
             party.setDateOfBirth(defendantContactDetails.getParty().getDateOfBirth());
