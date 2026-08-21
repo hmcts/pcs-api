@@ -1,6 +1,4 @@
 export const staff = {
-  pcs_solicitor_email: 'pcs-solicitor1@test.com',
-
   pcs_ctsc_admin_email: 'pcs-ctsc-admin-01@justice.gov.uk',
   pcs_ctsc_admin_ca_email: 'pcs-ctsc-admin-ca-01@justice.gov.uk',
   pcs_ctsc_admin_ts_email: 'pcs-ctsc-admin-ts-01@justice.gov.uk',
