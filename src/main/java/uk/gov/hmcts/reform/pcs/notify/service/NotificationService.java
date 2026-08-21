@@ -170,9 +170,11 @@ public class NotificationService {
         PartyEntity representedDefendant
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+        String outgoingEmail = outgoingRepresentative.getClaimPartyContactDetails().isEmpty()
+            ? null : outgoingRepresentative.getClaimPartyContactDetails().getFirst().getEmailAddress();
 
         return sendEmail(
-            legalRepresentativeRecipient(outgoingRepresentative, representedDefendant),
+            legalRepresentativeRecipient(outgoingRepresentative, representedDefendant, outgoingEmail),
             EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
