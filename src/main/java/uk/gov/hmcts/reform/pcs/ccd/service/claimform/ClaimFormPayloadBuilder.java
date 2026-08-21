@@ -56,6 +56,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.t
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.toLabel;
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormFormatter.yesOrNoToVertical;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 /**
  * Builds {@link ClaimFormPayload} from a {@link PcsCaseEntity}.
@@ -77,13 +79,16 @@ public class ClaimFormPayloadBuilder {
     private final CaseReferenceFormatter caseReferenceFormatter;
     private final ClaimFormPartyMapper partyMapper;
     private final Clock ukClock;
+    private final FeatureToggleService featureToggleService;
 
     public ClaimFormPayloadBuilder(CaseReferenceFormatter caseReferenceFormatter,
                                    ClaimFormPartyMapper partyMapper,
-                                   @Qualifier("ukClock") Clock ukClock) {
+                                   @Qualifier("ukClock") Clock ukClock,
+                                   FeatureToggleService featureToggleService) {
         this.caseReferenceFormatter = caseReferenceFormatter;
         this.partyMapper = partyMapper;
         this.ukClock = ukClock;
+        this.featureToggleService = featureToggleService;
     }
 
     public ClaimFormPayload build(PcsCaseEntity pcsCase) {
@@ -127,6 +132,7 @@ public class ClaimFormPayloadBuilder {
         boolean hasOtherGround = anyGroundIsOther(grounds);
         boolean hasWalesAsbGround = anyGroundHasCode(grounds, "ANTISOCIAL_BEHAVIOUR_S157");
         boolean noticeServedYes = isNoticeServedYes(claim.getNoticeOfPossession());
+        boolean enableExemptLandlordQuestion = showExemptLandlordQuestion();
 
         // One "Why is the claimant claiming possession?" row per Absolute/Other/No-grounds answer.
         payloadBuilder.whyClaimingPossessionGrounds(whyClaimingPossessionGrounds(claim.getClaimGrounds()));
@@ -140,7 +146,7 @@ public class ClaimFormPayloadBuilder {
         payloadBuilder.showPcscSection(isWales);
         payloadBuilder.showRequiredDocumentsSection(isWales);
         // The exempt-landlord question comes from the Housing (Wales) Act 2014, so it is Wales-only.
-        payloadBuilder.showExemptLandlordQuestion(isWales);
+        payloadBuilder.showExemptLandlordQuestion(isWales && enableExemptLandlordQuestion);
         // Tenancy-copy rows are England-only (Wales never captures the answer) and show only when
         // the claimant answered, so an unanswered question hides the row instead of a blank value.
         TenancyLicenceEntity tenancyLicence = pcsCase.getTenancyLicence();
@@ -634,6 +640,10 @@ public class ClaimFormPayloadBuilder {
 
     private List<PartyEntity> partiesByRole(ClaimEntity claim, PartyRole role) {
         return PartyDisplayMapper.partiesByRole(claim, role);
+    }
+
+    private boolean showExemptLandlordQuestion() {
+        return featureToggleService.isEnabled(FeatureFlag.EXEMPT_LANDLORD_QUESTION);
     }
 
 }
