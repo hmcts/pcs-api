@@ -2,26 +2,35 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,11 +46,19 @@ class ClaimPackSelectorTest {
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @Spy
     private SentPackDocuments sentPackDocuments = new SentPackDocuments(new ObjectMapper());
 
-    @InjectMocks
     private ClaimPackSelector underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new ClaimPackSelector(
+            claimActivityLogRepository, sentPackDocuments, new PackSkipRules(featureToggleService));
+    }
 
     private final PartyEntity claimant = party();
     private final PartyEntity defendantA = party();
@@ -122,6 +139,136 @@ class ClaimPackSelectorTest {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().party()).isEqualTo(defendantA);
         assertThat(result.getFirst().documents()).containsExactly(claimForm, pinA);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    @DisplayName("Does not send the claim pack when the claim requires translation")
+    void shouldSkipClaimPackWhenTranslationRequired(LanguageUsed languageUsed) {
+        enableRelease13();
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(languageUsed);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.NO);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send the claim pack when a gen app is expected")
+    void shouldSkipClaimPackWhenGenAppExpected() {
+        enableRelease13();
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.YES);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send the claim pack when translation and a gen app are both required")
+    void shouldSkipClaimPackWhenTranslationAndGenAppExpected() {
+        enableRelease13();
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.WELSH);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.YES);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Still sends an English claim with no expected gen app when the rollout flag is on")
+    void shouldStillSendEnglishClaimWhenRolloutFlagOn() {
+        enableRelease13();
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        pcsCase.getClaims().getFirst().setGenAppExpected(VerticalYesNo.NO);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Sends a Welsh claim when the rollout flag is off")
+    void shouldSendWelshClaimWhenRolloutFlagOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.WELSH);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send the claim pack when an Active PF0026 case flag is present")
+    void shouldSkipClaimPackWhenActiveCaseFlag() {
+        enableRelease13();
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        CaseFlagEntity flag = new CaseFlagEntity();
+        flag.setDefaultStatus("Active");
+        flag.setFlagRefData(FlagRefDataEntity.builder()
+            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+        pcsCase.setCaseFlags(List.of(flag));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send the claim pack when an Active PF0026 party flag is present")
+    void shouldSkipClaimPackWhenActivePartyFlag() {
+        enableRelease13();
+        CasePartyFlagEntity flag = new CasePartyFlagEntity();
+        flag.setDefaultStatus("Active");
+        flag.setFlagRefData(FlagRefDataEntity.builder()
+            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+        PartyEntity flaggedClaimant = party();
+        flaggedClaimant.getDefendantFlags().add(flag);
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA), List.of(
+            claimParty(flaggedClaimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Still sends when PF0026 is inactive")
+    void shouldSendClaimPackWhenTranslationFlagInactive() {
+        enableRelease13();
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = readyClaimCase();
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+        CaseFlagEntity flag = new CaseFlagEntity();
+        flag.setDefaultStatus("Inactive");
+        flag.setFlagRefData(FlagRefDataEntity.builder()
+            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+        pcsCase.setCaseFlags(List.of(flag));
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Leaves an already sent claim pack untouched")
+    void shouldLeaveAlreadySentClaimPackUntouchedWhenSkipWouldApply() {
+        enableRelease13();
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(claimant, claimForm)));
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(), List.of(claimParty(claimant, PartyRole.CLAIMANT, 1)));
+        pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
+
+        assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    private PcsCaseEntity readyClaimCase() {
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        return caseWith(claimForm, List.of(pinA), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1)));
+    }
+
+    private void enableRelease13() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
     }
 
     private PcsCaseEntity caseWith(DocumentEntity claimFormDocument, List<DocumentEntity> documents,
