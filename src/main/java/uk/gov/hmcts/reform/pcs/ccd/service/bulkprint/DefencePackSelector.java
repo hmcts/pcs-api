@@ -35,17 +35,23 @@ public class DefencePackSelector {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
     private final FeatureToggleService featureToggleService;
+    private final PackSkipRules packSkipRules;
 
     public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                                SentPackDocuments sentPackDocuments,
-                               FeatureToggleService featureToggleService) {
+                               FeatureToggleService featureToggleService,
+                               PackSkipRules packSkipRules) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
         this.featureToggleService = featureToggleService;
+        this.packSkipRules = packSkipRules;
     }
 
     public List<DefencePackCandidate> findDefencePackCandidates(PcsCaseEntity pcsCase) {
         if (pcsCase.getClaims().isEmpty()) {
+            return List.of();
+        }
+        if (packSkipRules.shouldSkipDefencePack(pcsCase)) {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
