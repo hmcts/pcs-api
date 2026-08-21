@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.addcasereviewdate.AddCaseReviewDateConfi
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ReviewDateStates.REVIEW_DATE_STATES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.addCaseReviewDate;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
@@ -35,9 +37,9 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(addCaseReviewDate.name(), this::submit)
-                .forStates(State.CASE_ISSUED)
+                .forStates(REVIEW_DATE_STATES)
                 .name("Add review date")
-                .grant(Permission.CRUD, UserRole.CTSC_ADMIN, UserRole.HEARING_CENTRE_ADMIN, UserRole.WLU_ADMIN)
+                .grant(Permission.CRUD, CASEWORKER_ROLES)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .showCondition(ShowConditions.featureFlagsEnabled(CASEWORKER_EVENTS, RELEASE_1_DOT_2))
@@ -48,7 +50,7 @@ public class AddCaseReviewDate implements CCDConfig<PCSCase, State, UserRole> {
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseId = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        caseReviewDateService.addCaseReviewDate(caseId, caseData);
+        caseReviewDateService.addCaseReviewDates(caseId, caseData);
         String address = addressFormatter
             .formatMediumAddress(caseData.getPropertyAddress(), AddressFormatter.COMMA_DELIMITER);
         return SubmitResponse.<State>builder()

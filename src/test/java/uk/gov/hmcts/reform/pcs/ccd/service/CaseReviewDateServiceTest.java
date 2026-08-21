@@ -7,19 +7,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseReviewDateServiceTest {
@@ -29,6 +35,12 @@ public class CaseReviewDateServiceTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+
+    @Mock
+    private CamundaService camundaService;
+
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
 
     @InjectMocks
     private CaseReviewDateService caseReviewDateService;
@@ -52,13 +64,22 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        Instant taskCreationTime = LocalDateTime.of(2026, 2, 1, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime
+        );
 
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(1);
@@ -97,13 +118,30 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        Instant taskCreationTime1 = LocalDateTime.of(2026, 2, 1, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime1
+        );
+
+        Instant taskCreationTime2 = LocalDateTime.of(2026, 3, 2, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime2
+        );
 
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(2);
