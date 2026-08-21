@@ -300,4 +300,36 @@ class LegalRepresentativeSummaryServiceTest {
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
+    @Test
+    void handleLegalRepresentativeSummary_WithNoContactDetails_ReturnsUpdateDetailsMarkDown() {
+        // given
+        long caseRef = 1L;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseRef)
+            .build();
+
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
+    }
+
 }
