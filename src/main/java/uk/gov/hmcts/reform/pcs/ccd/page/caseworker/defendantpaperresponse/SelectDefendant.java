@@ -15,7 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 public class SelectDefendant implements CcdPageConfiguration {
 
     private final DefendantResponseRepository defendantResponseRepository;
-    private static final String ERROR_MESSAGE = "This defendant has already submitted a response";
+    private static final String ERROR_MESSAGE = "This defendant has already submitted a response."
+        + " If the have filed a further response please use the upload document function.";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

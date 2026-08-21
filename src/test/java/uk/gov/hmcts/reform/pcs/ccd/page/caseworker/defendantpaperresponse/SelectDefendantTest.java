@@ -72,6 +72,8 @@ public class SelectDefendantTest extends BasePageTest {
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        assertThat(response.getErrorMessageOverride()).isEqualTo("This defendant has already submitted a response");
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo("This defendant has already submitted a response."
+                           + " If the have filed a further response please use the upload document function.");
     }
 }
