@@ -9,14 +9,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.LetterType;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.PackRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
@@ -46,6 +54,9 @@ class DefendantNameDivergenceTestingSupportControllerTest {
     @Mock
     private PackRecipientResolver packRecipientResolver;
 
+    @Mock
+    private ClaimActivityLogRepository claimActivityLogRepository;
+
     // The production resolver, unmodified - it is the thing under observation.
     private final RecipientAddressResolver recipientAddressResolver = new RecipientAddressResolver();
 
@@ -55,6 +66,7 @@ class DefendantNameDivergenceTestingSupportControllerTest {
     void setUp() {
         controller = new DefendantNameDivergenceTestingSupportController(
             pcsCaseRepository,
+            claimActivityLogRepository,
             recipientAddressResolver,
             partyAttributeAssertationService,
             packRecipientResolver,
@@ -73,50 +85,111 @@ class DefendantNameDivergenceTestingSupportControllerTest {
     }
 
     @Test
-    void reportsDivergenceWhenTheCoversheetStillSaysPersonsUnknown() {
-        // The HDPI-7686 shape: the claimant could not name the defendant, the defendant supplied a name
-        // through the response journey, but the party record was never updated.
+    void reportsTheTwoNamesForADefendantWhoseNameNeverReachedTheParty() {
+        // The HDPI-7686 shape: the defendant supplied a name through the response journey, but the party record
+        // still says the name is unknown. A coversheet addressed to them says "Persons unknown"; a defence form
+        // about them says the asserted name, because that fallback has no nameKnown gate.
         PartyEntity defendant = defendant(VerticalYesNo.NO, null, null);
         givenCaseWithDefendant(defendant);
         givenNameAssertion();
 
         DefendantNameDivergenceTestingSupportController.CaseNameReport report = report();
 
-        assertThat(report.anyDivergence()).isTrue();
-        assertThat(report.defendants()).singleElement().satisfies(names -> {
+        assertThat(report.parties()).singleElement().satisfies(names -> {
             assertThat(names.coversheetName()).isEqualTo("Persons unknown");
-            assertThat(names.formName()).isEqualTo("John Doe");
-            assertThat(names.diverges()).isTrue();
+            assertThat(names.ownFormName()).isEqualTo("John Doe");
+            assertThat(names.role()).isEqualTo("DEFENDANT");
         });
     }
 
     @Test
-    void reportsNoDivergenceOnceTheNameIsWrittenBackToTheParty() {
+    void reportsOneNameOnceTheNameIsWrittenBackToTheParty() {
         PartyEntity defendant = defendant(VerticalYesNo.YES, "John", "Doe");
         givenCaseWithDefendant(defendant);
         givenNameAssertion();
 
         DefendantNameDivergenceTestingSupportController.CaseNameReport report = report();
 
-        assertThat(report.anyDivergence()).isFalse();
-        assertThat(report.defendants()).singleElement().satisfies(names -> {
+        assertThat(report.parties()).singleElement().satisfies(names -> {
             assertThat(names.coversheetName()).isEqualTo("John Doe");
-            assertThat(names.formName()).isEqualTo("John Doe");
-            assertThat(names.diverges()).isFalse();
+            assertThat(names.ownFormName()).isEqualTo("John Doe");
         });
     }
 
     @Test
-    void ignoresPartiesThatAreNotDefendants() {
+    void reportsClaimantsAsWellAsDefendantsBecauseBothReceiveTheDefencePack() {
         PcsCaseEntity pcsCase = caseWith(claimParty(defendant(VerticalYesNo.YES, "Acme", "Lettings"),
             PartyRole.CLAIMANT));
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
         when(packRecipientResolver.resolveDefenceRecipients(CASE_ID)).thenReturn(List.of());
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         DefendantNameDivergenceTestingSupportController.CaseNameReport report = report();
 
-        assertThat(report.defendants()).isEmpty();
-        assertThat(report.anyDivergence()).isFalse();
+        assertThat(report.parties()).singleElement()
+            .satisfies(names -> assertThat(names.role()).isEqualTo("CLAIMANT"));
+        assertThat(report.defencePacks()).isEmpty();
+    }
+
+    @Test
+    void reportsEachDispatchedDefencePackWithTheRecipientItWasAddressedTo() {
+        PartyEntity recipient = defendant(VerticalYesNo.NO, null, null);
+        givenCaseWithDefendant(recipient);
+        UUID letterId = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
+            ClaimActivityLogEntity.builder()
+                .party(recipient)
+                .activityType(ClaimActivityType.PACK_SENT)
+                .status(ClaimActivityStatus.SUCCESS)
+                .details(packDetailsJson(LetterType.DEFENCE_PACK, documentId, letterId))
+                .build()
+        ));
+
+        DefendantNameDivergenceTestingSupportController.CaseNameReport report = report();
+
+        assertThat(report.defencePacks()).singleElement().satisfies(pack -> {
+            assertThat(pack.letterId()).isEqualTo(letterId);
+            assertThat(pack.recipientPartyId()).isEqualTo(PARTY_ID);
+            // Addressed to a party with no name, so the envelope reads "Persons unknown" even though the
+            // enclosed form belongs to another defendant entirely.
+            assertThat(pack.recipientCoversheetName()).isEqualTo("Persons unknown");
+            assertThat(pack.documents()).singleElement().satisfies(document -> {
+                assertThat(document.documentId()).isEqualTo(documentId);
+                assertThat(document.defendantNumber()).isEqualTo(2);
+                assertThat(document.self()).isFalse();
+            });
+        });
+    }
+
+    @Test
+    void ignoresPacksThatAreNotDefencePacks() {
+        PartyEntity recipient = defendant(VerticalYesNo.YES, "John", "Doe");
+        givenCaseWithDefendant(recipient);
+
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of(
+            ClaimActivityLogEntity.builder()
+                .party(recipient)
+                .activityType(ClaimActivityType.PACK_SENT)
+                .status(ClaimActivityStatus.SUCCESS)
+                .details(packDetailsJson(LetterType.DEFENDANT_CLAIM_PACK, UUID.randomUUID(), UUID.randomUUID()))
+                .build()
+        ));
+
+        assertThat(report().defencePacks()).isEmpty();
+    }
+
+    private String packDetailsJson(LetterType packType, UUID documentId, UUID letterId) {
+        try {
+            return new ObjectMapper().writeValueAsString(PackDetails.sent(
+                packType,
+                List.of(new PackDocumentRef(documentId, DocumentType.DEFENDANT_RESPONSE, 2, false)),
+                letterId
+            ));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private DefendantNameDivergenceTestingSupportController.CaseNameReport report() {
@@ -132,6 +205,7 @@ class DefendantNameDivergenceTestingSupportControllerTest {
         PcsCaseEntity pcsCase = caseWith(claimParty(defendant, PartyRole.DEFENDANT));
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCase));
         when(packRecipientResolver.resolveDefenceRecipients(CASE_ID)).thenReturn(List.of());
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
     }
 
     private void givenNameAssertion() {
