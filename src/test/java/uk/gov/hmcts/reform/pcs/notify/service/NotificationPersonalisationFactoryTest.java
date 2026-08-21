@@ -294,7 +294,7 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            OrganisationEntity legalRepParty = stubLegalRepParty();
+            OrganisationEntity organisationEntity = createOrganisation("hmcts");
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
@@ -302,16 +302,16 @@ class NotificationPersonalisationFactoryTest {
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
-            OrganisationBasePersonalisation result = factory.forOrganisation(legalRepParty,
+            OrganisationBasePersonalisation result = factory.forOrganisation(organisationEntity,
                                                                              pcsCaseEntity);
             Map<String, Object> map = result.toMap();
             assertThat(map)
+                .containsEntry("organisationName", "hmcts")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("firstName", "HMCTS")
-                .containsEntry("lastName", "")
-                .doesNotContainKey("organisationName");
+                .doesNotContainKey("firstName")
+                .doesNotContainKey("lastName");
         }
     }
 
@@ -374,13 +374,6 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private OrganisationEntity stubLegalRepParty() {
-        OrganisationEntity legalRepParty = createLegalRep("HMCTS");
-        legalRepParty.setId(1);
-
-        return legalRepParty;
-    }
-
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
         party.setId(UUID.randomUUID());
@@ -390,11 +383,11 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private OrganisationEntity createLegalRep(String organisationName) {
-        OrganisationEntity legalRep = new OrganisationEntity();
-        legalRep.setId(1);
-        legalRep.setOrganisationName(organisationName);
-        return legalRep;
+    private OrganisationEntity createOrganisation(String organisationName) {
+        OrganisationEntity organisationEntity = new OrganisationEntity();
+        organisationEntity.setId(1);
+        organisationEntity.setOrganisationName(organisationName);
+        return organisationEntity;
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {

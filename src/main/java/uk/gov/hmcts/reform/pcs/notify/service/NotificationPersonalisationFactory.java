@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBaseP
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 
 import java.util.Locale;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -100,12 +101,20 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-        String caseRef = defendantResponse.getPcsCase().getCaseReference().toString();
-        String paymentUrl = String.format(
-            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
-            frontendUrl,
-            caseRef
-        );
+
+        System.out.printf("@@@@@@@@@@ --- defendant response: " + defendantResponse);
+        String paymentUrl = Optional.ofNullable(defendantResponse)
+            .map(DefendantResponseEntity::getPcsCase)
+            .map(PcsCaseEntity::getCaseReference)
+            .map(Object::toString)
+            .map(caseRef -> String.format(
+                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+                frontendUrl,
+                caseRef
+            ))
+            .orElse(null);
+
+        System.out.printf("@@@@@@@@@@ --- defendant response: " + defendantResponse + "\npaymenturl: " + paymentUrl);
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forDefendant(defendantResponse))
