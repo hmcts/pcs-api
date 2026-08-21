@@ -997,7 +997,7 @@ else
           <text>Defendant submits Gen app, counterclaim, response or response and counterclaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_05cljls">
-          <text>Submitted</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xpd2q0">
           <text></text>
@@ -1006,7 +1006,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_000po80">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Defendant selects that they completed  Gen app, counterclaim, response or response and counterclaim in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0jueu0f">
           <text></text>

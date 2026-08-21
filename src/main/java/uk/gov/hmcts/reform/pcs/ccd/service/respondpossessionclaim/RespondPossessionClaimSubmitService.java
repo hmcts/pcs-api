@@ -11,17 +11,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,6 +46,7 @@ public class RespondPossessionClaimSubmitService {
     private final SchedulerClient schedulerClient;
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
+    private final TranslationWAService translationWAService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -50,19 +56,22 @@ public class RespondPossessionClaimSubmitService {
         JourneyType journeyType
     ) {
         claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData, defendantParty, journeyType);
+        DefendantResponseEntity savedResponse = defendantResponseService.saveDefendantResponse(
+            caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
         CounterClaim counterClaim = defendantResponses.getCounterClaim();
         Optional<CounterClaimEntity> savedCounterClaim =
             counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
-        ));
+        List<DocumentEntity> counterClaimDocuments = savedCounterClaim
+            .map(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+                defendantResponses.getCounterClaimDocuments(),
+                counterClaimEntity,
+                counterClaimEntity.getPcsCase(),
+                counterClaimEntity.getParty()
+            ))
+            .orElse(List.of());
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
 
@@ -74,6 +83,7 @@ public class RespondPossessionClaimSubmitService {
             schedulePendingCounterClaimIssuedNotification(counterClaimEntity);
             if (counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)) {
                 createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
+                createTranslationTaskForCounterClaim(counterClaimDocuments, savedResponse, defendantParty);
             } else {
                 paymentRequired = true;
             }
@@ -134,6 +144,22 @@ public class RespondPossessionClaimSubmitService {
             caseReference,
             TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
             taskDescription);
+    }
+
+    private void createTranslationTaskForCounterClaim(List<DocumentEntity> counterClaimDocuments,
+                                                       DefendantResponseEntity savedResponse,
+                                                       PartyEntity defendantParty) {
+
+        if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
+            return;
+        }
+
+        List<DocumentEntity> documents = counterClaimDocuments.stream()
+            .filter(document -> !document.isRemoved())
+            .toList();
+
+        PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
 }

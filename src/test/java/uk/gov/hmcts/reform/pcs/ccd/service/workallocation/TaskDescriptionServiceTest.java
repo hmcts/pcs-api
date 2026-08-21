@@ -576,6 +576,49 @@ class TaskDescriptionServiceTest {
         }
     }
 
+    @Test
+    void shouldRenderTranslateDefendantDocumentTaskDescription() throws IOException {
+        // Given
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        PartyEntity partyEntity = mock(PartyEntity.class);
+
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+
+        List<DocumentEntity> documentEntityList = List.of(
+            DocumentEntity.builder().fileName("filename1.pdf").build(),
+            DocumentEntity.builder().fileName("filename2.csv").build()
+        );
+
+        String expectedPartyLabel = "Defendant 1";
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+
+        String expectedRenderedContent = "some rendered content";
+        PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+            "translate-defendant-submitted-document",
+            expectedRenderedContent
+        );
+
+        // When
+        String description = underTest
+            .createTranslateDefendantDocumentDescription(
+                CASE_REFERENCE,
+                mainClaim,
+                partyEntity,
+                documentEntityList
+            );
+
+        // Then
+        assertThat(description).isEqualTo(expectedRenderedContent);
+
+        verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+        Map<String, Object> contextMap = contextMapCaptor.getValue();
+        assertThat(contextMap)
+            .containsEntry("caseReference", CASE_REFERENCE)
+            .containsEntry("partyLabel", expectedPartyLabel)
+            .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+    }
+
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
         PebbleTemplate pebbleTemplate = mock(PebbleTemplate.class, withSettings().strictness(Strictness.LENIENT));
         when(pebbleEngine.getTemplate("workallocation/" + templateName)).thenReturn(pebbleTemplate);
