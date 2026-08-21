@@ -151,10 +151,10 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         VerticalYesNo contactByEmail;
         VerticalYesNo contactByPost;
         if (!CollectionUtils.isEmpty(contactPreferences)) {
-            contactByEmail = contactPreferences.contains(ContactPreferencesSelection.BY_EMAIL) ?
-                VerticalYesNo.YES : VerticalYesNo.NO;
-            contactByPost = contactPreferences.contains(ContactPreferencesSelection.BY_POST) ?
-                VerticalYesNo.YES : VerticalYesNo.NO;
+            contactByEmail = contactPreferences.contains(ContactPreferencesSelection.BY_EMAIL)
+                ? VerticalYesNo.YES : VerticalYesNo.NO;
+            contactByPost = contactPreferences.contains(ContactPreferencesSelection.BY_POST)
+                ? VerticalYesNo.YES : VerticalYesNo.NO;
         } else {
             contactByEmail = VerticalYesNo.NO;
             contactByPost = VerticalYesNo.NO;

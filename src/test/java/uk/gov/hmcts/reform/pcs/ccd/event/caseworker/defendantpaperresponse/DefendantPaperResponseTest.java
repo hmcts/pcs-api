@@ -378,8 +378,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         Party party = defendantContactDetails.getParty();
         assertThat(party).isNotNull();
-        assertThat(party.getFirstName()).isEqualTo("Jack");
-        assertThat(party.getLastName()).isEqualTo("Smith");
+        assertThat(party.getFirstName()).isEqualTo("John");
+        assertThat(party.getLastName()).isEqualTo("Brown");
         assertThat(party.getAddress()).isEqualTo(AddressUK.builder().addressLine1("Address line 1").build());
         assertThat(party.getEmailAddress()).isEqualTo("test@email.com");
         assertThat(party.getPhoneNumber()).isEqualTo("phone number");
