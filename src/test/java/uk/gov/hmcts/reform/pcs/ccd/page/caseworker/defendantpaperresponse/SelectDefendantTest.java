@@ -74,6 +74,6 @@ public class SelectDefendantTest extends BasePageTest {
 
         assertThat(response.getErrorMessageOverride())
             .isEqualTo("This defendant has already submitted a response."
-                           + " If the have filed a further response please use the upload document function.");
+                           + " If they have filed a further response please use the upload document function.");
     }
 }

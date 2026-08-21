@@ -16,7 +16,7 @@ public class SelectDefendant implements CcdPageConfiguration {
 
     private final DefendantResponseRepository defendantResponseRepository;
     private static final String ERROR_MESSAGE = "This defendant has already submitted a response."
-        + " If the have filed a further response please use the upload document function.";
+        + " If they have filed a further response please use the upload document function.";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

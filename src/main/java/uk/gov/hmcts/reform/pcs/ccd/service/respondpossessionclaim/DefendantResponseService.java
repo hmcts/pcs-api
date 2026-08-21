@@ -348,18 +348,6 @@ public class DefendantResponseService {
         return defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }
 
-    private ClaimEntity getClaimEntity(long caseReference) {
-        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
-            .orElseThrow(() -> {
-                log.error("No claim found for case: {}", caseReference);
-                return new IllegalStateException(
-                    String.format("No claim found for case: %d", caseReference)
-                );
-            });
-
-        return claimRepository.getReferenceById(claimId);
-    }
-
     @Transactional(readOnly = true)
     public PossessionClaimResponse getSubmittedResponse(long caseReference) {
         UUID userId = securityContextService.getCurrentUserId();

@@ -237,7 +237,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     }
 
     private VerticalYesNo isNameConfirmed(String firstName, String lastName, PartyEntity partyEntity) {
-        if (StringUtils.isBlank(firstName) & StringUtils.isBlank(lastName)) {
+        if (StringUtils.isBlank(firstName) && StringUtils.isBlank(lastName)) {
             return null;
         }
 
