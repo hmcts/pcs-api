@@ -41,13 +41,14 @@ public enum UserRole implements HasRole {
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
     WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN),
     WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
-    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
-    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
-    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
-    JUDGE("judge", Set.of(R), RAS),
+    FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS, AccessProfile.JUDGE),
+    LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS, AccessProfile.JUDGE),
+    CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS, AccessProfile.JUDGE),
+    JUDGE("judge", Set.of(R), RAS, AccessProfile.JUDGE),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);
+
 
     @JsonValue
     private final String role;

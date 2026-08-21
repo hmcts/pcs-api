@@ -57,4 +57,12 @@ class AccessProfileTest {
             Arguments.of(AccessProfile.ORGANISATION_CASE_ACCESS_ADMINISTRATOR, "caseworker-caa", CRU)
         );
     }
+
+    @Test
+    void shouldMapEveryJudicialRoleToTheSingleJudgeAccessProfile() {
+        assertThat(UserRole.JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.FEE_PAID_JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.CIRCUIT_JUDGE.getAccessProfiles()).containsExactly("judge");
+        assertThat(UserRole.LEADERSHIP_JUDGE.getAccessProfiles()).containsExactly("judge");
+    }
 }
