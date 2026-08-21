@@ -88,12 +88,17 @@ public class BulkPrintScheduledTask {
         }
     }
 
-    private void sendPhase(UUID caseId, String phase, Runnable send) {
+    private void sendPhase(UUID caseId, String phase, PackSendPhase send) {
         try {
-            send.run();
+            send.send();
         } catch (Exception e) {
             log.error("Bulk print {} send failed for case {}; continuing", phase, caseId, e);
         }
+    }
+
+    @FunctionalInterface
+    private interface PackSendPhase {
+        void send();
     }
 
     private List<UUID> discoverCandidateCases() {
