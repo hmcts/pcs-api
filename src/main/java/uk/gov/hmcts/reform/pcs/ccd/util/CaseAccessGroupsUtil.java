@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNullElse;
+import java.util.Objects;
 import static java.util.function.Function.identity;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.caseAccessGroupIdFor;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
@@ -56,7 +57,10 @@ public final class CaseAccessGroupsUtil {
 
         requireNonNullElse(defendants, List.<ListValue<Party>>of()).stream()
             .map(ListValue::getId)
+            .peek(partyId -> log.info("Processing defendant party id: {}", partyId))
             .map(partyId -> partyEntitiesMap.get(UUID.fromString(partyId)))
+            .filter(Objects::nonNull)
+            .peek(partyEntity -> log.info("Found defendant party entity: {}", partyEntity))
             .map(partyEntity ->
                      partyEntity.getClaimPartyOrganisationList()
                          .stream()

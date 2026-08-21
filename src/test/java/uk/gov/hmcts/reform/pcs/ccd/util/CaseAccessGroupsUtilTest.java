@@ -4,8 +4,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -165,5 +168,87 @@ class CaseAccessGroupsUtilTest {
         assertThat(GroupAccessType.values())
             .filteredOn(type -> type == GroupAccessType.DUTY_ADVISOR_ACCESS)
             .allSatisfy(type -> assertThat(type.getPartyRole()).isNull());
+    }
+
+    @Test
+    void shouldDeriveDefendantSolicitorGroupIdForDefendantWithLinkedOrg() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).build();
+        defendant.getClaimPartyOrganisationList().add(activeOrg(defendant, "DEF_ORG", "SOLICITOR_PROFILE"));
+
+        List<ListValue<Party>> defListValues = List.of(defendantListValue(partyId));
+
+        List<ListValue<CaseAccessGroup>> groups =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(defendant), defListValues);
+
+        assertThat(groups).hasSize(1);
+        assertThat(groups.getFirst().getValue().getCaseAccessGroupId())
+            .isEqualTo("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:DEF_ORG");
+    }
+
+    @Test
+    void shouldNotDeriveDefendantGroupWhenNoActiveOrgLinked() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).build();
+
+        List<ListValue<Party>> defListValues = List.of(defendantListValue(partyId));
+
+        List<ListValue<CaseAccessGroup>> groups =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(defendant), defListValues);
+
+        assertThat(groups).isEmpty();
+    }
+
+    @Test
+    void shouldDeriveBothClaimantAndDefendantGroupsWhenBothPresent() {
+        PartyEntity claimant = party("CLAIMANT_ORG", "SOLICITOR_PROFILE");
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).build();
+        defendant.getClaimPartyOrganisationList().add(activeOrg(defendant, "DEF_ORG", "SOLICITOR_PROFILE"));
+
+        List<ListValue<Party>> defListValues = List.of(defendantListValue(partyId));
+
+        List<ListValue<CaseAccessGroup>> groups =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(claimant, defendant), defListValues);
+
+        assertThat(groups).hasSize(2);
+        assertThat(groups)
+            .extracting(lv -> lv.getValue().getCaseAccessGroupId())
+            .contains(
+                "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:CLAIMANT_ORG",
+                "PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:DEF_ORG"
+            );
+    }
+
+    @Test
+    void shouldSkipDefendantWhosePartyIdIsNotInThePartiesSet() {
+        UUID unknownPartyId = UUID.randomUUID();
+        List<ListValue<Party>> defListValues = List.of(defendantListValue(unknownPartyId));
+
+        // Should not throw NPE, and should return empty
+        List<ListValue<CaseAccessGroup>> groups =
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(Set.of(), defListValues);
+
+        assertThat(groups).isEmpty();
+    }
+
+    private ClaimPartyOrganisationEntity activeOrg(PartyEntity party, String orgId, String profileId) {
+        OrganisationEntity org = OrganisationEntity.builder()
+            .organisationId(orgId)
+            .organisationProfileId(profileId)
+            .build();
+        return ClaimPartyOrganisationEntity.builder()
+            .party(party)
+            .organisation(org)
+            .active(YesOrNo.YES)
+            .build();
+    }
+
+    private ListValue<Party> defendantListValue(UUID partyId) {
+        return ListValue.<Party>builder()
+            .id(partyId.toString())
+            .value(new Party())
+            .build();
     }
 }
