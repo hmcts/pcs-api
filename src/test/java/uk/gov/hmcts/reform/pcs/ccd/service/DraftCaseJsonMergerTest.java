@@ -93,7 +93,8 @@ class DraftCaseJsonMergerTest {
                             "enterGenAppRequest",
                             "casePartiesTab",
                             "caseDetailsTab",
-                            "summaryTab")
+                            "summaryTab",
+                            "defendantPaperResponse")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()

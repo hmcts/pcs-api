@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -652,6 +653,9 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
+    @JsonUnwrapped
+    private DefendantPaperResponseRequest defendantPaperResponse;
+
     @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
@@ -864,6 +868,12 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String hearingLocation;
+
+    @CCD(
+        label = "Which defendant submitted this response?",
+        typeOverride = FieldType.DynamicRadioList
+    )
+    private DynamicList defendantRadioList;
 
     @CCD(
         searchable = false,
