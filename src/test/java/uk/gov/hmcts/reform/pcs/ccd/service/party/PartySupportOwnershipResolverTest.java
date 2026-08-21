@@ -6,8 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -24,6 +24,8 @@ class PartySupportOwnershipResolverTest {
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String ORG_ID = "ORG-1";
+    private static final String CLAIMANT_FIRM = "CLAIMANT-FIRM";
+    private static final String DEFENDANT_FIRM = "DEFENDANT-FIRM";
 
     @Mock
     private OrganisationService organisationService;
@@ -36,148 +38,114 @@ class PartySupportOwnershipResolverTest {
         // Given
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).idamId(USER_ID).build();
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isTrue();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isTrue();
         verifyNoInteractions(organisationService);
     }
 
     @Test
-    void shouldOwnPartyWhenUserIsTheActiveLegalRepresentative() {
+    void shouldOwnPartyWhenUsersOrganisationRepresentsTheParty() {
         // Given
-        PartyEntity party = partyWithLegalRep(USER_ID, null, YesOrNo.YES);
-
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isTrue();
-        verifyNoInteractions(organisationService);
-    }
-
-    @Test
-    void shouldOwnPartyWhenUsersOrganisationIsTheActiveLegalRepresentative() {
-        // Given
-        PartyEntity party = partyWithLegalRep(UUID.randomUUID(), ORG_ID, YesOrNo.YES);
+        PartyEntity party = partyRepresentedBy(ORG_ID, YesOrNo.YES);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isTrue();
+    }
 
-        // Then
-        assertThat(owned).isTrue();
+    /**
+     * Representation is recorded against the organisation acting for the party rather than against an
+     * individual representative, so being a legal representative user is not on its own enough — the
+     * acting organisation has to match.
+     */
+    @Test
+    void shouldNotOwnPartyOnIndividualIdentityAloneWhenTheOrganisationDoesNotMatch() {
+        // Given
+        PartyEntity party = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
     }
 
     @Test
-    void shouldNotOwnPartyWhenLegalRepresentativeIsInactive() {
+    void shouldNotOwnPartyWhenRepresentationIsNotActive() {
         // Given
-        PartyEntity party = partyWithLegalRep(USER_ID, ORG_ID, YesOrNo.NO);
+        PartyEntity party = partyRepresentedBy(ORG_ID, YesOrNo.NO);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isFalse();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
         verifyNoInteractions(organisationService);
     }
 
     @Test
     void shouldNotOwnPartyOnTheOtherSide() {
         // Given
-        PartyEntity party = partyWithLegalRep(UUID.randomUUID(), "OTHER-ORG", YesOrNo.YES);
+        PartyEntity party = partyRepresentedBy("OTHER-ORG", YesOrNo.YES);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isFalse();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
     }
 
     @Test
     void shouldNotResolveAnOrganisationForACitizenUser() {
         // Given
-        PartyEntity party = partyWithLegalRep(UUID.randomUUID(), ORG_ID, YesOrNo.YES);
+        PartyEntity party = partyRepresentedBy(ORG_ID, YesOrNo.YES);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isFalse();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
     }
 
     @Test
-    void shouldNotLookUpAnOrganisationWhenPartyHasNoActiveRepresentatives() {
+    void shouldNotOwnPartyWhenTheRepresentingOrganisationHasNoIdentifier() {
         // Given
-        PartyEntity party = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
-            .build();
+        PartyEntity party = partyRepresentedBy(null, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
+    }
 
-        // Then
-        assertThat(owned).isFalse();
+    @Test
+    void shouldNotLookUpAnOrganisationWhenPartyHasNoActiveRepresentation() {
+        // Given
+        PartyEntity party = unrepresentedParty();
+
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
         verifyNoInteractions(organisationService);
     }
 
     @Test
     void shouldOwnPartyCreatedByTheUsersOwnOrganisation() {
         // Given
-        PartyEntity party = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
-            .organisationId(ORG_ID)
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
-            .build();
+        PartyEntity party = claimantRepresentedBy(ORG_ID);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isTrue();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isTrue();
     }
 
     @Test
     void shouldNotOwnPartyCreatedByADifferentOrganisation() {
         // Given
-        PartyEntity party = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
-            .organisationId("OTHER-ORG")
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
-            .build();
+        PartyEntity party = claimantRepresentedBy("OTHER-ORG");
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isFalse();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
     }
 
     @Test
     void shouldNotOwnPartyByOrganisationWhenUserHasNoOrganisation() {
         // Given
-        PartyEntity party = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
-            .organisationId(ORG_ID)
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
-            .build();
+        PartyEntity party = claimantRepresentedBy(ORG_ID);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
 
-        // When
-        boolean owned = underTest.isOwnedByUser(party, USER_ID);
-
-        // Then
-        assertThat(owned).isFalse();
+        // When / Then
+        assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
     }
 
     @Test
@@ -204,8 +172,8 @@ class PartySupportOwnershipResolverTest {
     @Test
     void shouldRejectClaimantSolicitorForADefendantRepresentedByAnotherFirm() {
         // Given
-        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", UUID.randomUUID());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
+        PartyEntity defendant = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CLAIMANT_FIRM);
 
         // When / Then
         assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isFalse();
@@ -214,11 +182,7 @@ class PartySupportOwnershipResolverTest {
     @Test
     void shouldRejectClaimantSolicitorForAnUnrepresentedDefendant() {
         // Given
-        PartyEntity defendant = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
-            .build();
+        PartyEntity defendant = unrepresentedParty();
 
         // When / Then
         assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isFalse();
@@ -228,18 +192,18 @@ class PartySupportOwnershipResolverTest {
     @Test
     void shouldAllowDefendantSolicitorForTheDefendantTheyRepresent() {
         // Given
-        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", USER_ID);
+        PartyEntity defendant = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(DEFENDANT_FIRM);
 
         // When / Then
         assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isTrue();
-        verifyNoInteractions(organisationService);
     }
 
     @Test
     void shouldRejectDefendantSolicitorForTheClaimant() {
         // Given
-        PartyEntity claimant = claimantRepresentedBy("CLAIMANT-FIRM");
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("DEFENDANT-FIRM");
+        PartyEntity claimant = claimantRepresentedBy(CLAIMANT_FIRM);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(DEFENDANT_FIRM);
 
         // When / Then
         assertThat(underTest.isOwnedByUser(claimant, USER_ID)).isFalse();
@@ -248,7 +212,7 @@ class PartySupportOwnershipResolverTest {
     @Test
     void shouldAllowAPartyActingForThemselvesRegardlessOfRepresentation() {
         // Given
-        PartyEntity defendant = defendantRepresentedBy("DEFENDANT-FIRM", UUID.randomUUID());
+        PartyEntity defendant = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
         defendant.setIdamId(USER_ID);
 
         // When / Then
@@ -261,31 +225,33 @@ class PartySupportOwnershipResolverTest {
             .id(UUID.randomUUID())
             .idamId(UUID.randomUUID())
             .organisationId(organisationId)
-            .claimPartyLegalRepresentativeList(new ArrayList<>())
+            .claimPartyOrganisationList(new ArrayList<>())
             .build();
     }
 
-    private PartyEntity defendantRepresentedBy(String organisationId, UUID legalRepIdamId) {
-        return partyWithLegalRep(legalRepIdamId, organisationId, YesOrNo.YES);
-    }
-
-    private PartyEntity partyWithLegalRep(UUID legalRepIdamId, String organisationId, YesOrNo active) {
-        LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
+    private PartyEntity unrepresentedParty() {
+        return PartyEntity.builder()
             .id(UUID.randomUUID())
-            .idamId(legalRepIdamId)
+            .idamId(UUID.randomUUID())
+            .claimPartyOrganisationList(new ArrayList<>())
+            .build();
+    }
+
+    private PartyEntity partyRepresentedBy(String organisationId, YesOrNo active) {
+        OrganisationEntity organisation = OrganisationEntity.builder()
             .organisationId(organisationId)
+            .organisationName("Test Firm")
             .build();
 
-        ClaimPartyLegalRepresentativeEntity claimPartyLegalRepresentative =
-            ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentative)
-                .active(active)
-                .build();
+        ClaimPartyOrganisationEntity claimPartyOrganisation = ClaimPartyOrganisationEntity.builder()
+            .organisation(organisation)
+            .active(active)
+            .build();
 
         return PartyEntity.builder()
             .id(UUID.randomUUID())
             .idamId(UUID.randomUUID())
-            .claimPartyLegalRepresentativeList(new ArrayList<>(List.of(claimPartyLegalRepresentative)))
+            .claimPartyOrganisationList(new ArrayList<>(List.of(claimPartyOrganisation)))
             .build();
     }
 }

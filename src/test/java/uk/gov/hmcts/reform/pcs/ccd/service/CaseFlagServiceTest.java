@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
@@ -1952,7 +1952,7 @@ class CaseFlagServiceTest {
         @Test
         void shouldRejectSolicitorActingForAPartyWhoseRepresentationHasEnded() {
             PartyEntity defendant = defendantRepresentedBy(DEFENDANT_FIRM);
-            defendant.getClaimPartyLegalRepresentativeList().getFirst().setActive(YesOrNo.NO);
+            defendant.getClaimPartyOrganisationList().getFirst().setActive(YesOrNo.NO);
 
             Throwable throwable = catchThrowable(() -> merge(defendant, supportRequest(), SOLICITOR_USER_ID));
 
@@ -2040,7 +2040,7 @@ class CaseFlagServiceTest {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .idamId(idamId)
-                .claimPartyLegalRepresentativeList(new ArrayList<>())
+                .claimPartyOrganisationList(new ArrayList<>())
                 .defendantFlags(new ArrayList<>())
                 .build();
         }
@@ -2050,27 +2050,26 @@ class CaseFlagServiceTest {
                 .id(UUID.randomUUID())
                 .idamId(UUID.randomUUID())
                 .organisationId(organisationId)
-                .claimPartyLegalRepresentativeList(new ArrayList<>())
+                .claimPartyOrganisationList(new ArrayList<>())
                 .defendantFlags(new ArrayList<>())
                 .build();
         }
 
         private PartyEntity defendantRepresentedBy(String firmOrganisationId) {
-            LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder()
-                .id(UUID.randomUUID())
-                .idamId(UUID.randomUUID())
+            OrganisationEntity organisation = OrganisationEntity.builder()
                 .organisationId(firmOrganisationId)
+                .organisationName("Representing firm")
                 .build();
 
-            ClaimPartyLegalRepresentativeEntity link = ClaimPartyLegalRepresentativeEntity.builder()
-                .legalRepresentative(legalRepresentative)
+            ClaimPartyOrganisationEntity link = ClaimPartyOrganisationEntity.builder()
+                .organisation(organisation)
                 .active(YesOrNo.YES)
                 .build();
 
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .idamId(UUID.randomUUID())
-                .claimPartyLegalRepresentativeList(new ArrayList<>(List.of(link)))
+                .claimPartyOrganisationList(new ArrayList<>(List.of(link)))
                 .defendantFlags(new ArrayList<>())
                 .build();
         }
