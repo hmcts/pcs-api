@@ -15,6 +15,7 @@ public class FreeLegalAdvice implements CcdPageConfiguration {
             .label("freeLegalAdvice-lineSeparator", "---")
             .complex(PCSCase::getDefendantPaperResponse)
             .optional(DefendantPaperResponseRequest::getFreeLegalAdvice)
+            .label("freeLegalAdvice-lineSeparator-bottom", "---")
             .done();
     }
 }

@@ -649,7 +649,7 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
-    @JsonUnwrapped(prefix = "paperResponse_")
+    @JsonUnwrapped
     private DefendantPaperResponseRequest defendantPaperResponse;
 
     @CCD(

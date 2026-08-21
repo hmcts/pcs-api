@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.defendantpaperresponse.SelectDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
@@ -74,6 +75,9 @@ public class DefendantPaperResponseTest extends BaseEventTest {
     @Mock
     private AddressEntity addressEntity;
 
+    @Mock
+    private SelectDefendant selectDefendant;
+
     @BeforeEach
     void setUp() {
         DefendantPaperResponse defendantPaperResponse = new DefendantPaperResponse(
@@ -81,7 +85,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
             partyService,
             claimResponseService,
             defendantResponseService,
-            addressMapper
+            addressMapper,
+            selectDefendant
         );
 
         setEventUnderTest(defendantPaperResponse);

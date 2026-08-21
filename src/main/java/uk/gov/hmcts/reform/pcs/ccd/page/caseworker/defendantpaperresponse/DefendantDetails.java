@@ -18,7 +18,9 @@ public class DefendantDetails implements CcdPageConfiguration {
             .label("defendantDetails-name", "1.1 What is the defendant’s name?")
             .optional(DefendantPaperResponseRequest::getFirstName)
             .optional(DefendantPaperResponseRequest::getLastName)
+            .label("defendantDetails-lineSeparator-dob", "---")
             .optional(DefendantPaperResponseRequest::getDateOfBirth)
+            .label("defendantDetails-lineSeparator-address", "---")
             .complex(DefendantPaperResponseRequest::getAddress)
                 .optional(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
@@ -28,6 +30,7 @@ public class DefendantDetails implements CcdPageConfiguration {
                 .optional(AddressUK::getCountry)
                 .optionalWithLabel(AddressUK::getPostCode, "Postcode")
                 .done()
+            .label("defendantDetails-lineSeparator-bottom", "---")
             .done();
     }
 

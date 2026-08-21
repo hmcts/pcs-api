@@ -15,6 +15,7 @@ public class DisputingOtherParts implements CcdPageConfiguration {
             .label("disputingOtherParts-lineSeparator", "---")
             .complex(PCSCase::getDefendantPaperResponse)
             .optional(DefendantPaperResponseRequest::getHasMadeCounterClaim)
+            .label("disputingOtherParts-lineSeparator-bottom", "---")
             .done();
     }
 

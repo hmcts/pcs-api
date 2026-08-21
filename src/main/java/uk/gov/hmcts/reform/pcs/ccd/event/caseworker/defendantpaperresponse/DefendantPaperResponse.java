@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +63,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     private final ClaimResponseService claimResponseService;
     private final DefendantResponseService defendantResponseService;
     private final AddressMapper addressMapper;
+    private final SelectDefendant selectDefendant;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -76,7 +78,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(new SelectDefendant())
+            .add(selectDefendant)
             .add(new FreeLegalAdvice())
             .add(new DefendantDetails())
             .add(new ContactPreferences())
@@ -147,6 +149,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         String firstName = defendantPaperResponse.getFirstName();
         String lastName = defendantPaperResponse.getLastName();
         String phoneNumber = defendantPaperResponse.getPhoneNumber();
+        LocalDate dateOfBirth = defendantPaperResponse.getDateOfBirth();
         Set<ContactPreferencesSelection> contactPreferences = defendantPaperResponse.getContactPreferences();
 
         VerticalYesNo contactByEmail;
@@ -164,7 +167,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         String emailAddress = contactByEmail == VerticalYesNo.YES ? defendantPaperResponse.getEmailAddress() : null;
 
         DefendantContactDetails defendantContactDetails =
-            buildDefendantContactDetails(address, firstName, lastName, emailAddress, phoneNumber);
+            buildDefendantContactDetails(address, firstName, lastName, emailAddress, phoneNumber, dateOfBirth);
         DefendantResponses defendantResponse = buildDefendantResponses(
             address,
             firstName,
@@ -174,7 +177,8 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             contactByPost,
             defendantPaperResponse.getFreeLegalAdvice(),
             defendantPaperResponse.getHasMadeCounterClaim(),
-            defendantParty
+            defendantParty,
+            dateOfBirth
         );
 
         return PossessionClaimResponse.builder()
@@ -188,7 +192,8 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         String firstName,
         String lastName,
         String emailAddress,
-        String phoneNumber
+        String phoneNumber,
+        LocalDate dateOfBirth
     ) {
         return DefendantContactDetails.builder()
             .party(
@@ -198,6 +203,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
                     .lastName(lastName)
                     .emailAddress(emailAddress)
                     .phoneNumber(phoneNumber)
+                    .dateOfBirth(dateOfBirth)
                     .build()
             ).build();
     }
@@ -211,7 +217,8 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         VerticalYesNo contactByPost,
         YesNoPreferNotToSay freeLegalAdvice,
         VerticalYesNo hasMadeCounterClaim,
-        PartyEntity defendantParty
+        PartyEntity defendantParty,
+        LocalDate dateOfBirth
     ) {
         VerticalYesNo addressConfirmed = isAddressConfirmed(address, defendantParty);
         VerticalYesNo nameConfirmed = isNameConfirmed(firstName, lastName, defendantParty);
@@ -225,6 +232,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             .contactByPhone(contactByPhone)
             .makeCounterClaim(hasMadeCounterClaim)
             .defendantNameConfirmation(nameConfirmed)
+            .dateOfBirth(dateOfBirth)
             .build();
     }
 

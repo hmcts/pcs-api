@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -20,24 +21,30 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+//@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DefendantPaperResponseRequest {
 
+    @JsonProperty("paperResponse_FreeLegalAdvice")
     @CCD(label = "Has the defendant had any free legal advice")
     private YesNoPreferNotToSay freeLegalAdvice;
 
+    @JsonProperty("paperResponse_FirstName")
     @CCD(label = "First name(s)")
     private String firstName;
 
+    @JsonProperty("paperResponse_LastName")
     @CCD(label = "Last name")
     private String lastName;
 
+    @JsonProperty("paperResponse_DateOfBirth")
     @CCD(label = "1.2 What is the defendant’s date of birth?")
     private LocalDate dateOfBirth;
 
+    @JsonProperty("paperResponse_Address")
     @CCD(label = "1.3 What is the defendant’s address for service?")
     private AddressUK address;
 
+    @JsonProperty("paperResponse_ContactPreferences")
     @CCD(
         label = "How does the defendant want to receive updates about their case?",
         typeOverride = FieldType.MultiSelectList,
@@ -45,20 +52,22 @@ public class DefendantPaperResponseRequest {
     )
     private Set<ContactPreferencesSelection> contactPreferences;
 
+    @JsonProperty("paperResponse_EmailAddress")
     @CCD(
         label = "Defendant’s email address",
         typeOverride = FieldType.Email
     )
     private String emailAddress;
 
+    @JsonProperty("paperResponse_PhoneNumber")
     @CCD(
-        label = "2.2 If we need to contact the defendant with notifications or urgent updates about their case, "
-            + "what is their phone number?",
+        label = "The defendant’s phone number is",
         regex = "^\\s*0\\d{10}\\s*$",
         max = 60
     )
     private String phoneNumber;
 
+    @JsonProperty("paperResponse_HasMadeCounterClaim")
     @CCD(
         label = "15.1 Has the defendant made a counterclaim against the claimant?"
     )

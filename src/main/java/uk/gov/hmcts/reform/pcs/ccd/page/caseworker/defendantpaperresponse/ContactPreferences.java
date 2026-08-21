@@ -24,6 +24,14 @@ public class ContactPreferences implements CcdPageConfiguration {
                     ContactPreferencesSelection.BY_EMAIL
                 )
             )
+            .label("contactPreferences-lineSeparator-phone", "---")
+            .label(
+                "contactPreferences-phoneNumber",
+                "2.2 If we need to contact the defendant with notifications or urgent updates about their case, "
+                    + "what is their phone number?"
+            )
+            .optional(DefendantPaperResponseRequest::getPhoneNumber)
+            .label("contactPreferences-lineSeparator-bottom", "---")
             .done();
     }
 }
