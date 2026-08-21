@@ -73,10 +73,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .forState(State.CASE_ISSUED)
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                // The organisations that are the claimant themselves - local authority and the
-                // "other" profiles - hold this capacity rather than claimant-solicitor
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);

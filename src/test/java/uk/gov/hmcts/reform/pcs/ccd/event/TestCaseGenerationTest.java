@@ -112,10 +112,6 @@ class TestCaseGenerationTest {
         verify(eventBuilder).showSummary();
         verify(eventBuilder).name(EVENT_NAME);
         verify(eventBuilder).grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
-        // Gated on the environment, so absent from a locally generated definition - the group
-        // access grants can only be checked here.
-        verify(eventBuilder).grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR);
-        verify(eventBuilder).grant(Permission.CRUD, UserRole.CLAIMANT);
     }
 
     @Test

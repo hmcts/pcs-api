@@ -33,8 +33,6 @@ public class AddCaseNote implements CCDConfig<PCSCase, State, UserRole> {
                         .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
                         .name("Add a case note")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                        .grant(Permission.CRUD, UserRole.CLAIMANT)
-                        .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                         .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                         .showSummary()
                         .endButtonLabel("Submit");

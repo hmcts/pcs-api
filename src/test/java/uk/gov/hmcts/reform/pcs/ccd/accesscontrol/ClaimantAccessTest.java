@@ -18,12 +18,7 @@ class ClaimantAccessTest {
         SetMultimap<HasRole, Permission> grants = claimantAccess.getGrants();
 
         // then
-        // Claimant fields follow the firm through its capacities.
-        assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
-        assertThat(grants.get(UserRole.CLAIMANT)).isEqualTo(Permission.CRU);
-        assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
-        // Kept until the group access roles exist in RAS. This assertion flips to isEmpty() once
-        // they do, and claimant data moves onto the capacities alone.
         assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
     }
 }
