@@ -77,3 +77,5 @@ aac-manage-case-assignment:
   enabled: false
 am-org-role-mapping-service:
   enabled: false
+ccd-case-disposer:
+  enabled: false

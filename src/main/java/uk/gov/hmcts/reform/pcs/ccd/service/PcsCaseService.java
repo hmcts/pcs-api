@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -33,6 +34,7 @@ public class PcsCaseService {
     private final ClaimService claimService;
     private final PartyService partyService;
     private final DocumentService documentService;
+    private final DocumentImportService documentImportService;
     private final TenancyLicenceService tenancyLicenceService;
     private final AddressMapper addressMapper;
     private final CaseLinkService caseLinkService;
@@ -95,6 +97,33 @@ public class PcsCaseService {
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    @Transactional
+    public void deleteCase(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        pcsCaseRepository.delete(pcsCaseEntity);
+        log.debug("Deleted case with reference: {}", caseReference);
+    }
+
+    @Transactional
+    public void deleteCase(PcsCaseEntity pcsCaseEntity) {
+        pcsCaseRepository.delete(pcsCaseEntity);
+        log.debug("Deleted case: {}", pcsCaseEntity.getId());
+    }
+
+    @Transactional
+    public List<String> getDocumentUrls(long caseReference) {
+        List<DocumentEntity> documents = loadCase(caseReference).getDocuments();
+        if (!CollectionUtils.isEmpty(documents)) {
+            return documents.stream().map(DocumentEntity::getUrl).toList();
+        }
+        return List.of();
+    }
+
+    public void deleteDocumentsFromCdam(List<String> documents, long caseReference) {
+        documents.forEach(documentImportService::deleteDocument);
+        log.debug("Deleted documents for case with reference: {}", caseReference);
     }
 
     public void allocateCaseManagementLocation(PCSCase pcsCase) {

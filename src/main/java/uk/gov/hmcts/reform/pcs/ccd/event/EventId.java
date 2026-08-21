@@ -28,5 +28,7 @@ public enum EventId {
     removeDocument,
     legalRepDocumentUpload,
     manageParties,
-    legalRepresentativeContactDetails
+    legalRepresentativeContactDetails,
+    markCaseForDeletion,
+    confirmCaseDisposal
 }

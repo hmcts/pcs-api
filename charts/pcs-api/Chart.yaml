@@ -3,7 +3,7 @@ appVersion: "1.0"
 description: A Helm chart for pcs-api App
 name: pcs-api
 home: https://github.com/hmcts/pcs-api
-version: 0.0.84
+version: 0.0.85
 maintainers:
   - name: HMCTS pcs team
 dependencies:
@@ -51,3 +51,7 @@ dependencies:
     version: 0.0.77
     repository: 'oci://hmctsprod.azurecr.io/helm'
     condition: am-org-role-mapping-service.enabled
+  - name: ccd-case-disposer
+    version: 0.2.38
+    repository: 'oci://hmctsprod.azurecr.io/helm'
+    condition: ccd-case-disposer.enabled
