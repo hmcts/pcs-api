@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser2;
 
 public class ApiSteps {
 
@@ -38,7 +39,7 @@ public class ApiSteps {
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
     public static String solicitorUserIdamToken;
-    Long caseId;
+    public static String solicitorUser2IdamToken;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -50,6 +51,7 @@ public class ApiSteps {
         systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
         citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
         solicitorUserIdamToken = PcsIdamTokenClient.generateToken(solicitorUser);
+        solicitorUser2IdamToken = PcsIdamTokenClient.generateToken(solicitorUser2);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -97,7 +99,6 @@ public class ApiSteps {
     public void theRequestContainsThePathParameter(String pathParam, String value) {
         request = request.pathParam(pathParam, value);
     }
-
 
     @Step("a call is submitted to the {0} endpoint using a {1} request")
     public void callIsSubmittedToTheEndpoint(String resource, String method) {
@@ -154,6 +155,7 @@ public class ApiSteps {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
             case solicitorUser -> solicitorUserIdamToken;
+            case solicitorUser2 -> solicitorUser2IdamToken;
         };
 
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
@@ -210,6 +212,15 @@ public class ApiSteps {
         throw new IllegalStateException("Unexpected retry failure");
     }
 
+    @Step("get defendant id from last created case")
+    public String getDefendantIdFromLastCase() {
+        String defendantId = SerenityRest.lastResponse().then().extract().path("defendantId");
+        if (defendantId == null) {
+            defendantId = SerenityRest.lastResponse().then().extract().path("defendantPartyId");
+        }
+        return defendantId;
+    }
+
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
         Callable<String> fetchPins = () -> {
@@ -223,7 +234,7 @@ public class ApiSteps {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(new TypeRef<Map<String, Object>>() {});
+                .as(new TypeRef<>() {});
 
             if (pins != null && !pins.isEmpty()) {
                 return pins.keySet().iterator().next();
@@ -243,7 +254,6 @@ public class ApiSteps {
             );
         }
     }
-
 
     @Step("access code validated")
     public String validateAccessCode(String caseReference, String accessCode) {
@@ -278,9 +288,9 @@ public class ApiSteps {
     }
 
     @Step("fee payment info details fetched")
-        public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
+    public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
         Callable<List<Map<String, Object>>> getPaymentInfo = () -> {
-            List<Map<String,Object>> paymentDetails = SerenityRest.given()
+            List<Map<String, Object>> paymentDetails = SerenityRest.given()
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
@@ -290,8 +300,7 @@ public class ApiSteps {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(new TypeRef<List<Map<String, Object>>>() {
-                });
+                .as(new TypeRef<>() {});
 
             if (paymentDetails != null && !paymentDetails.isEmpty()) {
                 return paymentDetails;
@@ -315,7 +324,6 @@ public class ApiSteps {
     @Step("retrieving internal case id from ccd data store")
     public String getInternalCaseId(Long caseReference) {
         String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
-        //NB: event permissions don't apply for this call, any valid IDAM token can be used
         String liveCaseNoteToken = SerenityRest.given()
             .baseUri(dataStoreUrl)
             .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
@@ -333,4 +341,18 @@ public class ApiSteps {
         return decodedJWT.getClaim("case-id").asString();
     }
 
+    @Step("link defendant solicitor to party")
+    public void linkDefendantSolicitorToParty(Long caseReference, String defendantId) {
+        SerenityRest.given()
+            .baseUri(baseUrl)
+            .contentType(ContentType.JSON)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUser2IdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .pathParam("caseReference", caseReference)
+            .pathParam("defendantId", defendantId)
+            .when()
+            .post("/testing-support/link-defendant-solicitor-to-party/{caseReference}/{defendantId}")
+            .then()
+            .statusCode(200);
+    }
 }
