@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
@@ -385,6 +386,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    private String summaryLegalRepresentativeMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -835,6 +839,9 @@ public class PCSCase {
     @JsonUnwrapped
     private AddPartyDetails addPartyDetails;
 
+    @JsonUnwrapped
+    private UpdatePartyDetails updatePartyDetails;
+
 
     @CCD(
         label = "Do you want to add, edit or cancel a hearing?",
@@ -879,4 +886,13 @@ public class PCSCase {
         typeOverride = FieldType.DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList mhDraftPartyList;
+
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }

@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
@@ -26,8 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,7 +59,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private DocumentService documentService;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
 
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
@@ -121,7 +120,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             .type(GenAppType.SOMETHING_ELSE)
             .applicationSubmittedDate(null)
             .build();
+        String orgId = "orgId";
 
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder().build());
 
@@ -196,8 +197,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder()
-                .genApps(null)
-                .build());
+                            .genApps(null)
+                            .build());
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -218,9 +219,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Test
     void shouldReturnEmptyForUnmappedCategory() {
+        String orgId = "orgId";
+
         assertThat(legalRepDocumentUpload.findGenAppsForCategory(
             PcsCaseEntity.builder().build(),
-            UUID.randomUUID(),
+            orgId,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
     }
@@ -246,8 +249,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
             .validCategories(DynamicStringList.builder()
-                .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
-                .build())
+                                 .value(DynamicStringListElement.builder().code(selectedId.toString()).build())
+                                 .build())
             .build();
 
         List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
@@ -261,15 +264,16 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         when(documentService.createLegalRepDocuments(pcsCase)).thenReturn(legalRepDocList);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        String orgId = "orgId";
 
         when(selectedGenApp.getId()).thenReturn(selectedId);
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
         List<GenAppEntity> mockGenAppList = List.of(selectedGenApp);
-        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), currentUserId))
+        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), orgId))
             .thenReturn(mockGenAppList);
         when(selectedGenApp.getParty()).thenReturn(currentUserParty);
 
-        given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
         // When
         callSubmitHandler(pcsCase);
@@ -304,7 +308,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
     }
-
 
     @Test
     void shouldReturnErrorWhenLegalRepDocumentIsNull() {
