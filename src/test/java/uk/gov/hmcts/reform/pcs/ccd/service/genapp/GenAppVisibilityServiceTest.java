@@ -26,7 +26,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
@@ -37,10 +40,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSU
 class GenAppVisibilityServiceTest {
 
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String TEST_ORG_ID = "ORG-123";
 
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private LegalRepresentativeRepository legalRepresentativeRepository;
-    @Mock
+    @Mock(strictness = LENIENT)
     private OrganisationDetailsService organisationDetailsService;
 
     private GenAppVisibilityService underTest;
@@ -53,7 +57,7 @@ class GenAppVisibilityServiceTest {
     @ParameterizedTest
     @NullSource
     @EnumSource(value = GenAppState.class, mode = EnumSource.Mode.EXCLUDE, names = "GEN_APP_ISSUED")
-    void shouldTreatGenAppsWithNoticeAsVisible(GenAppState state) {
+    void shouldTreatUnissuedGenAppsAsNotVisible(GenAppState state) {
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         when(genAppEntity.getState()).thenReturn(state);
@@ -83,9 +87,11 @@ class GenAppVisibilityServiceTest {
 
     @ParameterizedTest
     @MethodSource("withoutNoticeScenarios")
-    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(UUID applicantUserId,
-                                                             boolean isLegalRepresentativeLinkedToPartyAndActive,
-                                                             boolean expectedIsVisible) {
+    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserAndOrgId(UUID applicantUserId,
+                                                                  String applicantOrgId,
+                                                                  String currentUserOrgId,
+                                                                  boolean isLegalRepresentativeLinkedToPartyAndActive,
+                                                                  boolean expectedIsVisible) {
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         PartyEntity applicantParty = mock(PartyEntity.class, withSettings().strictness(Strictness.LENIENT));
@@ -96,6 +102,10 @@ class GenAppVisibilityServiceTest {
         UUID applicantPartyId = UUID.randomUUID();
         when(applicantParty.getId()).thenReturn(applicantPartyId);
         when(applicantParty.getIdamId()).thenReturn(applicantUserId);
+        when(applicantParty.getOrganisationId()).thenReturn(applicantOrgId);
+
+        when(organisationDetailsService.getOrganisationIdentifier(CURRENT_USER_ID.toString()))
+            .thenReturn(currentUserOrgId);
 
         when(legalRepresentativeRepository
                  .isLegalRepresentativeLinkedToPartyAndActive(CURRENT_USER_ID, applicantPartyId))
@@ -106,6 +116,28 @@ class GenAppVisibilityServiceTest {
 
         // Then
         assertThat(genAppVisibleToUser).isEqualTo(expectedIsVisible);
+    }
+
+    @Test
+    void shouldCacheOrgIdLookup() {
+        // Given
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        PartyEntity applicantParty = mock(PartyEntity.class);
+        when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
+        when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
+        when(genAppEntity.getParty()).thenReturn(applicantParty);
+
+        UUID applicantPartyId = UUID.randomUUID();
+        when(applicantParty.getId()).thenReturn(applicantPartyId);
+
+        // When
+        underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
+        underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
+        underTest.isGenAppVisibleToUser(genAppEntity, CURRENT_USER_ID, List.of());
+
+        // Then
+        verify(organisationDetailsService, times(1))
+            .getOrganisationIdentifier(CURRENT_USER_ID.toString());
     }
 
     @ParameterizedTest
@@ -281,19 +313,49 @@ class GenAppVisibilityServiceTest {
             Arguments.argumentSet(
                 "current user is applicant",
                 CURRENT_USER_ID,
-                false, // isLegalRepresentativeLinkedToPartyAndActive
+                TEST_ORG_ID, // applicantOrgId
+                null,        // currentUserOrgId
+                false,       // isLegalRepresentativeLinkedToPartyAndActive
+                true
+            ),
+            Arguments.argumentSet(
+                "current user not applicant but is in same org",
+                differentApplicantUserId,
+                TEST_ORG_ID, // applicantOrgId
+                TEST_ORG_ID, // currentUserOrgId
+                false,       // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
                 "current user is LR of applicant",
                 differentApplicantUserId,
-                true, // isLegalRepresentativeLinkedToPartyAndActive
+                TEST_ORG_ID, // applicantOrgId
+                null,        // currentUserOrgId
+                true,        // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
-                "current user is not LR of applicant",
+                "current user is not applicant, in any org or LR of applicant",
                 differentApplicantUserId,
-                false, // isLegalRepresentativeLinkedToPartyAndActive
+                TEST_ORG_ID,        // applicantOrgId
+                null,               // currentUserOrgId
+                false,              // isLegalRepresentativeLinkedToPartyAndActive
+                false
+            ),
+            Arguments.argumentSet(
+                "current user is not applicant or LR of applicant and applicant is not in a org",
+                differentApplicantUserId,
+                null,               // applicantOrgId
+                TEST_ORG_ID,        // currentUserOrgId
+                false,              // isLegalRepresentativeLinkedToPartyAndActive
+                false
+            ),
+            Arguments.argumentSet(
+                "current user is not applicant, in same org or LR of applicant",
+                differentApplicantUserId,
+                TEST_ORG_ID,        // applicantOrgId
+                "different org ID", // currentUserOrgId
+                false,              // isLegalRepresentativeLinkedToPartyAndActive
                 false
             )
         );

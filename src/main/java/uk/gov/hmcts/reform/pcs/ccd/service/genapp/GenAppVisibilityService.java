@@ -87,7 +87,6 @@ public class GenAppVisibilityService {
             return true;
         }
 
-        // TODO: Test
         String organisationId = getOrganisationId(currentUserId);
         if (organisationId != null && organisationId.equals(applicantParty.getOrganisationId())) {
             return true;
@@ -154,4 +153,5 @@ public class GenAppVisibilityService {
         return currentUserRoles.contains(PCS_CASEWORKER_ROLE)
             && !currentUserRoles.contains(PCS_SOLICITOR_ROLE);
     }
+
 }
