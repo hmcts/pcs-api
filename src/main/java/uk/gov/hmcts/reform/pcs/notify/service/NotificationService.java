@@ -148,7 +148,7 @@ public class NotificationService {
                 defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED,
+            EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP,
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forOrganisation(organisationEntity,
                                                                pcsCaseEntity));

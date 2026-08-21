@@ -12,7 +12,7 @@ public enum EmailTemplate {
     COUNTERCLAIM_PAYMENT_SUCCESS("counterclaim-payment-success"),
     COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP("counterclaim-payment-success-legal-rep"),
     RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED("counterclaim-no-payment-required"),
-    RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED("counterclaim-not-submitted-yet"),
+    RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP("Response submitted - counterclaim not submitted yet"),
 
     // Make a Claim Email Templates
     MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER("make-a-claim-claim-saved-for-later"),

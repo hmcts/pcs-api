@@ -29,7 +29,6 @@ public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
 
-    // TODO: temporary
     @Value("${frontend.url}")
     private String frontendUrl;
 
@@ -71,13 +70,11 @@ public class NotificationPersonalisationFactory {
 
     public OrganisationBasePersonalisation forOrganisation(
         OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity) {
-
         return buildPersonalisation(pcsCaseEntity, organisationEntity);
     }
 
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
                                                                          String paymentReference) {
-
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
