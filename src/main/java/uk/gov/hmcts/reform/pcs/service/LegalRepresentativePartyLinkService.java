@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
@@ -40,6 +41,7 @@ public class LegalRepresentativePartyLinkService {
     private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
     private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final NotificationService notificationService;
     private final Clock utcClock;
 
     public LegalRepresentativePartyLinkService(PcsCaseService pcsCaseService,
@@ -50,6 +52,7 @@ public class LegalRepresentativePartyLinkService {
                                                OrganisationDetailsService organisationDetailsService,
                                                AddressMapper addressMapper,
                                                CaseRoleAssignmentService caseRoleAssignmentService,
+                                               NotificationService notificationService,
                                                @Qualifier("utcClock") Clock utcClock) {
         this.pcsCaseService = pcsCaseService;
         this.organisationRepository = organisationRepository;
@@ -57,6 +60,7 @@ public class LegalRepresentativePartyLinkService {
         this.organisationDetailsService = organisationDetailsService;
         this.addressMapper = addressMapper;
         this.caseRoleAssignmentService = caseRoleAssignmentService;
+        this.notificationService = notificationService;
         this.utcClock = utcClock;
     }
 
@@ -113,6 +117,7 @@ public class LegalRepresentativePartyLinkService {
 
         organisationRepository.save(legalRepresentativeOrganisation);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
+        notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {

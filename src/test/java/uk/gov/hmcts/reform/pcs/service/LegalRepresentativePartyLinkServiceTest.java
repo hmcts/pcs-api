@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 
@@ -77,6 +78,9 @@ class LegalRepresentativePartyLinkServiceTest {
     private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
+    private NotificationService notificationService;
+
+    @Mock
     private AddressUK addressUK;
 
     @Mock
@@ -102,6 +106,7 @@ class LegalRepresentativePartyLinkServiceTest {
             organisationDetailsService,
             addressMapper,
             caseRoleAssignmentService,
+            notificationService,
             FIXED_UTC_CLOCK
         );
     }
@@ -159,6 +164,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
+        verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
     }
 
     @Test
@@ -495,6 +501,7 @@ class LegalRepresentativePartyLinkServiceTest {
             .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
+        verify(notificationService, never()).sendNoticeOfChangeCompletedEmailNotification(any());
         verify(organisationRepository, never()).save(any());
     }
 

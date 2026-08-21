@@ -17,7 +17,10 @@ public enum EmailTemplate {
     MAKE_A_CLAIM_CLAIM_ISSUED("make-a-claim-claim-issued"),
 
     // Gen App Email Templates
-    GENERAL_APPLICATION_RECEIVED("general-application-received");
+    GENERAL_APPLICATION_RECEIVED("general-application-received"),
+
+    // Notice of Change Email Templates
+    NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed");
 
     private final String templateKey;
 
