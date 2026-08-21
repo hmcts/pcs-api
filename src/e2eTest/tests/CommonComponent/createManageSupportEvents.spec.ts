@@ -3,7 +3,6 @@ import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
-import {staff} from '@data/user-data/staff.user.data';
 import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
@@ -76,18 +75,14 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     // Now create ManageSupport Event
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
-
     // Validate Manage Support header
     await performValidation('mainHeader', 'Manage Support');
-
     // Select Possession Claims Solicitor Org (Claimant) option with Reasonable adjustment and Friend or family, then continue
     await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - **Reasonable adjustment, Friend or family with me** (Test)' });
     await performAction('clickButton', createAndManageSupport.continueButton);
-
     // Add comments and continue
     await performAction('inputText', 'Comments', 'Test Chan Manage Support');
     await performAction('clickButton', createAndManageSupport.continueButton);
-
     // Submit and validate success message
     await performAction('clickButton', 'Submit');
     await performValidation('mainHeader', 'Case #.* has been updated with event: Manage support');
