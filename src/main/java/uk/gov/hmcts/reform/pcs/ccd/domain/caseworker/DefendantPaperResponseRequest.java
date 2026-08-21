@@ -26,11 +26,11 @@ public class DefendantPaperResponseRequest {
     private YesNoPreferNotToSay freeLegalAdvice;
 
     @JsonProperty("paperResponse_FirstName")
-    @CCD(label = "First name(s)")
+    @CCD(label = "First name(s)", max = 100)
     private String firstName;
 
     @JsonProperty("paperResponse_LastName")
-    @CCD(label = "Last name")
+    @CCD(label = "Last name", max = 100)
     private String lastName;
 
     @JsonProperty("paperResponse_DateOfBirth")
