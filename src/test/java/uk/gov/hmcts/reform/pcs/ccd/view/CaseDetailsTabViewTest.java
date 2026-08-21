@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -733,13 +734,15 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldSetCaseDetailsTabFieldsForWales() {
+    void shouldSetCaseDetailsTabFieldsForWalesWithExemptLandlordQuestion() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
         AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .exemptLandlordQuestionEnabled(VerticalYesNo.YES).build())
             .claimantType(
                 DynamicStringList.builder().value(
                         DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
@@ -1041,6 +1044,41 @@ class CaseDetailsTabViewTest {
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getEnergyPerformanceCertificates()).isNull();
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getElectricalInstallationReports()).isNull();
         assertThat(caseDetailsTab.getTenancyLicenceDetails()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseDetailsTabFieldsForWalesWithoutExemptLandlordQuestion() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .exemptLandlordQuestionEnabled(VerticalYesNo.NO).build())
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+       
+    }
+
+    @Test
+    void shouldNotSetClaimantRegistrationAndLicensingDetailsWhenFeatureFlagsAreNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Claimant")
+                .build()
+        );
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+
+        // Then
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
     }
 
     @Test

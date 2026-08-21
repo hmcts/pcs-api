@@ -20,6 +20,7 @@ public class FeatureFlagView {
                                     .release1dot3Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_3))
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
+                                    .exemptLandlordQuestionEnabled(getFlag(FeatureFlag.EXEMPT_LANDLORD_QUESTION))
                                     .build());
     }
 
