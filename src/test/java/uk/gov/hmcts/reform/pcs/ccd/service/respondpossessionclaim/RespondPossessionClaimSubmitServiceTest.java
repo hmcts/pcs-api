@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -78,9 +79,12 @@ class RespondPossessionClaimSubmitServiceTest {
     @Mock
     private PartyEntity partyEntity;
     @Mock
+    OrganisationService organisationService;
+    @Mock
     private SchedulerClient schedulerClient;
     @Captor
     private ArgumentCaptor<SchedulableInstance<DefendantResponseTaskData>> schedulableInstanceCaptor;
+
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -96,6 +100,7 @@ class RespondPossessionClaimSubmitServiceTest {
             taskDescriptionService,
             camundaService,
             translationWAService,
+            organisationService,
             schedulerClient
         );
 
@@ -113,13 +118,13 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistResponseWithoutCounterClaimLegalRepresentative() {
+        String organisationId = "org";
         when(partyEntity.getId()).thenReturn(UUID.randomUUID());
-        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
-            .thenReturn(new DefendantResponseEntity());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
         this.shouldPersistResponseWithoutCounterClaim(JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService)
-            .deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+            .deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, partyEntity.getId(), organisationId);
     }
 
     void shouldPersistResponseWithoutCounterClaim(JourneyType journeyType) {
@@ -180,7 +185,8 @@ class RespondPossessionClaimSubmitServiceTest {
     @Test
     void shouldPersistCounterClaimAndCreatePaymentWhenFeeIsRequiredForLegalRepJourney() {
         JourneyType journeyType = JourneyType.LEGAL_REPRESENTATIVE;
-
+        String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
             .isClaimAmountKnown(VerticalYesNo.YES)
@@ -208,7 +214,7 @@ class RespondPossessionClaimSubmitServiceTest {
             underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
         verify(draftCaseDataService).deleteUnsubmittedCaseData(
-            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId());
+            CASE_REFERENCE, respondPossessionClaim, partyEntity.getId(), organisationId);
         assertThat(result.counterClaimEntity()).isEqualTo(savedCounterClaim);
         assertThat(result.paymentRequired()).isTrue();
         assertThat(result.feeDetails()).isEqualTo(expectedFeeDetails);

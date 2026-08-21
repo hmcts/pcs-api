@@ -400,7 +400,7 @@ class TestingSupportControllerTest {
                                                         UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userUid, organisationDetails);
+            .linkLegalRepresentativeToParty(caseReference, partyId, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
