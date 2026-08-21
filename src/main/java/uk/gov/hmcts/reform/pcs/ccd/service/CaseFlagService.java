@@ -14,13 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
@@ -28,9 +27,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -50,6 +50,7 @@ public class CaseFlagService {
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
     private TaskDescriptionService taskDescriptionService;
+    private TranslationWAService translationWAService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
@@ -62,7 +63,7 @@ public class CaseFlagService {
      * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
      * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
      */
-    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
             return;
         }
@@ -79,6 +80,18 @@ public class CaseFlagService {
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
         }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
@@ -119,20 +132,7 @@ public class CaseFlagService {
 
                 // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
                 if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
-                    long caseReference = partyEntity.getPcsCase().getCaseReference();
-                    ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
-                        .filter(document -> !document.isRemoved()
-                            && document.getClaim() != null
-                            && document.getClaim().getId().equals(mainClaim.getId()))
-                        .toList();
-
-                    if (!documents.isEmpty()) {
-                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                            caseReference, documents);
-                        camundaService.createTask(
-                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
-                    }
+                    translationWAService.triggerTranslationTasksForFlaggingParty(partyEntity);
                 }
             }
         }
@@ -233,15 +233,18 @@ public class CaseFlagService {
         }
     }
 
-
     private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {
-        return flags.stream().anyMatch(flag -> isWelshCommunicationsPreference(flag));
+        return flags.stream().anyMatch(this::isWelshCommunicationsPreference);
     }
 
     private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**

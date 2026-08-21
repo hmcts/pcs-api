@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfT
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ReasonableAdjustments;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -47,8 +48,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.HouseholdCircu
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PartyAttributeAssertationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PaymentAgreementService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ReasonableAdjustmentsService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -101,6 +103,8 @@ class DefendantResponseServiceTest {
     @Mock
     private DefenceFormScheduler defenceFormScheduler;
     @Mock
+    private TranslationWAService translationWAService;
+    @Mock
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
@@ -127,6 +131,7 @@ class DefendantResponseServiceTest {
             documentService,
             partyAttributeAssertationService,
             defenceFormScheduler,
+            translationWAService,
             FIXED_UTC_CLOCK
         );
         // Mirror Hibernate returning the managed entity from save(); individual tests still assert on
@@ -1229,6 +1234,67 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWhenLanguageIsEnglishAndWelsh() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                          .url("url1").filename("evidence.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .defendantDocuments(uploadedDocs)
+            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+        DocumentEntity removedDocument = DocumentEntity.builder().fileName("removed.pdf").removed(true).build();
+        when(documentService.createDefendantUploadedDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
+            .thenReturn(List.of(activeDocument, removedDocument));
+        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
+
+        // Then
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            pcsCaseEntity, partyEntity, List.of(activeDocument));
+    }
+
+    @Test
+    void shouldNotCreateTranslateTaskWhenResponseLanguageIsEnglish() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .languageUsed(LanguageUsed.ENGLISH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
+
+        // Then
+        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
 }
