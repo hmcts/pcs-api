@@ -93,8 +93,8 @@ public class AccessCodeGenerationComponent {
                     if (finalAttempt) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
                         MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Access code generation permanently failed for case {} party {} after {} "
-                                  + "attempts: {}", caseReference, defendantPartyId, attempt, e.getMessage(), e);
+                        log.error("Access code generation permanently failed for case {} party {} after {} ",
+                                  caseReference, defendantPartyId, attempt, e);
                     }
                     throw e;
                 } finally {

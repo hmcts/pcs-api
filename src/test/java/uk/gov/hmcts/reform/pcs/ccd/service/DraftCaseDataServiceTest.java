@@ -221,7 +221,7 @@ class DraftCaseDataServiceTest {
         // When / Then
         assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId))
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessageContaining("No draft found");
+            .hasMessageContaining("REDACTED [DRAFT_NOT_FOUND]");
 
         verify(draftCaseDataRepository, never()).save(any());
     }
@@ -305,8 +305,7 @@ class DraftCaseDataServiceTest {
         // Then
         assertThatThrownBy(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId))
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessage("Failed to read saved answers")
-            .hasCause(jsonProcessingException);
+            .hasMessage("REDACTED [UNSUBMITTED_DATA_05]");
     }
 
     @Test
@@ -323,8 +322,7 @@ class DraftCaseDataServiceTest {
         // Then
         assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId))
            .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessage("Failed to save answers")
-            .hasCause(jsonProcessingException);
+            .hasMessage("REDACTED [UNSUBMITTED_DATA_01]");
 
     }
 
@@ -473,8 +471,7 @@ class DraftCaseDataServiceTest {
         assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId,
                                                                      organisationId))
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessage("Failed to save answers")
-            .hasCause(jsonProcessingException);
+            .hasMessage("REDACTED [UNSUBMITTED_DATA_01]");
     }
 
     @Test
@@ -522,7 +519,7 @@ class DraftCaseDataServiceTest {
         assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, partyId,
                                                                     organisationId))
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessageContaining("No draft found");
+            .hasMessageContaining("REDACTED [DRAFT_NOT_FOUND]");
 
         verify(draftCaseDataRepository, never()).save(any());
     }

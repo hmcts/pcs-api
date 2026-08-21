@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,8 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -20,7 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class IdamTokenProviderTest {
 
     private static final String SYSTEM_USERNAME = "system-user@test.com";
@@ -34,6 +37,11 @@ class IdamTokenProviderTest {
     @BeforeEach
     void setUp() {
         underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
+    }
+
+    @AfterEach
+    void afterEach() {
+        RedactionGate.setShowFullMessagesForTesting(null);
     }
 
     @Test
@@ -60,7 +68,7 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            .hasMessage("REDACTED [IDAM_EMPTY_TOKEN]");
     }
 
     @Test
@@ -73,12 +81,13 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response");
+            .hasMessage("REDACTED [IDAM_EMPTY_TOKEN]");
     }
 
     @Test
     @DisplayName("Should wrap OAuth2AuthorizationException thrown when fetching system update user token")
     void shouldWrapOAuth2AuthorizationExceptionGettingAuthToken() {
+        RedactionGate.setShowFullMessagesForTesting(true);
         OAuth2Error error = new OAuth2Error("invalid_token_response", "throttled", null);
         OAuth2AuthorizationException oauthException = new OAuth2AuthorizationException(error);
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(oauthException);
@@ -87,7 +96,7 @@ class IdamTokenProviderTest {
 
         assertThat(throwable)
             .isInstanceOf(IdamException.class)
-            .hasMessage("Unable to get access token response")
+            .hasMessage("client registration id=system-user, errorCode=invalid_token_response, description=throttled")
             .hasCause(oauthException);
     }
 

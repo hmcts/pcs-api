@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class AccessCodeAlreadyUsedException extends RuntimeException {
+public class AccessCodeAlreadyUsedException extends RedactedRuntimeException {
 
-    public AccessCodeAlreadyUsedException(String message) {
-        super(message);
+    public AccessCodeAlreadyUsedException(ErrorCode errorCode) {
+        super(errorCode);
     }
 
-    public AccessCodeAlreadyUsedException(String message, Throwable cause) {
-        super(message, cause);
+    public AccessCodeAlreadyUsedException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
 }

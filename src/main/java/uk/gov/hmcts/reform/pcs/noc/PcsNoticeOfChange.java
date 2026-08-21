@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -213,7 +215,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+            .orElseThrow(() -> new CaseNotFoundException(ErrorCode.CLAIM_NOT_FOUND,
+                RedactionContext.of("No claim found for case reference", caseReference)));
     }
 
     private List<PartyEntity> matchingDefendants(PcsCaseEntity pcsCase, NocAnswersRequest request) {

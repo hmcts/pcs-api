@@ -366,7 +366,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .isInstanceOf(PaymentCallbackException.class)
-            .hasMessageContaining("Unable to process");
+            .hasMessageContaining("REDACTED [COUNTER_CLAIM_TASK_DATA]");
     }
 
     @Test
@@ -386,7 +386,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThatThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .isInstanceOf(PaymentCallbackException.class)
-            .hasMessageContaining("missing relatedEntityId");
+            .hasMessageContaining("REDACTED [COUNTER_CLAIM_CALLBACK]");
     }
 
     private static CounterClaimEntity createCounterClaimEntity(UUID counterClaimId,

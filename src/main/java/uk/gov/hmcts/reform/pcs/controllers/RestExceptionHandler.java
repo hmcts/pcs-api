@@ -11,14 +11,17 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import uk.gov.hmcts.reform.authorisation.exceptions.InvalidTokenException;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.StateException;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.STATE;
 
 @Slf4j
 @ControllerAdvice
@@ -60,30 +63,29 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Error> handleInvalidServiceToken(InvalidTokenException ex) {
+        log.error("Invalid service authorization token", ex);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
+    }
+
     @ExceptionHandler(CaseAccessException.class)
     public ResponseEntity<Error> handleCaseAccess(CaseAccessException ex) {
-        log.error("Case access denied", ex);
+        log.error("No defendants associated with this case", ex);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Error> handleConflict(IllegalStateException ex) {
         log.error("Conflict state detected", ex);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new Error(new StateException(STATE, ex).getMessage()));
     }
 
     @ExceptionHandler(AccessCodeAlreadyUsedException.class)
     public ResponseEntity<Error> handleAccessCodeAlreadyUsed(AccessCodeAlreadyUsedException ex) {
         log.error("Access code already used", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(CaseAssignmentException.class)
-    public ResponseEntity<Error> handleCaseAssignmentException(CaseAssignmentException ex) {
-        log.error("Case assignment failed", ex);
-        return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(IdamException.class)
@@ -93,7 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .header(HttpHeaders.RETRY_AFTER, upstreamThrottling.retryAfterSeconds())
-                .body(new Error("Authentication service temporarily unavailable, please retry"));
+                .body(new Error(ex.getMessage()));
         }
         // Generic message to avoid leaking upstream OAuth2 error descriptions / internal URLs.
         return ResponseEntity
@@ -103,11 +105,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     @Nullable
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers, HttpStatusCode status,
+                                                                  WebRequest request) {
         log.error("Validation failed for request", ex);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

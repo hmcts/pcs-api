@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
@@ -25,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.CLAIM_NOT_FOUND;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.TEMPLATE_RENDERING;
 
 @Service
 @RequiredArgsConstructor
@@ -193,7 +197,7 @@ public class TaskDescriptionService {
         try {
             compiledTemplate.evaluate(writer, context);
         } catch (IOException e) {
-            throw new TemplateRenderingException("Failed to render template", e);
+            throw new TemplateRenderingException(TEMPLATE_RENDERING, e);
         }
 
         return writer.toString()
@@ -203,7 +207,8 @@ public class TaskDescriptionService {
 
     private String getPartyLabel(PartyEntity partyEntity, long caseReference) {
         ClaimEntity mainClaim = claimRepository.findClaimByCaseReference(caseReference)
-                .orElseThrow(() -> new ClaimNotFoundException(caseReference));
+                .orElseThrow(() -> new ClaimNotFoundException(CLAIM_NOT_FOUND,
+                    RedactionContext.of("No claim found for case reference", caseReference)));
 
         return partyService.getPartyLabel(mainClaim, partyEntity.getId());
     }

@@ -1,19 +1,28 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
 import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class OrganisationDetailsServiceTest {
 
     private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
@@ -52,9 +61,14 @@ class OrganisationDetailsServiceTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("Should successfully retrieve organisation details")
-    void shouldSuccessfullyRetrieveOrganisationDetails() {
+    void shouldSuccessfullyRetrieveOrganisationDetails(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         OrganisationDetailsResponse expectedResponse = OrganisationDetailsResponse.builder()
             .name(ORGANISATION_NAME)
@@ -81,9 +95,14 @@ class OrganisationDetailsServiceTest {
         verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("Should successfully get organisation name")
-    void shouldSuccessfullyGetOrganisationName() {
+    void shouldSuccessfullyGetOrganisationName(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
             .name(ORGANISATION_NAME)
@@ -127,6 +146,7 @@ class OrganisationDetailsServiceTest {
     @DisplayName("Should throw OrganisationDetailsException when Feign client throws exception")
     void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
         // Given
+        RedactionGate.setShowFullMessagesForTesting(true);
         RuntimeException runtimeException = new RuntimeException("Feign client error");
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
@@ -141,9 +161,14 @@ class OrganisationDetailsServiceTest {
             .hasCause(runtimeException);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("Should throw OrganisationDetailsException when general exception occurs")
-    void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs() {
+    void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         RuntimeException generalException = new RuntimeException("Connection failed");
 
@@ -152,11 +177,12 @@ class OrganisationDetailsServiceTest {
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(generalException);
 
-        // When & Then
+        // When // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Unexpected error retrieving organisation details")
-            .hasCause(generalException);
+            .hasMessage(isShow ? "Unexpected error retrieving organisation details" : "REDACTED [ORGANISATION_DETAILS]")
+            .hasCause(isShow ? generalException : null);
     }
 
     @Test
@@ -233,45 +259,67 @@ class OrganisationDetailsServiceTest {
         assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("Should wrap FeignException as OrganisationDetailsException with feign cause")
-    void shouldWrapFeignExceptionAsOrganisationDetailsException() {
+    void shouldWrapFeignExceptionAsOrganisationDetailsException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        FeignException feignEx = mock(FeignException.class);
-        when(feignEx.status()).thenReturn(500);
-        when(feignEx.getMessage()).thenReturn("PRD upstream failure");
+        String userId = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
+        Request request = Request.create(Request.HttpMethod.GET,
+                                         "/refdata/external/v1/organisations/users/" + userId,
+                                         Collections.emptyMap(), null, StandardCharsets.UTF_8, null
+        );
+        Response response = Response.builder().status(500).reason("PRD upstream failure").request(request)
+            .headers(Collections.emptyMap()).build();
+        FeignException feignEx = FeignException.errorStatus("RdProfessionalApi#getOrganisationDetails",
+                                                            response);
 
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
-        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenThrow(feignEx);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString())).thenThrow(feignEx);
 
-        // When / Then
+        // When // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Failed to retrieve organisation details")
-            .hasCause(feignEx);
+            .hasMessage(isShow ? "Unexpected error retrieving organisation details" : "REDACTED [ORGANISATION_DETAILS]")
+            .hasCause(isShow ? feignEx : null);
 
         verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("Should wrap unexpected RuntimeException as OrganisationDetailsException")
-    void shouldWrapUnexpectedExceptionAsOrganisationDetailsException() {
+    void shouldWrapUnexpectedExceptionAsOrganisationDetailsException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given — anything other than FeignException must hit the generic catch (Exception) branch.
         RuntimeException unexpected = new RuntimeException("token generator blew up");
         when(authTokenGenerator.generate()).thenThrow(unexpected);
 
-        // When / Then
+        // When // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Unexpected error retrieving organisation details")
-            .hasCause(unexpected);
+            .hasMessage(isShow ? "Unexpected error retrieving organisation details" : "REDACTED [ORGANISATION_DETAILS]")
+            .hasCause(isShow ? unexpected : null);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
     @DisplayName("getOrganisationName should propagate OrganisationDetailsException when underlying call throws Feign")
-    void getOrganisationNameShouldPropagateOrganisationDetailsExceptionOnFeignFailure() {
+    void getOrganisationNameShouldPropagateOrganisationDetailsExceptionOnFeignFailure(Boolean show) {
+        // Show
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(503);
@@ -281,9 +329,11 @@ class OrganisationDetailsServiceTest {
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(feignEx);
 
-        // When / Then
+        // When // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThatThrownBy(() -> organisationDetailsService.getOrganisationName(USER_ID))
             .isInstanceOf(OrganisationDetailsException.class)
-            .hasCause(feignEx);
+            .hasCause(isShow ? feignEx : null);
     }
+
 }

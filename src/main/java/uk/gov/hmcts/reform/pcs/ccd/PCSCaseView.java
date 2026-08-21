@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -284,7 +285,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private PcsCaseEntity loadCaseData(long caseRef) {
         return pcsCaseRepository.findByCaseReference(caseRef)
-            .orElseThrow(() -> new CaseNotFoundException(caseRef));
+            .orElseThrow(() -> new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND));
     }
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {

@@ -41,6 +41,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_NOT_FOUND;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.GEN_APP_ISSUE;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
@@ -202,7 +203,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .isOrganisationLinkedToPartyAndActive(organisationIdForCurrentUser, representedPartyId);
 
         if (!isLegalRepForParty) {
-            throw new PartyNotFoundException("No matching party found represented by current user");
+            throw new PartyNotFoundException(PARTY_NOT_FOUND);
         }
     }
 

@@ -917,6 +917,6 @@ public class HearingServiceTest {
         // Then
         assertThat(throwable)
             .isInstanceOf(HearingNotFoundException.class)
-            .hasMessage("Hearing not found with ID " + hearingId);
+            .hasMessage("REDACTED [HEARING_NOT_FOUND]");
     }
 }

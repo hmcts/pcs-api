@@ -1158,7 +1158,7 @@ class DocumentServiceTest {
         assertThatThrownBy(() ->
             underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null))
             .isInstanceOf(ClaimNotFoundException.class)
-            .hasMessageContaining(String.valueOf(CASE_REFERENCE));
+            .hasMessage("REDACTED [CLAIM_NOT_FOUND]");
 
         verify(documentRepository, never()).saveAll(anyList());
     }

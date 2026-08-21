@@ -117,7 +117,7 @@ public class ApiSteps {
         if (response == null) {
             throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
         }
-        response.then().assertThat().statusCode(statusCode);
+        response.then().log().all().assertThat().statusCode(statusCode);
     }
 
     @Step("the response body contains {0} as a string: {1}")

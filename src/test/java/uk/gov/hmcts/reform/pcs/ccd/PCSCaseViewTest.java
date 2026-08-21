@@ -107,7 +107,6 @@ class PCSCaseViewTest {
     private StatementOfTruthView statementOfTruthView;
     @Mock
     private GenAppsView genAppsView;
-
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -175,7 +174,7 @@ class PCSCaseViewTest {
         // Then
         assertThatThrownBy(() -> underTest.getCase(request))
             .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+            .hasMessage("REDACTED [CASE_NOT_FOUND]", CASE_REFERENCE);
     }
 
     @Test
