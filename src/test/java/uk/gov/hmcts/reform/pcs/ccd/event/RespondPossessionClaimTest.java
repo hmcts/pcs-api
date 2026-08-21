@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -155,6 +156,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
     private CaseDetailsTabView caseDetailsTabView;
     @Mock
     private TenancyLicenceView tenancyLicenceView;
@@ -206,6 +209,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             feeCalculator,
             documentService,
             draftCaseDataService,
+            schedulerClient,
             taskDescriptionService,
             camundaService,
             translationWAService,
