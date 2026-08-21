@@ -123,7 +123,8 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         PartyEntity defendantParty = partyService
             .getPartyEntityByEntityId(pcsCase.getDefendantRadioList().getValueCode(), caseReference);
 
-        PossessionClaimResponse possessionClaimResponse = buildPossessionClaimResponse(defendantPaperResponse, defendantParty);
+        PossessionClaimResponse possessionClaimResponse =
+            buildPossessionClaimResponse(defendantPaperResponse, defendantParty);
         claimResponseService.saveDraftDataForParty(possessionClaimResponse, defendantParty);
         defendantResponseService.saveDefendantResponse(
             caseReference,
@@ -144,49 +145,8 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
         AddressUK address = defendantPaperResponse.getAddress();
         String firstName = defendantPaperResponse.getFirstName();
         String lastName = defendantPaperResponse.getLastName();
-
-        DefendantContactDetails defendantContactDetails = buildDefendantContactDetails(address, firstName, lastName);
-        DefendantResponses defendantResponse = buildDefendantResponses(
-            address,
-            firstName,
-            lastName,
-            defendantPaperResponse.getPhoneNumber(),
-            defendantPaperResponse.getContactPreferences(),
-            defendantPaperResponse.getFreeLegalAdvice(),
-            defendantPaperResponse.getHasMadeCounterClaim(),
-            defendantParty
-        );
-
-        return PossessionClaimResponse.builder()
-            .defendantContactDetails(defendantContactDetails)
-            .defendantResponses(defendantResponse)
-            .build();
-    }
-
-    private DefendantContactDetails buildDefendantContactDetails(AddressUK address, String firstName, String lastName) {
-        return DefendantContactDetails.builder()
-            .party(
-                Party.builder()
-                    .address(address)
-                    .firstName(firstName)
-                    .lastName(lastName)
-                    .build()
-            ).build();
-    }
-
-    private DefendantResponses buildDefendantResponses(
-        AddressUK address,
-        String firstName,
-        String lastName,
-        String phoneNumber,
-        Set<ContactPreferencesSelection> contactPreferences,
-        YesNoPreferNotToSay freeLegalAdvice,
-        VerticalYesNo hasMadeCounterClaim,
-        PartyEntity defendantParty
-    ) {
-        VerticalYesNo addressConfirmed = isAddressConfirmed(address, defendantParty);
-        VerticalYesNo nameConfirmed = isNameConfirmed(firstName, lastName, defendantParty);
-        VerticalYesNo contactByPhone = phoneNumber != null ? VerticalYesNo.YES : VerticalYesNo.NO;
+        String phoneNumber = defendantPaperResponse.getPhoneNumber();
+        Set<ContactPreferencesSelection> contactPreferences = defendantPaperResponse.getContactPreferences();
 
         VerticalYesNo contactByEmail;
         VerticalYesNo contactByPost;
@@ -199,6 +159,62 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
             contactByEmail = VerticalYesNo.NO;
             contactByPost = VerticalYesNo.NO;
         }
+
+        String emailAddress = contactByEmail == VerticalYesNo.YES ? defendantPaperResponse.getEmailAddress() : null;
+
+        DefendantContactDetails defendantContactDetails =
+            buildDefendantContactDetails(address, firstName, lastName, emailAddress, phoneNumber);
+        DefendantResponses defendantResponse = buildDefendantResponses(
+            address,
+            firstName,
+            lastName,
+            phoneNumber,
+            contactByEmail,
+            contactByPost,
+            defendantPaperResponse.getFreeLegalAdvice(),
+            defendantPaperResponse.getHasMadeCounterClaim(),
+            defendantParty
+        );
+
+        return PossessionClaimResponse.builder()
+            .defendantContactDetails(defendantContactDetails)
+            .defendantResponses(defendantResponse)
+            .build();
+    }
+
+    private DefendantContactDetails buildDefendantContactDetails(
+        AddressUK address,
+        String firstName,
+        String lastName,
+        String emailAddress,
+        String phoneNumber
+    ) {
+        return DefendantContactDetails.builder()
+            .party(
+                Party.builder()
+                    .address(address)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .emailAddress(emailAddress)
+                    .phoneNumber(phoneNumber)
+                    .build()
+            ).build();
+    }
+
+    private DefendantResponses buildDefendantResponses(
+        AddressUK address,
+        String firstName,
+        String lastName,
+        String phoneNumber,
+        VerticalYesNo contactByEmail,
+        VerticalYesNo contactByPost,
+        YesNoPreferNotToSay freeLegalAdvice,
+        VerticalYesNo hasMadeCounterClaim,
+        PartyEntity defendantParty
+    ) {
+        VerticalYesNo addressConfirmed = isAddressConfirmed(address, defendantParty);
+        VerticalYesNo nameConfirmed = isNameConfirmed(firstName, lastName, defendantParty);
+        VerticalYesNo contactByPhone = phoneNumber != null ? VerticalYesNo.YES : VerticalYesNo.NO;
 
         return DefendantResponses.builder()
             .freeLegalAdvice(freeLegalAdvice)
