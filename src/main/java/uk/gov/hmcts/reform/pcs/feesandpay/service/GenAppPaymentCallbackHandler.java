@@ -43,6 +43,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
                 genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
                 notificationService.sendGenAppReceivedEmail(genAppEntity);
                 genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }

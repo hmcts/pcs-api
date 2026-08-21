@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -75,7 +76,7 @@ class PCSCaseViewTest {
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
 
     @Mock
-    private PcsCaseService pcsCaseService;
+    private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -133,32 +134,33 @@ class PCSCaseViewTest {
     @Mock
     private FeatureFlagView featureFlagView;
     @Mock
+    private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
+    @Mock
     private HearingView hearingView;
 
     private PCSCaseView underTest;
 
     @BeforeEach
     void setUp() {
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
-        underTest = new PCSCaseView(pcsCaseService, securityContextService, modelMapper, draftCaseDataService,
+        underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, documentsView, tenancyLicenceView, claimGroundsView,
                                     rentDetailsView, alternativesToPossessionView, asbProhibitedConductView,
                                     rentArrearsView, noticeOfPossessionView,
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    defendantResponseView, featureFlagView, hearingView
+                                    defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
+                                    hearingView
         );
     }
 
     @Test
     void shouldThrowExceptionForUnknownCaseReference() {
         // Given
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenThrow(new CaseNotFoundException(
-            CASE_NOT_FOUND,
-            RedactionContext.of("Case Reference", String.valueOf(CASE_REFERENCE))));
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
         CaseViewRequest<State> request = request(CASE_REFERENCE, DEFAULT_STATE);
@@ -336,6 +338,16 @@ class PCSCaseViewTest {
 
         // Then
         verify(caseFieldsView).setCaseFields(pcsCase);
+    }
+
+    @Test
+    void shouldDeduplicateCaseFileDocumentsAfterSettingCaseTabs() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(caseTabView).setCaseTabFields(pcsCase);
+        verify(caseFileDocumentDeduplicationService).removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
     }
 
     @Test

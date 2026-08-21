@@ -1,5 +1,5 @@
 import { IdamUtils } from '@hmcts/playwright-common';
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { performAction } from '../../controller';
 import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
@@ -23,10 +23,15 @@ export class LoginAction implements IAction {
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');
     }
-    await page.waitForSelector('#username', { timeout: LONG_TIMEOUT });
+    await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
     await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
+    await performAction('clickButton', signInOrCreateAnAccount.continueButton);
+    const pwdHeader = page.getByLabel('Enter your password', { exact: true });
+    await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
-    await performAction('clickButton', signInOrCreateAnAccount.signInButton);
+    await performAction('clickButton', signInOrCreateAnAccount.continueButton);
+    const signOut = page.getByText('Sign out', { exact: true });
+    await expect(signOut).toBeVisible({ timeout: LONG_TIMEOUT });
   }
 
   private async createUserAndLogin(userType: string, roles: string[], page:Page): Promise<void> {

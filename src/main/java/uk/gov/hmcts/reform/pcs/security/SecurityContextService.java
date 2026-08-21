@@ -26,12 +26,20 @@ public class SecurityContextService {
         return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
     }
 
+    public String getCurrentUserAuthToken() {
+        return getCurrentUser().getAuthToken();
+    }
+
     /**
      * Gets the current user details from the {@link SecurityContext}.
      * @return The user details for the user making the current request
      * @throws SecurityContextException if the security principal is not set or is not a {@link User} type
      */
     public UserInfo getCurrentUserDetails() {
+        return getCurrentUser().getUserDetails();
+    }
+
+    private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -39,7 +47,7 @@ public class SecurityContextService {
         }
 
         if (authentication.getPrincipal() instanceof User user) {
-            return user.getUserDetails();
+            return user;
         } else {
             throw new SecurityContextException(AUTHENTICATION_PRINCIPAL);
         }
