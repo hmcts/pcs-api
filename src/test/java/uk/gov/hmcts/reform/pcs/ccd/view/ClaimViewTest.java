@@ -24,6 +24,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +38,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimViewTest {
+
+    private static final Instant DOCUMENT_SUBMITTED_DATE = Instant.parse("2026-05-14T09:30:00Z");
 
     private PCSCase pcsCase;
     @Mock
@@ -321,6 +326,7 @@ class ClaimViewTest {
             .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
             .fileName(fileName)
             .categoryId("category-" + fileName)
+            .submittedDate(DOCUMENT_SUBMITTED_DATE)
             .build();
     }
 
@@ -339,6 +345,8 @@ class ClaimViewTest {
                 assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
                 assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
                 assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
+                assertThat(document.getUploadTimestamp())
+                    .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
             });
     }
 }

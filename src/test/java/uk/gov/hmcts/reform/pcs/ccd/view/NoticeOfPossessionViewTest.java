@@ -22,8 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +44,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_
 
 @ExtendWith(MockitoExtension.class)
 class NoticeOfPossessionViewTest {
+
+    private static final Instant DOCUMENT_SUBMITTED_DATE = Instant.parse("2026-05-14T09:30:00Z");
 
     @Mock
     private PCSCase pcsCase;
@@ -286,6 +290,7 @@ class NoticeOfPossessionViewTest {
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
                     .type(DocumentType.POSSESSION_NOTICE)
+                    .submittedDate(DOCUMENT_SUBMITTED_DATE)
                     .build()
             )
         );
@@ -302,6 +307,8 @@ class NoticeOfPossessionViewTest {
         List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
+        assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp())
+            .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }
 
     @Test

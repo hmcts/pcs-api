@@ -50,10 +50,7 @@ public class DocumentsView {
                            .url(entity.getUrl())
                            .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(entity.getSubmittedDate() == null
-                                                ? null
-                                                : entity.getSubmittedDate()
-                               .atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
+                           .uploadTimestamp(DocumentViewUtil.uploadTimestamp(entity))
                            .build())
                 .build())
             .collect(Collectors.toList());

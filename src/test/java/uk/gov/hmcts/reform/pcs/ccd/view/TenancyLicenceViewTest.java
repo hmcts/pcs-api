@@ -22,7 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +39,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TenancyLicenceViewTest {
+
+    private static final Instant DOCUMENT_SUBMITTED_DATE = Instant.parse("2026-05-14T09:30:00Z");
 
     @Mock
     private PCSCase pcsCase;
@@ -137,6 +142,7 @@ class TenancyLicenceViewTest {
                 DocumentEntity.builder()
                     .id(tenancyLicenceDocumentId)
                     .type(DocumentType.TENANCY_AGREEMENT)
+                    .submittedDate(DOCUMENT_SUBMITTED_DATE)
                     .build()
             )
         );
@@ -161,6 +167,8 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
         assertThat(tenancyLicenceDocuments).hasSize(1);
         assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+        assertThat(tenancyLicenceDocuments.getFirst().getValue().getUploadTimestamp())
+            .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }
 
     @Test
@@ -182,6 +190,7 @@ class TenancyLicenceViewTest {
                 DocumentEntity.builder()
                     .id(tenancyLicenceDocumentId)
                     .type(DocumentType.OCCUPATION_LICENCE)
+                    .submittedDate(DOCUMENT_SUBMITTED_DATE)
                     .build()
             )
         );
@@ -204,6 +213,8 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> licenceDocuments = occupationLicenceDetails.getLicenceDocuments();
         assertThat(licenceDocuments).hasSize(1);
         assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+        assertThat(licenceDocuments.getFirst().getValue().getUploadTimestamp())
+            .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
     }
 
     @Test
