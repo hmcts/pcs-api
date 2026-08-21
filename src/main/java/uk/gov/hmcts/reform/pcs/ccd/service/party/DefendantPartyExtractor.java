@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
@@ -26,10 +28,7 @@ public class DefendantPartyExtractor {
                 return new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR);
             });
 
-        List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
+        List<PartyEntity> defendants = extractDefendantParties(mainClaim);
 
         if (defendants.isEmpty()) {
             log.error("No defendants found for case {}", caseReference);
@@ -37,5 +36,20 @@ public class DefendantPartyExtractor {
         }
 
         return defendants;
+    }
+
+    public List<PartyEntity> summaryScreenSafeExtractDefendants(PcsCaseEntity caseEntity) {
+        Optional<ClaimEntity> mainClaim = caseEntity.getClaims().stream()
+            .findFirst();
+
+        return mainClaim.map(this::extractDefendantParties).orElse(Collections.emptyList());
+
+    }
+
+    private List<PartyEntity> extractDefendantParties(ClaimEntity mainClaim) {
+        return mainClaim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList();
     }
 }
