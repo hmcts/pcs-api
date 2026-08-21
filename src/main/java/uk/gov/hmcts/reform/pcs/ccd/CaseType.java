@@ -186,6 +186,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
             .forRoles(INTERNAL_TAB_ROLES)
+            .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
     }
 
