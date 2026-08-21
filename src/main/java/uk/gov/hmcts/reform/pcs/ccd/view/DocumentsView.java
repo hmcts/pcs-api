@@ -27,11 +27,11 @@ public class DocumentsView {
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
@@ -41,7 +41,8 @@ public class DocumentsView {
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
+                                                                   organisationId))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
@@ -59,7 +60,7 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
@@ -69,14 +70,14 @@ public class DocumentsView {
         if (genAppEntity != null) {
             return genAppVisibilityService.isGenAppDocumentVisibleToUser(
                 genAppEntity,
-                userRoles.userId(),
+                organisationId,
                 userRoles.roles()
             );
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
             PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService.isWithoutNoticeVisibleToUser(party, userRoles.userId(), userRoles.roles());
+            return genAppVisibilityService.isWithoutNoticeVisibleToUser(party, organisationId, userRoles.roles());
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
