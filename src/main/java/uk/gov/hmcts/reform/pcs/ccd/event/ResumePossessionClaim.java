@@ -44,9 +44,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -82,6 +82,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
+                // Kept alongside the group access roles until those are enabled everywhere. The event
+                // grant is also what gives a role field-level read, and this is the IdAM role every
+                // PCS solicitor holds, so dropping it takes claim fields away from the defendant's
+                // solicitor as well, who has no group role to fall back on.
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 // The organisations that are the claimant themselves - local authority and the
                 // "other" profiles - hold this capacity rather than claimant-solicitor
@@ -211,7 +216,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getClaimantInformation())
+        return ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
     }
 

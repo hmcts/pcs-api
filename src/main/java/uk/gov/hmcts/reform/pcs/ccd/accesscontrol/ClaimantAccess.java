@@ -11,6 +11,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOL
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR;
 
 
+/**
+ * Claimant data is reachable only through the group access roles, so that a solicitor holding the
+ * blanket caseworker-pcs-solicitor role cannot stand in for an organisation that derives no
+ * CaseAccessGroups - otherwise a broken group access configuration still reads as working.
+ */
 public class ClaimantAccess implements HasAccessControl {
 
     @Override

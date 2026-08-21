@@ -264,6 +264,40 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldDeriveCaseAccessGroupsFromTheClaimantOrganisation() {
+        // Given
+        PartyEntity claimant = PartyEntity.builder()
+            .organisationId("J1XJ9VJ")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .claimCreator(true)
+            .build();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(claimant));
+        when(modelMapper.map(claimant, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getCaseAccessGroups())
+            .extracting(group -> group.getValue().getCaseAccessGroupId())
+            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+    }
+
+    @Test
+    void shouldSetCaseAccessGroupsEmptyWhenNoPartyCarriesAnOrganisation() {
+        // Given
+        PartyEntity party = PartyEntity.builder().build();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(party));
+        when(modelMapper.map(party, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getCaseAccessGroups()).isEmpty();
+    }
+
+    @Test
     void shouldMapLegislativeCountry() {
         // Given
         LegislativeCountry expectedLegislativeCountry = LegislativeCountry.SCOTLAND;

@@ -75,6 +75,10 @@ public class PartyEntity {
     private String orgName;
 
     private String organisationId;
+    private String organisationProfileId;
+
+    /** The claimant the case was created for, marked at creation as there is no claim role to read yet. */
+    private boolean claimCreator;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -38,7 +38,9 @@
         "classification": "RESTRICTED",
         "readOnly": false,
         "attributes": {
-          "jurisdiction": "PCS"
+          "jurisdiction": "PCS",
+          "caseType": "PCS",
+          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:TEST-123"
         },
         "authorisations": []
       }

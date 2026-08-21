@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.UUID;
 
+
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -116,4 +117,5 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .scheduledTo(Instant.now())
         );
     }
+
 }

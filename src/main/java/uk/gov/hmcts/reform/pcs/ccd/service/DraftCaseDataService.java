@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -27,15 +28,18 @@ import java.util.function.Supplier;
 public class DraftCaseDataService {
 
     private final DraftCaseDataRepository draftCaseDataRepository;
+    private final OrganisationService organisationService;
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
+                                OrganisationService organisationService,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
                                 SecurityContextService securityContextService) {
         this.draftCaseDataRepository = draftCaseDataRepository;
+        this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
@@ -45,20 +49,49 @@ public class DraftCaseDataService {
         return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
     }
 
+    /**
+     * A user acting for an organisation shares one draft with their colleagues; a citizen keeps
+     * their own. Keyed on the caller's organisation rather than the case's, so a draft is never
+     * readable by an organisation that is not the caller's.
+     */
+    private Optional<String> currentUserOrganisationId() {
+        return Optional.ofNullable(organisationService.getOrganisationIdForCurrentUser());
+    }
+
+    private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
+                                                    Optional<String> organisationId) {
+        return organisationId
+            .map(orgId -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId)
+                .or(() -> adoptUserKeyedDraft(caseReference, eventId, userId, orgId)))
+            .orElseGet(() -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId));
+    }
+
+    /**
+     * Drafts saved before organisation keying carry no organisation, so the owner lookup misses them
+     * and the user would silently start again. The first open moves the row across.
+     */
+    private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, UUID userId,
+                                                             String organisationId) {
+        return draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .map(draft -> {
+                draft.setOrganisationId(organisationId);
+                return draftCaseDataRepository.save(draft);
+            });
+    }
+
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         return getUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -84,18 +117,14 @@ public class DraftCaseDataService {
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         return hasUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> draftExists(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -121,6 +150,20 @@ public class DraftCaseDataService {
     }
 
     /**
+     * Reports a not-yet-adopted draft as present too, so the dashboard agrees with what opening the
+     * journey will find. Adoption itself waits for that open rather than writing on a read.
+     */
+    private boolean draftExists(long caseReference, EventId eventId, UUID userId,
+                                Optional<String> organisationId) {
+        return organisationId
+            .map(orgId -> draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId))
+            .orElse(false)
+            || draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
+    }
+
+    /**
     * For dashboard display only. A respond draft may exist after START with only
     * claimant-populated contact details; that is not treated as "in progress".
     */
@@ -140,6 +183,7 @@ public class DraftCaseDataService {
                                              EventId eventId) {
 
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         saveUnsubmittedEventDataInternal(
             caseReference,
@@ -147,12 +191,7 @@ public class DraftCaseDataService {
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -269,17 +308,15 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
         patchInternal(
             caseReference,
             eventId,
             patchEventDataJson,
             userId,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference, eventId, userId
-                ),
+            () -> findDraft(caseReference, eventId, userId, organisationId),
             () -> createNewDraft(
-                caseReference, eventId, userId, patchEventDataJson
+                caseReference, eventId, userId, patchEventDataJson, organisationId
             )
         );
     }
@@ -296,18 +333,19 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         deleteUnsubmittedCaseDataInternal(
             caseReference,
             eventId,
             userId,
             null,
-            () -> draftCaseDataRepository
-                .deleteByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> organisationId.ifPresentOrElse(
+                orgId -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId),
+                () -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndIdamUserId(
+                        caseReference, eventId, userId))
         );
     }
 
@@ -362,6 +400,17 @@ public class DraftCaseDataService {
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
+        return newDraft;
+    }
+
+    /**
+     * The organisation identifies the draft when present; idamUserId is still written either way,
+     * so a shared draft records who last touched it.
+     */
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
+                                               Optional<String> organisationId) {
+        DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
+        organisationId.ifPresent(newDraft::setOrganisationId);
         return newDraft;
     }
 
