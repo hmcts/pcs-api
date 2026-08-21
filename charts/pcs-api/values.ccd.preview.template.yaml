@@ -221,7 +221,7 @@ xui-webapp:
            {"service":"SSCS","serviceCodes":["BBA3"]},
            {"service":"PCS","serviceCodes":["AAA3"]}]
       DECENTRALISED_CASE_TYPE_CONFIG: >-
-        {"PCS": {"nocBaseUrl": "https://${SERVICE_NAME}.preview.platform.hmcts.net"}}
+        {"PCS": {"webUrl":"${PCS_FRONTEND_URL}", "nocBaseUrl": "https://${SERVICE_NAME}.preview.platform.hmcts.net"}}
     keyVaults:
       rpx:
         resourceGroup: rpx
