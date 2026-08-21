@@ -797,7 +797,7 @@ public class PCSCase {
      * than stored - the name must be CaseAccessGroups to match what data store expects.
      */
     @JsonProperty("CaseAccessGroups")
-    @CCD
+    @CCD(searchable = false)
     private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 
     @CCD
