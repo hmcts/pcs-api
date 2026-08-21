@@ -10,9 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
-import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.LEGAL_REP_FOR_DEFENDANT_ACCESS;
 
 @Slf4j

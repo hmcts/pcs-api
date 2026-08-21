@@ -198,19 +198,13 @@ public class DraftCaseDataService {
 
         DraftCaseDataEntity draftCaseDataEntity = draftSupplier.get()
             .orElseThrow(() -> new UnsubmittedDataException(
-                ErrorCode.DRAFT_NOT_FOUND, RedactionContext.builder().value("caseReference", caseReference)
-                .value("eventId", eventId)
-                .value("userId", userId)
-                .value("partyId", partyId)
+                ErrorCode.DRAFT_NOT_FOUND, RedactionContext.builder()
+                .value("caseReference", draftCaseData.getCaseReference())
+                .value("eventId", draftCaseData.getEventId())
+                .value("organisationId", draftCaseData.getOrganisationId())
+                .value("partyId", draftCaseData.getPartyId())
+                .value("userId", draftCaseData.getUserId())
                 .build()));
-                draftCaseData.getPartyId() != null ? "No draft found for caseReference="
-                                                     + draftCaseData.getCaseReference()
-                                                     + ", eventId=" + draftCaseData.getEventId()
-                      + ", organisationId=" + draftCaseData.getOrganisationId() + ", partyId="
-                                                     + draftCaseData.getPartyId()
-                    : "No draft found for caseReference=" + draftCaseData.getCaseReference() + ", eventId="
-                      + draftCaseData.getEventId()
-                      + ", userId=" + draftCaseData.getUserId()));
 
         if (draftCaseData.getPartyId() != null) {
             log.debug("Replacing existing draft for organisationId={}, partyId={}", draftCaseData.getOrganisationId(),
