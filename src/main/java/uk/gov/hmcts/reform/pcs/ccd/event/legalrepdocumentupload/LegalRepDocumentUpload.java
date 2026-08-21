@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -47,9 +47,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
     private final DocumentService documentService;
-    private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
-    private final LegalRepForDefendantAccessValidator  legalRepForDefendantAccessValidator;
+    private final OrganisationService organisationService;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -74,7 +74,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
@@ -83,7 +83,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                         return Stream.of(buildCategoryItem(category, category.name(), null));
                     }
 
-                    return findGenAppsForCategory(pcsCaseEntity, currentUserId, category)
+                    return findGenAppsForCategory(pcsCaseEntity, organisationId, category)
                         .stream()
                         .map(genApp -> buildCategoryItem(
                             category, genApp.getId().toString(), genApp.getApplicationSubmittedDate()));
@@ -119,7 +119,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     List<GenAppEntity> findGenAppsForCategory(
         PcsCaseEntity pcsCaseEntity,
-        UUID currentUserId,
+        String organisationId,
         DocumentUploadCategory category
     ) {
         GenAppType mapped = mapCategoryToGenAppType(category);
@@ -127,7 +127,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return List.of();
         }
 
-        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+        return visibleGenAppsForUser(pcsCaseEntity, organisationId).stream()
             .filter(genApp -> genApp.getType() == mapped)
             .filter(genApp -> genApp.getApplicationSubmittedDate() != null)
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
@@ -143,11 +143,11 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         };
     }
 
-    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
-        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), organisationId);
     }
 
-    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, String organisationId) {
         LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
 
         if (details == null || details.getValidCategories() == null) {
@@ -163,28 +163,28 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         } catch (IllegalArgumentException e) {
             return null;
         }
-        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+        return visibleGenAppsForUser(pcsCaseEntity, organisationId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
             .orElse(null);
     }
 
-    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity) {
+    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
         return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
-                                                                            securityContextService.getCurrentUserId());
+                                                                            organisationId);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, currentUserId);
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, organisationId);
         PartyEntity party;
 
         if (selectedGenApp == null) {
-            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity);
+            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
             if (partyEntities.size() == 1) {
                 party = partyEntities.getFirst();
             } else {
