@@ -191,7 +191,8 @@ class DefendantAccessCodeServiceTest {
         UUID p2 = UUID.randomUUID();
         PcsCaseEntity caseEntity = createCaseWithDefendants(p1, p2);
         PartyAccessCodeEntity existing = mock(PartyAccessCodeEntity.class);
-        when(existing.getParty()).thenReturn(mock(PartyEntity.class));
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(existing.getParty()).thenReturn(partyEntity);
         when(existing.getParty().getId()).thenReturn(p1);
         when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of(existing));

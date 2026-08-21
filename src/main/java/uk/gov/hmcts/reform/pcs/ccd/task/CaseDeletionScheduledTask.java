@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentDeletionIncompleteException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
 
@@ -102,6 +102,9 @@ public class CaseDeletionScheduledTask {
                     try {
                         completeCaseDeletion(caseRef);
                     } catch (Exception e) {
+                        if (e instanceof InterruptedException) {
+                            Thread.currentThread().interrupt();
+                        }
                         log.error("Deletion failed for case: {}", caseRef, e);
                         failed.add(caseRef);
                     }
@@ -117,7 +120,7 @@ public class CaseDeletionScheduledTask {
         try {
             ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
             ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
-        } catch (CaseNotFoundException e) {
+        } catch (CcdCaseNotFoundException e) {
             log.warn("Case not found in main ccd datastore for reference: {}. ", caseRef);
         } finally {
             ccdCallThrottle.release();
@@ -136,7 +139,6 @@ public class CaseDeletionScheduledTask {
             try {
                 documentImportService.deleteDocument(document.getUrl());
             } catch (DocumentNotFoundException e) {
-                // Already deleted (retry convergence) — treat as success.
                 log.debug("Document {} already gone for case {}.", document.getId(), pcsCaseEntity.getCaseReference());
             } catch (Exception e) {
                 log.error("Failed to delete document {} for case {}", document.getId(),

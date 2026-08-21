@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -144,7 +145,11 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        userInfoStubbing();
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        String caseDataJson = "case data json";
 
         // When
         underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, caseDataJson);
@@ -176,7 +181,10 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        userInfoStubbing();
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
@@ -193,6 +201,10 @@ class DraftCaseDataServiceTest {
     void shouldThrowWhenNoDraftExistsForSave() throws JsonProcessingException {
         // Given
         PCSCase caseData = mock(PCSCase.class);
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
@@ -249,7 +261,7 @@ class DraftCaseDataServiceTest {
     void shouldDeleteUnsubmittedDataWhenInitiatedBySystemUser() {
         // Given
         DraftCaseDataEntity draftCaseDataEntity =
-                new DraftCaseDataEntity(1234, CASE_REFERENCE, "Some case data", eventId, USER_ID, null);
+                new DraftCaseDataEntity(1234, CASE_REFERENCE, "Some case data", eventId, USER_ID, null, null);
         when(draftCaseDataRepository.findByCaseReferenceAndEventId(CASE_REFERENCE, eventId))
             .thenReturn(List.of(draftCaseDataEntity));
         // When
@@ -287,7 +299,7 @@ class DraftCaseDataServiceTest {
 
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenThrow(jsonProcessingException);
-        userInfoStubbing();
+        UserInfo userInfo = userInfoStubbing();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // Then
@@ -303,7 +315,7 @@ class DraftCaseDataServiceTest {
         PCSCase caseData = mock(PCSCase.class);
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
-        userInfoStubbing();
+        UserInfo userInfo = userInfoStubbing();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // Then
@@ -392,7 +404,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        userInfoStubbing();
+        UserInfo userInfo = userInfoStubbing();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // When
@@ -430,7 +442,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        userInfoStubbing();
+        UserInfo userInfo = userInfoStubbing();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         // When
@@ -543,10 +555,11 @@ class DraftCaseDataServiceTest {
         verify(draftCaseDataEntity).setCaseData(newCaseDataJson);
     }
 
-    private void userInfoStubbing() {
+    private UserInfo userInfoStubbing() {
         UserInfo userInfo = UserInfo.builder()
                 .uid(USER_ID.toString())
                 .build();
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        return userInfo;
     }
 }

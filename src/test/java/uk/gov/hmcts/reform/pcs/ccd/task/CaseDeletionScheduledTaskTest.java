@@ -14,12 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -171,7 +173,7 @@ class CaseDeletionScheduledTaskTest {
         PcsCaseEntity entity = newPcsCaseEntity(List.of());
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, BATCH_SIZE))
             .thenReturn(List.of(CASE_1));
-        doThrow(new CaseNotFoundException(CASE_1)).when(ccdCaseDataDeletionService).markCaseForDeletion(CASE_1);
+        doThrow(new CcdCaseNotFoundException(CASE_1)).when(ccdCaseDataDeletionService).markCaseForDeletion(CASE_1);
         when(pcsCaseService.loadCase(CASE_1)).thenReturn(entity);
 
         // When
@@ -317,7 +319,7 @@ class CaseDeletionScheduledTaskTest {
             .thenReturn(List.of(CASE_1, CASE_2));
         when(pcsCaseService.loadCase(anyLong()))
             .thenAnswer(inv -> newPcsCaseEntity(List.of(document(url))));
-        doThrow(new RuntimeException("dm-store blew up")).when(documentImportService).deleteDocument(eq(url));
+        doThrow(new RuntimeException("dm-store blew up")).when(documentImportService).deleteDocument(url);
 
         // When
         assertDoesNotThrow(() -> underTest.runSweep());
@@ -344,11 +346,12 @@ class CaseDeletionScheduledTaskTest {
         return DocumentEntity.builder().id(UUID.randomUUID()).url(url).build();
     }
 
-    private Object trackConcurrencyWithLatency() throws InterruptedException {
+    private Object trackConcurrencyWithLatency() {
         int now = concurrentCalls.incrementAndGet();
         maxObservedConcurrency.accumulateAndGet(now, Math::max);
-        Thread.sleep(SIMULATED_LATENCY_MS);
+        LockSupport.parkNanos(Duration.ofMillis(SIMULATED_LATENCY_MS).toNanos());
         concurrentCalls.decrementAndGet();
         return null;
     }
+
 }
