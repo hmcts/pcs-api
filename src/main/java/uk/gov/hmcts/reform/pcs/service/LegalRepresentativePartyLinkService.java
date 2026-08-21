@@ -82,7 +82,8 @@ public class LegalRepresentativePartyLinkService {
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
-        unlinkExistingRepresentation(UUID.fromString(partyId));
+        final Optional<OrganisationEntity> outgoingRepresentative =
+            unlinkExistingRepresentation(UUID.fromString(partyId));
 
         Optional<OrganisationEntity> legalRepresentativeOrganisationEntity =
             findExistingRepresentativeOrganisation(organisationId);
@@ -124,6 +125,8 @@ public class LegalRepresentativePartyLinkService {
         organisationRepository.save(legalRepresentativeOrganisation);
         revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
+        outgoingRepresentative.ifPresent(outgoing -> notificationService
+            .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));
         notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
             legalRepresentativeOrganisation, defendantPartyEntity, legalRepEmail);
     }
@@ -204,7 +207,7 @@ public class LegalRepresentativePartyLinkService {
             });
     }
 
-    private void unlinkExistingRepresentation(UUID partyId) {
+    private Optional<OrganisationEntity> unlinkExistingRepresentation(UUID partyId) {
         Optional<OrganisationEntity> partyLinkedToLegalRepresentativeOrganisationAndActive =
             organisationRepository
                 .findByPartyLinkedToOrganisationAndActive(partyId);
@@ -220,6 +223,8 @@ public class LegalRepresentativePartyLinkService {
 
             organisationRepository.save(existingLegalRepresentativeOrganisation);
         }
+
+        return partyLinkedToLegalRepresentativeOrganisationAndActive;
     }
 
     private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyOrganisationEntity
