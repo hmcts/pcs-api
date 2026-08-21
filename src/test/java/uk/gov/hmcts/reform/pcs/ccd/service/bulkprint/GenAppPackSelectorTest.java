@@ -282,6 +282,30 @@ class GenAppPackSelectorTest {
     }
 
     @Test
+    @DisplayName("Still selects packs when the claim has defendants but no claimants")
+    void shouldSelectWhenClaimHasDefendantsButNoClaimants() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID)
+            .caseReference(CASE_REF)
+            .claims(List.of(claim))
+            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .build();
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient().getId()).isEqualTo(defendant.getId());
+            assertThat(candidate.role()).isEqualTo(PartyRole.DEFENDANT);
+            assertThat(candidate.documents()).containsExactly(withNoticePdf);
+        });
+    }
+
+    @Test
     @DisplayName("Returns nothing when genApps is null")
     void shouldReturnNothingWhenGenAppsNull() {
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());

@@ -52,6 +52,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -447,6 +448,19 @@ class GenAppDocumentGeneratorTest {
         verify(genAppEntity).setSubmissionDocument(documentEntity);
         verify(documentEntity).setType(DocumentType.GENERAL_APPLICATION);
         verify(documentEntity).setGeneralApplication(genAppEntity);
+        verify(claimActivityLogService).logGenerationSuccess(pcsCaseEntity, applicantPartyEntity);
+    }
+
+    @Test
+    void shouldLogDocumentsCreatedAfterSubmissionDocumentIsAttached() {
+        DocumentEntity documentEntity = mock(DocumentEntity.class);
+        when(documentImportService
+                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS))
+            .thenReturn(documentEntity);
+
+        underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+
+        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
         verify(claimActivityLogService).logGenerationSuccess(pcsCaseEntity, applicantPartyEntity);
     }
 
