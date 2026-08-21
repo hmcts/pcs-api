@@ -182,7 +182,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)
@@ -237,7 +238,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)
@@ -302,7 +304,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)
@@ -367,7 +370,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)
@@ -432,7 +436,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)
@@ -497,7 +502,8 @@ public class DefendantPaperResponseTest extends BaseEventTest {
 
         ArgumentCaptor<PossessionClaimResponse> possessionClaimResponseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity));
+        verify(claimResponseService)
+            .saveDraftDataForParty(possessionClaimResponseCaptor.capture(), eq(partyEntity), eq(TEST_CASE_REFERENCE));
 
         PossessionClaimResponse possessionClaimResponse = possessionClaimResponseCaptor.getValue();
         verify(defendantResponseService)

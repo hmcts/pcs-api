@@ -49,6 +49,7 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.defendantPaperResponse;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.paperResponseDefendant;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
@@ -66,7 +67,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(defendantPaperResponse.name(), this::submit, this::start)
-            .forStates(State.CASE_ISSUED)
+            .forStates(paperResponseDefendant())
             .name("Paper response - Defence")
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
@@ -125,7 +126,7 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
 
         PossessionClaimResponse possessionClaimResponse =
             buildPossessionClaimResponse(defendantPaperResponse, defendantParty);
-        claimResponseService.saveDraftDataForParty(possessionClaimResponse, defendantParty);
+        claimResponseService.saveDraftDataForParty(possessionClaimResponse, defendantParty, caseReference);
         defendantResponseService.saveDefendantResponse(
             caseReference,
             possessionClaimResponse,
