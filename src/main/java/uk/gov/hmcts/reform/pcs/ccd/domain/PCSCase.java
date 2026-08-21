@@ -806,9 +806,15 @@ public class PCSCase {
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
+     *
+     * <p>Left searchable even though nothing searches it. Marking it {@code searchable = false}
+     * emits the mapping as {@code {"enabled": false}}, and Elasticsearch cannot flip [enabled] on a
+     * field already mapped as an object - the put mapping returns 500 and the whole definition
+     * import fails. Any environment that has imported this field once, or has dynamically mapped it
+     * from a case document, would break on the next import.
      */
     @JsonProperty("CaseAccessGroups")
-    @CCD(searchable = false)
+    @CCD
     private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 
     @CCD
