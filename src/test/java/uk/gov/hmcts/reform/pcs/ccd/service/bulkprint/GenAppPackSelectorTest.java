@@ -281,7 +281,7 @@ class GenAppPackSelectorTest {
         assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
     }
 
-    @ParameterizedTest
+@ParameterizedTest
     @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
     @DisplayName("Does not send a gen-app pack when the application requires translation")
     void shouldSkipGenAppPackWhenTranslationRequired(LanguageUsed languageUsed) {
@@ -350,6 +350,69 @@ class GenAppPackSelectorTest {
         assertThat(result).hasSize(2);
         assertThat(result).extracting(GenAppPackCandidate::documents)
             .containsExactly(List.of(secondGaPdf), List.of(secondGaPdf));
+    }
+
+    @Test
+    @DisplayName("Returns nothing when the claim has no parties")
+    void shouldReturnNothingWhenClaimHasNoParties() {
+        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of()).build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID)
+            .caseReference(CASE_REF)
+            .claims(List.of(claim))
+            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .build();
+
+        assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Still selects packs when the claim has defendants but no claimants")
+    void shouldSelectWhenClaimHasDefendantsButNoClaimants() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID)
+            .caseReference(CASE_REF)
+            .claims(List.of(claim))
+            .genApps(new LinkedHashSet<>(List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant))))
+            .build();
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient().getId()).isEqualTo(defendant.getId());
+            assertThat(candidate.role()).isEqualTo(PartyRole.DEFENDANT);
+            assertThat(candidate.documents()).containsExactly(withNoticePdf);
+        });
+    }
+
+    @Test
+    @DisplayName("Returns nothing when genApps is null")
+    void shouldReturnNothingWhenGenAppsNull() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        ClaimEntity claim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(defendant).role(PartyRole.DEFENDANT).rank(1).build()))
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(CASE_ID).caseReference(CASE_REF).claims(List.of(claim)).genApps(null).build();
+
+        assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Excludes issued with-notice GAs that have no applicant party")
+    void shouldExcludeGenAppsWithNullApplicant() {
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity noApplicant = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        noApplicant.setParty(null);
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(noApplicant), claimant, defendant))).isEmpty();
     }
 
     private GenAppPackCandidate candidateFor(List<GenAppPackCandidate> result, PartyEntity recipient) {
