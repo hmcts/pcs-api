@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,11 +11,13 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +37,7 @@ class CreateFlagsTest extends  BaseEventTest {
 
     @Test
     void shouldBeConfiguredForEventStates() {
-        assertConfiguredForStates(EventStates.createFlags());
+        assertConfiguredForStates(ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED));
     }
 
     @Test
@@ -52,6 +55,42 @@ class CreateFlagsTest extends  BaseEventTest {
 
         // Then
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldUseCaseFlagsVersion2Point1CreateJourney() {
+        assertThat(getDisplayContextParameter("flagLauncherInternal"))
+            .isEqualTo("#ARGUMENT(CREATE,VERSION2.1)");
+    }
+
+    @Test
+    void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
+        assertThat(getSubFieldIds("allDefendants"))
+            .contains("defendantFlags", "partyFlagsExternal");
+    }
+
+    /**
+     * Availability before the case is issued is a confirmed requirement, so it is asserted in its own
+     * right and the whole state set is spelled out, rather than mirroring whichever helper the event
+     * happens to call.
+     */
+    @Test
+    void shouldBeAvailableFromPendingCaseIssuedOnwards() {
+        assertThat(configuredEvent.getPreState())
+            .contains(State.PENDING_CASE_ISSUED)
+            .containsExactlyInAnyOrder(
+                State.PENDING_CASE_ISSUED,
+                State.CASE_ISSUED,
+                State.CASE_PROGRESSION,
+                State.CASE_STAYED,
+                State.BREATHING_SPACE,
+                State.JUDICIAL_REFERRAL,
+                State.HEARING_READINESS,
+                State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+                State.DECISION_OUTCOME,
+                State.ALL_FINAL_ORDERS_ISSUED,
+                State.CLOSED)
+            .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 
     private List<ListValue<FlagDetail>> createFlagDetails() {

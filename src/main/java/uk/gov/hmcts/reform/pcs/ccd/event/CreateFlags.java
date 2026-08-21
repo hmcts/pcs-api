@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -24,13 +25,21 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 @AllArgsConstructor
 public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
 
+    /**
+     * Case flags may also be created before the case is issued. The shared
+     * {@link EventStates#createFlags()} set is not extended for this, because Make an application shares
+     * it and is only available once the case has been issued.
+     */
+    static final State[] CREATE_FLAG_STATES =
+        ArrayUtils.addAll(EventStates.createFlags(), State.PENDING_CASE_ISSUED);
+
     private  final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
-                .forStates(EventStates.createFlags())
+                .forStates(CREATE_FLAG_STATES)
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()
@@ -47,10 +56,11 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
                     .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                    .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
-                      "#ARGUMENT(CREATE)");
+                      "#ARGUMENT(CREATE,VERSION2.1)");
 
     }
 

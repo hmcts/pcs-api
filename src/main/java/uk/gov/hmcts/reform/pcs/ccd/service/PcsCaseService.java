@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,7 @@ public class PcsCaseService {
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
+    private final SecurityContextService securityContextService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -89,6 +91,29 @@ public class PcsCaseService {
 
         if (pcsCase.getParties() != null) {
             caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity.getParties());
+        }
+    }
+
+    public void patchSupportFlags(long caseReference, PCSCase pcsCase, boolean ownPartySupportOnly) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getPartySupport() != null) {
+            caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
+                                                  securityContextService.getCurrentUserId(), ownPartySupportOnly);
+        }
+    }
+
+    public void patchReviewedSupportFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getSupportReviewFlags() != null) {
+            caseFlagService.applyReviewedSupportFlags(pcsCase.getSupportReviewFlags(), pcsCaseEntity.getParties());
         }
     }
 

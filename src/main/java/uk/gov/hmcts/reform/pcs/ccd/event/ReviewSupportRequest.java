@@ -12,52 +12,58 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.SupportReviewService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SupportReviewRoles.SUPPORT_REVIEW_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @Component
 @Slf4j
 @AllArgsConstructor
-public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
-    private  final PcsCaseService pcsCaseService;
+public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole> {
+
+    private final PcsCaseService pcsCaseService;
+    private final SupportReviewService supportReviewService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                            .decentralisedEvent(EventId.amendFlags.name(), this::submit)
-                            .forStates(EventStates.amendFlags())
-                            .name("Manage case flags")
-                            .description("To manage flags")
+                            .decentralisedEvent(EventId.reviewSupportRequest.name(), this::submit, this::start)
+                            .forStates(CASE_FLAG_STATES)
+                            .name("Review support request")
+                            .description("To review requested support")
                             .showSummary()
                             .endButtonLabel("Submit")
-                            .grant(Permission.CRU,
-                                   UserRole.CTSC_ADMIN,
-                                   UserRole.HEARING_CENTRE_ADMIN,
-                                   UserRole.WLU_ADMIN)
+                            .grant(Permission.CRU, SUPPORT_REVIEW_ROLES)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("caseworkerCaseFlag")
-            .pageLabel("Manage case flags")
+            .pageLabel("Review support request")
             .label("caseworkerCaseFlag-lineSeparator", "---")
-            .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-            .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
-            .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
-                .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
-                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
+            .optional(PCSCase::getSupportReviewFlags, ShowConditions.NEVER_SHOW, true, true)
+            .list(PCSCase::getSupportReviewFlags, ShowConditions.NEVER_SHOW)
+                .optional(PartySupport::getSupportFlags, ShowConditions.NEVER_SHOW, true)
             .done()
-            .optional(PCSCase::getFlagLauncherInternal,null, null,
+            .optional(PCSCase::getFlagLauncherInternal, null, null,
                 null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+        caseData.setSupportReviewFlags(supportReviewService.buildRequestedSupport(caseData));
+        return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        log.debug("Caseworker updated case flag for {}", caseReference);
+        log.debug("Caseworker reviewed support request for {}", caseReference);
 
-        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
