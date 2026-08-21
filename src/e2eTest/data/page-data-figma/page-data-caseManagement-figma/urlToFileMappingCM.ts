@@ -24,6 +24,7 @@ export default {
   'manageHearing/confirm': 'confirmHearing',
   'enterGenApp/submit': 'genAppsCheckYourAnswers',
   'enterGenApp/confirm': 'enterGenAppConfirmation',
+  'managePartiesupdatePartyDetails': 'updatePartyDetails',
   'managePartiesmanagePartyOptions': 'managePartyOptions',
   'managePartiesaddClaimantOrDefendantDetails': 'partyDetails',
   'manageParties/submit': 'managePartiesCheckYourAnswers',

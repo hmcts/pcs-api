@@ -238,13 +238,13 @@ else
       </rule>
       <rule id="DecisionRule_0v14k8l">
         <inputEntry id="UnaryTests_125bf6j">
-          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+          <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
+          <text>"PENDING_REVIEW"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
@@ -259,7 +259,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
@@ -271,7 +271,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>
@@ -950,7 +950,7 @@ else
       </rule>
       <rule id="DecisionRule_0isk9qq">
         <inputEntry id="UnaryTests_1aysune">
-          <text>"Add review date"</text>
+          <text>"addCaseReviewDate"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1r9ux5s">
           <text></text>
@@ -997,7 +997,7 @@ else
           <text>Defendant submits Gen app, counterclaim, response or response and counterclaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_05cljls">
-          <text>Submitted</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xpd2q0">
           <text></text>
@@ -1006,7 +1006,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_000po80">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Defendant selects that they completed  Gen app, counterclaim, response or response and counterclaim in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0jueu0f">
           <text></text>

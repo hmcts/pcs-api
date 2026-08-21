@@ -211,9 +211,11 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService, never()).createTranslationTaskForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
             }
         }
 
@@ -341,6 +343,7 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
         }
 
         @Test

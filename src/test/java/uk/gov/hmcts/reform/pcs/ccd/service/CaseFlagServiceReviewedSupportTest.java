@@ -58,6 +58,26 @@ class CaseFlagServiceReviewedSupportTest {
         assertThat(requestedFlag.getDateTimeModified()).isEqualTo(modified);
     }
 
+    /**
+     * Setting a reviewed support flag to Inactive is the outcome the reviewer journey is signed off on,
+     * so the stored status, reason and modified timestamp are all asserted rather than only checking
+     * that the flag survived the review.
+     */
+    @Test
+    void shouldPersistInactiveStatusReasonAndModifiedDateToTheReviewedFlag() {
+        LocalDateTime modified = LocalDateTime.of(2026, 8, 21, 9, 30);
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), "Inactive", "Support no longer required", modified),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Inactive");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Support no longer required");
+        assertThat(requestedFlag.getDateTimeModified()).isEqualTo(modified);
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(internalRequestedFlag.getDefaultStatus()).isEqualTo("Requested");
+    }
+
     @Test
     void shouldSupportNotApprovedDecision() {
         underTest.applyReviewedSupportFlags(
