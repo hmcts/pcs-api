@@ -88,6 +88,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
 
+        if (!paymentRequired) {
+            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+        }
+
         if (isXuiJourney(createGenAppRequest)) {
             return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
         } else {

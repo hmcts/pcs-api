@@ -81,7 +81,10 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'addAHearing'
     || action === 'selectManageHearing'
     || action === 'editHearing'
-    || action === 'cancelHearing') {
+    || action === 'cancelHearing'
+    || action === 'selectParty' 
+    || action === 'updatePartyDetails'
+    || action === 'selectManageHearing') {
     captureDataForCYAPage = true;
   }
 
