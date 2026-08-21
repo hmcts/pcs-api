@@ -525,6 +525,55 @@ class TaskDescriptionServiceTest {
                 .hasMessage("Failed to render template")
                 .hasCause(pebbleException);
         }
+
+    }
+
+    @Nested
+    @DisplayName("Get description for Review Due Date task")
+    class ReviewDueDateTest {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-due-date",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-due-date",
+                expectedRenderedContent
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
     }
 
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {

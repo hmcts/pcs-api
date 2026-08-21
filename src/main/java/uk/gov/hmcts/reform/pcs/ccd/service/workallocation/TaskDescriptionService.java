@@ -156,6 +156,15 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createReviewDueDateDescription(long caseReference) {
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference
+        );
+
+        String templateName = "review-due-date";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
