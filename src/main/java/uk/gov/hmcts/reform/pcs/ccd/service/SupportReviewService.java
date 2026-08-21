@@ -2,10 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 
 import java.util.ArrayList;
@@ -19,25 +19,28 @@ public class SupportReviewService {
     public List<ListValue<PartySupport>> buildRequestedSupport(PCSCase pcsCase) {
         List<ListValue<PartySupport>> requestedSupport = new ArrayList<>();
 
-        if (pcsCase.getAllDefendants() == null) {
+        if (pcsCase.getPartySupport() == null) {
             return requestedSupport;
         }
 
-        for (ListValue<Party> partyListValue : pcsCase.getAllDefendants()) {
-            Party party = partyListValue.getValue();
-            if (party == null) {
+        for (ListValue<PartySupport> partySupportValue : pcsCase.getPartySupport()) {
+            PartySupport partySupport = partySupportValue.getValue();
+            if (partySupport == null) {
                 continue;
             }
 
-            List<ListValue<FlagDetail>> requestedDetails = requestedDetails(party.getPartyFlagsExternal());
+            Flags supportFlags = partySupport.getSupportFlags();
+            if (supportFlags == null || FlagVisibility.EXTERNAL != supportFlags.getVisibility()) {
+                continue;
+            }
+
+            List<ListValue<FlagDetail>> requestedDetails = requestedDetails(supportFlags);
             if (requestedDetails.isEmpty()) {
                 continue;
             }
 
-            Flags supportFlags = party.getPartyFlagsExternal();
-
             requestedSupport.add(ListValue.<PartySupport>builder()
-                .id(partyListValue.getId())
+                .id(partySupportValue.getId())
                 .value(PartySupport.builder()
                     .supportFlags(Flags.builder()
                         .partyName(supportFlags.getPartyName())

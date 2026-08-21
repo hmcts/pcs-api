@@ -9,11 +9,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.SupportReviewService;
@@ -61,11 +62,13 @@ class ReviewSupportRequestTest extends BaseEventTest {
     void shouldProjectOnlyRequestedSupportFlagsOnStart() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
-            .allDefendants(List.of(ListValue.<Party>builder()
+            .partySupport(List.of(ListValue.<PartySupport>builder()
                 .id(PARTY_ID)
-                .value(Party.builder()
-                    .id(PARTY_ID)
-                    .partyFlagsExternal(Flags.builder().details(createMixedStatusFlagDetails()).build())
+                .value(PartySupport.builder()
+                    .supportFlags(Flags.builder()
+                        .visibility(FlagVisibility.EXTERNAL)
+                        .details(createMixedStatusFlagDetails())
+                        .build())
                     .build())
                 .build()))
             .build();
