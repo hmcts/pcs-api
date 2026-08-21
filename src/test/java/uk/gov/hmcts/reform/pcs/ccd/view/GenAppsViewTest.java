@@ -15,8 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,16 +27,19 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GenAppsViewTest {
 
     private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+    private static final long TEST_CASE_REFERENCE = 123456789L;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private UserRoleService userRoleService;
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
@@ -47,13 +51,32 @@ class GenAppsViewTest {
 
     @BeforeEach
     void setUp() {
-        when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_IDAM_ID);
-        when(genAppVisibilityService.isGenAppVisibleToUser(isA(GenAppEntity.class), eq(CURRENT_USER_IDAM_ID)))
+        lenient().when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+        lenient().when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
+            .thenReturn(new UserRoles(CURRENT_USER_IDAM_ID, List.of()));
+        lenient().when(genAppVisibilityService.isGenAppVisibleToUser(
+            isA(GenAppEntity.class),
+            eq(CURRENT_USER_IDAM_ID),
+            eq(List.of())
+        ))
             .thenReturn(true);
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new GenAppsView(securityContextService, genAppVisibilityService);
+        underTest = new GenAppsView(userRoleService, genAppVisibilityService);
+    }
+
+    @Test
+    void shouldNotFetchUserRolesWhenCaseHasNoGeneralApplications() {
+        // Given
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of());
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getGenApps()).isEmpty();
+        verifyNoInteractions(userRoleService, genAppVisibilityService);
     }
 
     @Test
@@ -103,17 +126,20 @@ class GenAppsViewTest {
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID)).thenReturn(true);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID, List.of()))
+            .thenReturn(true);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID)).thenReturn(false);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID, List.of()))
+            .thenReturn(false);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID)).thenReturn(true);
+        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID, List.of()))
+            .thenReturn(true);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 

@@ -11,10 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Comparator;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -28,15 +30,26 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class GenAppsView {
 
-    private final SecurityContextService securityContextService;
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        Collection<GenAppEntity> genAppEntities = pcsCaseEntity.getGenApps();
+        if (genAppEntities == null || genAppEntities.isEmpty()) {
+            pcsCase.setGenApps(List.of());
+            return;
+        }
 
-        List<ListValue<GeneralApplication>> genApps = pcsCaseEntity.getGenApps().stream()
+        UserRoles userRoles =
+            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+
+        List<ListValue<GeneralApplication>> genApps = genAppEntities.stream()
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
-            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId))
+            .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
+                genAppEntity,
+                userRoles.userId(),
+                userRoles.roles()
+            ))
             .map(this::createListValue)
             .toList();
 
