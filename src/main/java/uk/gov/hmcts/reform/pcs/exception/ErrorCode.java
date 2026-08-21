@@ -89,6 +89,7 @@ public enum ErrorCode {
     DOCUMENT_DOWNLOAD("DOCUMENT_DOWNLOAD", "Document download issue"),
     DOCUMENT_NOT_FOUND("DOCUMENT_NOT_FOUND", "Document not found"),
     DRAFT_NOT_FOUND("DRAFT_NOT_FOUND", "No draft found"),
+    HEARING_NOT_FOUND("HEARING_NOT_FOUND", "Hearing not found"),
 
     REMOTE_CALL("REMOTE_CALL", "Remote call"),
     STATE("STATE", "Conflict state"),
