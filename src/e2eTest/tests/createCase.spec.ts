@@ -72,8 +72,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - England]', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @MAC @nightly', async () => {
+test.describe('[Create Case - England ]', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @MAC @nightly @CreateCaseEngland', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex

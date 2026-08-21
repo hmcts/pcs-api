@@ -37,7 +37,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Case tabs - Wales Journey] @nightly', async () => {
+test.describe('[Case tabs - Wales Journey] @nightly @rerun', async () => {
   test('Case tabs Wales - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
     await performAction('validateCaseSummaryDetails', {
@@ -105,7 +105,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       table: 'Notice details'
     });
   });
-  
+
   test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);

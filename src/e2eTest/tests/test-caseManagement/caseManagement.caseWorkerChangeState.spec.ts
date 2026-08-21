@@ -43,7 +43,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Case Worker change case state @nightly', async () => {
+test.describe('Case management - Case Worker change case state @nightly @rerun', async () => {
   test('Case management - Case Worker change case state @CM @regression', async () => {
     await performAction('selectAnEvent', { eventType: caseSummary.changeCaseState });
     await performValidation('mainHeader', changeCaseState.mainHeader);

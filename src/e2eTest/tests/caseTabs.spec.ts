@@ -66,7 +66,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Case tabs - England Journey] @nightly', async () => {
+test.describe('[Case tabs - England Journey] @nightly @rerun', async () => {
   test('Case tabs - Case parties tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseParties);

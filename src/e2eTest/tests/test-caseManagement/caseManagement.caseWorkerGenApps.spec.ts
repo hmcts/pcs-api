@@ -50,7 +50,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Case Worker Enter a General application @nightly', async () => {
+test.describe('Case management - Case Worker Enter a General application @nightly @rerun', async () => {
   test('Case management - Case Worker Enter a General application ADJOURN Journey @CM @regression', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);

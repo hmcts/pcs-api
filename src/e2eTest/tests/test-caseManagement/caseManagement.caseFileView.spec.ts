@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-  
+
   for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
       data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
@@ -40,7 +40,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - e2e Journey @nightly', async () => {
+test.describe('Case management - e2e Journey @nightly @rerun', async () => {
 
   test('Case management - CaseFile View test @CM @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)

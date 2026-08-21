@@ -1,18 +1,18 @@
 export const users = [{
   user: 'Creator',
-  email: 'pcs-solicitor2@test.com',
+  email: 'pcs.solicitor.org2user3@hmcts.net',//'pcs-solicitor2@test.com'->org-Possession Claims Solicitor Org
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },
 {
   user: 'Claimant Solicitor',
-  email: 'pcs-solicitor-user01@test.com',
+  email: 'pcs.solicitor.orguser3@hmcts.net', //'pcs.solicitor.org1@hmcts.net' --> org- PCS_Solicitor_Org_Testing,
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },
 {
   user: 'Defendant Solicitor',
-  email: 'pcs-org1-solicitor2@test.com',
+  email: 'pcs.solicitor.orguser4@hmcts.net', //'pcs-org1-solicitor2@test.com',
   password: process.env.IDAM_PCS_USER_PASSWORD,
   tabAccess: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request']
 },

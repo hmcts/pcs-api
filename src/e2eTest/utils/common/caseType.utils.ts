@@ -7,7 +7,7 @@ const CASE_TYPE_NAME_BASE = 'Possession';
  */
 export function getCaseTypeId(): string {
   const suffix = process.env.CASE_TYPE_SUFFIX;
-  return suffix ? `${CASE_TYPE_BASE}-${suffix}` : CASE_TYPE_BASE;
+  return suffix ? `${CASE_TYPE_BASE}` : CASE_TYPE_BASE;
 }
 
 /**
@@ -16,5 +16,5 @@ export function getCaseTypeId(): string {
  */
 export function getCaseTypeName(): string {
   const suffix = process.env.CASE_TYPE_SUFFIX;
-  return suffix ? `${CASE_TYPE_NAME_BASE} ${suffix}` : CASE_TYPE_NAME_BASE;
+  return suffix ? `${CASE_TYPE_NAME_BASE}` : CASE_TYPE_NAME_BASE;
 }

@@ -53,7 +53,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Manage documents Wales Journey @nightly', async () => {
+test.describe('Case management - Manage documents Wales Journey @nightly @rerun', async () => {
   test('Case management - Manage documents - Amend Wales Journey @CM @regression', async () => {
       let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
       let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -88,7 +88,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
         caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date, appType)
       });
     });
-  
+
     test('Case management - Manage documents - Amend Document not related to any App or Counterclaim Wales Journey @CM', async () => {
       let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
       let appType = amendDocumentDetails.notRelatedToAppRadioOption;
@@ -124,7 +124,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
         caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
       });
     });
-  
+
     test('Case management - Manage documents - Amend Document without any Issue date Wales Journey @CM', async () => {
       let date = '';
       let appType = amendDocumentDetails.notRelatedToAppRadioOption;
@@ -160,9 +160,9 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
         caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
       });
     });
-    
+
   test('Case management - Manage documents - Upload Wales Journey @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);    
+    let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
     let fileName = uploadADocument.uploadDocHiddenOption[1];
