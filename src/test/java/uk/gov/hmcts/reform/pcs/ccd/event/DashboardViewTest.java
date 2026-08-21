@@ -13,22 +13,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.StartDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.HearingsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.NoticesTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvaluator;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -52,9 +52,10 @@ class DashboardViewTest extends BaseEventTest {
     private SecurityContextService securityContextService;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private OrganisationService organisationService;
+
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationRepository organisationRepository;
 
     @Mock
     private UserRoleService userRoleService;
@@ -71,10 +72,7 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(
-            legalRepresentativeRepository,
-            organisationDetailsService
-        );
+        genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
 
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,
@@ -83,7 +81,7 @@ class DashboardViewTest extends BaseEventTest {
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new HearingsTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService),
+                new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService, organisationService),
                 new ResponseTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
             )
