@@ -55,7 +55,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
+                // Create only: a case carries no CaseAccessGroups until it holds a claimant party,
+                // so the group access roles cannot reach the event that creates one.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                // The organisations that are the claimant themselves - local authority and the
+                // "other" profiles - hold this capacity rather than claimant-solicitor
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
@@ -86,7 +92,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
+        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                  caseData.getLegislativeCountry());
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);

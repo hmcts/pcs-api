@@ -27,6 +27,24 @@
     ]
   },
   {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "claimant-solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
     "email": "caseworker@pcs.com",
     "id": "74e702fa-e20f-3a40-bc1d-d915f0874d00",
     "roleAssignments": [
