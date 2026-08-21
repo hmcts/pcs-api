@@ -9,14 +9,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,9 +76,9 @@ public class TaskDescriptionService {
     }
 
     public String createClaimAdditionalDocumentsDescription(long caseReference,
-                                                             ClaimEntity mainClaim,
-                                                             PartyEntity partyEntity,
-                                                             List<DocumentEntity> documentEntities) {
+                                                            ClaimEntity mainClaim,
+                                                            PartyEntity partyEntity,
+                                                            List<DocumentEntity> documentEntities) {
 
 
 
@@ -84,7 +87,7 @@ public class TaskDescriptionService {
     }
 
     public String createTranslateClaimantDocumentDescription(long caseReference,
-                                                             List<DocumentEntity> documentEntities) {
+                                                              List<DocumentEntity> documentEntities) {
 
         List<String> filenames = documentEntities.stream()
             .map(DocumentEntity::getFileName)
@@ -99,18 +102,37 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    private String createDocumentDescription(long caseReference,
-                                           ClaimEntity mainClaim,
-                                           PartyEntity partyEntity,
-                                           List<DocumentEntity> documentEntities,
-                                           String templateName,
-                                           Map<String, Object> customFields) {
+    public String createTranslateDefendantDocumentDescription(long caseReference,
+                                                               ClaimEntity mainClaim,
+                                                               PartyEntity partyEntity,
+                                                               List<DocumentEntity> documentEntities) {
 
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 
         List<String> filenames = documentEntities.stream()
             .map(DocumentEntity::getFileName)
             .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-defendant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
+    private String createDocumentDescription(long caseReference,
+                                             ClaimEntity mainClaim,
+                                             PartyEntity partyEntity,
+                                             List<DocumentEntity> documentEntities,
+                                             String templateName,
+                                             Map<String, Object> customFields) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+
+        List<String> filenames = extractFilenames(documentEntities);
 
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
@@ -136,6 +158,34 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createReviewResponseAndCounterClaimDescription(long caseReference,
+                                                                 CounterClaimEntity counterClaimEntity,
+                                                                 FeeDetails feeDetails) {
+
+        String partyLabel = getPartyLabel(counterClaimEntity.getParty(), caseReference);
+
+        String hwfReference = counterClaimEntity.getHwfReferenceNumber();
+        BigDecimal feeAmount = feeDetails.getFeeAmount();
+
+        Map<String, Object> context = Map.of(
+            "partyLabel", partyLabel,
+            "hwfReference", hwfReference,
+            "feeAmount", feeAmount
+        );
+
+        String templateName = "review-response-and-counterclaim";
+        return renderTemplate(templateName, context);
+    }
+
+    public String createReviewDueDateDescription(long caseReference) {
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference
+        );
+
+        String templateName = "review-due-date";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();
@@ -156,6 +206,12 @@ public class TaskDescriptionService {
                 .orElseThrow(() -> new ClaimNotFoundException(caseReference));
 
         return partyService.getPartyLabel(mainClaim, partyEntity.getId());
+    }
+
+    private static List<String> extractFilenames(List<DocumentEntity> documentEntities) {
+        return documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
     }
 
 }
