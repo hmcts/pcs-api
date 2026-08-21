@@ -281,7 +281,7 @@ class GenAppPackSelectorTest {
         assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
     }
 
-@ParameterizedTest
+    @ParameterizedTest
     @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
     @DisplayName("Does not send a gen-app pack when the application requires translation")
     void shouldSkipGenAppPackWhenTranslationRequired(LanguageUsed languageUsed) {
