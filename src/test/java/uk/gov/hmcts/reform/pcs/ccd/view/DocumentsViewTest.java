@@ -38,6 +38,7 @@ class DocumentsViewTest {
 
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
     private static final long TEST_CASE_REFERENCE = 123456789L;
+    private static final String ORGANISATION_ID = "org";
 
     @Mock
     private UserRoleService userRoleService;
@@ -87,7 +88,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1, entity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -141,7 +142,7 @@ class DocumentsViewTest {
 
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodePack, visibleDocument));
 
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
@@ -153,7 +154,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
@@ -174,7 +175,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).hasSize(1);
@@ -195,7 +196,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
@@ -205,11 +206,11 @@ class DocumentsViewTest {
     void shouldFilterGenAppDocumentsBasedOnVisibility() {
         // Given
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity2, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity2, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
@@ -244,7 +245,7 @@ class DocumentsViewTest {
             List.of(documentEntity1, documentEntity2, documentEntity3, documentEntity4));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -258,7 +259,7 @@ class DocumentsViewTest {
     void shouldHideDocumentLinkedToWithoutNoticeGenAppWhenGenAppIsNotVisibleToUser() {
         // Given
         GenAppEntity withoutNoticeGenApp = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(withoutNoticeGenApp, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
@@ -271,7 +272,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
@@ -281,7 +282,7 @@ class DocumentsViewTest {
     void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
         // Given
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
@@ -295,7 +296,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).isEmpty();
@@ -305,7 +306,7 @@ class DocumentsViewTest {
     void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
         // Given
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, List.of()))
+        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
@@ -319,7 +320,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).singleElement()
@@ -355,7 +356,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -377,7 +378,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
@@ -399,7 +400,7 @@ class DocumentsViewTest {
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();

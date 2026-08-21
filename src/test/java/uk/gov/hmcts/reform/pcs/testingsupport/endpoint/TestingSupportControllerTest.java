@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -399,7 +400,7 @@ class TestingSupportControllerTest {
                                                         UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userUid, organisationDetails);
+            .linkLegalRepresentativeToParty(caseReference, partyId, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
     }
@@ -497,6 +498,55 @@ class TestingSupportControllerTest {
         verify(pcsCaseService).allocateCaseManagementLocation(caseReference);
         verify(pcsCaseService).setCaseIssuedDate(caseReference);
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldRescheduleCamundaRequest() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        // When
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Camunda request rescheduled successfully");
+
+        ArgumentCaptor<TaskInstance<Void>> taskInstanceCaptor = ArgumentCaptor.forClass(TaskInstance.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(schedulerClient).reschedule(taskInstanceCaptor.capture(), instantCaptor.capture());
+
+        TaskInstance<Void> capturedTaskInstance = taskInstanceCaptor.getValue();
+        Instant scheduledInstant = instantCaptor.getValue();
+
+        assertThat(capturedTaskInstance.getId()).isSameAs("db-task-id");
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldHandleRescheduleCamundaRequestFailure() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
+            .reschedule(any(TaskInstance.class), any(Instant.class));
+
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("Failed to reschedule Camunda request task");
+        assertThat(response.getBody()).contains("Scheduler failure");
     }
 
     @Nested
