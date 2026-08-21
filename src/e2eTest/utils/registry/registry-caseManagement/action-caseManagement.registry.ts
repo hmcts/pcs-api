@@ -87,6 +87,9 @@ export class ActionCMRegistry {
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['getAddressInfo', new CaseManagementAction()],
+    ['selectParty', new CaseManagementAction()],
+    ['updatePartyDetails', new CaseManagementAction()],
+    ['confirmPartyDetailsUpdated', new CaseManagementAction()],
 
   ]);
 
