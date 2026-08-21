@@ -23,6 +23,7 @@ export * from './addHearing.page.data';
 export * from './checkYourAnswersManageHearing.page.data';
 export * from './genAppsCheckYourAnswers.page.data';
 export * from './enterGenAppConfirmation.page.data';
+export * from './updatePartyDetails.page.data';
 export * from './managePartyOptions.page.data';
 export * from './partyDetails.page.data';
 export * from './managePartiesCheckYourAnswers.page.data';
