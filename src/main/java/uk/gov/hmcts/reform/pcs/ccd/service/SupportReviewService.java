@@ -16,6 +16,11 @@ public class SupportReviewService {
 
     public static final String REQUESTED_STATUS = "Requested";
 
+    /**
+     * Requested support is read from the party support collection, which is the only collection the
+     * view layer populates with external party flags. The role-specific party collections carry no
+     * external flags, so reading them here would always yield nothing to review.
+     */
     public List<ListValue<PartySupport>> buildRequestedSupport(PCSCase pcsCase) {
         List<ListValue<PartySupport>> requestedSupport = new ArrayList<>();
 
