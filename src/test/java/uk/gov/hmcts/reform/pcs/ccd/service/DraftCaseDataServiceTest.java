@@ -281,8 +281,8 @@ class DraftCaseDataServiceTest {
 
         // Then
         verify(draftCaseDataRepository)
-            .deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                               orgId, partyId);
+            .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                        orgId, partyId);
     }
 
     @Test
@@ -338,8 +338,8 @@ class DraftCaseDataServiceTest {
         String organisationId = UUID.randomUUID().toString();
 
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                          organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenReturn(expectedUnsubmittedCaseData);
@@ -359,8 +359,8 @@ class DraftCaseDataServiceTest {
         UUID partyId = UUID.randomUUID();
         String organisationId = UUID.randomUUID().toString();
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.empty());
 
         // When
@@ -378,8 +378,8 @@ class DraftCaseDataServiceTest {
         UUID partyId = UUID.randomUUID();
         String organisationId = UUID.randomUUID().toString();
         when(draftCaseDataRepository
-                 .existsByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                            organisationId, partyId))
+                 .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                             organisationId, partyId))
             .thenReturn(repositoryDataExists);
 
         // When
@@ -399,8 +399,8 @@ class DraftCaseDataServiceTest {
         String organisationId = UUID.randomUUID().toString();
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                          organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
@@ -418,7 +418,7 @@ class DraftCaseDataServiceTest {
 
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
-        assertThat(savedEntity.getLegalRepresentativeOrganisationId()).isEqualTo(organisationId);
+        assertThat(savedEntity.getOrganisationId()).isEqualTo(organisationId);
         assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
     }
 
@@ -439,8 +439,8 @@ class DraftCaseDataServiceTest {
         when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
 
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
@@ -487,7 +487,7 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseDataEntity.getCaseData()).thenReturn(existingJson);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             CASE_REFERENCE, eventId, organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
         String patchJson = "patch json";
@@ -514,8 +514,8 @@ class DraftCaseDataServiceTest {
         when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
 
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                          organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.empty());
 
         // When / Then
@@ -542,8 +542,8 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
         when(draftCaseDataRepository
-                 .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
-                                                                                          organisationId, partyId))
+                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(CASE_REFERENCE, eventId,
+                                                                           organisationId, partyId))
             .thenReturn(Optional.of(draftCaseDataEntity));
 
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))

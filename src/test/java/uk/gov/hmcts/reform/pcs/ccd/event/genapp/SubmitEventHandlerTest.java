@@ -214,9 +214,11 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService, never()).createTranslationTaskForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
             }
         }
 
@@ -295,6 +297,15 @@ class SubmitEventHandlerTest {
 
     }
 
+    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
+        BigDecimal applicationFee = new BigDecimal("55.00");
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(applicationFee)
+            .build();
+        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
+        return feeDetails;
+    }
+
     @Nested
     @DisplayName("Citizen submit event tests")
     class CitizenSubmitEventTests {
@@ -337,6 +348,7 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
         }
 
         @Test
@@ -515,15 +527,6 @@ class SubmitEventHandlerTest {
 
     private void stubNoApplicationFee(GenAppRequest genAppRequest) {
         when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
-    }
-
-    private FeeDetails stubApplicationFeeCalculation(GenAppRequest genAppRequest) {
-        BigDecimal applicationFee = new BigDecimal("55.00");
-        FeeDetails feeDetails = FeeDetails.builder()
-            .feeAmount(applicationFee)
-            .build();
-        when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.of(feeDetails));
-        return feeDetails;
     }
 
     private GenAppEntity stubCreateGenAppEntity(GenAppRequest genAppRequest,

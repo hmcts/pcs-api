@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -30,6 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
@@ -62,6 +66,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
@@ -89,6 +94,10 @@ class DocumentServiceTest {
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
+    @InjectMocks
+    private DocumentService documentService;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> listCaptor;
 
     private DocumentService underTest;
 
@@ -976,6 +985,11 @@ class DocumentServiceTest {
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
+        String description = "some task description";
+        when(taskDescriptionService.createClaimAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
+        )).thenReturn(description);
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
@@ -994,6 +1008,7 @@ class DocumentServiceTest {
         assertThat(entity.getSize()).isEqualTo(123L);
         assertThat(entity.getPcsCase()).isSameAs(pcsCase);
         assertThat(entity.getParty()).isSameAs(party);
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
     }
 
     @Test
@@ -1148,16 +1163,6 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
-    @Test
-    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
-
-        // Then
-        assertThat(actualDocumentType).isNull();
-    }
-
-
     @ParameterizedTest
     @MethodSource("additionalDocumentTypeScenarios")
     void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
@@ -1167,6 +1172,15 @@ class DocumentServiceTest {
 
         // Then
         assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+    }
+
+    @Test
+    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
+        // When
+        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
+
+        // Then
+        assertThat(actualDocumentType).isNull();
     }
 
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
@@ -1189,6 +1203,93 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
         );
+    }
+
+    @Test
+    void shouldCreateValidLegalRepDocuments() {
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description("Test Description")
+            .document(Document.builder().build())
+            .build();
+
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
+            .legalRepDocuments(List.of(ListValue.<LegalRepDocument>builder().value(legalRepDocument).build()))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
+            .build();
+
+        List<LegalRepDocument> listOfLegalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+        assertThat(listOfLegalRepDocuments).hasSize(1);
+        assertThat(listOfLegalRepDocuments.getFirst().getLegalRepDocumentType().getLabel())
+            .isEqualTo("Photographic evidence");
+        assertThat(listOfLegalRepDocuments.getFirst().getDescription()).isEqualTo("Test Description");
+    }
+
+    @Test
+    void shouldSaveLegalRepDocuments() {
+        String description = "test description";
+        String docUrl = "test url";
+        String fileName = "test-filename.pdf";
+
+        Document document = Document.builder()
+            .filename(fileName)
+            .url(docUrl)
+            .binaryUrl("test binary url")
+            .categoryId(CaseFileCategory.EVIDENCE.getId())
+            .build();
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .document(document)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description(description)
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+
+        final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        setUpDefendantParty(pcsCaseEntity, party, 2);
+
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
+        when(party.getId()).thenReturn(partyId);
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
+
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+
+        String expectedRenamedFile = fileName + " GA1 - Defendant 2.pdf";
+        when(documentNameService.appendGenAppPostfix(fileName, selectedGenApp, mainClaim, partyId))
+            .thenReturn(expectedRenamedFile);
+
+        // When
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity, party,
+                                                                    selectedGenApp);
+
+        // Then
+        verify(pcsCaseEntity, times(1)).addDocuments(listCaptor.capture());
+
+        List<DocumentEntity> capturedDocumentList = listCaptor.getValue();
+        assertThat(capturedDocumentList).hasSize(1);
+
+        DocumentEntity documentEntity = capturedDocumentList.getFirst();
+
+        assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
+        assertThat(documentEntity.getDocumentId()).isEqualTo(expectedDocumentId);
+        assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
+        assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
+        assertThat(documentEntity.getDescription()).isEqualTo(description);
+        assertThat(documentEntity.getContentType()).isEqualTo("application/pdf");
+        assertThat(documentEntity.getSize()).isEqualTo(123L);
+        assertThat(documentEntity.getGeneralApplication()).isEqualTo(selectedGenApp);
     }
 
     @Test
@@ -1392,63 +1493,6 @@ class DocumentServiceTest {
         assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
     }
 
-    @Test
-    void shouldCreateDocumentEntitiesFromLegalRepDocuments() {
-        // Given
-        String url1 = "http://example.com/doc1.pdf";
-        String filename1 = "document1.pdf";
-        String binaryUrl1 = "http://example.com/binary/doc1";
-        String description1 = "Test document 1";
-        Document document1 = new Document(url1, filename1, binaryUrl1);
-
-        String url2 = "http://example.com/doc2.docx";
-        String filename2 = "document2.docx";
-        String binaryUrl2 = "http://example.com/binary/doc2";
-        String description2 = "Test document 2";
-        Document document2 = new Document(url2, filename2, binaryUrl2);
-
-        LegalRepDocument legalRepDoc1 = LegalRepDocument.builder()
-            .legalRepDocumentType(LegalRepDocumentType.WITNESS_STATEMENT)
-            .document(document1)
-            .description(description1)
-            .build();
-
-        LegalRepDocument legalRepDoc2 = LegalRepDocument.builder()
-            .legalRepDocumentType(LegalRepDocumentType.TENANCY_AGREEMENT)
-            .document(document2)
-            .description(description2)
-            .build();
-
-        List<LegalRepDocument> legalRepDocuments = List.of(legalRepDoc1, legalRepDoc2);
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-
-        // When
-        underTest.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments, pcsCaseEntity);
-
-        // Then
-        List<DocumentEntity> addedDocuments = pcsCaseEntity.getDocuments();
-        assertThat(addedDocuments).hasSize(2);
-
-        // Verify first document
-        DocumentEntity doc1 = addedDocuments.get(0);
-        assertThat(doc1.getUrl()).isEqualTo(url1);
-        assertThat(doc1.getFileName()).isEqualTo(filename1);
-        assertThat(doc1.getBinaryUrl()).isEqualTo(binaryUrl1);
-        assertThat(doc1.getDescription()).isEqualTo(description1);
-        assertThat(doc1.getType()).isEqualTo(DocumentType.WITNESS_STATEMENT);
-        assertThat(doc1.getCategoryId()).isEqualTo(CaseFileCategory.EVIDENCE.getId());
-        assertThat(doc1.getPcsCase()).isEqualTo(pcsCaseEntity);
-
-        // Verify second document
-        DocumentEntity doc2 = addedDocuments.get(1);
-        assertThat(doc2.getUrl()).isEqualTo(url2);
-        assertThat(doc2.getFileName()).isEqualTo(filename2);
-        assertThat(doc2.getBinaryUrl()).isEqualTo(binaryUrl2);
-        assertThat(doc2.getDescription()).isEqualTo(description2);
-        assertThat(doc2.getType()).isEqualTo(DocumentType.TENANCY_AGREEMENT);
-        assertThat(doc2.getCategoryId()).isEqualTo(CaseFileCategory.PROPERTY_DOCUMENTS.getId());
-        assertThat(doc2.getPcsCase()).isEqualTo(pcsCaseEntity);
-    }
 
     @Test
     void shouldCreateEmptyDocumentListWhenNoLegalRepDocuments() {
@@ -1456,7 +1500,7 @@ class DocumentServiceTest {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
 
         // When
-        underTest.createDocumentEntitiesFromLegalRepDocuments(List.of(), pcsCaseEntity);
+        underTest.createDocumentEntitiesFromLegalRepDocuments(List.of(), pcsCaseEntity, null, null);
 
         // Then
         assertThat(pcsCaseEntity.getDocuments()).isEmpty();

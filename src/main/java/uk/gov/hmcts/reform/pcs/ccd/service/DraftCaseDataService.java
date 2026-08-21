@@ -68,7 +68,7 @@ public class DraftCaseDataService {
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId)
                 .organisationId(legalRepresentativeOrganisationId).partyId(partyId).build(),
             () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+                .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -100,7 +100,7 @@ public class DraftCaseDataService {
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).partyId(partyId)
                 .organisationId(legalRepresentativeOrganisationId).build(),
             () -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+                .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -155,7 +155,7 @@ public class DraftCaseDataService {
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId)
                 .organisationId(legalRepresentativeOrganisationId).partyId(partyId).build(),
             () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+                .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     legalRepresentativeOrganisationId,
@@ -218,7 +218,7 @@ public class DraftCaseDataService {
                 saved.getId(),
                 saved.getCaseReference(),
                 saved.getEventId(),
-                saved.getLegalRepresentativeOrganisationId(),
+                saved.getOrganisationId(),
                 saved.getPartyId());
         } else {
             log.debug(
@@ -253,7 +253,7 @@ public class DraftCaseDataService {
                 .organisationId(legalRepresentativeOrganisationId).build(),
             patchEventDataJson,
             () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+                .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
                     caseReference, eventId, legalRepresentativeOrganisationId, partyId
                 ),
             () -> createNewDraft(
@@ -312,7 +312,7 @@ public class DraftCaseDataService {
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).partyId(partyId)
                 .organisationId(organisationId).build(),
             () -> draftCaseDataRepository
-                .deleteByCaseReferenceAndEventIdAndLegalRepresentativeOrganisationIdAndPartyId(
+                .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
                     caseReference,
                     eventId,
                     organisationId,
@@ -361,7 +361,7 @@ public class DraftCaseDataService {
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
         newDraft.setPartyId(partyId);
-        newDraft.setLegalRepresentativeOrganisationId(organisationId);
+        newDraft.setOrganisationId(organisationId);
         return newDraft;
     }
 

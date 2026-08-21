@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -93,6 +95,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
     private final FeatureFlagView featureFlagView;
+    private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
+    private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
 
@@ -121,6 +125,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase);
         }
+        caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
@@ -158,11 +163,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
-        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
-        documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
+        documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -172,16 +178,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
-        genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           organisationIdForCurrentUser, state);
-
+        hearingView.setCaseFields(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state,
+                                                                           organisationId);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 

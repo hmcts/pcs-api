@@ -311,10 +311,12 @@ class LegalRepresentativePageServiceTest {
         // given
         String orgId = "org";
         long caseReference = 1L;
+        String email = "email";
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .useEmailAddress(VerticalYesNo.YES)
             .organisationId(orgId)
+            .originalEmailAddress(email)
             .build();
 
         ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
@@ -329,7 +331,7 @@ class LegalRepresentativePageServiceTest {
 
         // then
         assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
-        assertThat(legalRepresentativeOrganisationContactDetails.getEmailAddress()).isNull();
+        assertThat(legalRepresentativeOrganisationContactDetails.getEmailAddress()).isEqualTo(email);
     }
 
     @Test
