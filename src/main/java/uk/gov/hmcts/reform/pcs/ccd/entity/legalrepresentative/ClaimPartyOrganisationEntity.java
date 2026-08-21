@@ -1,12 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,28 +22,30 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.Instant;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
-@Table(name = "claim_party_legal_representative")
+@Table(name = "claim_party_organisation")
 @Setter
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimPartyLegalRepresentativeEntity {
+public class ClaimPartyOrganisationEntity {
 
-    @EmbeddedId
-    @Builder.Default
-    private LegalRepresentativePartyId id = new LegalRepresentativePartyId();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @ManyToOne
-    @MapsId("partyId")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "party_id", nullable = false)
     @JsonBackReference
     private PartyEntity party;
 
-    @ManyToOne
-    @MapsId("legalRepresentativeId")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "organisation_id", nullable = false)
     @JsonBackReference
-    private LegalRepresentativeEntity legalRepresentative;
+    private OrganisationEntity organisation;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

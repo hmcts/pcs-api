@@ -289,12 +289,17 @@ public class ClaimEntity {
     }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
+        addParty(party, partyRole, null);
+    }
+
+    public void addParty(PartyEntity party, PartyRole partyRole, PartyEntity actingForParty) {
         int rank = countNumberOfExistingPartiesWithRole(partyRole) + 1;
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .rank(rank)
             .claim(this)
             .party(party)
             .role(partyRole)
+            .actingForParty(actingForParty)
             .build();
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);

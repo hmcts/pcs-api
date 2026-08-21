@@ -22,13 +22,13 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+    void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+        long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partyId);
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+    boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+        long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partId);
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+        long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
 }
