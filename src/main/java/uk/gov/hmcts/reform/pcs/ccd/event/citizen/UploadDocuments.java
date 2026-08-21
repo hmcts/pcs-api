@@ -21,16 +21,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimVisibilityService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocuments;
@@ -45,6 +48,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final DocumentService documentService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final CounterClaimVisibilityService counterClaimVisibilityService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -67,13 +71,17 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UUID currentUserId = securityContextService.getCurrentUserId();
 
-        List<ListValue<RelatedApplicationOption>> options =
+        List<ListValue<RelatedApplicationOption>> options = new ArrayList<>(
             visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
                 .map(this::toOption)
                 .filter(Objects::nonNull)
-                .toList();
+                .toList());
 
-        caseData.getDocumentUploadDetails().setRelatedApplicationOptions(new ArrayList<>(options));
+        visibleCounterClaimForUser(pcsCaseEntity, currentUserId)
+            .map(this::toCounterClaimOption)
+            .ifPresent(options::add);
+
+        caseData.getDocumentUploadDetails().setRelatedApplicationOptions(options);
 
         caseData.getDocumentUploadDetails().setShowRelatedApplicationsPage(
             options.isEmpty() ? YesOrNo.NO : YesOrNo.YES);
@@ -83,6 +91,11 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
         return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+    }
+
+    private Optional<CounterClaimEntity> visibleCounterClaimForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+        return counterClaimVisibilityService.getVisibleCounterClaimForUser(
+            pcsCaseEntity.getCounterClaims(), currentUserId);
     }
 
     private ListValue<RelatedApplicationOption> toOption(GenAppEntity genApp) {
@@ -97,6 +110,18 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
             .build();
         return ListValue.<RelatedApplicationOption>builder()
             .id(genApp.getId().toString())
+            .value(option)
+            .build();
+    }
+
+    private ListValue<RelatedApplicationOption> toCounterClaimOption(CounterClaimEntity counterClaim) {
+        RelatedApplicationOption option = RelatedApplicationOption.builder()
+            .counterClaimId(counterClaim.getId().toString())
+            .category(DocumentUploadCategory.COUNTERCLAIM)
+            .submittedDate(counterClaim.getClaimSubmittedDate())
+            .build();
+        return ListValue.<RelatedApplicationOption>builder()
+            .id(counterClaim.getId().toString())
             .value(option)
             .build();
     }
@@ -119,32 +144,53 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UUID currentUserId = securityContextService.getCurrentUserId();
         PartyEntity uploadingParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
-        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity, currentUserId);
+
+        UUID selectedId = parseSelectedRelatedApplicationId(caseData);
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(selectedId, pcsCaseEntity, currentUserId);
+        CounterClaimEntity selectedCounterClaim = selectedGenApp == null
+            ? resolveSelectedCounterClaim(selectedId, pcsCaseEntity, currentUserId)
+            : null;
 
         documentService.linkAdditionalDocumentsToCase(
             caseData.getUploadedAdditionalDocuments(),
             pcsCaseEntity,
             uploadingParty,
-            selectedGenApp
+            selectedGenApp,
+            selectedCounterClaim
         );
 
         return SubmitResponse.<State>builder().build();
     }
 
-    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+    private UUID parseSelectedRelatedApplicationId(PCSCase caseData) {
         DocumentUploadDetails details = caseData.getDocumentUploadDetails();
         if (details == null || details.getSelectedRelatedApplicationId() == null) {
             return null;
         }
-        UUID selectedId;
         try {
-            selectedId = UUID.fromString(details.getSelectedRelatedApplicationId());
+            return UUID.fromString(details.getSelectedRelatedApplicationId());
         } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private GenAppEntity resolveSelectedGenApp(UUID selectedId, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+        if (selectedId == null) {
             return null;
         }
         return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
+            .orElse(null);
+    }
+
+    private CounterClaimEntity resolveSelectedCounterClaim(UUID selectedId, PcsCaseEntity pcsCaseEntity,
+                                                           UUID currentUserId) {
+        if (selectedId == null) {
+            return null;
+        }
+        return visibleCounterClaimForUser(pcsCaseEntity, currentUserId)
+            .filter(counterClaim -> selectedId.equals(counterClaim.getId()))
             .orElse(null);
     }
 }
