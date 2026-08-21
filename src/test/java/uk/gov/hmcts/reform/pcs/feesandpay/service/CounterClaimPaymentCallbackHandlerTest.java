@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
