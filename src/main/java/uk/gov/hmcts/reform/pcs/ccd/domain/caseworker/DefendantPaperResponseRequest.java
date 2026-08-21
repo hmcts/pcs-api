@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.caseworker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +19,6 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DefendantPaperResponseRequest {
 
     @JsonProperty("paperResponse_FreeLegalAdvice")
