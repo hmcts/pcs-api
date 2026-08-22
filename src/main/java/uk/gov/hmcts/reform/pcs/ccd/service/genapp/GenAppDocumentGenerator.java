@@ -131,7 +131,7 @@ public class GenAppDocumentGenerator {
         String caseName = buildCaseName(mainClaim);
 
         PartyEntity applicantPartyEntity = partyService.getPartyEntityByEntityId(applicantPartyId, caseReference);
-        String applicantName = applicantPartyEntity.getFirstName() + " " + applicantPartyEntity.getLastName();
+        String applicantName = partyService.getPartyName(applicantPartyEntity);
         String formattedPropertyAddress = getFormattedPropertyAddress(pcsCaseEntity);
         String formattedApplicantAddress = getFormattedApplicantAddress(applicantPartyEntity, formattedPropertyAddress);
 
