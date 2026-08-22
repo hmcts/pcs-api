@@ -26,6 +26,7 @@ final class AccessGrants {
     static final UserRole[] PARTY_VISIBLE_ROLES = {
         CITIZEN,
         DEFENDANT,
+        GA_DEFENDANT_SOLICITOR,
         PCS_SOLICITOR,
         CLAIMANT,
         GA_CLAIMANT_SOLICITOR,
