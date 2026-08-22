@@ -8,6 +8,9 @@ export class ClickRadioButtonAction implements IAction {
     const question = params.question as string;
     const option = params.option as string;
 
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),
       () => this.radioPattern2(page, question, option, idx),
@@ -28,6 +31,8 @@ export class ClickRadioButtonAction implements IAction {
     if ((await locator.count()) !== 1) {
       return false;
     }
+
+    await locator.waitFor({ state: 'visible' });
 
     let attempt = 0;
     let radioIsChecked = false;
