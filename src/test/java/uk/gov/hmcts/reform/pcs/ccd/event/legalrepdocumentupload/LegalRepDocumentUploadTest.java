@@ -22,9 +22,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -52,21 +55,20 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private PcsCaseEntity pcsCaseEntity;
-
     @Mock
     private PcsCaseService pcsCaseService;
-
     @Mock
     private DocumentService documentService;
-
     @Mock
     private OrganisationService organisationService;
-
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
-
     @Mock
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    @Mock
+    private UserRoleService userRoleService;
+    @Mock
+    private PartyService partyService;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -232,6 +234,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     @Test
     void shouldUploadLegalRepDocumentCorrectly() {
         // Given
+        stubUserRoles();
+
         String description = "test description";
         UUID selectedId = UUID.randomUUID();
 
@@ -285,6 +289,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Test
     void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull() {
+        stubUserRoles();
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         LegalRepDocument nullLegalRepDocument = null;
@@ -311,5 +316,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
         assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
+    }
+
+    private void stubUserRoles() {
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE)).thenReturn(mock(UserRoles.class));
     }
 }
