@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 import static java.util.Objects.isNull;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -68,7 +70,7 @@ public class LegalRepresentativePartyLinkService {
         }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        checkConflictOfInterest(caseEntity, orgDetails.getOrganisationIdentifier());
+        checkConflictOfInterest(caseEntity, orgDetails);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
@@ -127,17 +129,19 @@ public class LegalRepresentativePartyLinkService {
             .isOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
     }
 
-    private void checkConflictOfInterest(PcsCaseEntity caseEntity, String organisationId) {
-        PartyEntity claimant = caseEntity.getClaims().getFirst().getClaimParties().stream()
-            .filter(claimParty -> PartyRole.CLAIMANT.equals(claimParty.getRole()))
-            .map(ClaimPartyEntity::getParty)
-            .findFirst()
-            .orElseThrow(() -> {
+    private void checkConflictOfInterest(PcsCaseEntity caseEntity, OrganisationDetailsResponse orgDetails) {
+        if (!OrganisationProfile.SOLICITOR_PROFILE.equals(valueOf(orgDetails.getOrgProfileId()))) {
+            throw new ConflictOfInterestException(
+                "Only a Solicitor Organisation can become a legal representative for a party in a case");
+        }
+        PartyEntity claimant = caseEntity.getParties().stream()
+            .filter(PartyEntity::isClaimCreator)
+            .findFirst().orElseThrow(() -> {
                 log.error("Unable to find claimant Party");
                 return new PartyNotFoundException("Unable to find claimant Party");
             });
 
-        if (organisationId.equals(claimant.getOrganisationId())) {
+        if (orgDetails.getOrganisationIdentifier().equals(claimant.getOrganisationId())) {
             throw new ConflictOfInterestException(
                 "Organisation cannot represent both claimant and defendant in the same case");
         }
