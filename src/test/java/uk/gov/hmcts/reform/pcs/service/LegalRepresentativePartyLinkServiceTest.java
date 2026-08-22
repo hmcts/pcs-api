@@ -112,7 +112,6 @@ class LegalRepresentativePartyLinkServiceTest {
         // given
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        String organisationName = "orgName";
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -164,7 +163,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertThat(actual.getCreatedDate()).isEqualTo(LocalDateTime.now(FIXED_UTC_CLOCK));
         assertEquals(addressEntity, actualContactDetails.getAddress());
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
-        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals("orgName", actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
@@ -175,7 +174,6 @@ class LegalRepresentativePartyLinkServiceTest {
         UUID defendantIdamId = UUID.randomUUID();
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -226,7 +224,6 @@ class LegalRepresentativePartyLinkServiceTest {
         // given
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        String organisationName = "orgName";
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -292,7 +289,7 @@ class LegalRepresentativePartyLinkServiceTest {
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
-        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals("orgName", actual.getOrganisationName());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
@@ -301,7 +298,6 @@ class LegalRepresentativePartyLinkServiceTest {
         // given
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        String organisationName = "orgName";
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -366,7 +362,7 @@ class LegalRepresentativePartyLinkServiceTest {
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
-        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals("orgName", actual.getOrganisationName());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
 
         ClaimPartyContactDetailsEntity actualContactDetails =
@@ -381,8 +377,6 @@ class LegalRepresentativePartyLinkServiceTest {
         // given
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        String organisationName = "orgName";
-
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .pcsCase(PcsCaseEntity.builder().caseReference(caseReference).build())
@@ -419,7 +413,7 @@ class LegalRepresentativePartyLinkServiceTest {
                 .build();
 
         OrganisationEntity legalRepresentative = OrganisationEntity.builder()
-            .organisationName(organisationName)
+            .organisationName("orgName")
             .organisationId(ORGANISATION_ID)
             .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
@@ -443,7 +437,7 @@ class LegalRepresentativePartyLinkServiceTest {
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
-        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals("orgName", actual.getOrganisationName());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
@@ -452,7 +446,6 @@ class LegalRepresentativePartyLinkServiceTest {
         // given
         long caseReference = 1L;
         UUID partyId = UUID.randomUUID();
-        String organisationName = "orgName";
 
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
@@ -489,7 +482,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         OrganisationEntity legalRepresentativeOrganisation =
             OrganisationEntity.builder()
-            .organisationName(organisationName)
+            .organisationName("orgName")
             .organisationId(ORGANISATION_ID)
             .claimPartyOrganisationList(List.of(partyLegalRepresentativeOrganisation))
             .build();
@@ -513,7 +506,7 @@ class LegalRepresentativePartyLinkServiceTest {
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
-        assertEquals(organisationName, actual.getOrganisationName());
+        assertEquals("orgName", actual.getOrganisationName());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
     }
 
