@@ -161,15 +161,12 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return null;
         }
         String selectedCode = details.getValidCategories().getValueCode();
-        if (selectedCode == null) {
+        if (selectedCode == null || selectedCode.equals(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name())) {
             return null;
         }
-        UUID selectedId;
-        try {
-            selectedId = UUID.fromString(selectedCode);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+
+        UUID selectedId = UUID.fromString(selectedCode);
+
         return visibleGenAppsForUser(pcsCaseEntity, organisationId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
@@ -191,7 +188,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         PartyEntity uploadingParty;
         try {
-            uploadingParty = getUploadingParty(caseReference, pcsCaseEntity, selectedGenApp, organisationId);
+            uploadingParty = getUploadingParty(caseReference, pcsCaseEntity, organisationId);
         } catch (MultiplePartiesException multiplePartiesException) {
             return errorResponse(multiplePartiesException.getMessage());
         }
@@ -216,10 +213,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private PartyEntity getUploadingParty(long caseReference,
                                           PcsCaseEntity pcsCaseEntity,
-                                          GenAppEntity selectedGenApp,
                                           String organisationId) {
 
-        // TODO: Test
         Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
 
         boolean isClaimantSolicitor = (userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole()));
@@ -231,15 +226,11 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
-            if (selectedGenApp == null) {
-                List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
-                if (partyEntities.size() == 1) {
-                    return partyEntities.getFirst();
-                } else {
-                    throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
-                }
+            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            if (partyEntities.size() == 1) {
+                return partyEntities.getFirst();
             } else {
-                return selectedGenApp.getParty();
+                throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
             }
         }
     }

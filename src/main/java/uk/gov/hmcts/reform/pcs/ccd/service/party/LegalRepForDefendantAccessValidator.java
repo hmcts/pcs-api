@@ -48,7 +48,7 @@ public class LegalRepForDefendantAccessValidator {
 
         if (linkedDefendants.isEmpty()) {
             log.error(
-                "Access denied: User {} is not linked as a defendant on case {}",
+                "Access denied: Organisation {} is not linked as a defendant solicitor on case {}",
                 organisationId,
                 caseReference
             );
