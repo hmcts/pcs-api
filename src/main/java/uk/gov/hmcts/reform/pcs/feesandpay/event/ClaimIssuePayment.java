@@ -52,6 +52,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.R, UserRole.DEFENDANT)
             .grant(Permission.R, UserRole.PCS_CASE_WORKER)
             .grant(Permission.R, UserRole.DEFENDANT_SOLICITOR)
+            .grant(Permission.R, UserRole.GA_DEFENDANT_SOLICITOR)
             .grant(Permission.R, UserRole.HEARING_CENTRE_ADMIN)
             .grant(Permission.R, UserRole.HEARING_CENTRE_TEAM_LEADER)
             .grant(Permission.R, UserRole.JUDGE)
