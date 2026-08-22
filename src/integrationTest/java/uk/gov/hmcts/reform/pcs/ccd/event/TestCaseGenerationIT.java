@@ -90,8 +90,6 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
         when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
-        when(organisationService.getOrganisationId(any())).thenReturn(ORGANISATION_ID);
-        when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
     }
 
     @AfterEach

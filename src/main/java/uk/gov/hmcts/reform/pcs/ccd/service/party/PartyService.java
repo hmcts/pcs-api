@@ -22,19 +22,19 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -48,11 +48,11 @@ public class PartyService {
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
 
-    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
-                                 String organisationIdForCurrentUser) {
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
         String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
         PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
-        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
+        populateClaimant(claimant, pcsCase, organisationId, orgProfileId);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -168,11 +168,10 @@ public class PartyService {
      * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
-        String organisationId = organisationService.getOrganisationId(organisationDetails);
-        String organisationProfileId = organisationService.getOrgProfileId(organisationDetails);
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
 
-        Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
+        requireNonNull(organisationId, "Organisation must be provided to create a case");
         if (StringUtils.isBlank(organisationProfileId)) {
             throw new IllegalArgumentException(
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);
@@ -194,7 +193,7 @@ public class PartyService {
                                   String organisationIdForCurrentUser, String orgProfileId) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
-        Objects.requireNonNull(claimantInformation, "Claimant must be provided");
+        requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
         setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
@@ -255,7 +254,7 @@ public class PartyService {
     }
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {
-        Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
+        requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
 
         List<PartyEntity> allDefendants = new ArrayList<>();
         allDefendants.add(createDefendant(pcsCase.getDefendant1()));
@@ -300,7 +299,7 @@ public class PartyService {
             return List.of();
         }
 
-        Objects.requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
+        requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
 
         List<PartyEntity> allUnderlesseeOrMortgagees = new ArrayList<>();
         allUnderlesseeOrMortgagees.add(createUnderlesseeOrMortgagee(pcsCase.getUnderlesseeOrMortgagee1()));

@@ -88,8 +88,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 // solicitor as well, who has no group role to fall back on.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                // The organisations that are the claimant themselves - local authority and the
-                // "other" profiles - hold this capacity rather than claimant-solicitor
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
@@ -190,7 +188,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
-        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase, organisationIdForCurrentUser);
+        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 

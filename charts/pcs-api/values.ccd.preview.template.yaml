@@ -187,7 +187,7 @@ ccd:
   am-role-assignment-service:
     java:
       nameOverride: ${SERVICE_NAME}-am-role-assignment-service
-      image: 'hmctsprod.azurecr.io/am/role-assignment-service:pr-2781'
+      image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
         enabled: false

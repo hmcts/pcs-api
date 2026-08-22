@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -22,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.ConflictOfInterestException;
@@ -44,8 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,17 +64,13 @@ class LegalRepresentativePartyLinkServiceTest {
     private OrganisationRepository organisationRepository;
 
     @Mock
-    private ClaimPartyContactDetailsRepository
-        claimPartyContactDetailsRepository;
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
 
     @Mock
     private RevokeAccessHelper revokeAccessHelper;
 
     @Mock
     private AddressMapper addressMapper;
-
-    @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
     private AddressUK addressUK;
@@ -105,7 +97,6 @@ class LegalRepresentativePartyLinkServiceTest {
             claimPartyContactDetailsRepository,
             organisationDetailsService,
             addressMapper,
-            caseRoleAssignmentService,
             revokeAccessHelper,
             FIXED_UTC_CLOCK
         );
@@ -144,6 +135,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         when(organisationDetails.getName()).thenReturn(organisationName);
         when(organisationDetails.getOrganisationIdentifier()).thenReturn(ORGANISATION_ID);
+        when(organisationDetails.getOrgProfileId()).thenReturn(ORG_PROFILE_ID);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
         when(organisationDetailsService.getOrganisationAddress(organisationDetails))
             .thenReturn(addressUK);
@@ -172,7 +164,6 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(organisationName, actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
-        verify(caseRoleAssignmentService, never()).revokeRasRole(anyLong(), anyString(), any(UserRole.class));
     }
 
     @Test
@@ -226,11 +217,7 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(caseRoleAssignmentService).revokeRasRole(
-            caseReference,
-            defendantIdamId.toString(),
-            UserRole.DEFENDANT
-        );
+        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
     }
 
     @Test
@@ -301,9 +288,6 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // then
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
-
-        verify(organisationDetailsService, never()).getOrganisationAddress(organisationDetails);
-        verify(addressMapper, never()).toAddressEntityAndNormalise(addressUK);
 
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 

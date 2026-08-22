@@ -795,14 +795,6 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
-    /**
-     * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
-     * than stored - the name must be CaseAccessGroups to match what data store expects.
-     */
-    @JsonProperty("CaseAccessGroups")
-    @CCD
-    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
-
     @CCD
     private String postCode;
 
@@ -821,15 +813,12 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
         searchable = false
     )
     private Document uploadSingleDocument;
-
-
 
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
@@ -866,4 +855,8 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @JsonProperty("CaseAccessGroups")
+    @CCD
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 }

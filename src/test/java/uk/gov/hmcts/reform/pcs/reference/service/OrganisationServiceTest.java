@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -77,7 +78,7 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null profile ids when absent from the organisation details")
+    @DisplayName("Should throw IllegalArgumentException when profile ids absent from the organisation details")
     void shouldReturnNullWhenProfileIdsAbsent() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
@@ -85,9 +86,9 @@ class OrganisationServiceTest {
                             .organisationIdentifier(ORGANISATION_IDENTIFIER)
                             .build());
 
-        String result = organisationService.getOrgProfileIdForCurrentUser();
-
-        assertThat(result).isNull();
+        assertThatThrownBy(() -> organisationService.getOrgProfileIdForCurrentUser())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining(ORGANISATION_IDENTIFIER);
     }
 
     @Test

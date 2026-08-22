@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 
 @Getter
@@ -61,8 +60,9 @@ public enum GroupAccessType implements CCDAccessGroup {
      */
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
+    private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
-    private static final Map<Key, GroupAccessType> BY_PROFILE_AND_ROLE = buildIndex();
+    private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
     /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
     private final PartyRole partyRole;
@@ -132,11 +132,10 @@ public enum GroupAccessType implements CCDAccessGroup {
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
      */
-    public static Optional<String> caseAccessGroupIdTemplateFor(String organisationProfileId, PartyRole partyRole) {
-        return Optional.ofNullable(partyRole)
-            .map(role -> new Key(organisationProfileId, role))
-            .map(BY_PROFILE_AND_ROLE::get)
-            .map(GroupAccessType::getCaseAccessGroupIdTemplate);
+    public static String caseAccessGroupIdFor(String organisationProfileId,
+                                                        PartyRole partyRole, String organisationId) {
+        return CASE_ACCESS_GROUP_MAP.get(new Key(organisationProfileId, partyRole))
+            .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
     }
 
     /**

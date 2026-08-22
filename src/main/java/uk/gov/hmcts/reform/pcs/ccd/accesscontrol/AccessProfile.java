@@ -4,6 +4,7 @@ import static java.util.Arrays.stream;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.CHARITY_ORG_CLAIMANT_ACCESS;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.DUTY_ADVISOR_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS;
@@ -31,7 +32,7 @@ public enum AccessProfile implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
-    GA_CLAIMANT("claimant", CRU,
+    CLAIMANT("claimant", CRU,
              LOCAL_AUTHORITY_CLAIMANT_ACCESS,
              REAL_ESTATE_ORG_CLAIMANT_ACCESS,
              PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS,
@@ -39,18 +40,18 @@ public enum AccessProfile implements HasRole {
              CHARITY_ORG_CLAIMANT_ACCESS),
     GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, SOLICITOR_ORG_CLAIMANT_ACCESS),
     GA_DEFENDANT_SOLICITOR("defendant-solicitor", CRU, SOLICITOR_ORG_DEFENDANT_ACCESS),
-    DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), GroupAccessType.DUTY_ADVISOR_ACCESS),
+    DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), DUTY_ADVISOR_ACCESS),
 
     JUDGE("judge", CRU),
     FEE_PAID_JUDGE("fee-paid-judge", CRU),
     CIRCUIT_JUDGE("circuit-judge", CRU),
     LEADERSHIP_JUDGE("leadership-judge", CRU),
-    CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU),
-    CTSC_ADMIN("ctsc", Permission.CRU),
-    HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU),
-    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
-    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU),
-    WLU_ADMIN("wlu-admin", Permission.CRU),
+    CTSC_TEAM_LEADER("ctsc-team-leader", CRU),
+    CTSC_ADMIN("ctsc", CRU),
+    HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", CRU),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", CRU),
+    WLU_TEAM_LEADER("wlu-team-leader", CRU),
+    WLU_ADMIN("wlu-admin", CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU),
