@@ -13,32 +13,36 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.exception.MultiplePartiesException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 
 @Component
 @AllArgsConstructor
@@ -50,6 +54,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final GenAppVisibilityService genAppVisibilityService;
     private final OrganisationService organisationService;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final UserRoleService userRoleService;
+    private final PartyService partyService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,6 +64,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit, this::start)
                 .forAllStates()
                 .name("Upload additional documents")
+                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .showSummary()
                 .endButtonLabel("Submit");
@@ -106,7 +113,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return caseData;
     }
 
-    DynamicStringListElement buildCategoryItem(
+    private DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         String code,
         LocalDateTime genAppDate
@@ -175,40 +182,71 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                                                                             organisationId);
     }
 
-    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseReference = eventPayload.caseReference();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, organisationId);
-        PartyEntity party;
 
-        if (selectedGenApp == null) {
-            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
-            if (partyEntities.size() == 1) {
-                party = partyEntities.getFirst();
-            } else {
-                return errorResponse("Uploading documents for multiple parties is not supported");
-            }
-        } else {
-            party = selectedGenApp.getParty();
+        PartyEntity uploadingParty;
+        try {
+            uploadingParty = getUploadingParty(caseReference, pcsCaseEntity, selectedGenApp, organisationId);
+        } catch (MultiplePartiesException multiplePartiesException) {
+            return errorResponse(multiplePartiesException.getMessage());
         }
 
-        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
-
-        boolean isDocumentNull = legalRepDocuments.stream()
-            .anyMatch(doc -> doc == null || doc.getDocument() == null);
-
-        if (isDocumentNull) {
+        List<LegalRepDocument> legalRepDocuments
+            = unwrapListItems(pcsCase.getLegalRepDocumentUploadDetails().getLegalRepDocuments());
+        if (anyDocumentIsNull(legalRepDocuments)) {
             return errorResponse("Your files were not submitted. Try again.");
         }
 
-        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity,
-                                                                    party,selectedGenApp);
+        documentService.createDocumentEntitiesFromLegalRepDocuments(
+            legalRepDocuments,
+            pcsCaseEntity,
+            uploadingParty,
+            selectedGenApp
+        );
 
         return SubmitResponse.<State>builder()
             .confirmationBody(getDocumentUploadedConfirmationMarkdown())
             .build();
+    }
+
+    private PartyEntity getUploadingParty(long caseReference,
+                                          PcsCaseEntity pcsCaseEntity,
+                                          GenAppEntity selectedGenApp,
+                                          String organisationId) {
+
+        // TODO: Test
+        Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
+
+        boolean isClaimantSolicitor = (userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole()));
+        boolean isDefendantSolicitor = (userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        if (isClaimantSolicitor && isDefendantSolicitor) {
+            throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
+        }
+
+        if (isClaimantSolicitor) {
+            return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        } else {
+            if (selectedGenApp == null) {
+                List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+                if (partyEntities.size() == 1) {
+                    return partyEntities.getFirst();
+                } else {
+                    throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
+                }
+            } else {
+                return selectedGenApp.getParty();
+            }
+        }
+    }
+
+    private static boolean anyDocumentIsNull(List<LegalRepDocument> legalRepDocuments) {
+        return legalRepDocuments.stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null);
     }
 
     private static String getDocumentUploadedConfirmationMarkdown() {
@@ -223,7 +261,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             """;
     }
 
-    @SuppressWarnings("SameParameterValue")
     private SubmitResponse<State> errorResponse(String message) {
         return SubmitResponse.<State>builder()
             .errors(List.of(message))
