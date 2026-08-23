@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
-import lombok.AllArgsConstructor;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -9,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -18,13 +21,34 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
 public class OrganisationService {
 
     private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
+    /**
+     * The draft journey resolves the organisation on every read, save, patch and delete, so without
+     * this each page of a claim costs an rd-professional round trip. Short enough that a user moved
+     * between organisations is picked up within the minute.
+     */
+    private static final Duration ORGANISATION_CACHE_TTL = Duration.ofMinutes(1);
+
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
+    /**
+     * Holds {@link Optional#empty()} for a user who genuinely has no organisation, so citizens stop
+     * re-asking. A failed lookup throws out of the loader, which Caffeine does not store - a blip
+     * must not be remembered as "no organisation" for the rest of the TTL.
+     */
+    private final Cache<String, Optional<String>> organisationIdCache;
+
+    public OrganisationService(SecurityContextService securityContextService,
+                               OrganisationDetailsService organisationDetailsService) {
+        this.securityContextService = securityContextService;
+        this.organisationDetailsService = organisationDetailsService;
+        this.organisationIdCache = Caffeine.newBuilder()
+            .expireAfterWrite(ORGANISATION_CACHE_TTL)
+            .build();
+    }
 
     /**
      * Retrieves the organisation name for the current user from the security context.
@@ -70,7 +94,10 @@ public class OrganisationService {
                 return null;
             }
 
-            return organisationDetailsService.getOrganisationIdentifier(userId.toString());
+            return organisationIdCache.get(
+                userId.toString(),
+                id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+            ).orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API. Error: {}",

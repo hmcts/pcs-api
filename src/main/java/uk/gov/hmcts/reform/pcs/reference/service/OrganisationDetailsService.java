@@ -48,6 +48,11 @@ public class OrganisationDetailsService {
 
             return details;
 
+        } catch (FeignException.NotFound ex) {
+            // Expected for anyone who is not a professional user - citizens have no organisation.
+            // Not logged as an error: it is the normal answer for most of the traffic on this path.
+            log.debug("No organisation held in rd-professional for userId: {}", userId);
+            return null;
         } catch (FeignException ex) {
             log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
                 userId, ex.status(), ex.getMessage(), ex);
@@ -66,7 +71,7 @@ public class OrganisationDetailsService {
      */
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getName();
+        return details == null ? null : details.getName();
     }
 
     /**
@@ -112,6 +117,6 @@ public class OrganisationDetailsService {
      */
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getOrganisationIdentifier();
+        return details == null ? null : details.getOrganisationIdentifier();
     }
 }

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
 import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -286,4 +290,47 @@ class OrganisationDetailsServiceTest {
             .isInstanceOf(OrganisationDetailsException.class)
             .hasCause(feignEx);
     }
+
+    @Test
+    @DisplayName("A user with no organisation is not an error: 404 means not a professional user")
+    void shouldReturnNullWithoutThrowingWhenTheUserHasNoOrganisation() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignError(404));
+
+        assertThat(organisationDetailsService.getOrganisationDetails(USER_ID)).isNull();
+    }
+
+    @Test
+    @DisplayName("A server error is still an error and must not be mistaken for having no organisation")
+    void shouldStillThrowOnAServerError() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignError(500));
+
+        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
+            .isInstanceOf(OrganisationDetailsException.class);
+    }
+
+    @Test
+    @DisplayName("A null response body must not blow up the identifier accessor")
+    void shouldReturnNullIdentifierWhenTheResponseBodyIsNull() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        assertThat(organisationDetailsService.getOrganisationIdentifier(USER_ID)).isNull();
+    }
+
+
+    private static FeignException feignError(int status) {
+        Request request = Request.create(Request.HttpMethod.GET, "/orgDetails", Map.of(), null,
+                                         StandardCharsets.UTF_8, null);
+        return FeignException.errorStatus("getOrganisationDetails",
+            Response.builder().status(status).reason("test").request(request).headers(Map.of()).build());
+    }
+
 }
