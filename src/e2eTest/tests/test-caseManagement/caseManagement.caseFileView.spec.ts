@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
-
+  
   for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
       data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
