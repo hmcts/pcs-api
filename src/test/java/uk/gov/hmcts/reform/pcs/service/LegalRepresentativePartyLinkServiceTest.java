@@ -23,8 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyCont
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.ConflictOfInterestException;
-import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -511,29 +509,6 @@ class LegalRepresentativePartyLinkServiceTest {
     }
 
     @Test
-    void linkLegalRepresentativeToParty_WithLegalRepAlreadyLinkedToParty_ThrowsException() {
-        // given
-        long caseReference = 1L;
-        UUID partyId = UUID.randomUUID();
-
-        when(organisationRepository.isOrganisationLinkedToPartyAndActive(
-            ORGANISATION_ID,
-            partyId
-        )).thenReturn(true);
-
-        // when / then
-        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-            caseReference,
-            partyId.toString(),
-            organisationDetails
-        )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
-            .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
-
-        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(organisationRepository, never()).save(any());
-    }
-
-    @Test
     void linkLegalRepresentativeToParty_WithNoPartyFound_ThrowsException() {
         // given
         long caseReference = 1L;
@@ -615,73 +590,6 @@ class LegalRepresentativePartyLinkServiceTest {
             organisationDetails
         )).isInstanceOf(PartyNotFoundException.class)
             .hasMessage("Unable to find Party with Id [" + partyId + "]");
-
-        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(organisationRepository, never()).save(any());
-    }
-
-    @Test
-    void linkLegalRepresentativeToParty_FromTheSameOrganisation_ThrowsException() {
-        // given
-        long caseReference = 1L;
-        UUID partyId = UUID.randomUUID();
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .build();
-        PartyEntity claimantPartyEntity = PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .claimCreator(true)
-            .organisationId(ORGANISATION_ID)
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(caseReference)
-            .parties(Set.of(claimantPartyEntity))
-            .claims(List.of(ClaimEntity.builder()
-                                .claimParties(
-                                    List.of(ClaimPartyEntity.builder()
-                                                .role(PartyRole.CLAIMANT)
-                                                .party(claimantPartyEntity)
-                                                .build(),
-                                            ClaimPartyEntity.builder()
-                                                .role(PartyRole.UNDERLESSEE_OR_MORTGAGEE)
-                                                .party(partyEntity)
-                                                .build()))
-                                .build()
-            ))
-            .build();
-        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-
-        // when / then
-        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-            caseReference,
-            partyId.toString(),
-            organisationDetails
-        )).isInstanceOf(ConflictOfInterestException.class)
-            .hasMessage("Organisation cannot represent both claimant and defendant in the same case");
-
-        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(organisationRepository, never()).save(any());
-    }
-
-    @Test
-    void linkLegalRepresentativeToParty_ToNonSolicitorOrganisation_ThrowsException() {
-        // given
-        long caseReference = 1L;
-        UUID partyId = UUID.randomUUID();
-
-        OrganisationDetailsResponse nonSolicitorOrgDetails = OrganisationDetailsResponse.builder()
-            .organisationIdentifier(ORGANISATION_ID)
-            .organisationProfileIds(List.of("LOCALAUTH_PROFILE"))
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(caseReference).build();
-        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-
-        assertThatThrownBy(() -> legalRepresentativePartyLinkService
-            .linkLegalRepresentativeToParty(caseReference, partyId.toString(), nonSolicitorOrgDetails))
-            .isInstanceOf(ConflictOfInterestException.class)
-            .hasMessage("Only a Solicitor Organisation can become a legal representative for a party in a case");
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(organisationRepository, never()).save(any());

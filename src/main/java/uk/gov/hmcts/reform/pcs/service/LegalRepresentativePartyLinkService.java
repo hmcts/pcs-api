@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 import static java.util.Objects.isNull;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -18,8 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyCont
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.ConflictOfInterestException;
-import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -64,13 +60,7 @@ public class LegalRepresentativePartyLinkService {
     public void linkLegalRepresentativeToParty(long caseReference, String partyId,
                                                OrganisationDetailsResponse orgDetails) {
         String orgId = orgDetails.getOrganisationIdentifier();
-        if (isAlreadyLinkedToParty(partyId, orgId)) {
-            throw new LegalRepresentativeAlreadyLinkedToPartyException(
-                "Legal Representative or organisation already linked to Party [" + partyId + "]");
-        }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-
-        checkConflictOfInterest(caseEntity, orgDetails);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
@@ -120,31 +110,6 @@ public class LegalRepresentativePartyLinkService {
             .addClaimPartyContactDetails(legalRepresentativeOrganisationContactDetails);
 
         return legalRepresentativeOrganisation;
-    }
-
-    private boolean isAlreadyLinkedToParty(String partyId, String organisationId) {
-        UUID targetPartyId = UUID.fromString(partyId);
-
-        return organisationRepository
-            .isOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
-    }
-
-    private void checkConflictOfInterest(PcsCaseEntity caseEntity, OrganisationDetailsResponse orgDetails) {
-        if (!OrganisationProfile.SOLICITOR_PROFILE.equals(valueOf(orgDetails.getOrgProfileId()))) {
-            throw new ConflictOfInterestException(
-                "Only a Solicitor Organisation can become a legal representative for a party in a case");
-        }
-        PartyEntity claimant = caseEntity.getParties().stream()
-            .filter(PartyEntity::isClaimCreator)
-            .findFirst().orElseThrow(() -> {
-                log.error("Unable to find claimant Party");
-                return new PartyNotFoundException("Unable to find claimant Party");
-            });
-
-        if (orgDetails.getOrganisationIdentifier().equals(claimant.getOrganisationId())) {
-            throw new ConflictOfInterestException(
-                "Organisation cannot represent both claimant and defendant in the same case");
-        }
     }
 
     private void backfillOrganisationMetadata(OrganisationEntity legalRepOrg,
