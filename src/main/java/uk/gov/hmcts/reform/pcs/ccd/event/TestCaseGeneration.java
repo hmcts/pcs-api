@@ -71,7 +71,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .name(EVENT_NAME)
                 // Same claimant capacities as createPossessionClaim, which this mirrors.
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT)
                 // Temporary: keeps the tool usable on AAT until the group access flags are on.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);

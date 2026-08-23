@@ -71,7 +71,7 @@ class RoleToAccessProfilesTest {
      */
     @Test
     void shouldMapGroupAccessRolesToProfilesOfTheSameName() {
-        assertThat(UserRole.CLAIMANT.getAccessProfiles())
+        assertThat(UserRole.GA_CLAIMANT.getAccessProfiles())
             .containsExactly(AccessProfile.GA_CLAIMANT.getRole());
         assertThat(UserRole.GA_CLAIMANT_SOLICITOR.getAccessProfiles())
             .containsExactly(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole());

@@ -62,7 +62,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 // The organisations that are the claimant themselves - local authority and the
                 // "other" profiles - hold this capacity rather than claimant-solicitor
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
