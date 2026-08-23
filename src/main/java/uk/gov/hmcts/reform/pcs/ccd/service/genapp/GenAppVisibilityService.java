@@ -63,12 +63,16 @@ public class GenAppVisibilityService {
             return true;
         }
 
-        if (party == null || organisationId == null) {
+        if (party == null || userId == null) {
             return false;
         }
 
         if (userId.equals(party.getIdamId())) {
             return true;
+        }
+
+        if (organisationId == null) {
+            return false;
         }
 
         if (organisationId.equals(party.getOrganisationId())) {

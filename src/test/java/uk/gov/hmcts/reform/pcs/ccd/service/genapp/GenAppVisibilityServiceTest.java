@@ -81,7 +81,8 @@ class GenAppVisibilityServiceTest {
 
     @ParameterizedTest
     @MethodSource("withoutNoticeScenarios")
-    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(String organisationId,
+    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(UUID applicantUserId,
+                                                             String organisationId,
                                                              boolean isLegalRepresentativeLinkedToPartyAndActive,
                                                              boolean expectedIsVisible) {
         // Given
@@ -93,6 +94,7 @@ class GenAppVisibilityServiceTest {
 
         UUID applicantPartyId = UUID.randomUUID();
         when(applicantParty.getId()).thenReturn(applicantPartyId);
+        when(applicantParty.getIdamId()).thenReturn(applicantUserId);
         when(applicantParty.getOrganisationId()).thenReturn(organisationId);
 
         when(organisationRepository
@@ -279,23 +281,41 @@ class GenAppVisibilityServiceTest {
     }
 
     private static Stream<Arguments> withoutNoticeScenarios() {
+        UUID differentUserId = UUID.randomUUID();
         String differentOrganisationId = UUID.randomUUID().toString();
 
         return Stream.of(
             Arguments.argumentSet(
-                "current user is applicant",
+                "current user is applicant and not in an org",
+                CURRENT_USER_ID,
+                null,
+                false, // isLegalRepresentativeLinkedToPartyAndActive
+                true
+            ),
+            Arguments.argumentSet(
+                "current user is applicant and in a different org",
+                CURRENT_USER_ID,
+                differentOrganisationId,
+                false, // isLegalRepresentativeLinkedToPartyAndActive
+                true
+            ),
+            Arguments.argumentSet(
+                "current user not applicant but in same org",
+                differentUserId,
                 ORG_ID,
                 false, // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
                 "current user is LR of applicant",
+                differentUserId,
                 differentOrganisationId,
                 true, // isLegalRepresentativeLinkedToPartyAndActive
                 true
             ),
             Arguments.argumentSet(
-                "current user is not LR of applicant",
+                "current user not applicant, nor in same org nor LR of applicant",
+                differentUserId,
                 differentOrganisationId,
                 false, // isLegalRepresentativeLinkedToPartyAndActive
                 false
