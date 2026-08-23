@@ -105,7 +105,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
       table: 'Notice details'
     });
   });
-
+  
   test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
