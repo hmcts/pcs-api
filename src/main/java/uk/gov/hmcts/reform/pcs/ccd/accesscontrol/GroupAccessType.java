@@ -9,10 +9,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLI
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+
 import lombok.Getter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
@@ -117,14 +120,17 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
+    /**
+     * Collected rather than put into a map, so two access types sharing a profile and party role
+     * fail here at class initialisation instead of one quietly overwriting the other and stamping
+     * cases with a group id nobody holds.
+     */
     private static Map<Key, GroupAccessType> buildIndex() {
-        Map<Key, GroupAccessType> index = new HashMap<>();
-        for (GroupAccessType accessType : values()) {
-            if (accessType.partyRole != null) {
-                index.put(new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
-            }
-        }
-        return Map.copyOf(index);
+        return Arrays.stream(values())
+            .filter(accessType -> accessType.partyRole != null)
+            .collect(toUnmodifiableMap(
+                accessType -> new Key(accessType.organisationProfileId, accessType.partyRole),
+                identity()));
     }
 
     /**
