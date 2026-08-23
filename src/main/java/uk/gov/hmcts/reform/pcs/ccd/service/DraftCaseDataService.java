@@ -85,7 +85,7 @@ public class DraftCaseDataService {
                 .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId)
                 .or(() -> adoptUserKeyedDraft(caseReference, eventId, userId, orgId)))
             .orElseGet(() -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId));
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId));
     }
 
     /**
@@ -113,7 +113,7 @@ public class DraftCaseDataService {
                 .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId))
             .orElse(false)
             || draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
+                .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId);
     }
 
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
@@ -354,7 +354,7 @@ public class DraftCaseDataService {
                 orgId -> draftCaseDataRepository
                     .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId),
                 () -> draftCaseDataRepository
-                    .deleteByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId))
+                    .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId))
         );
     }
 

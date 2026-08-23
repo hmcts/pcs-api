@@ -82,7 +82,7 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
         PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
@@ -103,7 +103,7 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldReturnEmptyWhenNoUnsubmittedCaseData() {
         // Given
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
         UserInfo userInfo = UserInfo.builder()
@@ -123,7 +123,7 @@ class DraftCaseDataServiceTest {
     void shouldReturnWhetherUnsubmittedCaseDataExists(boolean repositoryDataExists) {
         // Given
         when(draftCaseDataRepository
-                 .existsByCaseReferenceAndEventIdAndIdamUserId(
+                 .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
                      CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(repositoryDataExists);
         UserInfo userInfo = UserInfo.builder()
@@ -144,7 +144,7 @@ class DraftCaseDataServiceTest {
         String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -169,7 +169,7 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldPatchUnsubmittedCaseDataWithJson() {
         // Given
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -205,7 +205,7 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -235,7 +235,7 @@ class DraftCaseDataServiceTest {
             .build();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(objectMapper.writeValueAsString(caseData)).thenReturn("case data json");
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
 
@@ -256,7 +256,7 @@ class DraftCaseDataServiceTest {
 
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -290,7 +290,7 @@ class DraftCaseDataServiceTest {
 
         // Then
         verify(draftCaseDataRepository)
-            .deleteByCaseReferenceAndEventIdAndIdamUserId(
+            .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
                 CASE_REFERENCE, eventId, USER_ID);
     }
 
@@ -315,7 +315,7 @@ class DraftCaseDataServiceTest {
         String unsubmittedCaseDataJson = "case data json";
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
@@ -666,7 +666,7 @@ class DraftCaseDataServiceTest {
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
         when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(null);
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
 
         // When / Then
@@ -692,9 +692,8 @@ class DraftCaseDataServiceTest {
 
         assertThat(underTest.getUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isEmpty();
 
-        // the unconstrained user-keyed lookup must not be used either: it would match a party draft
-        verify(draftCaseDataRepository, never())
-            .findByCaseReferenceAndEventIdAndIdamUserId(anyLong(), any(), any());
+        verify(draftCaseDataRepository)
+            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID);
     }
 
     @Test
@@ -715,17 +714,35 @@ class DraftCaseDataServiceTest {
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
         when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(null);
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
 
         assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
+    }
+
+    /**
+     * "A draft exists" and "here is the draft" must agree. They read the same rows or a caller can
+     * be told a draft is there and then handed nothing - which is what a party-scoped draft matching
+     * the party-less existence check would do.
+     */
+    @Test
+    void shouldNotReportADraftExistsThatTheLookupWouldRefuseToReturn() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(null);
+
+        assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isFalse();
+
+        verify(draftCaseDataRepository)
+            .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+                CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID);
     }
 
     @Test
     void shouldNotAskRdProfessionalForACitizen() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(
             UserInfo.builder().uid(USER_ID.toString()).roles(List.of(UserRole.CITIZEN.getRole())).build());
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
 
         assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();

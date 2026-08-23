@@ -9,15 +9,6 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
-
-    boolean existsByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
-
-    void deleteByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
-
     // Claim drafts are keyed on the organisation alone and carry no party. The PartyIdIsNull is
     // load-bearing: the legal representative journey writes drafts for the same case, event and
     // organisation but with a party, so without it a firm's defendant draft is returned here - and
@@ -44,6 +35,12 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
         long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, UUID idamUserId);
+
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, UUID idamUserId);
+
+    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
