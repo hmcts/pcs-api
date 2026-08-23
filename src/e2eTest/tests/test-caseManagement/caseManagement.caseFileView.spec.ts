@@ -40,7 +40,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - e2e Journey @nightly ', async () => {
+test.describe('Case management - e2e Journey @nightly', async () => {
 
   test('Case management - CaseFile View test @CM @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)

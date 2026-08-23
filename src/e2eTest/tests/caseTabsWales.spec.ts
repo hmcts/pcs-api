@@ -37,7 +37,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Case tabs - Wales Journey] @nightly ', async () => {
+test.describe('[Case tabs - Wales Journey] @nightly', async () => {
   test('Case tabs Wales - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
     await performAction('validateCaseSummaryDetails', {

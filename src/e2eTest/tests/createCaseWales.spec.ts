@@ -62,7 +62,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales ]', async () => {
-  test('Wales - Standard Contract - Rent arrears only @MAC ', async () => {
+  test('Wales - Standard Contract - Rent arrears only @MAC', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,

@@ -53,7 +53,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Manage documents Wales Journey @nightly ', async () => {
+test.describe('Case management - Manage documents Wales Journey @nightly', async () => {
   test('Case management - Manage documents - Amend Wales Journey @CM @regression', async () => {
       let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
       let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
