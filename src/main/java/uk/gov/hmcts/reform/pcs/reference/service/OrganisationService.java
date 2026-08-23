@@ -107,6 +107,26 @@ public class OrganisationService {
     }
 
     /**
+     * The same lookup, but a failure is raised rather than reported as "no organisation". Callers
+     * that key stored data on the organisation need the two kept apart: treating an unavailable
+     * rd-professional as "this user has no firm" writes data the firm cannot see.
+     *
+     * @return The organisation identifier, or null if the user genuinely has none
+     */
+    public String requireOrganisationIdForCurrentUser() {
+        UUID userId = resolveUserId();
+
+        if (userId == null) {
+            return null;
+        }
+
+        return organisationIdCache.get(
+            userId.toString(),
+            id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+        ).orElse(null);
+    }
+
+    /**
      * The whole organisation record for the current user, so a caller needing more than one field
      * can read them from a single call rather than one round trip each.
      *

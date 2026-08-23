@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -60,7 +62,12 @@ public class DraftCaseDataService {
         if (currentUserIsCitizen()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(organisationService.getOrganisationIdForCurrentUser());
+        try {
+            return Optional.ofNullable(organisationService.requireOrganisationIdForCurrentUser());
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            throw new UnsubmittedDataException(
+                "Could not determine the organisation this draft belongs to", ex);
+        }
     }
 
     /** Citizens are not held in rd-professional, so the lookup could only ever answer "none". */

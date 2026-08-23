@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -32,6 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -594,7 +596,7 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity colleagueDraft = mock(DraftCaseDataEntity.class);
         PCSCase expected = mock(PCSCase.class);
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.of(colleagueDraft));
         when(colleagueDraft.getCaseData()).thenReturn(draftJson);
@@ -612,7 +614,7 @@ class DraftCaseDataServiceTest {
         // Given
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(true);
 
@@ -625,7 +627,7 @@ class DraftCaseDataServiceTest {
         // Given
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
@@ -647,7 +649,7 @@ class DraftCaseDataServiceTest {
         // Given
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
 
         // When
         underTest.deleteUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT);
@@ -663,7 +665,7 @@ class DraftCaseDataServiceTest {
         // Given a citizen, who belongs to no organisation
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(null);
         when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
             CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
 
@@ -682,7 +684,7 @@ class DraftCaseDataServiceTest {
     void shouldNotReadALegalRepresentativePartyDraftFromTheClaimJourney() {
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
@@ -693,6 +695,30 @@ class DraftCaseDataServiceTest {
         // the unconstrained user-keyed lookup must not be used either: it would match a party draft
         verify(draftCaseDataRepository, never())
             .findByCaseReferenceAndEventIdAndIdamUserId(anyLong(), any(), any());
+    }
+
+    @Test
+    void shouldFailRatherThanSilentlyKeepTheDraftToOneUserWhenTheOrganisationCannotBeResolved() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+        when(organisationService.requireOrganisationIdForCurrentUser())
+            .thenThrow(new OrganisationDetailsException("rd-professional unavailable", new RuntimeException()));
+
+        assertThatThrownBy(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT))
+            .isInstanceOf(UnsubmittedDataException.class);
+
+        verifyNoInteractions(draftCaseDataRepository);
+    }
+
+    @Test
+    void shouldKeepTheDraftUserKeyedWhenAProfessionalGenuinelyHasNoOrganisation() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(null);
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
+
+        assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
     }
 
     @Test
@@ -717,7 +743,7 @@ class DraftCaseDataServiceTest {
         legacyDraft.setCaseData(draftJson);
         PCSCase expected = mock(PCSCase.class);
 
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(organisationService.requireOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
