@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -691,6 +693,18 @@ class DraftCaseDataServiceTest {
         // the unconstrained user-keyed lookup must not be used either: it would match a party draft
         verify(draftCaseDataRepository, never())
             .findByCaseReferenceAndEventIdAndIdamUserId(anyLong(), any(), any());
+    }
+
+    @Test
+    void shouldNotAskRdProfessionalForACitizen() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(
+            UserInfo.builder().uid(USER_ID.toString()).roles(List.of(UserRole.CITIZEN.getRole())).build());
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(true);
+
+        assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
+
+        verify(organisationService, never()).getOrganisationIdForCurrentUser();
     }
 
     @Test

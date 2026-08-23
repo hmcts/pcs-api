@@ -9,10 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -55,7 +57,18 @@ public class DraftCaseDataService {
      * readable by an organisation that is not the caller's.
      */
     private Optional<String> currentUserOrganisationId() {
+        if (currentUserIsCitizen()) {
+            return Optional.empty();
+        }
         return Optional.ofNullable(organisationService.getOrganisationIdForCurrentUser());
+    }
+
+    /** Citizens are not held in rd-professional, so the lookup could only ever answer "none". */
+    private boolean currentUserIsCitizen() {
+        UserInfo userInfo = securityContextService.getCurrentUserDetails();
+        return userInfo != null
+            && userInfo.getRoles() != null
+            && userInfo.getRoles().contains(UserRole.CITIZEN.getRole());
     }
 
     private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
