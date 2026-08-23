@@ -85,7 +85,7 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Legal Representative - Upload Documents- e2e Journey @nightly @rerun', async () => {
+test.describe('Legal Representative - Upload Documents- e2e Journey @nightly ', async () => {
 
   test('Upload documents when GenApps submitted - Multi def @smoke @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);

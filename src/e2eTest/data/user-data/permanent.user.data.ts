@@ -1,7 +1,7 @@
 export const user = {
   claimantSolicitor:  { 
-    email: 'pcs-solicitor-user01@test.com',
-    //email: 'pcs.solicitor.orguser3@hmcts.net', //Org name - PCS_Solicitor_Org_Testing
+    //email: 'pcs-solicitor-user01@test.com',
+    email: 'pcs.solicitor.orguser3@hmcts.net', //Org name - PCS_Solicitor_Org_Testing
     password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
@@ -17,7 +17,7 @@ export const user = {
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
   defendantSolicitor:  {
-    email: 'pcs-org1-solicitor2@test.com',//pcs.solicitor.orguser4@hmcts.net', //Org name - PCS_Solicitor_Org_Testing //pcs-org1-solicitor2@test.com', 
+    email: 'pcs.solicitor.orguser4@hmcts.net', //Org name - PCS_Solicitor_Org_Testing //pcs-org1-solicitor2@test.com', 
     password: process.env.IDAM_PCS_USER_PASSWORD,
   },
   caseworker:  {

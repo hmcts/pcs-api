@@ -60,7 +60,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('Case management - Case Worker Manage Hearing @nightly @rerun', async () => {
+test.describe('Case management - Case Worker Manage Hearing @nightly ', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput, 'dateTime');
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});

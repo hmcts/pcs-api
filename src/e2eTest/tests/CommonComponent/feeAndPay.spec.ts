@@ -53,14 +53,14 @@ test.beforeEach(async ({ page, context }) => {
     timeout: VERY_LONG_TIMEOUT,
   });
 });
-
+s
 test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
 });
 
-test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay @CreateCaseEngland' , async () => {
+test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay ' , async () => {
   test('Fee And Pay - Pay by account PBA', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
@@ -186,7 +186,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay @CreateCas
   });
 });
 
-test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay @CreateCaseEngland' , async () => {
+test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay ' , async () => {
   test('Fee And Pay - Remission Process', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
