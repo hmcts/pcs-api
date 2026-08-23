@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.noc;
 
 import static java.util.Optional.of;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
@@ -231,6 +233,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         return pcsCase.getParties().stream()
             .filter(Objects::nonNull)
             .filter(this::isDefendant)
+            .filter(partyEntity -> partyEntity.getNameKnown() == YES
+                && isNotBlank(partyEntity.getFirstName()) && isNotBlank(partyEntity.getLastName()))
             .filter(party -> namesMatch(party, answersById))
             .toList();
     }

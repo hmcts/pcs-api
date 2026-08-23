@@ -55,6 +55,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.DUPLICATE_DEFENDANT_NAME_CODE;
@@ -411,6 +412,7 @@ public class PcsNoticeOfChangeTest {
         PartyEntity party = PartyEntity.builder()
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -418,6 +420,7 @@ public class PcsNoticeOfChangeTest {
         PartyEntity party2 = PartyEntity.builder()
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -451,6 +454,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -491,6 +495,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -538,6 +543,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -585,6 +591,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -625,6 +632,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -681,6 +689,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
