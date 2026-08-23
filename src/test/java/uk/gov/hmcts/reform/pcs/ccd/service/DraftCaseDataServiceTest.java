@@ -593,7 +593,7 @@ class DraftCaseDataServiceTest {
         PCSCase expected = mock(PCSCase.class);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.of(colleagueDraft));
         when(colleagueDraft.getCaseData()).thenReturn(draftJson);
         when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(expected);
@@ -611,7 +611,7 @@ class DraftCaseDataServiceTest {
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationId(
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(true);
 
         // When / Then
@@ -624,7 +624,7 @@ class DraftCaseDataServiceTest {
         when(securityContextService.getCurrentUserDetails())
             .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
         when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
@@ -652,7 +652,8 @@ class DraftCaseDataServiceTest {
 
         // Then
         verify(draftCaseDataRepository)
-            .deleteByCaseReferenceAndEventIdAndOrganisationId(CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID);
+            .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
+                CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID);
     }
 
     @Test
@@ -667,7 +668,29 @@ class DraftCaseDataServiceTest {
         // When / Then
         assertThat(underTest.hasUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isTrue();
         verify(draftCaseDataRepository, never())
-            .existsByCaseReferenceAndEventIdAndOrganisationId(anyLong(), any(), any());
+            .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(anyLong(), any(), any());
+    }
+
+    /**
+     * The legal representative journey writes drafts for the same case, event and organisation but
+     * with a party. The claim journey must not pick those up: it would surface a defendant's answers
+     * on the claimant side, and a firm representing two defendants would make the lookup non-unique.
+     */
+    @Test
+    void shouldNotReadALegalRepresentativePartyDraftFromTheClaimJourney() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(Optional.empty());
+
+        assertThat(underTest.getUnsubmittedCaseData(CASE_REFERENCE, PARTY_OWNED_EVENT)).isEmpty();
+
+        // the unconstrained user-keyed lookup must not be used either: it would match a party draft
+        verify(draftCaseDataRepository, never())
+            .findByCaseReferenceAndEventIdAndIdamUserId(anyLong(), any(), any());
     }
 
     @Test
@@ -681,9 +704,9 @@ class DraftCaseDataServiceTest {
         PCSCase expected = mock(PCSCase.class);
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(OWNER_ORGANISATION_ID);
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, OWNER_ORGANISATION_ID)).thenReturn(Optional.empty());
-        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
             CASE_REFERENCE, PARTY_OWNED_EVENT, USER_ID)).thenReturn(Optional.of(legacyDraft));
         when(draftCaseDataRepository.save(legacyDraft)).thenReturn(legacyDraft);
         when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(expected);

@@ -62,7 +62,7 @@ public class DraftCaseDataService {
                                                     Optional<String> organisationId) {
         return organisationId
             .map(orgId -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId)
+                .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId)
                 .or(() -> adoptUserKeyedDraft(caseReference, eventId, userId, orgId)))
             .orElseGet(() -> draftCaseDataRepository
                 .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId));
@@ -75,7 +75,7 @@ public class DraftCaseDataService {
     private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, UUID userId,
                                                               String organisationId) {
         return draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId)
             .map(draft -> {
                 draft.setOrganisationId(organisationId);
                 return draftCaseDataRepository.save(draft);
@@ -90,7 +90,7 @@ public class DraftCaseDataService {
                                 Optional<String> organisationId) {
         return organisationId
             .map(orgId -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId))
+                .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId))
             .orElse(false)
             || draftCaseDataRepository
                 .existsByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
@@ -332,7 +332,7 @@ public class DraftCaseDataService {
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
             () -> organisationId.ifPresentOrElse(
                 orgId -> draftCaseDataRepository
-                    .deleteByCaseReferenceAndEventIdAndOrganisationId(caseReference, eventId, orgId),
+                    .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId),
                 () -> draftCaseDataRepository
                     .deleteByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId))
         );
