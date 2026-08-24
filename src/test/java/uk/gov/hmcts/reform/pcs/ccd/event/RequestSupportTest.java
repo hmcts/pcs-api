@@ -9,7 +9,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -18,14 +21,16 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
 
 @ExtendWith(MockitoExtension.class)
-class ManageFlagsTest extends BaseEventTest {
+class RequestSupportTest extends BaseEventTest {
+
     @Mock
     private PcsCaseService pcsCaseService;
 
     @InjectMocks
-    private ManageFlags underTest;
+    private RequestSupport underTest;
 
     @BeforeEach
     void setUp() {
@@ -33,37 +38,35 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeConfiguredForEventStates() {
-        assertConfiguredForStates(EventStates.amendFlags());
-    }
-
-    @Test
-    void shouldCreateFlagsInSubmitCallback() {
+    void shouldPatchCaseFlagsInSubmitCallback() {
         // Given
-        List<ListValue<FlagDetail>> flagDetails = createFlagDetails();
-        Flags flags = Flags.builder()
-            .details(flagDetails)
+        PartySupport partySupport = PartySupport.builder()
+            .supportFlags(Flags.builder().details(createFlagDetails()).build())
             .build();
-
-        PCSCase pcsCase = PCSCase.builder().caseFlags(flags).build();
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(ListValue.<PartySupport>builder()
+                .id(UUID.randomUUID().toString())
+                .value(partySupport)
+                .build()))
+            .build();
 
         // When
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test
-    void shouldUseCaseFlagsVersion2Point1UpdateJourney() {
-        assertThat(getDisplayContextParameter("flagLauncherInternal"))
-            .isEqualTo("#ARGUMENT(UPDATE,VERSION2.1)");
+    void shouldUseExternalCreateJourney() {
+        assertThat(getDisplayContextParameter("flagLauncherExternal"))
+            .isEqualTo("#ARGUMENT(CREATE,EXTERNAL)");
     }
 
     @Test
-    void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
-        assertThat(getSubFieldIds("allDefendants"))
-            .contains("defendantFlags", "partyFlagsExternal");
+    void shouldConfigureOnlyTheDedicatedSupportCollection() {
+        assertThat(getSubFieldIds("partySupport"))
+            .containsExactly("supportFlags");
     }
 
     /**
@@ -90,9 +93,29 @@ class ManageFlagsTest extends BaseEventTest {
                 State.HEARING_READINESS,
                 State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
                 State.DECISION_OUTCOME,
-                State.ALL_FINAL_ORDERS_ISSUED,
-                State.CLOSED)
+                State.ALL_FINAL_ORDERS_ISSUED)
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
+    }
+
+    @Test
+    void shouldGrantEveryExternalPersona() {
+        assertThat(configuredEvent.getGrants().keySet())
+            .containsAll(List.of(EXTERNAL_CASE_FLAG_ROLES));
+    }
+
+    @Test
+    void shouldGrantHearingCentreRolesHistoryOnlyAccess() {
+        assertThat(configuredEvent.getHistoryOnlyRoles())
+            .contains(UserRole.HEARING_CENTRE_ADMIN.getRole(), UserRole.HEARING_CENTRE_TEAM_LEADER.getRole());
+        assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_ADMIN))
+            .containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_TEAM_LEADER))
+            .containsExactly(Permission.R);
+    }
+
+    @Test
+    void shouldNotConfigureALineSeparatorLabel() {
+        assertThat(getEventFieldIds()).noneMatch(id -> id != null && id.contains("lineSeparator"));
     }
 
     private List<ListValue<FlagDetail>> createFlagDetails() {
@@ -101,8 +124,8 @@ class ManageFlagsTest extends BaseEventTest {
             ListValue.<FlagDetail>builder()
                 .id(UUID.randomUUID().toString())
                 .value(FlagDetail.builder()
-                           .flagCode("CF0002")
-                           .name("Complex Case")
+                           .flagCode("RA0042")
+                           .name("Reasonable adjustment")
                            .build())
                 .build());
     }
