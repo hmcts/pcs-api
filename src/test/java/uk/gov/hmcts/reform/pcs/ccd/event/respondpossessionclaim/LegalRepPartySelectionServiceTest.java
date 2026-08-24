@@ -99,7 +99,7 @@ class LegalRepPartySelectionServiceTest {
         PartyEntity partyEntity = PartyEntity.builder()
             .id(partyId)
             .build();
-        String organisationId = UUID.randomUUID().toString();
+        String organisationId = UUID.randomUUID().toString();;
 
         when(selectedPartyRetriever.getSelectedPartyId(pcsCase)).thenReturn(Optional.of(partyId));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(12345L, partyId)).thenReturn(true);

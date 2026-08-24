@@ -76,9 +76,9 @@ public class TaskDescriptionService {
     }
 
     public String createClaimAdditionalDocumentsDescription(long caseReference,
-                                                             ClaimEntity mainClaim,
-                                                             PartyEntity partyEntity,
-                                                             List<DocumentEntity> documentEntities) {
+                                                            ClaimEntity mainClaim,
+                                                            PartyEntity partyEntity,
+                                                            List<DocumentEntity> documentEntities) {
 
 
 
@@ -87,7 +87,7 @@ public class TaskDescriptionService {
     }
 
     public String createTranslateClaimantDocumentDescription(long caseReference,
-                                                             List<DocumentEntity> documentEntities) {
+                                                              List<DocumentEntity> documentEntities) {
 
         List<String> filenames = documentEntities.stream()
             .map(DocumentEntity::getFileName)
@@ -102,12 +102,33 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createTranslateDefendantDocumentDescription(long caseReference,
+                                                               ClaimEntity mainClaim,
+                                                               PartyEntity partyEntity,
+                                                               List<DocumentEntity> documentEntities) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
+
+        List<String> filenames = documentEntities.stream()
+            .map(DocumentEntity::getFileName)
+            .toList();
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-defendant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
     private String createDocumentDescription(long caseReference,
-                                           ClaimEntity mainClaim,
-                                           PartyEntity partyEntity,
-                                           List<DocumentEntity> documentEntities,
-                                           String templateName,
-                                           Map<String, Object> customFields) {
+                                             ClaimEntity mainClaim,
+                                             PartyEntity partyEntity,
+                                             List<DocumentEntity> documentEntities,
+                                             String templateName,
+                                             Map<String, Object> customFields) {
 
         String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 

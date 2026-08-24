@@ -11,11 +11,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -28,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -36,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
@@ -63,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantRespo
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -70,9 +69,9 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -84,6 +83,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doNothing;
@@ -111,6 +111,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DefendantAccessValidator accessValidator;
     @Mock
     private DefendantResponseService defendantResponseService;
+    @Mock
+    private TranslationWAService translationWAService;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
     @Mock
@@ -161,12 +163,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private OrganisationService organisationService;
 
-    @Mock
-    private OrganisationRepository organisationRepository;
-
-    @Mock
-    private NotificationService notificationService;
-
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
 
@@ -212,8 +208,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
             draftCaseDataService,
             taskDescriptionService,
             camundaService,
+            translationWAService,
             organisationService
         );
+
+        lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().languageUsed(LanguageUsed.ENGLISH).build());
 
         CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
             partyService,
@@ -233,16 +233,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 ),
                 new LegalRepSubmissionEventStrategy(
                     draftCaseDataService,
-                    partyService,
-                    organisationRepository,
-                    pcsCaseService,
                     selectedPartyRetriever,
                     submitResponseFactory,
+                    partyService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    organisationService,
-                    notificationService
+                    organisationService
                 )
             ),
             securityContextService
@@ -1069,9 +1066,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
             .thenReturn(Optional.of(counterClaimEntity));
-        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(
-            any())).thenReturn(Optional.of(new OrganisationEntity()));
-        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(new PcsCaseEntity());
 
         // when
         callSubmitHandler(caseData);
