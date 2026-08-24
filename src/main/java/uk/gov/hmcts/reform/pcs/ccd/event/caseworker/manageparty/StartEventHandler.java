@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("managePartyStartEventHandler")
 @RequiredArgsConstructor
@@ -32,15 +33,18 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
-        caseData.getAddPartyDetails().setPartyRadioList(buildApplicantPartyList(mainClaim));
+        caseData.getAddPartyDetails().setPartyRadioList(
+            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
+        caseData.getUpdatePartyDetails().setPartyToUpdate(
+            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
 
         return caseData;
     }
 
-    private DynamicList buildApplicantPartyList(ClaimEntity mainClaim) {
+    private DynamicList buildPartyList(ClaimEntity mainClaim, PartyRole... allowedRoles) {
+        Set<PartyRole> roles = Set.of(allowedRoles);
         List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
-            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.CLAIMANT
-                || claimPartyEntity.getRole() == PartyRole.DEFENDANT)
+            .filter(claimPartyEntity -> roles.contains(claimPartyEntity.getRole()))
             .map(claimPartyEntity -> DynamicListElement.builder()
                 .code(claimPartyEntity.getParty().getId())
                 .label("%s - %s".formatted(
@@ -59,5 +63,4 @@ public class StartEventHandler implements Start<PCSCase, State> {
         }
         return partyService.getPartyName(partyEntity);
     }
-
 }
