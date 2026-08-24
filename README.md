@@ -295,7 +295,7 @@ docker compose -f docker-compose-wiremock.yml up -d
 
 To enable a Wiremock pod in the Preview environment for a PR, add the label `pr-values:wiremock` to the PR. This
 will deploy a Wiremock instance pre-configured to respond to health/liveness checks, and proxy any requests
-for certain APIs to their AAT origin.
+for certain APIs to their AAT origin..
 
 Those API requests can then have mappings added for them to change the response. For example to update the Fee Register
 response for the possession claim fee:
