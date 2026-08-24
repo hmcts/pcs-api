@@ -66,12 +66,10 @@ withPipeline(type, product, component) {
   }
 
   onPR() {
-    // TEMP (HDPI-7052): pact broker times out while the platform is waking after auto-shutdown,
-    // killing builds before the test stages. Re-enable before merge - see merge plan checklist.
-    // enablePactAs([
-    //   AppPipelineDsl.PactRoles.CONSUMER,
-    //   AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
-    // ])
+    enablePactAs([
+      AppPipelineDsl.PactRoles.CONSUMER,
+      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+    ])
     setPreviewEnvVars(githubApi)
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
