@@ -50,9 +50,9 @@ export class GlobalSearchCaseAction implements IAction {
     await performValidation('mainHeader', workAccess.mainHeader);
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
-    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    await performValidation('mainHeader', caseList.mainHeader);
-  }
+    await performAction('clickButton', workAccess.continueButton);
+    await performValidation('text', { elementType: 'subHeader', text: workAccess.nextmainHeader});
+}
 
   private async submitGlobalSearch(page: Page): Promise<void> {
     await page.locator('button[type="submit"]').click();
