@@ -84,6 +84,7 @@ class RespondPossessionClaimSubmitServiceTest {
     private SchedulerClient schedulerClient;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimTaskData>> schedulableInstanceCaptor;
+    @Mock
     OrganisationService organisationService;
 
     private RespondPossessionClaimSubmitService underTest;

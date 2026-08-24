@@ -149,7 +149,7 @@ class DefendantResponseNotificationServiceTest {
         UUID partyId = UUID.randomUUID();
 
         when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
-            .thenReturn(false);
+            .thenReturn(true);
 
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.of(response));
@@ -187,7 +187,7 @@ class DefendantResponseNotificationServiceTest {
         UUID partyId = UUID.randomUUID();
 
         when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
-            .thenReturn(true);
+            .thenReturn(false);
 
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.of(response));
@@ -225,7 +225,7 @@ class DefendantResponseNotificationServiceTest {
         UUID partyId = UUID.randomUUID();
 
         when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
-            .thenReturn(true);
+            .thenReturn(false);
 
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.of(response));
@@ -303,6 +303,9 @@ class DefendantResponseNotificationServiceTest {
         UUID defendantPartyId = UUID.randomUUID();
         UUID otherPartyId = UUID.randomUUID();
 
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
+            .thenReturn(true);
+
         when(defendantResponseRepository.findById(defendantResponseId))
             .thenReturn(Optional.of(response));
 
@@ -337,6 +340,9 @@ class DefendantResponseNotificationServiceTest {
         UUID counterClaimId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
         Integer defendantResponseId = 1;
+
+        when(counterClaimFeeCalculator.isHwfReferencePresent(any()))
+            .thenReturn(true);
 
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
         PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
