@@ -20,5 +20,7 @@ export const caseSummary = {
   },
   addReviewDates: 'Add review date',
   changeCaseState: 'Change case state',
-  enterAGenApp: 'Enter a general application'
+  enterAGenApp: 'Enter a general application',
+  manageParties: 'Manage parties',
+  manageHearing: 'Manage hearing'
 }

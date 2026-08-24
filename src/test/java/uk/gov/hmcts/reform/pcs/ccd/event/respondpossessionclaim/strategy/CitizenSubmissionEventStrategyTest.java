@@ -85,7 +85,7 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase caseData = createDraftSaveCaseData(responses);
         final RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(
-                caseData.getPossessionClaimResponse(), null, false);
+                caseData.getPossessionClaimResponse(), null, null, false);
 
         stubDraft(caseData);
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);

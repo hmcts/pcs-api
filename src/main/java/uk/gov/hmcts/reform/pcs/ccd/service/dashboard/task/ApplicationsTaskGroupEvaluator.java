@@ -5,10 +5,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.Task;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroup;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -18,15 +20,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplate
 @Component
 public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
 
-    private final SecurityContextService securityContextService;
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final OrganisationService organisationService;
 
     public ApplicationsTaskGroupEvaluator(
-        SecurityContextService securityContextService,
-        GenAppVisibilityService genAppVisibilityService
+        UserRoleService userRoleService,
+        GenAppVisibilityService genAppVisibilityService,
+        OrganisationService organisationService
     ) {
-        this.securityContextService = securityContextService;
+        this.userRoleService = userRoleService;
         this.genAppVisibilityService = genAppVisibilityService;
+        this.organisationService = organisationService;
     }
 
     @Override
@@ -52,13 +57,18 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
     }
 
     private boolean hasRaisedGeneralApplications(DashboardContext ctx) {
-        if (ctx == null || ctx.caseEntity() == null || ctx.caseEntity().getGenApps() == null) {
+        if (ctx == null || ctx.caseEntity() == null || ctx.caseEntity().getGenApps() == null
+            || ctx.caseEntity().getGenApps().isEmpty()) {
             return false;
         }
 
+        UserRoles userRoles =
+            userRoleService.getCurrentUserCaseRoles(ctx.caseReference());
+
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
-            securityContextService.getCurrentUserId()
+            organisationService.getOrganisationIdForCurrentUser(),
+            userRoles.roles()
         ).isEmpty();
     }
 }

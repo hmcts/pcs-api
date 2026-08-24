@@ -16,23 +16,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -46,7 +48,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final PcsCaseService pcsCaseService;
     private final DocumentService documentService;
     private final GenAppVisibilityService genAppVisibilityService;
-    private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -71,7 +74,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
@@ -80,7 +83,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                         return Stream.of(buildCategoryItem(category, category.name(), null));
                     }
 
-                    return findGenAppsForCategory(pcsCaseEntity, currentUserId, category)
+                    return findGenAppsForCategory(pcsCaseEntity, organisationId, category)
                         .stream()
                         .map(genApp -> buildCategoryItem(
                             category, genApp.getId().toString(), genApp.getApplicationSubmittedDate()));
@@ -116,7 +119,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     List<GenAppEntity> findGenAppsForCategory(
         PcsCaseEntity pcsCaseEntity,
-        UUID currentUserId,
+        String organisationId,
         DocumentUploadCategory category
     ) {
         GenAppType mapped = mapCategoryToGenAppType(category);
@@ -124,7 +127,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return List.of();
         }
 
-        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+        return visibleGenAppsForUser(pcsCaseEntity, organisationId).stream()
             .filter(genApp -> genApp.getType() == mapped)
             .filter(genApp -> genApp.getApplicationSubmittedDate() != null)
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
@@ -140,14 +143,56 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         };
     }
 
-    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
-        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), organisationId);
+    }
+
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, String organisationId) {
+        LegalRepDocumentUploadDetails details = caseData.getLegalRepDocumentUploadDetails();
+
+        if (details == null || details.getValidCategories() == null) {
+            return null;
+        }
+        String selectedCode = details.getValidCategories().getValueCode();
+        if (selectedCode == null) {
+            return null;
+        }
+        UUID selectedId;
+        try {
+            selectedId = UUID.fromString(selectedCode);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+        return visibleGenAppsForUser(pcsCaseEntity, organisationId).stream()
+            .filter(genApp -> selectedId.equals(genApp.getId()))
+            .findFirst()
+            .orElse(null);
+    }
+
+    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
+
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
+                                                                            organisationId);
     }
 
     SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, organisationId);
+        PartyEntity party;
+
+        if (selectedGenApp == null) {
+            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            if (partyEntities.size() == 1) {
+                party = partyEntities.getFirst();
+            } else {
+                return errorResponse("Uploading documents for multiple parties is not supported");
+            }
+        } else {
+            party = selectedGenApp.getParty();
+        }
 
         List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
 
@@ -158,10 +203,24 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return errorResponse("Your files were not submitted. Try again.");
         }
 
-        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity);
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity,
+                                                                    party,selectedGenApp);
 
         return SubmitResponse.<State>builder()
+            .confirmationBody(getDocumentUploadedConfirmationMarkdown())
             .build();
+    }
+
+    private static String getDocumentUploadedConfirmationMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+                <span class="govuk-panel__title govuk-!-font-size-36">Documents uploaded</span>
+            </div>
+            <p class="govuk-body">We have received the documents you uploaded.</p>
+             <h3>What happens next</h3>
+            <p class="govuk-body">You do not need to do anything else. We will review the documents.</p>
+            """;
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -170,5 +229,4 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .errors(List.of(message))
             .build();
     }
-
 }
