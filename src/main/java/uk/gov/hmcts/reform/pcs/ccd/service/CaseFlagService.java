@@ -275,7 +275,7 @@ public class CaseFlagService {
         return flags.stream().anyMatch(this::isWelshCommunicationsPreference);
     }
 
-    private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
+    public boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());

@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -46,7 +47,8 @@ class PackSkipRulesTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PackSkipRules(featureToggleService);
+        underTest = new PackSkipRules(
+            featureToggleService, new CaseFlagService(null, null, null, null));
     }
 
     @Test
@@ -390,7 +392,7 @@ class PackSkipRulesTest {
     private void applyWelshFlag(BaseCaseFlag flag, String status) {
         flag.setDefaultStatus(status);
         flag.setFlagRefData(FlagRefDataEntity.builder()
-            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE)
+            .flagCode("PF0026")
             .build());
     }
 }

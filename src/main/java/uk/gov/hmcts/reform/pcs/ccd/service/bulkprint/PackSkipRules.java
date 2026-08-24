@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -33,14 +34,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.isPopu
 @Slf4j
 public class PackSkipRules {
 
-    static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
-    private static final String ACTIVE_STATUS = "Active";
     private static final String TRANSLATION_REQUIRED = "translation required";
 
     private final FeatureToggleService featureToggleService;
+    private final CaseFlagService caseFlagService;
 
-    public PackSkipRules(FeatureToggleService featureToggleService) {
+    public PackSkipRules(FeatureToggleService featureToggleService, CaseFlagService caseFlagService) {
         this.featureToggleService = featureToggleService;
+        this.caseFlagService = caseFlagService;
     }
 
     public boolean shouldSkipClaimPack(PcsCaseEntity pcsCase, ClaimEntity claim) {
@@ -155,13 +156,7 @@ public class PackSkipRules {
     }
 
     private boolean hasActiveWelshCommunicationsFlag(List<? extends BaseCaseFlag> flags) {
-        return streamOf(flags).anyMatch(this::isActiveWelshCommunicationsFlag);
-    }
-
-    private boolean isActiveWelshCommunicationsFlag(BaseCaseFlag flag) {
-        return flag.getFlagRefData() != null
-            && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flag.getFlagRefData().getFlagCode())
-            && ACTIVE_STATUS.equals(flag.getDefaultStatus());
+        return streamOf(flags).anyMatch(caseFlagService::isWelshCommunicationsPreference);
     }
 
     private static boolean requiresTranslation(LanguageUsed languageUsed) {

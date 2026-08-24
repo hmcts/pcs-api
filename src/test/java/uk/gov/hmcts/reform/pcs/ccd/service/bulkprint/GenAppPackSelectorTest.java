@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -64,7 +65,9 @@ class GenAppPackSelectorTest {
     @BeforeEach
     void setUp() {
         underTest = new GenAppPackSelector(
-            claimActivityLogRepository, sentPackDocuments, new PackSkipRules(featureToggleService));
+            claimActivityLogRepository,
+            sentPackDocuments,
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null)));
     }
 
     private final PartyEntity claimant = party();

@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -64,7 +65,7 @@ class DefencePackSelectorTest {
             claimActivityLogRepository,
             sentPackDocuments,
             featureToggleService,
-            new PackSkipRules(featureToggleService));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null)));
     }
 
     private final PartyEntity claimant = party();

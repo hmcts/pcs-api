@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -57,7 +58,9 @@ class ClaimPackSelectorTest {
     @BeforeEach
     void setUp() {
         underTest = new ClaimPackSelector(
-            claimActivityLogRepository, sentPackDocuments, new PackSkipRules(featureToggleService));
+            claimActivityLogRepository,
+            sentPackDocuments,
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null)));
     }
 
     private final PartyEntity claimant = party();
@@ -207,7 +210,7 @@ class ClaimPackSelectorTest {
         CaseFlagEntity flag = new CaseFlagEntity();
         flag.setDefaultStatus("Active");
         flag.setFlagRefData(FlagRefDataEntity.builder()
-            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+            .flagCode("PF0026").build());
         pcsCase.setCaseFlags(List.of(flag));
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
@@ -220,7 +223,7 @@ class ClaimPackSelectorTest {
         CasePartyFlagEntity flag = new CasePartyFlagEntity();
         flag.setDefaultStatus("Active");
         flag.setFlagRefData(FlagRefDataEntity.builder()
-            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+            .flagCode("PF0026").build());
         PartyEntity flaggedClaimant = party();
         flaggedClaimant.getDefendantFlags().add(flag);
         DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
@@ -242,7 +245,7 @@ class ClaimPackSelectorTest {
         CaseFlagEntity flag = new CaseFlagEntity();
         flag.setDefaultStatus("Inactive");
         flag.setFlagRefData(FlagRefDataEntity.builder()
-            .flagCode(PackSkipRules.WELSH_COMMUNICATIONS_FLAG_CODE).build());
+            .flagCode("PF0026").build());
         pcsCase.setCaseFlags(List.of(flag));
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isNotEmpty();
