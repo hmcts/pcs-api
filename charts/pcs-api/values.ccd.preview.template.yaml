@@ -198,7 +198,6 @@ xui-webapp:
       HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
-      # NoC/share-a-case must resolve the PREVIEW's cases; AAT AAC 404s them (HDPI-7052)
       SERVICES_CCD_CASE_ASSIGNMENT_API: http://${SERVICE_NAME}-aac-manage-case-assignment
       SERVICES_ROLE_ASSIGNMENT_API: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
@@ -232,10 +231,6 @@ xui-webapp:
           - system-user-name
           - system-user-password
           - mc-session-secret
-          # The base xui chart mounts this by default; overriding the list above dropped it.
-          # The XUI build from 20 Aug requires it in /api/monitoring-tools - without it the
-          # endpoint 500s, InitialisationSyncService fails, and the case-edit wizard crashes,
-          # killing every make-a-claim journey on preview.
           - appinsights-connection-string-mc
 
 
