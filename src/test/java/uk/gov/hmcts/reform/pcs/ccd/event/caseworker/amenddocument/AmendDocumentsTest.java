@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.amenddocument;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,9 +12,10 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.event.caseworker.amenddocument.AmendDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.AmendDocumentDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -25,6 +26,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,6 +114,28 @@ class AmendDocumentsTest extends BaseEventTest {
             .withFailMessage("Expected %s to be configured for the CYA summary", fieldId)
             .isNotNull();
         assertThat(fields.get(fieldId).isShowSummary()).isTrue();
+    }
+
+    @Test
+    void shouldInitialiseDocumentAmendDetailsWhenMissingOnStart() {
+        PCSCase caseData = PCSCase.builder().build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getDocumentAmendDetails()).isNotNull();
+        verify(documentSelectionService).initialise(
+            TEST_CASE_REFERENCE, result, result.getDocumentAmendDetails());
+    }
+
+    @Test
+    void shouldRetainExistingDocumentAmendDetailsOnStart() {
+        DocumentAmendDetails existingDetails = new DocumentAmendDetails();
+        PCSCase caseData = PCSCase.builder().documentAmendDetails(existingDetails).build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getDocumentAmendDetails()).isSameAs(existingDetails);
+        verify(documentSelectionService).initialise(TEST_CASE_REFERENCE, result, existingDetails);
     }
 
     @Test
