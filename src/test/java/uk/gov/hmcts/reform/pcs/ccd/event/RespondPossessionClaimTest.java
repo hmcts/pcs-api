@@ -47,6 +47,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.Possession
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -71,6 +72,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -162,6 +164,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private OrganisationRepository organisationRepository;
+    @Mock
+    private NotificationService notificationService;
 
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
@@ -236,10 +242,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     selectedPartyRetriever,
                     submitResponseFactory,
                     partyService,
+                    organisationRepository,
+                    pcsCaseService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    organisationService
+                    organisationService,
+                    notificationService
                 )
             ),
             securityContextService

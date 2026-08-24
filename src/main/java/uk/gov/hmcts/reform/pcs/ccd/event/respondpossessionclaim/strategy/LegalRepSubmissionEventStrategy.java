@@ -42,11 +42,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSubmissionEventStrategy {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final SelectedPartyRetriever selectedPartyRetriever;
+    private final SubmitResponseFactory submitResponseFactory;
     private final PartyService partyService;
     private final OrganisationRepository organisationRepository;
     private final PcsCaseService pcsCaseService;
-    private final SelectedPartyRetriever selectedPartyRetriever;
-    private final SubmitResponseFactory submitResponseFactory;
     private final RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     private final CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     private final SecurityContextService securityContextService;

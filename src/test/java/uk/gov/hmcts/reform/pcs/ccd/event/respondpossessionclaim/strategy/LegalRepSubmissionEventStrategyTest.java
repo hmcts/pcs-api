@@ -87,14 +87,13 @@ class LegalRepSubmissionEventStrategyTest {
     void setUp() {
         underTest = new LegalRepSubmissionEventStrategy(
             draftCaseDataService,
+            selectedPartyRetriever,
+            submitResponseFactory,
             partyService,
             organisationRepository,
             pcsCaseService,
-            selectedPartyRetriever,
-            submitResponseFactory,
             respondPossessionClaimSubmitService,
             counterClaimSubmitConfirmationService,
-            securityContextService,
             securityContextService,
             organisationService,
             notificationService
