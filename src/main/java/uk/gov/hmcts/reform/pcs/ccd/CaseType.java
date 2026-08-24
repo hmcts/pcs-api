@@ -194,13 +194,19 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_ClaimantsDetails")
             .field("casePartiesTab_DefendantOneDetails")
-            .field("casePartiesTab_DefendantsDetails");
+            .field("casePartiesTab_DefendantsDetails")
+            .field("casePartiesTab_LfDetails")
+            .field("casePartiesTab_LfsDetails");
     }
 
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .label("summaryLegalRepresentativeMarkdownLabel", null,
+                   "${summaryLegalRepresentativeMarkdown}")
+            .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
             .label("Summary", null, "# Summary")

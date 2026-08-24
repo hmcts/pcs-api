@@ -54,13 +54,23 @@ withPipeline(type, product, component) {
   //skipping sync with demo/perftest during SIT testing/DB migration
   syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
+  // WA DMN/BPMN upload for demo/ithc/perftest. Those branches never run sectionDeployToAKS,
+  // so there is no smoketest:/functionalTest: stage to hang this off.
+  afterSuccess('checkout') {
+    if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
+      withSubscription('nonprod') {
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+      }
+    }
+  }
 
   onPR() {
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    setPreviewEnvVars()
+    setPreviewEnvVars(githubApi)
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
@@ -231,11 +241,20 @@ withPipeline(type, product, component) {
   }
 }
 
-def setPreviewEnvVars() {
+def setPreviewEnvVars(githubApi) {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
   env.ENABLE_TESTING_SUPPORT = "true"
   env.E2E_SUITE= "pr"
+
+  def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
+  if (frontendLabels && frontendLabels.size() > 0) {
+    def labelName = frontendLabels[0]
+    def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  } else {
+    env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
+  }
 }
 
 def setAatEnvVars() {
@@ -255,14 +274,20 @@ def setProdEnvVars() {
 
 def setDemoEnvVars() {
   env.ENVIRONMENT= "demo"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-demo.service.core-compute-demo.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
 }
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
 }
 
 def generateDefinitions(builder) {
