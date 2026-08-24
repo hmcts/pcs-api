@@ -4,9 +4,15 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskData.Action;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -14,6 +20,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,38 +37,36 @@ public class CamundaService {
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
+    private final LocationReferenceService locationReferenceService;
+    private final PcsCaseRepository pcsCaseRepository;
 
     private static final String CREATE = "createTaskMessage";
     private static final String CANCEL = "cancelTasks";
     private static final String UNCONFIGURED = "unconfigured";
     private static final String EMPTY_WARNINGS_LIST = "[]";
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
+    private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), null);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
     }
 
     public void createTask(long caseId, TaskType taskType, Duration delay) {
-        createTask(caseId, taskType, taskType.getDefaultDescription(), delay);
+        createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock).plus(delay));
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription) {
-        createTask(caseId, taskType, taskDescription, null);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock));
     }
 
-    public void createTask(long caseId, TaskType taskType, String taskDescription, Duration delay) {
+    public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .build();
-
-        Instant scheduledTo = Instant.now(utcClock);
-        if (delay != null) {
-            scheduledTo = scheduledTo.plus(delay);
-        }
 
         scheduleCamundaRequest(taskData, scheduledTo);
     }
@@ -111,7 +116,8 @@ public class CamundaService {
         // Note: A few fields are stripped out by wa-task-monitor before the task attributes are passed
         // to the configuration DMN, so should be not used as a custom field if that field is going to be
         // referenced in the configuration DMN
-        // The fields that are removed are: dueDate, assignee, priorityDate, description, name
+        // The fields that are removed are: dueDate, assignee, priorityDate, description, name, location, locationName,
+        // region
 
         processVariables.put("taskState", dmnStringValue(UNCONFIGURED));
         processVariables.put("caseTypeId", dmnStringValue(CaseType.getCaseType()));
@@ -129,6 +135,8 @@ public class CamundaService {
         LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
         processVariables.put("dueDate", dmnStringValue(dueDate.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("workingDaysAllowed", dmnIntegerValue(99));
+
+        addLocationDataToTask(caseId, processVariables);
 
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
@@ -182,6 +190,30 @@ public class CamundaService {
 
     private DmnValue<Boolean> dmnBooleanValue(Boolean value) {
         return DmnValue.<Boolean>builder().value(value).type("Boolean").build();
+    }
+
+    private PcsCaseEntity loadCase(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    private void addLocationDataToTask(long caseId, Map<String, DmnValue<?>> processVariables) {
+        try {
+            PcsCaseEntity pcsCaseEntity = loadCase(caseId);
+            Integer locationId = pcsCaseEntity.getBaseLocation();
+            List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(locationId));
+            String locationName = CollectionUtils.isEmpty(courtVenues) ? UNABLE_TO_FIND_LOCATION :
+                courtVenues.getFirst().courtName();
+
+            processVariables.put("taskLocationId", dmnIntegerValue(locationId));
+            processVariables.put("taskLocationName", dmnStringValue(locationName));
+            processVariables.put("taskRegion", dmnIntegerValue(pcsCaseEntity.getRegionId()));
+        } catch (Exception e) {
+            log.error("Failed to get location and region data", e);
+            processVariables.put("taskLocationId", dmnIntegerValue(1));
+            processVariables.put("taskLocationName", dmnStringValue(UNABLE_TO_FIND_LOCATION));
+            processVariables.put("taskRegion", dmnIntegerValue(1));
+        }
     }
 
 }

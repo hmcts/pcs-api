@@ -8,6 +8,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
 import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
@@ -384,6 +386,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    private String summaryLegalRepresentativeMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -798,6 +803,20 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
+    /**
+     * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
+     * than stored - the name must be CaseAccessGroups to match what data store expects.
+     *
+     * <p>Left searchable even though nothing searches it. Marking it {@code searchable = false}
+     * emits the mapping as {@code {"enabled": false}}, and Elasticsearch cannot flip [enabled] on a
+     * field already mapped as an object - the put mapping returns 500 and the whole definition
+     * import fails. Any environment that has imported this field once, or has dynamically mapped it
+     * from a case document, would break on the next import.
+     */
+    @JsonProperty("CaseAccessGroups")
+    @CCD
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
+
     @CCD
     private String postCode;
 
@@ -830,6 +849,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private AddPartyDetails addPartyDetails;
+
+    @JsonUnwrapped
+    private UpdatePartyDetails updatePartyDetails;
 
 
     @CCD(
@@ -869,4 +891,13 @@ public class PCSCase {
         typeOverride = FieldType.DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList mhDraftPartyList;
+
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }
