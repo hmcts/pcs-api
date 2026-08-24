@@ -61,6 +61,7 @@ class GenAppsViewTest {
             .thenReturn(new UserRoles(CURRENT_USER_IDAM_ID, List.of()));
         lenient().when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
+            eq(CURRENT_USER_IDAM_ID),
             eq(ORGANISATION_ID),
             eq(List.of())
         ))
@@ -131,19 +132,22 @@ class GenAppsViewTest {
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity1, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity2, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
-        when(genAppVisibilityService.isGenAppVisibleToUser(genAppEntity3, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
