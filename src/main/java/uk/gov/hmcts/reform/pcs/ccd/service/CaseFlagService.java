@@ -54,9 +54,16 @@ public class CaseFlagService {
     private TranslationWAService translationWAService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
+        List<CaseFlagEntity> mergedFlagDetails = mergeFlagDetails(
+            incomingCaseFlags, pcsCaseEntity, null, CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD
+        );
 
-        return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
-                        CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
+        createReviewCaseFlagRequestTask(
+            pcsCaseEntity.getCaseReference(),
+            getRequestedFlagNames(incomingCaseFlags.getDetails())
+        );
+
+        return mergedFlagDetails;
     }
 
     /**
@@ -83,17 +90,7 @@ public class CaseFlagService {
             return;
         }
 
-        List<String> requestedFlags = reasonableAdjustmentDetails.stream()
-            .map(ListValue::getValue)
-            .filter(CaseFlagService::isCaseFlagRequested)
-            .map(FlagDetail::getName)
-            .toList();
-
-        if (!CollectionUtils.isEmpty(requestedFlags)) {
-            String taskDescription = taskDescriptionService
-                .createReviewCaseFlagRequestDescription(caseReference, requestedFlags);
-            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG_REQUEST, taskDescription);
-        }
+        createReviewCaseFlagRequestTask(caseReference, getRequestedFlagNames(reasonableAdjustmentDetails));
 
         List<String> activeFlags = reasonableAdjustmentDetails.stream()
             .map(ListValue::getValue)
@@ -127,15 +124,22 @@ public class CaseFlagService {
                 Function.identity()
             ));
 
+        List<String> requestedFlags = new ArrayList<>();
+        Long caseReference = null;
+
         for (ListValue<Party> incomingPartyValue : incomingParties) {
             Party incomingParty = incomingPartyValue.getValue();
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
+            if (caseReference == null && partyEntity.getPcsCase() != null) {
+                caseReference = partyEntity.getPcsCase().getCaseReference();
+            }
 
             if (incomingParty.getDefendantFlags() != null
-                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+                && !CollectionUtils.isEmpty(incomingParty.getDefendantFlags().getDetails())) {
+                requestedFlags.addAll(getRequestedFlagNames(incomingParty.getDefendantFlags().getDetails()));
 
+                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
                 List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
                     incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new,
                     RefDataPolicy.UPDATE_FROM_PAYLOAD);
@@ -149,6 +153,30 @@ public class CaseFlagService {
                 }
             }
         }
+
+        createReviewCaseFlagRequestTask(caseReference, requestedFlags);
+    }
+
+    private void createReviewCaseFlagRequestTask(Long caseReference, List<String> requestedFlags) {
+        if (caseReference == null || CollectionUtils.isEmpty(requestedFlags)) {
+            return;
+        }
+
+        String taskDescription = taskDescriptionService
+            .createReviewCaseFlagRequestDescription(caseReference, requestedFlags);
+        camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG_REQUEST, taskDescription);
+    }
+
+    private static List<String> getRequestedFlagNames(List<ListValue<FlagDetail>> details) {
+        if (CollectionUtils.isEmpty(details)) {
+            return List.of();
+        }
+
+        return details.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagRequested)
+            .map(FlagDetail::getName)
+            .toList();
     }
 
     private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,

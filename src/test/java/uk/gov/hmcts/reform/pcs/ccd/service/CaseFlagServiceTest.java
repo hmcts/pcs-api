@@ -111,6 +111,37 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldCreateReviewCaseFlagRequestTaskWhenCaseFlagRequested() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null, "CF0002", "Complex Case",
+                                      "Complicated case", "Requested"))
+            .build();
+
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Complex Case"))
+        ).thenReturn("request description");
+
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        // Then
+        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Complex Case")
+        );
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_CASE_FLAG_REQUEST,
+            "request description"
+        );
+    }
+
+    @Test
     void shouldAmendExistingCaseFlags() {
         // Given
         UUID id = UUID.randomUUID();
@@ -161,6 +192,46 @@ class CaseFlagServiceTest {
         assertThat(savedFlags.getFlagComment()).isEqualTo("Complicated case");
         assertThat(savedFlags.getDefaultStatus()).isEqualTo("Active");
 
+    }
+
+    @Test
+    void shouldCreateReviewCaseFlagRequestTaskWhenPartyFlagRequested() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .pcsCase(pcsCaseEntity)
+            .build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(partyEntity)));
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null, "PF00015", "Language Interpreter",
+                                      "Spanish Language Interpreter", "Requested"))
+            .build();
+
+        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
+        List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
+
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Language Interpreter"))
+        ).thenReturn("request description");
+
+        // When
+        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
+
+        // Then
+        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Language Interpreter")
+        );
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_CASE_FLAG_REQUEST,
+            "request description"
+        );
     }
 
     @Test
