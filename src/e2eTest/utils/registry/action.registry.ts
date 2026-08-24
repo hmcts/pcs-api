@@ -21,7 +21,9 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
-import {DocumentsAction} from "@utils/actions/custom-actions";
+import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
+import {RecordAnswers} from "@utils/actions/custom-actions";
+
 
 
 export class ActionRegistry {
@@ -34,6 +36,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
@@ -63,6 +66,7 @@ export class ActionRegistry {
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
+    ['manageHearingAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
@@ -144,6 +148,7 @@ export class ActionRegistry {
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
     ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],
@@ -165,9 +170,20 @@ export class ActionRegistry {
     ['requestRefund', new FeeAndPayAction()],
     ['approveRefund', new FeeAndPayAction()],
     ['rejectRefund', new FeeAndPayAction()],
+    ['noticeOfChange', new CreateCaseAction()],
+    ['clientDetails', new CreateCaseAction()],
+    ['checkAndSubmit', new CreateCaseAction()],
+    ['verifyChangeLink', new CreateCaseAction()],
+    ['validateErrorPage', new CreateCaseAction()],
+    ['noticeOfChangeSuccessful', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
+    ['uploadFiles', new DocumentsAction()],
+    ['recordUserEntry', new RecordAnswers()],
+    ['retrieveCYATableDataLR', new DocumentsAction()],
+    ['validateCYAForLR', new DocumentsAction()],
+    ['readDocumentsSubmit', new DocumentsAction()],
   ]);
 
   static getAction(actionName: string): IAction {

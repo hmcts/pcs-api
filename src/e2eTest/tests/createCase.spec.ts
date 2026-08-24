@@ -93,7 +93,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -215,7 +215,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -338,7 +338,7 @@ test.describe('[Create Case - England]', async () => {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -438,7 +438,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -538,14 +538,14 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('selectClaimType', claimType.noRadioOption);
     await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -629,13 +629,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -734,7 +734,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -830,13 +830,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,
@@ -937,7 +937,7 @@ test.describe('[Create Case - England]', async () => {
       correspondenceAddress: contactPreferences.noRadioOption,
       phoneNumber: contactPreferences.yesRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
@@ -1054,13 +1054,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
@@ -1157,13 +1157,13 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('mainHeader', contactPreferences.mainHeader); 
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
       phoneNumber: contactPreferences.noRadioOption
     });
-    await performValidation('mainHeader', defendantDetails.mainHeader); 
+    await performValidation('mainHeader', defendantDetails.mainHeader);
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.noRadioOption,
       correspondenceAddressOption: defendantDetails.noRadioOption,

@@ -126,6 +126,16 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' pm', 'PM');
 }
 
+export const getFormattedDate = (date = new Date()): string =>
+  new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+    .format(date)
+    .replace(',', '');
+
 /* Formats a numeric case number by inserting a hyphen after every 4 digits.
 Example: "1781518470935861" -> "1781-5184-7093-5861"
 */
@@ -135,13 +145,13 @@ export function formatTheCaseNumber(caseNumber: string): string {
 
 /* format document name for eg "rentStatement.pdf" to rentStatement - Claimant 1.pdf */
 export function formatUploadDocName(docName: string): string {
-const fileExtension = docName.lastIndexOf('.');
-const newFilename =
-  fileExtension !== -1
-    ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
-    : `${docName} - Claimant 1`;
+  const fileExtension = docName.lastIndexOf('.');
+  const newFilename =
+    fileExtension !== -1
+      ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
+      : `${docName} - Claimant 1`;
 
-return newFilename;
+  return newFilename;
 }
 
 /* convert string for ex RENT_ARREARS to Rent Arrears */

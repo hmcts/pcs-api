@@ -140,6 +140,57 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_047fn37">
+        <inputEntry id="UnaryTests_0686ucm">
+          <text>"Notify claim - claimant is notified of case issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1bja5yc">
+          <text>"CASE_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nuipj0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kgtogt">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ubyuxn">
+          <text>User selects claim completed in English for Which language did you use to complete this service AND claimant indicates during their journey that they intend to make a Gen App</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1y1mhp4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1dwxgmd">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1mrxxuk">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0iwmfaw">
+          <text>"New Claim – Create new hearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kvnwhp">
+          <text>{
+"delayUntilOrigin":now(),
+"delayUntilIntervalDays":1,
+"delayUntilNonWorkingCalendar":"https://www.gov.uk/bank-holidays/england-and-wales.json",
+"delayUntilNonWorkingDaysOfWeek": "SATURDAY,SUNDAY",
+"delayUntilSkipNonWorkingDays": true,
+"delayUntillMustBeWorkingDays": "No"
+}</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1txoiut">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gzi14m">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1x48g47">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0vj0j5d">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0cuaabj">
         <description>Possible process for welsh translation when user selects they have selected completed claim in english and welsh or just welsh    </description>
         <inputEntry id="UnaryTests_1jnzzpw">
@@ -187,13 +238,13 @@ else
       </rule>
       <rule id="DecisionRule_0v14k8l">
         <inputEntry id="UnaryTests_125bf6j">
-          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+          <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
+          <text>"PENDING_REVIEW"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
@@ -208,7 +259,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
@@ -220,7 +271,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>
@@ -231,7 +282,7 @@ else
       </rule>
       <rule id="DecisionRule_0g14gbs">
         <inputEntry id="UnaryTests_00o2b5b">
-          <text>"Upload Document - Citizen dashboard" (NEED NAME OF EVENT)</text>
+          <text>"uploadDocuments"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1majuv9">
           <text></text>
@@ -275,7 +326,7 @@ else
       </rule>
       <rule id="DecisionRule_1ko9g24">
         <inputEntry id="UnaryTests_0elw9dw">
-          <text>"Upload Document (Defendant LR)", "Upload Document Claimant LR"</text>
+          <text>"uploadDocuments"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1it4om8">
           <text></text>
@@ -496,8 +547,9 @@ else
         </outputEntry>
       </rule>
       <rule id="DecisionRule_15nwjxc">
+        <description>When no payment required</description>
         <inputEntry id="UnaryTests_0my033r">
-          <text>"Submit General Application"</text>
+          <text>makeAnApplication</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0f94fhz">
           <text></text>
@@ -539,9 +591,55 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_1ts2qj9">
+        <description>When payment was required</description>
+        <inputEntry id="UnaryTests_1nyh6u6">
+          <text>Payment callback for "adjourn" general application</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1aw8m4y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08t0s2l">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_021b9zp">
+          <text>"GEN_APP_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1g53sf8">
+          <text>User selects("Ask to adjourn the hearing" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05uds6w">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0tfmknj">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1jovd48">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0umibwt">
+          <text>"Review adjourn gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0bt1b6d">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_12g21zw">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_15oef5p">
+          <text>"ReviewAdjournGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_083p8ca">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0l3zxms">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_08h5xfk">
+        <description>When no payment required</description>
         <inputEntry id="UnaryTests_116viz4">
-          <text>"Submit General Application"</text>
+          <text>makeAnApplication</text>
         </inputEntry>
         <inputEntry id="UnaryTests_07pvozn">
           <text></text>
@@ -583,9 +681,55 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_14q31wi">
+        <description>When payment was required</description>
+        <inputEntry id="UnaryTests_0x2o8xz">
+          <text>Payment callback for "set aside" general application</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0whra9y">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_03g2saa">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dkd4wc">
+          <text>"GEN_APP_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1p7byvb">
+          <text>User selects("Ask the court to set aside" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_009w299">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0sij9x0">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1mw14bz">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0sura4s">
+          <text>"Review set aside gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0rfhv5x">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1v7775b">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1397xil">
+          <text>"ReviewSetAsideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0zfcpk5">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0qwcqtk">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1fhifem">
+        <description>When no payment required</description>
         <inputEntry id="UnaryTests_14sfsrw">
-          <text>"Submit General Application"</text>
+          <text>makeAnApplication</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0edws7w">
           <text></text>
@@ -594,7 +738,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_19akjrn">
-          <text>"Application Issued"</text>
+          <text>"GEN_APP_ISSUED"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_09c3xws">
           <text>User selects("Something else" for Choose an application)</text>
@@ -615,7 +759,7 @@ else
           <text></text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1bbwfnm">
-          <text>1</text>
+          <text>2</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1dyc6w2">
           <text>"ReviewGenApp"</text>
@@ -624,6 +768,51 @@ else
           <text>"applications"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_01rsdhv">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1unjls3">
+        <description>When payment was required</description>
+        <inputEntry id="UnaryTests_0a2rwts">
+          <text>Payment callback for "something else" general application</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0mwitt7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0yb4qb7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1acjf5c">
+          <text>"GEN_APP_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02g0xjg">
+          <text>User selects("Something else" for Choose an application)</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0691gub">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0cqfrzw">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_15x7z36">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0wc69hm">
+          <text>"Review gen app"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ptrd8s">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_18nsz2l">
+          <text>2</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_110hfrr">
+          <text>"ReviewGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mcu47w">
+          <text>"applications"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_10bus2u">
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
@@ -673,7 +862,7 @@ else
       </rule>
       <rule id="DecisionRule_0g1qchi">
         <inputEntry id="UnaryTests_122k3nu">
-          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+          <text>"respondPossessionClaim"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1nts3e0">
           <text></text>
@@ -761,7 +950,7 @@ else
       </rule>
       <rule id="DecisionRule_0isk9qq">
         <inputEntry id="UnaryTests_1aysune">
-          <text>"Add review date"</text>
+          <text>"addCaseReviewDate"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1r9ux5s">
           <text></text>
@@ -808,7 +997,7 @@ else
           <text>Defendant submits Gen app, counterclaim, response or response and counterclaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_05cljls">
-          <text>Submitted</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xpd2q0">
           <text></text>
@@ -817,7 +1006,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_000po80">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Defendant selects that they completed  Gen app, counterclaim, response or response and counterclaim in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0jueu0f">
           <text></text>
@@ -849,10 +1038,10 @@ else
       </rule>
       <rule id="DecisionRule_1dxqrjr">
         <inputEntry id="UnaryTests_1hv7g4o">
-          <text>Submit Claim</text>
+          <text>Claimant submits claim or gen app</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0x5a2l7">
-          <text>"PENDING_CASE_ISSUED"</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0fbkyvu">
           <text></text>
@@ -861,7 +1050,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xs29rz">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Claimant selects claim completed in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0eloawb">
           <text></text>

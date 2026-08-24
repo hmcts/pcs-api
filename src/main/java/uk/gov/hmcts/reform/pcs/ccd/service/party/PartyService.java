@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -27,12 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @AllArgsConstructor
 public class PartyService {
+
+    private static final String PERSON_UNKNOWN_NAME = "Person unknown";
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
@@ -73,10 +77,17 @@ public class PartyService {
     }
 
     public String getPartyName(PartyEntity partyEntity) {
+        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
+            return PERSON_UNKNOWN_NAME;
+        }
         if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
             return partyEntity.getOrgName();
         } else {
-            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
+            String partyName = Stream.of(partyEntity.getFirstName(), partyEntity.getLastName())
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(" "));
+
+            return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
         }
     }
 
@@ -161,7 +172,8 @@ public class PartyService {
             : claimantContactPreferences.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
-
+        claimantParty.setNameKnown(VerticalYesNo.YES);
+        
         VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);

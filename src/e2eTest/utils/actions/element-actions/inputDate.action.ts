@@ -15,11 +15,14 @@ export class InputDateAction implements IAction {
 
     const locCount = await locator.count();
     const dateVal = String(value).split('/');
-    if (locCount !== dateVal.length) {
-      `Date fields are not in the correct format. Found ${locCount} inputs but received ${dateVal.length} values.`
+    if (dateVal.length > locCount) {
+      throw new Error(
+        `Date fields are not in the correct format. ` +
+        `Found ${locCount} inputs but received ${dateVal.length} values.`
+      );
     }
 
-    for (let i = 0; i < locCount; i++) {
+    for (let i = 0; i < dateVal.length; i++) {
       await locator.nth(i).fill(dateVal[i]);
     }
   }

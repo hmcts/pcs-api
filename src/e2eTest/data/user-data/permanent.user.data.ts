@@ -27,5 +27,5 @@ export const user = {
   hearingCenterAdminWales:  {
     email: 'pcs-hearing-centre-wales1@hmcts.net',
     password: process.env.IDAM_PCS_USER_PASSWORD
-  }
+  },
 };

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
@@ -220,6 +221,30 @@ class ClaimViewTest {
         assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
         assertThat(requiredDocumentsWales.getGasSafetyReport()).isEmpty();
         assertThat(requiredDocumentsWales.getElectricalInstallation()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeGenAppDocumentsInWalesRequiredDocuments() {
+        // Given
+        DocumentEntity genAppEicrDocument = documentEntity(
+            DocumentType.EICR_REPORT,
+            "genApps GA2 - Defendant 2.ppt",
+            null
+        );
+        genAppEicrDocument.setGeneralApplication(GenAppEntity.builder().build());
+
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
+            genAppEicrDocument
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
     }
 
     @Test

@@ -1,0 +1,15 @@
+### Review gen app
+
+
+Review {{partyLabel}}'s general application in
+<a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a>, decide what action is
+needed, and take the appropriate action. Only mark the task as complete once the application has been reviewed and any
+required action has been completed.
+
+#### Documents
+
+<ul class="govuk-list govuk-list--bullet">
+  {% for filename in filenames %}
+  <li class="govuk-!-font-size-19">{{filename}}</li>
+  {% endfor %}
+</ul>

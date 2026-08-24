@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -49,6 +50,14 @@ public class PossessionClaimResponse {
 
     @CCD(access = {DefendantAccess.class})
     private DefendantResponses defendantResponses;
+
+    /**
+     * Reasonable adjustment flags from cui-ra microsite, persisted against their party on submit.
+     * Every draft save must carry this field. The respond draft save fully replaces the
+     * stored draft rather than merging into it.
+     */
+    @CCD(access = {DefendantAccess.class}, label = "Defendant flags")
+    private Flags defendantFlags;
 
     @CCD(access = {DefendantAccess.class})
     private String currentDefendantPartyId;
