@@ -37,6 +37,9 @@ export class ActionCMRegistry {
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
+    ['validateDefendantDetails', new CaseManagementAction()],
+    ['validateClaimantDetails', new CaseManagementAction()],
+    ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
     ['selectAnEvent', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
@@ -64,6 +67,10 @@ export class ActionCMRegistry {
     ['errorValidationSelectDocumentPage', new ErrorValidationAction()],
     ['addReviewDates', new CaseManagementAction()],
     ['confirmReviewDatesAdded', new CaseManagementAction()],
+    ['selectManageParty', new CaseManagementAction()],
+    ['addNewPartyAddress', new CaseManagementAction()],
+    ['addNewParty', new CaseManagementAction()],
+    ['confirmAddParty', new CaseManagementAction()],
     ['addAHearing', new CaseManagementAction()],
     ['confirmAddHearing', new CaseManagementAction()],
     ['errorValidationAddReviewDatesPage', new ErrorValidationAction()],
@@ -80,6 +87,9 @@ export class ActionCMRegistry {
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['getAddressInfo', new CaseManagementAction()],
+    ['selectParty', new CaseManagementAction()],
+    ['updatePartyDetails', new CaseManagementAction()],
+    ['confirmPartyDetailsUpdated', new CaseManagementAction()],
 
   ]);
 

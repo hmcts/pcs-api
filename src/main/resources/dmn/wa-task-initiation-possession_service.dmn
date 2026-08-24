@@ -140,6 +140,57 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_047fn37">
+        <inputEntry id="UnaryTests_0686ucm">
+          <text>"Notify claim - claimant is notified of case issued"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1bja5yc">
+          <text>"CASE_ISSUED"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nuipj0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0kgtogt">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ubyuxn">
+          <text>User selects claim completed in English for Which language did you use to complete this service AND claimant indicates during their journey that they intend to make a Gen App</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1y1mhp4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1dwxgmd">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1mrxxuk">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0iwmfaw">
+          <text>"New Claim – Create new hearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kvnwhp">
+          <text>{
+"delayUntilOrigin":now(),
+"delayUntilIntervalDays":1,
+"delayUntilNonWorkingCalendar":"https://www.gov.uk/bank-holidays/england-and-wales.json",
+"delayUntilNonWorkingDaysOfWeek": "SATURDAY,SUNDAY",
+"delayUntilSkipNonWorkingDays": true,
+"delayUntillMustBeWorkingDays": "No"
+}</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1txoiut">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1gzi14m">
+          <text>"NewClaimCreateNewHearing"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1x48g47">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0vj0j5d">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0cuaabj">
         <description>Possible process for welsh translation when user selects they have selected completed claim in english and welsh or just welsh    </description>
         <inputEntry id="UnaryTests_1jnzzpw">
@@ -187,13 +238,13 @@ else
       </rule>
       <rule id="DecisionRule_0v14k8l">
         <inputEntry id="UnaryTests_125bf6j">
-          <text>"Respond to claim" (Respone and counterclaim submitted)</text>
+          <text>respondPossessionClaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0ttsckb">
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_09uwuq6">
-          <text>"PENDING_COUNTER_CLAIM_ISSUED"</text>
+          <text>"PENDING_REVIEW"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0vnmqle">
           <text></text>
@@ -208,7 +259,7 @@ else
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1krqf3d">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0jeqot3">
           <text>"Review Defendant response and counterclaim" </text>
@@ -220,7 +271,7 @@ else
           <text>5</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1443rue">
-          <text>"Review DefendantResponseAndCounterclaim"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_050op82">
           <text>"routine_work"</text>
@@ -811,7 +862,7 @@ else
       </rule>
       <rule id="DecisionRule_0g1qchi">
         <inputEntry id="UnaryTests_122k3nu">
-          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+          <text>"respondPossessionClaim"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1nts3e0">
           <text></text>
@@ -899,7 +950,7 @@ else
       </rule>
       <rule id="DecisionRule_0isk9qq">
         <inputEntry id="UnaryTests_1aysune">
-          <text>"Add review date"</text>
+          <text>"addCaseReviewDate"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1r9ux5s">
           <text></text>
@@ -946,7 +997,7 @@ else
           <text>Defendant submits Gen app, counterclaim, response or response and counterclaim</text>
         </inputEntry>
         <inputEntry id="UnaryTests_05cljls">
-          <text>Submitted</text>
+          <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xpd2q0">
           <text></text>
@@ -955,7 +1006,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_000po80">
-          <text>User selects claim completed in welsh or english and welsh OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
+          <text>Defendant selects that they completed  Gen app, counterclaim, response or response and counterclaim in welsh or english and welsh AND/OR Claimant or defendant had indicated they want to receive communications and documents in Welsh</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0jueu0f">
           <text></text>
