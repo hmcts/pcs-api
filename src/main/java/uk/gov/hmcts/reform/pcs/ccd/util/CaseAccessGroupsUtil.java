@@ -46,7 +46,10 @@ public final class CaseAccessGroupsUtil {
             .toList();
     }
 
-    /** Every item needs an id (data store skips id-less ones); derived from the group id so it is stable across reads. */
+    /**
+     * Every item needs an id (data store skips id-less ones); derived from the group id
+     * so it is stable across reads.
+     */
     private static ListValue<CaseAccessGroup> asIdentifiedGroupItem(String groupId) {
         return ListValue.<CaseAccessGroup>builder()
             .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())
