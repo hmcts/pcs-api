@@ -19,11 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
@@ -41,7 +40,7 @@ class StartEventHandlerTest {
     private static final long TEST_CASE_REFERENCE = 1234L;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OrganisationService organisationService;
     @Mock
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
@@ -53,7 +52,7 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(securityContextService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
     }
 
     @Test
@@ -68,10 +67,10 @@ class StartEventHandlerTest {
                                    .build()))
             .build();
 
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(expectedPartyNameList));
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
 
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
@@ -99,10 +98,10 @@ class StartEventHandlerTest {
             .listItems(listItems)
             .build();
 
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.of(expectedPartyNameList));
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
 
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
@@ -127,10 +126,13 @@ class StartEventHandlerTest {
     @Test
     void shouldNotSetRepresentedPartiesFieldWhenUserDoesNotRepresentAny() {
         // Given
-        UUID currentUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(currentUserId, TEST_CASE_REFERENCE))
-            .thenReturn(Optional.empty());
+        String orgId = UUID.randomUUID().toString();
+        DynamicList expectedPartyNameList = DynamicList.builder()
+            .listItems(List.of())
+            .build();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
 
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
@@ -140,7 +142,8 @@ class StartEventHandlerTest {
         underTest.start(eventPayload(caseData));
 
         // Then
-        assertThat(caseData.getRepresentedPartyNames()).isNull();
+        assertThat(caseData.getRepresentedPartyNames().getValue()).isNull();
+        assertThat(caseData.getRepresentedPartyNames().getListItems()).isEmpty();
     }
 
     @Test
@@ -152,6 +155,11 @@ class StartEventHandlerTest {
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
             .build();
+        DynamicList expectedPartyNameList = DynamicList.builder()
+            .listItems(List.of())
+            .build();
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
 
         // When
         underTest.start(eventPayload(caseData));
@@ -174,6 +182,11 @@ class StartEventHandlerTest {
         PCSCase caseData = PCSCase.builder()
             .xuiGenAppRequest(XuiGenAppRequest.builder().build())
             .build();
+        DynamicList expectedPartyNameList = DynamicList.builder()
+            .listItems(List.of())
+            .build();
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
 
         // When
         underTest.start(eventPayload(caseData));
