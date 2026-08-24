@@ -1,6 +1,6 @@
 export const createAndManageSupport = {
     mainHeader: `Request support`,
-    mainHeaderManage: `Manage Support`,
+    mainHeaderManage: `Manage support`,
     continueButton: `Continue`,
     addCommentLabel: `Tell us more about the request`,
     addCommentHintText: `Explain why you are creating this support request. Do not include any sensitive information such as personal details.`,
