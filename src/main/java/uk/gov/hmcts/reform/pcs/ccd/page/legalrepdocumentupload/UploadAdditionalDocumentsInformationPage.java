@@ -15,8 +15,8 @@ public class UploadAdditionalDocumentsInformationPage implements CcdPageConfigur
 
                     <div class="govuk-details__text govuk-!-margin-bottom-5">
                         <p class="govuk-body">
-                            We usually share anything you upload with the other parties, for example other defendants,
-                            the defendant’s landlord, housing association or mortgage provider.
+                            We usually share anything you upload with the other parties, for example
+                            a tenant, landlord, housing association, or mortgage lender.
                         </p>
                         <p class="govuk-body">
                             If your application is ‘without notice’ (where you have asked us to consider your
