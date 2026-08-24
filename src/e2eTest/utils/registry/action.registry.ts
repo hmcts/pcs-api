@@ -148,7 +148,6 @@ export class ActionRegistry {
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
-    ['confirmStatusForFlag', new CaseFlagAction()],
     ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],

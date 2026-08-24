@@ -7,7 +7,7 @@ export const manageParties = {
   removePartyRadioOption: `Remove a party`,
   removeLegalRepresentativeRadioOption: `Remove a legal representative`,
   whichPartyContactInformationHiddenQuestion:`Which party's contact information needs to be updated?`,
-  ClaimantHiddenRadioOption: `Possession Claims Solicitor Org - Claimant 1`,
+  ClaimantHiddenRadioOption: `PCS_Solicitor_Org_Testing - Claimant 1`,
   defendant1HiddenRadioOption: `John Doe - Defendant 1`,
   defendant2HiddenRadioOption:`Peter Parker - Defendant 2`,
   defendant3HiddenRadioOption:`Jen Parker - Defendant 3`,
