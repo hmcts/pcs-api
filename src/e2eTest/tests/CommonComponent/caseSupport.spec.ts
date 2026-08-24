@@ -69,12 +69,12 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Enter support details and continue
     await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('inputText', 'addCommentLabel', createAndManageSupport.addCommentText);
+    await performAction('inputText', createAndManageSupport.addCommentLabel, createAndManageSupport.addCommentText);
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Submit the request
     await performAction('clickButton', 'Submit');
     // Validate success header after submission
-    await performValidation('mainHeader', `Case #.* has been updated with event: Request support`);
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
     // Now create ManageSupport Event
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
@@ -82,16 +82,16 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     // Validate Manage Support header
     await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
     // Select Possession Claims Solicitor Org (Claimant) option with Reasonable adjustment and Friend or family, then continue
-    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - **Reasonable adjustment, Friend or family with me** (Test)' });
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Add comments and continue
     await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
-    await performAction('inputText', 'updateCommentLabel', createAndManageSupport.updateCommentText);
+    await performAction('inputText', createAndManageSupport.updateCommentLabel, createAndManageSupport.updateCommentText);
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Submit and validate success message
     await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
-    await performValidation('mainHeader', 'Case #.* has been updated with event: Manage support');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
   });
 
 });
