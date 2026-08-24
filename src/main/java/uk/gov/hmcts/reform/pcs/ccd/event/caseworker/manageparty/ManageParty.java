@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddLitigationParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.AddPartyDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.ManagePartyOptionsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.manageparty.UpdatePartyDetailsPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -28,13 +29,19 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
     private final AddPartyDetailsPage addPartyDetailsPage;
+    private final ManagePartyOptionsPage managePartyOptionsPage;
+    private final UpdatePartyDetailsPage updatePartyDetailsPage;
 
     public ManageParty(@Qualifier("managePartyStartEventHandler") StartEventHandler startEventHandler,
                         @Qualifier("managePartySubmitEventHandler") SubmitEventHandler submitEventHandler,
-                        AddPartyDetailsPage addPartyDetailsPage) {
+                        AddPartyDetailsPage addPartyDetailsPage,
+                        ManagePartyOptionsPage managePartyOptionsPage,
+                        UpdatePartyDetailsPage updatePartyDetailsPage) {
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
         this.addPartyDetailsPage = addPartyDetailsPage;
+        this.managePartyOptionsPage = managePartyOptionsPage;
+        this.updatePartyDetailsPage = updatePartyDetailsPage;
     }
 
     @Override
@@ -50,9 +57,10 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
             .endButtonLabel("Submit");
 
         new PageBuilder(eventBuilder)
-            .add(new ManagePartyOptionsPage())
+            .add(managePartyOptionsPage)
             .add(new AddLitigationParty())
-            .add(addPartyDetailsPage);
+            .add(addPartyDetailsPage)
+            .add(updatePartyDetailsPage);
     }
 
 }
