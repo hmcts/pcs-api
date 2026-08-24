@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,11 +36,7 @@ public class GenAppVisibilityService {
     private static final String PCS_SOLICITOR_ROLE = UserRole.PCS_SOLICITOR.getRole();
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
-                                         String organisationId) {
-        return isGenAppVisibleToUser(genAppEntity, organisationId, List.of());
-    }
-
-    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
+                                         UUID userId,
                                          String organisationId,
                                          Collection<String> currentUserRoles) {
         if (genAppEntity == null) {
@@ -54,17 +51,27 @@ public class GenAppVisibilityService {
             return true;
         }
 
-        return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), organisationId, currentUserRoles);
+        return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), userId, organisationId, currentUserRoles);
     }
 
     public boolean isWithoutNoticeVisibleToUser(PartyEntity party,
+                                                UUID userId,
                                                 String organisationId,
                                                 Collection<String> currentUserRoles) {
+
         if (isInternalUser(currentUserRoles)) {
             return true;
         }
 
-        if (party == null || organisationId == null) {
+        if (party == null || userId == null) {
+            return false;
+        }
+
+        if (userId.equals(party.getIdamId())) {
+            return true;
+        }
+
+        if (organisationId == null) {
             return false;
         }
 
@@ -77,6 +84,7 @@ public class GenAppVisibilityService {
     }
 
     public boolean isGenAppDocumentVisibleToUser(GenAppEntity genAppEntity,
+                                                 UUID userId,
                                                  String organisationId,
                                                  Collection<String> currentUserRoles) {
         if (genAppEntity == null) {
@@ -84,17 +92,20 @@ public class GenAppVisibilityService {
         }
 
         if (genAppEntity.getWithoutNotice() == VerticalYesNo.YES) {
-            return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), organisationId, currentUserRoles);
+            return isWithoutNoticeVisibleToUser(genAppEntity.getParty(), userId, organisationId, currentUserRoles);
         }
 
-        return isGenAppVisibleToUser(genAppEntity, organisationId, currentUserRoles);
-    }
-
-    public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps, String organisationId) {
-        return getVisibleGenAppsToUser(genApps, organisationId, List.of());
+        return isGenAppVisibleToUser(genAppEntity, userId, organisationId, currentUserRoles);
     }
 
     public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps,
+                                                      UUID userId,
+                                                      String organisationId) {
+        return getVisibleGenAppsToUser(genApps, userId, organisationId, List.of());
+    }
+
+    public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps,
+                                                      UUID userId,
                                                       String organisationId,
                                                       Collection<String> currentUserRoles) {
         if (genApps == null || genApps.isEmpty()) {
@@ -107,7 +118,7 @@ public class GenAppVisibilityService {
                 GenAppEntity::getApplicationSubmittedDate,
                 Comparator.nullsLast(Comparator.reverseOrder())
             ))
-            .filter(genAppEntity -> isGenAppVisibleToUser(genAppEntity, organisationId, currentUserRoles))
+            .filter(genAppEntity -> isGenAppVisibleToUser(genAppEntity, userId, organisationId, currentUserRoles))
             .toList();
     }
 
