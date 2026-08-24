@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 
@@ -110,6 +111,19 @@ class NotificationPersonalisationFactoryTest {
         void shouldUsePersonsUnknownWhenDefendantNameNotKnown() {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forDefendant(response);
+
+            assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name is missing")
+        void shouldUsePersonsUnknownWhenDefendantNameMissing() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            defendantParty.setNameKnown(null);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
             BasePersonalisation result = factory.forDefendant(response);
@@ -336,6 +350,44 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
 
+        @Test
+        @DisplayName("Should include organisation counterclaim details")
+        void shouldIncludeCounterclaimDetailsForOrganisation() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            OrganisationEntity organisationEntity = OrganisationEntity.builder().organisationName("HMCTS").build();
+            CounterclaimPaymentRequiredPersonalisation result = factory.
+                counterclaimPaymentRequired(organisationEntity, pcsCaseEntity);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("organisationName", "HMCTS")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("paymentUrl",
+                               "null/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+        }
+
+        @Test
+        @DisplayName("Should include citizen counterclaim details")
+        void shouldIncludeCounterclaimDetailsForCitizen() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+            CounterclaimPaymentRequiredPersonalisation result = factory.
+                counterclaimPaymentRequired(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "John")
+                .containsEntry("lastName", "Doe")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("paymentUrl",
+                               "null/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+        }
     }
 
     @Nested

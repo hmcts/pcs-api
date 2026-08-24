@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -35,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.LegalRepresentativeNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
@@ -46,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
@@ -402,6 +406,50 @@ class NotificationServiceTest {
 
         verify(notificationRepository).findById(NOTIFICATION_ID);
         verify(notificationRepository).save(any(CaseNotification.class));
+    }
+
+    @Test
+    @DisplayName("Recipient Email is blank, return null")
+    void emailIsBlank_returnNull() {
+        LegalRepresentativeNotificationRecipient legalRepresentativeNotificationRecipient =
+            new LegalRepresentativeNotificationRecipient(null, null, null, null);
+
+        assertThat(notificationService
+                       .sendEmailForLegalRepresentative(legalRepresentativeNotificationRecipient,
+                                                        null, null, null))
+            .isNull();
+    }
+
+    @Test
+    @DisplayName("Organisation is null, throws exception")
+    void organisationIsNull_throwsException() {
+        DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+            .id(NOTIFICATION_ID)
+            .party(null)
+            .build();
+
+        assertThatThrownBy(
+            () -> notificationService.sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
+                null, null, defendantResponseEntity))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No legal representative found for response: " + NOTIFICATION_ID);
+    }
+
+    @Test
+    @DisplayName("Contact details are missing is null, notification fails to send")
+    void contactDetailsNull_notificationDoesNotSend() {
+        DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder()
+            .id(NOTIFICATION_ID)
+            .party(null)
+            .build();
+
+        OrganisationEntity organisationEntity = OrganisationEntity.builder().claimPartyContactDetails(null).build();
+
+        notificationService.sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
+            organisationEntity, null, defendantResponseEntity);
+
+        verify(notificationRepository, never()).findById(NOTIFICATION_ID);
+        verify(notificationRepository, never()).save(any(CaseNotification.class));
     }
 
     @Nested
@@ -829,6 +877,107 @@ class NotificationServiceTest {
 
             // Then
             verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send notification for organisation with no counter claim")
+        void notificationSentForOrganisationNoCounterclaim() {
+            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();
+            OrganisationEntity organisationEntity = anOrganisationEntity(pcsCaseEntity);
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            when(notificationPersonalisationFactory.forOrganisation(organisationEntity, pcsCaseEntity)).thenReturn(
+                OrganisationBasePersonalisation.builder()
+                    .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
+            );
+
+            EmailNotificationResponse response = notificationService.
+                sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(organisationEntity,
+                                                                                     pcsCaseEntity,
+                                                                                     defendantResponseEntity);
+
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_NO_COUNTERCLAIM_LEGAL_REP);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send notification for organisation with counterclaim payment required")
+        void notificationSentForOrganisationCounterclaimPaymentRequired() {
+            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();
+            OrganisationEntity organisationEntity = anOrganisationEntity(pcsCaseEntity);
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            OrganisationBasePersonalisation organisationBasePersonalisation = OrganisationBasePersonalisation.builder()
+                .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build();
+
+            when(notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity, pcsCaseEntity)).thenReturn(
+                CounterclaimPaymentRequiredPersonalisation.builder()
+                    .base(organisationBasePersonalisation)
+                    .paymentUrl("theUrl").build()
+            );
+
+            EmailNotificationResponse response = notificationService.
+                sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(organisationEntity,
+                                                                                     pcsCaseEntity,
+                                                                                     defendantResponseEntity);
+
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should send notification for organisation with counterclaim no payment required")
+        void notificationSentForOrganisationCounterclaimNoPaymentRequired() {
+            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();
+            OrganisationEntity organisationEntity = anOrganisationEntity(pcsCaseEntity);
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
+
+            CaseNotification savedNotification = mock(CaseNotification.class);
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            when(notificationPersonalisationFactory.forOrganisation(organisationEntity, pcsCaseEntity)).thenReturn(
+                OrganisationBasePersonalisation.builder()
+                    .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
+            );
+
+            EmailNotificationResponse response = notificationService.
+                sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(organisationEntity,
+                                                                                      pcsCaseEntity,
+                                                                                      defendantResponseEntity);
+
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+        private OrganisationEntity anOrganisationEntity(PcsCaseEntity pcsCaseEntity) {
+            return OrganisationEntity.builder()
+                .claimPartyContactDetails(List.of((ClaimPartyContactDetailsEntity.builder()
+                    .id(NOTIFICATION_ID)
+                    .pcsCase(PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build())
+                    .emailAddress("myEmail@hmcts.net")
+                    .build())))
+                .build();
         }
     }
 

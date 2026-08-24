@@ -85,12 +85,15 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         OrganisationEntity organisationEntity, PcsCaseEntity pcsCaseEntity
     ) {
-        String caseRef = pcsCaseEntity.getCaseReference().toString();
-        String paymentUrl = String.format(
-            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
-            frontendUrl,
-            caseRef
-        );
+        String paymentUrl = Optional.of(pcsCaseEntity)
+            .map(PcsCaseEntity::getCaseReference)
+            .map(Object::toString)
+            .map(caseRef -> String.format(
+                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+                frontendUrl,
+                caseRef
+            ))
+            .orElse(null);
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forOrganisation(organisationEntity, pcsCaseEntity))
