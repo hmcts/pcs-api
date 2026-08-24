@@ -147,7 +147,7 @@ class PartiesViewTest {
             buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT),
             buildClaimPartyEntity(underlessee1, PartyRole.UNDERLESSEE_OR_MORTGAGEE),
             buildClaimPartyEntity(underlessee2, PartyRole.UNDERLESSEE_OR_MORTGAGEE),
-            buildClaimPartyEntity(litigationFriend, PartyRole.LITIGATION_FRIEND, claimant)
+            buildClaimPartyEntity(litigationFriend, PartyRole.LITIGATION_FRIEND, null, claimant)
         ));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -187,10 +187,10 @@ class PartiesViewTest {
         PartyEntity underlessee = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
-            buildClaimPartyEntity(claimant, PartyRole.CLAIMANT, 1),
-            buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT, 1),
-            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT, 2),
-            buildClaimPartyEntity(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1)
+            buildClaimPartyEntity(claimant, PartyRole.CLAIMANT, 1, null),
+            buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT, 1, null),
+            buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT, 2, null),
+            buildClaimPartyEntity(underlessee, PartyRole.UNDERLESSEE_OR_MORTGAGEE, 1, null)
         ));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -547,7 +547,7 @@ class PartiesViewTest {
     }
 
     private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role) {
-        return buildClaimPartyEntity(partyEntity, role, null);
+        return buildClaimPartyEntity(partyEntity, role, null, null);
     }
 
     private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role, Integer rank,
