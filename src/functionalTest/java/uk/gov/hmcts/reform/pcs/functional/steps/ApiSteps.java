@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -29,6 +28,10 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.Us
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
 
 public class ApiSteps {
+
+    private static final String CREATE_CASE_NOT_REPLAYABLE =
+        "Create test case failed before a usable response was read, so it is not known whether the case "
+            + "was created. The endpoint is not idempotent, so the request is deliberately not retried.";
 
     private RequestSpecification request;
     private Response response;
@@ -186,40 +189,43 @@ public class ApiSteps {
         return createCase(legislativeCountry, true);
     }
 
+    /**
+     * Deliberately single-shot. The CCD case is created part-way through the server-side orchestration
+     * (submitCaseCreation), and the resume event, court allocation, issue date and access-code steps all run
+     * after that point. TestingSupportExceptionHandler maps any failure there to 500 and RestExceptionHandler
+     * maps an upstream throttle to 503, so a 5xx can be returned with the case already created. This service
+     * emits neither 408 nor 429 itself, so those could only come from infrastructure and do not prove the
+     * request went unprocessed. No status is provably safe to replay, and replaying would create a second
+     * case. Give the endpoint an idempotency key before reintroducing any retry here.
+     */
     private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
-        final int maxAttempts = 3;
-        Throwable lastFailure = null;
-
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            try {
-                // Plain RestAssured rather than SerenityRest: SerenityRest records a failed step on the
-                // event bus for every failed call, and Serenity then skips subsequent @Step calls and
-                // returns Mockito mocks from them. That would mask a retry we successfully recovered from.
-                Response response = RestAssured.given()
-                    .baseUri(baseUrl)
-                    .contentType(ContentType.JSON)
-                    .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
-                    .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                    .pathParam("legislativeCountry", legislativeCountry)
-                    .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
-                    .when()
-                    .post(Endpoints.CreateTestCase.getResource());
-
-                if (response.statusCode() == 201) {
-                    return response.then().extract().path("caseId");
-                }
-
-                lastFailure = new AssertionError(
-                    "Create test case returned HTTP " + response.statusCode() + " - " + summarise(response)
-                );
-            } catch (Exception | AssertionError e) {
-                lastFailure = e;
-            }
+        Response createCaseResponse;
+        try {
+            createCaseResponse = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("legislativeCountry", legislativeCountry)
+                .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
+                .when()
+                .post(Endpoints.CreateTestCase.getResource());
+        } catch (Exception e) {
+            throw new IllegalStateException(CREATE_CASE_NOT_REPLAYABLE, e);
         }
 
-        throw new IllegalStateException(
-            "Failed to create test case for " + legislativeCountry + " after " + maxAttempts + " attempts",
-            lastFailure
+        int statusCode = createCaseResponse.statusCode();
+        if (statusCode == 201) {
+            return createCaseResponse.then().extract().path("caseId");
+        }
+        if (statusCode <= 0) {
+            // SerenityRest substitutes a stubbed response with status 0 when the request itself failed.
+            throw new IllegalStateException(CREATE_CASE_NOT_REPLAYABLE);
+        }
+
+        throw new AssertionError(
+            "Create test case for " + legislativeCountry + " returned HTTP " + statusCode
+                + " - " + summarise(createCaseResponse)
         );
     }
 
