@@ -46,11 +46,7 @@ public final class CaseAccessGroupsUtil {
             .toList();
     }
 
-    /**
-     * The data store skips collection items that have no id, so every group needs one. Deriving it
-     * from the group id rather than generating one keeps it the same on every read, and these are
-     * rebuilt on each read rather than stored.
-     */
+    /** Every item needs an id (data store skips id-less ones); derived from the group id so it is stable across reads. */
     private static ListValue<CaseAccessGroup> asIdentifiedGroupItem(String groupId) {
         return ListValue.<CaseAccessGroup>builder()
             .id(UUID.nameUUIDFromBytes(groupId.getBytes(StandardCharsets.UTF_8)).toString())

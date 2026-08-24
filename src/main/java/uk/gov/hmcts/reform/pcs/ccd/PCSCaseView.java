@@ -133,8 +133,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        // Set unconditionally: an omitted field reads as "no opinion" to anything holding a copy,
-        // so a case that stops deriving groups could keep the ones it had.
+        // Set unconditionally so stale copies can't keep groups the case no longer derives.
         pcsCase.setCaseAccessGroups(
             CaseAccessGroupsUtil.deriveCaseAccessGroups(submittedCase.pcsCaseEntity().getParties()));
 

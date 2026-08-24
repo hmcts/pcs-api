@@ -82,14 +82,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
-                // Kept alongside the group access roles until those are enabled everywhere. The event
-                // grant is also what gives a role field-level read, and this is the IdAM role every
-                // PCS solicitor holds, so dropping it takes claim fields away from the defendant's
-                // solicitor as well, who has no group role to fall back on.
+                // Kept until group access is enabled everywhere; dropping it would also take
+                // field-level read from the defendant's solicitor, who has no group role yet.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                // The organisations that are the claimant themselves - local authority and the
-                // "other" profiles - hold this capacity rather than claimant-solicitor
+                // orgs that are the claimant themselves (LA / "other" profiles)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()

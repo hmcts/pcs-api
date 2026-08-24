@@ -9,10 +9,8 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    // Claim drafts are keyed on the organisation alone and carry no party. The PartyIdIsNull is
-    // load-bearing: the legal representative journey writes drafts for the same case, event and
-    // organisation but with a party, so without it a firm's defendant draft is returned here - and
-    // a firm representing two defendants makes the lookup non-unique and throws.
+    // PartyIdIsNull is load-bearing: LR drafts share case/event/org but carry a party;
+    // without it a firm's defendant draft matches here (and two defendants -> non-unique).
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 

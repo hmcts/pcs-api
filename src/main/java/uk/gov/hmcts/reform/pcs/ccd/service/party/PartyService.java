@@ -162,10 +162,8 @@ public class PartyService {
     }
 
     /**
-     * The claimant party a shell case is created with, marked as the claim creator so CaseAccessGroups
-     * derive during the draft phase, before there is a claim role to read. Both organisation values are
-     * required: without them the case derives no group, and group access is the only way in, so nobody
-     * could open it.
+     * Shell-case claimant party, marked claim creator so CaseAccessGroups derive during draft.
+     * Both org values are required - without them no group derives and nobody can open the case.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
         OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
@@ -222,9 +220,8 @@ public class PartyService {
     }
 
     /**
-     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
-     * assigning unconditionally would wipe the organisation on a transient blip, and group access is
-     * the only way in, so the case would be left with nobody able to open it.
+     * Keeps creation-time values: rd-professional returns null on blips, and an unconditional
+     * assign would wipe the org - leaving nobody able to open the case.
      */
     private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
                                          String orgProfileId) {

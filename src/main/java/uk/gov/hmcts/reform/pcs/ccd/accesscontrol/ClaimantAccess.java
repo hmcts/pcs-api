@@ -13,16 +13,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 
 /**
- * Claimant data. The group access roles are the intended route, but caseworker-pcs-solicitor is
- * kept alongside them until they can actually grant anything.
- *
- * <p>Three things have to land first. A case carries no CaseAccessGroups until it holds a claimant
- * party, so no group role can reach the event that creates one. The defendant's solicitor has no
- * group role at all until the notice-of-change work lands. And cases created before this ticket
- * hold no organisation profile, so they derive no groups to match.
- *
- * <p>Removing it while those hold takes claimant fields away from everyone: the event grants say a
- * PCS solicitor may run the journey while the fields it touches say they may not.
+ * Claimant data. Group access roles are the intended route; caseworker-pcs-solicitor stays
+ * until they can grant anything (needs CaseAccessGroups on new cases, the NoC group role,
+ * and org profiles on pre-existing cases). Removing it early locks claimant fields for everyone.
  */
 public class ClaimantAccess implements HasAccessControl {
 
@@ -31,8 +24,7 @@ public class ClaimantAccess implements HasAccessControl {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(PCS_SOLICITOR, Permission.CRU);
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
-        // The organisations that are the claimant themselves - local authority and the "other"
-        // profiles - hold this capacity rather than claimant-solicitor
+        // orgs that are the claimant themselves (LA / "other" profiles)
         grants.putAll(GA_CLAIMANT, Permission.CRU);
         grants.putAll(ORGANISATION_CASE_ACCESS_ADMINISTRATOR, Permission.CRU);
         return grants;

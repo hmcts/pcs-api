@@ -26,18 +26,16 @@ public class OrganisationService {
     private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
 
     /**
-     * The draft journey resolves the organisation on every read, save, patch and delete, so without
-     * this each page of a claim costs an rd-professional round trip. Short enough that a user moved
-     * between organisations is picked up within the minute.
+     * The draft journey resolves the org on every operation; cached so each page isn't an
+     * rd-professional round trip. TTL short enough to pick up an org move within a minute.
      */
     private static final Duration ORGANISATION_CACHE_TTL = Duration.ofMinutes(1);
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
     /**
-     * Holds {@link Optional#empty()} for a user who genuinely has no organisation, so citizens stop
-     * re-asking. A failed lookup throws out of the loader, which Caffeine does not store - a blip
-     * must not be remembered as "no organisation" for the rest of the TTL.
+     * {@link Optional#empty()} = genuinely no organisation (citizens stop re-asking). Failed
+     * lookups throw and are not cached - a blip must not be remembered as "no organisation".
      */
     private final Cache<String, Optional<String>> organisationIdCache;
 
@@ -50,13 +48,7 @@ public class OrganisationService {
             .build();
     }
 
-    /**
-     * Retrieves the organisation name for the current user from the security context.
-     * Gets the user ID from security context and fetches the organisation name
-     * from the rd-professional API using PRD admin token and S2S token.
-     *
-     * @return The organisation name, or null if unable to retrieve
-     */
+    /** Organisation name for the current user, or null if unable to retrieve. */
     public String getOrganisationNameForCurrentUser() {
         try {
             UUID userId = resolveUserId();
@@ -81,11 +73,7 @@ public class OrganisationService {
         }
     }
 
-    /**
-     * Retrieves the organisation identifier for the current user.
-     *
-     * @return The organisation identifier, or null if it cannot be resolved
-     */
+    /** Organisation identifier for the current user, or null if it cannot be resolved. */
     public String getOrganisationIdForCurrentUser() {
         try {
             UUID userId = resolveUserId();

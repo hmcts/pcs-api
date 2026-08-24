@@ -54,9 +54,8 @@ public class DraftCaseDataService {
     }
 
     /**
-     * A user acting for an organisation shares one draft with their colleagues; a citizen keeps
-     * their own. Keyed on the caller's organisation rather than the case's, so a draft is never
-     * readable by an organisation that is not the caller's.
+     * Org users share one draft; citizens keep their own. Keyed on the caller's org,
+     * so another organisation can never read it.
      */
     private Optional<String> currentUserOrganisationId() {
         if (currentUserIsCitizen()) {
@@ -88,10 +87,7 @@ public class DraftCaseDataService {
                 .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId));
     }
 
-    /**
-     * Drafts saved before organisation keying carry no organisation, so the owner lookup misses them
-     * and the user would silently start again. The first open moves the row across.
-     */
+    /** Pre-org-keying drafts carry no org and would be missed; the first open adopts the row. */
     private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, UUID userId,
                                                               String organisationId) {
         return draftCaseDataRepository
@@ -102,10 +98,7 @@ public class DraftCaseDataService {
             });
     }
 
-    /**
-     * Reports a not-yet-adopted draft as present too, so the dashboard agrees with what opening the
-     * journey will find. Adoption itself waits for that open rather than writing on a read.
-     */
+    /** Counts a not-yet-adopted draft too, so the dashboard matches what opening will find. */
     private boolean draftExists(long caseReference, EventId eventId, UUID userId,
                                 Optional<String> organisationId) {
         return organisationId
@@ -172,10 +165,7 @@ public class DraftCaseDataService {
         );
     }
 
-    /**
-    * For dashboard display only. A respond draft may exist after START with only
-    * claimant-populated contact details; that is not treated as "in progress".
-    */
+    /** Dashboard only: a post-START draft with only claimant contact details isn't "in progress". */
     public boolean hasMeaningfulRespondDraft(long caseReference, EventId eventId) {
         if (!hasUnsubmittedCaseData(caseReference, eventId)) {
             return false;
@@ -410,10 +400,7 @@ public class DraftCaseDataService {
         return newDraft;
     }
 
-    /**
-     * The organisation identifies the draft when present; idamUserId is still written either way,
-     * so a shared draft records who last touched it.
-     */
+    /** Org identifies the draft when present; idamUserId always records who last touched it. */
     private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
                                                Optional<String> organisationId) {
         DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);

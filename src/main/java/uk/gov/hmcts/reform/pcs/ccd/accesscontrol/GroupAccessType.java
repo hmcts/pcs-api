@@ -58,10 +58,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         false, false, true, true
     );
 
-    /**
-     * The definition store rejects the import with "'HintText' must be set for 'Display' to be
-     * used" when a displayed access type has no hint, so every constant needs one.
-     */
+    /** Required: definition store rejects a displayed access type without a hint. */
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
 
@@ -79,11 +76,9 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean display;
     private final boolean groupAccessEnabled;
     /**
-     * The case role naming the OrganisationPolicy that supplies the organisation ID. A role name
-     * rather than a field name, despite the column's title, and given as a literal rather than
-     * {@code AccessProfile.CLAIMANT.getRole()} so that this enum holds no reference back into
-     * {@link AccessProfile}. The definition store validates it against
-     * {@code RoleToAccessProfiles.RoleName}, so it must be a declared role.
+     * Case role naming the OrganisationPolicy that supplies the org ID. A literal (not
+     * {@code AccessProfile.CLAIMANT.getRole()}) to avoid a back-reference; must be a role
+     * declared in {@code RoleToAccessProfiles.RoleName}.
      */
     private final String caseAssignedRoleField;
 
@@ -120,11 +115,7 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
-    /**
-     * Collected rather than put into a map, so two access types sharing a profile and party role
-     * fail here at class initialisation instead of one quietly overwriting the other and stamping
-     * cases with a group id nobody holds.
-     */
+    /** Collected (not mapped) so a duplicate profile+partyRole fails at init, not silently. */
     private static Map<Key, GroupAccessType> buildIndex() {
         return Arrays.stream(values())
             .filter(accessType -> accessType.partyRole != null)
