@@ -298,7 +298,6 @@ class NotificationPersonalisationFactoryTest {
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
-            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 

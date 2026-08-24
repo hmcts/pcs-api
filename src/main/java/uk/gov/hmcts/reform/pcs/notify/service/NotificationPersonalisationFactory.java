@@ -101,8 +101,6 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-
-        System.out.printf("@@@@@@@@@@ --- defendant response: " + defendantResponse);
         String paymentUrl = Optional.ofNullable(defendantResponse)
             .map(DefendantResponseEntity::getPcsCase)
             .map(PcsCaseEntity::getCaseReference)
@@ -113,8 +111,6 @@ public class NotificationPersonalisationFactory {
                 caseRef
             ))
             .orElse(null);
-
-        System.out.printf("@@@@@@@@@@ --- defendant response: " + defendantResponse + "\npaymenturl: " + paymentUrl);
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forDefendant(defendantResponse))
