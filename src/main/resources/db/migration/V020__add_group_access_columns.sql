@@ -9,25 +9,9 @@
 -- and group access has to work from the first draft.
 ALTER TABLE public.party ADD COLUMN organisation_profile_id varchar(255);
 
--- A duplicate already in the table would abort the index below and block the deploy. There should be
--- none - only the legal representative journey has written organisation_id so far and it always
--- writes a party too - but the deploy must not depend on that holding. Keep the newest row for each
--- key and release the organisation on the rest: they stay owned by whoever wrote them and are
--- adopted again on next open, rather than being deleted.
-UPDATE draft.draft_case_data older
-SET organisation_id = NULL
-WHERE older.party_id IS NULL
-  AND older.organisation_id IS NOT NULL
-  AND EXISTS (
-      SELECT 1
-      FROM draft.draft_case_data newer
-      WHERE newer.case_reference = older.case_reference
-        AND newer.event_id = older.event_id
-        AND newer.organisation_id = older.organisation_id
-        AND newer.party_id IS NULL
-        AND newer.id > older.id
-  );
-
+-- A pre-existing duplicate aborts the index below and rolls this migration back. Remedy if it
+-- ever fires: NULL organisation_id on the older duplicates (same case_reference/event_id/
+-- organisation_id, party_id IS NULL, lower id), keeping the newest row, then re-deploy.
 -- draft_case_data_unique_by_organisation_idx does not cover claim drafts: it includes party_id, and
 -- Postgres counts NULLs as distinct, so it constrains nothing once party_id is null.
 CREATE UNIQUE INDEX draft_case_data_organisation_key
