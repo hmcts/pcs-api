@@ -206,11 +206,13 @@ class DocumentsViewTest {
     void shouldFilterGenAppDocumentsBasedOnVisibility() {
         // Given
         GenAppEntity genAppEntity1 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity1, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppDocumentVisibleToUser(genAppEntity1, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         GenAppEntity genAppEntity2 = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(genAppEntity2, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppDocumentVisibleToUser(genAppEntity2, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         UUID document1Id = UUID.randomUUID();
@@ -259,7 +261,8 @@ class DocumentsViewTest {
     void shouldHideDocumentLinkedToWithoutNoticeGenAppWhenGenAppIsNotVisibleToUser() {
         // Given
         GenAppEntity withoutNoticeGenApp = mock(GenAppEntity.class);
-        when(genAppVisibilityService.isGenAppDocumentVisibleToUser(withoutNoticeGenApp, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isGenAppDocumentVisibleToUser(withoutNoticeGenApp, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
@@ -282,7 +285,8 @@ class DocumentsViewTest {
     void shouldHideStandaloneWithoutNoticeOrderWhenPartyScopedRuleDoesNotAllowAccess() {
         // Given
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
             .thenReturn(false);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
@@ -306,7 +310,8 @@ class DocumentsViewTest {
     void shouldShowStandaloneWithoutNoticeOrderWhenPartyScopedRuleAllowsAccess() {
         // Given
         PartyEntity relatedParty = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(genAppVisibilityService.isWithoutNoticeVisibleToUser(relatedParty, ORGANISATION_ID, List.of()))
+        when(genAppVisibilityService
+                 .isWithoutNoticeVisibleToUser(relatedParty, CURRENT_USER_ID, ORGANISATION_ID, List.of()))
             .thenReturn(true);
 
         DocumentEntity documentEntity = DocumentEntity.builder()
