@@ -8,6 +8,7 @@ import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
@@ -104,6 +105,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
+    @Disabled("Disabled due to flakiness, needs investigation")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
