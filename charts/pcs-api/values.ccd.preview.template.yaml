@@ -232,11 +232,6 @@ xui-webapp:
           - system-user-name
           - system-user-password
           - mc-session-secret
-          # The base xui chart mounts this by default; overriding the list above dropped it.
-          # The XUI build from 20 Aug requires it in /api/monitoring-tools - without it the
-          # endpoint 500s, InitialisationSyncService fails, and the case-edit wizard crashes,
-          # killing every make-a-claim journey on preview.
-          - appinsights-connection-string-mc
 
 
 ccd-case-document-am-api:
