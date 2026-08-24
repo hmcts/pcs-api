@@ -13,6 +13,16 @@
         "attributes": {
         },
         "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "idam:caseworker-pcs-solicitor",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "PCS" },
+        "authorisations": []
       }
     ]
   },
@@ -23,6 +33,17 @@
       {
         "roleType": "ORGANISATION",
         "roleName": "hearing-centre-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "ctsc-team-leader",
         "grantType": "STANDARD",
         "roleCategory": "LEGAL_OPERATIONS",
         "classification": "PUBLIC",

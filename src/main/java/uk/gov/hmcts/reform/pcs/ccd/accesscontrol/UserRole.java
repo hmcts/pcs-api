@@ -30,6 +30,11 @@ public enum UserRole implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
 
+    GA_CLAIMANT("claimant", CRU, RAS),
+    GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, RAS),
+    GA_DEFENDANT_SOLICITOR("defendant-solicitor", CRU, RAS),
+    DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), RAS),
+
     HMCTS_ADMIN("hmcts-admin", Set.of(R), RAS, GS_PROFILE),
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
@@ -45,8 +50,9 @@ public enum UserRole implements HasRole {
     LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
     CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
     JUDGE("judge", Set.of(R), RAS),
-    SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM);
-
+    SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
+    WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
+    ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);
 
     @JsonValue
     private final String role;

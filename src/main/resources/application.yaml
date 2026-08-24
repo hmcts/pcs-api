@@ -115,7 +115,7 @@ idam:
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
-    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data,payment_app}
+    services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app}
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
@@ -334,9 +334,22 @@ core_case_data:
 caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
+camunda:
+  url: ${CAMUNDA_BASE_URL:http://camunda-local-bpm/engine-rest}
+  request:
+    max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
+    backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
+
+bankHoliday:
+  url: https://www.gov.uk/bank-holidays
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
 
-cache:
-  organisationDetails:
-    ttlInMinutes: ${CACHED_ORGANISATION_DETAILS_RESPONSE_TTL_IN_MINUTES:5}
+ccd:
+  decentralised-runtime:
+    noc:
+      enabled: true
+
+frontend:
+  url: ${PCS_FRONTEND_URL:http://localhost:3209}

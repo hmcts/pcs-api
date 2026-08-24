@@ -177,19 +177,25 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(page.url().includes("enforceTheOrder")){
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       }
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
+      else if(page.url().includes("legalRepDocumentUpload")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
+      }
       else if(
-      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp"].some(str =>
+      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
         page.url().includes(str)
       )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
       }
+      else if(page.url().includes("legalRepresentative")) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative-figma/urlToFileMappingLegalRepresentative.ts');
+      }
       else{
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       }
       if (!fs.existsSync(mappingPath)) return null;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');
@@ -243,12 +249,14 @@ export class PageContentValidation implements IValidation {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+    } else if (page.url().includes("legalRepDocumentUpload")) {
+      filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
     }
     else if (page.url().includes("globalSearch")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-common-component', `${fileName}.page.data.ts`);
     }
     else if (
-      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp"].some(str =>
+      ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
         page.url().includes(str)
       )) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma', `${fileName}.page.data.ts`);
@@ -386,11 +394,11 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(url.includes("enforceTheOrder")){
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       } else if(url.includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       } else if (
-        ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp"].some(str =>
+        ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
           url.includes(str)
         )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');

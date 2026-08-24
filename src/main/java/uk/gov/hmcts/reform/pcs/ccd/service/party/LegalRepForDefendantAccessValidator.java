@@ -8,45 +8,37 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
-import java.util.UUID;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Component
 @AllArgsConstructor
 public class LegalRepForDefendantAccessValidator {
 
-    private final OrganisationService organisationService;
     private final DefendantPartyExtractor defendantPartyExtractor;
     private final DefendantResponseRepository defendantResponseRepository;
 
-    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, UUID authenticatedUserId) {
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-        return findMatchingLinkedDefendants(defendants, authenticatedUserId, organisationId, caseReference);
+        return findMatchingLinkedDefendants(defendants, organisationId, caseReference);
     }
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
-        UUID authenticatedUserId,
         String organisationId,
         long caseReference
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
-            .filter(party -> party.getClaimPartyLegalRepresentativeList()
+            .filter(party -> party.getClaimPartyOrganisationList()
                 .stream()
-                .anyMatch(claimPartyLegalRepresentative ->
-                              claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES)
-                                  && isUserOrOrganisationMatch(
-                                  claimPartyLegalRepresentative.getLegalRepresentative().getIdamId(),
-                                  claimPartyLegalRepresentative.getLegalRepresentative().getOrganisationId(),
-                                  authenticatedUserId,
+                .anyMatch(claimPartyOrganisation ->
+                              claimPartyOrganisation.getActive().equals(YesOrNo.YES)
+                                  && isOrganisationMatch(
+                                  claimPartyOrganisation.getOrganisation()
+                                      .getOrganisationId(),
                                   organisationId
                               )
                 ))
@@ -57,7 +49,7 @@ public class LegalRepForDefendantAccessValidator {
         if (linkedDefendants.isEmpty()) {
             log.error(
                 "Access denied: User {} is not linked as a defendant on case {}",
-                authenticatedUserId,
+                organisationId,
                 caseReference
             );
             throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
@@ -66,12 +58,10 @@ public class LegalRepForDefendantAccessValidator {
         return linkedDefendants;
     }
 
-    private boolean isUserOrOrganisationMatch(UUID linkedUserId,
+
+    private boolean isOrganisationMatch(
                                               String linkedOrganisationId,
-                                              UUID authenticatedUserId,
                                               String authenticatedOrganisationId) {
-        return authenticatedUserId.equals(linkedUserId)
-            || (isNotBlank(authenticatedOrganisationId)
-            && authenticatedOrganisationId.equals(linkedOrganisationId));
+        return authenticatedOrganisationId.equals(linkedOrganisationId);
     }
 }

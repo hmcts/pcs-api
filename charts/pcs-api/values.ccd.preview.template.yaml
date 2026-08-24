@@ -18,7 +18,7 @@ java:
     # HDPI-8115: preview shares one small flexible server across ~70 releases;
     # shrink per-pod pools so idle stacks hold no connections.
     PCS_DB_POOL_MIN_IDLE: "0"
-    PCS_DB_POOL_MAX_SIZE: "2"
+    PCS_DB_POOL_MAX_SIZE: "4"
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
@@ -84,6 +84,7 @@ ccd:
         DEFINITION_STORE_DB_MAX_POOL_SIZE: 2
         ELASTIC_SEARCH_INDEX_SHARDS: 1
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
+        ENABLE_CASE_GROUP_ACCESS: true
         DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
@@ -115,8 +116,9 @@ ccd:
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
-        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend"
+        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend,xui_webapp"
         CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+        ENABLE_CASE_GROUP_ACCESS_FILTERING: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -196,6 +198,8 @@ xui-webapp:
       HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      SERVICES_ROLE_ASSIGNMENT_API: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
@@ -215,6 +219,8 @@ xui-webapp:
            {"service":"CIVIL","serviceCodes":["AAA6","AAA7"]},
            {"service":"SSCS","serviceCodes":["BBA3"]},
            {"service":"PCS","serviceCodes":["AAA3"]}]
+      DECENTRALISED_CASE_TYPE_CONFIG: >-
+        {"PCS": {"nocBaseUrl": "https://${SERVICE_NAME}.preview.platform.hmcts.net"}}
     keyVaults:
       rpx:
         resourceGroup: rpx
@@ -224,6 +230,8 @@ xui-webapp:
           - system-user-name
           - system-user-password
           - mc-session-secret
+
+
 ccd-case-document-am-api:
   enabled: true
   java:
@@ -244,3 +252,5 @@ ccd-case-document-am-api:
         secrets:
           - name: ccd-case-document-am-api-s2s-secret
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
+
+
