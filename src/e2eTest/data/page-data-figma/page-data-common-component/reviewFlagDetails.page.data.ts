@@ -3,7 +3,7 @@ export const reviewFlagDetails={
     mainHeader: `Create case flags`,
     rowLabel: `Flag type`,
     changeLink: `Change`,
-    saveAndContinueButton: `Save and continue`,
+    saveAndContinueButton: `Submit`,
     previousButton: `Previous`,
     cancelButton: `Cancel`,
 };
