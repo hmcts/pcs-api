@@ -81,7 +81,6 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', caseSummary.go);
     // Validate Manage Support header
     await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
-    // Select Possession Claims Solicitor Org (Claimant) option with Reasonable adjustment and Friend or family, then continue
     await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
     await performAction('clickButton', createAndManageSupport.continueButton);
     // Add comments and continue
