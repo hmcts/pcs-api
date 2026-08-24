@@ -108,7 +108,7 @@ public class PackSkipRules {
         if (reason.isEmpty()) {
             return false;
         }
-        log.info("Skipping {} pack for case {} - {}", packType, pcsCase.getId(), reason.get());
+        log.debug("Skipping {} pack for case {} - {}", packType, pcsCase.getId(), reason.get());
         return true;
     }
 
