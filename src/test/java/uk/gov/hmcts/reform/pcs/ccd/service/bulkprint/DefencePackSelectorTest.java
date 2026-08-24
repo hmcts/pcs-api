@@ -164,22 +164,32 @@ class DefencePackSelectorTest {
     }
 
     @Test
-    @DisplayName("Excludes missing, null and non-postal contact preferences")
-    void shouldExcludeDefendantsWithoutExplicitPostPreference() {
+    @DisplayName("Defaults to post when preferences are missing or contactByPost is null; excludes explicit No")
+    void shouldDefaultToPostUnlessExplicitlyOptedOut() {
         PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
         PartyEntity nonPostalDefendant = partyWithPostPreference(VerticalYesNo.NO);
         PartyEntity missingPreferencesDefendant = party();
         PartyEntity nullPostPreferenceDefendant = partyWithPostPreference(null);
         DocumentEntity postalDefence = defenceForm(postalDefendant);
+        DocumentEntity missingPreferencesDefence = defenceForm(missingPreferencesDefendant);
+        DocumentEntity nullPostPreferenceDefence = defenceForm(nullPostPreferenceDefendant);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
 
         List<DefencePackCandidate> result = underTest.findDefencePackCandidates(
-            caseWith(List.of(postalDefence), claimant, postalDefendant, nonPostalDefendant,
-                missingPreferencesDefendant, nullPostPreferenceDefendant));
+            caseWith(
+                List.of(postalDefence, missingPreferencesDefence, nullPostPreferenceDefence),
+                claimant,
+                postalDefendant,
+                nonPostalDefendant,
+                missingPreferencesDefendant,
+                nullPostPreferenceDefendant));
 
         assertThat(result).extracting(candidate -> candidate.recipient().getId())
-            .containsExactly(postalDefendant.getId());
+            .containsExactlyInAnyOrder(
+                postalDefendant.getId(),
+                missingPreferencesDefendant.getId(),
+                nullPostPreferenceDefendant.getId());
     }
 
     @Test

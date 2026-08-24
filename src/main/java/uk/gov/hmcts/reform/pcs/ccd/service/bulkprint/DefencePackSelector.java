@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
@@ -96,7 +97,7 @@ public class DefencePackSelector {
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
-                .filter(this::contactByPost)
+                .filter(this::wantsPost)
                 .toList();
         }
 
@@ -105,9 +106,12 @@ public class DefencePackSelector {
         return allParties;
     }
 
-    private boolean contactByPost(PartyEntity party) {
-        return party.getContactPreferences() != null
-            && party.getContactPreferences().getContactByPost() == VerticalYesNo.YES;
+    private boolean wantsPost(PartyEntity party) {
+        ContactPreferencesEntity preferences = party.getContactPreferences();
+        if (preferences == null || preferences.getContactByPost() == null) {
+            return true;
+        }
+        return preferences.getContactByPost() != VerticalYesNo.NO;
     }
 
     private void addPending(Map<UUID, PartyEntity> recipients, Map<UUID, Set<DocumentEntity>> documentsByRecipient,
