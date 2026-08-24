@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.amenddocument;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
