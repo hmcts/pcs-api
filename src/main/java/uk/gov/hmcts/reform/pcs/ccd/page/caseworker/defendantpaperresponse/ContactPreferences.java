@@ -28,7 +28,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .label(
                 "contactPreferences-phoneNumber",
                 "2.2 If we need to contact the defendant with notifications or urgent updates about their case, "
-                    + "what is their phone number?"
+                    + "what is their phone number? (Optional)"
             )
             .optional(DefendantPaperResponseRequest::getPhoneNumber)
             .label("contactPreferences-lineSeparator-bottom", "---")

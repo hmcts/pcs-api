@@ -22,7 +22,7 @@ import java.util.Set;
 public class DefendantPaperResponseRequest {
 
     @JsonProperty("paperResponse_FreeLegalAdvice")
-    @CCD(label = "Has the defendant had any free legal advice")
+    @CCD(label = "Has the defendant had any free legal advice?")
     private YesNoPreferNotToSay freeLegalAdvice;
 
     @JsonProperty("paperResponse_FirstName")
@@ -43,7 +43,7 @@ public class DefendantPaperResponseRequest {
 
     @JsonProperty("paperResponse_ContactPreferences")
     @CCD(
-        label = "How does the defendant want to receive updates about their case?",
+        label = "2.1 How does the defendant want to receive updates about their case?",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "ContactPreferencesSelection"
     )
