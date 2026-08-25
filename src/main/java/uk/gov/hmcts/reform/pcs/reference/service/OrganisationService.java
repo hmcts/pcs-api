@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -32,7 +34,7 @@ public class OrganisationService {
      */
     public String getOrganisationNameForCurrentUser() {
         try {
-            UUID userId = resolveUserId();
+            UUID userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
@@ -61,7 +63,7 @@ public class OrganisationService {
      */
     public String getOrganisationIdForCurrentUser() {
         try {
-            UUID userId = resolveUserId();
+            UUID userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
@@ -86,7 +88,7 @@ public class OrganisationService {
     public AddressUK getOrganisationAddressForCurrentUser() {
 
         try {
-            UUID userId = resolveUserId();
+            UUID userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
@@ -109,12 +111,21 @@ public class OrganisationService {
         }
     }
 
-    private UUID resolveUserId() {
+    private UUID resolveProfessionalUserId() {
+        if (currentUserIsCitizen()) {
+            return null;
+        }
         UUID userId = securityContextService.getCurrentUserId();
         if (userId == null) {
             log.warn("User ID is null from security context, cannot fetch organisation details");
         }
         return userId;
+    }
+
+    private boolean currentUserIsCitizen() {
+        UserInfo details = securityContextService.getCurrentUserDetails();
+        return details != null && details.getRoles() != null
+            && details.getRoles().contains(UserRole.CITIZEN.getRole());
     }
 
     private boolean keyAddressFieldsEmpty(AddressUK organisationAddress) {
