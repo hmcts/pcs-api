@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -19,13 +20,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -46,6 +46,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 
 @Component("genAppSubmitEventHandler")
 @RequiredArgsConstructor
+@Slf4j
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
@@ -55,7 +56,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final GenAppFeeCalculator genAppFeeCalculator;
-    private final OrganisationRepository organisationRepository;
+    private final PartyRepository partyRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
     private final PaymentService paymentService;
     private final SchedulerClient schedulerClient;
@@ -70,7 +71,14 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PCSCase caseData = eventPayload.caseData();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData);
+
+        Optional<PartyEntity> applicant = findApplicantParty(caseReference, caseData);
+        if (applicant.isEmpty()) {
+            log.warn("Applicant party unresolved on genapp submit: currentRepresentedPartyId={}, caseReference={}",
+                caseData.getCurrentRepresentedPartyId(), caseReference);
+            return errorResponse("The selected party is not available on this case");
+        }
+        PartyEntity applicantParty = applicant.get();
 
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
 
@@ -184,26 +192,35 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
-        UUID currentUserId = securityContextService.getCurrentUserId();
-        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+    /**
+     * The applicant party the caller named, or empty when it cannot be resolved. The party id
+     * arrives in case data, so it is client-supplied and is only trusted once it has been checked
+     * against both this case and the caller's organisation.
+     */
+    private Optional<PartyEntity> findApplicantParty(long caseReference, PCSCase caseData) {
+        String rawPartyId = caseData.getCurrentRepresentedPartyId();
 
-        if (caseData.getCurrentRepresentedPartyId() != null) {
-            UUID representedPartyId = UUID.fromString(caseData.getCurrentRepresentedPartyId());
-            validateCurrentUserIsLegalRepForParty(organisationIdForCurrentUser, representedPartyId);
-            return partyService.getPartyEntityByEntityId(representedPartyId, caseReference);
-        } else {
-            return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
+        if (rawPartyId == null) {
+            return partyService.findPartyEntityByIdamId(
+                securityContextService.getCurrentUserId(), caseReference);
         }
-    }
 
-    private void validateCurrentUserIsLegalRepForParty(String organisationIdForCurrentUser, UUID representedPartyId) {
-        boolean isLegalRepForParty = organisationRepository
-            .isOrganisationLinkedToPartyAndActive(organisationIdForCurrentUser, representedPartyId);
-
-        if (!isLegalRepForParty) {
-            throw new PartyNotFoundException("No matching party found represented by current user");
+        UUID representedPartyId;
+        try {
+            representedPartyId = UUID.fromString(rawPartyId);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Malformed currentRepresentedPartyId '{}' on case {}", rawPartyId, caseReference);
+            return Optional.empty();
         }
+
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        if (organisationId == null) {
+            log.warn("No organisation resolved for the current user on case {}", caseReference);
+            return Optional.empty();
+        }
+
+        return partyRepository.findPartyOnCaseRepresentedByOrganisation(
+            representedPartyId, caseReference, organisationId);
     }
 
     // This event can handle requests from ExUI and pcs_frontend, so return the one that
@@ -220,7 +237,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             && genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, clientReference);
     }
 
-    @SuppressWarnings("SameParameterValue")
     private static SubmitResponse<State> errorResponse(String errorMessage) {
         return SubmitResponse.<State>builder()
             .errors(List.of(errorMessage))

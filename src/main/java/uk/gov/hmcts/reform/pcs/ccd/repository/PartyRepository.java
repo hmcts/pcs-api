@@ -37,4 +37,24 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
     List<PartyEntity> findAllPartiesByOrganisationIdAndCaseReference(@Param("organisationId") String organisationId,
                                                                          @Param("caseReference") long caseReference);
 
+    /**
+     * Resolves a party the caller has named, applying both constraints in one statement: the party
+     * must sit on this case, and the caller's organisation must actively represent it. Checking the
+     * representation separately from the fetch lets a party id from another case of the same
+     * organisation pass the first check and fail the second.
+     */
+    @Query("""
+        SELECT p FROM PartyEntity p
+        JOIN p.claimPartyOrganisationList cpo
+        JOIN cpo.organisation o
+        WHERE p.id = :partyId
+        AND p.pcsCase.caseReference = :caseReference
+        AND o.organisationId = :organisationId
+        AND cpo.active = 'YES'
+        """
+        )
+    Optional<PartyEntity> findPartyOnCaseRepresentedByOrganisation(@Param("partyId") UUID partyId,
+                                                                   @Param("caseReference") long caseReference,
+                                                                   @Param("organisationId") String organisationId);
+
 }

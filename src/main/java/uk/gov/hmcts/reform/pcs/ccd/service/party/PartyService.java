@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -68,6 +69,14 @@ public class PartyService {
         return partyRepository.queryPartyById(entityId, caseReference)
             .orElseThrow(() -> new PartyNotFoundException(
                 "No party found for entity ID: " + entityId + " and case reference: " + caseReference));
+    }
+
+    /**
+     * Non-throwing counterpart to {@link #getPartyEntityByIdamId}, for callers that treat an
+     * unresolved party as a validation outcome rather than a fault.
+     */
+    public Optional<PartyEntity> findPartyEntityByIdamId(UUID idamId, long caseReference) {
+        return partyRepository.queryPartyByIdamId(idamId, caseReference);
     }
 
     public PartyEntity getPartyEntityByIdamId(UUID idamId, long caseReference) {
