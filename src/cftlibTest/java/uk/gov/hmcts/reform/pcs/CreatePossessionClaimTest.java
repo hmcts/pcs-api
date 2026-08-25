@@ -53,7 +53,7 @@ class CreatePossessionClaimTest extends CftlibTest {
 
     @BeforeAll
     void setup() {
-        solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+        solicitorToken = idamClient.getAccessToken("pcs.solicitor.org1@hmcts.net", "password");
     }
 
     @Test

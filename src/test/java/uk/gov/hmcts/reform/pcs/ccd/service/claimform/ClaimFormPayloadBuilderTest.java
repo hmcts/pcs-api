@@ -270,11 +270,11 @@ class ClaimFormPayloadBuilderTest {
         @Test
         void displayNameUsesOrgNameWhenSet() {
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
-            attach(pcsCase, orgParty("Possession Claims Solicitor Org", address("MOJ")), PartyRole.CLAIMANT, 1);
+            attach(pcsCase, orgParty("PCS_Solicitor_Org_Testing", address("MOJ")), PartyRole.CLAIMANT, 1);
 
             ClaimFormPayload payload = builder.build(pcsCase);
 
-            assertThat(payload.getClaimantDisplayName()).isEqualTo("Possession Claims Solicitor Org");
+            assertThat(payload.getClaimantDisplayName()).isEqualTo("PCS_Solicitor_Org_Testing");
         }
 
         @Test

@@ -41,7 +41,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = new HashMap<String, List<String>>();
         users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
-        users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
+        users.put("pcs.solicitor.org1@hmcts.net", List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
