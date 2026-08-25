@@ -460,7 +460,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("statement_of_truth validations",
                                                    () -> assertHasColumns("public.statement_of_truth", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(2, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validStatementOfTruth,  msgValidSoT)
         );
     }
