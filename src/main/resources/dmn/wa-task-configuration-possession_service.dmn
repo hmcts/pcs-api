@@ -79,7 +79,7 @@
           <text>"region"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0w92hli">
-          <text>if(caseData!=null and caseData.caseManagementLocation!=null and caseData.caseManagementLocation.region!=null) then caseData.caseManagementLocation.region else "1"</text>
+          <text>taskAttributes.taskRegion</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0nud1yw">
           <text>true</text>
@@ -100,7 +100,7 @@
           <text>"location"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0kcac7o">
-          <text>if (caseData.caseManagementLocation != null and caseData.caseManagementLocation.baseLocation != null) then caseData.caseManagementLocation.baseLocation else "336559"</text>
+          <text>taskAttributes.taskLocationId</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0qxf2oq">
           <text>true</text>
@@ -123,7 +123,7 @@ Short name</description>
           <text>"locationName"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0bqzxy2">
-          <text>if (caseData.caseManagementLocation != null and caseData.caseManagementLocation.baseLocation != null and caseData.managingOffice != null) then caseData.managingOffice else "Unable to find location"</text>
+          <text>taskAttributes.taskLocationName</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0pwyuux">
           <text>true</text>
