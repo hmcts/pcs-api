@@ -31,11 +31,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class DataTest extends CftlibTest {
@@ -72,34 +70,6 @@ public class DataTest extends CftlibTest {
 
     @BeforeAll
     void setUpAndPopulate() {
-        WireMock wireMock8083 = new WireMock("localhost", 8083);
-        wireMock8083.register(
-            any(urlMatching("/documents.*"))
-                .willReturn(aResponse()
-                                .withStatus(200)
-                                .withHeader("Content-Type", "application/json")
-                                .withBody("""
-                                    {
-                                      "status": "SUCCESS",
-                                      "_embedded": {
-                                        "documents": [
-                                          {
-                                            "_links": {
-                                              "self": {
-                                                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000"
-                                              },
-                                              "binary": {
-                                                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000/binary"
-                                              }
-                                            },
-                                            "originalDocumentSerialization": "rent-statement.pdf"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                    """))
-        );
-
         try {
             solicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
             citizenToken = idamClient.getAccessToken("citizen@pcs.com", "password");
@@ -124,11 +94,10 @@ public class DataTest extends CftlibTest {
 
             responseCreationService.createDefendantResponse(caseReference, citizenToken);
 
-            System.out.println("CASE + RESPONSE CREATED - CASE REF: " + caseReference);
+            log.info("CASE + RESPONSE CREATED - CASE REF: {}", caseReference);
+
         } catch (FeignException e) {
-            System.err.println("ERROR CREATING CASE/RESPONSE");
-            System.err.println("Status: " + e.status());
-            System.err.println("Response Body: " + e.contentUTF8());
+            log.error("ERROR CREATING CASE/RESPONSE - Status: {}, Body: {}", e.status(), e.contentUTF8());
             throw e;
         }
     }
@@ -419,7 +388,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("document validations",
                                                    () -> assertHasColumns("public.document", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(2, createdCasePresent, msgCasePresent),
+                                                   () -> assertEquals(3, createdCasePresent, msgCasePresent),
                                                    () -> assertEquals(1, validDocument,  msgValidDocument)
         );
     }
