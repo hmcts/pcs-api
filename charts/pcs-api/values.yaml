@@ -2,6 +2,12 @@ java:
   applicationPort: 3206
   memoryRequests: '2Gi'
   memoryLimits: '2.5Gi'
+  # AAT staging and PR previews deploy with global.devMode=true, and in devMode the java chart
+  # reads the dev* keys instead of the pair above (library/_container.tpl), defaulting to a 1Gi
+  # limit. That default is what the E2E runs have been OOMKilled (exit 137) against - the two
+  # earlier raises (#1578, #2485) only moved the non-dev keys, which devMode never reads.
+  devmemoryRequests: '1Gi'
+  devmemoryLimits: '2Gi'
   image: 'hmctsprod.azurecr.io/pcs/api:latest'
   ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: pcs
