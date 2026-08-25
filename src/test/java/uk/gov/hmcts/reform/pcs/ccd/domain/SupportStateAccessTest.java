@@ -32,6 +32,7 @@ class SupportStateAccessTest {
     @Test
     void shouldGrantExternalReadOnEveryStateSupportIsAvailableIn() {
         assertThat(SUPPORT_TAB_STATES)
+            .isNotEmpty()
             .allSatisfy(state -> assertThat(externalRolesCanRead(state))
                 .as("external read access for %s", state)
                 .isTrue());
