@@ -190,13 +190,9 @@ public class ApiSteps {
     }
 
     /**
-     * Deliberately single-shot. The CCD case is created part-way through the server-side orchestration
-     * (submitCaseCreation), and the resume event, court allocation, issue date and access-code steps all run
-     * after that point. TestingSupportExceptionHandler maps any failure there to 500 and RestExceptionHandler
-     * maps an upstream throttle to 503, so a 5xx can be returned with the case already created. This service
-     * emits neither 408 nor 429 itself, so those could only come from infrastructure and do not prove the
-     * request went unprocessed. No status is provably safe to replay, and replaying would create a second
-     * case. Give the endpoint an idempotency key before reintroducing any retry here.
+     * Single-shot on purpose: create-case is not idempotent. The CCD case is created part-way through the
+     * server-side orchestration, so no failure response proves it was not created, and replaying would
+     * create a second case. Add an idempotency key to the endpoint before reintroducing any retry.
      */
     private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
         Response createCaseResponse;
