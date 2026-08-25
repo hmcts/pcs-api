@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.Objects;
@@ -65,7 +66,7 @@ public class AddPartyService {
     private PartyEntity resolveActingForParty(UUID actingForPartyId) {
         Objects.requireNonNull(actingForPartyId, "Acting for party is required for litigation friend");
         return partyRepository.findById(actingForPartyId)
-            .orElseThrow(() -> new PartyNotFoundException("Acting for party not found"));
+            .orElseThrow(() -> new PartyNotFoundException(ErrorCode.PARTY_NOT_FOUND));
     }
 
     private void applyClaimantDetails(AddPartyDetails addPartyDetails, PartyEntity partyEntity) {

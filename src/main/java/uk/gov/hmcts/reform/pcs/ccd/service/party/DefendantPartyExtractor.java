@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
+
 @Component
 @Slf4j
 public class DefendantPartyExtractor {
@@ -22,14 +25,14 @@ public class DefendantPartyExtractor {
             .findFirst()
             .orElseThrow(() -> {
                 log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
+                return new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR);
             });
 
         List<PartyEntity> defendants = extractDefendantParties(mainClaim);
 
         if (defendants.isEmpty()) {
             log.error("No defendants found for case {}", caseReference);
-            throw new CaseAccessException("No defendants associated with this case");
+            throw new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS);
         }
 
         return defendants;

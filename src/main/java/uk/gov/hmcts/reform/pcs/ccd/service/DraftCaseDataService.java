@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -21,6 +23,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.READ_FAIL;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.UNSUBMITTED_DATA;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.UPDATE_DRAFT;
 
 @Service
 @Slf4j
@@ -192,14 +198,13 @@ public class DraftCaseDataService {
 
         DraftCaseDataEntity draftCaseDataEntity = draftSupplier.get()
             .orElseThrow(() -> new UnsubmittedDataException(
-                draftCaseData.getPartyId() != null ? "No draft found for caseReference="
-                                                     + draftCaseData.getCaseReference()
-                                                     + ", eventId=" + draftCaseData.getEventId()
-                      + ", organisationId=" + draftCaseData.getOrganisationId() + ", partyId="
-                                                     + draftCaseData.getPartyId()
-                    : "No draft found for caseReference=" + draftCaseData.getCaseReference() + ", eventId="
-                      + draftCaseData.getEventId()
-                      + ", userId=" + draftCaseData.getUserId()));
+                ErrorCode.DRAFT_NOT_FOUND, RedactionContext.builder()
+                .value("caseReference", draftCaseData.getCaseReference())
+                .value("eventId", draftCaseData.getEventId())
+                .value("organisationId", draftCaseData.getOrganisationId())
+                .value("partyId", draftCaseData.getPartyId())
+                .value("userId", draftCaseData.getUserId())
+                .build()));
 
         if (draftCaseData.getPartyId() != null) {
             log.debug("Replacing existing draft for organisationId={}, partyId={}", draftCaseData.getOrganisationId(),
@@ -282,7 +287,7 @@ public class DraftCaseDataService {
             return draftCaseJsonMerger.mergeJson(baseCaseDataJson, patchCaseDataJson);
         } catch (IOException e) {
             log.error("Unable to merge case data patch JSON", e);
-            throw new UnsubmittedDataException("Failed to update draft case data", e);
+            throw new UnsubmittedDataException(UPDATE_DRAFT, e);
         }
     }
 
@@ -326,7 +331,7 @@ public class DraftCaseDataService {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {
             log.error("Unable to parse draft case data JSON", e);
-            throw new UnsubmittedDataException("Failed to read saved answers", e);
+            throw new UnsubmittedDataException(READ_FAIL, e);
         }
     }
 
@@ -335,7 +340,7 @@ public class DraftCaseDataService {
             return objectMapper.writeValueAsString(caseData);
         } catch (JsonProcessingException e) {
             log.error("Unable to write draft case data JSON", e);
-            throw new UnsubmittedDataException("Failed to save answers", e);
+            throw new UnsubmittedDataException(UNSUBMITTED_DATA, e);
         }
     }
 
@@ -575,6 +580,5 @@ public class DraftCaseDataService {
             });
         draftCaseDataRepository.save(draftCaseDataEntity);
     }
-
 
 }

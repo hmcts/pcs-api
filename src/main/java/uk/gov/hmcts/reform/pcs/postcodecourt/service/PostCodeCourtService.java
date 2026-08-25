@@ -52,7 +52,7 @@ public class PostCodeCourtService {
             ? postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate)
             : postCodeCourtRepository.findActiveByPostCodeIn(postcodes, legislativeCountry, currentDate);
         if (results.isEmpty()) {
-            log.warn("Postcode court mapping not found for postcode {}", postcode);
+            log.warn("Postcode court mapping not found for postcode.");
             return List.of();
         }
 

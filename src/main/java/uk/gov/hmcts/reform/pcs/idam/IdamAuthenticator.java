@@ -6,7 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
+import uk.gov.hmcts.reform.pcs.exception.RemoteCallException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_BLANK;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_UNAUTHORIZED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_VALIDATION;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +26,11 @@ public class IdamAuthenticator {
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
             log.warn("Authorization token is null or blank");
-            throw new InvalidAuthTokenException("Authorization token is null or blank");
+            throw new InvalidAuthTokenException(AUTH_BLANK);
         }
         if (!authorisation.startsWith(BEARER_PREFIX) || authorisation.length() <= 7) {
-            log.warn("Malformed Bearer token: '{}'", authorisation);
-            throw new InvalidAuthTokenException("Malformed Authorization token");
+            log.warn("Malformed Bearer token.  Length: '{}'", authorisation.length());
+            throw new InvalidAuthTokenException(AUTH_MALFORMED);
         }
         try {
             User user = retrieveUser(authorisation);
@@ -31,13 +38,23 @@ public class IdamAuthenticator {
             return user;
         } catch (FeignException.Unauthorized ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
-            throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid", ex);
-        } catch (FeignException ex) {
-            // Any other Feign error (timeout, 5xx, network) — surface as IdamException so the
-            // controller advice returns 503 + Retry-After instead of a raw 500. The token might
-            // still be valid; this is an upstream-IDAM problem, not a client problem.
+            throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
+        } catch (RemoteCallException ex) {
+            int status = ex.getStatus();
+            if (status >= 400 && status < 500 && status != 429) {
+                // IDAM actively rejected the request — the caller's token cannot be
+                // validated, so this is a client auth failure (401), not a server fault.
+                log.error("IDAM rejected token validation with status {}", status, ex);
+                throw new InvalidAuthTokenException(AUTH_UNAUTHORIZED, ex);
+            }
+            // No response (status < 0), throttle (429) or 5xx — an upstream-IDAM problem;
+            // surface as IdamException so the controller advice returns 503 + Retry-After.
             log.error("IDAM /o/userinfo call failed while validating Authorization token", ex);
-            throw new IdamException("Unable to validate authorization token", ex);
+            throw new IdamException(AUTH_VALIDATION, RedactionContext.builder()
+                .value("message", AUTH_VALIDATION.safeDescription())
+                .value(IdamException.AUTH_VALIDATION_STATUS_CODE, status)
+                .build(),
+                ex);
         }
     }
 

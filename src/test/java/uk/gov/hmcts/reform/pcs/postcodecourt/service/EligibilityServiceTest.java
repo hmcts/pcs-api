@@ -9,6 +9,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -28,7 +30,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class EligibilityServiceTest {
 
     private static final String TEST_POSTCODE = "AB12 3EF";
@@ -55,6 +57,7 @@ class EligibilityServiceTest {
     @NullSource
     @ValueSource(strings = {"", " "})
     void shouldThrowExceptionForNullOrBlankPostcode(String postcode) {
+        RedactionGate.setShowFullMessagesForTesting(true);
         Throwable throwable = catchThrowable(() -> underTest.checkEligibility(postcode, ENGLAND));
 
         assertThat(throwable)

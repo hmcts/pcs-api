@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.LEGAL_REP_FOR_DEFENDANT_ACCESS;
+
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -52,7 +54,7 @@ public class LegalRepForDefendantAccessValidator {
                 organisationId,
                 caseReference
             );
-            throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
+            throw new CaseAccessException(LEGAL_REP_FOR_DEFENDANT_ACCESS);
 
         }
         return linkedDefendants;

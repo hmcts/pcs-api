@@ -27,12 +27,15 @@ public class SecurityConfiguration {
     private final List<String> anonymousPaths = new ArrayList<>();
     private final ServiceAuthFilter serviceAuthFilter;
     private final IdamAuthenticationFilter idamAuthFilter;
+    private final RemoteCallExceptionTranslationFilter remoteCallExceptionTranslationFilter;
 
     @Autowired
-    public SecurityConfiguration(ServiceAuthFilter serviceAuthFilter, IdamAuthenticationFilter idamAuthFilter) {
+    public SecurityConfiguration(ServiceAuthFilter serviceAuthFilter, IdamAuthenticationFilter idamAuthFilter,
+                                 RemoteCallExceptionTranslationFilter remoteCallExceptionTranslationFilter) {
         super();
         this.serviceAuthFilter = serviceAuthFilter;
         this.idamAuthFilter = idamAuthFilter;
+        this.remoteCallExceptionTranslationFilter = remoteCallExceptionTranslationFilter;
     }
 
     @Bean
@@ -45,6 +48,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+            .addFilterBefore(remoteCallExceptionTranslationFilter, AbstractPreAuthenticatedProcessingFilter.class)
             .addFilterBefore(serviceAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
             .addFilterBefore(idamAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(STATELESS))

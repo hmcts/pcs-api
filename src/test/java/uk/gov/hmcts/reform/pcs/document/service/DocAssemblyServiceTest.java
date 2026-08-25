@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,8 +32,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DOC_GENERATION_FAILED;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 @DisplayName("DocAssemblyService Tests")
 class DocAssemblyServiceTest {
 
@@ -93,6 +96,7 @@ class DocAssemblyServiceTest {
         @Test
         @DisplayName("Should throw IllegalArgumentException when form payload is null")
         void shouldThrowIllegalArgumentExceptionWhenFormPayloadIsNull() {
+            RedactionGate.setShowFullMessagesForTesting(true);
             assertThatThrownBy(() ->
                                    docAssemblyService.generateDocument(
                                        null, TEMPLATE_ID, OutputType.PDF, OUTPUT_FILENAME))
@@ -109,6 +113,7 @@ class DocAssemblyServiceTest {
         @Test
         @DisplayName("Should handle DocumentGenerationFailedException")
         void shouldHandleDocumentGenerationFailedException() {
+            RedactionGate.setShowFullMessagesForTesting(true);
             final FormPayload formPayload = mock(FormPayload.class);
             DocumentGenerationFailedException docException =
                 new DocumentGenerationFailedException(new RuntimeException("Document generation failed"));
@@ -262,6 +267,7 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should throw DocAssemblyException when rendition output location is null")
             void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsNull() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse(null);
 
@@ -288,6 +294,7 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should throw DocAssemblyException when rendition output location is empty")
             void shouldThrowDocAssemblyExceptionWhenRenditionOutputLocationIsEmpty() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
                 DocAssemblyResponse mockResponse = createMockResponse("");
 
@@ -314,6 +321,7 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should throw DocAssemblyException when unexpected exception occurs")
             void shouldThrowDocAssemblyExceptionWhenUnexpectedExceptionOccurs() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException unexpectedException = new RuntimeException("Unexpected network error");
 
@@ -341,8 +349,9 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should not rethrow DocAssemblyException when it's already a DocAssemblyException")
             void shouldNotRethrowDocAssemblyExceptionWhenAlreadyThrown() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
-                DocAssemblyException originalException = new DocAssemblyException("Original error");
+                DocAssemblyException originalException = new DocAssemblyException(DOC_GENERATION_FAILED);
 
                 when(systemUpdateUserTokenProvider.getAuthToken()).thenThrow(originalException);
 
@@ -354,7 +363,7 @@ class DocAssemblyServiceTest {
                                            OUTPUT_FILENAME
                                        ))
                     .isInstanceOf(DocAssemblyException.class)
-                    .hasMessage("Original error")
+                    .hasMessage(DOC_GENERATION_FAILED.safeDescription())
                     .isSameAs(originalException);
             }
 
@@ -386,6 +395,7 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should handle IdamTokenProvider exception")
             void shouldHandleIdamTokenProviderException() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException idamException = new RuntimeException("IDAM service unavailable");
 
@@ -406,6 +416,7 @@ class DocAssemblyServiceTest {
             @Test
             @DisplayName("Should handle AuthTokenGenerator exception")
             void shouldHandleAuthTokenGeneratorException() {
+                RedactionGate.setShowFullMessagesForTesting(true);
                 final FormPayload formPayload = mock(FormPayload.class);
                 RuntimeException authException = new RuntimeException("Auth token generation failed");
 

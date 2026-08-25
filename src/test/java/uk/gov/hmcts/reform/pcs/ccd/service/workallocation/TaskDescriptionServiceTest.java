@@ -153,8 +153,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
     }
 
@@ -231,8 +230,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
 
     }
@@ -288,8 +286,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
 
     }
@@ -369,8 +366,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
 
     }
@@ -455,8 +451,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
     }
 
@@ -522,8 +517,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
 
     }
@@ -571,8 +565,7 @@ class TaskDescriptionServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
-                .hasMessage("Failed to render template")
-                .hasCause(pebbleException);
+                .hasMessage("REDACTED [TEMPLATE_RENDERING]");
         }
     }
 

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -31,6 +32,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.HEARING_NOT_FOUND;
 
 @Service
 public class HearingService {
@@ -82,7 +85,9 @@ public class HearingService {
         int hearingId = Objects.requireNonNull(hearing.getHearingId(), "Hearing ID must be set");
 
         HearingEntity hearingEntity = hearingRepository.findById(hearingId)
-            .orElseThrow(() -> new HearingNotFoundException("Hearing not found with ID " + hearingId));
+            .orElseThrow(() -> new HearingNotFoundException(
+                HEARING_NOT_FOUND,
+                RedactionContext.of("Hearing not found with ID ", hearingId)));
 
         hearingEntity.setCancelled(true);
         hearingEntity.setCancellationReason(hearing.getCancellationReason());

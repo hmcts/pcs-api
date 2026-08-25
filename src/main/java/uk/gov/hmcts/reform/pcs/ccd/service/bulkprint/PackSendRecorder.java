@@ -77,13 +77,13 @@ public class PackSendRecorder {
         accessCodeActivityLogService.recordPackFailed(pcsCase, recipient,
             PackDetails.failed(letterType, packDocumentRefs(pcsCase, recipient, documents), cause));
         if (terminal) {
-            log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}: {}",
+            log.error("Pack send failed (terminal) - case: {}, party: {}, letterType: {}, documents: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
-                documentSummary(documents), cause.getMessage(), cause);
+                documentSummary(documents), cause);
         } else {
-            log.warn("Pack send failed (will retry) - case: {}, party: {}, letterType: {}, documents: {}: {}",
+            log.warn("Pack send failed (will retry) - case: {}, party: {}, letterType: {}, documents: {}",
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(),
-                documentSummary(documents), cause.getMessage());
+                documentSummary(documents), cause);
         }
     }
 

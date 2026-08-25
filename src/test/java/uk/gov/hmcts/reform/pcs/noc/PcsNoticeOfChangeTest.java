@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -56,7 +58,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 public class PcsNoticeOfChangeTest {
 
     private static final long TEST_CASE_REFERENCE = 1L;
@@ -283,6 +285,7 @@ public class PcsNoticeOfChangeTest {
     @Test
     void validate_WithCaseNotFound_ReturnException() {
         // given
+        RedactionGate.setShowFullMessagesForTesting(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
 
@@ -293,7 +296,7 @@ public class PcsNoticeOfChangeTest {
         // when / then
         assertThatThrownBy(() -> pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest))
             .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
+            .hasMessage("No claim found for case reference=%s", TEST_CASE_REFERENCE);
     }
 
     @Test
@@ -570,6 +573,7 @@ public class PcsNoticeOfChangeTest {
     @Test
     void submit_WithCaseNotFound_ThrowsException() {
         // given
+        RedactionGate.setShowFullMessagesForTesting(true);
         String firstName = "Dan";
         String lastName = "Tester";
         NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
@@ -580,7 +584,7 @@ public class PcsNoticeOfChangeTest {
         // when / then
         assertThatThrownBy(() -> pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest))
             .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
+            .hasMessage("No claim found for case reference=%s", TEST_CASE_REFERENCE);
     }
 
 

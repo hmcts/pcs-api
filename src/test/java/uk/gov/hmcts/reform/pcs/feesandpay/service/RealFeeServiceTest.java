@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -27,7 +29,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class RealFeeServiceTest {
 
     @Mock
@@ -68,6 +70,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
+        RedactionGate.setShowFullMessagesForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -81,7 +84,7 @@ class RealFeeServiceTest {
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee=" + FEE_TYPE)
             .hasCauseInstanceOf(NotFound.class);
     }
 
@@ -98,7 +101,7 @@ class RealFeeServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-
+        RedactionGate.setShowFullMessagesForTesting(true);
         Request request = Request.create(
             Request.HttpMethod.GET,
             "/fees/lookup",
@@ -113,7 +116,7 @@ class RealFeeServiceTest {
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee=CASE_ISSUE_FEE")
             .hasCauseInstanceOf(InternalServerError.class);
     }
 

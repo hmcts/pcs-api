@@ -32,7 +32,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +56,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class PartyServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
@@ -146,7 +148,7 @@ class PartyServiceTest {
             // Then
             assertThat(throwable)
                 .isInstanceOf(PartyNotFoundException.class)
-                .hasMessage("No party found for IDAM ID: " + idamId + " and case reference: " + CASE_REFERENCE);
+                .hasMessage("REDACTED [PARTY_BY_IDAM_AND_CASE]");
 
         }
 
@@ -170,6 +172,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionWhenNoPartyEntityById() {
             // Given
+            RedactionGate.setShowFullMessagesForTesting(true);
             UUID id = UUID.randomUUID();
             long caseReference = 1234L;
 
@@ -180,8 +183,8 @@ class PartyServiceTest {
 
             // Then
             assertThat(throwable)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No party found for party ID: " + id + " and case reference: " + caseReference);
+                .isInstanceOf(PartyNotFoundException.class)
+                .hasMessage("message=No party found for, partyId=" + id + ", case reference=" + caseReference);
         }
 
         @Test

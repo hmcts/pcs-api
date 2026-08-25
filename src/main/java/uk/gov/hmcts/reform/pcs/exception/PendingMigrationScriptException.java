@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class PendingMigrationScriptException extends RuntimeException {
+public class PendingMigrationScriptException extends RedactedRuntimeException {
 
-    public PendingMigrationScriptException(String script) {
-        super("Found migration not yet applied: " + script);
+    public PendingMigrationScriptException(ErrorCode errorCode, RedactionContext redactionContext) {
+        super(errorCode, redactionContext);
     }
 }

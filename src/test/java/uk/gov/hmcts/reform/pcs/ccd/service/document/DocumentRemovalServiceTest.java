@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, ResetExceptionRedactionExtension.class})
 class DocumentRemovalServiceTest {
 
     @Mock
@@ -77,6 +79,7 @@ class DocumentRemovalServiceTest {
 
     @Test
     void shouldThrowWhenDocumentNotFound() {
+        RedactionGate.setShowFullMessagesForTesting(true);
         UUID documentId = UUID.randomUUID();
         when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
 

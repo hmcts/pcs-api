@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.pcs.controllers;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,12 +20,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionGate;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
+import uk.gov.hmcts.reform.pcs.exception.ResetExceptionRedactionExtension;
 
 import java.util.List;
 import java.util.Set;
@@ -31,7 +36,24 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ALREADY_IN_USE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.ACCESS_CODE_ISSUE;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_MALFORMED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_EMPTY;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_TOKEN_RETRIEVAL_FAIL;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_UNAUTHORIZED;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.AUTH_VALIDATION;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_ACCESS_VALIDATOR;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.PARTY_ACCESS_CODE;
+import static uk.gov.hmcts.reform.pcs.exception.RedactionGate.safeMessage;
+import static uk.gov.hmcts.reform.pcs.exception.IdamException.AUTH_VALIDATION_STATUS_CODE;
+import static uk.gov.hmcts.reform.pcs.exception.IdamException.OAUTH2_ERROR_CODE;
 
+@ExtendWith(ResetExceptionRedactionExtension.class)
 class RestExceptionHandlerTest {
 
     private RestExceptionHandler underTest;
@@ -43,61 +65,83 @@ class RestExceptionHandlerTest {
         underTest = new RestExceptionHandler(upstreamThrottling);
     }
 
-    @Test
-    void shouldHandleCaseNotFoundException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleCaseNotFoundException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         long caseReference = 12345L;
-        CaseNotFoundException caseNotFoundException = new CaseNotFoundException(caseReference);
-        String expectedErrorMessage = "No case found with reference " + caseReference;
+        CaseNotFoundException caseNotFoundException = new CaseNotFoundException(ErrorCode.CASE_NOT_FOUND,
+                                                                                RedactionContext.of("Case Reference",
+                                                                                String.valueOf(caseReference)));
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
             = underTest.handleCaseNotFoundException(caseNotFoundException);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? "Case Reference=12345"
+                                                                     : "REDACTED [CASE_NOT_FOUND]");
     }
 
-    @Test
-    void shouldHandleInvalidAccessCodeException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidAccessCodeException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        String expectedErrorMessage = "Invalid access code";
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException(ACCESS_CODE_ISSUE);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
             = underTest.handleInvalidAccessCode(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? "Invalid data"
+                                                                     : "REDACTED [ACCESS_CODE_ISSUE]");
     }
 
-    @Test
-    void shouldHandleInvalidAccessCodeExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidAccessCodeExceptionWithCause(Boolean show) {
         // Given
-        String expectedErrorMessage = "Invalid access code";
+        RedactionGate.setShowFullMessagesForTesting(show);
+
+        // Given
         Throwable cause = new RuntimeException("Root cause");
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage, cause);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException(ACCESS_CODE_ISSUE, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
             = underTest.handleInvalidAccessCode(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? "Invalid data"
+                                                                     : "REDACTED [ACCESS_CODE_ISSUE]");
     }
 
-    @Test
-    void shouldHandleInvalidPartyForCaseException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidPartyForCaseException(Boolean show) {
         // Given
-        String expectedErrorMessage = "Invalid party for access code";
-        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(expectedErrorMessage);
+        RedactionGate.setShowFullMessagesForTesting(show);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -106,15 +150,21 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(
+            Boolean.TRUE.equals(show)
+                ? "The party this access code was generated for is not a defendant in this case"
+                : safeMessage(PARTY_ACCESS_CODE)
+        );
     }
 
-    @Test
-    void shouldHandleInvalidPartyForCaseExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidPartyForCaseExceptionWithCause(Boolean show) {
         // Given
-        String errorMessage = "Invalid party for access code";
+        RedactionGate.setShowFullMessagesForTesting(show);
         Throwable cause = new RuntimeException("Root cause");
-        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(errorMessage, cause);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(PARTY_ACCESS_CODE, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -123,14 +173,18 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(errorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(Boolean.TRUE.equals(show)
+            ? "The party this access code was generated for is not a defendant in this case"
+            : safeMessage(PARTY_ACCESS_CODE));
     }
 
-    @Test
-    void shouldHandleInvalidAuthTokenException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidAuthTokenException(Boolean show) {
         // Given
-        String expectedErrorMessage = "Invalid authentication token";
-        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage);
+        RedactionGate.setShowFullMessagesForTesting(show);
+        InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_MALFORMED);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -139,15 +193,20 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(
+            Boolean.TRUE.equals(show)
+                ? "Malformed Authorization token"
+                : safeMessage(AUTH_MALFORMED));
     }
 
-    @Test
-    void shouldHandleInvalidAuthTokenExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleInvalidAuthTokenExceptionWithCause(Boolean show) {
         // Given
-        String expectedErrorMessage = "Invalid authentication token";
+        RedactionGate.setShowFullMessagesForTesting(show);
         Exception cause = new RuntimeException("Root cause");
-        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage, cause);
+        InvalidAuthTokenException exception = new InvalidAuthTokenException(AUTH_UNAUTHORIZED, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -156,13 +215,21 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(
+            Boolean.TRUE.equals(show)
+                ? "The Authorization token provided is expired or invalid"
+                : safeMessage(AUTH_UNAUTHORIZED));
     }
 
-    @Test
-    void shouldHandleIllegalStateException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleIllegalStateException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        String expectedErrorMessage = "Conflict state detected";
+        String expectedErrorMessage = "Conflict state";
         IllegalStateException exception = new IllegalStateException(expectedErrorMessage);
 
         // When
@@ -170,15 +237,21 @@ class RestExceptionHandlerTest {
             = underTest.handleConflict(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? expectedErrorMessage : "REDACTED [STATE]");
     }
 
-    @Test
-    void shouldHandleIllegalStateExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleIllegalStateExceptionWithCause(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        String expectedErrorMessage = "Conflict state detected";
+        String expectedErrorMessage = "Conflict state";
         Throwable cause = new RuntimeException("Root cause");
         IllegalStateException exception = new IllegalStateException(expectedErrorMessage, cause);
 
@@ -187,16 +260,19 @@ class RestExceptionHandlerTest {
             = underTest.handleConflict(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? expectedErrorMessage : "REDACTED [STATE]");
     }
 
-    @Test
-    void shouldHandleAccessCodeAlreadyUsedException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleAccessCodeAlreadyUsedException(Boolean show) {
         // Given
-        String expectedErrorMessage = "Access code already used";
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage);
+        RedactionGate.setShowFullMessagesForTesting(show);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -205,15 +281,24 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(
+            Boolean.TRUE.equals(show)
+                ? "This access code is already linked to a user"
+                : safeMessage(ACCESS_CODE_ALREADY_IN_USE)
+        );
     }
 
-    @Test
-    void shouldHandleAccessCodeAlreadyUsedExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleAccessCodeAlreadyUsedExceptionWithCause(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        String expectedErrorMessage = "Access code already used";
         Throwable cause = new RuntimeException("Root cause");
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage, cause);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(ACCESS_CODE_ALREADY_IN_USE,
+                                                                                      cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -222,11 +307,19 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(
+            Boolean.TRUE.equals(show)
+                ? "This access code is already linked to a user"
+                : safeMessage(ACCESS_CODE_ALREADY_IN_USE));
     }
 
-    @Test
-    void shouldHandleMethodArgumentNotValidException() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleMethodArgumentNotValidException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         BindingResult bindingResult = mock(BindingResult.class);
@@ -243,6 +336,7 @@ class RestExceptionHandlerTest {
             exception, headers, status, request);
 
         // Then
+        assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isInstanceOf(RestExceptionHandler.Error.class);
@@ -250,8 +344,13 @@ class RestExceptionHandlerTest {
         assertThat(error.message()).isEqualTo("Invalid data");
     }
 
-    @Test
-    void shouldHandleMethodArgumentNotValidExceptionWithDifferentStatus() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleMethodArgumentNotValidExceptionWithDifferentStatus(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         BindingResult bindingResult = mock(BindingResult.class);
@@ -275,8 +374,13 @@ class RestExceptionHandlerTest {
         assertThat(error.message()).isEqualTo("Invalid data");
     }
 
-    @Test
-    void shouldHandleExceptionWithNullMessage() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleExceptionWithNullMessage(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         IllegalStateException exception = new IllegalStateException((String) null);
 
@@ -285,32 +389,21 @@ class RestExceptionHandlerTest {
             = underTest.handleConflict(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? "Conflict state" : "REDACTED [STATE]");
     }
 
-    @Test
-    void shouldHandleExceptionWithEmptyMessage() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleCaseAccessException(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
-        String expectedErrorMessage = "";
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
-
-        // When
-        ResponseEntity<RestExceptionHandler.Error> responseEntity
-            = underTest.handleInvalidAccessCode(exception);
-
-        // Then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    void shouldHandleCaseAccessException() {
-        // Given
-        String expectedErrorMessage = "User is not linked as a defendant on this case";
-        CaseAccessException exception = new CaseAccessException(expectedErrorMessage);
+        CaseAccessException exception = new CaseAccessException(DEFENDANT_ACCESS_VALIDATOR);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -319,90 +412,102 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message())
+            .isEqualTo(
+                Boolean.TRUE.equals(show)
+                    ? "User is not linked as a defendant on this case"
+                    : safeMessage(DEFENDANT_ACCESS_VALIDATOR));
     }
 
-    @Test
-    void shouldHandleCaseAccessExceptionWithCause() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldHandleCaseAccessExceptionWithCause(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Given
         String expectedErrorMessage = "No defendants associated with this case";
         Throwable cause = new RuntimeException("Root cause");
-        CaseAccessException exception = new CaseAccessException(expectedErrorMessage, cause);
+        CaseAccessException exception = new CaseAccessException(DEFENDANT_PARTY_EXTRACTOR_NO_DEFENDANTS, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
             = underTest.handleCaseAccess(exception);
 
         // Then
+        boolean isShow = Boolean.TRUE.equals(show);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(isShow ? expectedErrorMessage
+                                                                     : "REDACTED [DEFENDANT_PARTY_EXTRACTOR_02]");
     }
 
-    @Test
-    void shouldHandleCaseAssignmentException() {
-        // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage);
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
 
-        // When
-        ResponseEntity<RestExceptionHandler.Error> responseEntity
-            = underTest.handleCaseAssignmentException(exception);
-
-        // Then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    void shouldHandleCaseAssignmentExceptionWithCause() {
-        // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
-        Throwable cause = new RuntimeException("CCD assignment API failure");
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage, cause);
-
-        // When
-        ResponseEntity<RestExceptionHandler.Error> responseEntity
-            = underTest.handleCaseAssignmentException(exception);
-
-        // Then
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-        assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
-        assertThat(exception.getCause()).isEqualTo(cause);
-    }
-
-    @Test
-    void shouldMapIdamExceptionWrappingOAuth2WithRestClient429ToServiceUnavailable() {
-        // Real production shape: Spring's OAuth2 password client wraps a RestClient 429 in
-        // OAuth2AuthorizationException, then SystemUpdateUserTokenProvider wraps that in IdamException.
+        // Real production shape (IdamTokenProvider): Spring's OAuth2 password client wraps a
+        // RestClient 429 in OAuth2AuthorizationException, which is wrapped in
+        // IdamException(AUTH_TOKEN_RETRIEVAL_FAIL) with the OAuth2 error code string stored
+        // under OAUTH2_ERROR_CODE.
         HttpClientErrorException tooMany = HttpClientErrorException.create(
-            HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
+            TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
         OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled by IDAM", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, tooMany);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, oauthError.getErrorCode()),
+                                             oauthEx);
 
+        // When
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        // Then
+        boolean isShow = Boolean.TRUE.equals(show);
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().message())
-            .isEqualTo("Authentication service temporarily unavailable, please retry");
+            .isEqualTo(isShow ? "errorCode=invalid_token_response" : safeMessage(AUTH_TOKEN_RETRIEVAL_FAIL));
     }
 
     @Test
-    void shouldMapIdamExceptionWithDirectRestClient429CauseToServiceUnavailable() {
+    void shouldMapIdamExceptionWithEmptyTokenToServiceUnavailable() {
+        // Production shape (IdamTokenProvider): a null authorized client / access token throws
+        // new IdamException(AUTH_TOKEN_EMPTY) with no context or cause. An empty token always
+        // counts as upstream-unavailable.
+        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
+        assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldMapIdamExceptionWithDirectRestClient429CauseToServiceUnavailable(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // Defense-in-depth: handler should also recognise a RestClient 429 set directly as the cause,
         // not only when buried under OAuth2AuthorizationException.
         HttpClientErrorException tooMany = HttpClientErrorException.create(
-            HttpStatus.TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
-        IdamException ex = new IdamException("Unable to get access token response", tooMany);
+            TOO_MANY_REQUESTS, "Too Many Requests", HttpHeaders.EMPTY, new byte[0], null);
+        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, SERVICE_UNAVAILABLE), tooMany);
 
+        // When
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
@@ -413,15 +518,16 @@ class RestExceptionHandlerTest {
     void shouldMapIdamExceptionWithOAuth2ThrottleCodeToServiceUnavailable(String errorCode) {
         OAuth2Error oauthError = new OAuth2Error(errorCode, "throttled by IDAM", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, errorCode),
+                                             oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message())
-            .isEqualTo("Authentication service temporarily unavailable, please retry");
+        assertThat(response.getBody().message()).isEqualTo(safeMessage(AUTH_TOKEN_RETRIEVAL_FAIL));
     }
 
     // Non-throttle OAuth2 error codes must NOT return 503 — these are not transient.
@@ -430,7 +536,9 @@ class RestExceptionHandlerTest {
     void shouldMapIdamExceptionWithNonThrottleOAuth2CodeToInternalServerError(String errorCode) {
         OAuth2Error oauthError = new OAuth2Error(errorCode, "non-throttle OAuth2 error", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, errorCode),
+                                             oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -446,7 +554,8 @@ class RestExceptionHandlerTest {
             HttpStatus.INTERNAL_SERVER_ERROR, "Server Error", HttpHeaders.EMPTY, new byte[0], null);
         OAuth2Error oauthError = new OAuth2Error("server_error", "IDAM down", null);
         OAuth2AuthorizationException oauthEx = new OAuth2AuthorizationException(oauthError, internal);
-        IdamException ex = new IdamException("Unable to get access token response", oauthEx);
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, INTERNAL_SERVER_ERROR), oauthEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -463,11 +572,12 @@ class RestExceptionHandlerTest {
     void shouldMapIdamExceptionWithFeignUpstreamFailureToServiceUnavailable(int status) {
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(status);
-        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+        IdamException ex = new IdamException(AUTH_VALIDATION, RedactionContext.of(AUTH_VALIDATION_STATUS_CODE,
+                                                                                   status), feignEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("30");
     }
 
@@ -479,7 +589,8 @@ class RestExceptionHandlerTest {
     void shouldMapIdamExceptionWithFeignClientErrorToInternalServerError(int status) {
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(status);
-        IdamException ex = new IdamException("Unable to validate authorization token", feignEx);
+        IdamException ex = new IdamException(AUTH_VALIDATION,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, status), feignEx);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -489,7 +600,7 @@ class RestExceptionHandlerTest {
 
     @Test
     void shouldMapIdamExceptionWithNoCauseToInternalServerError() {
-        IdamException ex = new IdamException("Unable to get access token response");
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL);
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleIdamException(ex);
 
@@ -498,18 +609,24 @@ class RestExceptionHandlerTest {
         assertThat(response.getBody().message()).isEqualTo("Authentication service error");
     }
 
-    @Test
-    void shouldUseConfiguredRetryAfterValueInThrottleResponse() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @NullSource
+    void shouldUseConfiguredRetryAfterValueInThrottleResponse(Boolean show) {
+        // Setup
+        RedactionGate.setShowFullMessagesForTesting(show);
+
         // The Retry-After value is read from idam.throttle.retry-after-seconds, not hardcoded.
         RestExceptionHandler handler = new RestExceptionHandler(
             new UpstreamThrottling("90", Set.of("invalid_token_response")));
         OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "throttled", null);
-        IdamException ex = new IdamException(
-            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
+        IdamException ex = new IdamException(AUTH_TOKEN_EMPTY,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, SERVICE_UNAVAILABLE),
+                                             new OAuth2AuthorizationException(oauthError));
 
         ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getStatusCode()).isEqualTo(SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("90");
     }
 
@@ -519,8 +636,9 @@ class RestExceptionHandlerTest {
         RestExceptionHandler handler = new RestExceptionHandler(
             new UpstreamThrottling("30", Set.of("temporarily_unavailable")));
         OAuth2Error oauthError = new OAuth2Error("invalid_token_response", "not a configured throttle code", null);
-        IdamException ex = new IdamException(
-            "Unable to get access token response", new OAuth2AuthorizationException(oauthError));
+        IdamException ex = new IdamException(AUTH_TOKEN_RETRIEVAL_FAIL,
+                                             RedactionContext.of(OAUTH2_ERROR_CODE, TOO_MANY_REQUESTS),
+                                             new OAuth2AuthorizationException(oauthError));
 
         ResponseEntity<RestExceptionHandler.Error> response = handler.handleIdamException(ex);
 

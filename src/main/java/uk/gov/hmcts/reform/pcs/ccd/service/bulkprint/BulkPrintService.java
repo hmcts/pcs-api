@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
+import uk.gov.hmcts.reform.pcs.exception.ErrorCode;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 import uk.gov.hmcts.reform.sendletter.api.model.v3.LetterV3;
@@ -69,7 +71,8 @@ public class BulkPrintService {
 
     private void requirePostalAddress(AddressUK address, PartyEntity recipient) {
         if (address == null || StringUtils.isBlank(address.getAddressLine1())) {
-            throw new MissingPostalAddressException("No postal address for party " + recipient.getId());
+            throw new MissingPostalAddressException(ErrorCode.MISSING_POSTAL_ADDRESS, RedactionContext.builder()
+                .value("No postal address for party ", recipient.getId()).build());
         }
     }
 

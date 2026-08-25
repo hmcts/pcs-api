@@ -18,12 +18,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossess
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.exception.RedactionContext;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.exception.ErrorCode.DRAFT_NOT_FOUND;
 
 @Component
 @RequiredArgsConstructor
@@ -53,7 +55,10 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
         Long caseReference = eventPayload.caseReference();
         PCSCase draftData = draftCaseDataService
             .getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+            .orElseThrow(() -> new DraftNotFoundException(DRAFT_NOT_FOUND, RedactionContext.builder()
+                                                            .value("Case Reference", caseReference)
+                                                            .value("Event", respondPossessionClaim)
+                                                            .build()));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 

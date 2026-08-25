@@ -49,8 +49,7 @@ public class OrganisationService {
             return organisationName;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation name from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation name from rd-professional API.", ex);
             // Return null instead of throwing to allow graceful degradation
             return null;
         }
@@ -72,8 +71,7 @@ public class OrganisationService {
             return organisationDetailsService.getOrganisationIdentifier(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
         }
     }
@@ -105,8 +103,7 @@ public class OrganisationService {
             return organisationAddress;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation address from rd-professional API. Error: {}",
-                      ex.getMessage(), ex);
+            log.error("Error retrieving organisation address from rd-professional API", ex);
             return null;
         }
     }

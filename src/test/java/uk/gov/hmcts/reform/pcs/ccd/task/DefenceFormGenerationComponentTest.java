@@ -172,7 +172,8 @@ class DefenceFormGenerationComponentTest {
         assertThat(terminalErrors).hasSize(1);
 
         ILoggingEvent event = terminalErrors.getFirst();
-        assertThat(event.getFormattedMessage()).contains(RESPONSE_ID.toString()).contains("docassembly 500");
+        assertThat(event.getFormattedMessage()).contains(RESPONSE_ID.toString());
+        assertThat(event.getThrowableProxy()).isNotNull();
         assertThat(event.getMDCPropertyMap())
             .containsEntry("caseReference", "1234567812345678")
             .containsEntry("taskName", "defence-form-generation-task")
