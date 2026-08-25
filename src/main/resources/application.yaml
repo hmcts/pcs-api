@@ -57,7 +57,7 @@ spring:
       charSet: UTF-8
     hikari:
       minimumIdle: ${PCS_DB_POOL_MIN_IDLE:0}
-      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:15}
       idleTimeout: 30000
       poolName: PCSHikariCP
       maxLifetime: 1800000
