@@ -47,6 +47,7 @@ public class GenAppsView {
             .sorted(Comparator.comparing(GenAppEntity::getApplicationSubmittedDate).reversed())
             .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
                 genAppEntity,
+                userRoles.userId(),
                 organisationId,
                 userRoles.roles()
             ))
