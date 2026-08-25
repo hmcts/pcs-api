@@ -44,10 +44,6 @@ public class CcdCaseDataDeletionService {
         return ccdCaseRepository.findExpiredDraftCases(discardAfterDays, limit);
     }
 
-    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
-        return ccdCaseRepository.findExpiredDraftCasesInDraftDiscardedState();
-    }
-
     @Transactional
     public void deleteCcdCaseData(long caseReference) {
         ccdCaseRepository.deleteCcdCaseData(caseReference);

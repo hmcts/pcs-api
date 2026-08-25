@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
@@ -22,10 +20,11 @@ import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+
+import static java.lang.Math.min;
 
 @Slf4j
 @Component
@@ -41,6 +40,7 @@ public class CaseDeletionScheduledTask {
     private final String schedule;
     private final int discardAfterDays;
     private final int batchSize;
+    private final int sqlLimit;
 
     // These are used to restrict a call flood on the other services.
     private final Semaphore ccdCallThrottle;
@@ -49,6 +49,7 @@ public class CaseDeletionScheduledTask {
     public CaseDeletionScheduledTask(@Value("${expired-case-deletion.schedule}") String schedule,
                                     @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
                                     @Value("${expired-case-deletion.batch-size}") int batchSize,
+                                    @Value("${expired-case-deletion.sql-limit}") int sqlLimit,
                                     @Value("${expired-case-deletion.ccd-call-control-size:10}") int ccdControlSize,
                                     @Value("${expired-case-deletion.doc-call-control-size:25}") int docControlSize,
                                     CaseDeletionService caseDeletionService,
@@ -58,6 +59,7 @@ public class CaseDeletionScheduledTask {
         this.schedule = schedule;
         this.discardAfterDays = discardAfterDays;
         this.batchSize = batchSize;
+        this.sqlLimit = sqlLimit;
         this.caseDeletionService = caseDeletionService;
         this.ccdCaseDataDeletionService = ccdCaseDataDeletionService;
         this.pcsCaseService = pcsCaseService;
@@ -76,17 +78,23 @@ public class CaseDeletionScheduledTask {
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
         log.info("runSweep starting up ...");
         try {
-            List<Long> cases = ccdCaseDataDeletionService.findExpiredDraftCasesBatch(discardAfterDays, batchSize);
+            List<Long> cases = ccdCaseDataDeletionService.findExpiredDraftCasesBatch(discardAfterDays, sqlLimit);
             if (CollectionUtils.isEmpty(cases)) {
                 log.debug("No cases to delete within this sweep.");
                 return;
             }
-            log.info("Processing {} cases for deletion (page size is {})", cases.size(), batchSize);
-            List<Long> failed = processCases(cases);
-            if (!failed.isEmpty()) {
-                log.warn("{} case(s) failed deletion and will be retried on a later sweep: {}", failed.size(), failed);
+            int totalCases = cases.size();
+            log.info("Processing {} cases for deletion (page size is {})", totalCases, batchSize);
+            int processed = 0;
+            List<Long> failed = new ArrayList<>();
+            while (processed < totalCases) {
+                failed.addAll(processCases(cases.subList(processed, min(processed + batchSize, totalCases))));
+                processed += min(processed + batchSize, totalCases);
             }
-            log.info("Sweep complete. {} succeeded, {} failed.", cases.size() - failed.size(), failed.size());
+            if (!failed.isEmpty()) {
+                log.warn("{} case(s) failed deletion and will be retried on next sweep: {}", failed.size(), failed);
+            }
+            log.info("Sweep complete. {} succeeded, {} failed.", totalCases - failed.size(), failed.size());
         } finally {
             MDC.remove(MDC_TASK_NAME);
         }
@@ -125,25 +133,22 @@ public class CaseDeletionScheduledTask {
         } finally {
             ccdCallThrottle.release();
         }
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseRef);
-        deleteDocuments(pcsCaseEntity);
-        // Below is relatively inexpensive compared to the processing above
-        caseDeletionService.deleteCaseData(pcsCaseEntity);
+        List<String> documentUrls = pcsCaseService.getDocumentUrls(caseRef);
+        deleteDocuments(documentUrls, caseRef);
+        caseDeletionService.deleteCaseData(caseRef);
     }
 
-    private void deleteDocuments(PcsCaseEntity pcsCaseEntity) throws InterruptedException {
-        List<UUID> failed = new ArrayList<>();
-        List<DocumentEntity> documents = pcsCaseEntity.getDocuments();
-        for (DocumentEntity document : documents) {
+    private void deleteDocuments(List<String> documentUrls, long caseRef) throws InterruptedException {
+        List<String> failed = new ArrayList<>();
+        for (String url : documentUrls) {
             documentCallThrottle.acquire();
             try {
-                documentImportService.deleteDocument(document.getUrl());
+                documentImportService.deleteDocument(url);
             } catch (DocumentNotFoundException e) {
-                log.debug("Document {} already gone for case {}.", document.getId(), pcsCaseEntity.getCaseReference());
+                log.debug("Document {} not found for case {}.", url, caseRef);
             } catch (Exception e) {
-                log.error("Failed to delete document {} for case {}", document.getId(),
-                          pcsCaseEntity.getCaseReference(), e);
-                failed.add(document.getId());
+                log.error("Failed to delete document {} for case {}", url, caseRef, e);
+                failed.add(url);
             } finally {
                 documentCallThrottle.release();
             }
@@ -152,7 +157,7 @@ public class CaseDeletionScheduledTask {
             // We need to stop the processing otherwise there will be leftover documents hanging around, and without
             // the metadata held in the case, then they will not get processed.
             log.warn("Stopping further deletion processing of the case as some documents failed to delete");
-            throw new DocumentDeletionIncompleteException(failed, pcsCaseEntity.getCaseReference());
+            throw new DocumentDeletionIncompleteException(failed, caseRef);
         }
     }
 
@@ -166,5 +171,4 @@ public class CaseDeletionScheduledTask {
             MDC.clear();
         }
     }
-
 }

@@ -34,17 +34,6 @@ public class CcdCaseRepository {
         );
     }
 
-    public List<Long> findExpiredDraftCasesInDraftDiscardedState() {
-        return jdbcTemplate.query(
-                """
-                   SELECT cd.reference
-                   FROM ccd.case_data cd
-                   WHERE cd.state in ('DRAFT_DISCARDED')
-                """,
-                (rs, rowNum) -> rs.getLong("reference")
-        );
-    }
-
     public void deleteCcdCaseData(long caseReference) {
         String sql = """
             WITH target_case AS (

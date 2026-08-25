@@ -272,7 +272,8 @@ bulk-print:
 expired-case-deletion:
   schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:DAILY|03:00}
   discard-after-days: ${EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS:30}
-  batch-size: ${EXPIRED_CASE_DELETION_BATCH_SIZE:2}
+  batch-size: ${EXPIRED_CASE_DELETION_BATCH_SIZE:5}
+  sql-limit: ${EXPIRED_CASE_DELETION_BATCH_SIZE:200}
 
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
