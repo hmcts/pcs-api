@@ -124,21 +124,13 @@ public class CaseFlagService {
                 Function.identity()
             ));
 
-        List<String> requestedFlags = new ArrayList<>();
-        Long caseReference = null;
-
         for (ListValue<Party> incomingPartyValue : incomingParties) {
             Party incomingParty = incomingPartyValue.getValue();
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
-            if (caseReference == null && partyEntity.getPcsCase() != null) {
-                caseReference = partyEntity.getPcsCase().getCaseReference();
-            }
 
             if (incomingParty.getDefendantFlags() != null
                 && !CollectionUtils.isEmpty(incomingParty.getDefendantFlags().getDetails())) {
-                requestedFlags.addAll(getRequestedFlagNames(incomingParty.getDefendantFlags().getDetails()));
-
                 boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
                 List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
                     incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new,
@@ -153,8 +145,6 @@ public class CaseFlagService {
                 }
             }
         }
-
-        createReviewCaseFlagRequestTask(caseReference, requestedFlags);
     }
 
     private void createReviewCaseFlagRequestTask(Long caseReference, List<String> requestedFlags) {

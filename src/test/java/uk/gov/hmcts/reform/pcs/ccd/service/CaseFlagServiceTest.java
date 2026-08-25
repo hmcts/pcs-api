@@ -195,46 +195,6 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldCreateReviewCaseFlagRequestTaskWhenPartyFlagRequested() {
-        // Given
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .build();
-        PartyEntity partyEntity = PartyEntity.builder()
-            .id(partyId)
-            .pcsCase(pcsCaseEntity)
-            .build();
-        pcsCaseEntity.setParties(new HashSet<>(List.of(partyEntity)));
-
-        Flags incomingFlags = Flags.builder()
-            .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF00015", "Language Interpreter",
-                                      "Spanish Language Interpreter", "Requested"))
-            .build();
-
-        Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
-        List<ListValue<Party>> parties = List.of(createPartyListValue(partyId.toString(), incomingParty));
-
-        when(taskDescriptionService.createReviewCaseFlagRequestDescription(
-            CASE_REFERENCE, List.of("Language Interpreter"))
-        ).thenReturn("request description");
-
-        // When
-        underTest.mergePartyFlags(parties, pcsCaseEntity.getParties());
-
-        // Then
-        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(
-            CASE_REFERENCE, List.of("Language Interpreter")
-        );
-        verify(camundaService).createTask(
-            CASE_REFERENCE,
-            TaskType.REVIEW_CASE_FLAG_REQUEST,
-            "request description"
-        );
-    }
-
-    @Test
     void shouldReplaceOnlyReasonableAdjustmentFlagsOnParty() {
         // Given
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
