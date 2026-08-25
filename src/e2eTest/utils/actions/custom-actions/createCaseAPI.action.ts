@@ -212,6 +212,9 @@ export class CreateCaseAPIAction implements IAction {
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
+        // Reset shared state: this array is module-level and must reflect ONLY the current case,
+        // otherwise a later test reads a previous case's party id (genapp submit 500s).
+        defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
           process.env.Defendant_ID = defendant.id;
           const defendantName =
@@ -568,6 +571,8 @@ export class CreateCaseAPIAction implements IAction {
           throw new Error('Solicitor 2 credentials are missing.');
         }
 
+        // Reset shared state (see note at the other push site).
+        defendantUserDetails.length = 0;
         for (let index = 0; index < allDefendants.length; index++) {
           const defendant = allDefendants[index];
           process.env.Defendant_ID = defendant.id;
