@@ -7,10 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -228,5 +231,17 @@ class OrganisationServiceTest {
         assertThat(result).isEqualTo(orgAddress);
         verify(securityContextService).getCurrentUserId();
         verify(organisationDetailsService).getOrganisationAddress(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should skip the rd-professional lookup for a citizen user")
+    void shouldSkipOrganisationLookupForCitizen() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().roles(List.of(UserRole.CITIZEN.getRole())).build());
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).getOrganisationIdentifier(anyString());
     }
 }
