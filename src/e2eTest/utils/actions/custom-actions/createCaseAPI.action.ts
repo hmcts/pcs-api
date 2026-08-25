@@ -212,6 +212,9 @@ export class CreateCaseAPIAction implements IAction {
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
+        // Shared across every spec in this worker, so clear it or earlier cases' defendants
+        // get submitted against this one.
+        defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
           process.env.Defendant_ID = defendant.id;
           const defendantName =
@@ -568,6 +571,8 @@ export class CreateCaseAPIAction implements IAction {
           throw new Error('Solicitor 2 credentials are missing.');
         }
 
+        // Clear the shared list before recording this case's defendants.
+        defendantUserDetails.length = 0;
         for (let index = 0; index < allDefendants.length; index++) {
           const defendant = allDefendants[index];
           process.env.Defendant_ID = defendant.id;
