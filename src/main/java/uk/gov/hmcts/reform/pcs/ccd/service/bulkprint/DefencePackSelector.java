@@ -2,12 +2,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,20 +24,24 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects defence-phase envelopes per recipient. Each party (claimant and defendants) gets the defence form
- * and any issued counter-claim; only documents not covered by a {@code PACK_SENT} success row are included,
- * so a late counter-claim follows in a later sweep without re-sending.
+ * Selects defence-phase envelopes per recipient. Defence packs go to defendants who opted into postal contact;
+ * claimants are not included. The current rollout flag gates that rule and, while off, keeps the previous
+ * all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are included, so late
+ * counter-claims follow without re-sending.
  */
 @Service
 public class DefencePackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
+    private final FeatureToggleService featureToggleService;
 
     public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository,
-                               SentPackDocuments sentPackDocuments) {
+                               SentPackDocuments sentPackDocuments,
+                               FeatureToggleService featureToggleService) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
+        this.featureToggleService = featureToggleService;
     }
 
     public List<DefencePackCandidate> findDefencePackCandidates(PcsCaseEntity pcsCase) {
@@ -47,8 +54,7 @@ public class DefencePackSelector {
 
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        List<PartyEntity> allParties = new ArrayList<>(claimants);
-        allParties.addAll(defendants);
+        List<PartyEntity> eligibleRecipients = eligibleRecipients(claimants, defendants);
         Set<UUID> claimantIds = claimants.stream().map(PartyEntity::getId).collect(Collectors.toSet());
 
         Map<UUID, PartyEntity> recipients = new LinkedHashMap<>();
@@ -57,11 +63,13 @@ public class DefencePackSelector {
         for (PartyEntity defendant : defendants) {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
-                allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, defenceForm));
+                eligibleRecipients.forEach(
+                    party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
             DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
             if (counterClaimForm != null) {
-                allParties.forEach(party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
+                eligibleRecipients.forEach(
+                    party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
             }
         }
 
@@ -77,6 +85,23 @@ public class DefencePackSelector {
             }
         }
         return candidates;
+    }
+
+    private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
+        if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
+            return defendants.stream()
+                .filter(this::contactByPost)
+                .toList();
+        }
+
+        List<PartyEntity> allParties = new ArrayList<>(claimants);
+        allParties.addAll(defendants);
+        return allParties;
+    }
+
+    private boolean contactByPost(PartyEntity party) {
+        return party.getContactPreferences() != null
+            && party.getContactPreferences().getContactByPost() == VerticalYesNo.YES;
     }
 
     private void addPending(Map<UUID, PartyEntity> recipients, Map<UUID, Set<DocumentEntity>> documentsByRecipient,
