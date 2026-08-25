@@ -56,11 +56,11 @@ export class CreateCaseAPIAction implements IAction {
   private async createCaseAPI(caseData: actionData): Promise<void> {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     try {
-      const tokenResponse = await this.retry(() => createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint));
+      const tokenResponse = await this.apiRetry(() => createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint));
       process.env.CREATE_EVENT_TOKEN = tokenResponse.data.token;
       const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
 
-      const createResponse = await this.retry(() => createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+      const createResponse = await this.apiRetry(() => createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
         data: createCasePayloadData,
         event: { id: createCaseApiData.createCaseEventName },
         event_token: process.env.CREATE_EVENT_TOKEN,
@@ -95,10 +95,10 @@ export class CreateCaseAPIAction implements IAction {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
     let submitCasePayloadData : any;
     try {
-      const tokenSubmitResponse = await this.retry(() => submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint()));
+      const tokenSubmitResponse = await this.apiRetry(() => submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint()));
       process.env.SUBMIT_EVENT_TOKEN = tokenSubmitResponse.data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const submitResponse = await this.retry(() => submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+      const submitResponse = await this.apiRetry(() => submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
         event_token: process.env.SUBMIT_EVENT_TOKEN,
@@ -446,10 +446,10 @@ export class CreateCaseAPIAction implements IAction {
     const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
     let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
-      const tokenGenAppResponse = await this.retry(() => makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint()));
+      const tokenGenAppResponse = await this.apiRetry(() => makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint()));
       process.env.MAA_EVENT_TOKEN = tokenGenAppResponse.data.token;
       makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const genAppResponse = await this.retry(() => makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+      const genAppResponse = await this.apiRetry(() => makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
         data: makeAnApplicationPayloadData,
         event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
         event_token: process.env.MAA_EVENT_TOKEN,
@@ -703,7 +703,7 @@ export class CreateCaseAPIAction implements IAction {
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
-  private async retry<T>(
+  private async apiRetry<T>(
     fn: () => Promise<T>,
     retries = actionRetries,
     delay = 2000
@@ -716,8 +716,6 @@ export class CreateCaseAPIAction implements IAction {
       const shouldRetry =
         !status ||
         [429, 500, 502, 503, 504].includes(status);
-      // const shouldRetry =
-      //   !status || status < 200 || status >= 300;
 
       if (!shouldRetry || retries <= 1) {
         throw error;
@@ -725,7 +723,7 @@ export class CreateCaseAPIAction implements IAction {
       console.warn(`Request failed with status ${status}. Retrying in ${delay}ms...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
 
-      return this.retry(fn, retries - 1, delay * 2);
+      return this.apiRetry(fn, retries - 1, delay * 2);
     }
   }
 }
