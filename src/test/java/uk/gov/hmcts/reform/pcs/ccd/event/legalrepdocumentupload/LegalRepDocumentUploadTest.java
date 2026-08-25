@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,6 +58,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private DocumentService documentService;
+
+    @Mock
+    private SecurityContextService securityContextService;
 
     @Mock
     private OrganisationService organisationService;
@@ -126,7 +130,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE))
             .thenReturn(PcsCaseEntity.builder().build());
 
-        when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+        when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
             .thenReturn(List.of(earlierAdjournApp, laterAdjournApp, generalApp, generalAppWithNullDate));
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -223,6 +227,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         assertThat(legalRepDocumentUpload.findGenAppsForCategory(
             PcsCaseEntity.builder().build(),
+            UUID.randomUUID(),
             orgId,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
@@ -234,6 +239,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         String description = "test description";
         UUID selectedId = UUID.randomUUID();
         UUID currentUserId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
 
         Document document = Document.builder()
             .filename("test filename")
@@ -265,7 +271,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         when(selectedGenApp.getId()).thenReturn(selectedId);
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
         List<GenAppEntity> mockGenAppList = List.of(selectedGenApp);
-        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), orgId))
+        when(genAppVisibilityService.getVisibleGenAppsToUser(Set.of(selectedGenApp), currentUserId, orgId))
             .thenReturn(mockGenAppList);
         when(selectedGenApp.getParty()).thenReturn(currentUserParty);
 
