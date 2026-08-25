@@ -212,13 +212,8 @@ export class CreateCaseAPIAction implements IAction {
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
-        // defendantUserDetails is declared at module level, so every spec running in this
-        // Playwright worker shares one array and nothing ever empties it. The caseManagement
-        // specs loop over the WHOLE array to submit applications, so without this reset they
-        // also submit the defendants left over from earlier cases against the case created
-        // here - and the server rejects a party that belongs to a different case with
-        // "No party found for entity ID <id> and case reference <ref>".
-        // Emptying it first keeps the array holding only the case we have just created.
+        // Shared across every spec in this worker, so clear it or earlier cases' defendants
+        // get submitted against this one.
         defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
           process.env.Defendant_ID = defendant.id;
@@ -576,7 +571,7 @@ export class CreateCaseAPIAction implements IAction {
           throw new Error('Solicitor 2 credentials are missing.');
         }
 
-        // Same reset as the other place this array is populated - see the explanation there.
+        // Clear the shared list before recording this case's defendants.
         defendantUserDetails.length = 0;
         for (let index = 0; index < allDefendants.length; index++) {
           const defendant = allDefendants[index];
