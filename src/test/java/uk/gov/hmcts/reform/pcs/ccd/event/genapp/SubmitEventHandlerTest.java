@@ -31,12 +31,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -50,6 +51,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -86,7 +88,7 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppFeeCalculator genAppFeeCalculator;
     @Mock
-    private PartyRepository partyRepository;
+    private OrganisationRepository organisationRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
     @Mock
@@ -112,7 +114,7 @@ class SubmitEventHandlerTest {
 
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
-                                           partyRepository, confirmationScreenFactory,
+                                           organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
                                            genAppWaTaskService, objectMapper, organisationService
         );
@@ -140,7 +142,10 @@ class SubmitEventHandlerTest {
                 .applicationType(GenAppType.SET_ASIDE)
                 .build();
 
-            stubLegalRepForParty(representedPartyUuid, representedParty);
+            when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
+                .thenReturn(representedParty);
+
+            stubLegalRepForParty(representedPartyUuid);
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
 
@@ -170,7 +175,10 @@ class SubmitEventHandlerTest {
                 .applicationType(GenAppType.SET_ASIDE)
                 .build();
 
-            stubLegalRepForParty(representedPartyUuid, representedParty);
+            when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
+                .thenReturn(representedParty);
+
+            stubLegalRepForParty(representedPartyUuid);
 
             UUID expectedGenAppEntityId = UUID.randomUUID();
             GenAppEntity genAppEntity = stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
@@ -224,7 +232,10 @@ class SubmitEventHandlerTest {
                 .applicationType(GenAppType.SET_ASIDE)
                 .build();
 
-            stubLegalRepForParty(representedPartyUuid, representedParty);
+            when(partyService.getPartyEntityByEntityId(representedPartyUuid, TEST_CASE_REFERENCE))
+                .thenReturn(representedParty);
+
+            stubLegalRepForParty(representedPartyUuid);
 
             stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, representedParty);
 
@@ -248,7 +259,7 @@ class SubmitEventHandlerTest {
         }
 
         @Test
-        void shouldReturnErrorIfApplicantIsNotRepresentedByCurrentUser() {
+        void shouldThrowErrorIfApplicantIsNotRepresentedByCurrentUser() {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
@@ -263,52 +274,25 @@ class SubmitEventHandlerTest {
             String organisationId = "Org";
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-            when(partyRepository.findPartyOnCaseRepresentedByOrganisation(
-                     representedPartyUuid, TEST_CASE_REFERENCE, organisationId))
-                .thenReturn(Optional.empty());
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
+                .thenReturn(false);
 
             // When
-            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
+            Throwable throwable = catchThrowable(() -> underTest.submit(eventPayload(caseData)));
 
             // Then
-            assertThat(submitResponse.getErrors())
-                .containsExactly("The selected party is not available on this case");
-
-            verify(genAppService, never())
-                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
+            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
         }
 
-        @Test
-        void shouldReturnErrorIfRepresentedPartyIdIsNotAUuid() {
-            // Given
-            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
-                .applicationType(GenAppType.SET_ASIDE)
-                .build();
-
-            PCSCase caseData = PCSCase.builder()
-                .currentRepresentedPartyId("not-a-uuid")
-                .xuiGenAppRequest(genAppRequest)
-                .build();
-
-            // When
-            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
-
-            // Then
-            assertThat(submitResponse.getErrors())
-                .containsExactly("The selected party is not available on this case");
-
-            verify(genAppService, never())
-                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
-        }
-
-        private void stubLegalRepForParty(UUID representedPartyUuid, PartyEntity representedParty) {
+        private void stubLegalRepForParty(UUID representedPartyUuid) {
             UUID currentUserId = UUID.randomUUID();
             String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
-            when(partyRepository.findPartyOnCaseRepresentedByOrganisation(
-                     representedPartyUuid, TEST_CASE_REFERENCE, orgId))
-                .thenReturn(Optional.of(representedParty));
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
+                .thenReturn(true);
         }
 
     }
@@ -346,8 +330,7 @@ class SubmitEventHandlerTest {
 
             UUID currentUserId = UUID.randomUUID();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
-            given(partyService.findPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE))
-                .willReturn(Optional.of(applicantParty));
+            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
             when(genAppFeeCalculator.getApplicationFeeDetails(genAppRequest)).thenReturn(Optional.empty());
 
@@ -380,9 +363,6 @@ class SubmitEventHandlerTest {
             PCSCase caseData = PCSCase.builder()
                 .citizenGenAppRequest(genAppRequest)
                 .build();
-
-            given(partyService.findPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE))
-                .willReturn(Optional.of(mock(PartyEntity.class)));
 
             when(genAppRepository.existsByPcsCaseAndClientReference(pcsCaseEntity, existingClientReference))
                 .thenReturn(true);
@@ -436,8 +416,7 @@ class SubmitEventHandlerTest {
 
             UUID currentUserId = UUID.randomUUID();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
-            given(partyService.findPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE))
-                .willReturn(Optional.of(applicantParty));
+            given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
             stubApplicationFeeCalculation(genAppRequest);
             stubPaymentServiceResponse();
@@ -481,8 +460,7 @@ class SubmitEventHandlerTest {
 
             stubCurrentUser();
 
-            given(partyService.findPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE))
-                .willReturn(Optional.of(applicantParty));
+            given(partyService.getPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE)).willReturn(applicantParty);
 
             UserInfo userInfo = UserInfo.builder()
                 .name(CURRENT_USER_FULL_NAME)
@@ -543,8 +521,7 @@ class SubmitEventHandlerTest {
 
     private PartyEntity stubCurrentUserParty() {
         PartyEntity currentUserParty = mock(PartyEntity.class);
-        given(partyService.findPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE))
-            .willReturn(Optional.of(currentUserParty));
+        given(partyService.getPartyEntityByIdamId(CURRENT_USER_ID, TEST_CASE_REFERENCE)).willReturn(currentUserParty);
         return currentUserParty;
     }
 
