@@ -1,12 +1,13 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
+import static java.util.Objects.nonNull;
+
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -51,18 +52,21 @@ public class OrganisationDetailsService {
         } catch (FeignException ex) {
             log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
                 userId, ex.status(), ex.getMessage(), ex);
-            throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
+            return null;
         } catch (Exception ex) {
             log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
                 userId, ex.getMessage(), ex);
-            throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
+            return null;
         }
     }
 
     /** Organisation name for a user (claimant name population). */
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details == null ? null : details.getName();
+        if (nonNull(details)) {
+            return details.getName();
+        }
+        return null;
     }
 
     /** Organisation address for a user (claimant address population), or null if none. */
@@ -96,6 +100,9 @@ public class OrganisationDetailsService {
     /** Organisation identifier for a user. */
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details == null ? null : details.getOrganisationIdentifier();
+        if (nonNull(details)) {
+            return details.getOrganisationIdentifier();
+        }
+        return null;
     }
 }
