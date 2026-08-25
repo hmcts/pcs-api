@@ -15,7 +15,9 @@ public class DefendantDetails implements CcdPageConfiguration {
             .pageLabel("1. Defendant’s details")
             .label("defendantDetails-lineSeparator", "---")
             .complex(PCSCase::getDefendantPaperResponse)
-            .label("defendantDetails-name", "1.1 What is the defendant’s name? (Optional)")
+            .label("defendantDetails-name", """
+                <span class="form-label">1.1 What is the defendant’s name? (Optional)</span>
+            """)
             .optional(DefendantPaperResponseRequest::getFirstName)
             .optional(DefendantPaperResponseRequest::getLastName)
             .label("defendantDetails-lineSeparator-dob", "---")
