@@ -69,7 +69,7 @@ public class StartSomethingElse implements CcdPageConfiguration {
         <p class="govuk-body">It usually costs ${xui_genapp_StandardFee} to apply.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>
         <ul class="govuk-list govuk-list--bullet">
-          <li class="govuk-!-font-size-19">your have already told the other party that you are making
+          <li class="govuk-!-font-size-19">you have already told the other party that you are making
           this application, and</li>
           <li class="govuk-!-font-size-19">the other party did not agree to it
           (this means that they objected to it)</li>

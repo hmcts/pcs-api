@@ -14,7 +14,7 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
     private static final String INFO_MARKDOWN = """
         <p class="govuk-body">The ‘other parties’ are the other people or organisations named on the claim form.
         For example a tenant, landlord, housing association, or mortgage lender.</p>
-        <p class="govuk-body">Every other party will need to agree to let you you this application, if they
+        <p class="govuk-body">Every other party will need to agree to let you make this application, if they
         don’t agree, you may need to pay a higher fee.</p>
         <h2 class="govuk-heading-m">If the other parties do not agree</h2>
         <p class="govuk-body govuk-!-margin-bottom-1">The application fee will increase to ${xui_genapp_MaxFee} if:</p>

@@ -13,7 +13,7 @@ public enum ClaimantGenAppType implements HasLabel {
 
     SET_ASIDE("Ask the court to set aside (cancel) a decision the court has made - You can ask "
                   + "the court to set aside its order if you have a good reason. "
-                  + "For example, if you were unable to attend the court hearing because your were ill"),
+                  + "For example, if you were unable to attend the court hearing because you were ill"),
 
     SOMETHING_ELSE("Something else - Make an application for something that is not listed above");
 
