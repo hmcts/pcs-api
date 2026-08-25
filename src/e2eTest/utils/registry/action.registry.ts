@@ -164,6 +164,7 @@ export class ActionRegistry {
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
