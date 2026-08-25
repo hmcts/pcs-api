@@ -1668,28 +1668,18 @@ export class CreateCaseAction implements IAction {
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
-    const caseFileViewTab = page.getByRole('tab', { name: 'Case File View' })
-      .or(page.getByRole('link', { name: 'Case File View' }));
+    const text = await folder.innerText();
+    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
-    // Gen-app documents are generated asynchronously by the scheduler after submit, so the
-    // folder can legitimately be empty (or partially filled) on first render. Case File View
-    // does not live-update, so each retry re-opens the tab to fetch a fresh document list.
-    let fileArray: string[] = [];
-    await expect(async () => {
-      await caseFileViewTab.first().click();
-      const text = await folder.innerText();
-      const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
-      expect(fileCount, `For folder "${folderName}" files are not present`).toBeGreaterThan(0);
+    if (fileCount === 0) {
+      throw new Error(`For folder "${folderName}" files are not present`);
+    }
+    await folder.click();
+    const actualFileCount = await fileLocator.count();
 
-      await folder.click();
-      const actualFileCount = await fileLocator.count();
-      expect(actualFileCount, 'File count matching').toEqual(fileCount);
-      fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
-      expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
-    }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
-      intervals: [2000],
-    });
+    expect(actualFileCount, 'File count matching').toEqual(fileCount)
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
+    expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
     if ((await folder.getAttribute('aria-expanded')) === 'true') {
