@@ -5,7 +5,7 @@ import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
 import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
-import {BrowserContext, Page} from '@playwright/test';
+import {BrowserContext, Page, expect} from '@playwright/test';
 
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
@@ -91,6 +91,51 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Support is limited to the party the external professional represents @supportAccess', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('navigateToCaseSummary');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', createAndManageSupport.mainHeader);
+
+    await expect(page.getByRole('radio', {name: createAndManageSupport.representedPartyOption})).toBeVisible();
+    await expect(page.getByRole('radio')).toHaveCount(1);
+
+    const partyOptionLabels = (await page.locator('.govuk-radios__label').allInnerTexts()).join(' ');
+    expect(partyOptionLabels).toContain(createAndManageSupport.representedPartyOption);
+    expect(partyOptionLabels).not.toContain(createAndManageSupport.oppositePartyRoleLabel);
+    for (const oppositePartyName of createAndManageSupport.oppositePartyNames) {
+      expect(partyOptionLabels).not.toContain(oppositePartyName);
+    }
+
+    await performAction('clickRadioButton', {option: createAndManageSupport.representedPartyOption});
+    await performAction('clickButton', createAndManageSupport.continueButton);
+    await performAction('clickRadioButton', {option: 'Reasonable adjustment'});
+    await performAction('clickButton', createAndManageSupport.continueButton);
+    await performAction('clickRadioButton', {option: 'I need to bring support with me to a hearing'});
+    await performAction('clickButton', createAndManageSupport.continueButton);
+    await performAction('clickRadioButton', {option: 'Friend or family with me'});
+    await performAction('clickButton', createAndManageSupport.continueButton);
+    await performAction('inputText', createAndManageSupport.addCommentLabel,
+                        createAndManageSupport.ownPartySupportComment);
+    await performAction('clickButton', createAndManageSupport.continueButton);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
+
+    await performAction('clickTab', createAndManageSupport.supportTab);
+
+    const supportTabContent = page.locator('.mat-tab-body-active');
+    await expect(supportTabContent).toBeVisible();
+    await expect(supportTabContent).toContainText(createAndManageSupport.ownPartySupportComment);
+    await expect(supportTabContent).toContainText(createAndManageSupport.representedPartyOption);
+    await expect(supportTabContent).not.toContainText(createAndManageSupport.oppositePartyRoleLabel);
+    for (const oppositePartyName of createAndManageSupport.oppositePartyNames) {
+      await expect(supportTabContent).not.toContainText(oppositePartyName);
+    }
   });
 
 });
