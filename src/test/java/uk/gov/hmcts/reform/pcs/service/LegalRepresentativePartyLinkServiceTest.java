@@ -675,6 +675,8 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(addressEntity, actualContactDetails.getAddress());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
+        verify(notificationService)
+            .sendNoticeOfChangeNoLongerRepresentingEmailNotification(existingLinkedLegalRep, partyEntity);
     }
 
     @Test

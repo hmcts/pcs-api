@@ -361,6 +361,44 @@ class NotificationPersonalisationFactoryTest {
     }
 
     @Nested
+    @DisplayName("noticeOfChangeNoLongerRepresenting")
+    class NoticeOfChangeNoLongerRepresentingTests {
+
+        @Test
+        @DisplayName("Should address the organisation, which has no personal name recorded")
+        void shouldAddressTheOrganisation() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
+
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(
+                legalRepresentativeOrganisation, pcsCaseEntity).toMap())
+                .containsEntry("organisationName", "Test Solicitors LLP")
+                .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE");
+        }
+
+        @Test
+        @DisplayName("Should fall back to an empty name when no organisation name is recorded")
+        void shouldFallBackToEmptyNameWhenOrganisationNameIsMissing() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder().build();
+
+            assertThat(factory.noticeOfChangeNoLongerRepresenting(
+                legalRepresentativeOrganisation, pcsCaseEntity).toMap())
+                .containsEntry("organisationName", "");
+        }
+    }
+
+    @Nested
     @DisplayName("noticeOfChangeCompleteLegalRep")
     class NoticeOfChangeCompleteLegalRepTests {
 
