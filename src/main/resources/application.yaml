@@ -56,8 +56,8 @@ spring:
     properties:
       charSet: UTF-8
     hikari:
-      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:4}
-      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:20}
+      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:0}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
       idleTimeout: 30000
       poolName: PCSHikariCP
       maxLifetime: 1800000
@@ -272,8 +272,10 @@ bulk-print:
 expired-case-deletion:
   schedule: ${EXPIRED_CASE_DELETION_SCHEDULE:DAILY|03:00}
   discard-after-days: ${EXPIRED_CASE_DELETION_DISCARD_AFTER_DAYS:30}
-  batch-size: ${EXPIRED_CASE_DELETION_BATCH_SIZE:5}
-  sql-limit: ${EXPIRED_CASE_DELETION_BATCH_SIZE:200}
+  batch-size: ${EXPIRED_CASE_DELETION_BATCH_SIZE:10}
+  sql-limit: ${EXPIRED_CASE_DELETION_SQL_LIMIT:200}
+  ccd-call-control-size: ${EXPIRED_CASE_DELETION_CCD_CALL_CONTROL_SIZE:5}
+  doc-call-control-size: ${EXPIRED_CASE_DELETION_DOC_CALL_CONTROL_SIZE:15}
 
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
