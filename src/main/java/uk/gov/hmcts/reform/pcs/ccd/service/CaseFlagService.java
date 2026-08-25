@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
-
+import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
 @Service
 @Slf4j
@@ -54,8 +54,8 @@ public class CaseFlagService {
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
-        return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
-                        CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
+        return mergeFlagDetails(incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
+                                CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
     }
 
     /**
@@ -100,7 +100,7 @@ public class CaseFlagService {
             .build();
 
         List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
-            reasonableAdjustmentFlags, null, partyEntity, CasePartyFlagEntity::new,
+            reasonableAdjustmentFlags, null, null, partyEntity, CasePartyFlagEntity::new,
             RefDataPolicy.CREATE_IF_ABSENT);
 
         partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
@@ -119,40 +119,78 @@ public class CaseFlagService {
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-            if (incomingParty.getDefendantFlags() != null
-                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+            mergePartyFlagCollections(incomingParty, partyEntity);
 
-                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
-                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new,
-                    RefDataPolicy.UPDATE_FROM_PAYLOAD);
-
-                partyEntity.getDefendantFlags().clear();
-                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
-
-                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
-                if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
-                    translationWAService.triggerTranslationTasksForFlaggingParty(partyEntity);
-                }
-            }
         }
     }
 
-    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
-                        PartyEntity partyEntity, Supplier<T> flagEntitySupplier, RefDataPolicy refDataPolicy) {
+    private void mergePartyFlagCollections(Party incomingParty, PartyEntity partyEntity) {
+        Flags incomingInternalFlags = incomingParty.getDefendantFlags();
+        Flags incomingExternalFlags = incomingParty.getDefendantFlagsExternal();
+
+        if (hasNoFlagDetails(incomingInternalFlags) && hasNoFlagDetails(incomingExternalFlags)) {
+            return;
+        }
+
+        List<CasePartyFlagEntity> existingFlags = List.copyOf(partyEntity.getDefendantFlags());
+
+        List<CasePartyFlagEntity> mergedFlags = new ArrayList<>();
+        mergedFlags.addAll(
+            mergeOrRetainPartyFlags(incomingInternalFlags, FlagVisibility.INTERNAL, existingFlags, partyEntity));
+        mergedFlags.addAll(
+            mergeOrRetainPartyFlags(incomingExternalFlags, FlagVisibility.EXTERNAL, existingFlags, partyEntity));
+
+        boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+        partyEntity.getDefendantFlags().clear();
+        partyEntity.getDefendantFlags().addAll(mergedFlags);
+
+        fireOnActiveWelshFlags(partyEntity, mergedFlags, welshCommsAlreadyActive);
+    }
+
+    private void fireOnActiveWelshFlags(PartyEntity partyEntity, List<CasePartyFlagEntity> mergedFlags,
+                                        boolean welshCommsAlreadyActive) {
+        // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
+        if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedFlags)) {
+            translationWAService.triggerTranslationTasksForFlaggingParty(partyEntity);
+        }
+    }
+
+    private List<CasePartyFlagEntity> mergeOrRetainPartyFlags(Flags incomingFlags, FlagVisibility visibility,
+                                                              List<CasePartyFlagEntity> existingFlags,
+                                                              PartyEntity partyEntity) {
+        if (hasNoFlagDetails(incomingFlags)) {
+            return existingFlags.stream()
+                .filter(existingFlag -> visibility == toFlagVisibility(existingFlag.getVisibility()))
+                .toList();
+        }
+
+        return mergeFlagDetails(incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new,
+                                RefDataPolicy.UPDATE_FROM_PAYLOAD);
+    }
+
+    private boolean hasNoFlagDetails(Flags flags) {
+        return flags == null || flags.getDetails() == null || flags.getDetails().isEmpty();
+    }
+
+    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
+                                                               PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
+                                                               Supplier<T> flagEntitySupplier,
+                                                               RefDataPolicy refDataPolicy) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
         Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
 
-        String flagVisibility = incomingCaseFlags.getVisibility() != null
-            ? incomingCaseFlags.getVisibility().getValue()
-            : FlagVisibility.INTERNAL.getValue();
+        // Caseworker events state the visibility explicitly; flags supplied from outside CCD carry it
+        // on the payload instead, and default to internal when absent.
+        FlagVisibility effectiveVisibility = visibility != null
+            ? visibility
+            : requireNonNullElse(incomingCaseFlags.getVisibility(), FlagVisibility.INTERNAL);
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
             FlagRefDataEntity flagRefDataEntity =
-                mergeFlagRefData(incomingFlagDetail, flagVisibility, refDataPolicy);
+                mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy);
             flagRefDataEntities.add(flagRefDataEntity);
 
             T flagEntity = flagEntitySupplier.get();
@@ -172,6 +210,7 @@ public class CaseFlagService {
             flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
             flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
+            flagEntity.setVisibility(effectiveVisibility.getValue());
 
             flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
             flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
@@ -223,7 +262,6 @@ public class CaseFlagService {
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
         if (incomingFlagDetail.getPath() != null) {
-            // Flags raised outside CCD arrive with path values but no ids
             String paths = incomingFlagDetail.getPath().stream()
                 .map(pathListValue -> requireNonNullElse(pathListValue.getId(), "")
                     + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
@@ -257,4 +295,3 @@ public class CaseFlagService {
         CREATE_IF_ABSENT
     }
 }
-
