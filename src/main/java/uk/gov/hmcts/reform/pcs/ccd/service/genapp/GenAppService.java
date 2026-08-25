@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
@@ -41,20 +41,20 @@ public class GenAppService {
     private static final String GENERAL_APPLICATION_FILENAME = "General Application";
 
     private final GenAppRepository genAppRepository;
-    private final DocumentService documentService;
     private final DocumentNameService documentNameService;
+    private final DocumentTypeMapper documentTypeMapper;
     private final DocumentRepository documentRepository;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
-                         DocumentService documentService,
                          DocumentNameService documentNameService,
+                         DocumentTypeMapper documentTypeMapper,
                          DocumentRepository documentRepository,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
-        this.documentService = documentService;
         this.documentNameService = documentNameService;
+        this.documentTypeMapper = documentTypeMapper;
         this.documentRepository = documentRepository;
         this.utcClock = utcClock;
     }
@@ -249,7 +249,7 @@ public class GenAppService {
                     .appendGenAppPostfix(originalFilename, genAppEntity, mainClaimEntity, applicantPartyId);
 
                 DocumentType type = uploadedDocument.getDocumentType() != null
-                    ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
+                    ? documentTypeMapper.mapToDocumentType(uploadedDocument.getDocumentType())
                     : null;
 
                 DocumentEntity documentEntity = buildDocumentEntity(uploadedDocument.getDocument(), pcsCaseEntity,

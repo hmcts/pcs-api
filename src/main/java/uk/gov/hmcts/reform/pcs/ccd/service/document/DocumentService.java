@@ -25,13 +25,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -59,6 +57,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
     private final DocumentNameService documentNameService;
+    private final DocumentTypeMapper documentTypeMapper;
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
 
@@ -169,7 +168,7 @@ public class DocumentService {
         return ListValueUtils.unwrapListItems(documents).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
-                .type(mapAdditionalDocumentTypeToDocumentType(
+                .type(documentTypeMapper.mapToDocumentType(
                         AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
                 .description(doc.getDescription())
                 .build())
@@ -215,32 +214,6 @@ public class DocumentService {
                     + "." + FilenameUtils.getExtension(uploadedFilename));
         });
 
-    }
-
-    public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
-        if (additionalType == null) {
-            return null;
-        }
-
-        return switch (additionalType) {
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
-            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
-            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
-            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
-            case EICR_REPORT -> DocumentType.EICR_REPORT;
-            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
-            case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
-            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
-            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
-            case POSSESSION_NOTICE -> DocumentType.POSSESSION_NOTICE;
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
-            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
-            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
-            case OTHER -> DocumentType.OTHER;
-        };
     }
 
     public List<DocumentEntity> linkAdditionalDocumentsToCase(
@@ -515,34 +488,6 @@ public class DocumentService {
         };
     }
 
-    private DocumentType mapLegalRepDocumentTypeToDocumentType(LegalRepDocumentType legalRepDocumentType) {
-        return switch (legalRepDocumentType) {
-            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
-            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
-            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
-            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
-            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
-            case OTHER -> DocumentType.OTHER;
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-        };
-    }
-
-    private DocumentType mapLegalRepDocumentTypeToDocumentType(LegalRepDocumentTypeWales legalRepDocumentTypeWales) {
-        return switch (legalRepDocumentTypeWales) {
-            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
-            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
-            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
-            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
-            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
-            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
-            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
-            case OTHER -> DocumentType.OTHER;
-            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
-        };
-    }
-
     @Builder
     @Data
     private static class DocumentHolder {
@@ -559,10 +504,17 @@ public class DocumentService {
     }
 
     public DocumentType resolveDocumentType(LegalRepDocument legalRepDoc) {
-        if (legalRepDoc.getLegalRepDocumentTypeWales() != null) {
-            return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentTypeWales());
+        if (legalRepDoc.getClaimantDocumentType() != null) {
+            return documentTypeMapper.mapToDocumentType(legalRepDoc.getClaimantDocumentType());
+        } else if (legalRepDoc.getClaimantDocumentTypeWales() != null) {
+            return documentTypeMapper.mapToDocumentType(legalRepDoc.getClaimantDocumentTypeWales());
+        } else if (legalRepDoc.getDefendantDocumentType() != null) {
+            return documentTypeMapper.mapToDocumentType(legalRepDoc.getDefendantDocumentType());
+        } else if (legalRepDoc.getDefendantDocumentTypeWales() != null) {
+            return documentTypeMapper.mapToDocumentType(legalRepDoc.getDefendantDocumentTypeWales());
+        } else {
+            return null;
         }
-        return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentType());
     }
 
     public void createDocumentEntitiesFromLegalRepDocuments(

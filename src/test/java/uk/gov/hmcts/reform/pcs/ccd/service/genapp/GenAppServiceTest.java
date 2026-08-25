@@ -41,7 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
@@ -82,9 +82,9 @@ class GenAppServiceTest {
     @Mock
     private GenAppRepository genAppRepository;
     @Mock
-    private DocumentService documentService;
-    @Mock
     private DocumentNameService documentNameService;
+    @Mock
+    private DocumentTypeMapper documentTypeMapper;
     @Mock(strictness = LENIENT)
     private DocumentRepository documentRepository;
     @Mock(strictness = LENIENT)
@@ -109,8 +109,8 @@ class GenAppServiceTest {
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
-        underTest = new GenAppService(genAppRepository, documentService, documentNameService,
-                                      documentRepository, utcClock
+        underTest = new GenAppService(genAppRepository, documentNameService,
+                                      documentTypeMapper, documentRepository, utcClock
         );
     }
 
@@ -366,7 +366,7 @@ class GenAppServiceTest {
             ))
                 .thenReturn(modifiedFilename);
 
-            AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.CERTIFICATE_OF_SERVICE;
+            AdditionalDocumentType additionalDocumentType = mock(AdditionalDocumentType.class);
             UploadedDocument uploadedDocument = UploadedDocument.builder()
                 .document(document)
                 .documentType(additionalDocumentType)
@@ -383,9 +383,8 @@ class GenAppServiceTest {
             List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
             when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
 
-            DocumentType expectedDocumentType = DocumentType.CERTIFICATE_OF_SERVICE;
-            when(documentService.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType))
-                .thenReturn(expectedDocumentType);
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(expectedDocumentType);
 
             // When
             underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);

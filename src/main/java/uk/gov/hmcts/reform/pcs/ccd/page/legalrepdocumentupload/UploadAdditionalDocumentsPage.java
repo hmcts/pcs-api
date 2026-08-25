@@ -2,14 +2,19 @@ package uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Component
 @AllArgsConstructor
@@ -46,14 +51,29 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         String pageKey = getPageKey();
         pageBuilder
             .page(pageKey)
-            .pageLabel("Upload additional documents")
+            .pageLabel("Upload additional documents zz")
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
+            .readonly(LegalRepDocumentUploadDetails::getPartyType, NEVER_SHOW)
             .readonly(LegalRepDocumentUploadDetails::getIsWales, NEVER_SHOW)
             .list(LegalRepDocumentUploadDetails::getLegalRepDocuments)
-            .mandatory(LegalRepDocument::getLegalRepDocumentType, "isWales = \"No\"")
-            .mandatory(LegalRepDocument::getLegalRepDocumentTypeWales, "isWales = \"Yes\"")
+            .mandatory(LegalRepDocument::getClaimantDocumentType, ShowConditions.and(
+                fieldEquals("lrDocUpload_PartyType", PartyType.CLAIMANT),
+                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.NO)
+            ))
+            .mandatory(LegalRepDocument::getClaimantDocumentTypeWales, ShowConditions.and(
+                fieldEquals("lrDocUpload_PartyType", PartyType.CLAIMANT),
+                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.YES)
+            ))
+            .mandatory(LegalRepDocument::getDefendantDocumentType, ShowConditions.and(
+                fieldEquals("lrDocUpload_PartyType", PartyType.DEFENDANT),
+                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.NO)
+            ))
+            .mandatory(LegalRepDocument::getDefendantDocumentTypeWales, ShowConditions.and(
+                fieldEquals("lrDocUpload_PartyType", PartyType.DEFENDANT),
+                fieldEquals("lrDocUpload_IsWales", YesOrNo.YES)
+            ))
             .mandatory(LegalRepDocument::getDocument)
             .mandatory(LegalRepDocument::getDescription)
             .done()

@@ -8,11 +8,12 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
@@ -97,18 +98,23 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 })
                 .toList();
 
-        caseData.getLegalRepDocumentUploadDetails().setValidCategories(
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = caseData.getLegalRepDocumentUploadDetails();
+        legalRepDocumentUploadDetails.setValidCategories(
             DynamicStringList.builder()
                 .listItems(validCategoryItems)
                 .build()
         );
 
         // By default, Main claim is always added
-        caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
-                                                                                       ? YesOrNo.YES : YesOrNo.NO);
+        legalRepDocumentUploadDetails
+            .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
+
+        Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
+        boolean isClaimantSolicitor = isClaimantSolicitor(userRoles);
+        legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
-        caseData.getLegalRepDocumentUploadDetails().setIsWales(isWalesClaim ? YesOrNo.YES : YesOrNo.NO);
+        legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));
 
         return caseData;
     }
@@ -216,9 +222,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                                           String organisationId) {
 
         Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
-
-        boolean isClaimantSolicitor = (userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole()));
-        boolean isDefendantSolicitor = (userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        boolean isClaimantSolicitor = isClaimantSolicitor(userRoles);
+        boolean isDefendantSolicitor = isDefendantSolicitor(userRoles);
         if (isClaimantSolicitor && isDefendantSolicitor) {
             throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
         }
@@ -233,6 +238,14 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
             }
         }
+    }
+
+    private static boolean isClaimantSolicitor(Collection<String> userRoles) {
+        return userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole());
+    }
+
+    private static boolean isDefendantSolicitor(Collection<String> userRoles) {
+        return userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole());
     }
 
     private static boolean anyDocumentIsNull(List<LegalRepDocument> legalRepDocuments) {

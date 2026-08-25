@@ -14,10 +14,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
@@ -36,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.time.LocalDateTime;
@@ -54,6 +56,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
 class LegalRepDocumentUploadTest extends BaseEventTest {
@@ -100,6 +103,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldBuildValidCategoriesWhenGenAppDatesExist() {
+            stubUserRoles(DEFENDANT_SOLICITOR);
             LocalDateTime laterDate = LocalDateTime.of(2026, 4, 25, 10, 0);
             LocalDateTime earlierDate = LocalDateTime.of(2026, 4, 20, 10, 0);
 
@@ -182,11 +186,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 );
 
             assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage())
-                .isEqualTo(YesOrNo.YES);
+                .isEqualTo(VerticalYesNo.YES);
+
         }
 
         @Test
         void shouldKeepOnlyMainClaimOrCounterclaimWhenNoGenAppDatesAvailable() {
+            stubUserRoles(DEFENDANT_SOLICITOR);
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -199,6 +205,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
+            stubUserRoles(DEFENDANT_SOLICITOR);
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -207,6 +214,57 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(categories.getListItems()).hasSize(1);
             assertThat(categories.getListItems().getFirst().getCode())
                 .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
+        }
+
+        @Test
+        void shouldSetWalesFlagForWales() {
+            // Given
+            stubUserRoles(DEFENDANT_SOLICITOR);
+            when(pcsCaseEntity.getLegislativeCountry()).thenReturn(WALES);
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getIsWales()).isEqualTo(VerticalYesNo.YES);
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = LegislativeCountry.class, names = "WALES", mode = EnumSource.Mode.EXCLUDE)
+        void shouldSetNotWalesFlagForOtherCountries(LegislativeCountry legislativeCountry) {
+            // Given
+            stubUserRoles(DEFENDANT_SOLICITOR);
+            when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);;
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getIsWales()).isEqualTo(VerticalYesNo.NO);
+        }
+
+        @Test
+        void shouldSetPartyTypeFieldForClaimant() {
+            // Given
+            stubUserRoles(CLAIMANT_SOLICITOR);
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getPartyType()).isEqualTo(PartyType.CLAIMANT);
+        }
+
+        @Test
+        void shouldSetPartyTypeFieldForDefendant() {
+            // Given
+            stubUserRoles(DEFENDANT_SOLICITOR);
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getPartyType()).isEqualTo(PartyType.DEFENDANT);
         }
     }
 
@@ -387,15 +445,16 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
         }
 
-        private void stubUserRoles(UserRole... roles) {
-            List<String> rolesList = Arrays.stream(roles)
-                .map(UserRole::getRole)
-                .toList();
+    }
 
-            UserRoles userRoles = mock(UserRoles.class);
-            when(userRoles.roles()).thenReturn(rolesList);
-            when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE)).thenReturn(userRoles);
-        }
+    private void stubUserRoles(UserRole... roles) {
+        List<String> rolesList = Arrays.stream(roles)
+            .map(UserRole::getRole)
+            .toList();
+
+        UserRoles userRoles = mock(UserRoles.class);
+        when(userRoles.roles()).thenReturn(rolesList);
+        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE)).thenReturn(userRoles);
     }
 
 }
