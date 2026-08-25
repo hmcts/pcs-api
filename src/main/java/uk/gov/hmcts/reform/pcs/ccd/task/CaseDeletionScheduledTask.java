@@ -50,8 +50,8 @@ public class CaseDeletionScheduledTask {
                                     @Value("${expired-case-deletion.discard-after-days}") int discardAfterDays,
                                     @Value("${expired-case-deletion.batch-size}") int batchSize,
                                     @Value("${expired-case-deletion.sql-limit}") int sqlLimit,
-                                    @Value("${expired-case-deletion.ccd-call-control-size:10}") int ccdControlSize,
-                                    @Value("${expired-case-deletion.doc-call-control-size:25}") int docControlSize,
+                                    @Value("${expired-case-deletion.ccd-call-control-size:5}") int ccdControlSize,
+                                    @Value("${expired-case-deletion.doc-call-control-size:15}") int docControlSize,
                                     CaseDeletionService caseDeletionService,
                                     CcdCaseDataDeletionService ccdCaseDataDeletionService,
                                     PcsCaseService pcsCaseService,
@@ -124,6 +124,9 @@ public class CaseDeletionScheduledTask {
 
     private void completeCaseDeletion(long caseRef) throws InterruptedException {
         log.debug("Performing case deletion tasks for case: {}", caseRef);
+        // strategy to minimise multiple threads waiting for DB resources all at the same time
+        Thread.sleep((caseRef % 5) * 400L);
+
         ccdCallThrottle.acquire();
         try {
             ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
