@@ -894,8 +894,8 @@ class NotificationServiceTest {
                     .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
             );
 
-            EmailNotificationResponse response = notificationService.
-                sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(organisationEntity,
+            EmailNotificationResponse response = notificationService
+                .sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(organisationEntity,
                                                                                      pcsCaseEntity,
                                                                                      defendantResponseEntity);
 
@@ -921,22 +921,23 @@ class NotificationServiceTest {
             OrganisationBasePersonalisation organisationBasePersonalisation = OrganisationBasePersonalisation.builder()
                 .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build();
 
-            when(notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity, pcsCaseEntity)).thenReturn(
-                CounterclaimPaymentRequiredPersonalisation.builder()
-                    .base(organisationBasePersonalisation)
-                    .paymentUrl("theUrl").build()
-            );
+            when(notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity, pcsCaseEntity))
+                .thenReturn(
+                    CounterclaimPaymentRequiredPersonalisation.builder()
+                        .base(organisationBasePersonalisation)
+                        .paymentUrl("theUrl").build()
+                );
 
-            EmailNotificationResponse response = notificationService.
-                sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(organisationEntity,
+            EmailNotificationResponse response = notificationService
+                .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(organisationEntity,
                                                                                      pcsCaseEntity,
                                                                                      defendantResponseEntity);
-
 
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
-            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP);
+            verify(templateConfiguration).getTemplateId(EmailTemplate
+                                                            .RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
         }
@@ -956,8 +957,8 @@ class NotificationServiceTest {
                     .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
             );
 
-            EmailNotificationResponse response = notificationService.
-                sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(organisationEntity,
+            EmailNotificationResponse response = notificationService
+                .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(organisationEntity,
                                                                                       pcsCaseEntity,
                                                                                       defendantResponseEntity);
 
@@ -965,7 +966,8 @@ class NotificationServiceTest {
             assertThat(response).isNotNull();
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
-            verify(templateConfiguration).getTemplateId(EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP);
+            verify(templateConfiguration).getTemplateId(EmailTemplate
+                                                            .RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
         }

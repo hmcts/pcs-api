@@ -174,7 +174,7 @@ class LegalRepSubmissionEventStrategyTest {
     @EnumSource(value = CounterClaimState.class, names = {"PENDING_REVIEW", "COUNTER_CLAIM_ISSUED"})
     void counterclaimInWrongState_notificationNotSent(CounterClaimState counterClaimState) {
         // given
-         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .status(counterClaimState)
             .build();
@@ -198,6 +198,10 @@ class LegalRepSubmissionEventStrategyTest {
     private void setupHappyPath(CounterClaimEntity counterClaimEntity) {
         // given
         UUID representedPartyId = UUID.randomUUID();
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntity(representedPartyId);
+        pcsCaseEntity.setCounterClaims(List.of(counterClaimEntity));
+
         String organisationId = "org";
 
         PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
@@ -224,9 +228,6 @@ class LegalRepSubmissionEventStrategyTest {
                 null,
                 false
             );
-
-        PcsCaseEntity pcsCaseEntity = pcsCaseEntity(representedPartyId);
-        pcsCaseEntity.setCounterClaims(List.of(counterClaimEntity));
 
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);

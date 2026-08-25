@@ -357,8 +357,8 @@ class NotificationPersonalisationFactoryTest {
             stubDefendantParty();
 
             OrganisationEntity organisationEntity = OrganisationEntity.builder().organisationName("HMCTS").build();
-            CounterclaimPaymentRequiredPersonalisation result = factory.
-                counterclaimPaymentRequired(organisationEntity, pcsCaseEntity);
+            CounterclaimPaymentRequiredPersonalisation result = factory
+                .counterclaimPaymentRequired(organisationEntity, pcsCaseEntity);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -376,8 +376,8 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
 
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
-            CounterclaimPaymentRequiredPersonalisation result = factory.
-                counterclaimPaymentRequired(response);
+            CounterclaimPaymentRequiredPersonalisation result = factory
+                .counterclaimPaymentRequired(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
