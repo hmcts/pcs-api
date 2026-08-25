@@ -29,6 +29,9 @@ import static java.util.stream.Collectors.toCollection;
 @Component
 public class CftlibConfig implements CFTLibConfigurer {
 
+    public static final String EXTERNAL_PROFESSIONAL_USER = "pcs-solicitor1@test.com";
+    public static final String LOCAL_IDAM_PASSWORD = "password";
+
     private final CCDDefinitionGenerator configWriter;
 
     public CftlibConfig(@Lazy CCDDefinitionGenerator configWriter) {
@@ -41,7 +44,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = new HashMap<String, List<String>>();
         users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
-        users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
+        users.put(EXTERNAL_PROFESSIONAL_USER, List.of("caseworker", "caseworker-pcs-solicitor"));
         users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
                                                               "caseworker-pcs-solicitor",  "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));

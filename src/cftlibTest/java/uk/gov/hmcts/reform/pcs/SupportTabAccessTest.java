@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
+import uk.gov.hmcts.reform.pcs.CftlibConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,9 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SupportTabAccessTest extends CftlibTest {
-
-    private static final String CLAIMANT_SOLICITOR_USERNAME = "pcs-solicitor1@test.com";
-    private static final String CFTLIB_USER_PASSWORD = "password";
 
     private static final String OWN_PARTY_SUPPORT = "OWN_PARTY_SUPPORT";
     private static final String OPPOSITE_PARTY_SUPPORT = "OPPOSITE_PARTY_SUPPORT";
@@ -67,7 +65,8 @@ class SupportTabAccessTest extends CftlibTest {
 
     @BeforeAll
     void setUp() {
-        claimantSolicitorToken = idamClient.getAccessToken(CLAIMANT_SOLICITOR_USERNAME, CFTLIB_USER_PASSWORD);
+        claimantSolicitorToken = idamClient.getAccessToken(CftlibConfig.EXTERNAL_PROFESSIONAL_USER,
+                                                          CftlibConfig.LOCAL_IDAM_PASSWORD);
     }
 
     @Test
