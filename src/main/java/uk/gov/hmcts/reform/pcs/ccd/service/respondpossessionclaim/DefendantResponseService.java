@@ -165,21 +165,17 @@ public class DefendantResponseService {
         PartyEntity defendantParty,
         String successLogMessage
     ) {
-        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
+        ClaimEntity claimRef = claimRepository.findClaimByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
-                return new IllegalStateException(
-                    String.format("No claim found for case: %d", caseReference)
-                );
+                return new IllegalStateException(String.format("No claim found for case: %d", caseReference));
             });
-
-        ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
         LocalDateTime submittedAt = LocalDateTime.now(utcClock);
 
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(claimRef, defendantParty, responses, submittedAt);
+            buildDefendantResponseEntity(claimRef, claimRef.getPcsCase(), defendantParty, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
         linkStatementOfTruth(responseEntity, responses, defendantParty);
@@ -233,14 +229,16 @@ public class DefendantResponseService {
         return userId;
     }
 
-    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
-                                                                PartyEntity partyRef,
-                                                                DefendantResponses responses,
-                                                                LocalDateTime submittedAt) {
+    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimEntity,
+                                                                 PcsCaseEntity pcsCase,
+                                                                 PartyEntity partyRef,
+                                                                 DefendantResponses responses,
+                                                                 LocalDateTime submittedAt) {
 
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
-            .claim(claimRef)
+            .claim(claimEntity)
             .party(partyRef)
+            .pcsCase(pcsCase)
             .status(DefendantResponseStatus.SUBMITTED)
             .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
@@ -263,8 +261,7 @@ public class DefendantResponseService {
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
             .build();
 
-        // link back to the case
-        claimRef.getPcsCase().addDefendantResponse(defendantResponse);
+        pcsCase.addDefendantResponse(defendantResponse);
 
         return defendantResponse;
     }
