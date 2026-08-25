@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -71,6 +72,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
+
+    @Mock
+    private SecurityContextService securityContextService;
+
     @Mock
     private OrganisationService organisationService;
     @Mock(strictness = LENIENT)
@@ -137,7 +142,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(earlierAdjournApp, laterAdjournApp, generalApp, generalAppWithNullDate));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -279,6 +284,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldReturnEmptyForUnmappedCategory() {
         assertThat(legalRepDocumentUpload.findGenAppsForCategory(
             PcsCaseEntity.builder().build(),
+            UUID.randomUUID(),
             ORGANISATION_ID,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
@@ -353,10 +359,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             Set<GenAppEntity> allGenApps = Set.of(mock(GenAppEntity.class), mock(GenAppEntity.class));
             List<GenAppEntity> visibleGenApps = List.of(visibleGenApp1, visibleGenApp2);
 
+            UUID currentUserId = UUID.randomUUID();
+            when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
+
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             when(pcsCaseEntity.getGenApps()).thenReturn(allGenApps);
-            when(genAppVisibilityService.getVisibleGenAppsToUser(allGenApps, ORGANISATION_ID))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(allGenApps, currentUserId, ORGANISATION_ID))
                 .thenReturn(visibleGenApps);
 
             PCSCase pcsCase = PCSCase.builder()

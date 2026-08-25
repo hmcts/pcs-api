@@ -70,6 +70,7 @@ public class DocumentsView {
         if (genAppEntity != null) {
             return genAppVisibilityService.isGenAppDocumentVisibleToUser(
                 genAppEntity,
+                userRoles.userId(),
                 organisationId,
                 userRoles.roles()
             );
@@ -77,7 +78,8 @@ public class DocumentsView {
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
             PartyEntity party = documentEntity.getParty();
-            return genAppVisibilityService.isWithoutNoticeVisibleToUser(party, organisationId, userRoles.roles());
+            return genAppVisibilityService
+                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
