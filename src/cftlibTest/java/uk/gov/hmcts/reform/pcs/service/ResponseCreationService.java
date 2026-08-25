@@ -20,13 +20,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RTCStatementOfT
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RecurrenceFrequency;
 
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
-import uk.gov.hmcts.reform.pcs.client.TestingSupportClient;
 
 import java.math.BigDecimal;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
-
-import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -45,7 +42,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ResponseCreationService extends CftlibTest {
+public class ResponseCreationService {
 
     private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
 
@@ -58,16 +55,6 @@ public class ResponseCreationService extends CftlibTest {
     private CcdClient ccdClient;
     @Autowired
     private IdamClient idamClient;
-    @Autowired
-    private CaseCreationService caseCreationService;
-    @Autowired
-    private CaseStateService caseStateService;
-    @Autowired
-    private FeePaymentService feePaymentService;
-    @Autowired
-    private AccessCodeService accessCodeService;
-    @Autowired
-    private TestingSupportClient testingSupportClient;
     @Autowired
     private CoreCaseDataApi ccdApi;
 
