@@ -175,6 +175,8 @@ export class ActionRegistry {
     ['verifyChangeLink', new CreateCaseAction()],
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
+    ['createPartialClaimDetails', new CreateCaseAction()],
+    ['resumePartialClaim', new CreateCaseAction()],  
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
