@@ -4,6 +4,6 @@ export const workAccess = {
   createNewBookingOption: 'Create new booking',
   viewTasksAndCasesOption: 'View tasks and cases',
   continueButton: 'Continue',
-  nextmainHeader: 'My work'
+  nextmainHeader: 'My work',
 };
  
