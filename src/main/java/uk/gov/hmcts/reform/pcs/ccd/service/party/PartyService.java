@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -26,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,6 +104,22 @@ public class PartyService {
         } else {
             return null;
         }
+    }
+
+    public DynamicList buildPartyDynamicList(ClaimEntity mainClaim, PartyRole... roles) {
+        Set<PartyRole> allowedRoles = Set.of(roles);
+        List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
+            .filter(claimPartyEntity -> allowedRoles.contains(claimPartyEntity.getRole()))
+            .map(claimPartyEntity -> DynamicListElement.builder()
+                .code(claimPartyEntity.getParty().getId())
+                .label("%s - %s".formatted(
+                    getPartyName(claimPartyEntity.getParty()),
+                    getPartyLabel(mainClaim, claimPartyEntity.getParty().getId())
+                ))
+                .build())
+            .toList();
+
+        return DynamicList.builder().listItems(listItems).build();
     }
 
     public PartyEntity getPrimaryClaimantPartyEntity(PcsCaseEntity pcsCaseEntity) {

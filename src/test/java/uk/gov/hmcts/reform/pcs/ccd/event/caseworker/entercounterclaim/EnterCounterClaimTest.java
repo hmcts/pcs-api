@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
@@ -68,43 +67,17 @@ class EnterCounterClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBuildSubmittingPartyListFromDefendantsOnly() {
+    void shouldPopulateSubmittingPartyListFromDefendantsOnly() {
         // Given
-        UUID claimantId = UUID.randomUUID();
-        UUID defendant1Id = UUID.randomUUID();
-        UUID defendant2Id = UUID.randomUUID();
-
-        PartyEntity claimant = PartyEntity.builder()
-            .id(claimantId)
-            .firstName("John")
-            .lastName("Smith")
-            .nameKnown(VerticalYesNo.YES)
-            .build();
-
-        PartyEntity defendant1 = PartyEntity.builder()
-            .id(defendant1Id)
-            .firstName("Jane")
-            .lastName("Doe")
-            .nameKnown(VerticalYesNo.YES)
-            .build();
-
-        PartyEntity defendant2 = PartyEntity.builder()
-            .id(defendant2Id)
-            .nameKnown(VerticalYesNo.NO)
-            .build();
-
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
-        when(claimEntity.getClaimParties()).thenReturn(List.of(
-            ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build()
-        ));
 
-        when(partyService.getPartyName(defendant1)).thenReturn("Jane Doe");
-        when(partyService.getPartyName(defendant2)).thenReturn("Person unknown");
-        when(partyService.getPartyLabel(claimEntity, defendant1Id)).thenReturn("Defendant 1");
-        when(partyService.getPartyLabel(claimEntity, defendant2Id)).thenReturn("Defendant 2");
+        DynamicList partyList = DynamicList.builder()
+            .listItems(List.of(DynamicListElement.builder().code(UUID.randomUUID()).label("Jane Doe - Defendant 1")
+                .build()))
+            .build();
+        when(partyService.buildPartyDynamicList(claimEntity, PartyRole.DEFENDANT))
+            .thenReturn(partyList);
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -112,12 +85,7 @@ class EnterCounterClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        List<DynamicListElement> listItems = result.getCounterClaimSubmittingPartyList().getListItems();
-
-        assertThat(listItems).containsExactly(
-            DynamicListElement.builder().code(defendant1Id).label("Jane Doe - Defendant 1").build(),
-            DynamicListElement.builder().code(defendant2Id).label("Person unknown - Defendant 2").build()
-        );
+        assertThat(result.getCounterClaimSubmittingPartyList()).isEqualTo(partyList);
     }
 
     @Test

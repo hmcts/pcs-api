@@ -8,8 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -26,8 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.TypeOfCount
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -68,22 +64,9 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        caseData.setCounterClaimSubmittingPartyList(buildDefendantPartyList(mainClaim));
+        caseData.setCounterClaimSubmittingPartyList(
+            partyService.buildPartyDynamicList(mainClaim, PartyRole.DEFENDANT));
         return caseData;
-    }
-
-    private DynamicList buildDefendantPartyList(ClaimEntity mainClaim) {
-        List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
-            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.DEFENDANT)
-            .map(claimPartyEntity -> DynamicListElement.builder()
-                .code(claimPartyEntity.getParty().getId())
-                .label("%s - %s".formatted(
-                    partyService.getPartyName(claimPartyEntity.getParty()),
-                    partyService.getPartyLabel(mainClaim, claimPartyEntity.getParty().getId())
-                ))
-                .build())
-            .toList();
-        return DynamicList.builder().listItems(listItems).build();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
