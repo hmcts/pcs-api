@@ -41,4 +41,10 @@ public class DraftCaseDataEntity {
 
     private UUID partyId;
 
+    /**
+     * When set, this (not {@link #idamUserId}) identifies the draft - same org the case's
+     * CaseAccessGroups derive from, so a draft reaches exactly the people the case does.
+     */
+    private String organisationId;
+
 }

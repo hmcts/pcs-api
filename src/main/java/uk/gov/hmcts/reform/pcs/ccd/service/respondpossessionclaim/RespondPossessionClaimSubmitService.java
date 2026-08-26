@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,7 @@ public class RespondPossessionClaimSubmitService {
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
     private final TranslationWAService translationWAService;
+    private final OrganisationService organisationService;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -87,7 +89,8 @@ public class RespondPossessionClaimSubmitService {
             draftCaseDataService.deleteUnsubmittedCaseData(
                 caseReference,
                 respondPossessionClaim,
-                defendantParty.getId()
+                defendantParty.getId(),
+                organisationService.getOrganisationIdForCurrentUser()
             );
         } else {
             draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
