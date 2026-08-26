@@ -66,6 +66,7 @@ final class AccessGrants {
         grants.putAll(DEFENDANT, Permission.CR);
         grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_CLAIMANT, Permission.CR);
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
