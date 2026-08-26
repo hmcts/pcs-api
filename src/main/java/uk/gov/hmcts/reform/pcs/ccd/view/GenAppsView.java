@@ -33,7 +33,7 @@ public class GenAppsView {
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         Collection<GenAppEntity> genAppEntities = pcsCaseEntity.getGenApps();
         if (genAppEntities == null || genAppEntities.isEmpty()) {
             pcsCase.setGenApps(List.of());
@@ -48,6 +48,7 @@ public class GenAppsView {
             .filter(genAppEntity -> genAppVisibilityService.isGenAppVisibleToUser(
                 genAppEntity,
                 userRoles.userId(),
+                organisationId,
                 userRoles.roles()
             ))
             .map(this::createListValue)
