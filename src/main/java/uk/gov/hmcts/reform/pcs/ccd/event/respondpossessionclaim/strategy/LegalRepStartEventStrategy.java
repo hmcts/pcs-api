@@ -32,13 +32,19 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        // return defendants who have submitted
+        if (this.legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
+            List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference,
+                                                                                               organisationId, false);
+            return legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendantPartiesLinkedAndActive);
+        }
 
-        List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference, organisationId);
 
+        // return drafts that have not been submitted
+        List<PartyEntity> defendantPartiesLinkedAndActive = this.loadAndValidateDefendants(caseReference,
+                                                                                           organisationId, true);
         if (defendantPartiesLinkedAndActive.size() == 1) {
             PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
-            legalRepPartySelectionService.validateResponseNotAlreadySubmitted(caseReference, defendant.getId());
-
             return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
                                                                   defendantPartiesLinkedAndActive,
                                                                   organisationId);
@@ -48,11 +54,19 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
                                                       caseReference, organisationId);
     }
 
-    private List<PartyEntity> loadAndValidateDefendants(long caseReference, String organisationId) {
+    /**
+     * Returns defendant parties that do not have a submitted response for the organisation of the current user.
+     *
+     * @param caseReference the case reference
+     * @param validate if true and there are no defendants then an exception will be thrown,
+     *           if false no exception will be thrown
+     * @return the list of defendant parties
+     */
+    private List<PartyEntity> loadAndValidateDefendants(long caseReference, String organisationId, boolean validate) {
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
-                                                                            organisationId);
+                                                                            organisationId, validate);
     }
 
 }
