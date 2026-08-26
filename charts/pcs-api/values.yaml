@@ -2,6 +2,9 @@ java:
   applicationPort: 3206
   memoryRequests: '2Gi'
   memoryLimits: '2.5Gi'
+  # devMode (AAT staging / previews) reads these dev* keys, not the pair above
+  devmemoryRequests: '2Gi'
+  devmemoryLimits: '2Gi'
   image: 'hmctsprod.azurecr.io/pcs/api:latest'
   ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: pcs

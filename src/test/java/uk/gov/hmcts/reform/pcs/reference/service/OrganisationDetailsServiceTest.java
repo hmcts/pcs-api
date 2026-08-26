@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -124,39 +122,35 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("Should throw OrganisationDetailsException when Feign client throws exception")
-    void shouldThrowOrganisationDetailsExceptionWhenFeignClientThrowsException() {
+    @DisplayName("Should return null when Feign client throws exception")
+    void shouldReturnNullWhenFeignClientThrowsException() {
         // Given
-        RuntimeException runtimeException = new RuntimeException("Feign client error");
-
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenThrow(runtimeException);
+            .thenThrow(new RuntimeException("Feign client error"));
 
-        // When & Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
-            .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Unexpected error retrieving organisation details")
-            .hasCause(runtimeException);
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
     }
 
     @Test
-    @DisplayName("Should throw OrganisationDetailsException when general exception occurs")
-    void shouldThrowOrganisationDetailsExceptionWhenGeneralExceptionOccurs() {
+    @DisplayName("Should return null when general exception occurs")
+    void shouldReturnNullWhenGeneralExceptionOccurs() {
         // Given
-        RuntimeException generalException = new RuntimeException("Connection failed");
-
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
-            .thenThrow(generalException);
+            .thenThrow(new RuntimeException("Connection failed"));
 
-        // When & Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
-            .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Unexpected error retrieving organisation details")
-            .hasCause(generalException);
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
     }
 
     @Test
@@ -234,8 +228,8 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("Should wrap FeignException as OrganisationDetailsException with feign cause")
-    void shouldWrapFeignExceptionAsOrganisationDetailsException() {
+    @DisplayName("Should return null when FeignException is thrown")
+    void shouldReturnNullWhenFeignExceptionThrown() {
         // Given
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(500);
@@ -246,32 +240,31 @@ class OrganisationDetailsServiceTest {
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(feignEx);
 
-        // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
-            .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Failed to retrieve organisation details")
-            .hasCause(feignEx);
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
 
+        // Then
+        assertThat(result).isNull();
         verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
     }
 
     @Test
-    @DisplayName("Should wrap unexpected RuntimeException as OrganisationDetailsException")
-    void shouldWrapUnexpectedExceptionAsOrganisationDetailsException() {
+    @DisplayName("Should return null when unexpected RuntimeException is thrown")
+    void shouldReturnNullWhenUnexpectedExceptionThrown() {
         // Given — anything other than FeignException must hit the generic catch (Exception) branch.
         RuntimeException unexpected = new RuntimeException("token generator blew up");
         when(authTokenGenerator.generate()).thenThrow(unexpected);
 
-        // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationDetails(USER_ID))
-            .isInstanceOf(OrganisationDetailsException.class)
-            .hasMessage("Unexpected error retrieving organisation details")
-            .hasCause(unexpected);
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
     }
 
     @Test
-    @DisplayName("getOrganisationName should propagate OrganisationDetailsException when underlying call throws Feign")
-    void getOrganisationNameShouldPropagateOrganisationDetailsExceptionOnFeignFailure() {
+    @DisplayName("getOrganisationName should return null when underlying call throws FeignException")
+    void getOrganisationNameShouldReturnNullOnFeignFailure() {
         // Given
         FeignException feignEx = mock(FeignException.class);
         when(feignEx.status()).thenReturn(503);
@@ -281,9 +274,10 @@ class OrganisationDetailsServiceTest {
         when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
             .thenThrow(feignEx);
 
-        // When / Then
-        assertThatThrownBy(() -> organisationDetailsService.getOrganisationName(USER_ID))
-            .isInstanceOf(OrganisationDetailsException.class)
-            .hasCause(feignEx);
+        // When
+        String result = organisationDetailsService.getOrganisationName(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
     }
 }
