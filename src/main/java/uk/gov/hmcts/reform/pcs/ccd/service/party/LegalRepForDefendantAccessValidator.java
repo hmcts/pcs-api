@@ -20,15 +20,30 @@ public class LegalRepForDefendantAccessValidator {
     private final DefendantResponseRepository defendantResponseRepository;
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
+        return this.validateAndGetDefendants(caseEntity, organisationId, true);
+    }
+
+
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId,
+                                                      boolean validate) {
+        long caseReference = caseEntity.getCaseReference();
+        List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
+        return findMatchingLinkedDefendants(defendants, organisationId, caseReference, validate);
+    }
+
+    /* master
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         return findMatchingLinkedDefendants(defendants, organisationId, caseReference);
     }
+     */
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
         String organisationId,
-        long caseReference
+        long caseReference,
+        boolean validate
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
@@ -46,14 +61,13 @@ public class LegalRepForDefendantAccessValidator {
                 caseReference, party.getId()))
             .toList();
 
-        if (linkedDefendants.isEmpty()) {
+        if (validate && linkedDefendants.isEmpty()) {
             log.error(
                 "Access denied: User {} is not linked as a defendant on case {}",
                 organisationId,
                 caseReference
             );
             throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
-
         }
         return linkedDefendants;
     }
