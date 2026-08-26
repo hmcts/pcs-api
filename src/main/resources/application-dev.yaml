@@ -1,3 +1,8 @@
 spring:
   flyway:
     locations: classpath:db/migration,classpath:db/testdata
+
+ccd:
+  decentralised-runtime:
+    noc:
+      enabled: true

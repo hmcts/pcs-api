@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -47,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
@@ -132,7 +135,15 @@ class PCSCaseViewTest {
     @Mock
     private FeatureFlagView featureFlagView;
     @Mock
+    private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
+    @Mock
     private HearingView hearingView;
+
+    @Mock
+    private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
+
+    @Mock
+    private OrganisationService organisationService;
 
     private PCSCaseView underTest;
 
@@ -148,7 +159,8 @@ class PCSCaseViewTest {
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    defendantResponseView, featureFlagView, hearingView
+                                    defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
+                                    hearingView, legalRepresentativeSummaryService, organisationService
         );
     }
 
@@ -260,6 +272,40 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldDeriveCaseAccessGroupsFromTheClaimantOrganisation() {
+        // Given
+        PartyEntity claimant = PartyEntity.builder()
+            .organisationId("J1XJ9VJ")
+            .organisationProfileId("SOLICITOR_PROFILE")
+            .claimCreator(true)
+            .build();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(claimant));
+        when(modelMapper.map(claimant, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getCaseAccessGroups())
+            .extracting(group -> group.getValue().getCaseAccessGroupId())
+            .containsExactly("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:J1XJ9VJ");
+    }
+
+    @Test
+    void shouldSetCaseAccessGroupsEmptyWhenNoPartyCarriesAnOrganisation() {
+        // Given
+        PartyEntity party = PartyEntity.builder().build();
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(party));
+        when(modelMapper.map(party, Party.class)).thenReturn(mock(Party.class));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getCaseAccessGroups()).isEmpty();
+    }
+
+    @Test
     void shouldMapLegislativeCountry() {
         // Given
         LegislativeCountry expectedLegislativeCountry = LegislativeCountry.SCOTLAND;
@@ -300,13 +346,17 @@ class PCSCaseViewTest {
 
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
+        // given
+        String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -319,9 +369,11 @@ class PCSCaseViewTest {
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseListView).setCaseFields(pcsCase);
-        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, organisationId);
         verify(featureFlagView).setCaseFields(pcsCase);
         verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                                   DEFAULT_STATE, organisationId);
     }
 
     @Test
@@ -333,6 +385,16 @@ class PCSCaseViewTest {
 
         // Then
         verify(caseFieldsView).setCaseFields(pcsCase);
+    }
+
+    @Test
+    void shouldDeduplicateCaseFileDocumentsAfterSettingCaseTabs() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(caseTabView).setCaseTabFields(pcsCase);
+        verify(caseFileDocumentDeduplicationService).removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
     }
 
     @Test

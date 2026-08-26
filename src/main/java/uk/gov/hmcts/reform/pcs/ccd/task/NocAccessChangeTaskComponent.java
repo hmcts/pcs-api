@@ -6,7 +6,6 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import java.time.Duration;
-import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +60,6 @@ public class NocAccessChangeTaskComponent {
                     legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
                             caseReference,
                             taskData.getPartyId(),
-                            UUID.fromString(taskData.getUserId()),
                             taskData.getOrganisationDetailsResponse());
 
                     return new CompletionHandler.OnCompleteRemove<>();

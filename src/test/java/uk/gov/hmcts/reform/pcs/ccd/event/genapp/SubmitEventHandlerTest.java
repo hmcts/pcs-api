@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -87,7 +88,7 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppFeeCalculator genAppFeeCalculator;
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private OrganisationRepository organisationRepository;
     @Mock
     private ConfirmationScreenFactory confirmationScreenFactory;
     @Mock
@@ -100,6 +101,8 @@ class SubmitEventHandlerTest {
     private GenAppWaTaskService genAppWaTaskService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private OrganisationService organisationService;
     @Captor
     private ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor;
 
@@ -111,9 +114,9 @@ class SubmitEventHandlerTest {
 
         underTest = new SubmitEventHandler(pcsCaseService, partyService, securityContextService, genAppService,
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
-                                           legalRepresentativeRepository, confirmationScreenFactory,
+                                           organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper
+                                           genAppWaTaskService, objectMapper, organisationService
         );
     }
 
@@ -211,9 +214,11 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService, never()).createTranslationTaskForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+                verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
             }
         }
 
@@ -266,11 +271,11 @@ class SubmitEventHandlerTest {
                 .xuiGenAppRequest(genAppRequest)
                 .build();
 
-            UUID currentUserId = UUID.randomUUID();
-            when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
+            String organisationId = "Org";
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-            when(legalRepresentativeRepository
-                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(organisationId, representedPartyUuid))
                 .thenReturn(false);
 
             // When
@@ -282,9 +287,11 @@ class SubmitEventHandlerTest {
 
         private void stubLegalRepForParty(UUID representedPartyUuid) {
             UUID currentUserId = UUID.randomUUID();
+            String orgId = "org";
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
-            when(legalRepresentativeRepository
-                     .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyUuid))
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+            when(organisationRepository
+                     .isOrganisationLinkedToPartyAndActive(orgId, representedPartyUuid))
                 .thenReturn(true);
         }
 
@@ -341,6 +348,7 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
+            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
         }
 
         @Test
