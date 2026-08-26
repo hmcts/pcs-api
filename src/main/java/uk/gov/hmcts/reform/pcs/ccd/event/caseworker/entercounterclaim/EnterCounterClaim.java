@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CounterClaimAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CourtPermission;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.HelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.TypeOfCounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -40,6 +42,8 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final CounterClaimService counterClaimService;
     private final CourtPermission courtPermission;
     private final TypeOfCounterClaim typeOfCounterClaim;
+    private final CounterClaimAmount counterClaimAmount;
+    private final HelpWithFees helpWithFees;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -55,7 +59,9 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(courtPermission)
-            .add(typeOfCounterClaim);
+            .add(typeOfCounterClaim)
+            .add(counterClaimAmount)
+            .add(helpWithFees);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
