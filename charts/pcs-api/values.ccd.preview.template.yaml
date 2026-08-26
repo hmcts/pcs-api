@@ -152,6 +152,9 @@ ccd:
     nodejs:
       image: hmctsprod.azurecr.io/ccd/admin-web:latest
       ingressHost: admin-web-${SERVICE_FQDN}
+      # chart default is 512Mi in devMode; admin-web is OOMKilled at that on every PCS preview
+      devmemoryRequests: 512Mi
+      devmemoryLimits: 1Gi
       environment:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
         ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
