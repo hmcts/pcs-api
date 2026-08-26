@@ -33,14 +33,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.params.ParameterizedTest.ARGUMENT_SET_NAME_PLACEHOLDER;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
@@ -65,6 +68,8 @@ class PartyServiceTest {
     private PartyRepository partyRepository;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private OrganisationService organisationService;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -80,7 +85,7 @@ class PartyServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PartyService(partyRepository, addressMapper);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService);
     }
 
     @Nested
@@ -675,6 +680,59 @@ class PartyServiceTest {
             assertThat(throwable)
                 .isInstanceOf(NullPointerException.class)
                 .hasMessage("Claimant must be provided");
+        }
+
+        @Test
+        void shouldKeepTheOrganisationCapturedAtCreationWhenSubmitCannotReadIt() {
+            // Given
+            PartyEntity initialisedClaimant = new PartyEntity();
+            initialisedClaimant.setOrganisationId(ORG_ID);
+            initialisedClaimant.setOrganisationProfileId("SOLICITOR_PROFILE");
+            initialisedClaimant.setClaimCreator(true);
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(initialisedClaimant));
+
+            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
+            when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
+                .claimantName("Claimant name")
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .build());
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build());
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, null);
+
+            // Then
+            assertThat(initialisedClaimant.getOrganisationId()).isEqualTo(ORG_ID);
+            assertThat(initialisedClaimant.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
+        }
+
+        @Test
+        void shouldCompleteTheClaimantStubRatherThanCreateASecondClaimant() {
+            // Given
+            PartyEntity stub = new PartyEntity();
+            stub.setOrganisationId(ORG_ID);
+            stub.setOrganisationProfileId("SOLICITOR_PROFILE");
+            stub.setClaimCreator(true);
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(stub));
+
+            when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
+                .claimantName("Claimant name")
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .build());
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build());
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+
+            // Then
+            verify(partyRepository).save(partyEntityCaptor.capture());
+            assertThat(partyEntityCaptor.getValue()).isSameAs(stub);
         }
 
         @Test
@@ -1622,6 +1680,51 @@ class PartyServiceTest {
             boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
 
             assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    class CreateClaimantStub {
+
+        @Test
+        void shouldAddClaimantCarryingOnlyTheOrganisation() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
+
+            underTest.createClaimantStub(caseEntity);
+
+            assertThat(caseEntity.getParties()).singleElement().satisfies(party -> {
+                assertThat(party.getOrganisationId()).isEqualTo(ORG_ID);
+                assertThat(party.getOrganisationProfileId()).isEqualTo("SOLICITOR_PROFILE");
+                assertThat(party.getFirstName()).isNull();
+                assertThat(party.getClaimParties()).isEmpty();
+            });
+        }
+
+        @Test
+        void shouldRejectCaseCreationWithoutAnOrganisation() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+
+            assertThatThrownBy(() ->
+                underTest.createClaimantStub(caseEntity))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Organisation must be provided");
+
+            assertThat(caseEntity.getParties()).isEmpty();
+        }
+
+        @Test
+        void shouldRejectCaseCreationWithoutOrganisationProfileId() {
+            PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
+            when(organisationService.getOrgProfileId(any())).thenReturn(null);
+
+            assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Organisation profile ID must be provided");
+
+            assertThat(caseEntity.getParties()).isEmpty();
         }
     }
 }
