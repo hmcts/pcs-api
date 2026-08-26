@@ -69,6 +69,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name(EVENT_NAME)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());
