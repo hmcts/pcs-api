@@ -52,7 +52,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Case management - Case Party Management e2e Journey @nightly', async () => {
-  test('Case management - Add a Party to the Case - Defendant @CM @regression', async () => {
+  test('Case management - Add a Party to the Case - Defendant @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
@@ -96,7 +96,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
   });
 
-  test('Case management - Add a Party to the Case - Claimant @CM @regression', async () => {
+  test('Case management - Add a Party to the Case - Claimant @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
@@ -194,7 +194,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
   });
 
-  test('Case management - update party to the case - Defendants details @CM @regression', async () => {
+  test('Case management - update party to the case - Defendants details @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     let party= allPartyDetails[1];
     await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
@@ -224,7 +224,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
 
-  test('Case management - update party to the case- Claimant details @CM @regression', async () => {
+  test('Case management - update party to the case- Claimant details @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
     await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
