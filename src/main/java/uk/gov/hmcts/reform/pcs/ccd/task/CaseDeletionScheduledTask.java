@@ -89,7 +89,7 @@ public class CaseDeletionScheduledTask {
             List<Long> failed = new ArrayList<>();
             while (processed < totalCases) {
                 failed.addAll(processCases(cases.subList(processed, min(processed + batchSize, totalCases))));
-                processed += min(processed + batchSize, totalCases);
+                processed += batchSize;
             }
             if (!failed.isEmpty()) {
                 log.warn("{} case(s) failed deletion and will be retried on next sweep: {}", failed.size(), failed);

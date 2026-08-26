@@ -107,12 +107,6 @@ public class PcsCaseService {
     }
 
     @Transactional
-    public void deleteCase(PcsCaseEntity pcsCaseEntity) {
-        pcsCaseRepository.delete(pcsCaseEntity);
-        log.debug("Deleted case: {}", pcsCaseEntity.getId());
-    }
-
-    @Transactional
     public List<String> getDocumentUrls(long caseReference) {
         List<DocumentEntity> documents = loadCase(caseReference).getDocuments();
         if (!CollectionUtils.isEmpty(documents)) {
