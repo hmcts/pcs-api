@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toCollection;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -26,12 +25,6 @@ public class PartySupportOwnershipResolver {
     private final OrganisationService organisationService;
 
     public boolean isOwnedByUser(PartyEntity partyEntity, UUID authenticatedUserId) {
-        return isOwnedByUser(partyEntity, authenticatedUserId,
-                             organisationService::getOrganisationIdForCurrentUser);
-    }
-
-    private boolean isOwnedByUser(PartyEntity partyEntity, UUID authenticatedUserId,
-                                  Supplier<String> authenticatedOrganisationId) {
         if (authenticatedUserId == null || partyEntity == null) {
             return false;
         }
@@ -40,42 +33,74 @@ public class PartySupportOwnershipResolver {
             return true;
         }
 
-        if (isOwnedByUserOrganisation(partyEntity, authenticatedOrganisationId)) {
-            return true;
+        if (!requiresOrganisationLookup(partyEntity)) {
+            return false;
         }
 
-        return isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
+        String authenticatedOrganisationId = organisationService.getOrganisationIdForCurrentUser();
+
+        return isOwnedByUserOrganisation(partyEntity, authenticatedOrganisationId)
+            || isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
     }
 
     public Set<UUID> resolveRepresentedPartyIds(Collection<PartyEntity> partyEntities, UUID authenticatedUserId) {
-        if (partyEntities == null || partyEntities.isEmpty()) {
+        if (partyEntities == null || partyEntities.isEmpty() || authenticatedUserId == null) {
             return Set.of();
         }
 
-        Supplier<String> sharedOrganisationIdLookup = new SingleLookupOrganisationIdSupplier();
+        boolean organisationLookupRequired = partyEntities.stream()
+            .filter(Objects::nonNull)
+            .filter(partyEntity -> !authenticatedUserId.equals(partyEntity.getIdamId()))
+            .anyMatch(this::requiresOrganisationLookup);
+
+        String authenticatedOrganisationId = organisationLookupRequired
+            ? organisationService.getOrganisationIdForCurrentUser()
+            : null;
 
         return partyEntities.stream()
-            .filter(partyEntity -> isOwnedByUser(partyEntity, authenticatedUserId, sharedOrganisationIdLookup))
+            .filter(Objects::nonNull)
+            .filter(partyEntity -> isOwnedByUser(
+                partyEntity,
+                authenticatedUserId,
+                authenticatedOrganisationId
+            ))
             .map(PartyEntity::getId)
             .filter(Objects::nonNull)
             .collect(toCollection(LinkedHashSet::new));
     }
 
+    private boolean isOwnedByUser(PartyEntity partyEntity,
+                                  UUID authenticatedUserId,
+                                  String authenticatedOrganisationId) {
+        if (authenticatedUserId.equals(partyEntity.getIdamId())) {
+            return true;
+        }
+
+        return isOwnedByUserOrganisation(partyEntity, authenticatedOrganisationId)
+            || isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
+    }
+
+    private boolean requiresOrganisationLookup(PartyEntity partyEntity) {
+        if (isNotBlank(partyEntity.getOrganisationId())) {
+            return true;
+        }
+
+        return partyEntity.getClaimPartyOrganisationList().stream()
+            .anyMatch(claimPartyOrganisation ->
+                          YesOrNo.YES.equals(claimPartyOrganisation.getActive())
+                              && claimPartyOrganisation.getOrganisation() != null);
+    }
+
     private boolean isOwnedByUserOrganisation(PartyEntity partyEntity,
-                                              Supplier<String> authenticatedOrganisationId) {
+                                              String authenticatedOrganisationId) {
         String partyOrganisationId = partyEntity.getOrganisationId();
 
         return isNotBlank(partyOrganisationId)
-            && partyOrganisationId.equals(authenticatedOrganisationId.get());
+            && partyOrganisationId.equals(authenticatedOrganisationId);
     }
 
-    /**
-     * Representation is held against the organisation acting for the party rather than against an
-     * individual representative, so a professional user acts for a party when their organisation holds a
-     * current link to it. Links that have been ended are excluded.
-     */
     private boolean isRepresentedByUserOrganisation(PartyEntity partyEntity,
-                                                    Supplier<String> authenticatedOrganisationId) {
+                                                    String authenticatedOrganisationId) {
         List<OrganisationEntity> activeOrganisations =
             partyEntity.getClaimPartyOrganisationList().stream()
                 .filter(claimPartyOrganisation -> YesOrNo.YES.equals(claimPartyOrganisation.getActive()))
@@ -87,27 +112,9 @@ public class PartySupportOwnershipResolver {
             return false;
         }
 
-        String organisationId = authenticatedOrganisationId.get();
-
-        return isNotBlank(organisationId)
+        return isNotBlank(authenticatedOrganisationId)
             && activeOrganisations.stream()
-                .anyMatch(organisation ->
-                              organisationId.equals(organisation.getOrganisationId()));
-    }
-
-    private final class SingleLookupOrganisationIdSupplier implements Supplier<String> {
-
-        private boolean resolved;
-        private String organisationId;
-
-        @Override
-        public String get() {
-            if (!resolved) {
-                organisationId = organisationService.getOrganisationIdForCurrentUser();
-                resolved = true;
-            }
-
-            return organisationId;
-        }
+            .anyMatch(organisation ->
+                          authenticatedOrganisationId.equals(organisation.getOrganisationId()));
     }
 }
