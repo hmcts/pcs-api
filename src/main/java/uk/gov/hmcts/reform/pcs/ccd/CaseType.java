@@ -125,7 +125,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildCaseDetailsTab(builder);
 
-        builder.tab("caseFileView", "Case File View")
+        builder.tab("caseFileView", "Case file view")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
@@ -144,14 +144,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);
 
-        builder.tab("serviceRequest", "Service Request")
+        builder.tab("serviceRequest", "Service request")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
 
-        builder.tab("caseLinks", "Linked Cases")
+        builder.tab("caseLinks", "Linked cases")
             .forRoles(INTERNAL_TAB_ROLES)
             .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
             .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
@@ -186,7 +186,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.tab("caseParties", "Case Parties")
+        builder.tab("caseParties", "Case parties")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
@@ -238,7 +238,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private void buildCaseDetailsTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        builder.tab("caseDetails", "Case Details")
+        builder.tab("caseDetails", "Case details")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case details", null, "# Case details")
             .field("detailsTab_ClaimDetails")
