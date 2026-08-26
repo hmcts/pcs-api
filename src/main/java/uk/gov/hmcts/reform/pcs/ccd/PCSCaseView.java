@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
+import uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
@@ -131,6 +132,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
+
+        // Set unconditionally so stale copies can't keep groups the case no longer derives.
+        pcsCase.setCaseAccessGroups(
+            CaseAccessGroupsUtil.deriveCaseAccessGroups(submittedCase.pcsCaseEntity().getParties()));
 
         // Only the canonical PCS case type is indexed into the shared global_search index.
         if (!CaseType.isSuffixedCaseType()) {
