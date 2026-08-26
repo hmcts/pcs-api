@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Builder
@@ -62,5 +63,14 @@ public class CounterClaim {
         typeParameterOverride = "Party"
     )
     private List<ListValue<Party>> counterClaimAgainst;
+
+    @CCD
+    private VerticalYesNo courtPermissionGranted;
+
+    @CCD
+    private LocalDate permissionOrderDate;
+
+    @CCD
+    private LocalDate claimReceivedDate;
 
 }
