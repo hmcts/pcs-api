@@ -112,6 +112,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
 
+    @CCD(searchable = false, typeOverride = TextArea)
+    @External
+    private String makeOrderPayload;
+
     @CCD(
         searchable = false
     )
