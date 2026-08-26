@@ -147,7 +147,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         //resend request to get 409 error.
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(409);
-        apiSteps.theResponseBodyContainsAString("message", "This access code is already linked to a user.");
+        apiSteps.theResponseBodyContainsAString("message", "Access code already used");
 
     }
 
