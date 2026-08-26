@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -46,6 +47,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 
 @Component("genAppSubmitEventHandler")
 @RequiredArgsConstructor
+@Slf4j
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
@@ -70,7 +72,19 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PCSCase caseData = eventPayload.caseData();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData);
+
+        PartyEntity applicantParty;
+        try {
+            applicantParty = getApplicantParty(caseReference, caseData);
+        } catch (PartyNotFoundException | IllegalArgumentException ex) {
+            // currentRepresentedPartyId is client-supplied case data - the server sets it from a
+            // case+org scoped list at start, so a value that no longer resolves is bad input, not
+            // a server fault. Return a validation error rather than a 500 (which CCD reports as a
+            // 502, indistinguishable from an outage).
+            log.warn("Applicant party could not be resolved on genapp submit for case {}: {}",
+                caseReference, ex.getMessage());
+            return errorResponse("The selected party is not available on this case");
+        }
 
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
 
