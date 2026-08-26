@@ -141,8 +141,7 @@ class DefendantResponseServiceTest {
     }
 
     private void stubClaimLookup() {
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(claimEntity));
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
     }
 
@@ -462,7 +461,7 @@ class DefendantResponseServiceTest {
     void shouldThrowExceptionWhenClaimNotFound() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -479,61 +478,6 @@ class DefendantResponseServiceTest {
             .hasMessage(String.format("No claim found for case: %d", CASE_REFERENCE));
 
         verify(defendantResponseRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldUseGetReferenceByIdForOptimalPerformance() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        // When
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then - Verify JPA proxy pattern used
-        verify(claimRepository).getReferenceById(CLAIM_ID);
-
-        // Verify ID-only queries used (not findById which loads full entity)
-        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
-    }
-
-    @Test
-    void shouldFollowOptimalExecutionOrder() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then - Verify execution order matches optimal pattern:
-        // 1. Get current user ID
-        verify(securityContextService).getCurrentUserId();
-
-        // 2. Get IDs only (minimal lock time)
-        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
-
-        // 3. Get JPA proxies (no database query)
-        verify(claimRepository).getReferenceById(CLAIM_ID);
-
-        // 4. Save (only locks new row)
-        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 
     @ParameterizedTest
