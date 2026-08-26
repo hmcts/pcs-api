@@ -14,6 +14,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLIC
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
@@ -65,6 +66,9 @@ final class AccessGrants {
         grants.putAll(DEFENDANT, Permission.CR);
         grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_CLAIMANT, Permission.CR);
+        grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
         return grants;
     }
