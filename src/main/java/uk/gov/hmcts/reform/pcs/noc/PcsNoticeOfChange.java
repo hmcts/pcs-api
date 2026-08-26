@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.noc;
 
+import static java.util.Objects.isNull;
+
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -42,29 +44,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
-    private static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
-    private static final String CHALLENGE_ID = "NoCChallenge";
+    static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
+    static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
+    static final String CHALLENGE_ID = "NoCChallenge";
 
-    private static final int EXPECTED_ANSWER_COUNT = 2;
-    private static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
+    static final int EXPECTED_ANSWER_COUNT = 2;
+    static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
 
-    private static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
+    static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
 
-    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
+    static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
         + "defendant as there is more than one defendant with the same name on this case."
         + " Contact the issuing court for help.";
 
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
+    static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
         + " to this case. "
         + "You or a colleague are already representing this client on this case."
         + " Return to case list.";
 
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+    static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+    static final String ORG_NOT_FOUND_CODE = "organisationNotFound";
+    static final String ORG_NOT_FOUND_MESSAGE = "No organisation was found for the current user.";
 
-    private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
+    static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
 
-    private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
+    static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
         + "currently disabled";
 
 
@@ -113,6 +117,9 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
         PartyEntity matchedParty = matches.getFirst();
         OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+        if (isNull(organisation)) {
+            return NocAnswersResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
         if (organisationRepository.isOrganisationLinkedToPartyAndActive(
             organisation.getOrganisationIdentifier(),
@@ -133,6 +140,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         UUID currentUserId = currentUserId(context);
         OrganisationDetailsResponse organisationDetails = organisationDetailsService.getOrganisationDetails(
             currentUserId.toString());
+
+        if (isNull(organisationDetails)) {
+            return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
         NocAccessChangePlan accessChangePlan = planAccessChanges(
             pcsCase,

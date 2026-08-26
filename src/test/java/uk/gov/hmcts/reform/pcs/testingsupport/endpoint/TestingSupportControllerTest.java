@@ -408,6 +408,32 @@ class TestingSupportControllerTest {
     }
 
     @Test
+    void linkDefendantSolicitorToPartyWhenOrganisationDetailsNullReturnsInternalServerError() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+        UUID userUid = UUID.randomUUID();
+        when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+        when(user.getUserDetails()).thenReturn(userInfo);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(null);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
     void linkDefendantSolicitorToPartyReleaseFeatureFlagNotSet() {
         // given
         long caseReference = 111111111111L;

@@ -70,6 +70,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
@@ -430,6 +431,11 @@ public class TestingSupportController {
 
         OrganisationDetailsResponse organisationDetails = organisationDetailsService
             .getOrganisationDetails(userDetails.getUid());
+
+        if (isNull(organisationDetails)) {
+            log.error("No organisation details found for userId: {}", userDetails.getUid());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
