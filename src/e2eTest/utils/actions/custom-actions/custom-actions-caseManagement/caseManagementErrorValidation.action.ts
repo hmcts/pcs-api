@@ -2,8 +2,9 @@ import { Page } from '@playwright/test';
 import { performAction } from '@utils/controller-caseManagement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
+  addHearing, cancelHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
-  enterGenAppConsentAndNotice, enterGenAppHearingDate, selectDocument, uploadADocument,
+  enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
@@ -21,6 +22,10 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationApplicationFeePage', () => this.errorValidationApplicationFeePage(errorFlag as string)],
       ['errorValidationUploadADocumentPage', () => this.errorValidationUploadADocumentPage(errorFlag as string)],
       ['errorValidationApplicationConsentAndNotice', () => this.errorValidationApplicationConsentAndNotice(errorFlag as string)],
+      ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
+      ['errorValidationEnterAddAHearingPage', () => this.errorValidationEnterAddAHearingPage(errorFlag as string)],
+      ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
+      ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -250,7 +255,81 @@ export class ErrorValidationAction implements IAction {
         button: enterGenAppConsentAndNotice.continueButton
       });
     }
+  };
+
+  private async errorValidationEnterAddAHearingPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption1,
+        question: addHearing.typeOfHearingQuestion,
+        option:  addHearing.typeOfHearingOption[0],
+        button: addHearing.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.four,
+        inputArray: addHearing.errorValidationField.errorDropDown,
+        dropQn: addHearing.wordingForHearingNoticeTextLabel,
+        option: addHearing.wordingForHearingHiddenOption,
+        button: addHearing.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.five,
+        inputArray: addHearing.errorValidationField.errorDateField,
+        header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        header1: addHearing.thereIsProbErrorMessageHeader,
+        question: addHearing.whenIsTheHearingQuestion,
+        label1: addHearing.dayTextLabel,
+        label2: addHearing.monthTextLabel,
+        label3: addHearing.yearTextLabel,
+        button: addHearing.continueButton
+      });
+
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.two,
+        inputArray: addHearing.errorValidationField.errorRadioOption2,
+        question: addHearing.hearingNoticeQuestion,
+        option:  addHearing.hearingNoticeNoRadioOption,
+        button: addHearing.continueButton
+      });
+
+      await performAction('inputErrorValidation', {
+        validationType: addHearing.errorValidationType.seven,
+        inputArray: addHearing.errorValidationField.errorMoneyField,
+        // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label1: addHearing.daysTextLabel,
+        label: addHearing.hoursTextLabel,
+        labelMulti :addHearing.minutesTextLabel,
+        button: addHearing.continueButton
+      });
+    }
   }
+  private async errorValidationManageHearing(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: manageHearing.errorValidationType.two,
+        inputArray: manageHearing.errorValidationField.errorRadioOption,
+        question: manageHearing.doYouWantToAddQuestion,
+        option: manageHearing.addAHearingRadioOption,
+        button: manageHearing.continueButton
+      });
+    }
+  }
+
+  private async errorValidationCancelHearing(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: cancelHearing.errorValidationType.one,
+        inputArray: cancelHearing.errorValidationField.errorTextField,
+        header: cancelHearing.eventCouldNotBeCreatedErrorMessageHeader,
+        label: cancelHearing.enterReasonForCancellationLabel,
+        button: cancelHearing.continueButton
+
+      });
+    }
+  }
+
   private async errorValidationUploadGenAppsFile(validationReq: string) {
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
@@ -260,5 +339,4 @@ export class ErrorValidationAction implements IAction {
       });
     }
   }
-
 }

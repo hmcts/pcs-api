@@ -53,6 +53,7 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     private LegislativeCountry legislativeCountry;
 
+
     @Enumerated(EnumType.STRING)
     @Column(name = "claimant_type")
     private ClaimantType claimantType;
@@ -112,6 +113,11 @@ public class PcsCaseEntity {
         orphanRemoval = true)
     @Builder.Default
     private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private List<HearingEntity> hearings = new ArrayList<>();
 
     private Integer regionId;
 
@@ -181,6 +187,11 @@ public class PcsCaseEntity {
     public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
         reviewDates.add(reviewDate);
         reviewDate.setPcsCase(this);
+    }
+
+    public void addHearing(HearingEntity hearing) {
+        hearings.add(hearing);
+        hearing.setPcsCase(this);
     }
 
 }

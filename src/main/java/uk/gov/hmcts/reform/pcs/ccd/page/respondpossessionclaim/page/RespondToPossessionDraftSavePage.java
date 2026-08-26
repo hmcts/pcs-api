@@ -49,6 +49,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
             .defendantResponses(response.getDefendantResponses())
+            .defendantFlags(response.getDefendantFlags())
             .build();
 
         PCSCase partialUpdate = PCSCase.builder()

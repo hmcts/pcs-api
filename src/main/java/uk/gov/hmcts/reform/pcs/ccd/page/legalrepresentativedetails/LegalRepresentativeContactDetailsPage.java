@@ -79,7 +79,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         different office from the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .label("contactPreferences-address-registered", """
+            .label("legalRepresentativeDetails-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your registered address is:
                     </h3>
@@ -101,7 +101,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                      different address with My HMCTS.
                 </p>
                 """, ORG_ADDRESS_NOT_FOUND)
-            .label("contactPreferences-address-missing", """
+            .label("legalRepresentativeDetails-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve your service address that’s linked to your My
                         HMCTS account

@@ -70,6 +70,7 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllClaimants()).isNull();
         assertThat(pcsCase.getAllDefendants()).isNull();
         assertThat(pcsCase.getAllUnderlesseeOrMortgagees()).isNull();
+        assertThat(pcsCase.getAllLitigationFriends()).isNull();
     }
 
     @Test
@@ -138,13 +139,15 @@ class PartiesViewTest {
         PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
         PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
         PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
+        PartyEntity litigationFriend = buildParty(UUID.randomUUID(), "Frank", "F", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
             buildClaimPartyEntity(defendant1, PartyRole.DEFENDANT),
             buildClaimPartyEntity(defendant2, PartyRole.DEFENDANT),
             buildClaimPartyEntity(underlessee1, PartyRole.UNDERLESSEE_OR_MORTGAGEE),
-            buildClaimPartyEntity(underlessee2, PartyRole.UNDERLESSEE_OR_MORTGAGEE)
+            buildClaimPartyEntity(underlessee2, PartyRole.UNDERLESSEE_OR_MORTGAGEE),
+            buildClaimPartyEntity(litigationFriend, PartyRole.LITIGATION_FRIEND, claimant)
         ));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -166,6 +169,11 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
             .extracting(lv -> lv.getValue().getFirstName())
             .containsExactly("Dave", "Eve");
+
+        assertThat(pcsCase.getAllLitigationFriends()).hasSize(1);
+        assertThat(pcsCase.getAllLitigationFriends().getFirst().getValue().getFirstName()).isEqualTo("Frank");
+        assertThat(pcsCase.getAllLitigationFriends().getFirst().getValue().getActingForPartyId())
+            .isEqualTo(claimant.getId().toString());
     }
 
     @Test
@@ -507,12 +515,18 @@ class PartiesViewTest {
     }
 
     private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role) {
+        return buildClaimPartyEntity(partyEntity, role, null);
+    }
+
+    private ClaimPartyEntity buildClaimPartyEntity(PartyEntity partyEntity, PartyRole role,
+                                                    PartyEntity actingForParty) {
         ClaimPartyId id = new ClaimPartyId();
         id.setPartyId(partyEntity.getId());
         return ClaimPartyEntity.builder()
             .id(id)
             .party(partyEntity)
             .role(role)
+            .actingForParty(actingForParty)
             .build();
     }
 }

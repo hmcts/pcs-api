@@ -54,8 +54,10 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         }
 
         Long caseReference = eventPayload.caseReference();
+        PCSCase pcsCase = eventPayload.caseData();
         UUID representedPartyId = selectedPartyRetriever
             .getCurrentRepresentedPartyId(eventPayload.caseData())
+            .or(() -> selectedPartyRetriever.getSelectedPartyId(pcsCase))
             .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
 
         String organisationId = organisationService.getOrganisationIdForCurrentUser();

@@ -1,7 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -21,25 +22,37 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PartyService {
+
+    private static final String PERSON_UNKNOWN_NAME = "Person unknown";
 
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
+    private final OrganisationService organisationService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
                                  String organisationIdForCurrentUser) {
-        PartyEntity claimant = createClaimant(pcsCase, organisationIdForCurrentUser);
+        String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
+        PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
+        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -73,10 +86,17 @@ public class PartyService {
     }
 
     public String getPartyName(PartyEntity partyEntity) {
+        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
+            return PERSON_UNKNOWN_NAME;
+        }
         if (StringUtils.isNotBlank(partyEntity.getOrgName())) {
             return partyEntity.getOrgName();
         } else {
-            return partyEntity.getFirstName() + " " + partyEntity.getLastName();
+            String partyName = Stream.of(partyEntity.getFirstName(), partyEntity.getLastName())
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining(" "));
+
+            return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
         }
     }
 
@@ -141,15 +161,41 @@ public class PartyService {
             ));
     }
 
-    private PartyEntity createClaimant(PCSCase pcsCase, String organisationIdForCurrentUser) {
+    /**
+     * Shell-case claimant party, marked claim creator so CaseAccessGroups derive during draft.
+     * Both org values are required - without them no group derives and nobody can open the case.
+     */
+    public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
+        OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        String organisationId = organisationService.getOrganisationId(organisationDetails);
+        String organisationProfileId = organisationService.getOrgProfileId(organisationDetails);
+
+        Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
+        if (StringUtils.isBlank(organisationProfileId)) {
+            throw new IllegalArgumentException(
+                "Organisation profile ID must be provided to create a case for organisation " + organisationId);
+        }
+        PartyEntity claimantParty = new PartyEntity();
+        claimantParty.setOrganisationId(organisationId);
+        claimantParty.setOrganisationProfileId(organisationProfileId);
+        claimantParty.setClaimCreator(true);
+        pcsCaseEntity.addParty(claimantParty);
+    }
+
+    private Optional<PartyEntity> findClaimantStub(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getParties().stream()
+            .filter(PartyEntity::isClaimCreator)
+            .findFirst();
+    }
+
+    private void populateClaimant(PartyEntity claimantParty, PCSCase pcsCase,
+                                  String organisationIdForCurrentUser, String orgProfileId) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
         Objects.requireNonNull(claimantInformation, "Claimant must be provided");
 
-        PartyEntity claimantParty = new PartyEntity();
-
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setOrganisationId(organisationIdForCurrentUser);
+        setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
@@ -161,7 +207,8 @@ public class PartyService {
             : claimantContactPreferences.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
-
+        claimantParty.setNameKnown(VerticalYesNo.YES);
+        
         VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);
@@ -170,8 +217,26 @@ public class PartyService {
         }
 
         partyRepository.save(claimantParty);
+    }
 
-        return claimantParty;
+    /**
+     * Keeps creation-time values: rd-professional returns null on blips, and an unconditional
+     * assign would wipe the org - leaving nobody able to open the case.
+     */
+    private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
+                                         String orgProfileId) {
+        if (organisationId != null) {
+            claimantParty.setOrganisationId(organisationId);
+        } else {
+            log.warn("No organisation ID returned for the current user, keeping the one stored at case "
+                         + "creation for party {}", claimantParty.getId());
+        }
+        if (StringUtils.isNotBlank(orgProfileId)) {
+            claimantParty.setOrganisationProfileId(orgProfileId);
+        } else {
+            log.warn("No organisation profile ID returned for the current user, keeping the one stored "
+                         + "at case creation for party {}", claimantParty.getId());
+        }
     }
 
     private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
