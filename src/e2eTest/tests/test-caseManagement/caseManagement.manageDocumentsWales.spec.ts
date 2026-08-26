@@ -161,7 +161,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
       });
     });
     
-  test('Case management - Manage documents - Upload Wales Journey @CM @regression', async () => {
+  test('Case management - Manage documents - Upload Wales Journey @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);    
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
