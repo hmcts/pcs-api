@@ -72,9 +72,14 @@ class ManageFlagsTest extends BaseEventTest {
      * happens to call.
      */
     @Test
-    void shouldBeAvailableFromPendingCaseIssuedOnwards() {
+    void shouldBeAvailableBeforeTheCaseIsIssued() {
         assertThat(configuredEvent.getPreState())
-            .contains(State.PENDING_CASE_ISSUED)
+            .contains(State.PENDING_CASE_ISSUED);
+    }
+
+    @Test
+    void shouldBeAvailableInTheRequiredStatesAndNeverInDraft() {
+        assertThat(configuredEvent.getPreState())
             .containsExactlyInAnyOrder(
                 State.PENDING_CASE_ISSUED,
                 State.CASE_ISSUED,
