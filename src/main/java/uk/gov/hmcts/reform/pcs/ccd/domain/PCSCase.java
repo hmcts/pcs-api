@@ -213,6 +213,12 @@ public class PCSCase {
     )
     private Integer regionId;
 
+    @CCD(
+        label = "Court Type ID"
+    )
+    @JsonProperty("court_type_id")
+    private Integer courtTypeId;
+
     @CCD(access = {InternalCaseFlagAccess.class},
         label = "Party")
     private List<ListValue<Party>> parties;
