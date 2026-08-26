@@ -281,6 +281,26 @@ class PartySupportOwnershipResolverTest {
     }
 
     @Test
+    void shouldNotLookUpTheOrganisationWhenNoPartyHoldsOrganisationData() {
+        PartyEntity self = unrepresentedParty();
+        self.setIdamId(USER_ID);
+        PartyEntity unrepresented = unrepresentedParty();
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(self, unrepresented)), USER_ID);
+
+        assertThat(representedPartyIds).containsExactly(self.getId());
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldNotLookUpTheOrganisationForAnUnrepresentedParty() {
+        assertThat(underTest.isOwnedByUser(unrepresentedParty(), USER_ID)).isFalse();
+
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
     void shouldLookUpTheUsersOrganisationOnceForTheWholeCase() {
         PartyEntity firstParty = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
         PartyEntity secondParty = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
