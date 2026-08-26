@@ -9,10 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
@@ -28,15 +33,18 @@ import java.util.function.Supplier;
 public class DraftCaseDataService {
 
     private final DraftCaseDataRepository draftCaseDataRepository;
+    private final OrganisationService organisationService;
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
+                                OrganisationService organisationService,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
                                 SecurityContextService securityContextService) {
         this.draftCaseDataRepository = draftCaseDataRepository;
+        this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
@@ -46,17 +54,69 @@ public class DraftCaseDataService {
         return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
     }
 
+    /**
+     * Org users share one draft; citizens keep their own. Keyed on the caller's org,
+     * so another organisation can never read it.
+     */
+    private Optional<String> currentUserOrganisationId() {
+        if (currentUserIsCitizen()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.ofNullable(organisationService.requireOrganisationIdForCurrentUser());
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            throw new UnsubmittedDataException(
+                "Could not determine the organisation this draft belongs to", ex);
+        }
+    }
+
+    /** Citizens are not held in rd-professional, so the lookup could only ever answer "none". */
+    private boolean currentUserIsCitizen() {
+        UserInfo userInfo = securityContextService.getCurrentUserDetails();
+        return userInfo != null
+            && userInfo.getRoles() != null
+            && userInfo.getRoles().contains(UserRole.CITIZEN.getRole());
+    }
+
+    private Optional<DraftCaseDataEntity> findDraft(long caseReference, EventId eventId, UUID userId,
+                                                    Optional<String> organisationId) {
+        return organisationId
+            .map(orgId -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId)
+                .or(() -> adoptUserKeyedDraft(caseReference, eventId, userId, orgId)))
+            .orElseGet(() -> draftCaseDataRepository
+                .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId));
+    }
+
+    /** Pre-org-keying drafts carry no org and would be missed; the first open adopts the row. */
+    private Optional<DraftCaseDataEntity> adoptUserKeyedDraft(long caseReference, EventId eventId, UUID userId,
+                                                              String organisationId) {
+        return draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId)
+            .map(draft -> {
+                draft.setOrganisationId(organisationId);
+                return draftCaseDataRepository.save(draft);
+            });
+    }
+
+    /** Counts a not-yet-adopted draft too, so the dashboard matches what opening will find. */
+    private boolean draftExists(long caseReference, EventId eventId, UUID userId,
+                                Optional<String> organisationId) {
+        return organisationId
+            .map(orgId -> draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId))
+            .orElse(false)
+            || draftCaseDataRepository
+                .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId);
+    }
+
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         return getUnsubmittedCaseDataInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -80,15 +140,11 @@ public class DraftCaseDataService {
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         return hasUnsubmittedCaseDataInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
-            () -> draftCaseDataRepository
-                .existsByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> draftExists(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -110,10 +166,7 @@ public class DraftCaseDataService {
         );
     }
 
-    /**
-    * For dashboard display only. A respond draft may exist after START with only
-    * claimant-populated contact details; that is not treated as "in progress".
-    */
+    /** Dashboard only: a post-START draft with only claimant contact details isn't "in progress". */
     public boolean hasMeaningfulRespondDraft(long caseReference, EventId eventId) {
         if (!hasUnsubmittedCaseData(caseReference, eventId)) {
             return false;
@@ -130,16 +183,12 @@ public class DraftCaseDataService {
                                              EventId eventId) {
 
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         saveUnsubmittedEventDataInternal(
             eventData,
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> findDraft(caseReference, eventId, userId, organisationId)
         );
     }
 
@@ -265,15 +314,13 @@ public class DraftCaseDataService {
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
         patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
             patchEventDataJson,
-            () -> draftCaseDataRepository
-                .findByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference, eventId, userId
-                ),
+            () -> findDraft(caseReference, eventId, userId, organisationId),
             () -> createNewDraft(
-                caseReference, eventId, userId, patchEventDataJson
+                caseReference, eventId, userId, patchEventDataJson, organisationId
             )
         );
     }
@@ -290,15 +337,15 @@ public class DraftCaseDataService {
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
+        Optional<String> organisationId = currentUserOrganisationId();
 
         deleteUnsubmittedCaseDataInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
-            () -> draftCaseDataRepository
-                .deleteByCaseReferenceAndEventIdAndIdamUserId(
-                    caseReference,
-                    eventId,
-                    userId
-                )
+            () -> organisationId.ifPresentOrElse(
+                orgId -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(caseReference, eventId, orgId),
+                () -> draftCaseDataRepository
+                    .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId))
         );
     }
 
@@ -364,6 +411,14 @@ public class DraftCaseDataService {
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
+        return newDraft;
+    }
+
+    /** Org identifies the draft when present; idamUserId always records who last touched it. */
+    private DraftCaseDataEntity createNewDraft(long caseReference, EventId eventId, UUID userId, String caseData,
+                                               Optional<String> organisationId) {
+        DraftCaseDataEntity newDraft = createNewDraft(caseReference, eventId, userId, caseData);
+        organisationId.ifPresent(newDraft::setOrganisationId);
         return newDraft;
     }
 

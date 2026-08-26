@@ -42,8 +42,7 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
 
-    public PcsCaseEntity createCase(long caseReference,
-                                    AddressUK propertyAddress,
+    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
@@ -53,6 +52,8 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
+
+        partyService.createClaimantStub(pcsCaseEntity);
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

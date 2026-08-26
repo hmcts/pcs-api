@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
-import lombok.AllArgsConstructor;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -8,8 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -19,19 +23,34 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 @Service
 @Slf4j
-@AllArgsConstructor
 public class OrganisationService {
+
+    private static final String GENERIC_ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
+
+    /**
+     * The draft journey resolves the org on every operation; cached so each page isn't an
+     * rd-professional round trip. TTL short enough to pick up an org move within a minute.
+     */
+    private static final Duration ORGANISATION_CACHE_TTL = Duration.ofMinutes(1);
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
-
     /**
-     * Retrieves the organisation name for the current user from the security context.
-     * Gets the user ID from security context and fetches the organisation name
-     * from the rd-professional API using PRD admin token and S2S token.
-     *
-     * @return The organisation name, or null if unable to retrieve
+     * {@link Optional#empty()} = genuinely no organisation (citizens stop re-asking). Failed
+     * lookups throw and are not cached - a blip must not be remembered as "no organisation".
      */
+    private final Cache<String, Optional<String>> organisationIdCache;
+
+    public OrganisationService(SecurityContextService securityContextService,
+                               OrganisationDetailsService organisationDetailsService) {
+        this.securityContextService = securityContextService;
+        this.organisationDetailsService = organisationDetailsService;
+        this.organisationIdCache = Caffeine.newBuilder()
+            .expireAfterWrite(ORGANISATION_CACHE_TTL)
+            .build();
+    }
+
+    /** Organisation name for the current user, or null if unable to retrieve. */
     public String getOrganisationNameForCurrentUser() {
         try {
             UUID userId = resolveProfessionalUserId();
@@ -56,11 +75,7 @@ public class OrganisationService {
         }
     }
 
-    /**
-     * Retrieves the organisation identifier for the current user.
-     *
-     * @return The organisation identifier, or null if it cannot be resolved
-     */
+    /** Organisation identifier for the current user, or null if it cannot be resolved. */
     public String getOrganisationIdForCurrentUser() {
         try {
             UUID userId = resolveProfessionalUserId();
@@ -69,13 +84,93 @@ public class OrganisationService {
                 return null;
             }
 
-            return organisationDetailsService.getOrganisationIdentifier(userId.toString());
+            return organisationIdCache.get(
+                userId.toString(),
+                id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+            ).orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             return null;
         }
+    }
+
+    /**
+     * The same lookup, but a failure is raised rather than reported as "no organisation". Callers
+     * that key stored data on the organisation need the two kept apart: treating an unavailable
+     * rd-professional as "this user has no firm" writes data the firm cannot see.
+     *
+     * @return The organisation identifier, or null if the user genuinely has none
+     */
+    public String requireOrganisationIdForCurrentUser() {
+        UUID userId = resolveProfessionalUserId();
+
+        if (userId == null) {
+            return null;
+        }
+
+        return organisationIdCache.get(
+            userId.toString(),
+            id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+        ).orElse(null);
+    }
+
+    /**
+     * The whole organisation record for the current user, so a caller needing more than one field
+     * can read them from a single call rather than one round trip each.
+     *
+     * @return The organisation details, or null if they cannot be retrieved
+     */
+    public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
+        try {
+            UUID userId = resolveProfessionalUserId();
+
+            if (userId == null) {
+                return null;
+            }
+
+            return organisationDetailsService.getOrganisationDetails(userId.toString());
+
+        } catch (OrganisationDetailsException | SecurityContextException ex) {
+            log.error("Error retrieving organisation details from rd-professional API. Error: {}",
+                ex.getMessage(), ex);
+            return null;
+        }
+    }
+
+    /**
+     * Reads the organisation identifier off an already-fetched record.
+     *
+     * @return The organisation identifier, or null if there is none
+     */
+    public String getOrganisationId(OrganisationDetailsResponse organisationDetails) {
+        return organisationDetails == null ? null : organisationDetails.getOrganisationIdentifier();
+    }
+
+    /**
+     * The organisation profile PRM keys the group access catalogue on. Every organisation also
+     * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
+     * single profile that identifies an access type.
+     *
+     * @return The organisation profile, or null if there is none
+     */
+    public String getOrgProfileId(OrganisationDetailsResponse organisationDetails) {
+        if (organisationDetails == null || organisationDetails.getOrganisationProfileIds() == null) {
+            return null;
+        }
+        return organisationDetails.getOrganisationProfileIds().stream()
+            .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
+            .findFirst().orElse(null);
+    }
+
+    /**
+     * Fetches the record and resolves the profile from it in one call.
+     *
+     * @return The organisation profile for the current user, or null if it cannot be resolved
+     */
+    public String getOrgProfileIdForCurrentUser() {
+        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
     }
 
     /**
