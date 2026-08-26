@@ -25,7 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SupportReviewRoles.SUPPORT_REVIEW_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.reviewSupportRequest;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewSupportRequestTest extends BaseEventTest {
@@ -112,7 +112,7 @@ class ReviewSupportRequestTest extends BaseEventTest {
     @Test
     void shouldBeAvailableFromPendingCaseIssuedOnwards() {
         assertThat(configuredEvent.getPreState())
-            .containsExactlyInAnyOrder(CASE_FLAG_STATES)
+            .containsExactlyInAnyOrder(reviewSupportRequest())
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 

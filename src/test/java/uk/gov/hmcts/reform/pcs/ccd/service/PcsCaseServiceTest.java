@@ -48,7 +48,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -561,11 +560,11 @@ class PcsCaseServiceTest {
         underTest.patchCaseFlags(CASE_REFERENCE, pcsCase);
 
         // Then
-        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), anyBoolean());
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
     }
 
     @Test
-    void shouldMergeSupportFlagsRestrictedToOwnPartyWhenRequested() {
+    void shouldMergeSupportFlagsForTheAuthenticatedUser() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
         UUID authenticatedUserId = UUID.randomUUID();
@@ -578,32 +577,11 @@ class PcsCaseServiceTest {
         PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
 
         // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, true);
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
 
         // Then
         verify(caseFlagService).mergePartySupportFlags(
-            partySupport, pcsCaseEntity.getParties(), authenticatedUserId, true);
-    }
-
-    @Test
-    void shouldMergeSupportFlagsWithoutOwnPartyRestrictionWhenNotRequested() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = stubFindCase();
-        UUID authenticatedUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
-
-        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
-            .id(UUID.randomUUID().toString())
-            .value(PartySupport.builder().build())
-            .build());
-        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
-
-        // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, false);
-
-        // Then
-        verify(caseFlagService).mergePartySupportFlags(
-            partySupport, pcsCaseEntity.getParties(), authenticatedUserId, false);
+            partySupport, pcsCaseEntity.getParties(), authenticatedUserId);
     }
 
     @Test
@@ -613,10 +591,10 @@ class PcsCaseServiceTest {
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase, true);
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
 
         // Then
-        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), anyBoolean());
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
     }
 
     @Test
@@ -624,7 +602,7 @@ class PcsCaseServiceTest {
         // When
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                                                          () -> underTest.patchSupportFlags(
-                                                             CASE_REFERENCE, null, true));
+                                                             CASE_REFERENCE, null));
 
         // Then
         assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");

@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,6 +109,29 @@ class SupportReviewServiceTest {
             .build();
 
         assertThat(underTest.buildRequestedSupport(pcsCase)).isEmpty();
+    }
+
+    @Test
+    void shouldSkipEntryWhenSupportFlagsCarryNoDetails() {
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(supportEntry(PARTY_ID, FlagVisibility.EXTERNAL, null)))
+            .build();
+
+        assertThat(underTest.buildRequestedSupport(pcsCase)).isEmpty();
+    }
+
+    @Test
+    void shouldSkipFlagDetailsWithNoValue() {
+        PCSCase pcsCase = caseWithSupport(new ArrayList<>(List.of(
+            ListValue.<FlagDetail>builder().id(UUID.randomUUID().toString()).value(null).build(),
+            flag("Requested", "Sign Language Interpreter"))));
+
+        List<ListValue<PartySupport>> result = underTest.buildRequestedSupport(pcsCase);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getValue().getSupportFlags().getDetails())
+            .extracting(detail -> detail.getValue().getName())
+            .containsExactly("Sign Language Interpreter");
     }
 
     @Test

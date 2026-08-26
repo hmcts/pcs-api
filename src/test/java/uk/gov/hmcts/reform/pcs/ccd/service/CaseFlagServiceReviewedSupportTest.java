@@ -206,6 +206,30 @@ class CaseFlagServiceReviewedSupportTest {
         assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
     }
 
+    @Test
+    void shouldIgnoreReviewedDetailWithNoValue() {
+        // Given
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder().id(partyEntity.getId().toString())
+                .value(PartySupport.builder()
+                    .supportFlags(Flags.builder()
+                        .details(List.of(ListValue.<FlagDetail>builder()
+                            .id(requestedFlag.getId().toString())
+                            .value(null)
+                            .build()))
+                        .build())
+                    .build())
+                .build()
+        );
+
+        // When
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        // Then
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+    }
+
     private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, String status, String reason,
                                                           LocalDateTime modified) {
         List<ListValue<PartySupport>> reviewed = new ArrayList<>();

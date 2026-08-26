@@ -50,6 +50,8 @@ public class CaseFlagService {
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
     private static final String ACTIVE_STATUS = "Active";
     private static final String RA_FLAG_CODE_PREFIX = "RA";
+    private static final String SUPPORT_NOT_REPRESENTED_MESSAGE =
+        "User cannot change support for this party on this case";
 
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
@@ -281,9 +283,10 @@ public class CaseFlagService {
 
     public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
                                        Set<PartyEntity> existingParties,
-                                       UUID authenticatedUserId,
-                                       boolean ownPartyOnly) {
+                                       UUID authenticatedUserId) {
         Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+        Set<UUID> representedPartyIds =
+            resolveRepresentedPartyIds(incomingPartySupport, existingPartiesMap, authenticatedUserId);
 
         for (ListValue<PartySupport> incomingSupportValue : incomingPartySupport) {
             Flags incomingSupportFlags = incomingSupportValue.getValue() == null
@@ -291,23 +294,27 @@ public class CaseFlagService {
                 : incomingSupportValue.getValue().getSupportFlags();
 
             PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
-            boolean ownedByUser = partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId);
-            if (ownPartyOnly && !ownedByUser) {
-                Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
-                if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
-                    log.error("Changing support for the party.");
-                    // Removing this for the time being as it prevents a solicitor from adding CaseFlags to a defendant
-                    // on a case at the moment.
-                    // throw new CaseAccessException("User cannot change support for this party on this case");
+
+            if (!representedPartyIds.contains(partyEntity.getId())) {
+                if (changesSupport(incomingSupportFlags, partyEntity)) {
+                    throw new CaseAccessException(SUPPORT_NOT_REPRESENTED_MESSAGE);
                 }
-                if (!existingExternalFlags.isEmpty()) {
-                    log.info("existingExternalFlags.size() = {}", existingExternalFlags.size());
-                    //continue;
-                }
+
+                continue;
             }
 
             mergePartyFlagCollections(null, incomingSupportFlags, partyEntity);
         }
+    }
+
+    private Set<UUID> resolveRepresentedPartyIds(List<ListValue<PartySupport>> incomingPartySupport,
+                                                 Map<UUID, PartyEntity> existingPartiesMap,
+                                                 UUID authenticatedUserId) {
+        List<PartyEntity> supportParties = incomingPartySupport.stream()
+            .map(incomingSupportValue -> resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap))
+            .toList();
+
+        return partySupportOwnershipResolver.resolveRepresentedPartyIds(supportParties, authenticatedUserId);
     }
 
     public void applyReviewedSupportFlags(List<ListValue<PartySupport>> reviewedSupport,
@@ -351,22 +358,22 @@ public class CaseFlagService {
             });
     }
 
-    private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity,
-                                           Map<String, CasePartyFlagEntity> existingExternalFlags) {
-        List<ListValue<FlagDetail>> incomingDetails = hasNoFlagDetails(incomingSupportFlags) ? List.of()
-            : incomingSupportFlags.getDetails();
-
-        if (existingExternalFlags.isEmpty()) {
+    private boolean changesSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
+        if (incomingSupportFlags == null || incomingSupportFlags.getDetails() == null) {
             return false;
         }
+
+        Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
+        List<ListValue<FlagDetail>> incomingDetails = incomingSupportFlags.getDetails();
+
         if (incomingDetails.size() != existingExternalFlags.size()) {
             return true;
         }
-        boolean anyMatch = incomingDetails.stream().anyMatch(incomingDetail -> {
+
+        return incomingDetails.stream().anyMatch(incomingDetail -> {
             CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
             return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
         });
-        return anyMatch;
     }
 
     private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {

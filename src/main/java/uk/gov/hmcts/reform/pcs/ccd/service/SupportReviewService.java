@@ -62,7 +62,7 @@ public class SupportReviewService {
     }
 
     private List<ListValue<FlagDetail>> requestedDetails(Flags flags) {
-        if (flags == null || flags.getDetails() == null) {
+        if (flags.getDetails() == null) {
             return List.of();
         }
 
