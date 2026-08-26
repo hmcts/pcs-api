@@ -187,10 +187,10 @@ xui-webapp:
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
     image: hmctsprod.azurecr.io/xui/webapp:latest
     ingressHost: xui-${SERVICE_FQDN}
-    devmemoryRequests: 3Gi
-    devcpuRequests: 1
-    devmemoryLimits: 6Gi
-    devcpuLimits: 2
+    devmemoryRequests: 2Gi
+    devcpuRequests: 500m
+    devmemoryLimits: 4Gi
+    devcpuLimits: 1
     environment:
       SERVICES_DOCUMENTS_API_V2: http://${SERVICE_NAME}-cdam
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
