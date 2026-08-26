@@ -58,6 +58,12 @@ public abstract class BaseEventTest {
             .toList();
     }
 
+    protected List<String> getEventFieldIds() {
+        return getEventFields()
+            .map(Field::getId)
+            .toList();
+    }
+
     private Stream<Field<?, ?, ?, ?>> getEventFields() {
         return getConfiguredEvent().getFields().getFields().stream()
             .map(FieldBuilder::build)

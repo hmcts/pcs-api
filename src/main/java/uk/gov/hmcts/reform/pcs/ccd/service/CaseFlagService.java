@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
@@ -18,10 +20,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,8 +43,8 @@ import static java.util.Objects.requireNonNullElse;
 import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
 @Service
-@Slf4j
 @AllArgsConstructor
+@Slf4j
 public class CaseFlagService {
 
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
@@ -51,6 +55,7 @@ public class CaseFlagService {
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
     private TaskDescriptionService taskDescriptionService;
+    private PartySupportOwnershipResolver partySupportOwnershipResolver;
     private TranslationWAService translationWAService;
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
@@ -119,18 +124,15 @@ public class CaseFlagService {
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, Set<PartyEntity> existingParties) {
-        Map<UUID, PartyEntity> existingPartiesMap = existingParties.stream()
-            .collect(Collectors.toMap(
-                PartyEntity::getId,
-                Function.identity()
-            ));
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
 
         for (ListValue<Party> incomingPartyValue : incomingParties) {
             Party incomingParty = incomingPartyValue.getValue();
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-            mergePartyFlagCollections(incomingParty, partyEntity);
+            mergePartyFlagCollections(incomingParty.getDefendantFlags(),
+                                      incomingParty.getPartyFlagsExternal(), partyEntity);
         }
     }
 
@@ -156,10 +158,8 @@ public class CaseFlagService {
             .toList();
     }
 
-    private void mergePartyFlagCollections(Party incomingParty, PartyEntity partyEntity) {
-        Flags incomingInternalFlags = incomingParty.getDefendantFlags();
-        Flags incomingExternalFlags = incomingParty.getDefendantFlagsExternal();
-
+    private void mergePartyFlagCollections(Flags incomingInternalFlags, Flags incomingExternalFlags,
+                                           PartyEntity partyEntity) {
         if (hasNoFlagDetails(incomingInternalFlags) && hasNoFlagDetails(incomingExternalFlags)) {
             return;
         }
@@ -175,7 +175,6 @@ public class CaseFlagService {
         boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
         partyEntity.getDefendantFlags().clear();
         partyEntity.getDefendantFlags().addAll(mergedFlags);
-
         fireOnActiveWelshFlags(partyEntity, mergedFlags, welshCommsAlreadyActive);
     }
 
@@ -311,6 +310,133 @@ public class CaseFlagService {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
+    }
+
+    public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
+                                       Set<PartyEntity> existingParties,
+                                       UUID authenticatedUserId,
+                                       boolean ownPartyOnly) {
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+
+        for (ListValue<PartySupport> incomingSupportValue : incomingPartySupport) {
+            Flags incomingSupportFlags = incomingSupportValue.getValue() == null
+                ? null
+                : incomingSupportValue.getValue().getSupportFlags();
+
+            PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
+            boolean ownedByUser = partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId);
+            if (ownPartyOnly && !ownedByUser) {
+                Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
+                if (changesExistingSupport(incomingSupportFlags, partyEntity, existingExternalFlags)) {
+                    log.error("Changing support for the party.");
+                    // Removing this for the time being as it prevents a solicitor from adding CaseFlags to a defendant
+                    // on a case at the moment.
+                    // throw new CaseAccessException("User cannot change support for this party on this case");
+                }
+                if (!existingExternalFlags.isEmpty()) {
+                    log.info("existingExternalFlags.size() = {}", existingExternalFlags.size());
+                    //continue;
+                }
+            }
+
+            mergePartyFlagCollections(null, incomingSupportFlags, partyEntity);
+        }
+    }
+
+    public void applyReviewedSupportFlags(List<ListValue<PartySupport>> reviewedSupport,
+                                          Set<PartyEntity> existingParties) {
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+
+        for (ListValue<PartySupport> reviewedValue : reviewedSupport) {
+            Flags reviewedFlags = reviewedValue.getValue() == null
+                ? null
+                : reviewedValue.getValue().getSupportFlags();
+
+            if (hasNoFlagDetails(reviewedFlags)) {
+                continue;
+            }
+
+            PartyEntity partyEntity = resolveSupportParty(reviewedValue.getId(), existingPartiesMap);
+
+            for (ListValue<FlagDetail> reviewedDetail : reviewedFlags.getDetails()) {
+                applyReviewedStatus(reviewedDetail, partyEntity);
+            }
+        }
+    }
+
+    private void applyReviewedStatus(ListValue<FlagDetail> reviewedDetail, PartyEntity partyEntity) {
+        FlagDetail reviewedFlagDetail = reviewedDetail.getValue();
+        if (reviewedFlagDetail == null) {
+            return;
+        }
+
+        partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
+                .equalsIgnoreCase(existingFlag.getDefaultStatus()))
+            .filter(existingFlag -> existingFlag.getId() != null
+                && existingFlag.getId().toString().equals(reviewedDetail.getId()))
+            .findFirst()
+            .ifPresent(existingFlag -> {
+                existingFlag.setDefaultStatus(reviewedFlagDetail.getStatus());
+                existingFlag.setFlagUpdateComment(reviewedFlagDetail.getFlagUpdateComment());
+                existingFlag.setDateTimeModified(reviewedFlagDetail.getDateTimeModified());
+            });
+    }
+
+    private boolean changesExistingSupport(Flags incomingSupportFlags, PartyEntity partyEntity,
+                                           Map<String, CasePartyFlagEntity> existingExternalFlags) {
+        List<ListValue<FlagDetail>> incomingDetails = hasNoFlagDetails(incomingSupportFlags) ? List.of()
+            : incomingSupportFlags.getDetails();
+
+        if (existingExternalFlags.isEmpty()) {
+            return false;
+        }
+        if (incomingDetails.size() != existingExternalFlags.size()) {
+            return true;
+        }
+        boolean anyMatch = incomingDetails.stream().anyMatch(incomingDetail -> {
+            CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
+            return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
+        });
+        return anyMatch;
+    }
+
+    private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
+        return partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
+    }
+
+    private boolean differs(FlagDetail incomingFlagDetail, CasePartyFlagEntity existingFlag) {
+        return incomingFlagDetail == null
+            || !Objects.equals(incomingFlagDetail.getStatus(), existingFlag.getDefaultStatus())
+            || !Objects.equals(incomingFlagDetail.getFlagComment(), existingFlag.getFlagComment())
+            || !Objects.equals(incomingFlagDetail.getFlagUpdateComment(), existingFlag.getFlagUpdateComment());
+    }
+
+    private PartyEntity resolveSupportParty(String incomingPartyId, Map<UUID, PartyEntity> existingPartiesMap) {
+        UUID partyId;
+        try {
+            partyId = UUID.fromString(incomingPartyId);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw new CaseAccessException("Support submitted for an invalid party reference");
+        }
+
+        PartyEntity partyEntity = existingPartiesMap.get(partyId);
+        if (partyEntity == null) {
+            throw new CaseAccessException("Support submitted for a party that is not on this case");
+        }
+
+        return partyEntity;
+    }
+
+    private Map<UUID, PartyEntity> mapPartiesById(Set<PartyEntity> existingParties) {
+        return existingParties.stream()
+            .collect(Collectors.toMap(
+                PartyEntity::getId,
+                Function.identity()
+            ));
     }
 
     private static boolean isCaseFlagActive(FlagDetail flagDetail) {

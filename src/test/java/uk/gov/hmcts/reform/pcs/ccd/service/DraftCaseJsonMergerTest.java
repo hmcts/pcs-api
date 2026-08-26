@@ -81,6 +81,8 @@ class DraftCaseJsonMergerTest {
                             "genApps",
                             "claimGroundSummaries",
                             "parties",
+                            "partySupport",
+                            "supportReviewFlags",
                             "allClaimants",
                             "allDefendants",
                             "allLinkedDefendants",

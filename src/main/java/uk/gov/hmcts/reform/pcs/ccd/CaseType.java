@@ -33,6 +33,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
         AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -49,6 +51,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
+    };
+    static final AccessProfile[] EXTERNAL_FLAG_TAB_ROLES = {
+        AccessProfile.PCS_SOLICITOR,
+        AccessProfile.CITIZEN,
+        AccessProfile.DEFENDANT
     };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
@@ -166,6 +173,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
+        buildSupportTab(builder);
+
         if (shutterService) {
             builder.shutterService();
         }
@@ -181,6 +190,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+    }
+
+    private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("support", "Support")
+            .forRoles(EXTERNAL_FLAG_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
+            .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

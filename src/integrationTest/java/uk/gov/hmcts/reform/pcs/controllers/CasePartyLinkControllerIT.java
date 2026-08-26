@@ -28,6 +28,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
+import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import java.util.ArrayList;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
@@ -95,6 +106,12 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private PartyAccessCodeHashingService partyAccessCodeHashingService;
 
+    @Autowired
+    private PcsCaseService pcsCaseService;
+
+    @Autowired
+    private FlagRefDataRepository flagRefDataRepository;
+
     @BeforeEach
     void setUp() {
         idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
@@ -110,6 +127,130 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
             anyString(),
             any(CaseAssignmentUserRolesRequest.class)
         )).thenReturn(mockedResponse);
+    }
+
+    @Test
+    @DisplayName("Review support request should persist the decision against the requested flag only")
+    @Transactional
+    void shouldPersistReviewedSupportDecisionAgainstRequestedFlagOnly() {
+        long caseReference = 98765L;
+        PcsCaseEntity caseEntity =
+            caseCreationHelper.createTestCaseWithParty(caseReference, UUID.randomUUID(), PartyRole.DEFENDANT);
+        PartyEntity party = caseEntity.getParties().iterator().next();
+
+        FlagRefDataEntity refData = flagRefDataRepository.save(FlagRefDataEntity.builder()
+            .flagCode("RA0042")
+            .flagName("Sign Language Interpreter")
+            .build());
+
+        party.setDefendantFlags(new ArrayList<>(List.of(
+            supportFlag("Requested", FlagVisibility.EXTERNAL, refData, party),
+            supportFlag("Active", FlagVisibility.EXTERNAL, refData, party),
+            supportFlag("Requested", FlagVisibility.INTERNAL, refData, party))));
+        pcsCaseRepository.saveAndFlush(caseEntity);
+
+        List<CasePartyFlagEntity> saved = persistedFlags(caseReference);
+        final UUID requestedId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.EXTERNAL);
+        final UUID activeId = flagByStatusAndVisibility(saved, "Active", FlagVisibility.EXTERNAL);
+        final UUID internalId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.INTERNAL);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .supportReviewFlags(reviewedSupport(party.getId(), requestedId,
+                                                "Not approved", "Cannot be accommodated"))
+            .build();
+
+        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseRepository.flush();
+
+        List<CasePartyFlagEntity> persisted = persistedFlags(caseReference);
+
+        assertThat(persisted).hasSize(3);
+        assertThat(flagById(persisted, requestedId).getDefaultStatus()).isEqualTo("Not approved");
+        assertThat(flagById(persisted, requestedId).getFlagUpdateComment())
+            .isEqualTo("Cannot be accommodated");
+        assertThat(flagById(persisted, activeId).getDefaultStatus()).isEqualTo("Active");
+        assertThat(flagById(persisted, internalId).getDefaultStatus()).isEqualTo("Requested");
+    }
+
+    @Test
+    @DisplayName("Review support request should not let an already active flag be changed")
+    @Transactional
+    void shouldNotAllowAnActiveFlagToBeChangedThroughTheReviewEvent() {
+        long caseReference = 98766L;
+        PcsCaseEntity caseEntity =
+            caseCreationHelper.createTestCaseWithParty(caseReference, UUID.randomUUID(), PartyRole.DEFENDANT);
+        PartyEntity party = caseEntity.getParties().iterator().next();
+
+        FlagRefDataEntity refData = flagRefDataRepository.save(FlagRefDataEntity.builder()
+            .flagCode("RA0013")
+            .flagName("Assistance dog")
+            .build());
+
+        party.setDefendantFlags(new ArrayList<>(List.of(
+            supportFlag("Active", FlagVisibility.EXTERNAL, refData, party))));
+        pcsCaseRepository.saveAndFlush(caseEntity);
+
+        UUID activeId = flagByStatusAndVisibility(persistedFlags(caseReference), "Active", FlagVisibility.EXTERNAL);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .supportReviewFlags(reviewedSupport(party.getId(), activeId, "Inactive", "Attempted change"))
+            .build();
+
+        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseRepository.flush();
+
+        assertThat(flagById(persistedFlags(caseReference), activeId).getDefaultStatus()).isEqualTo("Active");
+    }
+
+    private List<CasePartyFlagEntity> persistedFlags(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference).orElseThrow()
+            .getParties().iterator().next().getDefendantFlags();
+    }
+
+    private UUID flagByStatusAndVisibility(List<CasePartyFlagEntity> flags, String status,
+                                           FlagVisibility visibility) {
+        return flags.stream()
+            .filter(flag -> status.equals(flag.getDefaultStatus())
+                && visibility.getValue().equals(flag.getVisibility()))
+            .map(CasePartyFlagEntity::getId)
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private CasePartyFlagEntity flagById(List<CasePartyFlagEntity> flags, UUID flagId) {
+        return flags.stream()
+            .filter(flag -> flagId.equals(flag.getId()))
+            .findFirst()
+            .orElseThrow();
+    }
+
+    private List<ListValue<PartySupport>> reviewedSupport(UUID partyId, UUID flagId,
+                                                          String status, String reason) {
+        return List.of(ListValue.<PartySupport>builder()
+            .id(partyId.toString())
+            .value(PartySupport.builder()
+                .supportFlags(Flags.builder()
+                    .details(List.of(ListValue.<FlagDetail>builder()
+                        .id(flagId.toString())
+                        .value(FlagDetail.builder()
+                            .status(status)
+                            .flagUpdateComment(reason)
+                            .build())
+                        .build()))
+                    .build())
+                .build())
+            .build());
+    }
+
+    private CasePartyFlagEntity supportFlag(String status, FlagVisibility visibility,
+                                            FlagRefDataEntity refData, PartyEntity party) {
+        CasePartyFlagEntity flag = new CasePartyFlagEntity();
+        flag.setDefaultStatus(status);
+        flag.setVisibility(visibility.getValue());
+        flag.setFlagRefData(refData);
+        flag.setPaths("1:Party");
+        flag.setParty(party);
+        return flag;
     }
 
     @Test
