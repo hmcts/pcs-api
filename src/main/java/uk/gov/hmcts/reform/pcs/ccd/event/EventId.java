@@ -22,9 +22,11 @@ public enum EventId {
     amendFlags,
     claimIssuePayment,
     changeCaseState,
+    manageHearing,
     enterGenApp,
     caseworkerUploadDocuments,
     removeDocument,
     legalRepDocumentUpload,
+    manageParties,
     legalRepresentativeContactDetails
 }

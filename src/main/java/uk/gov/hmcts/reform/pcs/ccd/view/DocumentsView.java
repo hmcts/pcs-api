@@ -11,7 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.util.List;
@@ -21,21 +24,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DocumentsView {
 
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationIdForCurrentUser) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationIdForCurrentUser));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity,
-                                                          String organisationIdForCurrentUser) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
         }
 
+        UserRoles userRoles =
+            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, organisationIdForCurrentUser))
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
+                                                                   organisationId))
             .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
@@ -53,7 +60,7 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, String orgId) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
@@ -61,7 +68,18 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, orgId);
+            return genAppVisibilityService.isGenAppDocumentVisibleToUser(
+                genAppEntity,
+                userRoles.userId(),
+                organisationId,
+                userRoles.roles()
+            );
+        }
+
+        if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
+            PartyEntity party = documentEntity.getParty();
+            return genAppVisibilityService
+                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
@@ -86,6 +104,10 @@ public class DocumentsView {
         return !documentEntity.isRemoved();
     }
 
+    public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
+        return documentEntity.getGeneralApplication() == null;
+    }
+
     private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
         List<DocumentType> caseDetailsDocuments = List.of(
             DocumentType.TENANCY_AGREEMENT,
@@ -105,5 +127,4 @@ public class DocumentsView {
         // Is not an additional document
         return !isDescriptionEmpty(documentEntity);
     }
-
 }

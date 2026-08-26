@@ -64,7 +64,7 @@ class CaseRoleAssignmentTaskComponentTest {
     }
 
     @Test
-    @DisplayName("Should assign claimant solicitor role and revoke creator role on execution")
+    @DisplayName("Should revoke the creator role on execution")
     void shouldExecuteTaskAndCallCaseRoleAssignmentService() {
         // Given
         RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
@@ -79,14 +79,13 @@ class CaseRoleAssignmentTaskComponentTest {
         CompletionHandler<RoleAssignmentTaskData> result = task.execute(taskInstance, executionContext);
 
         // Then
-        verify(caseRoleAssignmentService).assignRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);
         verify(caseRoleAssignmentService).revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
     @Test
-    @DisplayName("Should rethrow exception when assign role fails")
-    void shouldRethrowExceptionWhenAssignRoleFails() {
+    @DisplayName("Should rethrow exception when revoke role fails")
+    void shouldRethrowExceptionWhenRevokeRoleFails() {
         // Given
         RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
             .caseReference("1234")
@@ -96,7 +95,7 @@ class CaseRoleAssignmentTaskComponentTest {
         when(taskInstance.getData()).thenReturn(data);
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(mock(RuntimeException.class)).when(caseRoleAssignmentService)
-            .assignRasRole(1234L, "user-abc", UserRole.CLAIMANT_SOLICITOR);
+            .revokeRasRole(1234L, "user-abc", UserRole.CREATOR);
 
         CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
 

@@ -75,6 +75,10 @@ public class PartyEntity {
     private String orgName;
 
     private String organisationId;
+    private String organisationProfileId;
+
+    /** The claimant the case was created for, marked at creation as there is no claim role to read yet. */
+    private boolean claimCreator;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -84,7 +88,7 @@ public class PartyEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo nameOverridden;
 
-    @OneToOne(cascade = ALL)
+    @OneToOne(cascade = ALL, orphanRemoval = true)
     private AddressEntity address;
 
     @OneToOne(cascade = ALL)
