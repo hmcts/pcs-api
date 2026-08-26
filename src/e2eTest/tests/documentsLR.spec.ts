@@ -111,7 +111,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('readDocumentsSubmit');
   });
 
-  test('Upload documents when GenApps submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -135,7 +135,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('readDocumentsSubmit');
   });
 
-  test('Upload documents when GenApps submitted With Out Notice - Multi def @regression', async ({page}) => {
+  test('Upload documents when GenApps submitted With Out Notice - Multi def', async ({page}) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -180,7 +180,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps not submitted - Multi def @regression', async () => {
+  test('Upload documents when GenApps not submitted - Multi def', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -201,7 +201,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
   });
 
-  test('Upload documents when GenApps not submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps not submitted - Single def', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
