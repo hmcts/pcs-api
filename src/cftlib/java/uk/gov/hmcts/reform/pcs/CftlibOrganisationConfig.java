@@ -41,6 +41,16 @@ public class CftlibOrganisationConfig {
             }
 
             @Override
+            public String getOrganisationName(OrganisationDetailsResponse orgDetails) {
+                return "Test Organisation";
+            }
+
+            @Override
+            public uk.gov.hmcts.ccd.sdk.type.AddressUK getOrganisationAddress(OrganisationDetailsResponse orgDetails) {
+                return null;
+            }
+
+            @Override
             public String getOrganisationIdForCurrentUser() {
                 return TEST_ORG_ID;
             }

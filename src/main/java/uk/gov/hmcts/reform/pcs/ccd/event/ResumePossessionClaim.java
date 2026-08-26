@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -102,7 +103,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        OrganisationDetailsResponse orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        String organisationName = organisationService.getOrganisationName(orgDetails);
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
@@ -140,7 +142,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddress(orgDetails));
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
