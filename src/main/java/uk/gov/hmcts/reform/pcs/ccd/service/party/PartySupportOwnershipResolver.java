@@ -39,6 +39,16 @@ public class PartySupportOwnershipResolver {
 
         String authenticatedOrganisationId = organisationService.getOrganisationIdForCurrentUser();
 
+        return isOwnedByUser(partyEntity, authenticatedUserId, authenticatedOrganisationId);
+    }
+
+    private boolean isOwnedByUser(PartyEntity partyEntity,
+                                  UUID authenticatedUserId,
+                                  String authenticatedOrganisationId) {
+        if (authenticatedUserId.equals(partyEntity.getIdamId())) {
+            return true;
+        }
+
         return isOwnedByUserOrganisation(partyEntity, authenticatedOrganisationId)
             || isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
     }
@@ -67,17 +77,6 @@ public class PartySupportOwnershipResolver {
             .map(PartyEntity::getId)
             .filter(Objects::nonNull)
             .collect(toCollection(LinkedHashSet::new));
-    }
-
-    private boolean isOwnedByUser(PartyEntity partyEntity,
-                                  UUID authenticatedUserId,
-                                  String authenticatedOrganisationId) {
-        if (authenticatedUserId.equals(partyEntity.getIdamId())) {
-            return true;
-        }
-
-        return isOwnedByUserOrganisation(partyEntity, authenticatedOrganisationId)
-            || isRepresentedByUserOrganisation(partyEntity, authenticatedOrganisationId);
     }
 
     private boolean requiresOrganisationLookup(PartyEntity partyEntity) {
