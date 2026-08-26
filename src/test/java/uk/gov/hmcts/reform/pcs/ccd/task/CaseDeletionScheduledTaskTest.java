@@ -42,12 +42,13 @@ class CaseDeletionScheduledTaskTest {
 
     private static final String VALID_SCHEDULE = "DAILY|00:00";
     private static final int DISCARD_AFTER_DAYS = 30;
-    private static final int BATCH_SIZE = 10;
     private static final int SQL_LIMIT = 200;
     private static final long SIMULATED_LATENCY_MS = 100;
     private static final long CASE_1 = 1L;
     private static final long CASE_2 = 2L;
     private static final long CASE_3 = 3L;
+    private static final long CASE_4 = 4L;
+    private static final long CASE_5 = 5L;
 
     @Mock
     private CcdCaseDataDeletionService ccdCaseDataDeletionService;
@@ -65,7 +66,7 @@ class CaseDeletionScheduledTaskTest {
 
     @BeforeEach
     void setUp() {
-        underTest = createTask(10, 25);
+        underTest = createTask(10, 25, 10);
     }
 
     @Test
@@ -146,7 +147,6 @@ class CaseDeletionScheduledTaskTest {
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(CASE_1, CASE_2, CASE_3));
 
-
         // When
         underTest.runSweep();
 
@@ -224,7 +224,7 @@ class CaseDeletionScheduledTaskTest {
     void shouldCapConcurrentCcdCallsToThrottleSize() {
         // Given
         int ccdControlSize = 2;
-        underTest = createTask(ccdControlSize, 25);
+        underTest = createTask(ccdControlSize, 25, 10);
         List<Long> cases = LongStream.rangeClosed(1, 8).boxed().toList();
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(cases);
@@ -248,7 +248,7 @@ class CaseDeletionScheduledTaskTest {
         String url = "url1";
         String url2 = "url2";
         int docControlSize = 2;
-        underTest = createTask(10, docControlSize);
+        underTest = createTask(10, docControlSize, 10);
         List<Long> cases = LongStream.rangeClosed(1, 6).boxed().toList();
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT)).thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(cases.get(0))).thenReturn(List.of(url, url2));
@@ -274,7 +274,7 @@ class CaseDeletionScheduledTaskTest {
     @Timeout(30)
     void shouldReleaseCcdWhenCallsFailSoSweepDoesNotDeadlock() {
         // Given
-        underTest = createTask(1, 25);
+        underTest = createTask(1, 25, 10);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
             .thenReturn(List.of(CASE_1, CASE_2));
         doThrow(new RuntimeException("ccd issue"))
@@ -293,7 +293,7 @@ class CaseDeletionScheduledTaskTest {
     @Timeout(30)
     void shouldReleaseWhenDocumentDeletionFailsSoRunSweepDoesNotDeadlock() {
         // Setup
-        underTest = createTask(10, 1);
+        underTest = createTask(10, 1, 10);
 
         // Given
         String url = "url";
@@ -313,8 +313,144 @@ class CaseDeletionScheduledTaskTest {
         verify(caseDeletionService, never()).deleteCaseData(anyLong());
     }
 
-    private CaseDeletionScheduledTask createTask(int ccdControlSize, int docControlSize) {
-        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, BATCH_SIZE, SQL_LIMIT,
+    @Test
+    @Timeout(30)
+    void shouldProcessCasesInBatches() {
+        // Given
+        int batchSize = 2;
+        underTest = createTask(10, 25, batchSize);
+        List<Long> cases = List.of(CASE_1, CASE_2, CASE_3, CASE_4);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(anyLong())).thenReturn(List.of());
+
+        // When
+        underTest.runSweep();
+
+        // Then
+        for (Long caseRef : cases) {
+            verify(ccdCaseDataDeletionService).markCaseForDeletion(caseRef);
+        }
+        verify(caseDeletionService, times(cases.size())).deleteCaseData(anyLong());
+    }
+
+    @Test
+    void shouldCollectFailedCasesFromMultipleBatches() {
+        // Given
+        int batchSize = 2;
+        underTest = createTask(10, 25, batchSize);
+        List<Long> cases = List.of(CASE_1, CASE_2, CASE_3, CASE_4);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
+        when(pcsCaseService.getDocumentUrls(CASE_2)).thenThrow(new RuntimeException("service error"));
+        when(pcsCaseService.getDocumentUrls(CASE_3)).thenReturn(List.of());
+        when(pcsCaseService.getDocumentUrls(CASE_4)).thenThrow(new RuntimeException("service error"));
+
+        // When
+        assertDoesNotThrow(() -> underTest.runSweep());
+
+        // Then
+        verify(caseDeletionService).deleteCaseData(CASE_1);
+        verify(caseDeletionService).deleteCaseData(CASE_3);
+        verify(caseDeletionService, never()).deleteCaseData(CASE_2);
+        verify(caseDeletionService, never()).deleteCaseData(CASE_4);
+    }
+
+    @Test
+    void shouldProcessExactlyOneBatchWhenCasesEqualBatchSize() {
+        // Given
+        int batchSize = 3;
+        underTest = createTask(10, 25, batchSize);
+        List<Long> cases = List.of(CASE_1, CASE_2, CASE_3);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(anyLong())).thenReturn(List.of());
+
+        // When
+        underTest.runSweep();
+
+        // Then
+        verify(caseDeletionService, times(3)).deleteCaseData(anyLong());
+    }
+
+    @Test
+    void shouldProcessSingleCaseInBatch() {
+        // Given
+        int batchSize = 10;
+        underTest = createTask(10, 25, batchSize);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(List.of(CASE_1));
+        when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
+
+        // When
+        underTest.runSweep();
+
+        // Then
+        verify(caseDeletionService).deleteCaseData(CASE_1);
+    }
+
+    @Test
+    void shouldHandlePartialBatchFailure() {
+        // Given
+        int batchSize = 3;
+        underTest = createTask(10, 25, batchSize);
+        List<Long> cases = List.of(CASE_1, CASE_2, CASE_3, CASE_4, CASE_5);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of());
+        when(pcsCaseService.getDocumentUrls(CASE_2)).thenReturn(List.of());
+        when(pcsCaseService.getDocumentUrls(CASE_3)).thenThrow(new RuntimeException("error"));
+        when(pcsCaseService.getDocumentUrls(CASE_4)).thenReturn(List.of());
+        when(pcsCaseService.getDocumentUrls(CASE_5)).thenReturn(List.of());
+
+        // When
+        assertDoesNotThrow(() -> underTest.runSweep());
+
+        // Then
+        verify(caseDeletionService, times(4)).deleteCaseData(anyLong());
+        verify(caseDeletionService, never()).deleteCaseData(CASE_3);
+    }
+
+    @Test
+    void shouldThrowDocumentDeletionIncompleteExceptionWhenDocumentDeletionFails() {
+        // Given
+        String url = "url1";
+        List<Long> cases = List.of(CASE_1);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url));
+        doThrow(new RuntimeException("dm-store error"))
+                .when(documentImportService).deleteDocument(url);
+
+        // When & Then
+        assertDoesNotThrow(() -> underTest.runSweep());
+
+        // Document error should prevent case deletion
+        verify(caseDeletionService, never()).deleteCaseData(CASE_1);
+    }
+
+    @Test
+    void shouldIgnoreDocumentNotFoundException() {
+        // Given
+        String url = "url1";
+        UUID documentId = UUID.randomUUID();
+        List<Long> cases = List.of(CASE_1);
+        when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT))
+                .thenReturn(cases);
+        when(pcsCaseService.getDocumentUrls(CASE_1)).thenReturn(List.of(url));
+        doThrow(new DocumentNotFoundException(documentId))
+                .when(documentImportService).deleteDocument(url);
+
+        // When
+        underTest.runSweep();
+
+        // Then - DocumentNotFoundException should be caught and logged, case still deleted
+        verify(caseDeletionService).deleteCaseData(CASE_1);
+    }
+
+    private CaseDeletionScheduledTask createTask(int ccdControlSize, int docControlSize, int batchSize) {
+        return new CaseDeletionScheduledTask(VALID_SCHEDULE, DISCARD_AFTER_DAYS, batchSize, SQL_LIMIT,
                                              ccdControlSize, docControlSize,
                                              caseDeletionService, ccdCaseDataDeletionService,
                                              pcsCaseService, documentImportService);

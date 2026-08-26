@@ -124,8 +124,6 @@ public class CaseDeletionScheduledTask {
 
     private void completeCaseDeletion(long caseRef) throws InterruptedException {
         log.debug("Performing case deletion tasks for case: {}", caseRef);
-        // strategy to minimise multiple threads waiting for DB resources all at the same time
-        Thread.sleep((caseRef % 5) * 400L);
 
         ccdCallThrottle.acquire();
         try {
