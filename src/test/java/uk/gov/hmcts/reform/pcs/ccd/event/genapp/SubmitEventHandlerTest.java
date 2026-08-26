@@ -286,6 +286,53 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
         }
 
+        @Test
+        void shouldReturnValidationErrorIfRepresentedPartyIdIsMalformed() {
+            // Given
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId("not-a-uuid")
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
+
+            // Then
+            assertThat(submitResponse.getErrors())
+                .containsExactly("The selected party is not available on this case");
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
+        }
+
+        @Test
+        void shouldReturnValidationErrorIfOrganisationCannotBeResolved() {
+            // Given
+            UUID representedPartyUuid = UUID.randomUUID();
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId(representedPartyUuid.toString())
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+
+            // When
+            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
+
+            // Then
+            assertThat(submitResponse.getErrors())
+                .containsExactly("The selected party is not available on this case");
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
+        }
+
         private void stubLegalRepForParty(UUID representedPartyUuid) {
             UUID currentUserId = UUID.randomUUID();
             String orgId = "org";

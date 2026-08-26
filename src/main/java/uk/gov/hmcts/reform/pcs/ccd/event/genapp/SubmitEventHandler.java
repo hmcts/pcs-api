@@ -78,8 +78,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             applicantParty = getApplicantParty(caseReference, caseData);
         } catch (PartyNotFoundException | IllegalArgumentException ex) {
             // client-supplied party id that no longer resolves is bad input, not a server fault
-            log.warn("Applicant party could not be resolved on genapp submit for case {}: {}",
-                caseReference, ex.getMessage());
+            log.warn("Applicant party unresolved on genapp submit: partyId={}, caseReference={}",
+                caseData.getCurrentRepresentedPartyId(), caseReference, ex);
             return errorResponse("The selected party is not available on this case");
         }
 
