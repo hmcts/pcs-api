@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -67,11 +68,21 @@ class UploadDocumentsTest extends BaseEventTest {
 
         // Default: visibility service is identity (returns input unchanged). Individual tests
         // override to simulate hiding without-notice gen apps or to control ordering.
-        lenient().when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+        lenient().when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
             .thenAnswer(invocation -> {
                 Collection<GenAppEntity> input = invocation.getArgument(0);
                 return input == null ? List.<GenAppEntity>of() : new ArrayList<>(input);
             });
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.uploadDocuments());
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     @Nested
@@ -166,7 +177,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity hidden = mock(GenAppEntity.class);
             lenient().when(hidden.getId()).thenReturn(hiddenId);
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(hidden));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any())).thenReturn(List.of());
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any())).thenReturn(List.of());
 
             PCSCase caseData = PCSCase.builder()
                 .documentUploadDetails(DocumentUploadDetails.builder()
@@ -301,7 +312,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity oldest = stubGenApp(GenAppType.ADJOURN, now.minusDays(10));
 
             // Bypass the identity stub: return entities in the order the service would.
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(newest, middle, oldest));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(newest, middle, oldest));
 
@@ -322,7 +333,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, older);
             GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, newer);
 
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(newerAdjourn, olderAdjourn));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(newerAdjourn, olderAdjourn));
 
@@ -361,7 +372,7 @@ class UploadDocumentsTest extends BaseEventTest {
             // frontend skips the confirm page.
             GenAppEntity hidden = stubGenApp(GenAppType.SOMETHING_ELSE, LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(hidden));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any())).thenReturn(List.of());
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any())).thenReturn(List.of());
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -377,7 +388,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity visibleWithNotice = stubGenApp(GenAppType.ADJOURN, now);
             GenAppEntity hiddenWithoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, now.minusDays(1));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(visibleWithNotice, hiddenWithoutNotice));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(visibleWithNotice));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());

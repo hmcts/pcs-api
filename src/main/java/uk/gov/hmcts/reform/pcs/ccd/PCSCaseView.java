@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
@@ -95,6 +96,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
     private final FeatureFlagView featureFlagView;
+    private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
@@ -124,6 +126,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase);
         }
+        caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
@@ -186,8 +189,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
         hearingView.setCaseFields(pcsCase, pcsCaseEntity);
-        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           organisationIdForCurrentUser, state);
+        legalRepresentativeSummaryService
+            .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 

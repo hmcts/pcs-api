@@ -4,7 +4,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+
+import java.util.List;
 
 /**
  * Stubs organisation lookups for local and CFTLib test runs.
@@ -28,7 +31,22 @@ public class CftlibOrganisationConfig {
     public OrganisationService organisationService() {
         return new OrganisationService(null, null) {
             @Override
+            public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
+                OrganisationDetailsResponse response = new OrganisationDetailsResponse();
+                response.setOrganisationIdentifier(TEST_ORG_ID);
+                response.setOrganisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()));
+                response.setName("Test Organisation");
+                response.setContactInformation(List.of());
+                return response;
+            }
+
+            @Override
             public String getOrganisationIdForCurrentUser() {
+                return TEST_ORG_ID;
+            }
+
+            @Override
+            public String requireOrganisationIdForCurrentUser() {
                 return TEST_ORG_ID;
             }
 

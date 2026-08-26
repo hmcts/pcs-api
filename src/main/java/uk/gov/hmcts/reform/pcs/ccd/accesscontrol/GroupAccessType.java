@@ -9,10 +9,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLI
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+
 import lombok.Getter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 
@@ -54,10 +57,6 @@ public enum GroupAccessType implements CCDAccessGroup {
         false, false, true, true
     );
 
-    /**
-     * The definition store rejects the import with "'HintText' must be set for 'Display' to be
-     * used" when a displayed access type has no hint, so every constant needs one.
-     */
     private static final String ASSIGN_HINT =
         "Assign to Users to enable access to all cases associated with this organisation";
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
@@ -75,13 +74,7 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean accessDefault;
     private final boolean display;
     private final boolean groupAccessEnabled;
-    /**
-     * The case role naming the OrganisationPolicy that supplies the organisation ID. A role name
-     * rather than a field name, despite the column's title, and given as a literal rather than
-     * {@code AccessProfile.CLAIMANT.getRole()} so that this enum holds no reference back into
-     * {@link AccessProfile}. The definition store validates it against
-     * {@code RoleToAccessProfiles.RoleName}, so it must be a declared role.
-     */
+
     private final String caseAssignedRoleField;
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
@@ -118,13 +111,11 @@ public enum GroupAccessType implements CCDAccessGroup {
     private record Key(String organisationProfileId, PartyRole partyRole) { }
 
     private static Map<Key, GroupAccessType> buildIndex() {
-        Map<Key, GroupAccessType> index = new HashMap<>();
-        for (GroupAccessType accessType : values()) {
-            if (accessType.partyRole != null) {
-                index.put(new Key(accessType.organisationProfileId, accessType.partyRole), accessType);
-            }
-        }
-        return Map.copyOf(index);
+        return Arrays.stream(values())
+            .filter(accessType -> accessType.partyRole != null)
+            .collect(toUnmodifiableMap(
+                accessType -> new Key(accessType.organisationProfileId, accessType.partyRole),
+                identity()));
     }
 
     /**
@@ -132,9 +123,8 @@ public enum GroupAccessType implements CCDAccessGroup {
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
      */
-    public static String caseAccessGroupIdFor(String organisationProfileId,
-                                                        PartyRole partyRole, String organisationId) {
-        return CASE_ACCESS_GROUP_MAP.get(new Key(organisationProfileId, partyRole))
+    public static String caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole, String organisationId) {
+        return CASE_ACCESS_GROUP_MAP.get(new Key(orgProfileId, partyRole))
             .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
     }
 

@@ -208,6 +208,7 @@ public class PartyService {
             : claimantContactPreferences.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
+        claimantParty.setNameKnown(VerticalYesNo.YES);
 
         VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
@@ -220,9 +221,8 @@ public class PartyService {
     }
 
     /**
-     * Keeps what was validated at creation. rd-professional returns null rather than failing, so
-     * assigning unconditionally would wipe the organisation on a transient blip, and group access is
-     * the only way in, so the case would be left with nobody able to open it.
+     * Keeps creation-time values: rd-professional returns null on blips, and an unconditional
+     * assign would wipe the org - leaving nobody able to open the case.
      */
     private void setClaimantOrganisation(PartyEntity claimantParty, String organisationId,
                                          String orgProfileId) {

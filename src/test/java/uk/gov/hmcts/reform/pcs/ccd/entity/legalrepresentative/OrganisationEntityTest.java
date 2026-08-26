@@ -20,7 +20,7 @@ class OrganisationEntityTest {
     }
 
     @Test
-    void addParty_ShouldReactivatePartyIfAlreadyPresent() {
+    void addParty_ShouldNotAddPartyIfAlreadyPresent() {
         // given
         UUID partyId = UUID.randomUUID();
         PartyEntity party = PartyEntity.builder()

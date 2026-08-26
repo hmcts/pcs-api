@@ -123,6 +123,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
         setEventUnderTest(underTest);
     }
 
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(State.AWAITING_SUBMISSION_TO_HMCTS);
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
+    }
+
     @Nested
     @DisplayName("Start callback tests")
     class StartCallbackTests {
@@ -439,8 +449,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldCreateMainClaimOnCase() {
             // Given
             stubFeeService();
-            String orgId = "org123";
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)

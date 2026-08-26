@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.AppliedForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
@@ -48,7 +49,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(makeAnApplication.name(), submitEventHandler, startEventHandler)
-            .forAllStates() // TODO: Adjust once target states are known and available
+            .forStates(EventStates.makeAnApplication())
             .name("Make an application")
             .grant(Permission.CRUD, UserRole.DEFENDANT)
             .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)

@@ -60,19 +60,12 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        // if we have an existing inactive plroe that is inactive, then reactivate as it was previously linked
         Optional<ClaimPartyOrganisationEntity> existingEntity =
             this.claimPartyOrganisationList
                 .stream()
                 .filter(e -> e.getParty().getId().equals(party.getId()))
                 .findFirst();
-        if (existingEntity.isPresent() && YesOrNo.NO.equals(existingEntity.get().getActive())) {
-            ClaimPartyOrganisationEntity claimPartyOrganisationEntity = existingEntity
-                .get();
-            claimPartyOrganisationEntity.setActive(YesOrNo.YES);
-            claimPartyOrganisationEntity.setStartDate(Instant.now());
-            return;
-        } else if (existingEntity.isPresent() && YesOrNo.YES.equals(existingEntity.get().getActive())) {
+        if (existingEntity.isPresent() && YesOrNo.YES.equals(existingEntity.get().getActive())) {
             log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
                      party.getId(), this.getId());
             return;

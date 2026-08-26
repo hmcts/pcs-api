@@ -66,6 +66,8 @@ import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.INVALID_ORG_TYPE_COD
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.INVALID_ORG_TYPE_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_NOT_FOUND_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_NOT_FOUND_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
 public class PcsNoticeOfChangeTest {
@@ -439,6 +441,43 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
+    void validate_WithNullOrganisationDetails_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .build();
+        String userId = "123";
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(ORG_NOT_FOUND_CODE, actual.code());
+        assertEquals(ORG_NOT_FOUND_MESSAGE, actual.message());
+    }
+
+    @Test
     void validate_WithDefendantAlreadyRepresented_ReturnErrorAnswerResponse() {
         // given
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
@@ -675,6 +714,41 @@ public class PcsNoticeOfChangeTest {
             .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
     }
 
+
+    @Test
+    void submit_WithNullOrganisationDetails_ReturnInvalidResponse() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+
+        // when
+        NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(ORG_NOT_FOUND_CODE, actual.code());
+        assertEquals(ORG_NOT_FOUND_MESSAGE, actual.message());
+    }
 
     @Test
     void submit_WithDefendantNotAlreadyRepresented_SchedulesAccessChangeTask() {

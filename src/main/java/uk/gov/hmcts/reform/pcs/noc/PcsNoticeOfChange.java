@@ -7,6 +7,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valu
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
+import static java.util.Objects.isNull;
+
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +71,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         + "You or a colleague are already representing this client on this case. Return to case list.";
 
     static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+    static final String ORG_NOT_FOUND_CODE = "organisationNotFound";
+    static final String ORG_NOT_FOUND_MESSAGE = "No organisation was found for the current user.";
 
     static final String INVALID_ORG_TYPE_CODE = "invalidOrganisationType";
     static final String INVALID_ORG_TYPE_MESSAGE =
@@ -76,10 +80,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     static final String CONFLICT_OF_INTEREST_CODE = "conflictOfInterest";
     static final String CONFLICT_OF_INTEREST_MESSAGE =
         "Organisation cannot represent both claimant and defendant in the same case";
-
     static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
 
-    static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is currently disabled";
+    static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
+        + "currently disabled";
 
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -127,6 +131,9 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
         PartyEntity matchedParty = matches.getFirst();
         OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+        if (isNull(organisation)) {
+            return NocAnswersResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
         if (organisationRepository
             .isOrganisationLinkedToPartyAndActive(organisation.getOrganisationIdentifier(), matchedParty.getId())) {
@@ -145,6 +152,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         UUID currentUserId = currentUserId(context);
         OrganisationDetailsResponse organisationDetails =
             organisationDetailsService.getOrganisationDetails(currentUserId.toString());
+
+        if (isNull(organisationDetails)) {
+            return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
         NocAccessChangePlan accessChangePlan =
             planAccessChanges(pcsCase, matchedParty, currentUserId.toString(), organisationDetails);
