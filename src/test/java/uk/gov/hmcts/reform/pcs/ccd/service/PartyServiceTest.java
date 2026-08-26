@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
@@ -50,6 +52,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -84,6 +87,11 @@ class PartyServiceTest {
 
     @BeforeEach
     void setUp() {
+        var orgDetails = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORG_ID)
+            .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
+            .build();
+        lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
         underTest = new PartyService(partyRepository, addressMapper, organisationService);
     }
 
@@ -614,7 +622,6 @@ class PartyServiceTest {
             initialisedClaimant.setClaimCreator(true);
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(initialisedClaimant));
 
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
                                                                   .claimantName("Claimant name")
                                                                   .isClaimantNameCorrect(VerticalYesNo.YES)
@@ -675,7 +682,6 @@ class PartyServiceTest {
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
@@ -1238,8 +1244,7 @@ class PartyServiceTest {
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(null);
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest
-                .createAllParties(pcsCase, pcsCaseEntity, claimEntity));
+            Throwable throwable = catchThrowable(() -> underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity));
 
             // Then
             assertThat(throwable)
@@ -1613,8 +1618,6 @@ class PartyServiceTest {
         @Test
         void shouldAddClaimantCarryingOnlyTheOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
 
             underTest.createClaimantStub(caseEntity);
 
@@ -1629,9 +1632,9 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutAnOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(null);
 
-            assertThatThrownBy(() ->
-                                   underTest.createClaimantStub(caseEntity))
+            assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Organisation must be provided");
 
@@ -1641,12 +1644,15 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
+            var orgDetails = OrganisationDetailsResponse.builder()
+                .organisationIdentifier(ORG_ID)
+                .organisationProfileIds(List.of())
+                .build();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
 
             assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Organisation profile ID must be provided");
+                .hasMessageContaining("No organisation profile id found for organisation");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }

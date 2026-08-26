@@ -60,12 +60,8 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        Optional<ClaimPartyOrganisationEntity> existingEntity =
-            this.claimPartyOrganisationList
-                .stream()
-                .filter(e -> e.getParty().getId().equals(party.getId()))
-                .findFirst();
-        if (existingEntity.isPresent() && YesOrNo.YES.equals(existingEntity.get().getActive())) {
+        if (this.claimPartyOrganisationList.stream()
+            .anyMatch(e -> e.getParty().getId() == party.getId())) {
             log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
                      party.getId(), this.getId());
             return;

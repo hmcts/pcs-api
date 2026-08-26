@@ -49,10 +49,9 @@ public class PartyService {
     private final OrganisationService organisationService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-        String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
+        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
         PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
-        populateClaimant(claimant, pcsCase, organisationId, orgProfileId);
+        populateClaimant(claimant, pcsCase, orgDetails.getOrganisationIdentifier(), orgDetails.getOrgProfileId());
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -168,10 +167,13 @@ public class PartyService {
      * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        String organisationId = organisationService.getOrganisationIdForCurrentUser();
-        String organisationProfileId = organisationService.getOrgProfileIdForCurrentUser();
+        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
 
-        requireNonNull(organisationId, "Organisation must be provided to create a case");
+        requireNonNull(orgDetails, "Organisation must be provided to create a case");
+
+        String organisationId = orgDetails.getOrganisationIdentifier();
+        String organisationProfileId = orgDetails.getOrgProfileId();
+
         if (StringUtils.isBlank(organisationProfileId)) {
             throw new IllegalArgumentException(
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);

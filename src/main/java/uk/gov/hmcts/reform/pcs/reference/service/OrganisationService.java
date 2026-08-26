@@ -149,6 +149,15 @@ public class OrganisationService {
     }
 
     /**
+     * Fetches the record and resolves the profile from it in one call.
+     *
+     * @return The organisation profile for the current user, or null if it cannot be resolved
+     */
+    public String getOrgProfileIdForCurrentUser() {
+        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
+    }
+
+    /**
      * The organisation profile PRM keys the group access catalogue on. Every organisation also
      * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
      * single profile that identifies an access type.
@@ -162,15 +171,6 @@ public class OrganisationService {
         return organisationDetails.getOrganisationProfileIds().stream()
             .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
             .findFirst().orElse(null);
-    }
-
-    /**
-     * Fetches the record and resolves the profile from it in one call.
-     *
-     * @return The organisation profile for the current user, or null if it cannot be resolved
-     */
-    public String getOrgProfileIdForCurrentUser() {
-        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
     }
 
     /**
