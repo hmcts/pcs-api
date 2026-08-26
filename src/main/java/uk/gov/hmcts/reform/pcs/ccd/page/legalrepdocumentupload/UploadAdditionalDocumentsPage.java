@@ -51,7 +51,7 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
         String pageKey = getPageKey();
         pageBuilder
             .page(pageKey)
-            .pageLabel("Upload additional documents zz")
+            .pageLabel("Upload additional documents")
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
