@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -89,6 +91,8 @@ class DocumentServiceTest {
     @Mock
     private DocumentTypeMapper documentTypeMapper;
     @Mock
+    private DocumentCategoryMapper documentCategoryMapper;
+    @Mock
     private TaskDescriptionService taskDescriptionService;
     @Mock
     private CamundaService camundaService;
@@ -109,7 +113,8 @@ class DocumentServiceTest {
         when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
-                                        documentTypeMapper, taskDescriptionService, camundaService);
+                                        documentTypeMapper, documentCategoryMapper,
+                                        taskDescriptionService, camundaService);
     }
 
     @Test
@@ -1467,94 +1472,191 @@ class DocumentServiceTest {
             .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
-    @Test
-    void shouldCheckClaimantDocumentTypeFirstWhenResolving() {
-        // Given
-        ClaimantDocumentType claimantDocumentType = mock(ClaimantDocumentType.class);
-        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
-            .claimantDocumentType(claimantDocumentType)
-            .claimantDocumentTypeWales(mock(ClaimantDocumentTypeWales.class))
-            .defendantDocumentType(mock(DefendantDocumentType.class))
-            .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
-            .build();
+    @Nested
+    @DisplayName("Resolve document type tests")
+    class ResolveDocumentTypeTests {
+        @Test
+        void shouldCheckClaimantDocumentTypeFirstWhenResolvingType() {
+            // Given
+            ClaimantDocumentType claimantDocumentType = mock(ClaimantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(claimantDocumentType)
+                .claimantDocumentTypeWales(mock(ClaimantDocumentTypeWales.class))
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
 
-        DocumentType expectedDocumentType = mock(DocumentType.class);
-        when(documentTypeMapper.mapToDocumentType(claimantDocumentType)).thenReturn(expectedDocumentType);
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(claimantDocumentType)).thenReturn(expectedDocumentType);
 
-        // When
-        DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
 
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
-        verifyNoMoreInteractions(documentTypeMapper);
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckClaimantDocumentTypeWalesSecondWhenResolvingType() {
+            // Given
+            ClaimantDocumentTypeWales claimantDocumentTypeWales = mock(ClaimantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(claimantDocumentTypeWales)
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(claimantDocumentTypeWales)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeThirdWhenResolvingType() {
+            // Given
+            DefendantDocumentType defendantDocumentType = mock(DefendantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(defendantDocumentType)
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(defendantDocumentType)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeFourthWhenResolvingType() {
+            // Given
+            DefendantDocumentTypeWales defendantDocumentTypeWales = mock(DefendantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(null)
+                .defendantDocumentTypeWales(defendantDocumentTypeWales)
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(defendantDocumentTypeWales)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
     }
 
-    @Test
-    void shouldCheckClaimantDocumentTypeWalesSecondWhenResolving() {
-        // Given
-        ClaimantDocumentTypeWales claimantDocumentTypeWales = mock(ClaimantDocumentTypeWales.class);
-        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
-            .claimantDocumentType(null)
-            .claimantDocumentTypeWales(claimantDocumentTypeWales)
-            .defendantDocumentType(mock(DefendantDocumentType.class))
-            .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
-            .build();
+    @Nested
+    @DisplayName("Resolve document category tests")
+    class ResolveDocumentCategoryTests {
+        @Test
+        void shouldCheckClaimantDocumentTypeFirstWhenResolvingCategory() {
+            // Given
+            ClaimantDocumentType claimantDocumentType = mock(ClaimantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(claimantDocumentType)
+                .claimantDocumentTypeWales(mock(ClaimantDocumentTypeWales.class))
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
 
-        DocumentType expectedDocumentType = mock(DocumentType.class);
-        when(documentTypeMapper.mapToDocumentType(claimantDocumentTypeWales)).thenReturn(expectedDocumentType);
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(claimantDocumentType)).thenReturn(Optional.of(expectedCategory));
 
-        // When
-        DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
 
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
-        verifyNoMoreInteractions(documentTypeMapper);
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckClaimantDocumentTypeWalesSecondWhenResolvingCategory() {
+            // Given
+            ClaimantDocumentTypeWales claimantDocumentTypeWales = mock(ClaimantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(claimantDocumentTypeWales)
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(claimantDocumentTypeWales))
+                .thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeThirdWhenResolvingCategory() {
+            // Given
+            DefendantDocumentType defendantDocumentType = mock(DefendantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(defendantDocumentType)
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(defendantDocumentType)).thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeFourthWhenResolvingCategory() {
+            // Given
+            DefendantDocumentTypeWales defendantDocumentTypeWales = mock(DefendantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(null)
+                .defendantDocumentTypeWales(defendantDocumentTypeWales)
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(defendantDocumentTypeWales))
+                .thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
     }
-
-    @Test
-    void shouldCheckDefendantDocumentTypeThirdWhenResolving() {
-        // Given
-        DefendantDocumentType defendantDocumentType = mock(DefendantDocumentType.class);
-        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
-            .claimantDocumentType(null)
-            .claimantDocumentTypeWales(null)
-            .defendantDocumentType(defendantDocumentType)
-            .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
-            .build();
-
-        DocumentType expectedDocumentType = mock(DocumentType.class);
-        when(documentTypeMapper.mapToDocumentType(defendantDocumentType)).thenReturn(expectedDocumentType);
-
-        // When
-        DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
-
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
-        verifyNoMoreInteractions(documentTypeMapper);
-    }
-
-    @Test
-    void shouldCheckDefendantDocumentTypeFourthWhenResolving() {
-        // Given
-        DefendantDocumentTypeWales defendantDocumentTypeWales = mock(DefendantDocumentTypeWales.class);
-        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
-            .claimantDocumentType(null)
-            .claimantDocumentTypeWales(null)
-            .defendantDocumentType(null)
-            .defendantDocumentTypeWales(defendantDocumentTypeWales)
-            .build();
-
-        DocumentType expectedDocumentType = mock(DocumentType.class);
-        when(documentTypeMapper.mapToDocumentType(defendantDocumentTypeWales)).thenReturn(expectedDocumentType);
-
-        // When
-        DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
-
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
-        verifyNoMoreInteractions(documentTypeMapper);
-    }
-
 
     @Test
     void shouldCreateEmptyDocumentListWhenNoLegalRepDocuments() {

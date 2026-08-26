@@ -58,6 +58,7 @@ public class DocumentService {
     private final DocumentIdExtractor documentIdExtractor;
     private final DocumentNameService documentNameService;
     private final DocumentTypeMapper documentTypeMapper;
+    private final DocumentCategoryMapper documentCategoryMapper;
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
 
@@ -517,6 +518,20 @@ public class DocumentService {
         }
     }
 
+    Optional<CaseFileCategory> resolveDocumentCategory(LegalRepDocument legalRepDoc) {
+        if (legalRepDoc.getClaimantDocumentType() != null) {
+            return documentCategoryMapper.mapToCategory(legalRepDoc.getClaimantDocumentType());
+        } else if (legalRepDoc.getClaimantDocumentTypeWales() != null) {
+            return documentCategoryMapper.mapToCategory(legalRepDoc.getClaimantDocumentTypeWales());
+        } else if (legalRepDoc.getDefendantDocumentType() != null) {
+            return documentCategoryMapper.mapToCategory(legalRepDoc.getDefendantDocumentType());
+        } else if (legalRepDoc.getDefendantDocumentTypeWales() != null) {
+            return documentCategoryMapper.mapToCategory(legalRepDoc.getDefendantDocumentTypeWales());
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public void createDocumentEntitiesFromLegalRepDocuments(
         List<LegalRepDocument> legalRepDocuments,
         PcsCaseEntity pcsCaseEntity,
@@ -528,7 +543,7 @@ public class DocumentService {
 
                 DocumentType resolvedDocumentType = resolveDocumentType(legalRepDoc);
 
-                String categoryId = mapDocumentTypeToCategory(resolvedDocumentType)
+                String categoryId = resolveDocumentCategory(legalRepDoc)
                     .map(CaseFileCategory::getId)
                     .orElse(null);
 
