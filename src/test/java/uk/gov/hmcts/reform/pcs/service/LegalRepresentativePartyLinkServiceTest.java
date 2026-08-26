@@ -171,6 +171,7 @@ class LegalRepresentativePartyLinkServiceTest {
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
         verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, 
             partyEntity, LEGAL_REP_EMAIL);
+        verify(notificationService).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(partyEntity);
     }
 
     @Test
@@ -515,6 +516,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(notificationService, never()).sendNoticeOfChangeCompletedEmailNotification(any());
+        verify(notificationService, never()).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(any());
         verify(organisationRepository, never()).save(any());
     }
 

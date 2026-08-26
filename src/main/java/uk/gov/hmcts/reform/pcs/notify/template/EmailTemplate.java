@@ -22,7 +22,8 @@ public enum EmailTemplate {
     // Notice of Change Email Templates
     NOTICE_OF_CHANGE_COMPLETED("notice-of-change-completed"),
     NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP("notice-of-change-complete-legal-rep"),
-    NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING("notice-of-change-no-longer-representing");
+    NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING("notice-of-change-no-longer-representing"),
+    NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED("notice-of-change-other-party-represented");
 
     private final String templateKey;
 

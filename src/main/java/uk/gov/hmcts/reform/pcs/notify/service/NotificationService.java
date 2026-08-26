@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -34,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -193,6 +196,33 @@ public class NotificationService {
             notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
                 legalRepresentativeOrganisation, representedDefendant)
         );
+    }
+
+    public void sendNoticeOfChangeNonRepresentedPartiesEmailNotification(PartyEntity representedDefendant) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        List<PartyEntity> recipients = new ArrayList<>();
+        recipients.add(partyService.getPrimaryClaimantPartyEntity(pcsCase));
+
+        pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
+            .forEach(recipients::add);
+
+        for (PartyEntity recipient : recipients) {
+            if (recipient.getEmailAddress() == null) {
+                log.info("Skipping notice of change email to party {}: no email address", recipient.getId());
+                continue;
+            }
+
+            sendEmail(
+                partyRecipient(recipient),
+                EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED,
+                NotificationClaimType.NOTICE_OF_CHANGE,
+                notificationPersonalisationFactory.forParty(recipient, pcsCase)
+            );
+        }
     }
 
     private NotificationRecipient partyRecipient(PartyEntity party) {

@@ -129,6 +129,7 @@ public class LegalRepresentativePartyLinkService {
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));
         notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
             legalRepresentativeOrganisation, defendantPartyEntity, legalRepEmail);
+        notificationService.sendNoticeOfChangeNonRepresentedPartiesEmailNotification(defendantPartyEntity);
     }
 
     private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
