@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -95,26 +97,20 @@ public class PcsCaseService {
         }
     }
 
-    public void patchSupportFlags(long caseReference, PCSCase pcsCase) {
-        if (pcsCase == null) {
-            throw new IllegalArgumentException("PCSCase cannot be null");
-        }
+    public void patchSupportFlags(long caseReference, List<ListValue<PartySupport>> partySupport) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (pcsCase.getPartySupport() != null) {
-            caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
+        if (partySupport != null) {
+            caseFlagService.mergePartySupportFlags(partySupport, pcsCaseEntity.getParties(),
                                                   securityContextService.getCurrentUserId());
         }
     }
 
-    public void patchReviewedSupportFlags(long caseReference, PCSCase pcsCase) {
-        if (pcsCase == null) {
-            throw new IllegalArgumentException("PCSCase cannot be null");
-        }
+    public void patchReviewedSupportFlags(long caseReference, List<ListValue<PartySupport>> reviewedSupport) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (pcsCase.getSupportReviewFlags() != null) {
-            caseFlagService.applyReviewedSupportFlags(pcsCase.getSupportReviewFlags(), pcsCaseEntity.getParties());
+        if (reviewedSupport != null) {
+            caseFlagService.applyReviewedSupportFlags(reviewedSupport, pcsCaseEntity.getParties());
         }
     }
 

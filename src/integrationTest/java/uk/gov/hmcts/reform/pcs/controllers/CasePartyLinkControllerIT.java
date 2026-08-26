@@ -32,7 +32,6 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
@@ -154,12 +153,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         final UUID activeId = flagByStatusAndVisibility(saved, "Active", FlagVisibility.EXTERNAL);
         final UUID internalId = flagByStatusAndVisibility(saved, "Requested", FlagVisibility.INTERNAL);
 
-        PCSCase pcsCase = PCSCase.builder()
-            .supportReviewFlags(reviewedSupport(party.getId(), requestedId,
-                                                "Not approved", "Cannot be accommodated"))
-            .build();
-
-        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchReviewedSupportFlags(
+            caseReference,
+            reviewedSupport(party.getId(), requestedId, "Not approved", "Cannot be accommodated"));
         pcsCaseRepository.flush();
 
         List<CasePartyFlagEntity> persisted = persistedFlags(caseReference);
@@ -192,11 +188,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         UUID activeId = flagByStatusAndVisibility(persistedFlags(caseReference), "Active", FlagVisibility.EXTERNAL);
 
-        PCSCase pcsCase = PCSCase.builder()
-            .supportReviewFlags(reviewedSupport(party.getId(), activeId, "Inactive", "Attempted change"))
-            .build();
-
-        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchReviewedSupportFlags(
+            caseReference,
+            reviewedSupport(party.getId(), activeId, "Inactive", "Attempted change"));
         pcsCaseRepository.flush();
 
         assertThat(flagById(persistedFlags(caseReference), activeId).getDefaultStatus()).isEqualTo("Active");

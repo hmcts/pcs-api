@@ -55,7 +55,7 @@ class RequestSupportTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase.getPartySupport());
     }
 
     @Test

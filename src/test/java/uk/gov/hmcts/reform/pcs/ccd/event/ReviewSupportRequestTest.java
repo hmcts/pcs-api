@@ -55,7 +55,7 @@ class ReviewSupportRequestTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchReviewedSupportFlags(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchReviewedSupportFlags(TEST_CASE_REFERENCE, pcsCase.getSupportReviewFlags());
     }
 
     @Test

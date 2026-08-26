@@ -55,7 +55,7 @@ public class ManageSupport implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("External user updated support for {}", caseReference);
 
-        pcsCaseService.patchSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchSupportFlags(caseReference, pcsCase.getPartySupport());
 
         return SubmitResponse.defaultResponse();
     }

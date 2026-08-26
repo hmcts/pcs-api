@@ -53,6 +53,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
@@ -574,10 +575,8 @@ class PcsCaseServiceTest {
             .id(UUID.randomUUID().toString())
             .value(PartySupport.builder().build())
             .build());
-        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
-
         // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchSupportFlags(CASE_REFERENCE, partySupport);
 
         // Then
         verify(caseFlagService).mergePartySupportFlags(
@@ -588,47 +587,53 @@ class PcsCaseServiceTest {
     void shouldNotMergeSupportFlagsWhenPartySupportIsAbsent() {
         // Given
         stubFindCase();
-        PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchSupportFlags(CASE_REFERENCE, null);
 
         // Then
         verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
     }
 
     @Test
-    void shouldThrowExceptionPatchingSupportFlagsWithNullCaseData() {
+    void shouldTouchNothingButThePartiesWhenPatchingSupportFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+
         // When
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                         () -> underTest.patchSupportFlags(
-                                                             CASE_REFERENCE, null));
+        underTest.patchSupportFlags(CASE_REFERENCE, List.of(ListValue.<PartySupport>builder()
+            .id(UUID.randomUUID().toString())
+            .value(PartySupport.builder().build())
+            .build()));
 
         // Then
-        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+        verify(pcsCaseEntity).getParties();
+        verifyNoMoreInteractions(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(any());
     }
 
     @Test
-    void shouldThrowExceptionOnPatchReviewedSupportFlagsWithNullCaseData() {
-        // Given ... When
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> underTest.patchReviewedSupportFlags(
-                                                              CASE_REFERENCE, null));
+    void shouldTouchNothingButThePartiesWhenPatchingReviewedSupportFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, new ArrayList<>());
 
         // Then
-        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+        verify(pcsCaseEntity).getParties();
+        verifyNoMoreInteractions(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(any());
     }
 
     @Test
     void shouldPatchReviewedSupportFlags() {
         // Given
         stubFindCase();
-        PCSCase pcsCase = PCSCase.builder()
-            .supportReviewFlags(new ArrayList<>())
-            .build();
 
         // When
-        underTest.patchReviewedSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, new ArrayList<>());
 
         // Then
         verify(caseFlagService).applyReviewedSupportFlags(any(), any());
@@ -638,10 +643,9 @@ class PcsCaseServiceTest {
     void shouldHandleNoFlagsWhenCallingPatchReviewedSupportFlags() {
         // Given
         stubFindCase();
-        PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.patchReviewedSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, null);
 
         // Then
         verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());

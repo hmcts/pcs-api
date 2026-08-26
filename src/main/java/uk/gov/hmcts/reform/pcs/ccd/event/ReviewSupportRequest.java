@@ -63,7 +63,7 @@ public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole>
 
         log.debug("Caseworker reviewed support request for {}", caseReference);
 
-        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase.getSupportReviewFlags());
 
         return SubmitResponse.defaultResponse();
     }
