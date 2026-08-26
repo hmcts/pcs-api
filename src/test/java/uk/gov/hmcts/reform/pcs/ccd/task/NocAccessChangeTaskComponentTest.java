@@ -77,7 +77,6 @@ class NocAccessChangeTaskComponentTest {
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(caseRoleAssignmentService).assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR);
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
-                                                                                   UUID.fromString(userId),
                                                                                    organisationDetailsResponse);
     }
 

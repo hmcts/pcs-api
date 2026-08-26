@@ -64,4 +64,22 @@ class RoleToAccessProfilesTest {
             .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
         assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
     }
+
+    /**
+     * One name per capacity: each group-access role resolves to the access profile of the same
+     * name, which is where its permissions attach.
+     */
+    @Test
+    void shouldMapGroupAccessRolesToProfilesOfTheSameName() {
+        assertThat(UserRole.GA_CLAIMANT.getAccessProfiles())
+            .containsExactly(AccessProfile.GA_CLAIMANT.getRole());
+        assertThat(UserRole.GA_CLAIMANT_SOLICITOR.getAccessProfiles())
+            .containsExactly(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole());
+    }
+
+    @Test
+    void shouldGiveTheGroupAccessProfilesRead() {
+        assertThat(AccessProfile.GA_CLAIMANT.getCaseTypePermissions()).contains("R");
+        assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.getCaseTypePermissions()).contains("R");
+    }
 }

@@ -1,18 +1,18 @@
 package uk.gov.hmcts.reform.pcs.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Slf4j
-@Testcontainers
 public abstract class AbstractPostgresContainerIT {
 
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static final PostgreSQLContainer<?> postgres =
+        new PostgreSQLContainer<>("postgres:16-alpine")
+            .withCommand("postgres", "-c", "max_connections=300");
+
+    static {
+        postgres.start();
+    }
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
