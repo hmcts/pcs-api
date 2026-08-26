@@ -279,8 +279,7 @@ class SubmitEventHandlerTest {
             // When
             SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
 
-            // Then - a client-supplied party id that does not resolve is a validation error,
-            // not an unhandled 500.
+            // Then - an unresolved party id is a validation error, not an unhandled 500
             assertThat(submitResponse.getErrors())
                 .containsExactly("The selected party is not available on this case");
             verify(genAppService, never())

@@ -77,10 +77,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         try {
             applicantParty = getApplicantParty(caseReference, caseData);
         } catch (PartyNotFoundException | IllegalArgumentException ex) {
-            // currentRepresentedPartyId is client-supplied case data - the server sets it from a
-            // case+org scoped list at start, so a value that no longer resolves is bad input, not
-            // a server fault. Return a validation error rather than a 500 (which CCD reports as a
-            // 502, indistinguishable from an outage).
+            // client-supplied party id that no longer resolves is bad input, not a server fault
             log.warn("Applicant party could not be resolved on genapp submit for case {}: {}",
                 caseReference, ex.getMessage());
             return errorResponse("The selected party is not available on this case");
