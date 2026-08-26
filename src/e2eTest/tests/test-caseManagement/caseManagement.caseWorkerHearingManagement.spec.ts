@@ -61,7 +61,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
-  test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
+  test('Case management - Case Worker Edit a hearing @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput, 'dateTime');
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
@@ -95,7 +95,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
-  test('Case management - Case Worker Cancel a hearing @CM @regression', async () => {
+  test('Case management - Case Worker Cancel a hearing @CM', async () => {
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -115,7 +115,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 
-  test('Case management - Case Worker Add a hearing @CM @regression', async () => {
+  test('Case management - Case Worker Add a hearing @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
     let typeOfHearing = addHearing.typeOfHearingOption[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
