@@ -129,11 +129,7 @@ public enum GroupAccessType implements CCDAccessGroup {
             .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
     }
 
-    /**
-     * Hidden from ManageOrg on the staging case type, which duplicates every row of the main
-     * one and doubles each checkbox. User ticks are keyed without case type, and ORM ignores
-     * Display, so PCS-staging role derivation is unaffected.
-     */
+    // Hidden on the staging case type so ManageOrg does not show duplicate checkboxes.
     public boolean isDisplay() {
         return display && !CaseType.isSuffixedCaseType();
     }
