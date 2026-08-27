@@ -22,19 +22,19 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
@@ -48,11 +48,10 @@ public class PartyService {
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
 
-    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
-                                 String organisationIdForCurrentUser) {
-        String orgProfileId = organisationService.getOrgProfileIdForCurrentUser();
+    public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
         PartyEntity claimant = findClaimantStub(pcsCaseEntity).orElseGet(PartyEntity::new);
-        populateClaimant(claimant, pcsCase, organisationIdForCurrentUser, orgProfileId);
+        populateClaimant(claimant, pcsCase, orgDetails.getOrganisationIdentifier(), orgDetails.getOrgProfileId());
         pcsCaseEntity.addParty(claimant);
         claimEntity.addParty(claimant, PartyRole.CLAIMANT);
 
@@ -162,15 +161,19 @@ public class PartyService {
     }
 
     /**
-     * Shell-case claimant party, marked claim creator so CaseAccessGroups derive during draft.
-     * Both org values are required - without them no group derives and nobody can open the case.
+     * The claimant party a shell case is created with, marked as the claim creator so CaseAccessGroups
+     * derive during the draft phase, before there is a claim role to read. Both organisation values are
+     * required: without them the case derives no group, and group access is the only way in, so nobody
+     * could open it.
      */
     public void createClaimantStub(PcsCaseEntity pcsCaseEntity) {
-        OrganisationDetailsResponse organisationDetails = organisationService.getOrganisationDetailsForCurrentUser();
-        String organisationId = organisationService.getOrganisationId(organisationDetails);
-        String organisationProfileId = organisationService.getOrgProfileId(organisationDetails);
+        var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
 
-        Objects.requireNonNull(organisationId, "Organisation must be provided to create a case");
+        requireNonNull(orgDetails, "Organisation must be provided to create a case");
+
+        String organisationId = orgDetails.getOrganisationIdentifier();
+        String organisationProfileId = orgDetails.getOrgProfileId();
+
         if (StringUtils.isBlank(organisationProfileId)) {
             throw new IllegalArgumentException(
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);
@@ -192,7 +195,7 @@ public class PartyService {
                                   String organisationIdForCurrentUser, String orgProfileId) {
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
-        Objects.requireNonNull(claimantInformation, "Claimant must be provided");
+        requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
         setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
@@ -208,7 +211,7 @@ public class PartyService {
 
         claimantParty.setEmailAddress(contactEmail);
         claimantParty.setNameKnown(VerticalYesNo.YES);
-        
+
         VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);
@@ -253,7 +256,7 @@ public class PartyService {
     }
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {
-        Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
+        requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
 
         List<PartyEntity> allDefendants = new ArrayList<>();
         allDefendants.add(createDefendant(pcsCase.getDefendant1()));
@@ -298,7 +301,7 @@ public class PartyService {
             return List.of();
         }
 
-        Objects.requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
+        requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
 
         List<PartyEntity> allUnderlesseeOrMortgagees = new ArrayList<>();
         allUnderlesseeOrMortgagees.add(createUnderlesseeOrMortgagee(pcsCase.getUnderlesseeOrMortgagee1()));
