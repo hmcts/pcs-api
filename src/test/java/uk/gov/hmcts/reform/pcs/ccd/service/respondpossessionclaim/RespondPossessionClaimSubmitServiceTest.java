@@ -400,6 +400,4 @@ class RespondPossessionClaimSubmitServiceTest {
         verify(translationWAService, never())
             .createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
-
-
 }

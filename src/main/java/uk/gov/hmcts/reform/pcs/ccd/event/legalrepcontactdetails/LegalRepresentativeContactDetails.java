@@ -37,6 +37,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
                 .forState(State.CASE_ISSUED)
                 .name("Amend representative’s details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .endButtonLabel("Submit");
 
         new PageBuilder(eventBuilder)

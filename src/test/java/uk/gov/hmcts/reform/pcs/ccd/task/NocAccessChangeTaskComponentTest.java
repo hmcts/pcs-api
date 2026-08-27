@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -21,6 +19,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,9 +29,6 @@ class NocAccessChangeTaskComponentTest {
 
     private static final int MAX_RETRIES = 3;
     private static final Duration BACKOFF_DELAY = Duration.ofSeconds(10);
-
-    @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
 
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
@@ -50,7 +47,6 @@ class NocAccessChangeTaskComponentTest {
     @BeforeEach
     void setUp() {
         nocAccessChangeTaskComponent = new NocAccessChangeTaskComponent(
-            caseRoleAssignmentService,
             legalRepresentativePartyLinkService,
             MAX_RETRIES,
             BACKOFF_DELAY
@@ -72,12 +68,13 @@ class NocAccessChangeTaskComponentTest {
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
 
+        // when
         CustomTask<NocAccessChangeTaskData> task = nocAccessChangeTaskComponent.nocAccessChangeTask();
         CompletionHandler<NocAccessChangeTaskData> completionHandler =
             task.execute(taskInstance, executionContext);
 
+        // then - access is granted through the case access groups, so the task only links the representative
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-        verify(caseRoleAssignmentService).assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR);
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
@@ -88,29 +85,33 @@ class NocAccessChangeTaskComponentTest {
         // given
         String partyId = UUID.randomUUID().toString();
         String userId = UUID.randomUUID().toString();
+        String email = "solicitor@example.com";
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .partyId(partyId)
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .caseReference("1")
             .build();
 
         when(taskInstance.getData()).thenReturn(taskData);
 
-        Execution execution = org.mockito.Mockito.mock(Execution.class);
+        Execution execution = mock(Execution.class);
         when(executionContext.getExecution()).thenReturn(execution);
 
         RuntimeException expectedException = new RuntimeException("Database error or service unavailable");
-        when(caseRoleAssignmentService.assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR))
-            .thenThrow(expectedException);
+        doThrow(expectedException).when(legalRepresentativePartyLinkService)
+            .linkLegalRepresentativeToParty(1L, partyId, email, organisationDetailsResponse);
 
         CustomTask<NocAccessChangeTaskData> task = nocAccessChangeTaskComponent.nocAccessChangeTask();
 
-        // when & then
+        // when & then - the failure propagates so db-scheduler can retry
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
             .isInstanceOf(RuntimeException.class)
             .hasMessage("Database error or service unavailable");
 
-        verify(caseRoleAssignmentService).assignRasRole(1L, userId, UserRole.DEFENDANT_SOLICITOR);
+        verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
+                                                                                   email,
+                                                                                   organisationDetailsResponse);
     }
 }
