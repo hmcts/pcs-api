@@ -58,10 +58,12 @@ class NocAccessChangeTaskComponentTest {
         // given
         String partyId = UUID.randomUUID().toString();
         String userId = UUID.randomUUID().toString();
+        String email = "solicitor@example.com";
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .partyId(partyId)
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .caseReference("1")
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
@@ -74,6 +76,7 @@ class NocAccessChangeTaskComponentTest {
         // then - access is granted through the case access groups, so the task only links the representative
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
+                                                                                   email,
                                                                                    organisationDetailsResponse);
     }
 
@@ -82,10 +85,12 @@ class NocAccessChangeTaskComponentTest {
         // given
         String partyId = UUID.randomUUID().toString();
         String userId = UUID.randomUUID().toString();
+        String email = "solicitor@example.com";
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .partyId(partyId)
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .caseReference("1")
             .build();
 
@@ -96,7 +101,7 @@ class NocAccessChangeTaskComponentTest {
 
         RuntimeException expectedException = new RuntimeException("Database error or service unavailable");
         doThrow(expectedException).when(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(1L, partyId, organisationDetailsResponse);
+            .linkLegalRepresentativeToParty(1L, partyId, email, organisationDetailsResponse);
 
         CustomTask<NocAccessChangeTaskData> task = nocAccessChangeTaskComponent.nocAccessChangeTask();
 
@@ -106,6 +111,7 @@ class NocAccessChangeTaskComponentTest {
             .hasMessage("Database error or service unavailable");
 
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
+                                                                                   email,
                                                                                    organisationDetailsResponse);
     }
 }

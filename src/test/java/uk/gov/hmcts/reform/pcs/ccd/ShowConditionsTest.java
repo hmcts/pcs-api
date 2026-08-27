@@ -76,6 +76,24 @@ class ShowConditionsTest {
     }
 
     @ParameterizedTest
+    @MethodSource("joinWithOrScenarios")
+    void shouldJoinShowConditionWithOr(List<String> showConditionsToJoin, String expectedJoinedShowConditions) {
+        String showCondition = ShowConditions.or(showConditionsToJoin.toArray(new String[0]));
+
+        assertThat(showCondition).isEqualTo(expectedJoinedShowConditions);
+    }
+
+    private static Stream<Arguments> joinWithOrScenarios() {
+        return Stream.of(
+            // Show conditions to join, expected joined show condition
+            argumentSet("no params", List.of(), ""),
+            argumentSet("one param", List.of("a"), "a"),
+            argumentSet("two params", List.of("a", "b"), "a OR b"),
+            argumentSet("three params", List.of("a", "b", "c"), "a OR b OR c")
+        );
+    }
+
+    @ParameterizedTest
     @MethodSource("featureFlagScenarios")
     void shouldCreateShowConditionForFeatureFlags(List<FeatureFlag> featureFlags,
                                                   String expectedShowCondition) {

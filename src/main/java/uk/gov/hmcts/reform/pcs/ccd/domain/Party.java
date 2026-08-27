@@ -72,6 +72,6 @@ public class Party {
         label = "Party Flags (external)",
         retainHiddenValue = true
     )
-    private Flags defendantFlagsExternal;
+    private Flags partyFlagsExternal;
 
 }
