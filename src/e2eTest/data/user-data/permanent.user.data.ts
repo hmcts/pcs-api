@@ -49,7 +49,7 @@ export const user = {
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   localAuthorityOrg1Usr2:  {
-    email: 'pcs.local.auth1user2@test.com',
+    email: 'pcs.local.auth2user2@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   localAuthorityOrg2Usr1:  {
