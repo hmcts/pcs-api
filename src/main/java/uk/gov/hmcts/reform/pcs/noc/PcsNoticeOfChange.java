@@ -157,8 +157,13 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
         }
 
-        NocAccessChangePlan accessChangePlan =
-            planAccessChanges(pcsCase, matchedParty, currentUserId.toString(), organisationDetails);
+        NocAccessChangePlan accessChangePlan = planAccessChanges(
+            pcsCase,
+            matchedParty,
+            context.userId(),
+            context.email(),
+            organisationDetails
+        );
 
         scheduleAccessChanges(accessChangePlan);
 
@@ -169,17 +174,19 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCase,
         PartyEntity matchedParty,
         String currentUserIdString,
+        String currentUserEmail,
         OrganisationDetailsResponse organisationDetailsResponse
     ) {
         List<NocAccessChangeTaskData> changes = new ArrayList<>();
-        changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, organisationDetailsResponse,
-                                 matchedParty.getId()));
+        changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, currentUserEmail,
+                                 organisationDetailsResponse, matchedParty.getId()));
         return new NocAccessChangePlan(changes);
     }
 
     private NocAccessChangeTaskData accessChange(
         long caseReference,
         String userId,
+        String email,
         OrganisationDetailsResponse organisationDetailsResponse,
         UUID partyId
     ) {
@@ -187,6 +194,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             .caseReference(String.valueOf(caseReference))
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .partyId(partyId.toString())
             .build();
     }
