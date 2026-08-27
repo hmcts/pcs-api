@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -29,8 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
@@ -42,21 +39,17 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -83,10 +76,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private GenAppVisibilityService genAppVisibilityService;
     @Mock(strictness = LENIENT)
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    @Mock
-    private UserRoleService userRoleService;
     @Mock(strictness = LENIENT)
     private PartyService partyService;
+    @Mock
+    private PartyEntity primaryClaimantParty;
 
     @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -94,6 +87,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
 
         setEventUnderTest(legalRepDocumentUpload);
     }
@@ -109,7 +103,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldBuildValidCategoriesWhenGenAppDatesExist() {
-            stubUserRoles(DEFENDANT_SOLICITOR);
             LocalDateTime laterDate = LocalDateTime.of(2026, 4, 25, 10, 0);
             LocalDateTime earlierDate = LocalDateTime.of(2026, 4, 20, 10, 0);
 
@@ -198,7 +191,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldKeepOnlyMainClaimOrCounterclaimWhenNoGenAppDatesAvailable() {
-            stubUserRoles(DEFENDANT_SOLICITOR);
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -211,7 +203,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
-            stubUserRoles(DEFENDANT_SOLICITOR);
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -225,7 +216,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @Test
         void shouldSetWalesFlagForWales() {
             // Given
-            stubUserRoles(DEFENDANT_SOLICITOR);
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(WALES);
 
             // When
@@ -239,7 +229,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @EnumSource(value = LegislativeCountry.class, names = "WALES", mode = EnumSource.Mode.EXCLUDE)
         void shouldSetNotWalesFlagForOtherCountries(LegislativeCountry legislativeCountry) {
             // Given
-            stubUserRoles(DEFENDANT_SOLICITOR);
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);
 
             // When
@@ -252,7 +241,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @Test
         void shouldSetPartyTypeFieldForClaimant() {
             // Given
-            stubUserRoles(CLAIMANT_SOLICITOR);
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(primaryClaimantParty.getOrganisationId()).thenReturn(ORGANISATION_ID);
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -263,42 +253,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldSetPartyTypeFieldForDefendant() {
-            // Given
-            stubUserRoles(DEFENDANT_SOLICITOR);
-
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             // Then
             assertThat(result.getLegalRepDocumentUploadDetails().getPartyType()).isEqualTo(PartyType.DEFENDANT);
-        }
-
-        @Test
-        void shouldThrowExceptionWhenUserDoesNotHaveRequiredRole() {
-            // Given
-            stubUserRoles(UserRole.PCS_CASE_WORKER);
-
-            // When
-            Throwable throwable = catchThrowable(() -> callStartHandler(PCSCase.builder().build()));
-
-            // Then
-            assertThat(throwable)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User must have claimant solicitor or defendant solicitor role");
-        }
-
-        @Test
-        void shouldThrowExceptionWhenUserHasClaimantAndDefendantSolicitorRoles() {
-            // Given
-            stubUserRoles(UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
-
-            // When
-            Throwable throwable = catchThrowable(() -> callStartHandler(PCSCase.builder().build()));
-
-            // Then
-            assertThat(throwable)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User must have claimant solicitor or defendant solicitor role, not both");
         }
 
     }
@@ -325,14 +284,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     class SubmitHandlerTests {
 
         @Mock
-        private PartyEntity primaryClaimantParty;
-        @Mock
         private PartyEntity defendantParty;
 
         @BeforeEach
         void setUp() {
-            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
-
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty));
         }
@@ -340,7 +295,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @Test
         void shouldReturnErrorIfLrRepresentsMultipleDefendants() {
             // Given
-            stubUserRoles(DEFENDANT_SOLICITOR);
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
 
@@ -358,12 +312,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @MethodSource("documentUploadScenarios")
         void shouldUploadLegalRepDocument(String selectedCode,
                                           UUID genAppId,
-                                          boolean isDefendantLR,
+                                          boolean isDefendantLrScenario,
                                           boolean shouldSelectGenApp) {
 
             // Given
-            stubUserRoles(isDefendantLR ? DEFENDANT_SOLICITOR : CLAIMANT_SOLICITOR);
-
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
                 .document(mock(Document.class))
                 .build();
@@ -398,6 +350,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(genAppVisibilityService.getVisibleGenAppsToUser(allGenApps, currentUserId, ORGANISATION_ID))
                 .thenReturn(visibleGenApps);
 
+            when(primaryClaimantParty.getOrganisationId())
+                .thenReturn(isDefendantLrScenario ? "different org ID" : ORGANISATION_ID);
+
             PCSCase pcsCase = PCSCase.builder()
                 .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
                 .build();
@@ -406,7 +361,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             callSubmitHandler(pcsCase);
 
             // Then
-            PartyEntity expectedUploadingParty = isDefendantLR ? defendantParty : primaryClaimantParty;
+            PartyEntity expectedUploadingParty = isDefendantLrScenario ? defendantParty : primaryClaimantParty;
 
             verify(documentService)
                 .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,
@@ -422,48 +377,44 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 Arguments.argumentSet("Defendant LR, no selected category",
                                       null, // Selected code
                                       existingGenAppId,
-                                      true, // isDefendantLR
+                                      true, // isDefendantLrScenario
                                       false // Should select gen app
                 ),
                 Arguments.argumentSet("Defendant LR, main claim selected",
                                       DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name(), // Selected code
                                       existingGenAppId,
-                                      true, // isDefendantLR
+                                      true, // isDefendantLrScenario
                                       false // Should select gen app
                 ),
                 Arguments.argumentSet("Defendant LR, gen app selected",
                                       existingGenAppId.toString(), // Selected code
                                       existingGenAppId,
-                                      true, // isDefendantLR
+                                      true, // isDefendantLrScenario
                                       true  // Should select gen app
                 ),
                 Arguments.argumentSet("Claimant LR, no selected category",
                                       null, // Selected code
                                       existingGenAppId,
-                                      false, // isDefendantLR
+                                      false, // isDefendantLrScenario
                                       false  // Should select gen app
                 ),
                 Arguments.argumentSet("Claimant LR, main claim selected",
                                       DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name(), // Selected code
                                       existingGenAppId,
-                                      false, // isDefendantLR
+                                      false, // isDefendantLrScenario
                                       false  // Should select gen app
                 ),
                 Arguments.argumentSet("Claimant LR, gen app selected",
                                       existingGenAppId.toString(), // Selected code
                                       existingGenAppId,
-                                      false, // isDefendantLR
+                                      false, // isDefendantLrScenario
                                       true  // Should select gen app
                 )
             );
         }
 
-        @ParameterizedTest
-        @EnumSource(value = UserRole.class,
-            names = {"CLAIMANT_SOLICITOR", "DEFENDANT_SOLICITOR", "GA_CLAIMANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
-        void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull(UserRole userRole) {
-            stubUserRoles(userRole);
-
+        @Test
+        void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull() {
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument nullLegalRepDocument = null;
@@ -487,16 +438,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
-    }
-
-    private void stubUserRoles(UserRole... roles) {
-        List<String> rolesList = Arrays.stream(roles)
-            .map(UserRole::getRole)
-            .toList();
-
-        UserRoles userRoles = mock(UserRoles.class);
-        when(userRoles.roles()).thenReturn(rolesList);
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE)).thenReturn(userRoles);
     }
 
 }

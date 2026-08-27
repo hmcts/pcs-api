@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
@@ -37,7 +36,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -57,7 +55,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final GenAppVisibilityService genAppVisibilityService;
     private final OrganisationService organisationService;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    private final UserRoleService userRoleService;
     private final PartyService partyService;
 
     @Override
@@ -114,17 +111,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
-        boolean isClaimantSolicitor = isClaimantSolicitor(userRoles);
-        boolean isDefendantSolicitor = isDefendantSolicitor(userRoles);
-
-        if (!isClaimantSolicitor && !isDefendantSolicitor) {
-            throw new IllegalStateException("User must have claimant solicitor or defendant solicitor role");
-        }
-
-        if (isClaimantSolicitor && isDefendantSolicitor) {
-            throw new IllegalStateException("User must have claimant solicitor or defendant solicitor role, not both");
-        }
+        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
         legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
 
@@ -221,7 +208,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         PartyEntity uploadingParty;
         try {
-            uploadingParty = getUploadingParty(caseReference, pcsCaseEntity, organisationId);
+            uploadingParty = getUploadingParty(pcsCaseEntity, organisationId);
         } catch (MultiplePartiesException multiplePartiesException) {
             return errorResponse(multiplePartiesException.getMessage());
         }
@@ -244,16 +231,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .build();
     }
 
-    private PartyEntity getUploadingParty(long caseReference,
-                                          PcsCaseEntity pcsCaseEntity,
+    private PartyEntity getUploadingParty(PcsCaseEntity pcsCaseEntity,
                                           String organisationId) {
 
-        Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
-        boolean isClaimantSolicitor = isClaimantSolicitor(userRoles);
-        boolean isDefendantSolicitor = isDefendantSolicitor(userRoles);
-        if (isClaimantSolicitor && isDefendantSolicitor) {
-            throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
-        }
+        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
@@ -267,14 +248,11 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         }
     }
 
-    private static boolean isClaimantSolicitor(Collection<String> userRoles) {
-        return userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole())
-            || userRoles.contains(UserRole.GA_CLAIMANT_SOLICITOR.getRole());
-    }
+    private boolean isClaimantSolicitor(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        String claimantOrganisationId = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+            .getOrganisationId();
 
-    private static boolean isDefendantSolicitor(Collection<String> userRoles) {
-        return userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole())
-            || userRoles.contains(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
+        return claimantOrganisationId != null && claimantOrganisationId.equals(organisationId);
     }
 
     private static boolean anyDocumentIsNull(List<LegalRepDocument> legalRepDocuments) {
