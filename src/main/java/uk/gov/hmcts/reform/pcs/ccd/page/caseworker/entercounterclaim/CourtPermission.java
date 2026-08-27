@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 @Component
 public class CourtPermission implements CcdPageConfiguration {
 
-    private static final String COURT_PERMISSION_GRANTED_FIELD = "enter_counterclaim_CourtPermissionGranted";
+    private static final String COURT_PERMISSION_GRANTED_FIELD = "enter_cc_CourtPermissionGranted";
 
     private static final String COURT_PERMISSION_ANSWERED = ShowConditions.or(
         fieldEquals(COURT_PERMISSION_GRANTED_FIELD, VerticalYesNo.YES),
@@ -34,6 +34,8 @@ public class CourtPermission implements CcdPageConfiguration {
         "Date the order was made must not be in the future";
     private static final String CLAIM_RECEIVED_DATE_ERROR =
         "Date the counterclaim was received must not be in the future";
+
+    private static final String PARTY_LIST_LABEL = "Which party submitted the counterclaim?";
 
     private final Clock ukClock;
 
@@ -54,8 +56,8 @@ public class CourtPermission implements CcdPageConfiguration {
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                    You should check whether permission is required. If it is, you must advise the party \
-                to get permission from the court to make their counterclaim.
+                    You should check whether permission is required. If it is, you must advise the party to get
+                    permission from the court to make their counterclaim.
                 </strong>
                 </div>""",
                 COURT_PERMISSION_ANSWERED)
@@ -65,7 +67,7 @@ public class CourtPermission implements CcdPageConfiguration {
                     EnterCounterClaimDetails::getPermissionOrderDate,
                     fieldEquals(COURT_PERMISSION_GRANTED_FIELD, VerticalYesNo.YES))
             .done()
-            .mandatory(PCSCase::getCounterClaimSubmittingPartyList, COURT_PERMISSION_ANSWERED)
+            .mandatory(PCSCase::getPartyRadioList, COURT_PERMISSION_ANSWERED, null,PARTY_LIST_LABEL)
             .complex(PCSCase::getEnterCounterClaim)
                 .mandatory(EnterCounterClaimDetails::getClaimReceivedDate, COURT_PERMISSION_ANSWERED)
             .done();

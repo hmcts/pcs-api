@@ -64,7 +64,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(eventPayload.caseReference());
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-        caseData.setCounterClaimSubmittingPartyList(
+        caseData.setPartyRadioList(
             partyService.buildPartyDynamicList(mainClaim, PartyRole.DEFENDANT));
         return caseData;
     }
@@ -75,7 +75,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
         EnterCounterClaimDetails counterClaimRequest = caseData.getEnterCounterClaim();
 
         PartyEntity submittingParty = partyService.getPartyEntityByEntityId(
-            caseData.getCounterClaimSubmittingPartyList().getValueCode(), caseReference);
+            caseData.getPartyRadioList().getValueCode(), caseReference);
 
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(counterClaimRequest.getClaimTypeOption())

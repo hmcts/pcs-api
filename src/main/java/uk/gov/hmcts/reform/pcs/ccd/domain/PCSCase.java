@@ -713,14 +713,8 @@ public class PCSCase {
     @CCD(
         searchable = false
     )
-    @JsonUnwrapped(prefix = "enter_counterclaim_")
+    @JsonUnwrapped(prefix = "enter_cc_")
     private EnterCounterClaimDetails enterCounterClaim;
-
-    @CCD(label = "Which party submitted the counterclaim?",
-        searchable = false,
-        typeOverride = DynamicRadioList
-    )
-    private DynamicList counterClaimSubmittingPartyList;
 
     @CCD(
         label = "Search Criteria",

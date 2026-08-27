@@ -11,7 +11,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 @Component
 public class CounterClaimAmount implements CcdPageConfiguration {
 
-    private static final String CLAIM_TYPE_FIELD = "enter_counterclaim_ClaimTypeOption";
+    private static final String CLAIM_TYPE_FIELD = "enter_cc_ClaimTypeOption";
 
     private static final String AMOUNT_APPLIES = ShowConditions.or(
         fieldEquals(CLAIM_TYPE_FIELD, CounterClaimType.PAYMENT_OR_COMPENSATION),

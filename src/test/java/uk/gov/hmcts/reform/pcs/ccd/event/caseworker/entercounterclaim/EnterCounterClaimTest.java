@@ -85,7 +85,7 @@ class EnterCounterClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getCounterClaimSubmittingPartyList()).isEqualTo(partyList);
+        assertThat(result.getPartyRadioList()).isEqualTo(partyList);
     }
 
     @Test
@@ -113,7 +113,7 @@ class EnterCounterClaimTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder()
             .enterCounterClaim(enterCounterClaimDetails)
-            .counterClaimSubmittingPartyList(submittingPartyList)
+            .partyRadioList(submittingPartyList)
             .build();
 
         // When
