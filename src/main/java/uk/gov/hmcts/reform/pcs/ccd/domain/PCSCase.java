@@ -195,13 +195,6 @@ public class PCSCase {
         searchable = false,
         access = {DefendantAccess.class}
     )
-    @External
-    private String userPcqId;
-
-    @CCD(
-        searchable = false,
-        access = {DefendantAccess.class}
-    )
     private YesOrNo userPcqIdSet;
 
     @CCD(
@@ -813,6 +806,12 @@ public class PCSCase {
         label = "Launch the external flags screen"
     )
     private FlagLauncher flagLauncherExternal;
+
+    @CCD(
+        access = {ExternalCaseFlagAccess.class},
+        label = "Party support"
+    )
+    private List<ListValue<PartySupport>> partySupport;
 
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
