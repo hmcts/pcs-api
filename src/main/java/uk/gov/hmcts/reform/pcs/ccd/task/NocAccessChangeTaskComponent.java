@@ -59,9 +59,7 @@ public class NocAccessChangeTaskComponent {
                             taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
 
-                    // Representation feeds the derived CaseAccessGroups served by search; queue a
-                    // reindex or the new representative never sees the case in their case list and
-                    // the outgoing organisation keeps a stale row.
+                    // CaseAccessGroups is derived, so search only sees this change after a reindex.
                     caseReindexingService.reindexCase(caseReference);
 
                     return new CompletionHandler.OnCompleteRemove<>();
