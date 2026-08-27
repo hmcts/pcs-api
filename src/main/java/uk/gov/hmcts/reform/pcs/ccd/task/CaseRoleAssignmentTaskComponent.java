@@ -52,7 +52,7 @@ public class CaseRoleAssignmentTaskComponent {
                 log.debug("Revoking creator role for case: {}", caseReference);
 
                 try {
-                    caseRoleAssignmentService.revokeRasRole(caseReference, userId, UserRole.CREATOR);
+                    caseRoleAssignmentService.revokeCaseRole(caseReference, userId, UserRole.CREATOR);
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {

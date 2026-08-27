@@ -29,37 +29,6 @@ public class OrganisationDetailsService {
         this.prdAdminTokenProvider = prdAdminTokenProvider;
     }
 
-    /** Retrieves organisation details for a given user ID. */
-    public OrganisationDetailsResponse getOrganisationDetails(String userId) {
-        try {
-            String s2sToken = authTokenGenerator.generate();
-            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
-
-            OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
-                userId, s2sToken, prdAdminToken
-            );
-
-            if (details == null) {
-                log.warn("Organisation details response is null for userId: {}", userId);
-            }
-
-            return details;
-
-        } catch (FeignException.NotFound ex) {
-            // Normal for citizens (no organisation), so not logged as an error.
-            log.debug("No organisation held in rd-professional for userId: {}", userId);
-            return null;
-        } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
-                userId, ex.status(), ex.getMessage(), ex);
-            return null;
-        } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
-                userId, ex.getMessage(), ex);
-            return null;
-        }
-    }
-
     /** Organisation name for a user (claimant name population). */
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
@@ -104,5 +73,34 @@ public class OrganisationDetailsService {
             return details.getOrganisationIdentifier();
         }
         return null;
+    }
+
+    /** Retrieves organisation details for a given user ID. */
+    public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+        try {
+            String s2sToken = authTokenGenerator.generate();
+            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
+
+            OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
+                userId, s2sToken, prdAdminToken
+            );
+
+            if (details == null) {
+                log.warn("Organisation details response is null for userId: {}", userId);
+            }
+            return details;
+
+        } catch (FeignException.NotFound ex) {
+            log.error("No organisation held in rd-professional for userId: {}", userId);
+            return null;
+        } catch (FeignException ex) {
+            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
+                      userId, ex.status(), ex.getMessage(), ex);
+            return null;
+        } catch (Exception ex) {
+            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
+                      userId, ex.getMessage(), ex);
+            return null;
+        }
     }
 }
