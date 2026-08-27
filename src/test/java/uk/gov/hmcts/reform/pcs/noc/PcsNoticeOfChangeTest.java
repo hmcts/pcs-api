@@ -31,7 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -55,29 +55,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.DUPLICATE_DEFENDANT_NAME_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.DUPLICATE_DEFENDANT_NAME_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.FEATURE_FLAG_DISABLED_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.FEATURE_FLAG_DISABLED_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_NOT_FOUND_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_NOT_FOUND_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
 public class PcsNoticeOfChangeTest {
 
     private static final long TEST_CASE_REFERENCE = 1L;
-
-    private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
-
-    private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
-        + "currently disabled";
-
-    private static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
-
-    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
-        + "defendant as there is more than one defendant with the same name on this case."
-        + " Contact the issuing court for help.";
-
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
-        + " to this case. "
-        + "You or a colleague are already representing this client on this case."
-        + " Return to case list.";
-
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
 
     private PcsNoticeOfChange pcsNoticeOfChange;
 
@@ -85,7 +75,7 @@ public class PcsNoticeOfChangeTest {
     private PcsCaseRepository pcsCaseRepository;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private OrganisationRepository organisationRepository;
 
     @Mock
     private OrganisationDetailsService organisationDetailsService;
@@ -104,8 +94,8 @@ public class PcsNoticeOfChangeTest {
 
     @BeforeEach
     void setUp() {
-        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, legalRepresentativeRepository,
-                                                  organisationDetailsService, schedulerClient, featureToggleService);
+        pcsNoticeOfChange = new PcsNoticeOfChange(pcsCaseRepository, organisationDetailsService, schedulerClient,
+                                                  featureToggleService, organisationRepository);
     }
 
     @Test
@@ -444,6 +434,42 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
+    void validate_WithNullOrganisationDetails_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .build();
+        String userId = "123";
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(ORG_NOT_FOUND_CODE, actual.code());
+        assertEquals(ORG_NOT_FOUND_MESSAGE, actual.message());
+    }
+
+    @Test
     void validate_WithDefendantAlreadyRepresented_ReturnErrorAnswerResponse() {
         // given
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
@@ -472,8 +498,8 @@ public class PcsNoticeOfChangeTest {
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
-        when(legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(orgId, partyId))
-            .thenReturn(true);
+        when(organisationRepository
+                 .isOrganisationLinkedToPartyAndActive(orgId, partyId)).thenReturn(true);
 
         // when
         NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
@@ -583,6 +609,40 @@ public class PcsNoticeOfChangeTest {
             .hasMessage("No case found with reference %s", TEST_CASE_REFERENCE);
     }
 
+
+    @Test
+    void submit_WithNullOrganisationDetails_ReturnInvalidResponse() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(null);
+
+        // when
+        NocSubmissionResponse actual = pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(ORG_NOT_FOUND_CODE, actual.code());
+        assertEquals(ORG_NOT_FOUND_MESSAGE, actual.message());
+    }
 
     @Test
     void submit_WithDefendantNotAlreadyRepresented_SchedulesAccessChangeTask() {

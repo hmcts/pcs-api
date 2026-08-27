@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPos
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -61,6 +62,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     private UserInfo userInfo;
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
+    @Mock
+    private OrganisationService organisationService;
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
@@ -71,7 +74,8 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         setPageUnderTest(new RespondToPossessionDraftSavePage(
             draftCaseDataService,
             securityContextService,
-            selectedPartyRetriever
+            selectedPartyRetriever,
+            organisationService
 
         ));
     }
@@ -491,21 +495,25 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
                                              .defendantContactDetails(contactDetails)
                                              .build());
-
-        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE))
+        String organisationId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(selectedPartyRetriever.getSelectedPartyId(TEST_CASE_REFERENCE, organisationId))
             .thenReturn(Optional.of(representedPartyId));
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId),
+            eq(organisationId)
         );
     }
 
     @Test
     void shouldThrowErrorWhenNoSelectedPartyId() {
+        String organisationId = "org";
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
