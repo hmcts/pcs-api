@@ -108,7 +108,8 @@ class ShowConditionsTest {
 
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM", "CUI_RESPOND_TO_CLAIM_LR"},
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM", 
+        "CUI_RESPOND_TO_CLAIM_LR"},
         mode = INCLUDE)
     void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
         // When / Then
@@ -160,8 +161,8 @@ class ShowConditionsTest {
                       "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.walesMakeAClaimEnabled=\"YES\""),
             arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
                       "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
-            arguments(List.of(RELEASE_1_DOT_2, CUI_RESPOND_TO_CLAIM_LR),
-                      "featureFlags.release1dot2Enabled=\"YES\" "
+            arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.release1dot3Enabled=\"YES\" "
                           + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\"")
         );
     }
