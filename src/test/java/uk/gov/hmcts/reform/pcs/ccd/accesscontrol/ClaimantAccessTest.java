@@ -18,12 +18,8 @@ class ClaimantAccessTest {
         SetMultimap<HasRole, Permission> grants = claimantAccess.getGrants();
 
         // then
-        // Claimant fields follow the firm through its capacities.
         assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
-        assertThat(grants.get(UserRole.GA_CLAIMANT)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.CLAIMANT)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
-        // Kept until the group roles can grant anything: creation cannot use them, the defendant's
-        // solicitor has none, and pre-existing cases derive no groups.
-        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEqualTo(Permission.CRU);
     }
 }

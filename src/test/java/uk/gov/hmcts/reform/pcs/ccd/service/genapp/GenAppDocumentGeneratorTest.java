@@ -230,13 +230,11 @@ class GenAppDocumentGeneratorTest {
     @Test
     void shouldSetApplicantPartyDetails() {
         // Given
-        String firstName = "some first name";
-        String lastName = "some last name";
+        String partyName = "some party name";
         String emailAddress = "some email address";
         String phoneNumber = "some phone number";
 
-        when(applicantPartyEntity.getFirstName()).thenReturn(firstName);
-        when(applicantPartyEntity.getLastName()).thenReturn(lastName);
+        when(partyService.getPartyName(applicantPartyEntity)).thenReturn(partyName);
         when(applicantPartyEntity.getEmailAddress()).thenReturn(emailAddress);
         when(applicantPartyEntity.getPhoneNumber()).thenReturn(phoneNumber);
 
@@ -246,7 +244,7 @@ class GenAppDocumentGeneratorTest {
         // Then
         GenAppFormPayload formPayload = getFormPayload();
         Party applicantParty = formPayload.getApplicant();
-        assertThat(applicantParty.getName()).isEqualTo("%s %s", firstName, lastName);
+        assertThat(applicantParty.getName()).isEqualTo(partyName);
         assertThat(applicantParty.getEmailAddress()).isEqualTo(emailAddress);
         assertThat(applicantParty.getTelephoneNumber()).isEqualTo(phoneNumber);
     }

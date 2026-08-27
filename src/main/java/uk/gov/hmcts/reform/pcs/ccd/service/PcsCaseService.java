@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,7 @@ public class PcsCaseService {
     private final CaseFlagService caseFlagService;
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
+    private final SecurityContextService securityContextService;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -57,7 +59,7 @@ public class PcsCaseService {
     }
 
     @Transactional
-    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.buildDocumentEntitiesForCase(pcsCase);
@@ -65,7 +67,7 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
@@ -90,6 +92,18 @@ public class PcsCaseService {
 
         if (pcsCase.getParties() != null) {
             caseFlagService.mergePartyFlags(pcsCase.getParties(), pcsCaseEntity.getParties());
+        }
+    }
+
+    public void patchSupportFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getPartySupport() != null) {
+            caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
+                                                  securityContextService.getCurrentUserId());
         }
     }
 
