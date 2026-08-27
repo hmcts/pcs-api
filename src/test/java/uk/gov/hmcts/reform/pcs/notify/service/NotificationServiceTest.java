@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -48,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
@@ -825,6 +828,7 @@ class NotificationServiceTest {
             when(genAppEntity.getParty()).thenReturn(applicantParty);
             when(applicantParty.getPcsCase()).thenReturn(pcsCaseEntity);
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(mock(ClaimEntity.class)));
+            when(applicantParty.getEmailAddress()).thenReturn("applicant@example.com");
             when(partyService.getPartyRole(applicantParty)).thenReturn(PartyRole.DEFENDANT);
             when(partyService.canSendEmailNotification(applicantParty, PartyRole.DEFENDANT)).thenReturn(false);
 
@@ -842,6 +846,7 @@ class NotificationServiceTest {
 
         private static final String CLAIMANT_EMAIL = "claimant@example.com";
         private static final String REPRESENTED_DEFENDANT_EMAIL = "represented@example.com";
+        private static final String OUTGOING_REPRESENTATIVE_EMAIL = "outgoing@example.com";
         private static final String OTHER_DEFENDANT_EMAIL = "other@example.com";
 
         private PcsCaseEntity pcsCase;
@@ -860,10 +865,14 @@ class NotificationServiceTest {
             lenient().when(partyService.getPrimaryClaimantPartyEntity(pcsCase)).thenReturn(claimant);
             lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleted(representedDefendant, pcsCase))
                 .thenReturn(mock(NoticeOfChangeCompletedPersonalisation.class));
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(any(), any()))
+                .thenReturn(mock(NoticeOfChangeNoLongerRepresentingPersonalisation.class));
             lenient().when(notificationPersonalisationFactory.forParty(any(), any()))
                 .thenReturn(mock(BasePersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
                 .thenReturn(TEMPLATE_ID);
+            lenient().when(templateConfiguration.getTemplateId(
+                EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING)).thenReturn(TEMPLATE_ID);
             lenient().when(templateConfiguration.getTemplateId(
                 EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED)).thenReturn(TEMPLATE_ID);
             lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
@@ -915,6 +924,39 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should email the outgoing legal representative and record it against the represented defendant")
+        void shouldEmailOutgoingLegalRepresentative() {
+            notificationService.sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+                legalRepresentative(OUTGOING_REPRESENTATIVE_EMAIL), representedDefendant);
+
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(OUTGOING_REPRESENTATIVE_EMAIL);
+            assertThat(taskData.getTemplateId()).isEqualTo(TEMPLATE_ID);
+
+            ArgumentCaptor<CaseNotification> notificationCaptor =
+                ArgumentCaptor.forClass(CaseNotification.class);
+            verify(notificationRepository, atLeastOnce()).save(notificationCaptor.capture());
+
+            CaseNotification created = notificationCaptor.getAllValues().getFirst();
+            assertThat(created.getClaimType()).isEqualTo(NotificationClaimType.NOTICE_OF_CHANGE);
+            assertThat(created.getRecipient()).isEqualTo(OUTGOING_REPRESENTATIVE_EMAIL);
+            assertThat(created.getPartyId()).isEqualTo(representedDefendant);
+            assertThat(created.getPcsCase()).isEqualTo(pcsCase);
+        }
+
+        @Test
+        @DisplayName("Should not email an outgoing legal representative with no recorded email address")
+        void shouldNotEmailOutgoingLegalRepresentativeWithoutAnEmailAddress() {
+            notificationService.sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+                legalRepresentative(null), representedDefendant);
+
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+            verify(notificationRepository, never()).save(any());
+        }
+
+        @Test
         @DisplayName("Should email the claimant and other defendants but not the represented defendant")
         void shouldEmailOtherPartiesExcludingRepresentedDefendant() {
             PartyEntity otherDefendant = party(OTHER_DEFENDANT_EMAIL);
@@ -958,6 +1000,20 @@ class NotificationServiceTest {
                 .emailAddress(emailAddress)
                 .pcsCase(pcsCase)
                 .build();
+        }
+
+        private OrganisationEntity legalRepresentative(String email) {
+            OrganisationEntity legalRepresentativeOrganisation =
+                OrganisationEntity.builder()
+                    .organisationName("Test Solicitors LLP")
+                    .build();
+
+            legalRepresentativeOrganisation.addClaimPartyContactDetails(
+                ClaimPartyContactDetailsEntity.builder()
+                    .emailAddress(email)
+                    .build());
+
+            return legalRepresentativeOrganisation;
         }
 
         private ClaimPartyEntity claimParty(PartyEntity party, PartyRole role) {
