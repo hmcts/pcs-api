@@ -43,8 +43,8 @@ public class PaymentNotificationService {
         }
 
         OrganisationEntity legalRepresentativeOrganisationEntity =
-            organisationRepository.findByPartyLinkedToOrganisationAndActive(
-                defendantResponse.getParty().getId()).orElse(null);
+            organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(
+                defendantResponse.getParty().getId(), pcsCase.getCaseReference()).orElse(null);
 
         if (legalRepresentativeOrganisationEntity != null) {
             log.info("Sending counterclaim payment success email to legal representative case reference {}",

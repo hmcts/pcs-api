@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -97,13 +97,13 @@ class NotificationServiceTest {
     private NotificationPersonalisationFactory notificationPersonalisationFactory;
 
     @Mock
-    private LegalRepresentativeEntity legalRepresentativeEntity;
+    private OrganisationEntity organisationEntity;
 
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     @Mock
-    private PartyEntity legalRepresentativePartyEntity;
+    private PartyEntity partyEntity;
 
     @Mock
     private DefendantResponseEntity defendantResponseEntity;

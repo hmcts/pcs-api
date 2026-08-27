@@ -96,7 +96,7 @@ class PaymentNotificationServiceTest {
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaim));
         when(pcsCase.getDefendantResponses()).thenReturn(List.of(defendantResponse));
         when(legalRepresentativeOrganisationRepository
-                 .findByPartyLinkedToOrganisationAndActive(defendantId))
+                 .findByPartyLinkedToOrganisationAndCaseAndActive(defendantId,pcsCase.getCaseReference()))
             .thenReturn(Optional.of(legalRepOrganisation));
 
         String paymentReference = "PAY-1234";
