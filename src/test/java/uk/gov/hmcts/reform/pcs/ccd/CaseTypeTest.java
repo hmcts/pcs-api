@@ -114,13 +114,13 @@ class CaseTypeTest {
         when(builder.tab("summary", "Summary")).thenReturn(summaryTabBuilder);
         when(builder.tab("CaseHistory", "History")).thenReturn(caseHistoryTabBuilder);
         when(builder.tab("hidden", "HiddenFields")).thenReturn(hiddenTabBuilder);
-        when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
+        when(builder.tab("serviceRequest", "Service request")).thenReturn(serviceRequestTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
-        when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
-        when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
-        when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
+        when(builder.tab("caseLinks", "Linked cases")).thenReturn(caseLinksTabBuilder);
+        when(builder.tab("caseFileView", "Case file view")).thenReturn(caseFileViewTabBuilder);
+        when(builder.tab("caseParties", "Case parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
-        when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("caseDetails", "Case details")).thenReturn(caseDetailsTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -210,13 +210,13 @@ class CaseTypeTest {
         when(builder.tab("summary", "Summary")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("CaseHistory", "History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("hidden", "HiddenFields")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("serviceRequest", "Service Request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("serviceRequest", "Service request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseLinks", "Linked cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseFileView", "Case file view")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseParties", "Case parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("caseDetails", "Case details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }
