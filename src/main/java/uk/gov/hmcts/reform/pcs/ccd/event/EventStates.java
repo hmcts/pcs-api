@@ -53,6 +53,10 @@ public class EventStates {
         return createFlags();
     }
 
+    public static State[] legalRepUploadDocuments() {
+        return createFlags();
+    }
+
     public static State[] respondPossessionClaim() {
         return createCaseLink();
     }

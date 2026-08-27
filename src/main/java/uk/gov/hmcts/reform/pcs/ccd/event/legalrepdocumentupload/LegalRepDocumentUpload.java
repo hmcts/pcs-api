@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -62,7 +63,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit, this::start)
-                .forAllStates()
+                .forStates(EventStates.legalRepUploadDocuments())
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
