@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -51,7 +50,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -259,7 +257,7 @@ class SubmitEventHandlerTest {
         }
 
         @Test
-        void shouldThrowErrorIfApplicantIsNotRepresentedByCurrentUser() {
+        void shouldReturnValidationErrorIfApplicantIsNotRepresentedByCurrentUser() {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();
             XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
@@ -279,10 +277,60 @@ class SubmitEventHandlerTest {
                 .thenReturn(false);
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.submit(eventPayload(caseData)));
+            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
+
+            // Then - an unresolved party id is a validation error, not an unhandled 500
+            assertThat(submitResponse.getErrors())
+                .containsExactly("The selected party is not available on this case");
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
+        }
+
+        @Test
+        void shouldReturnValidationErrorIfRepresentedPartyIdIsMalformed() {
+            // Given
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId("not-a-uuid")
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
 
             // Then
-            assertThat(throwable).isInstanceOf(PartyNotFoundException.class);
+            assertThat(submitResponse.getErrors())
+                .containsExactly("The selected party is not available on this case");
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
+        }
+
+        @Test
+        void shouldReturnValidationErrorIfOrganisationCannotBeResolved() {
+            // Given
+            UUID representedPartyUuid = UUID.randomUUID();
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId(representedPartyUuid.toString())
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(null);
+
+            // When
+            SubmitResponse<State> submitResponse = underTest.submit(eventPayload(caseData));
+
+            // Then
+            assertThat(submitResponse.getErrors())
+                .containsExactly("The selected party is not available on this case");
+            verify(genAppService, never())
+                .createGenAppEntity(any(GenAppRequest.class), any(), any(), any());
         }
 
         private void stubLegalRepForParty(UUID representedPartyUuid) {
