@@ -56,6 +56,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -272,6 +273,21 @@ class PCSCaseViewTest {
     }
 
     @Test
+    void shouldSetCollectionItemIdFromPartyId() {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+
+        String partyId = UUID.randomUUID().toString();
+        Party party = mock(Party.class);
+        when(party.getId()).thenReturn(partyId);
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        assertThat(pcsCase.getParties().getFirst().getId()).isEqualTo(partyId);
+    }
+
+    @Test
     void shouldDeriveCaseAccessGroupsFromTheClaimantOrganisation() {
         // Given
         PartyEntity claimant = PartyEntity.builder()
@@ -346,17 +362,16 @@ class PCSCaseViewTest {
 
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
-        // given
-        String organisationId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-
+        // Given
+        String orgId = "org";
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
@@ -369,11 +384,11 @@ class PCSCaseViewTest {
         verify(caseFlagsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(defendantResponseView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(caseListView).setCaseFields(pcsCase);
-        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, organisationId);
+        verify(genAppsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(featureFlagView).setCaseFields(pcsCase);
         verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
-        verify(legalRepresentativeSummaryService).handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                                   DEFAULT_STATE, organisationId);
+        verify(legalRepresentativeSummaryService)
+            .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
     }
 
     @Test

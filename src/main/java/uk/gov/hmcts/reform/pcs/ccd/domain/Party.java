@@ -46,6 +46,9 @@ public class Party {
 
     private VerticalYesNo phoneNumberProvided;
 
+    @CCD(searchable = false)
+    private String pcqId;
+
     private LocalDate dateOfBirth;
 
     private LegalRepresentative legalRepresentative;
@@ -69,6 +72,6 @@ public class Party {
         label = "Party Flags (external)",
         retainHiddenValue = true
     )
-    private Flags defendantFlagsExternal;
+    private Flags partyFlagsExternal;
 
 }
