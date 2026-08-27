@@ -105,18 +105,6 @@ class NotificationServiceTest {
     @Mock
     private AddressMapper addressMapper;
 
-    @Mock
-    private OrganisationEntity organisationEntity;
-
-    @Mock
-    private PcsCaseEntity pcsCaseEntity;
-
-    @Mock
-    private PartyEntity partyEntity;
-
-    @Mock
-    private DefendantResponseEntity defendantResponseEntity;
-
     @Captor
     private ArgumentCaptor<SchedulableInstance<SendEmailTaskData>> schedulableInstanceCaptor;
 
