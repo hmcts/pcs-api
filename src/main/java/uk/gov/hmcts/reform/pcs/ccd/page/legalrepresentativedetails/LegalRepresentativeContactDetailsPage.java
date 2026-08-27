@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
@@ -37,7 +36,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("legalRepresentativeContactDetails", this::midEvent)
-            .pageLabel("Amend representative's details")
+            .pageLabel("Amend representative’s details")
             .complex(PCSCase::getLegalRepresentativeDetails)
             .label("legalRepresentativeDetails-reference",  """
                     ---
@@ -80,7 +79,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         different office from the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .label("contactPreferences-address-registered", """
+            .label("legalRepresentativeDetails-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your registered address is:
                     </h3>
@@ -102,7 +101,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                      different address with My HMCTS.
                 </p>
                 """, ORG_ADDRESS_NOT_FOUND)
-            .label("contactPreferences-address-missing", """
+            .label("legalRepresentativeDetails-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve your service address that’s linked to your My
                         HMCTS account
@@ -130,9 +129,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """)
                 .optional(LegalRepresentativeDetails::getProvideContactPhoneNumber)
                 .mandatory(LegalRepresentativeDetails::getContactPhoneNumber,
-                           "provideContactPhoneNumber=\"YES\"")
-            .done()
-            .label("legalRepresentativeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                           "provideContactPhoneNumber=\"YES\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

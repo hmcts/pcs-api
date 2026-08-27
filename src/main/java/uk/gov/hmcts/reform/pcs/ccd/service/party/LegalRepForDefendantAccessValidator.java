@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
@@ -16,40 +17,57 @@ import java.util.List;
 public class LegalRepForDefendantAccessValidator {
 
     private final DefendantPartyExtractor defendantPartyExtractor;
+    private final DefendantResponseRepository defendantResponseRepository;
 
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
+        return this.validateAndGetDefendants(caseEntity, organisationId, true);
+    }
+
+
+    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId,
+                                                      boolean validate) {
+        long caseReference = caseEntity.getCaseReference();
+        List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
+        return findMatchingLinkedDefendants(defendants, organisationId, caseReference, validate);
+    }
+
+    /* master
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         return findMatchingLinkedDefendants(defendants, organisationId, caseReference);
     }
+     */
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
         String organisationId,
-        long caseReference
+        long caseReference,
+        boolean validate
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
-            .filter(party -> party.getPartyLegalRepresentativeOrganisationList()
+            .filter(party -> party.getClaimPartyOrganisationList()
                 .stream()
-                .anyMatch(partyLegalRepresentativeOrganisation ->
-                              partyLegalRepresentativeOrganisation.getActive().equals(YesOrNo.YES)
+                .anyMatch(claimPartyOrganisation ->
+                              claimPartyOrganisation.getActive().equals(YesOrNo.YES)
                                   && isOrganisationMatch(
-                                  partyLegalRepresentativeOrganisation.getLegalRepresentativeOrganisation()
+                                  claimPartyOrganisation.getOrganisation()
                                       .getOrganisationId(),
                                   organisationId
                               )
                 ))
+            .filter(party -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                caseReference, party.getId()))
             .toList();
 
-        if (linkedDefendants.isEmpty()) {
+        if (validate && linkedDefendants.isEmpty()) {
             log.error(
                 "Access denied: User {} is not linked as a defendant on case {}",
                 organisationId,
                 caseReference
             );
             throw new CaseAccessException("User is not linked as a defendant solicitor on this case");
-
         }
         return linkedDefendants;
     }

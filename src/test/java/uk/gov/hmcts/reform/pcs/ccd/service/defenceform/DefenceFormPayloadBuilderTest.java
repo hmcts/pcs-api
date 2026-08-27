@@ -253,20 +253,20 @@ class DefenceFormPayloadBuilderTest {
         }
 
         @Test
-        void landlordRegisteredAndLicensedShownForWalesOnly() {
+        void exemptLandlordAndLicensedShownForWalesOnly() {
             DefendantResponseEntity wales = response(LegislativeCountry.WALES);
-            wales.setLandlordRegistered(YesNoNotSure.YES);
+            wales.setExemptLandlord(YesNoNotSure.YES);
             wales.setLandlordLicensed(YesNoNotSure.NO);
 
             DefenceFormPayload payload = builder.build(wales);
 
-            assertThat(payload.isShowLandlordRegistered()).isTrue();
-            assertThat(payload.getLandlordRegistered()).isEqualTo("Yes");
+            assertThat(payload.isShowExemptLandlord()).isTrue();
+            assertThat(payload.getExemptLandlord()).isEqualTo("Yes");
             assertThat(payload.isShowLandlordLicensed()).isTrue();
             assertThat(payload.getLandlordLicensed()).isEqualTo("No");
 
             DefenceFormPayload england = builder.build(response(LegislativeCountry.ENGLAND));
-            assertThat(england.isShowLandlordRegistered()).isFalse();
+            assertThat(england.isShowExemptLandlord()).isFalse();
             assertThat(england.isShowLandlordLicensed()).isFalse();
         }
 

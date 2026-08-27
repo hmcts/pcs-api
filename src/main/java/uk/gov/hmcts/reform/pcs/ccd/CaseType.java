@@ -32,7 +32,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR,
+        AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -145,6 +148,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getCaseTitleMarkdown)
             .field(PCSCase::getDashboardData)
+            .field(PCSCase::getCaseNameHmctsInternal)
             .field(PCSCase::getFeatureFlags);
 
         builder.tab("serviceRequest", "Service Request")
@@ -174,7 +178,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(AccessProfile.PCS_SOLICITOR)
+            builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
@@ -193,8 +197,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .label("Case parties", null, "# Case Parties")
             .field("casePartiesTab_ClaimantDetails")
+            .field("casePartiesTab_ClaimantsDetails")
             .field("casePartiesTab_DefendantOneDetails")
-            .field("casePartiesTab_DefendantsDetails");
+            .field("casePartiesTab_DefendantsDetails")
+            .field("casePartiesTab_LfDetails")
+            .field("casePartiesTab_LfsDetails");
     }
 
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -301,7 +308,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 "detailsTab_RequiredDocumentsDetails!=\"\"",
                 "## Required Documents"
             )
-            .field("detailsTab_RequiredDocumentsDetails");
+            .field("detailsTab_RequiredDocumentsDetails")
+            .label(
+                "Documents you've uploaded",
+                "detailsTab_UploadedDocumentsChecklistDetails!=\"\"",
+                "## Documents you've uploaded"
+            )
+            .field("detailsTab_UploadedDocumentsChecklistDetails");
     }
 
     private void buildCaseListView(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

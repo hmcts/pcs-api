@@ -18,10 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -81,10 +78,8 @@ class LegalRepStartEventStrategyTest {
         List<PartyEntity> defendants = List.of(defendant);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId, true))
             .thenReturn(defendants);
-
-        when(defendant.getId()).thenReturn(UUID.randomUUID());
 
         when(legalRepPartySelectionService.getDraftCaseData(CASE_REFERENCE, pcsCase,
                                                             defendant, defendants, organisationId))
@@ -95,8 +90,6 @@ class LegalRepStartEventStrategyTest {
 
         // then
         assertThat(result).isEqualTo(pcsCase);
-
-        verify(legalRepPartySelectionService).validateResponseNotAlreadySubmitted(CASE_REFERENCE, defendant.getId());
 
         verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants,
                                                                organisationId);
@@ -115,7 +108,7 @@ class LegalRepStartEventStrategyTest {
         List<PartyEntity> defendants = List.of(defendant1, defendant2);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId, true))
             .thenReturn(defendants);
 
         when(legalRepPartySelectionService.getDraft(pcsCase, defendants, CASE_REFERENCE, organisationId))
@@ -127,9 +120,32 @@ class LegalRepStartEventStrategyTest {
         // then
         assertThat(result).isEqualTo(pcsCase);
 
-        verify(legalRepPartySelectionService, never()).validateResponseNotAlreadySubmitted(anyLong(), any());
-
         verify(legalRepPartySelectionService).getDraft(pcsCase, defendants, CASE_REFERENCE, organisationId);
+    }
+
+    @Test
+    void shouldBuildSubmittedResponseWhenResponseAlreadySubmitted() {
+        // Given
+        UUID defendantId = UUID.randomUUID();
+        UUID representativeId = UUID.randomUUID();
+        PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
+        List<PartyEntity> defendantParties = List.of(defendantEntity);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        String organisationId = "org";
+
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, organisationId, false))
+            .thenReturn(defendantParties);
+        when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
+            .thenReturn(true);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        // When
+        underTest.loadDraft(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(legalRepPartySelectionService).buildSubmittedResponseCase(pcsCase, defendantParties);
     }
 
 }

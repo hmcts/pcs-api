@@ -19,5 +19,13 @@ export const user = {
   hearingCenterAdmin:  {
     email: 'pcs-hearing-centre-administrator-01@justice.gov.uk',
     password: process.env.IDAM_PCS_USER_PASSWORD
-  }
+  },
+  defendantSolicitor2:  {
+    email: 'pcs-defendant-solicitor2@test.com',
+    password: process.env.IDAM_PCS_USER_PASSWORD,
+  },
+  hearingCenterAdminWales:  {
+    email: 'pcs-hearing-centre-wales1@hmcts.net',
+    password: process.env.IDAM_PCS_USER_PASSWORD
+  },
 };

@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimPar
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -28,40 +26,36 @@ import java.util.UUID;
 @Transactional
 public class CounterClaimService {
 
-    private final PartyService partyService;
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final CounterClaimRepository counterClaimRepository;
-    private final SecurityContextService securityContextService;
+    private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final Clock utcClock;
 
-    public CounterClaimService(PartyService partyService,
-                               PartyRepository partyRepository,
+    public CounterClaimService(PartyRepository partyRepository,
                                ClaimRepository claimRepository,
                                CounterClaimRepository counterClaimRepository,
-                               SecurityContextService securityContextService,
+                               CounterClaimFeeCalculator counterClaimFeeCalculator,
                                @Qualifier("utcClock") Clock utcClock) {
-        this.partyService = partyService;
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.counterClaimRepository = counterClaimRepository;
-        this.securityContextService = securityContextService;
+        this.counterClaimFeeCalculator = counterClaimFeeCalculator;
         this.utcClock = utcClock;
     }
 
-    public Optional<CounterClaimEntity> saveCounterClaim(long caseReference, CounterClaim counterClaim) {
+    public Optional<CounterClaimEntity> saveCounterClaim(
+        long caseReference,
+        CounterClaim counterClaim,
+        PartyEntity partyRef
+    ) {
+        if (partyRef == null) {
+            throw new IllegalStateException("party is null for case: " + caseReference);
+        }
+
         if (counterClaim == null) {
             return Optional.empty();
         }
-
-        UUID userId = securityContextService.getCurrentUserId();
-        if (userId == null) {
-            throw new IllegalStateException("Current user IDAM ID is null");
-        }
-
-        PartyEntity partyRef = partyRepository.getReferenceById(
-            partyService.getPartyEntityByIdamId(userId, caseReference).getId()
-        );
 
         UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> new IllegalStateException("No claim found for case: " + caseReference));
@@ -75,9 +69,9 @@ public class CounterClaimService {
         return Optional.of(savedCounterClaim);
     }
 
-    public CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
-                                                      PartyEntity partyRef,
-                                                      LocalDateTime submittedAt) {
+    private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
+                                                       PartyEntity partyRef,
+                                                       LocalDateTime submittedAt) {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
 
@@ -97,7 +91,7 @@ public class CounterClaimService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .status(getInitialStatus(counterClaim))
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -117,11 +111,9 @@ public class CounterClaimService {
         return counterClaimEntity;
     }
 
-    public CounterClaimEntity issueCounterClaim(CounterClaimEntity counterClaimEntity) {
-        counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
-        counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
-        CounterClaimEntity issuedCounterClaim = counterClaimRepository.save(counterClaimEntity);
-        log.info("Issued counterclaim {}", issuedCounterClaim.getId());
-        return issuedCounterClaim;
+    private CounterClaimState getInitialStatus(CounterClaim counterClaim) {
+        boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
+        return hwfReferencePresent ? CounterClaimState.PENDING_REVIEW : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
+
 }

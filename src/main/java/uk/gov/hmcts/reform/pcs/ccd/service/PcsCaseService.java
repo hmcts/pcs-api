@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -39,8 +40,7 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
 
-    public PcsCaseEntity createCase(long caseReference,
-                                    AddressUK propertyAddress,
+    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
@@ -51,22 +51,27 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
+        partyService.createClaimantStub(pcsCaseEntity);
+
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
+    @Transactional
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
-        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
+        List<DocumentEntity> documentEntities = documentService.buildDocumentEntitiesForCase(pcsCase);
         documentEntities.forEach(doc -> doc.setClaim(claimEntity));
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
         pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocationNumber());
+
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCaseFlags(long caseReference, PCSCase pcsCase) {

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
@@ -123,6 +124,11 @@ class RentArrearsViewTest {
                         DocumentEntity.builder()
                                 .id(rentDocumentId)
                                 .type(DocumentType.RENT_STATEMENT)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.RENT_STATEMENT)
+                                .generalApplication(GenAppEntity.builder().build())
                                 .build(),
                         DocumentEntity.builder()
                                 .id(UUID.randomUUID())

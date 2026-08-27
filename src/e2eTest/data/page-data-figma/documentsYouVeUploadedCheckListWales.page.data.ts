@@ -1,0 +1,17 @@
+export const documentsYouVeUploadedCheckListWales = {
+  makeAClaimCaption: `Make a claim`,
+  mainHeader: `Documents you've uploaded`,
+  whichDocumentsHaveYouUploadedQuestion: `Which documents have you uploaded as part of your claim?`,
+  selectAllThatApplyHintText: `Select all that apply`,
+  occupationLicenceCheckbox: `Occupation contract or licence`,
+  writtenTermsOfOccupationContractCheckbox: `Written terms of occupation contract`,
+  energyPerformanceCertificateCheckbox: `Energy performance certificate`,
+  currentGasSafetyReportCheckbox: `Current gas safety report`,
+  currentEicrReportCheckbox: `Current Electrical Installation Condition Report (EICR)`,
+  depositSchemeCheckbox: `Deposit scheme (not required for community landlords)`,
+  noticeServedCheckbox: `The notice you served, for example RHW20`,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
+  continueButton: `Continue`,
+};

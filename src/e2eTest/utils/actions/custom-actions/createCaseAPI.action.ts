@@ -1,7 +1,22 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData, paymentApiData } from '@data/api-data';
+import {
+  createCaseApiData,
+  createCaseEventTokenApiData,
+  submitCaseApiData,
+  submitCaseEventTokenApiData,
+  caseUserRoleDeletionApiData,
+  enforceOrderEventTokenApiData,
+  enforceWarrantApiData,
+  getCaseApiData,
+  submitCaseEventTokenDynamicApiData,
+  createCaseEventTokenDynamicApiData,
+  makeAnApplicationEventTokenApiData,
+  makeAnApplicationApiData,
+  paymentApiData,
+  manageHearingEventTokenApiData, manageHearingApiData
+} from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -23,11 +38,15 @@ export class CreateCaseAPIAction implements IAction {
       ['enforceCaseAPI', () => this.enforceCaseAPI(fieldName)],
       ['fetchCurrentUserAPI', () => this.fetchCurrentUserAPI(fieldName)],
       ['getCaseAPI', () => this.getCaseAPI(fieldName)],
+      ['getCaseAPIForLR', () => this.getCaseAPIForLR(fieldName)],
       ['getCaseAPIDynamic', () => this.getCaseAPIDynamic(fieldName as actionRecord)],
       ['createCaseAPIDynamicUsers', () => this.createCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
+      ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
+      ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -37,18 +56,21 @@ export class CreateCaseAPIAction implements IAction {
   private async createCaseAPI(caseData: actionData): Promise<void> {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     try {
-      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+      const tokenResponse = await this.apiRetry(() => createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint));
+      process.env.CREATE_EVENT_TOKEN = tokenResponse.data.token;
       const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
 
-      const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+      const createResponse = await this.apiRetry(() => createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
         data: createCasePayloadData,
         event: { id: createCaseApiData.createCaseEventName },
         event_token: process.env.CREATE_EVENT_TOKEN,
-      });
+      })
+      );
       process.env.CASE_NUMBER = createResponse.data.id;
       caseInfo.id = createResponse.data.id;
       caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = createResponse.data.state;
+      console.log(`\n✅ CASE CREATION SUCCESSFUL:Case #  ${caseInfo.fid}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -71,18 +93,21 @@ export class CreateCaseAPIAction implements IAction {
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
-    let submitCasePayloadData;
+    let submitCasePayloadData : any;
     try {
-      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      const tokenSubmitResponse = await this.apiRetry(() => submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint()));
+      process.env.SUBMIT_EVENT_TOKEN = tokenSubmitResponse.data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+      const submitResponse = await this.apiRetry(() => submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
         event_token: process.env.SUBMIT_EVENT_TOKEN,
-      });
+      })
+    );
       caseInfo.id = submitResponse.data.id;
       caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = submitResponse.data.state;
+      console.log(`\n✅ CASE SUBMISSION SUCCESSFUL:`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -189,10 +214,13 @@ export class CreateCaseAPIAction implements IAction {
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
       } else {
         await this.generateSolicitorAccessToken(user.defendantSolicitor.email as string,user.defendantSolicitor.password as string);
-        const allDefendants = createResponse.data.data.allDefendants;        
+        const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
+        // Shared across every spec in this worker, so clear it or earlier cases' defendants
+        // get submitted against this one.
+        defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
           process.env.Defendant_ID = defendant.id;
           const defendantName =
@@ -418,16 +446,19 @@ export class CreateCaseAPIAction implements IAction {
     const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
     let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
-      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      const tokenGenAppResponse = await this.apiRetry(() => makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint()));
+      process.env.MAA_EVENT_TOKEN = tokenGenAppResponse.data.token;
       makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+      const genAppResponse = await this.apiRetry(() => makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
         data: makeAnApplicationPayloadData,
         event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
         event_token: process.env.MAA_EVENT_TOKEN,
-      });
+      })
+      );
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
+      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL`)
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -448,6 +479,46 @@ export class CreateCaseAPIAction implements IAction {
         throw new Error('Make an application: no response from server.');
       }
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+
+  private async manageHearingAPI(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const manageHearingApi = Axios.create(manageHearingEventTokenApiData.manageHearingEventTokenApiInstance());
+    let manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    try {
+      process.env.Hearing_EVENT_TOKEN = (await manageHearingApi.get(manageHearingEventTokenApiData.manageHearingEventTokenApiEndPoint())).data.token;
+      manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const hearingResponse = await manageHearingApi.post(manageHearingApiData.manageHearingApiEndPoint(), {
+        data: manageHearingPayloadData,
+        event: {id: manageHearingApiData.manageHearingEventName},
+        event_token: process.env.Hearing_EVENT_TOKEN,
+      });
+      caseInfo.id = hearingResponse.data.id;
+      caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = hearingResponse.data.state;
+      console.log(`\n✅ NEW HEARING DATE ADDED SUCCESSFUL : STATUS ${hearingResponse.status}`);
+    }
+    catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(manageHearingPayloadData);
+        throw new Error(`Add a hearing: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Add a hearing: no response from server.');
+      }
+      throw new Error(`Add a hearing failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 
@@ -483,5 +554,176 @@ export class CreateCaseAPIAction implements IAction {
       }
     }
     throw new Error('Payment API failed after multiple retries');
+  }
+  private defendantIds: string[] = [];
+  private def1Details: { id: string; name: string } | null = null;
+  private solicitor1Details: { email: string; password: string } | null = null;
+  private async getCaseAPIForLR(getDetails: actionData): Promise<void> {
+    const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
+    try {
+      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
+        process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
+        console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
+      } else {
+        const allDefendants = createResponse.data.data.allDefendants;
+        const defendantIds = allDefendants.map((d: any) => d.id);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+
+        const solicitor1 = user.defendantSolicitor;
+        const solicitor2 = user.defendantSolicitor2;
+
+        if (!solicitor1?.email || !solicitor1?.password) {
+          throw new Error('Solicitor 1 credentials are missing.');
+        }
+        if (!solicitor2?.email || !solicitor2?.password) {
+          throw new Error('Solicitor 2 credentials are missing.');
+        }
+
+        // Clear the shared list before recording this case's defendants.
+        defendantUserDetails.length = 0;
+        for (let index = 0; index < allDefendants.length; index++) {
+          const defendant = allDefendants[index];
+          process.env.Defendant_ID = defendant.id;
+
+          const defendantName =
+            defendant.value?.nameKnown === 'YES'
+              ? `${defendant.value.firstName} ${defendant.value.lastName}`
+              : '';
+
+          defendantUserDetails.push({
+            id: defendant.id,
+            name: defendantName,
+          });
+
+          // Defendants 1 & 2 -> Solicitor 1, Defendant 3 -> Solicitor 2
+          const solicitor = index < 2 ? solicitor1 : solicitor2;
+
+          // Store def1 + solicitor1 details for reuse in makeAnApplicationAPI
+          if (index === 0) {
+            this.def1Details = { id: defendant.id, name: defendantName };
+            this.solicitor1Details = {
+              email: solicitor.email as string,
+              password: solicitor.password as string,
+            };
+          }
+
+          await this.generateSolicitorAccessToken(
+            solicitor.email as string,
+            solicitor.password as string
+          );
+
+          await performAction('linkSolicitorAPI', solicitor.email as string);
+
+          console.log(`✅ Defendant ${index + 1} (${defendant.id}) linked to ${solicitor.email}`);
+        }
+        console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
+      }
+
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Defendant id not retrieved: no response from server.');
+      }
+      throw new Error(`Retrieving defendant id failed with status ${status}. Response received is ${responseBody?.message}`);
+    }
+  }
+  private async makeAnApplicationAPIForLR(caseData: actionData): Promise<void> {
+    const solicitor1 = user.defendantSolicitor;
+    const solicitor2 = user.defendantSolicitor2;
+
+    if (!solicitor1?.email || !solicitor1?.password) {
+      throw new Error('Solicitor 1 credentials are missing.');
+    }
+    if (!solicitor2?.email || !solicitor2?.password) {
+      throw new Error('Solicitor 2 credentials are missing.');
+    }
+
+    let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+
+    // Determine which defendant this payload belongs to by matching any value
+    // in the payload against known defendant IDs
+    const payloadValues = Object.values(makeAnApplicationPayloadData ?? {});
+    const defendantIndex = defendantUserDetails.findIndex(d => payloadValues.includes(d.id));
+
+    if (defendantIndex === -1) {
+      throw new Error('Could not determine defendant for this application payload. Ensure getCaseAPIForLR has run first.');
+    }
+
+    // Def1 & Def2 -> Solicitor 1, Def3 -> Solicitor 2
+    const solicitor = defendantIndex < 2 ? solicitor1 : solicitor2;
+
+    await this.generateSolicitorAccessToken(
+      solicitor.email as string,
+      solicitor.password as string
+    );
+
+    const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
+    try {
+      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+        data: makeAnApplicationPayloadData,
+        event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
+        event_token: process.env.MAA_EVENT_TOKEN,
+      });
+      caseInfo.id = genAppResponse.data.id;
+      caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = genAppResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(makeAnApplicationPayloadData);
+        throw new Error(`Make an application failed: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Make an application: no response from server.');
+      }
+      throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+  private async apiRetry<T>(
+    fn: () => Promise<T>,
+    retries = actionRetries,
+    delay = 2000
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const status = error?.response?.status;
+
+      const shouldRetry =
+        !status ||
+        [429, 500, 502, 503, 504].includes(status);
+
+      if (!shouldRetry || retries <= 1) {
+        throw error;
+      }
+      console.warn(`Request failed with status ${status}. Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      return this.apiRetry(fn, retries - 1, delay * 2);
+    }
   }
 }

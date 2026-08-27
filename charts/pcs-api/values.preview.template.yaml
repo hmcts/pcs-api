@@ -27,8 +27,15 @@ java:
           alias: LAUNCHDARKLY_SDK_KEY
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
+    # HDPI-8115: preview shares one small flexible server across ~70 releases;
+    # shrink per-pod pools so idle stacks hold no connections.
+    PCS_DB_POOL_MIN_IDLE: "0"
+    PCS_DB_POOL_MAX_SIZE: "2"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
+    SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
+    SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
+    DB_SCHEDULER_THREADS: "2"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
@@ -41,10 +48,10 @@ java:
     SEND_LETTER_URL: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+    NOTIFY_URL: https://api.notifications.service.gov.uk
     CCD_SDK_DECENTRALISED: "true"
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
-    CACHED_ORGANISATION_DETAILS_RESPONSE_TTL_IN_MINUTES: 5
     PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
   secrets:
     PCS_DB_PASSWORD:

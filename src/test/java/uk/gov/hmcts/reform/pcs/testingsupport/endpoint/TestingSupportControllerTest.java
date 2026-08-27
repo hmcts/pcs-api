@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
@@ -44,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +98,10 @@ class TestingSupportControllerTest {
     @Mock
     private UserInfo userInfo;
     @Mock
+    private OrganisationDetailsService organisationDetailsService;
+    @Mock
+    private OrganisationDetailsResponse organisationDetails;
+    @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private AccessCodeGenerationService accessCodeGenerationService;
@@ -113,6 +120,7 @@ class TestingSupportControllerTest {
                                                  caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
+                                                 organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
                                                  featureToggleService
@@ -371,10 +379,13 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        String userUid = "userUid";
+        UUID userUid = UUID.randomUUID();
+        String legalRepEmail = "solicitor@example.com";
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(userInfo.getSub()).thenReturn(legalRepEmail);
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 
@@ -387,12 +398,39 @@ class TestingSupportControllerTest {
         );
 
         // then
-        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid, UserRole.DEFENDANT_SOLICITOR);
+        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid.toString(),
+                                                        UserRole.DEFENDANT_SOLICITOR);
 
         verify(legalRepresentativePartyLinkService)
-            .linkLegalRepresentativeToParty(caseReference, partyId, userInfo);
+            .linkLegalRepresentativeToParty(caseReference, partyId, legalRepEmail, organisationDetails);
 
         assertThat(HttpStatus.OK.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void linkDefendantSolicitorToPartyWhenOrganisationDetailsNullReturnsInternalServerError() {
+        // given
+        long caseReference = 111111111111L;
+        String partyId = "abc";
+        String authToken = "testAuth";
+        UUID userUid = UUID.randomUUID();
+        when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
+        when(user.getUserDetails()).thenReturn(userInfo);
+        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(null);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+
+        // when
+        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
+            caseReference,
+            partyId,
+            authToken,
+            "testS2S"
+        );
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -488,6 +526,55 @@ class TestingSupportControllerTest {
         verify(pcsCaseService).allocateCaseManagementLocation(caseReference);
         verify(pcsCaseService).setCaseIssuedDate(caseReference);
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference), true);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldRescheduleCamundaRequest() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        // When
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
+
+        // Then
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Camunda request rescheduled successfully");
+
+        ArgumentCaptor<TaskInstance<Void>> taskInstanceCaptor = ArgumentCaptor.forClass(TaskInstance.class);
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+
+        verify(schedulerClient).reschedule(taskInstanceCaptor.capture(), instantCaptor.capture());
+
+        TaskInstance<Void> capturedTaskInstance = taskInstanceCaptor.getValue();
+        Instant scheduledInstant = instantCaptor.getValue();
+
+        assertThat(capturedTaskInstance.getId()).isSameAs("db-task-id");
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldHandleRescheduleCamundaRequestFailure() {
+        // Given
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), any(Timestamp.class)))
+            .thenReturn(List.of("db-task-id"));
+
+        doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
+            .reschedule(any(TaskInstance.class), any(Instant.class));
+
+        ResponseEntity<String> response = underTest.rescheduleCamundaRequest(1, 2, 3,
+                                                                             SERVICE_AUTH_TOKEN);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("Failed to reschedule Camunda request task");
+        assertThat(response.getBody()).contains("Scheduler failure");
     }
 
     @Nested

@@ -1,0 +1,358 @@
+package uk.gov.hmcts.reform.pcs.reference.service;
+
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class OrganisationDetailsServiceTest {
+
+    private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
+    private static final String S2S_TOKEN = "test-s2s-token";
+    private static final String PRD_ADMIN_TOKEN = "Bearer test-prd-admin-token";
+    private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
+    private static final String ORGANISATION_IDENTIFIER = "E71FH4Q";
+
+    @Mock
+    private RdProfessionalApi rdProfessionalApi;
+
+    @Mock
+    private AuthTokenGenerator authTokenGenerator;
+
+    @Mock
+    private IdamTokenProvider prdAdminTokenProvider;
+
+    private OrganisationDetailsService organisationDetailsService;
+
+    @BeforeEach
+    void setUp() {
+        organisationDetailsService = new OrganisationDetailsService(
+            rdProfessionalApi,
+            authTokenGenerator,
+            prdAdminTokenProvider
+        );
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation details")
+    void shouldSuccessfullyRetrieveOrganisationDetails() {
+        // Given
+        OrganisationDetailsResponse expectedResponse = OrganisationDetailsResponse.builder()
+            .name(ORGANISATION_NAME)
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .status("ACTIVE")
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(expectedResponse);
+
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(ORGANISATION_NAME);
+        assertThat(result.getOrganisationIdentifier()).isEqualTo(ORGANISATION_IDENTIFIER);
+        assertThat(result.getStatus()).isEqualTo("ACTIVE");
+
+        verify(authTokenGenerator).generate();
+        verify(prdAdminTokenProvider).getAuthToken();
+        verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation name")
+    void shouldSuccessfullyGetOrganisationName() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .name(ORGANISATION_NAME)
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        String result = organisationDetailsService.getOrganisationName(USER_ID);
+
+        // Then
+        assertThat(result).isEqualTo(ORGANISATION_NAME);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation identifier")
+    void shouldSuccessfullyGetOrganisationIdentifier() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .name(ORGANISATION_NAME)
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        String result = organisationDetailsService.getOrganisationIdentifier(USER_ID);
+
+        // Then
+        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation payment accounts")
+    void shouldSuccessfullyGetOrganisationPaymentAccounts() {
+        // Given
+        List<String> paymentAccounts = List.of("PBA1234567", "PBA7654321");
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .paymentAccount(paymentAccounts)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
+
+        // Then
+        assertThat(result).isEqualTo(paymentAccounts);
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation payment accounts are null")
+    void shouldReturnNullWhenOrganisationPaymentAccountsAreNull() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder().build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        List<String> result = organisationDetailsService.getOrganisationPaymentAccount(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when Feign client throws exception")
+    void shouldReturnNullWhenFeignClientThrowsException() {
+        // Given
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(new RuntimeException("Feign client error"));
+
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when general exception occurs")
+    void shouldReturnNullWhenGeneralExceptionOccurs() {
+        // Given
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(new RuntimeException("Connection failed"));
+
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation details is null")
+    void shouldReturnNullWhenOrganisationDetailsIsNull() {
+        // Given
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when contact information is empty")
+    void shouldReturnNullWhenContactInformationIsEmpty() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of())
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should successfully get first organisation address")
+    void shouldSuccessfullyGetOrganisationAddress() {
+        // Given
+        OrganisationDetailsResponse.ContactInformation contactInfo1 =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("27 Feather Street")
+            .townCity("London")
+            .postCode("B8 7FH")
+            .build();
+
+        OrganisationDetailsResponse.ContactInformation contactInfo2 =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("1 Additional Street")
+            .townCity("London")
+            .postCode("AD1 5TR")
+            .build();
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of(contactInfo1, contactInfo2))
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
+        assertThat(result.getPostTown()).isEqualTo(contactInfo1.getTownCity());
+        assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
+    }
+
+    @Test
+    @DisplayName("Should return null when FeignException is thrown")
+    void shouldReturnNullWhenFeignExceptionThrown() {
+        // Given
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(500);
+        when(feignEx.getMessage()).thenReturn("PRD upstream failure");
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignEx);
+
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+        verify(rdProfessionalApi).getOrganisationDetails(USER_ID, S2S_TOKEN, PRD_ADMIN_TOKEN);
+    }
+
+    @Test
+    @DisplayName("Should return null when unexpected RuntimeException is thrown")
+    void shouldReturnNullWhenUnexpectedExceptionThrown() {
+        // Given — anything other than FeignException must hit the generic catch (Exception) branch.
+        RuntimeException unexpected = new RuntimeException("token generator blew up");
+        when(authTokenGenerator.generate()).thenThrow(unexpected);
+
+        // When
+        OrganisationDetailsResponse result = organisationDetailsService.getOrganisationDetails(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("getOrganisationName should return null when underlying call throws FeignException")
+    void getOrganisationNameShouldReturnNullOnFeignFailure() {
+        // Given
+        FeignException feignEx = mock(FeignException.class);
+        when(feignEx.status()).thenReturn(503);
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignEx);
+
+        // When
+        String result = organisationDetailsService.getOrganisationName(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("A user with no organisation is not an error: 404 means not a professional user")
+    void shouldReturnNullWithoutThrowingWhenTheUserHasNoOrganisation() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignError(404));
+
+        assertThat(organisationDetailsService.getOrganisationDetails(USER_ID)).isNull();
+    }
+
+
+    @Test
+    @DisplayName("A null response body must not blow up the identifier accessor")
+    void shouldReturnNullIdentifierWhenTheResponseBodyIsNull() {
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        assertThat(organisationDetailsService.getOrganisationIdentifier(USER_ID)).isNull();
+    }
+
+
+    private static FeignException feignError(int status) {
+        Request request = Request.create(Request.HttpMethod.GET, "/orgDetails", Map.of(), null,
+                                         StandardCharsets.UTF_8, null);
+        return FeignException.errorStatus("getOrganisationDetails",
+            Response.builder().status(status).reason("test").request(request).headers(Map.of()).build());
+    }
+
+}

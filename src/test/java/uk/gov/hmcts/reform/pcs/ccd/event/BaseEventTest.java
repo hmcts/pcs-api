@@ -7,16 +7,22 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.Field;
+import uk.gov.hmcts.ccd.sdk.api.Field.FieldBuilder;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,6 +42,30 @@ public abstract class BaseEventTest {
         return startHandler.start(eventPayload);
     }
 
+    protected String getDisplayContextParameter(String caseFieldId) {
+        return getEventFields()
+            .filter(field -> caseFieldId.equals(field.getId()))
+            .map(Field::getDisplayContextParameter)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No field configured with ID " + caseFieldId));
+    }
+
+    protected List<String> getSubFieldIds(String parentCaseFieldId) {
+        return getConfiguredEvent().getFields().getComplexFields().stream()
+            .map(FieldCollectionBuilder::build)
+            .filter(subFields -> parentCaseFieldId.equals(subFields.getRootFieldname()))
+            .flatMap(subFields -> subFields.getFields().stream())
+            .map(FieldBuilder::build)
+            .map(field -> ((Field<?, ?, ?, ?>) field).getId())
+            .toList();
+    }
+
+    private Stream<Field<?, ?, ?, ?>> getEventFields() {
+        return getConfiguredEvent().getFields().getFields().stream()
+            .map(FieldBuilder::build)
+            .map(field -> (Field<?, ?, ?, ?>) field);
+    }
+
     protected SubmitResponse<State> callSubmitHandler(PCSCase caseData) {
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
         Submit<PCSCase, State> submitHandler = getConfiguredEvent().getSubmitHandler();
@@ -51,6 +81,11 @@ public abstract class BaseEventTest {
     protected void assertConfiguredForStates(State... expectedStates) {
         assertThat(getConfiguredEvent().getPreState())
             .containsExactlyInAnyOrder(expectedStates);
+    }
+
+    protected void assertConfiguredAsNeverShow() {
+        assertThat(getConfiguredEvent().getShowCondition())
+            .isEqualTo(ShowConditions.NEVER_SHOW);
     }
 
     protected void assertGrants(UserRole userRole, Set<Permission> permissions) {

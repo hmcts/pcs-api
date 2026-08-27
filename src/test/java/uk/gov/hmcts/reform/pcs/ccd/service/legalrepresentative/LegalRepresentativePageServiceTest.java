@@ -10,17 +10,14 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LegalRepresentativeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.LegalRepresentativeOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -40,7 +37,8 @@ class LegalRepresentativePageServiceTest {
     private LegalRepresentativePageService legalRepresentativePageService;
 
     @Mock
-    private LegalRepresentativeOrganisationRepository legalRepresentativeOrganisationRepository;
+    private ClaimPartyContactDetailsRepository
+        claimPartyContactDetailsRepository;
 
     @Mock
     private AddressMapper addressMapper;
@@ -60,16 +58,16 @@ class LegalRepresentativePageServiceTest {
         AddressUK address = AddressUK.builder().build();
         AddressEntity mappedAddress = new AddressEntity();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
         final LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .differentPostalAddress(VerticalYesNo.YES)
             .updatedCorrespondenceAddress(address)
             .organisationId(orgId)
             .build();
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
         when(addressMapper.toAddressEntityAndNormalise(address))
             .thenReturn(mappedAddress);
 
@@ -77,11 +75,12 @@ class LegalRepresentativePageServiceTest {
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(mappedAddress, legalRepresentativeOrganisationEntity.getAddress());
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
+        assertEquals(mappedAddress, legalRepresentativeOrganisationContactDetails.getAddress());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
 
         verify(addressMapper).toAddressEntityAndNormalise(address);
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
+        verify(claimPartyContactDetailsRepository)
+            .save(legalRepresentativeOrganisationContactDetails);
     }
 
     @Test
@@ -95,22 +94,22 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertThat(legalRepresentativeOrganisationEntity.getAddress()).isNull();
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
+        assertThat(legalRepresentativeOrganisationContactDetails.getAddress()).isNull();
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
 
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
+        verify(claimPartyContactDetailsRepository)
+            .save(legalRepresentativeOrganisationContactDetails);
     }
 
     @Test
@@ -124,20 +123,21 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(legalRepresentativeOrganisationRepository).save(legalRepresentativeOrganisationEntity);
+        verify(claimPartyContactDetailsRepository)
+            .save(legalRepresentativeOrganisationContactDetails);
     }
 
     @Test
@@ -154,19 +154,19 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertEquals(contactNumber, legalRepresentativeOrganisationEntity.getPhone());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertEquals(contactNumber, legalRepresentativeOrganisationContactDetails.getPhoneNumber());
     }
 
     @Test
@@ -182,19 +182,18 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertNull(legalRepresentativeOrganisationEntity.getPhone());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertNull(legalRepresentativeOrganisationContactDetails.getPhoneNumber());
     }
 
     @Test
@@ -209,19 +208,19 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertNull(legalRepresentativeOrganisationEntity.getPhone());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertNull(legalRepresentativeOrganisationContactDetails.getPhoneNumber());
     }
 
     @Test
@@ -237,19 +236,19 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertEquals(reference, legalRepresentativeOrganisationEntity.getContactReference());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertEquals(reference, legalRepresentativeOrganisationContactDetails.getContactReference());
     }
 
     @Test
@@ -264,19 +263,19 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertNull(legalRepresentativeOrganisationEntity.getContactReference());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertNull(legalRepresentativeOrganisationContactDetails.getContactReference());
     }
 
     @Test
@@ -292,19 +291,19 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertEquals(email, legalRepresentativeOrganisationEntity.getEmail());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertEquals(email, legalRepresentativeOrganisationContactDetails.getEmailAddress());
     }
 
     @Test
@@ -312,25 +311,27 @@ class LegalRepresentativePageServiceTest {
         // given
         String orgId = "org";
         long caseReference = 1L;
+        String email = "email";
 
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .useEmailAddress(VerticalYesNo.YES)
             .organisationId(orgId)
+            .originalEmailAddress(email)
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            new LegalRepresentativeOrganisationEntity();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
-        assertThat(legalRepresentativeOrganisationEntity.getEmail()).isNull();
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
+        assertThat(legalRepresentativeOrganisationContactDetails.getEmailAddress()).isEqualTo(email);
     }
 
     @Test
@@ -344,20 +345,18 @@ class LegalRepresentativePageServiceTest {
             .organisationId(orgId)
             .build();
 
-        LegalRepresentativeEntity legalRepresentative = LegalRepresentativeEntity.builder().build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            new ClaimPartyContactDetailsEntity();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisationEntity =
-            LegalRepresentativeOrganisationEntity.builder().legalRepresentativeList(List.of(legalRepresentative))
-                .build();
-
-        when(legalRepresentativeOrganisationRepository.findByOrganisationIdAndCaseReference(orgId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisationEntity));
+        when(claimPartyContactDetailsRepository
+                 .findByOrganisationIdAndCaseReference(orgId, caseReference))
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         legalRepresentativePageService.save(caseReference, legalRepresentativeDetails);
 
         // then
-        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationEntity.getHasAmendedContactDetails());
+        assertEquals(YesOrNo.YES, legalRepresentativeOrganisationContactDetails.getContactDetailsCorrectConfirmation());
         verify(securityContextService, never()).getCurrentUserId();
     }
 
@@ -375,7 +374,7 @@ class LegalRepresentativePageServiceTest {
         assertThat(assertThrows(
             IllegalStateException.class,
             () -> legalRepresentativePageService.save(caseReference, legalRepresentativeDetails)
-        )).hasMessage("Cannot find LegalRepresentativeOrganisation");
+        )).hasMessage("Cannot find LegalRepresentativeOrganisationContactDetails");
     }
 
     @Test
@@ -388,19 +387,20 @@ class LegalRepresentativePageServiceTest {
         AddressEntity addressEntity = AddressEntity.builder()
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
-            .builder()
-            .email(email)
-            .address(addressEntity)
-            .build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            ClaimPartyContactDetailsEntity.builder()
+                .emailAddress(email)
+                .address(addressEntity)
+                .build();
+
         AddressUK addressUK = AddressUK.builder().build();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .legalRepresentativeOrganisationAddress(addressUK)
             .build();
 
-        when(legalRepresentativeOrganisationRepository
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         when(addressMapper.toAddressUK(addressEntity)).thenReturn(addressUK);
 
@@ -426,18 +426,18 @@ class LegalRepresentativePageServiceTest {
         AddressEntity addressEntity = AddressEntity.builder()
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
-            .builder()
-            .address(addressEntity)
-            .build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            ClaimPartyContactDetailsEntity.builder()
+                .address(addressEntity)
+                .build();
         AddressUK addressUK = AddressUK.builder().build();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .legalRepresentativeOrganisationAddress(addressUK)
             .build();
 
-        when(legalRepresentativeOrganisationRepository
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         UserInfo userInfo = UserInfo.builder().sub(email).build();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
@@ -463,19 +463,20 @@ class LegalRepresentativePageServiceTest {
         AddressEntity addressEntity = AddressEntity.builder()
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
-            .builder()
-            .email("email")
-            .address(addressEntity)
-            .build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            ClaimPartyContactDetailsEntity.builder()
+                .emailAddress("email")
+                .address(addressEntity)
+                .build();
+
         AddressUK addressUK = AddressUK.builder().build();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .legalRepresentativeOrganisationAddress(addressUK)
             .build();
 
-        when(legalRepresentativeOrganisationRepository
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         when(addressMapper.toAddressUK(addressEntity)).thenReturn(addressUK);
 
@@ -498,18 +499,19 @@ class LegalRepresentativePageServiceTest {
         String organisationId = "org";
         long caseReference = 1L;
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
-            .builder()
-            .email("email")
-            .build();
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            ClaimPartyContactDetailsEntity.builder()
+                .emailAddress("email")
+                .build();
+
         AddressUK addressUK = AddressUK.builder().build();
         LegalRepresentativeDetails legalRepresentativeDetails = LegalRepresentativeDetails.builder()
             .legalRepresentativeOrganisationAddress(addressUK)
             .build();
 
-        when(legalRepresentativeOrganisationRepository
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
@@ -533,15 +535,14 @@ class LegalRepresentativePageServiceTest {
         AddressEntity addressEntity = AddressEntity.builder()
             .build();
 
-        LegalRepresentativeOrganisationEntity legalRepresentativeOrganisation = LegalRepresentativeOrganisationEntity
-            .builder()
-            .email("email")
-            .address(addressEntity)
-            .build();
-
-        when(legalRepresentativeOrganisationRepository
+        ClaimPartyContactDetailsEntity legalRepresentativeOrganisationContactDetails =
+            ClaimPartyContactDetailsEntity.builder()
+                .emailAddress("email")
+                .address(addressEntity)
+                .build();
+        when(claimPartyContactDetailsRepository
                  .findByOrganisationIdAndCaseReference(organisationId, caseReference))
-            .thenReturn(Optional.of(legalRepresentativeOrganisation));
+            .thenReturn(Optional.of(legalRepresentativeOrganisationContactDetails));
 
         // when
         LegalRepresentativeDetails actual = legalRepresentativePageService.retrieveLegalRepresentativeDetails(
@@ -569,7 +570,7 @@ class LegalRepresentativePageServiceTest {
             IllegalStateException.class,
             () -> legalRepresentativePageService.retrieveLegalRepresentativeDetails(orgId, caseReference,
                                                                                     legalRepresentativeDetails)
-        )).hasMessage("Cannot find LegalRepresentativeOrganisation");
+        )).hasMessage("Cannot find LegalRepresentativeOrganisationContactDetails");
     }
 
 }

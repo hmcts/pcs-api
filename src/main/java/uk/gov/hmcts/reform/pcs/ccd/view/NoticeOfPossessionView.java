@@ -72,6 +72,7 @@ public class NoticeOfPossessionView {
                 }
                 case OTHER_ELECTRONIC -> {
                     noticeServedDetails.setOtherElectronicDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                    noticeServedDetails.setOtherElectronicExplanation(noticeOfPossessionEntity.getNoticeDetails());
                 }
                 case OTHER -> {
                     noticeServedDetails.setOtherDateTime(noticeOfPossessionEntity.getNoticeDateTime());
@@ -95,7 +96,9 @@ public class NoticeOfPossessionView {
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(NoticeOfPossessionView::isNoticeStatement)
+            .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
+            .filter(DocumentsView::isNotRemoved)
             .map(NoticeOfPossessionView::toDocument)
             .toList();
     }

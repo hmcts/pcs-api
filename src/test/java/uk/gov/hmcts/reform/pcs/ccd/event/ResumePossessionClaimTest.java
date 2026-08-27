@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -40,7 +41,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetails;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -102,6 +102,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private FeatureFlagView featureFlagView;
 
     @BeforeEach
     void setUp() {
@@ -115,10 +117,20 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, partyService, securityContextService,
             savingPageBuilderFactory,
             organisationService, schedulerClient, draftCaseDataService, addressFormatter, feeService,
-            moneyFormatter, resumePossessionClaimConfigurer, notificationService
+            moneyFormatter, resumePossessionClaimConfigurer, notificationService, featureFlagView
         );
 
         setEventUnderTest(underTest);
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(State.AWAITING_SUBMISSION_TO_HMCTS);
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     @Nested
@@ -161,11 +173,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
             String orgName = "ACME Org Ltd";
-            String postcode = "MK14 9PJN";
-
-            OrganisationDetails organisationDetails = new OrganisationDetails(orgName, AddressUK.builder()
-                .postCode(postcode).build(), null);
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
+            when(organisationService.getOrganisationName(any())).thenReturn(orgName);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -185,8 +193,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(null);
-
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
@@ -208,6 +214,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
 
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
@@ -227,11 +238,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            String orgName = "ACME Org Ltd";
+
             AddressUK organisationAddress = mock(AddressUK.class);
-            OrganisationDetails organisationDetails = new OrganisationDetails(orgName, organisationAddress,
-                                                                              null);
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
+            when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
 
             String formattedOrgAddress = "formatted org address";
             when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
@@ -259,9 +268,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            String orgName = "ACME Org Ltd";
-            OrganisationDetails organisationDetails = new OrganisationDetails(orgName, null, null);
-            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(organisationDetails);
+
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
+                .thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -432,8 +441,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldCreateMainClaimOnCase() {
             // Given
             stubFeeService();
-            String orgId = "org123";
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
@@ -444,7 +451,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData, orgId);
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test

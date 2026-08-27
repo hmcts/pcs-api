@@ -1,0 +1,107 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/location/court-venues/services",
+    "queryParameters": {
+      "service_code": {
+        "equalTo": "AAA3"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "service_code": "AAA3",
+      "court_type_id": "10",
+      "court_type": "County Court",
+      "welsh_court_type": null,
+      "court_venues": [
+        {
+          "court_venue_id": "75400",
+          "epimms_id": "283922",
+          "service_code": "AAA3",
+          "site_name": "Stoke CTSC",
+          "region_id": "2",
+          "region": "Midlands",
+          "court_type": "County Court",
+          "court_type_id": "10",
+          "cluster_id": null,
+          "cluster_name": null,
+          "open_for_public": "NO",
+          "court_address": "Town Road",
+          "postcode": "ST1 2QB",
+          "phone_number": "0300 123 7050",
+          "closed_date": null,
+          "court_location_code": "700",
+          "dx_address": "",
+          "welsh_site_name": "",
+          "welsh_court_address": "",
+          "court_status": "Open",
+          "court_open_date": null,
+          "court_name": "Stoke CTSC",
+          "venue_name": "CTSC Stoke",
+          "is_case_management_location": "Y",
+          "is_hearing_location": "N",
+          "welsh_venue_name": "",
+          "is_temporary_location": "N",
+          "is_nightingale_court": "N",
+          "location_type": "COURT",
+          "parent_location": "",
+          "welsh_court_name": "",
+          "uprn": "",
+          "venue_ou_code": "",
+          "mrd_building_location_id": "MRD-BLD-326",
+          "mrd_venue_id": "MRD-CRT-3268",
+          "service_url": "",
+          "fact_url": "",
+          "external_short_name": "Online Civil Money Claims",
+          "welsh_external_short_name": "Hawliadau am Arian yn y Llys Sifil Ar-lein"
+        },
+        {
+          "court_venue_id": "75226",
+          "epimms_id": "827534",
+          "service_code": "AAA3",
+          "site_name": "Aberystwyth Justice Centre",
+          "region_id": "7",
+          "region": "Wales",
+          "court_type": "County Court",
+          "court_type_id": "10",
+          "cluster_id": null,
+          "cluster_name": null,
+          "open_for_public": "YES",
+          "court_address": "Y Lanfa, Trefechan, Aberystwyth",
+          "postcode": "SY23 1AS",
+          "phone_number": "01970 621 250",
+          "closed_date": null,
+          "court_location_code": "102",
+          "dx_address": "99560 Aberystwyth 2",
+          "welsh_site_name": "Canolfan Gyfiawnder Aberystwyth",
+          "welsh_court_address": "Trefechan Y Lanfa  Trefechan  Aberystwyth",
+          "court_status": "Open",
+          "court_open_date": null,
+          "court_name": "Aberystwyth Justice Centre",
+          "venue_name": "Aberystwyth",
+          "is_case_management_location": "Y",
+          "is_hearing_location": "Y",
+          "welsh_venue_name": "Aberystwyth",
+          "is_temporary_location": "N",
+          "is_nightingale_court": "N",
+          "location_type": "COURT",
+          "parent_location": "",
+          "welsh_court_name": "Canolfan Gyfiawnder Aberystwyth",
+          "uprn": "",
+          "venue_ou_code": "",
+          "mrd_building_location_id": "MRD-BLD-007",
+          "mrd_venue_id": "MRD-CRT-1168",
+          "service_url": "",
+          "fact_url": "https://www.find-court-tribunal.service.gov.uk/courts/aberystwyth-justice-centre",
+          "external_short_name": "Aberystwyth",
+          "welsh_external_short_name": "Aberystwyth"
+        }
+      ]
+    }
+  }
+}
