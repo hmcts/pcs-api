@@ -60,7 +60,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final String ORG_ID = "org123";
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -202,7 +201,7 @@ class PcsCaseServiceTest {
             .build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(claimService).createMainClaimEntity(caseData);
@@ -218,10 +217,10 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder().build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity, ORG_ID);
+        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity);
     }
 
     @Test
@@ -236,7 +235,7 @@ class PcsCaseServiceTest {
         when(documentService.buildDocumentEntitiesForCase(caseData)).thenReturn(documentEntities);
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntities);
@@ -258,7 +257,7 @@ class PcsCaseServiceTest {
 
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);

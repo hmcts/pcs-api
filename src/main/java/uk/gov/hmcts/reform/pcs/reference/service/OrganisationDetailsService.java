@@ -64,8 +64,8 @@ public class OrganisationDetailsService {
             return details;
 
         } catch (FeignException.NotFound ex) {
-            // Normal for citizens (no organisation), so not logged as an error.
-            log.debug("No organisation held in rd-professional for userId: {}", userId);
+            // Normal for citizens (no organisation).
+            log.error("No organisation held in rd-professional for userId: {}", userId);
             return null;
         } catch (FeignException ex) {
             log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
