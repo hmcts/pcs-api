@@ -125,6 +125,43 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
+    private BasePersonalisation buildPersonalisation(
+        PartyEntity emailRecipient,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        return buildPersonalisation(
+            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
+            Objects.toString(emailRecipient.getLastName(), ""),
+            pcsCaseEntity
+        );
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        String recipientFirstName,
+        String recipientLastName,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        return BasePersonalisation.builder()
+            .firstName(recipientFirstName)
+            .lastName(recipientLastName)
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
+            .build();
+    }
+
     public NoticeOfChangeCompletedPersonalisation noticeOfChangeCompleted(PartyEntity partyEntity,
                                                                          PcsCaseEntity pcsCaseEntity) {
 
@@ -173,43 +210,6 @@ public class NotificationPersonalisationFactory {
             addressMapper.toAddressUK(propertyAddress),
             AddressFormatter.COMMA_DELIMITER
         );
-    }
-
-    private BasePersonalisation buildPersonalisation(
-        PartyEntity emailRecipient,
-        PcsCaseEntity pcsCaseEntity
-    ) {
-        return buildPersonalisation(
-            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
-            Objects.toString(emailRecipient.getLastName(), ""),
-            pcsCaseEntity
-        );
-    }
-
-    private BasePersonalisation buildPersonalisation(
-        String recipientFirstName,
-        String recipientLastName,
-        PcsCaseEntity pcsCaseEntity
-    ) {
-        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
-        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
-
-        String claimantName = primaryClaimant.getOrgName() != null
-            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-
-        String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
-            primaryDefendant.getFirstName(),
-            primaryDefendant.getLastName());
-
-        return BasePersonalisation.builder()
-            .firstName(recipientFirstName)
-            .lastName(recipientLastName)
-            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
-            .claimantName(claimantName)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
     }
 
     private static String getClaimantName(ClaimantInformation claimantInformation) {
