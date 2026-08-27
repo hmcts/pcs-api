@@ -59,10 +59,31 @@ public class CaseFlagService {
     private PartySupportOwnershipResolver partySupportOwnershipResolver;
     private TranslationWAService translationWAService;
 
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && isReasonableAdjustmentCode(flag.getFlagRefData().getFlagCode());
+    }
+
+    private static boolean isReasonableAdjustmentCode(String flagCode) {
+        return flagCode != null && flagCode.startsWith(RA_FLAG_CODE_PREFIX);
+    }
+
+    private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
+        return partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), "Active");
+    }
+
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
 
-        return mergeFlagDetails(incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
-                                CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
+        return mergeFlagDetails(
+            incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
+            CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD
+        );
     }
 
     /**
@@ -81,8 +102,10 @@ public class CaseFlagService {
 
         int ignored = incomingFlags.getDetails().size() - reasonableAdjustmentDetails.size();
         if (ignored > 0) {
-            log.warn("Ignoring {} supplied flag(s) for party {} that are not reasonable adjustments",
-                     ignored, partyEntity.getId());
+            log.warn(
+                "Ignoring {} supplied flag(s) for party {} that are not reasonable adjustments",
+                ignored, partyEntity.getId()
+            );
         }
 
         if (reasonableAdjustmentDetails.isEmpty()) {
@@ -108,7 +131,8 @@ public class CaseFlagService {
 
         List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
             reasonableAdjustmentFlags, null, null, partyEntity, CasePartyFlagEntity::new,
-            RefDataPolicy.CREATE_IF_ABSENT);
+            RefDataPolicy.CREATE_IF_ABSENT
+        );
 
         partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
         partyEntity.getDefendantFlags().addAll(casePartyFlags);
@@ -122,8 +146,10 @@ public class CaseFlagService {
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-            mergePartyFlagCollections(incomingParty.getDefendantFlags(),
-                                      incomingParty.getPartyFlagsExternal(), partyEntity);
+            mergePartyFlagCollections(
+                incomingParty.getDefendantFlags(),
+                incomingParty.getPartyFlagsExternal(), partyEntity
+            );
         }
     }
 
@@ -164,18 +190,20 @@ public class CaseFlagService {
                 .toList();
         }
 
-        return mergeFlagDetails(incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new,
-                                RefDataPolicy.UPDATE_FROM_PAYLOAD);
+        return mergeFlagDetails(
+            incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new,
+            RefDataPolicy.UPDATE_FROM_PAYLOAD
+        );
     }
 
     private boolean hasNoFlagDetails(Flags flags) {
         return flags == null || flags.getDetails() == null || flags.getDetails().isEmpty();
     }
 
-    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
-                                                               PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
-                                                               Supplier<T> flagEntitySupplier,
-                                                               RefDataPolicy refDataPolicy) {
+    private <T extends BaseCaseFlag> List<T> mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
+                                                              PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
+                                                              Supplier<T> flagEntitySupplier,
+                                                              RefDataPolicy refDataPolicy) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
         Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
@@ -248,15 +276,6 @@ public class CaseFlagService {
             incomingFlagDetail.getAvailableExternally()));
 
         return flagRefDataEntity;
-    }
-
-    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
-        return flag.getFlagRefData() != null
-            && isReasonableAdjustmentCode(flag.getFlagRefData().getFlagCode());
-    }
-
-    private static boolean isReasonableAdjustmentCode(String flagCode) {
-        return flagCode != null && flagCode.startsWith(RA_FLAG_CODE_PREFIX);
     }
 
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
@@ -344,7 +363,7 @@ public class CaseFlagService {
             return;
         }
 
-          partyEntity.getDefendantFlags().stream()
+        partyEntity.getDefendantFlags().stream()
             .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
                 .equalsIgnoreCase(existingFlag.getDefaultStatus()))
             .filter(existingFlag -> existingFlag.getId() != null
@@ -361,10 +380,8 @@ public class CaseFlagService {
         if (incomingSupportFlags == null || incomingSupportFlags.getDetails() == null) {
             return false;
         }
-
         Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
         List<ListValue<FlagDetail>> incomingDetails = incomingSupportFlags.getDetails();
-
         if (incomingDetails.size() != existingExternalFlags.size()) {
             return true;
         }
@@ -373,12 +390,6 @@ public class CaseFlagService {
             CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
             return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
         });
-    }
-
-    private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
-        return partyEntity.getDefendantFlags().stream()
-            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
-            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
     }
 
     private boolean differs(FlagDetail incomingFlagDetail, CasePartyFlagEntity existingFlag) {
@@ -410,10 +421,6 @@ public class CaseFlagService {
                 PartyEntity::getId,
                 Function.identity()
             ));
-    }
-
-    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
-        return Objects.equals(flagDetail.getStatus(), "Active");
     }
 
     /**
