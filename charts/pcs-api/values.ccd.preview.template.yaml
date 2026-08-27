@@ -256,10 +256,6 @@ ccd-case-document-am-api:
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
 
 
-
-# Restored (was removed in #2439): AAC is case-data-coupled - it must read the
-# preview's data store to answer NoC questions. AAT's AAC 404s preview cases,
-# which breaks the whole Notice of Change journey on every ccd preview.
 aac-manage-case-assignment:
   enabled: true
   java:

@@ -1,11 +1,22 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNullElse;
+import java.util.Objects;
+import static java.util.function.Function.identity;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.caseAccessGroupIdFor;
+import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -18,25 +29,52 @@ import java.util.UUID;
  * Builds the CaseAccessGroups the data store matches against users' role assignments. The id must be
  * byte-identical to the one PRM builds from the same AccessTypeRole template; a mismatch fails closed.
  */
+@Slf4j
 public final class CaseAccessGroupsUtil {
 
     public static final String CCD_ALL_CASES_ACCESS = "CCD:all-cases-access";
-    static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
-    /** Claimant only for now; the defendant side belongs to the notice-of-change work. */
-    private static final Set<PartyRole> DERIVED_ROLES = Set.of(PartyRole.CLAIMANT);
 
     private CaseAccessGroupsUtil() {
     }
 
-    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties) {
+    public static List<ListValue<CaseAccessGroup>> deriveCaseAccessGroups(Set<PartyEntity> parties,
+                                                                          List<ListValue<Party>> defendants) {
         List<CaseAccessGroup> caseAccessGroups = new ArrayList<>();
 
-        parties.forEach(party -> derivedRole(party)
-            .flatMap(role -> GroupAccessType.caseAccessGroupIdTemplateFor(party.getOrganisationProfileId(), role))
-            .ifPresent(template -> caseAccessGroups.add(new CaseAccessGroup(
-                CCD_ALL_CASES_ACCESS,
-                template.replace(ORG_IDENTIFIER_TEMPLATE, party.getOrganisationId())))));
+        parties.stream()
+            .filter(CaseAccessGroupsUtil::isClaimant)
+            .findFirst()
+            .ifPresent(party -> {
+                var caseAccessGroup =
+                    caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId());
+                log.info("Found claimant case access group: {}", caseAccessGroup);
+                caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroup));
+            });
+
+        Map<UUID, PartyEntity> partyEntitiesMap = parties.stream()
+            .collect(Collectors.toMap(PartyEntity::getId, identity()));
+
+        requireNonNullElse(defendants, List.<ListValue<Party>>of()).stream()
+            .map(ListValue::getId)
+            .peek(partyId -> log.info("Processing defendant party id: {}", partyId))
+            .map(partyId -> partyEntitiesMap.get(UUID.fromString(partyId)))
+            .filter(Objects::nonNull)
+            .peek(partyEntity -> log.info("Found defendant party entity: {}", partyEntity))
+            .map(partyEntity ->
+                     partyEntity.getClaimPartyOrganisationList()
+                         .stream()
+                         .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
+                         .findFirst())
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(ClaimPartyOrganisationEntity::getOrganisation)
+            .map(legalRepOrg ->
+                     caseAccessGroupIdFor(legalRepOrg.getOrganisationProfileId(),
+                                          DEFENDANT, legalRepOrg.getOrganisationId()))
+            .peek(caseAccessGroupId -> log.info("Found defendant case access group: {}", caseAccessGroupId))
+            .forEach(caseAccessGroupId ->
+                         caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));;
 
         return caseAccessGroups.stream()
             .map(CaseAccessGroup::getCaseAccessGroupId)
@@ -47,8 +85,9 @@ public final class CaseAccessGroupsUtil {
     }
 
     /**
-     * Every item needs an id (data store skips id-less ones); derived from the group id
-     * so it is stable across reads.
+     * The data store skips collection items that have no id, so every group needs one. Deriving it
+     * from the group id rather than generating one keeps it the same on every read, and these are
+     * rebuilt on each read rather than stored.
      */
     private static ListValue<CaseAccessGroup> asIdentifiedGroupItem(String groupId) {
         return ListValue.<CaseAccessGroup>builder()
@@ -57,18 +96,7 @@ public final class CaseAccessGroupsUtil {
             .build();
     }
 
-    private static Optional<PartyRole> derivedRole(PartyEntity party) {
-        if (party.getOrganisationId() == null) {
-            return Optional.empty();
-        }
-        if (party.isClaimCreator()) {
-            return Optional.of(PartyRole.CLAIMANT);
-        }
-        return party.getClaimParties().stream()
-            .map(ClaimPartyEntity::getRole)
-            .filter(DERIVED_ROLES::contains)
-            .findFirst();
+    private static boolean isClaimant(PartyEntity party) {
+        return nonNull(party.getOrganisationId()) && party.isClaimCreator();
     }
-
-
 }
