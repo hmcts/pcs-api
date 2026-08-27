@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.StartDashboardViewHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.dashboard.SubmitDashboardViewHandler;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
@@ -81,6 +81,7 @@ class DashboardViewTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
+
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,
             defendantResponseService,

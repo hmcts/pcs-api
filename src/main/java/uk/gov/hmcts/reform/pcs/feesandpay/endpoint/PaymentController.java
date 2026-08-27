@@ -24,6 +24,9 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.CreateCardPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaAccountsResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
@@ -133,6 +136,64 @@ public class PaymentController {
         OutstandingCounterClaimPayment outstandingPayment =
             outstandingCounterClaimPaymentService.getOutstandingForDefendant(caseReference, idamUserId);
         return ResponseEntity.ok(outstandingPayment);
+    }
+
+    @GetMapping(path = "pba-accounts")
+    @Operation(
+        summary = "Get list of PBA account details"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "PBA accounts returned successfully"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<PbaAccountsResponse> getPbaAccounts(
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken) {
+
+        PbaAccountsResponse pbaAccountsResponse = paymentService.getPbaAccounts(authorization);
+
+        return ResponseEntity.status(HttpStatus.OK).body(pbaAccountsResponse);
+    }
+
+    @PostMapping(path = "service-request/{serviceRequestReference}/pba", consumes = APPLICATION_JSON_VALUE)
+    @Operation(
+        summary = "Create a PBA payment request",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                mediaType = APPLICATION_JSON_VALUE,
+                examples = @ExampleObject(
+                    name = "Create PBA payment request",
+                    value = """
+                    {
+                        "amount": 300.99,
+                        "pbaAccount": "PBA123",
+                        "customerReference": "abc"
+                    }
+                    """
+                )
+            )
+        )
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Payment request created successfully"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<PbaPaymentResponse> createPbaPaymentRequest(
+        @RequestHeader(value = SERVICE_AUTHORIZATION) String s2sToken,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @PathVariable("serviceRequestReference") String serviceRequestReference,
+        @RequestBody @Valid PbaPaymentRequest pbaPaymentRequest) {
+
+        PbaPaymentResponse pbaPaymentResponse = paymentService.createPbaPaymentRequest(
+            authorization,
+            serviceRequestReference,
+            pbaPaymentRequest
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(pbaPaymentResponse);
     }
 
 }
