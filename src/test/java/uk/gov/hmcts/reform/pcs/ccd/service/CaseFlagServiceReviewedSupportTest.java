@@ -108,13 +108,51 @@ class CaseFlagServiceReviewedSupportTest {
     }
 
     @Test
-    void shouldNotModifyInternalFlagsEvenWhenRequested() {
+    void shouldApplyReviewToARequestedFlagStoredAsInternal() {
+        LocalDateTime modified = LocalDateTime.of(2026, 8, 27, 11, 15);
+
         underTest.applyReviewedSupportFlags(
-            reviewedSupport(internalRequestedFlag.getId(), "Active", "Attempted change", null),
+            reviewedSupport(internalRequestedFlag.getId(), "Active", "Adjustment agreed", modified),
             Set.of(partyEntity));
 
-        assertThat(internalRequestedFlag.getDefaultStatus()).isEqualTo("Requested");
-        assertThat(internalRequestedFlag.getFlagUpdateComment()).isNull();
+        assertThat(internalRequestedFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(internalRequestedFlag.getFlagUpdateComment()).isEqualTo("Adjustment agreed");
+        assertThat(internalRequestedFlag.getDateTimeModified()).isEqualTo(modified);
+        assertThat(internalRequestedFlag.getVisibility()).isEqualTo(FlagVisibility.INTERNAL.getValue());
+    }
+
+    @Test
+    void shouldLeaveStoredVisibilityUntouchedWhenReviewingAnExternalFlag() {
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), "Not approved", "Insufficient evidence", null),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Not approved");
+        assertThat(requestedFlag.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+    }
+
+    @Test
+    void shouldReviewInternalAndExternalRequestedFlagsInOneSubmission() {
+        List<ListValue<PartySupport>> reviewed = List.of(
+            ListValue.<PartySupport>builder()
+                .id(partyEntity.getId().toString())
+                .value(PartySupport.builder()
+                    .supportFlags(Flags.builder()
+                        .details(List.of(
+                            reviewedDetail(requestedFlag.getId(), "Active", "External approved"),
+                            reviewedDetail(internalRequestedFlag.getId(), "Not approved", "Internal refused")))
+                        .build())
+                    .build())
+                .build());
+
+        underTest.applyReviewedSupportFlags(reviewed, Set.of(partyEntity));
+
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("External approved");
+        assertThat(internalRequestedFlag.getDefaultStatus()).isEqualTo("Not approved");
+        assertThat(internalRequestedFlag.getFlagUpdateComment()).isEqualTo("Internal refused");
+        assertThat(activeFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(activeFlag.getFlagUpdateComment()).isNull();
     }
 
     @Test
@@ -228,6 +266,13 @@ class CaseFlagServiceReviewedSupportTest {
         // Then
         assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
         assertThat(requestedFlag.getFlagUpdateComment()).isNull();
+    }
+
+    private ListValue<FlagDetail> reviewedDetail(UUID flagId, String status, String reason) {
+        return ListValue.<FlagDetail>builder()
+            .id(flagId.toString())
+            .value(FlagDetail.builder().status(status).flagUpdateComment(reason).build())
+            .build();
     }
 
     private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, String status, String reason,

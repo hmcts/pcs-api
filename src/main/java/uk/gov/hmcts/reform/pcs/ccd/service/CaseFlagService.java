@@ -344,8 +344,7 @@ public class CaseFlagService {
             return;
         }
 
-        partyEntity.getDefendantFlags().stream()
-            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+          partyEntity.getDefendantFlags().stream()
             .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
                 .equalsIgnoreCase(existingFlag.getDefaultStatus()))
             .filter(existingFlag -> existingFlag.getId() != null

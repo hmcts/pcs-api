@@ -68,18 +68,44 @@ class SupportReviewServiceTest {
         assertThat(supportFlags.getPartyName()).isEqualTo("Test Party");
         assertThat(supportFlags.getRoleOnCase()).isEqualTo("Defendant");
         assertThat(supportFlags.getGroupId()).isEqualTo(PARTY_UUID);
-        assertThat(supportFlags.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL);
+        // The reviewed collection is internal-only case data rendered through the internal flag
+        // launcher, so it is presented as internal whatever visibilities it was gathered from.
+        assertThat(supportFlags.getVisibility()).isEqualTo(FlagVisibility.INTERNAL);
     }
 
     /**
-     * Internal party flags live in their own collection and never reach the support collection, but the
-     * visibility guard is asserted directly so an internally scoped entry can never be offered for review.
+     * Support a defendant requests through the citizen Your Support journey is stored as internal, and an
+     * authorised internal reviewer must still be able to review it. Stored visibility decides who sees
+     * support on the Support tab, not whether a requested flag can be reviewed.
      */
     @Test
-    void shouldNotIncludeInternalPartyFlags() {
+    void shouldIncludeRequestedSupportStoredAsInternal() {
         PCSCase pcsCase = PCSCase.builder()
             .partySupport(List.of(supportEntry(PARTY_ID, FlagVisibility.INTERNAL,
-                List.of(flag("Requested", "Internal only flag")))))
+                List.of(flag("Requested", "Internally stored flag")))))
+            .build();
+
+        List<ListValue<PartySupport>> result = underTest.buildRequestedSupport(pcsCase);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getValue().getSupportFlags().getDetails())
+            .extracting(detail -> detail.getValue().getName())
+            .containsExactly("Internally stored flag");
+    }
+
+    @Test
+    void shouldExcludeNonRequestedSupportWhateverItsVisibility() {
+        String internalPartyId = UUID.randomUUID().toString();
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(
+                supportEntry(internalPartyId, FlagVisibility.INTERNAL, List.of(
+                    flag("Active", "Internal active"),
+                    flag("Inactive", "Internal inactive"),
+                    flag("Not approved", "Internal not approved"))),
+                supportEntry(PARTY_ID, FlagVisibility.EXTERNAL, List.of(
+                    flag("Active", "External active"),
+                    flag("Inactive", "External inactive"),
+                    flag("Not approved", "External not approved")))))
             .build();
 
         assertThat(underTest.buildRequestedSupport(pcsCase)).isEmpty();
