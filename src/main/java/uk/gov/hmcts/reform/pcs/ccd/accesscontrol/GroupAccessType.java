@@ -129,12 +129,9 @@ public enum GroupAccessType implements CCDAccessGroup {
     }
 
     /**
-     * Hidden from ManageOrg on the staging clone. The staging definition (generated with
-     * {@code CASE_TYPE_SUFFIX} set) duplicates every access-type row of the main PCS case type
-     * under the same jurisdiction, so ManageOrg's "Additional types of access" screen renders
-     * each checkbox twice. User selections are keyed on (jurisdiction, profile, accessTypeId)
-     * with no case type, so the single visible row from the main case type covers both.
-     * ORM's role derivation never reads Display, so PCS-staging roles still derive.
+     * Hidden from ManageOrg on the staging case type, which duplicates every row of the main
+     * one and doubles each checkbox. User ticks are keyed without case type, and ORM ignores
+     * Display, so PCS-staging role derivation is unaffected.
      */
     public boolean isDisplay() {
         return display && System.getenv("CASE_TYPE_SUFFIX") == null;
