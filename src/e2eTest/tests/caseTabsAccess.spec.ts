@@ -46,7 +46,7 @@ test.afterEach(async () => {
 
 test.describe('[Case tabs Access - England Journey] @nightly', async () => {
 users.forEach(({ user, email, password, tabAccess }) => {
-  test(`Case tabs Access - Check for update access for user "${user}" @MAC @regression`, async ({ page, context }) => {
+  test(`Case tabs Access - Check for update access for user "${user}" @MAC`, async ({ page, context }) => {
 
     if (user === 'Defendant Solicitor') {
       await performAction('getCaseAPIDynamic', { req: 'Link Solicitor', email: email, password: password });
