@@ -59,8 +59,7 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        // Inactive links are history from previous representations of this party and must not
-        // block re-linking after a notice of change back to this organisation.
+        // Inactive links are history and must not block re-linking after a NoC back to this organisation.
         if (this.claimPartyOrganisationList.stream()
             .filter(e -> e.getActive() == YesOrNo.YES)
             .anyMatch(e -> e.getParty().getId().equals(party.getId()))) {
