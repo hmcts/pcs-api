@@ -1,6 +1,7 @@
 export const reviewSupport = {
     mainHeader: `Request support`,
     mainHeaderManage: `Manage support`,
+    reviewSupportHeader: `Review support request`,
     continueButton: `Continue`,
     submitButton: `Submit`,
     optionOne: `Possession Claims Solicitor Org (Claimant)`,
@@ -13,4 +14,6 @@ export const reviewSupport = {
     updateCommentLabel: `Please provide your comments below`,
     updateCommentHintText: `Do not include any sensitive information such as personal details.`,
     updateCommentText: `Test Change Manage Support`,
+    reviewCommentLabel: `Please provide your comments below`,
+    reviewCommentText: `Test Change Review Support`,
 };
