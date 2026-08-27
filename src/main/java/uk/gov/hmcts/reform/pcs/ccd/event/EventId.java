@@ -21,6 +21,8 @@ public enum EventId {
     addCaseReviewDate,
     createFlags,
     amendFlags,
+    requestSupport,
+    manageSupport,
     claimIssuePayment,
     changeCaseState,
     manageHearing,
