@@ -55,10 +55,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.DUPLICATE_DEFENDANT_NAME_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.DUPLICATE_DEFENDANT_NAME_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.FEATURE_FLAG_DISABLED_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.FEATURE_FLAG_DISABLED_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.INVALID_ORG_TYPE_CODE;
+import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.INVALID_ORG_TYPE_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_ALREADY_REPRESENTS_PARTY_MESSAGE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.ORG_NOT_FOUND_CODE;
@@ -409,6 +414,7 @@ public class PcsNoticeOfChangeTest {
         PartyEntity party = PartyEntity.builder()
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -416,6 +422,7 @@ public class PcsNoticeOfChangeTest {
         PartyEntity party2 = PartyEntity.builder()
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -449,6 +456,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -485,6 +493,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -525,12 +534,17 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
             .build();
+        PartyEntity claimant = PartyEntity.builder()
+            .claimCreator(true)
+            .organisationId("different-org")
+            .build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(Set.of(party))
+            .parties(Set.of(party, claimant))
             .build();
         String userId = "123";
         String orgId = "org";
@@ -539,6 +553,7 @@ public class PcsNoticeOfChangeTest {
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
+        when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
         when(organisationDetailsResponse.getName()).thenReturn(orgName);
 
         // when
@@ -567,12 +582,17 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
             .build();
+        PartyEntity claimant = PartyEntity.builder()
+            .claimCreator(true)
+            .organisationId("different-org")
+            .build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .parties(Set.of(party))
+            .parties(Set.of(party, claimant))
             .build();
         String userId = "123";
         String orgId = "org";
@@ -581,6 +601,7 @@ public class PcsNoticeOfChangeTest {
         when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
         when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
+        when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
         when(organisationDetailsResponse.getName()).thenReturn(orgName);
 
         // when
@@ -591,6 +612,90 @@ public class PcsNoticeOfChangeTest {
         NocOrganisation organisation = actual.organisation();
         assertEquals(orgId, organisation.organisationId());
         assertEquals(orgName, organisation.organisationName());
+    }
+
+    @Test
+    void validate_WithInvalidOrganisationType_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .build();
+        String userId = "123";
+        String orgId = "org";
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
+        when(organisationDetailsResponse.getOrgProfileId()).thenReturn("LOCALAUTH_PROFILE");
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(INVALID_ORG_TYPE_CODE, actual.code());
+        assertEquals(INVALID_ORG_TYPE_MESSAGE, actual.message());
+    }
+
+    @Test
+    void validate_WithOrgAlreadyRepresentingClaimant_ReturnErrorAnswerResponse() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+
+        String firstName = "Dan";
+        String lastName = "Tester";
+        NocAnswer answer = new NocAnswer("pcs-defendant-first-name", firstName);
+        NocAnswer answer2 = new NocAnswer("pcs-defendant-last-name", lastName);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(TEST_CASE_REFERENCE, List.of(answer, answer2));
+        UUID partyId = UUID.randomUUID();
+        String orgId = "org";
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PartyEntity claimant = PartyEntity.builder()
+            .claimCreator(true)
+            .organisationId(orgId)
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party, claimant))
+            .build();
+        String userId = "123";
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        when(organisationDetailsResponse.getOrganisationIdentifier()).thenReturn(orgId);
+        when(organisationDetailsResponse.getOrgProfileId()).thenReturn("SOLICITOR_PROFILE");
+
+        // when
+        NocAnswersResponse actual = pcsNoticeOfChange.validate(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        assertEquals(CONFLICT_OF_INTEREST_CODE, actual.code());
+        assertEquals(CONFLICT_OF_INTEREST_MESSAGE, actual.message());
     }
 
     @Test
@@ -623,6 +728,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
@@ -657,6 +763,7 @@ public class PcsNoticeOfChangeTest {
             .id(partyId)
             .firstName(firstName)
             .lastName(lastName)
+            .nameKnown(YES)
             .claimParties(Set.of(ClaimPartyEntity.builder()
                                      .role(PartyRole.DEFENDANT)
                                      .build()))
