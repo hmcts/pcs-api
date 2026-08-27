@@ -429,9 +429,12 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @ParameterizedTest
-        @EnumSource(value = UserRole.class, names = {"CLAIMANT_SOLICITOR", "DEFENDANT_SOLICITOR"})
+        @EnumSource(value = UserRole.class,
+            names = {"CLAIMANT_SOLICITOR", "DEFENDANT_SOLICITOR", "GA_CLAIMANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"})
         void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull(UserRole userRole) {
             stubUserRoles(userRole);
+
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument nullLegalRepDocument = null;
             LegalRepDocument validLegalRepDocument = LegalRepDocument.builder()

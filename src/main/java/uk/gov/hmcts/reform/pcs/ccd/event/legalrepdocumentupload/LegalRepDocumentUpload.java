@@ -258,11 +258,13 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private static boolean isClaimantSolicitor(Collection<String> userRoles) {
-        return userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole());
+        return userRoles.contains(UserRole.CLAIMANT_SOLICITOR.getRole())
+            || userRoles.contains(UserRole.GA_CLAIMANT_SOLICITOR.getRole());
     }
 
     private static boolean isDefendantSolicitor(Collection<String> userRoles) {
-        return userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole());
+        return userRoles.contains(UserRole.DEFENDANT_SOLICITOR.getRole())
+            || userRoles.contains(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
     }
 
     private static boolean anyDocumentIsNull(List<LegalRepDocument> legalRepDocuments) {
