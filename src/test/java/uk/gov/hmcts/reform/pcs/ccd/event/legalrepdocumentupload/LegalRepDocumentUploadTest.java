@@ -239,7 +239,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         void shouldSetNotWalesFlagForOtherCountries(LegislativeCountry legislativeCountry) {
             // Given
             stubUserRoles(DEFENDANT_SOLICITOR);
-            when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);;
+            when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -451,7 +451,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
-            assertThat(submitResponse.getErrors().contains("Your files were not submitted. Try again."));
+            assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
     }
