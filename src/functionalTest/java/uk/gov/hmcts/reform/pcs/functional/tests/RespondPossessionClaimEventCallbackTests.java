@@ -104,7 +104,6 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
-    @Disabled("Disabled due to flakiness, needs investigation")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
@@ -123,6 +122,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
             Map.of("caseReference",caseReference)
         );
         apiSteps.validateEventData(
+            caseType,
             PcsIdamTokenClient.UserType.citizenUser,
             "respondPossessionClaimrespondToPossessionDraftSavePage",
             validateClaimRequestBody);
