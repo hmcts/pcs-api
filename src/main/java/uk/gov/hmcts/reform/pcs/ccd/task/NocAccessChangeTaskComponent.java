@@ -6,15 +6,12 @@ import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import java.time.Duration;
-import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 @Slf4j
@@ -26,18 +23,15 @@ public class NocAccessChangeTaskComponent {
     public static final TaskDescriptor<NocAccessChangeTaskData> NOC_ACCESS_CHANGE_TASK_DESCRIPTOR =
         TaskDescriptor.of(NOC_ACCESS_CHANGE_TASK_NAME, NocAccessChangeTaskData.class);
 
-    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final int maxRetries;
     private final Duration backoffDelay;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
     public NocAccessChangeTaskComponent(
-        CaseRoleAssignmentService caseRoleAssignmentService,
         LegalRepresentativePartyLinkService legalRepresentativePartyLinkService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
-        this.caseRoleAssignmentService = caseRoleAssignmentService;
         this.legalRepresentativePartyLinkService = legalRepresentativePartyLinkService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
@@ -55,13 +49,10 @@ public class NocAccessChangeTaskComponent {
                 log.info("Applying NoC access change for case {}", caseReference);
 
                 try {
-                    caseRoleAssignmentService.assignRasRole(caseReference, taskData.getUserId(),
-                                                            UserRole.DEFENDANT_SOLICITOR);
-
                     legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
                             caseReference,
                             taskData.getPartyId(),
-                            UUID.fromString(taskData.getUserId()),
+                            taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
 
                     return new CompletionHandler.OnCompleteRemove<>();

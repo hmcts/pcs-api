@@ -1,7 +1,22 @@
 import Axios from 'axios';
 import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData, enforceOrderEventTokenApiData, enforceWarrantApiData, getCaseApiData, submitCaseEventTokenDynamicApiData, createCaseEventTokenDynamicApiData, makeAnApplicationEventTokenApiData, makeAnApplicationApiData, paymentApiData } from '@data/api-data';
+import {
+  createCaseApiData,
+  createCaseEventTokenApiData,
+  submitCaseApiData,
+  submitCaseEventTokenApiData,
+  caseUserRoleDeletionApiData,
+  enforceOrderEventTokenApiData,
+  enforceWarrantApiData,
+  getCaseApiData,
+  submitCaseEventTokenDynamicApiData,
+  createCaseEventTokenDynamicApiData,
+  makeAnApplicationEventTokenApiData,
+  makeAnApplicationApiData,
+  paymentApiData,
+  manageHearingEventTokenApiData, manageHearingApiData
+} from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
 import { performAction } from '@utils/controller';
@@ -30,6 +45,8 @@ export class CreateCaseAPIAction implements IAction {
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
+      ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -39,18 +56,21 @@ export class CreateCaseAPIAction implements IAction {
   private async createCaseAPI(caseData: actionData): Promise<void> {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     try {
-      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+      const tokenResponse = await this.apiRetry(() => createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint));
+      process.env.CREATE_EVENT_TOKEN = tokenResponse.data.token;
       const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
 
-      const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+      const createResponse = await this.apiRetry(() => createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
         data: createCasePayloadData,
         event: { id: createCaseApiData.createCaseEventName },
         event_token: process.env.CREATE_EVENT_TOKEN,
-      });
+      })
+      );
       process.env.CASE_NUMBER = createResponse.data.id;
       caseInfo.id = createResponse.data.id;
       caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = createResponse.data.state;
+      console.log(`\n✅ CASE CREATION SUCCESSFUL:Case #  ${caseInfo.fid}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -73,18 +93,21 @@ export class CreateCaseAPIAction implements IAction {
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
-    let submitCasePayloadData;
+    let submitCasePayloadData : any;
     try {
-      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      const tokenSubmitResponse = await this.apiRetry(() => submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint()));
+      process.env.SUBMIT_EVENT_TOKEN = tokenSubmitResponse.data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+      const submitResponse = await this.apiRetry(() => submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
         event_token: process.env.SUBMIT_EVENT_TOKEN,
-      });
+      })
+    );
       caseInfo.id = submitResponse.data.id;
       caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = submitResponse.data.state;
+      console.log(`\n✅ CASE SUBMISSION SUCCESSFUL:`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -195,6 +218,9 @@ export class CreateCaseAPIAction implements IAction {
         const defendantIds = allDefendants.map((d: any) => d.id);
         if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
 
+        // Shared across every spec in this worker, so clear it or earlier cases' defendants
+        // get submitted against this one.
+        defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
           process.env.Defendant_ID = defendant.id;
           const defendantName =
@@ -420,16 +446,19 @@ export class CreateCaseAPIAction implements IAction {
     const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
     let makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
-      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      const tokenGenAppResponse = await this.apiRetry(() => makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint()));
+      process.env.MAA_EVENT_TOKEN = tokenGenAppResponse.data.token;
       makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+      const genAppResponse = await this.apiRetry(() => makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
         data: makeAnApplicationPayloadData,
         event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
         event_token: process.env.MAA_EVENT_TOKEN,
-      });
+      })
+      );
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
+      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL`)
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -450,6 +479,46 @@ export class CreateCaseAPIAction implements IAction {
         throw new Error('Make an application: no response from server.');
       }
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+
+  private async manageHearingAPI(caseData: actionRecord): Promise<void> {
+    await this.getAccessToken(caseData.email as string, caseData.password as string);
+    const manageHearingApi = Axios.create(manageHearingEventTokenApiData.manageHearingEventTokenApiInstance());
+    let manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    try {
+      process.env.Hearing_EVENT_TOKEN = (await manageHearingApi.get(manageHearingEventTokenApiData.manageHearingEventTokenApiEndPoint())).data.token;
+      manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+      const hearingResponse = await manageHearingApi.post(manageHearingApiData.manageHearingApiEndPoint(), {
+        data: manageHearingPayloadData,
+        event: {id: manageHearingApiData.manageHearingEventName},
+        event_token: process.env.Hearing_EVENT_TOKEN,
+      });
+      caseInfo.id = hearingResponse.data.id;
+      caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = hearingResponse.data.state;
+      console.log(`\n✅ NEW HEARING DATE ADDED SUCCESSFUL : STATUS ${hearingResponse.status}`);
+    }
+    catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+      if (status === 404) {
+        console.error(manageHearingPayloadData);
+        throw new Error(`Add a hearing: endpoint not found (404).please check the payload above \n ${error}`);
+      }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error('Add a hearing: no response from server.');
+      }
+      throw new Error(`Add a hearing failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 
@@ -511,6 +580,8 @@ export class CreateCaseAPIAction implements IAction {
           throw new Error('Solicitor 2 credentials are missing.');
         }
 
+        // Clear the shared list before recording this case's defendants.
+        defendantUserDetails.length = 0;
         for (let index = 0; index < allDefendants.length; index++) {
           const defendant = allDefendants[index];
           process.env.Defendant_ID = defendant.id;
@@ -630,6 +701,29 @@ export class CreateCaseAPIAction implements IAction {
         throw new Error('Make an application: no response from server.');
       }
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
+    }
+  }
+  private async apiRetry<T>(
+    fn: () => Promise<T>,
+    retries = actionRetries,
+    delay = 2000
+  ): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      const status = error?.response?.status;
+
+      const shouldRetry =
+        !status ||
+        [429, 500, 502, 503, 504].includes(status);
+
+      if (!shouldRetry || retries <= 1) {
+        throw error;
+      }
+      console.warn(`Request failed with status ${status}. Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      return this.apiRetry(fn, retries - 1, delay * 2);
     }
   }
 }

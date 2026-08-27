@@ -1,14 +1,14 @@
-### Review Documents
+### Review additional documents – gen app
 
-Additional documents have been uploaded to general application GA{{genAppRank}} by {{partyLabel}}:
+Additional documents have been uploaded to general application GA{{genAppRank}} by {{partyLabel}}. Review the
+additional documents submitted for the general application in
+<a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a>, check whether any
+further case action is required, and take the appropriate action. Only mark the task as complete once the documents
+have been reviewed and any required action has been completed.
 
+Documents:
 <ul class="govuk-list govuk-list--bullet">
   {% for filename in filenames %}
   <li class="govuk-!-font-size-19">{{filename}}</li>
   {% endfor %}
 </ul>
-
-Review the additional documents submitted for the general application in
-<a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a>, check whether any
-further case action is required, and take the appropriate action. Only mark the task as complete once the documents
-have been reviewed and any required action has been completed.

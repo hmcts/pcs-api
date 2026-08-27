@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -30,6 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
@@ -45,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDateTime;
@@ -59,6 +64,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
@@ -86,6 +92,10 @@ class DocumentServiceTest {
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentEntityListCaptor;
+    @InjectMocks
+    private DocumentService documentService;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> listCaptor;
 
     private DocumentService underTest;
 
@@ -973,6 +983,11 @@ class DocumentServiceTest {
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
+        String description = "some task description";
+        when(taskDescriptionService.createClaimAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
+        )).thenReturn(description);
+
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
 
@@ -991,6 +1006,7 @@ class DocumentServiceTest {
         assertThat(entity.getSize()).isEqualTo(123L);
         assertThat(entity.getPcsCase()).isSameAs(pcsCase);
         assertThat(entity.getParty()).isSameAs(party);
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
     }
 
     @Test
@@ -1145,16 +1161,6 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
-    @Test
-    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
-
-        // Then
-        assertThat(actualDocumentType).isNull();
-    }
-
-
     @ParameterizedTest
     @MethodSource("additionalDocumentTypeScenarios")
     void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
@@ -1164,6 +1170,15 @@ class DocumentServiceTest {
 
         // Then
         assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+    }
+
+    @Test
+    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
+        // When
+        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
+
+        // Then
+        assertThat(actualDocumentType).isNull();
     }
 
     private static Stream<Arguments> additionalDocumentCategoryScenarios() {
@@ -1186,6 +1201,93 @@ class DocumentServiceTest {
             Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
             Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
         );
+    }
+
+    @Test
+    void shouldCreateValidLegalRepDocuments() {
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description("Test Description")
+            .document(Document.builder().build())
+            .build();
+
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = LegalRepDocumentUploadDetails.builder()
+            .legalRepDocuments(List.of(ListValue.<LegalRepDocument>builder().value(legalRepDocument).build()))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
+            .build();
+
+        List<LegalRepDocument> listOfLegalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+        assertThat(listOfLegalRepDocuments).hasSize(1);
+        assertThat(listOfLegalRepDocuments.getFirst().getLegalRepDocumentType().getLabel())
+            .isEqualTo("Photographic evidence");
+        assertThat(listOfLegalRepDocuments.getFirst().getDescription()).isEqualTo("Test Description");
+    }
+
+    @Test
+    void shouldSaveLegalRepDocuments() {
+        String description = "test description";
+        String docUrl = "test url";
+        String fileName = "test-filename.pdf";
+
+        Document document = Document.builder()
+            .filename(fileName)
+            .url(docUrl)
+            .binaryUrl("test binary url")
+            .categoryId(CaseFileCategory.EVIDENCE.getId())
+            .build();
+
+        LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+            .document(document)
+            .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+            .description(description)
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+
+        final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+        setUpDefendantParty(pcsCaseEntity, party, 2);
+
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
+        when(party.getId()).thenReturn(partyId);
+        UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+        when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
+
+        GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+
+        String expectedRenamedFile = fileName + " GA1 - Defendant 2.pdf";
+        when(documentNameService.appendGenAppPostfix(fileName, selectedGenApp, mainClaim, partyId))
+            .thenReturn(expectedRenamedFile);
+
+        // When
+        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocList, pcsCaseEntity, party,
+                                                                    selectedGenApp);
+
+        // Then
+        verify(pcsCaseEntity, times(1)).addDocuments(listCaptor.capture());
+
+        List<DocumentEntity> capturedDocumentList = listCaptor.getValue();
+        assertThat(capturedDocumentList).hasSize(1);
+
+        DocumentEntity documentEntity = capturedDocumentList.getFirst();
+
+        assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
+        assertThat(documentEntity.getDocumentId()).isEqualTo(expectedDocumentId);
+        assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
+        assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
+        assertThat(documentEntity.getDescription()).isEqualTo(description);
+        assertThat(documentEntity.getContentType()).isEqualTo("application/pdf");
+        assertThat(documentEntity.getSize()).isEqualTo(123L);
+        assertThat(documentEntity.getGeneralApplication()).isEqualTo(selectedGenApp);
     }
 
     @Test
@@ -1365,6 +1467,43 @@ class DocumentServiceTest {
             .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
+    @ParameterizedTest
+    @EnumSource(LegalRepDocumentTypeWales.class)
+    void shouldResolveWalesDocumentTypeWhenWalesTypePresent(LegalRepDocumentTypeWales walesType) {
+        LegalRepDocument doc = LegalRepDocument.builder()
+            .legalRepDocumentTypeWales(walesType)
+            .build();
+
+        DocumentType result = underTest.resolveDocumentType(doc);
+
+        assertThat(result).isEqualTo(DocumentType.valueOf(walesType.name()));
+    }
+
+    @ParameterizedTest
+    @EnumSource(LegalRepDocumentType.class)
+    void shouldResolveDocumentTypeWhenWalesTypeNull(LegalRepDocumentType legalRepType) {
+        LegalRepDocument doc = LegalRepDocument.builder()
+            .legalRepDocumentType(legalRepType)
+            .build();
+
+        DocumentType result = underTest.resolveDocumentType(doc);
+
+        assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
+    }
+
+
+    @Test
+    void shouldCreateEmptyDocumentListWhenNoLegalRepDocuments() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        // When
+        underTest.createDocumentEntitiesFromLegalRepDocuments(List.of(), pcsCaseEntity, null, null);
+
+        // Then
+        assertThat(pcsCaseEntity.getDocuments()).isEmpty();
+    }
+
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
         return Stream.of(
             Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, CaseFileCategory.PROPERTY_DOCUMENTS),
@@ -1387,6 +1526,7 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE),
             Arguments.of(DocumentType.AMENDED_CLAIM_FORM, CaseFileCategory.STATEMENTS_OF_CASE),
             Arguments.of(DocumentType.PART_20_COUNTERCLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
+            Arguments.of(DocumentType.COUNTERCLAIM, CaseFileCategory.STATEMENTS_OF_CASE),
             Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF, CaseFileCategory.CORRESPONDENCE),
             Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE),
             Arguments.of(DocumentType.POLICE_REPORT, null),
@@ -1400,7 +1540,8 @@ class DocumentServiceTest {
             Arguments.of(DocumentType.WITH_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.WITHOUT_NOTICE_ORDER, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
             Arguments.of(DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS),
-            Arguments.of(DocumentType.OTHER, null)
+            Arguments.of(DocumentType.OTHER, null),
+            Arguments.of(DocumentType.GENERAL_APPLICATION, CaseFileCategory.APPLICATIONS)
         );
     }
 
@@ -1533,4 +1674,5 @@ class DocumentServiceTest {
             )
         );
     }
+
 }

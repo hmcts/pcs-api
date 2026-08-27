@@ -1,7 +1,10 @@
 java:
   applicationPort: 3206
-  memoryRequests: '1.5Gi'
-  memoryLimits: '2Gi'
+  memoryRequests: '2Gi'
+  memoryLimits: '2.5Gi'
+  # devMode (AAT staging / previews) reads these dev* keys, not the pair above
+  devmemoryRequests: '2Gi'
+  devmemoryLimits: '2Gi'
   image: 'hmctsprod.azurecr.io/pcs/api:latest'
   ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: pcs
@@ -55,9 +58,10 @@ java:
     CASE_DOCUMENT_AM_URL: "http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     NOTIFY_URL: "https://api.notifications.service.gov.uk"
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
-    CAMUNDA_BASE_URL: "http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    CAMUNDA_BASE_URL: "http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest"
     DECENTRALISED_CASE_TYPE_CONFIG: >-
-      {"PCS": {"nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
+      {"PCS": {"webUrl": "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
+    PCS_FRONTEND_URL: "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net"
 servicebus:
   enabled: false
 ccd:
@@ -70,9 +74,9 @@ wiremock:
   enabled: false
 ccd-case-document-am-api:
   enabled: false
-wa:
-  enabled: false
 aac-manage-case-assignment:
   enabled: false
 am-org-role-mapping-service:
+  enabled: false
+wa:
   enabled: false
