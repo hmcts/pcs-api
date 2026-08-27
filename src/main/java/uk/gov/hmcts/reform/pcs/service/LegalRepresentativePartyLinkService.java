@@ -80,7 +80,7 @@ public class LegalRepresentativePartyLinkService {
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
 
-        Optional<OrganisationEntity> outgoingRepresentative =
+        final Optional<OrganisationEntity> outgoingRepresentative =
             unlinkExistingRepresentation(caseEntity, defendantPartyEntity);
 
         Optional<OrganisationEntity> legalRepOrgEntity = organisationRepository.findByOrganisationId(orgId);

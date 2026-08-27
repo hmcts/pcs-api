@@ -654,6 +654,7 @@ class LegalRepresentativePartyLinkServiceTest {
         verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
         verify(organisationRepository, never()).save(any());
     }
+
     @Test
     void linkLegalRepresentativeToParty_WithExistingLinkedLegalRepresentative_SendsNoLongerRepresentingNotification() {
         // given
