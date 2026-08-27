@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -82,12 +83,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
-                // Kept until group access is enabled everywhere; dropping it would also take
-                // field-level read from the defendant's solicitor, who has no group role yet.
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                // orgs that are the claimant themselves (LA / "other" profiles)
-                .grant(Permission.CRUD, UserRole.GA_CLAIMANT)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
@@ -105,8 +103,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-        // Fetch organisation name from rd-professional API
-        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        OrganisationDetailsResponse orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        String organisationName = organisationService.getOrganisationName(orgDetails);
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
@@ -144,7 +142,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddress(orgDetails));
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
@@ -186,8 +184,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
-        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase, organisationIdForCurrentUser);
+        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
