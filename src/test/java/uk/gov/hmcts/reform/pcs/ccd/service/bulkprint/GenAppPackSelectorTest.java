@@ -67,7 +67,7 @@ class GenAppPackSelectorTest {
         underTest = new GenAppPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
     }
 
     private final PartyEntity claimant = party();

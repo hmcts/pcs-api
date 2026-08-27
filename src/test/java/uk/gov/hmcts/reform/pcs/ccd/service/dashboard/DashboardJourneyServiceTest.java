@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
@@ -61,7 +61,6 @@ class DashboardJourneyServiceTest {
 
     @Mock
     private OrganisationService organisationService;
-
     @Mock
     private OrganisationRepository organisationRepository;
 
@@ -70,6 +69,7 @@ class DashboardJourneyServiceTest {
     @BeforeEach
     void setUp() {
         genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
+
         underTest = new DashboardJourneyService(
             draftCaseDataService, defendantResponseService, List.of(
                 new ClaimTaskGroupEvaluator(),

@@ -65,7 +65,7 @@ class DefencePackSelectorTest {
             claimActivityLogRepository,
             sentPackDocuments,
             featureToggleService,
-            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null)));
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
     }
 
     private final PartyEntity claimant = party();

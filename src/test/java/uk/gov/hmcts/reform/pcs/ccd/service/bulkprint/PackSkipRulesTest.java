@@ -48,7 +48,7 @@ class PackSkipRulesTest {
     @BeforeEach
     void setUp() {
         underTest = new PackSkipRules(
-            featureToggleService, new CaseFlagService(null, null, null, null));
+            featureToggleService, new CaseFlagService(null, null, null, null, null));
     }
 
     @Test
