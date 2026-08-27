@@ -69,7 +69,7 @@ class LegalRepresentativeSummaryServiceTest {
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
-        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
         lenient().when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
     }
 
@@ -358,9 +358,9 @@ class LegalRepresentativeSummaryServiceTest {
     }
 
     @Test
-    void handleLegalRepresentativeSummary_WithRelease1dot2Disabled_ReturnsEmptyMarkDown() {
+    void handleLegalRepresentativeSummary_WithRelease1dot3Disabled_ReturnsEmptyMarkDown() {
         // given
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         PCSCase pcsCase = PCSCase.builder().build();

@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Slf4j
 @Component
@@ -41,7 +41,7 @@ public class LegalRepresentativeContactDetails implements CCDConfig<PCSCase, Sta
                 .name("Amend representative’s details")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CUI_RESPOND_TO_CLAIM_LR))
+                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR))
                 .endButtonLabel("Submit");
 
         new PageBuilder(eventBuilder)

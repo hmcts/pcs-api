@@ -110,7 +110,7 @@ public class LegalRepresentativeSummaryService {
     }
 
     private boolean isFeatureDisabled() {
-        return !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)
+        return !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)
             || !featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR);
     }
 
