@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -22,21 +24,22 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -182,13 +185,80 @@ public class NotificationService {
         );
     }
 
+    public void sendNoticeOfChangeCompletedEmailNotification(PartyEntity defendant) {
+        sendEmail(
+            partyRecipient(defendant),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETED,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeCompleted(defendant, defendant.getPcsCase())
+        );
+    }
+
+    public EmailNotificationResponse sendNoticeOfChangeNoLongerRepresentingEmailNotification(
+        OrganisationEntity outgoingRepresentative,
+        PartyEntity representedDefendant
+    ) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+        String outgoingEmail = outgoingRepresentative.getClaimPartyContactDetails().isEmpty()
+            ? null : outgoingRepresentative.getClaimPartyContactDetails().getFirst().getEmailAddress();
+
+        return sendEmail(
+            legalRepresentativeRecipient(outgoingRepresentative, representedDefendant, outgoingEmail),
+            EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
+        );
+    }
+
+    public EmailNotificationResponse sendNoticeOfChangeCompleteLegalRepEmailNotification(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant,
+        String legalRepEmail
+    ) {
+        return sendEmail(
+            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant, legalRepEmail),
+            EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
+            NotificationClaimType.NOTICE_OF_CHANGE,
+            notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
+                legalRepresentativeOrganisation, representedDefendant)
+        );
+    }
+
+    public void sendNoticeOfChangeNonRepresentedPartiesEmailNotification(PartyEntity representedDefendant) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        List<PartyEntity> recipients = new ArrayList<>();
+        recipients.add(partyService.getPrimaryClaimantPartyEntity(pcsCase));
+
+        pcsCase.getClaims().getFirst().getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .filter(defendant -> !defendant.getId().equals(representedDefendant.getId()))
+            .forEach(recipients::add);
+
+        for (PartyEntity recipient : recipients) {
+            if (recipient.getEmailAddress() == null) {
+                log.info("Skipping notice of change email to party {}: no email address", recipient.getId());
+                continue;
+            }
+
+            sendEmail(
+                partyRecipient(recipient),
+                EmailTemplate.NOTICE_OF_CHANGE_OTHER_PARTY_REPRESENTED,
+                NotificationClaimType.NOTICE_OF_CHANGE,
+                notificationPersonalisationFactory.forParty(recipient, pcsCase)
+            );
+        }
+    }
+
     private NotificationRecipient partyRecipient(PartyEntity party) {
+        PcsCaseEntity pcsCase = party.getPcsCase();
         PartyRole partyRole = partyService.getPartyRole(party);
         return new NotificationRecipient(
                 party.getEmailAddress(),
                 party,
-                party.getPcsCase(),
-                null,
+                pcsCase,
+                pcsCase.getClaims().getFirst(),
                 partyRole
         );
     }
@@ -437,14 +507,15 @@ public class NotificationService {
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
-        PartyEntity party = recipient.party();
+        if (recipient.email() == null || recipient.email().isBlank()) {
+            log.info("Skipping email notification because recipient email is blank");
+            return null;
+        }
 
-        if (party == null) {
-            if (recipient.email() == null) {
-                log.info("Skipping email notification because both party and recipient email are null");
-                return null;
-            }
-        } else if (!partyService.canSendEmailNotification(party, recipient.recipientRole())) {
+        PartyEntity party = recipient.party();
+        if (party != null
+            && recipient.recipientRole() != null
+            && !partyService.canSendEmailNotification(party, recipient.recipientRole())) {
             log.info("Skipping email notification to user: {}", party.getId());
             return null;
         }
@@ -508,6 +579,22 @@ public class NotificationService {
             claim.getPcsCase(),
             claim,
             PartyRole.CLAIMANT
+        );
+    }
+
+    private NotificationRecipient legalRepresentativeRecipient(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant,
+        String legalRepEmail
+    ) {
+        PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
+
+        return new NotificationRecipient(
+            legalRepEmail,
+            representedDefendant,
+            pcsCase,
+            pcsCase.getClaims().getFirst(),
+            null
         );
     }
 
