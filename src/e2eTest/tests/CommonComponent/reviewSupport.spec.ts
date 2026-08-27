@@ -6,6 +6,7 @@ import {caseSummary, user} from '@data/page-data';
 import {reviewSupport} from '../../data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
+import { staff } from '@data/user-data/staff.user.data';
 
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
   await context.clearCookies();
