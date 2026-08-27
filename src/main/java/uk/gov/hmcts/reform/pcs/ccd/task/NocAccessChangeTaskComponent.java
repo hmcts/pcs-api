@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseReindexService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 @Slf4j
@@ -26,13 +27,16 @@ public class NocAccessChangeTaskComponent {
     private final int maxRetries;
     private final Duration backoffDelay;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+    private final CaseReindexService caseReindexService;
 
     public NocAccessChangeTaskComponent(
         LegalRepresentativePartyLinkService legalRepresentativePartyLinkService,
+        CaseReindexService caseReindexService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.legalRepresentativePartyLinkService = legalRepresentativePartyLinkService;
+        this.caseReindexService = caseReindexService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -54,6 +58,11 @@ public class NocAccessChangeTaskComponent {
                             taskData.getPartyId(),
                             taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
+
+                    // Representation feeds the derived CaseAccessGroups served by search;
+                    // without this the new representative never sees the case in their
+                    // case list and the outgoing organisation keeps a stale row.
+                    caseReindexService.reindex(caseReference);
 
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
