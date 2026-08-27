@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class OrganisationDetailsService {
@@ -38,7 +40,21 @@ public class OrganisationDetailsService {
         return null;
     }
 
-    /** Organisation address for a user (claimant address population), or null if none. */
+    /**
+     * Gets the organisation payment accounts for a given user ID.
+     * @param userId The user ID to get organisation payment accounts for
+     * @return Organisation payment accounts
+     */
+    public List<String> getOrganisationPaymentAccount(String userId) {
+        OrganisationDetailsResponse details = getOrganisationDetails(userId);
+        return details.getPaymentAccount();
+    }
+
+    /**
+     * Gets the organisation address for a given user ID (for claimant address population).
+     * @param userId The user ID to get organisation address for
+     * @return Organisation address or null if no address information is available
+     */
     public AddressUK getOrganisationAddress(String userId) {
 
         OrganisationDetailsResponse organisationDetails = getOrganisationDetails(userId);
