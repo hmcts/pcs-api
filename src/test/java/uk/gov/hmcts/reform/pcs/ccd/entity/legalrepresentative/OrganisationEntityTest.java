@@ -39,6 +39,7 @@ class OrganisationEntityTest {
             underTest.getClaimPartyOrganisationList().getFirst();
 
         assertThat(partyLegalRepresentativeOrganisation.getParty().getId()).isEqualTo(partyId);
+        assertThat(partyLegalRepresentativeOrganisation.getActive()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
