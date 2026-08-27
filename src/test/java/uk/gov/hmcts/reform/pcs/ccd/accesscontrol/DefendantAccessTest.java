@@ -22,5 +22,6 @@ class DefendantAccessTest {
         // then
         assertThat(grants.get(UserRole.DEFENDANT_SOLICITOR)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.DEFENDANT)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.GA_DEFENDANT_SOLICITOR)).isEqualTo(Permission.CRU);
     }
 }
