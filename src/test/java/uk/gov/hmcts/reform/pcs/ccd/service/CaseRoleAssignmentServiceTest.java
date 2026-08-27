@@ -53,13 +53,13 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
             .getCaseAssignmentUserRolesWithOrganisation().getFirst();
 
-        assertThat(assignment.getCaseRole()).isEqualTo(UserRole.CLAIMANT_SOLICITOR.getRole());
+        assertThat(assignment.getCaseRole()).isEqualTo(UserRole.DEFENDANT.getRole());
     }
 
     @Test
@@ -71,7 +71,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -92,7 +92,7 @@ class CaseRoleAssignmentServiceTest {
 
         // WHEN
         CaseAssignmentUserRolesResponse result =
-            caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+            caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         assertThat(result).isEqualTo(expectedResponse);
@@ -107,14 +107,14 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.CLAIMANT_SOLICITOR);
+        caseRoleAssignmentService.assignRasRole(CASE_REFERENCE, USER_ID, UserRole.DEFENDANT);
 
         // THEN
         verify(caseAssignmentApi).addCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());
     }
 
     @Test
-    void revokeRasRole_shouldCallApiWithCorrectCaseRole() {
+    void revokeCaseRole_shouldCallApiWithCorrectCaseRole() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(USER_TOKEN);
@@ -122,7 +122,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
+        caseRoleAssignmentService.revokeCaseRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -132,7 +132,7 @@ class CaseRoleAssignmentServiceTest {
     }
 
     @Test
-    void revokeRasRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
+    void revokeCaseRole_shouldCallApiWithCorrectCaseReferenceAndUserId() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(USER_TOKEN);
@@ -140,7 +140,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
+        caseRoleAssignmentService.revokeCaseRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         CaseAssignmentUserRoleWithOrganisation assignment = requestCaptor.getValue()
@@ -151,7 +151,7 @@ class CaseRoleAssignmentServiceTest {
     }
 
     @Test
-    void revokeRasRole_shouldReturnApiResponse() {
+    void revokeCaseRole_shouldReturnApiResponse() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(USER_TOKEN);
@@ -161,14 +161,14 @@ class CaseRoleAssignmentServiceTest {
 
         // WHEN
         CaseAssignmentUserRolesResponse result =
-            caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
+            caseRoleAssignmentService.revokeCaseRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
-    void revokeRasRole_shouldUseSystemUserTokenAndS2SToken() {
+    void revokeCaseRole_shouldUseSystemUserTokenAndS2SToken() {
         // GIVEN
         when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(USER_TOKEN);
@@ -176,7 +176,7 @@ class CaseRoleAssignmentServiceTest {
             .thenReturn(mock(CaseAssignmentUserRolesResponse.class));
 
         // WHEN
-        caseRoleAssignmentService.revokeRasRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
+        caseRoleAssignmentService.revokeCaseRole(CASE_REFERENCE, USER_ID, UserRole.CREATOR);
 
         // THEN
         verify(caseAssignmentApi).removeCaseUserRoles(eq(USER_TOKEN), eq(S2S_TOKEN), requestCaptor.capture());

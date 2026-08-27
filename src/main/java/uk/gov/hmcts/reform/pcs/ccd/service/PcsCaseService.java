@@ -40,8 +40,7 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
 
-    public PcsCaseEntity createCase(long caseReference,
-                                    AddressUK propertyAddress,
+    public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
@@ -52,11 +51,13 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
+        partyService.createClaimantStub(pcsCaseEntity);
+
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
     @Transactional
-    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase, String organisationIdForCurrentUser) {
+    public void createMainClaimOnCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.buildDocumentEntitiesForCase(pcsCase);
@@ -64,7 +65,7 @@ public class PcsCaseService {
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity, organisationIdForCurrentUser);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
         pcsCaseEntity.setRegionId(pcsCase.getRegionId());
         pcsCaseEntity.setBaseLocation(pcsCase.getCaseManagementLocationNumber());
