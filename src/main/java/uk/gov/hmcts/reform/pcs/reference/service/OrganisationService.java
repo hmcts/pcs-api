@@ -146,6 +146,36 @@ public class OrganisationService {
     }
 
     /**
+     * Reads the organisation name off an already-fetched record, avoiding a second rd-professional
+     * round trip when the caller already holds a {@link OrganisationDetailsResponse}.
+     *
+     * @return The organisation name, or null if there is none
+     */
+    public String getOrganisationName(OrganisationDetailsResponse organisationDetails) {
+        return organisationDetails == null ? null : organisationDetails.getName();
+    }
+
+    /**
+     * Derives the organisation address from an already-fetched record, avoiding a second
+     * rd-professional round trip when the caller already holds a {@link OrganisationDetailsResponse}.
+     *
+     * @return The organisation address, or null if empty or unavailable
+     */
+    public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
+        AddressUK address = organisationDetailsService.getOrganisationAddress(organisationDetails);
+        return keyAddressFieldsEmpty(address) ? null : address;
+    }
+
+    /**
+     * Fetches the record and resolves the profile from it in one call.
+     *
+     * @return The organisation profile for the current user, or null if it cannot be resolved
+     */
+    public String getOrgProfileIdForCurrentUser() {
+        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
+    }
+
+    /**
      * The organisation profile PRM keys the group access catalogue on. Every organisation also
      * carries the generic ORGANISATION_PROFILE alongside its real one, so skipping that leaves the
      * single profile that identifies an access type.
@@ -159,15 +189,6 @@ public class OrganisationService {
         return organisationDetails.getOrganisationProfileIds().stream()
             .filter(profile -> !GENERIC_ORGANISATION_PROFILE.equals(profile))
             .findFirst().orElse(null);
-    }
-
-    /**
-     * Fetches the record and resolves the profile from it in one call.
-     *
-     * @return The organisation profile for the current user, or null if it cannot be resolved
-     */
-    public String getOrgProfileIdForCurrentUser() {
-        return getOrgProfileId(getOrganisationDetailsForCurrentUser());
     }
 
     /**
