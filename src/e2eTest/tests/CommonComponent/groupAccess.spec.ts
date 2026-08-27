@@ -2,50 +2,16 @@ import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
+  performValidation} from '@utils/controller';
 import {
   addressCheckYourAnswers,
   addressDetails,
-  checkYourAnswers,
-  propertyDetails,
-  reasonsForPossession,
-  resumeClaim,
-  resumeClaimOptions,
   user,
-  whatAreYourGroundsForPossession,
   home
 } from '@data/page-data';
 import {
-  claimantType,
-  claimType,
-  claimantInformation,
-  defendantDetails,
-  contactPreferences,
-  tenancyLicenceDetails,
-  groundsForPossession,
-  preactionProtocol,
-  alternativesToPossession,
-  claimantCircumstances,
-  dailyRentAmount,
-  defendantCircumstances,
-  mediationAndSettlement,
-  moneyJudgment,
-  noticeDetails,
-  rentDetails,
-  checkingNotice,
-  rentArrears,
-  additionalReasonsForPossession,
-  generalApplication,
-  completingYourClaim,
-  claimLanguageUsed,
-  underlesseeMortgageeEntitledToClaimRelief,
-  wantToUploadDocuments,
-  statementOfTruth,
   noResultFound,
 } from '@data/page-data-figma';
-import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { dismissCookieBanner } from '@config/cookie-banner';
 // This test validates the resume & find case functionality with and without saved options.
@@ -82,11 +48,11 @@ test.afterEach(async () => {
 test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async () => {
   test('Users belonging to Same SOLICITOR Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
     //England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
-    await performAction('login', user.claimantSolicitor);
+    await performAction('login', user.claimantSolicitorForGATest);
     await performAction('createPartialClaimDetails');
     await performAction('signOut');
     //Login as user2 of Org1
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor1);
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor1ForGATest);
     await performAction('resumePartialClaim');
   });
   test('Users belonging to Same Local Authority Org allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
@@ -137,7 +103,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
 
   test('Users belonging to Different Org [Solicitor - Solicitor And Solicitor- localAuthority]are Not allowed to resume case @nightly @MAC @CC @groupAccess', async () => {
     //ResumeCase By different user belonging to different Org -England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
-    await performAction('login', user.claimantSolicitor);
+    await performAction('login', user.claimantSolicitorForGATest);
     await performAction('clickTab', home.createCaseTab);
     await performAction('selectJurisdictionCaseTypeEvent');
     await performAction('housingPossessionClaim');
@@ -151,7 +117,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performAction('extractCaseIdFromAlert');
     await performAction('signOut');
     //Login as user2 belonging to different org of same type.
-    await performAction('reloginAndFindTheCase', user.claimantSolicitorOrg2);
+    await performAction('reloginAndFindTheCase', user.claimantSolicitorOrg2ForGATest);
     await performValidation('mainHeader', noResultFound.mainHeader);
     await performAction('signOut');
     //Login as user belonging to different type of org.
@@ -203,7 +169,7 @@ test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async
     await performValidation('mainHeader', noResultFound.mainHeader);
     await performAction('signOut');
     //Login as user belonging to different type of org.
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor1);
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor1ForGATest);
     await performValidation('mainHeader', noResultFound.mainHeader);
    });
 });

@@ -3,7 +3,7 @@ export const submitCaseApiDataWales = {
 
   submitCasePayloadCaseSummary: {
     orgNameFound: 'Yes',
-    claimantName: 'PCS_Solicitor_Org_Testing',
+    claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
     legislativeCountry: 'Wales',
     claimantType: {
@@ -95,7 +95,7 @@ export const submitCaseApiDataWales = {
     rentArrears_RecoveryAttempted: 'YES',
     rentArrears_RecoveryAttemptDetails: 'recovery attempts made',
     arrearsJudgmentWanted: 'YES',
-    claimantNamePossessiveForm: 'PCS_Solicitor_Org_Testing’s',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'test data claimant circumstances',
     hasDefendantCircumstancesInfo: 'YES',
@@ -163,7 +163,7 @@ export const submitCaseApiDataWales = {
     regionId: '7',
     caseManagementLocationNumber: '366572',
     orgNameFound: 'Yes',
-    claimantName: 'PCS_Solicitor_Org_Testing',
+    claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
     legislativeCountry: 'Wales',
     claimantType: {
@@ -277,7 +277,7 @@ export const submitCaseApiDataWales = {
     rentArrears_RecoveryAttempted: 'YES',
     rentArrears_RecoveryAttemptDetails: 'test attempts made',
     arrearsJudgmentWanted: 'YES',
-    claimantNamePossessiveForm: 'PCS_Solicitor_Org_Testing’s',
+    claimantNamePossessiveForm: 'Possession Claims Solicitor Org’s',
     claimantCircumstancesSelect: 'YES',
     claimantCircumstancesDetails: 'claimant circumstances',
     hasDefendantCircumstancesInfo: 'YES',
