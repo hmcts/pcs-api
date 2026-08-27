@@ -338,7 +338,10 @@ public class ApiSteps {
     }
 
     @Step("Validate event data")
-    public Response validateEventData(String caseType, PcsIdamTokenClient.UserType userType, String eventPageId, Object body) {
+    public Response validateEventData(String caseType,
+                                      PcsIdamTokenClient.UserType userType,
+                                      String eventPageId,
+                                      Object body) {
         String userToken = switch (userType) {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
@@ -355,7 +358,7 @@ public class ApiSteps {
             .header("Content-Type","application/json")
             .body(body)
             .when()
-            .post("/case-types/"+caseType+"/validate?pageId=" + eventPageId)
+            .post("/case-types/" + caseType + "/validate?pageId=" + eventPageId)
             .then()
             .statusCode(200)
             .extract()
