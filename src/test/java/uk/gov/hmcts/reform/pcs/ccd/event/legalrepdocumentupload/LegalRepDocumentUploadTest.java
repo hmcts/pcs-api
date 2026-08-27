@@ -49,6 +49,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
@@ -271,6 +272,35 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Then
             assertThat(result.getLegalRepDocumentUploadDetails().getPartyType()).isEqualTo(PartyType.DEFENDANT);
         }
+
+        @Test
+        void shouldThrowExceptionWhenUserDoesNotHaveRequiredRole() {
+            // Given
+            stubUserRoles(UserRole.PCS_CASE_WORKER);
+
+            // When
+            Throwable throwable = catchThrowable(() -> callStartHandler(PCSCase.builder().build()));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("User must have claimant solicitor or defendant solicitor role");
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUserHasClaimantAndDefendantSolicitorRoles() {
+            // Given
+            stubUserRoles(UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+
+            // When
+            Throwable throwable = catchThrowable(() -> callStartHandler(PCSCase.builder().build()));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("User must have claimant solicitor or defendant solicitor role, not both");
+        }
+
     }
 
     @Test

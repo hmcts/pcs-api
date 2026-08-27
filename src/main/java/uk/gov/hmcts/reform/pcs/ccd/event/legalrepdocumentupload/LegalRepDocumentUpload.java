@@ -116,6 +116,16 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         Collection<String> userRoles = userRoleService.getCurrentUserCaseRoles(caseReference).roles();
         boolean isClaimantSolicitor = isClaimantSolicitor(userRoles);
+        boolean isDefendantSolicitor = isDefendantSolicitor(userRoles);
+
+        if (!isClaimantSolicitor && !isDefendantSolicitor) {
+            throw new IllegalStateException("User must have claimant solicitor or defendant solicitor role");
+        }
+
+        if (isClaimantSolicitor && isDefendantSolicitor) {
+            throw new IllegalStateException("User must have claimant solicitor or defendant solicitor role, not both");
+        }
+
         legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
