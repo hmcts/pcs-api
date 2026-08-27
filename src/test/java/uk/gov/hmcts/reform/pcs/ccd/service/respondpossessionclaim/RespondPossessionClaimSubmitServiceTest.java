@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,12 +29,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
@@ -47,12 +49,15 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.task.CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent.PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,10 +87,10 @@ class RespondPossessionClaimSubmitServiceTest {
     private PartyEntity partyEntity;
     @Mock
     private SchedulerClient schedulerClient;
-    @Captor
-    private ArgumentCaptor<SchedulableInstance<CounterClaimTaskData>> schedulableInstanceCaptor;
     @Mock
-    OrganisationService organisationService;
+    private OrganisationService organisationService;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<?>> schedulableInstanceCaptor;
 
     private RespondPossessionClaimSubmitService underTest;
 
@@ -111,6 +116,8 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldPersistResponseWithoutCounterClaimCitizen() {
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
         this.shouldPersistResponseWithoutCounterClaim(JourneyType.CITIZEN);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
@@ -320,8 +327,6 @@ class RespondPossessionClaimSubmitServiceTest {
 
     @Test
     void shouldSaveCounterClaimDocumentsWhenPresent() {
-        JourneyType journeyType = JourneyType.CITIZEN;
-
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .build();
@@ -334,9 +339,6 @@ class RespondPossessionClaimSubmitServiceTest {
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .counterClaim(counterClaim)
             .counterClaimDocuments(counterClaimDocuments)
-            .build();
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(defendantResponses)
             .build();
         PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
@@ -351,7 +353,11 @@ class RespondPossessionClaimSubmitServiceTest {
             .thenReturn(Optional.of(savedCounterClaim));
         when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(false);
 
-        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CITIZEN);
 
         verify(documentService).createCounterClaimUploadedDocuments(
             defendantResponses.getCounterClaimDocuments(),
@@ -390,12 +396,14 @@ class RespondPossessionClaimSubmitServiceTest {
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
         // Then
-        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-        SchedulableInstance<CounterClaimTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+        List<SchedulableInstance<?>> counterClaimEmailTasks
+            = getScheduledTasks(PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR);
 
-        TaskInstance<CounterClaimTaskData> taskInstance = schedulableInstance.getTaskInstance();
-        assertThat(taskInstance.getTaskName()).isEqualTo(PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName());
-        assertThat(taskInstance.getData().getCounterClaimId()).isEqualTo(savedCounterClaimId);
+        assertThat(counterClaimEmailTasks).hasSize(1);
+        SchedulableInstance<?> schedulableInstance = counterClaimEmailTasks.getFirst();
+
+        TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
+        assertThat(((CounterClaimTaskData)taskInstance.getData()).getCounterClaimId()).isEqualTo(savedCounterClaimId);
     }
 
     @ParameterizedTest
@@ -414,7 +422,8 @@ class RespondPossessionClaimSubmitServiceTest {
         underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
 
         // Then
-        verify(schedulerClient, never()).scheduleIfNotExists(any());
+        List<SchedulableInstance<?>> counterClaimEmailTasks = getScheduledTasks(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR);
+        assertThat(counterClaimEmailTasks).isEmpty();
     }
 
     @Test
@@ -469,5 +478,46 @@ class RespondPossessionClaimSubmitServiceTest {
             .createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
+    @ParameterizedTest
+    @EnumSource(JourneyType.class)
+    void shouldScheduleDefendantResponseEmail(JourneyType journeyType) {
+        // Given
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(defendantResponses)
+            .build();
+
+        int defendantResponseId = 8001;
+        DefendantResponseEntity savedDefendantResponseEntity = DefendantResponseEntity.builder()
+            .id(defendantResponseId)
+            .build();
+
+        when(defendantResponseService
+                 .saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType))
+            .thenReturn(savedDefendantResponseEntity);
+
+        // When
+        underTest.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse, partyEntity, journeyType);
+
+        // Then
+        List<SchedulableInstance<?>> responseEmailTasks
+            = getScheduledTasks(DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR);
+
+        assertThat(responseEmailTasks).hasSize(1);
+        SchedulableInstance<?> schedulableInstance = responseEmailTasks.getFirst();
+
+        DefendantResponseTaskData taskData
+            = (DefendantResponseTaskData) schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getDefendantResponseId()).isEqualTo(defendantResponseId);
+    }
+
+    private List<SchedulableInstance<?>> getScheduledTasks(TaskDescriptor<?> taskDescriptor) {
+        verify(schedulerClient, atLeast(0)).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        return schedulableInstanceCaptor.getAllValues().stream()
+            .filter(schedulableInstance -> schedulableInstance.getTaskName().equals(taskDescriptor.getTaskName()))
+            .toList();
+    }
 
 }
