@@ -36,7 +36,7 @@ public class CaseRoleAssignmentService {
         return applyRasRole(caseReference, userId, role, caseAssignmentApi::addCaseUserRoles);
     }
 
-    public CaseAssignmentUserRolesResponse revokeRasRole(long caseReference, String userId, UserRole role) {
+    public CaseAssignmentUserRolesResponse revokeCaseRole(long caseReference, String userId, UserRole role) {
         return applyRasRole(caseReference, userId, role, caseAssignmentApi::removeCaseUserRoles);
     }
 
