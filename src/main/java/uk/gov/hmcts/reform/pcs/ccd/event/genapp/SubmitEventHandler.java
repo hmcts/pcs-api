@@ -69,10 +69,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData);
-
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PartyEntity applicantParty = getApplicantParty(caseReference, caseData, createGenAppRequest);
 
         if (isDuplicateRequest(createGenAppRequest, pcsCaseEntity)) {
             return errorResponse("Application already exists for client reference");
@@ -184,7 +184,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
+    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData, GenAppRequest genAppRequest) {
+        if (genAppRequest.getApplicantPartyId() != null) {
+            UUID applicantPartyId = UUID.fromString(genAppRequest.getApplicantPartyId());
+            return partyService.getPartyEntityById(applicantPartyId, caseReference);
+        }
+
         UUID currentUserId = securityContextService.getCurrentUserId();
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
 

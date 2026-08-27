@@ -165,6 +165,10 @@ notify:
     make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
     make-a-claim-claim-issued: 0ea3d807-8ebb-484e-8cd5-72364c9b527f
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
+    notice-of-change-completed: fdc826c0-21e2-4039-a450-19ae3ffb93fa
+    notice-of-change-complete-legal-rep: bd3d224e-dfed-4df8-bf00-c192cf294235
+    notice-of-change-no-longer-representing: dd033fbc-e0a2-4d13-b591-33d71c66c868
+    notice-of-change-other-party-represented: 726a86a9-8f1d-4ca0-aaf9-846fd4d10342
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}

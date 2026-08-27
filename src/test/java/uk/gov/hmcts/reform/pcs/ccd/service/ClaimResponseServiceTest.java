@@ -414,6 +414,46 @@ class ClaimResponseServiceTest {
     }
 
     @Test
+    void shouldSavePcqId() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .pcqId("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+    }
+
+    @Test
+    void shouldNotClearExistingPcqIdWhenResponseOmitsIt() {
+        // Given
+        testParty.setPcqId("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .emailAddress("defendant@example.com")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+    }
+
+    @Test
     void saveDraftDataForParty_WithPartyId() {
         // Given
         PossessionClaimResponse response = buildResponse(

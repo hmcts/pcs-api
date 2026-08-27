@@ -44,4 +44,9 @@ public interface GenAppRequest {
     default String getClientReference() {
         return null;
     }
+
+    default String getApplicantPartyId() {
+        return null;
+    }
+
 }
