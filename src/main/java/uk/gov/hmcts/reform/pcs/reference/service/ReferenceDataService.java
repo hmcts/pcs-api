@@ -26,11 +26,11 @@ public class ReferenceDataService {
      */
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
-            log.info("Retrieving organisation details");
+            log.debug("Retrieving organisation details");
 
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
 
-            log.info("Successfully retrieved organisation details");
+            log.debug("Successfully retrieved organisation details");
             return details;
 
         } catch (Exception ex) {
@@ -46,11 +46,11 @@ public class ReferenceDataService {
      */
     public String getOrganisationName(String userId) {
         try {
-            log.info("Retrieving organisation name");
+            log.debug("Retrieving organisation name");
 
             String organisationName = organisationDetailsService.getOrganisationName(userId);
 
-            log.info("Successfully retrieved organisation name");
+            log.debug("Successfully retrieved organisation name");
             return organisationName;
 
         } catch (Exception ex) {
@@ -66,11 +66,11 @@ public class ReferenceDataService {
      */
     public String getOrganisationIdentifier(String userId) {
         try {
-            log.info("Retrieving organisation identifier");
+            log.debug("Retrieving organisation identifier");
 
             String organisationIdentifier = organisationDetailsService.getOrganisationIdentifier(userId);
 
-            log.info("Successfully retrieved organisation identifier");
+            log.debug("Successfully retrieved organisation identifier");
             return organisationIdentifier;
 
         } catch (Exception ex) {
@@ -86,7 +86,7 @@ public class ReferenceDataService {
      */
     public ClaimantInformation populateClaimantInformation(String userId) {
         try {
-            log.info("Populating claimant information");
+            log.debug("Populating claimant information");
 
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
 
@@ -102,7 +102,7 @@ public class ReferenceDataService {
                 .sraRegulated(details.getSraRegulated())
                 .build();
 
-            log.info("Successfully populated claimant information");
+            log.debug("Successfully populated claimant information");
             return claimantInfo;
 
         } catch (Exception ex) {

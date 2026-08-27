@@ -68,7 +68,7 @@ public class PostCodeCourtService {
             log.error("Multiple active EpimIds found for postcode. Count: {}", filteredResults.size());
             return List.of();
         }
-        log.info("Found court mapping for postcode");
+        log.debug("Found court mapping for postcode");
         return filteredResults;
     }
 }

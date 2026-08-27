@@ -100,7 +100,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NO_MATCH_FOUND -> {
-                log.info("Cross-border eligibility check: NO_MATCH_FOUND for country {}. "
+                log.debug("Cross-border eligibility check: NO_MATCH_FOUND for country {}. "
                         + "Redirecting to PostcodeNotAssignedToCourt page", selectedCountry);
                 caseData.setLegislativeCountry(selectedCountry);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
