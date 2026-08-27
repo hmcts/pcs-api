@@ -41,7 +41,8 @@ test.afterEach(async () => {
 test.describe('[Review support request] - Solicitor user - @nightly @CC @supportEvents', async () => {
 
   test('Approve support request @smoke', async ({page}) => {
-    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+    //await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     
     await performAction('navigateToCaseSummary');
@@ -64,6 +65,18 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('clickButton', reviewSupport.continueButton);
     await performAction('clickButton', reviewSupport.submitButton);
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
+
+
+    //Approve Support Request
+    await performAction('navigateToCaseSummary');
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', reviewSupport.reviewSupportHeader);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.reviewSupportHeader);
+    await performAction('inputText', reviewSupport.reviewCommentLabel, reviewSupport.reviewCommentText);
+    await performAction('clickButton', reviewSupport.submitButton);
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Review support`);
   });
 
 });

@@ -16,6 +16,7 @@ export const caseSummary = {
   serviceRequestTab: 'Service Request',
   requestSupport: 'Request support',
   manageSupport: 'Manage support',
+  reviewSupport: 'Review support request',
   manageDocuments:{
     amend : 'Manage documents: Amend',
     upload : 'Manage documents: Upload'
