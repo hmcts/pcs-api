@@ -13,6 +13,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import lombok.Getter;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
@@ -134,7 +135,7 @@ public enum GroupAccessType implements CCDAccessGroup {
      * Display, so PCS-staging role derivation is unaffected.
      */
     public boolean isDisplay() {
-        return display && System.getenv("CASE_TYPE_SUFFIX") == null;
+        return display && !CaseType.isSuffixedCaseType();
     }
 
     /**
