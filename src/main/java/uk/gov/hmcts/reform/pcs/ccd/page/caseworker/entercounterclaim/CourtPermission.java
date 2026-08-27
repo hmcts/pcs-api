@@ -31,9 +31,9 @@ public class CourtPermission implements CcdPageConfiguration {
     );
 
     private static final String PERMISSION_ORDER_DATE_ERROR =
-        "Date the order was made must be in the past";
+        "Date the order was made must not be in the future";
     private static final String CLAIM_RECEIVED_DATE_ERROR =
-        "Date the counterclaim was received must be in the past";
+        "Date the counterclaim was received must not be in the future";
 
     private final Clock ukClock;
 
@@ -81,12 +81,13 @@ public class CourtPermission implements CcdPageConfiguration {
 
         if (counterClaimDetails != null) {
             LocalDate permissionOrderDate = counterClaimDetails.getPermissionOrderDate();
-            if (permissionOrderDate != null && !permissionOrderDate.isBefore(currentDate)) {
+            boolean permissionGranted = counterClaimDetails.getCourtPermissionGranted() == VerticalYesNo.YES;
+            if (permissionGranted && permissionOrderDate != null && permissionOrderDate.isAfter(currentDate)) {
                 validationErrors.add(PERMISSION_ORDER_DATE_ERROR);
             }
 
             LocalDate claimReceivedDate = counterClaimDetails.getClaimReceivedDate();
-            if (claimReceivedDate != null && !claimReceivedDate.isBefore(currentDate)) {
+            if (claimReceivedDate != null && claimReceivedDate.isAfter(currentDate)) {
                 validationErrors.add(CLAIM_RECEIVED_DATE_ERROR);
             }
         }

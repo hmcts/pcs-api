@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -40,10 +42,12 @@ class CourtPermissionTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("permissionOrderDateScenarios")
-    void shouldValidatePermissionOrderDateIsInThePast(LocalDate permissionOrderDate, boolean isValid) {
+    void shouldRejectPermissionOrderDateInTheFutureWhenPermissionGranted(
+            LocalDate permissionOrderDate, boolean isValid) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterCounterClaim(EnterCounterClaimDetails.builder()
+                .courtPermissionGranted(VerticalYesNo.YES)
                 .permissionOrderDate(permissionOrderDate)
                 .build())
             .build();
@@ -56,22 +60,39 @@ class CourtPermissionTest extends BasePageTest {
             assertThat(response.getErrorMessageOverride()).isNull();
         } else {
             assertThat(response.getErrorMessageOverride())
-                .isEqualTo("Date the order was made must be in the past");
+                .isEqualTo("Date the order was made must not be in the future");
         }
     }
 
     private static Stream<Arguments> permissionOrderDateScenarios() {
         return Stream.of(
             arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-            arguments(FIXED_CURRENT_DATE, false),
+            arguments(FIXED_CURRENT_DATE, true),
             arguments(FIXED_CURRENT_DATE.minusDays(1), true),
             arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );
     }
 
+    @Test
+    void shouldNotValidatePermissionOrderDateWhenPermissionNotGranted() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterCounterClaim(EnterCounterClaimDetails.builder()
+                .courtPermissionGranted(VerticalYesNo.NO)
+                .permissionOrderDate(FIXED_CURRENT_DATE.plusDays(1))
+                .build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
     @ParameterizedTest
     @MethodSource("claimReceivedDateScenarios")
-    void shouldValidateClaimReceivedDateIsInThePast(LocalDate claimReceivedDate, boolean isValid) {
+    void shouldRejectClaimReceivedDateInTheFuture(LocalDate claimReceivedDate, boolean isValid) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterCounterClaim(EnterCounterClaimDetails.builder()
@@ -87,14 +108,14 @@ class CourtPermissionTest extends BasePageTest {
             assertThat(response.getErrorMessageOverride()).isNull();
         } else {
             assertThat(response.getErrorMessageOverride())
-                .isEqualTo("Date the counterclaim was received must be in the past");
+                .isEqualTo("Date the counterclaim was received must not be in the future");
         }
     }
 
     private static Stream<Arguments> claimReceivedDateScenarios() {
         return Stream.of(
             arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-            arguments(FIXED_CURRENT_DATE, false),
+            arguments(FIXED_CURRENT_DATE, true),
             arguments(FIXED_CURRENT_DATE.minusDays(1), true)
         );
     }
