@@ -53,6 +53,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
+    static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN
+    };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
     @Value("${hmcts.hmctsOrgId}")
@@ -188,7 +197,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
-            .forRoles(INTERNAL_TAB_ROLES)
+            .forRoles(CASE_NOTE_TAB_ROLES)
             .field(PCSCase::getCaseNotes);
     }
 
