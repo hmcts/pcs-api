@@ -59,8 +59,11 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
+        // Inactive links are history from previous representations of this party and must not
+        // block re-linking after a notice of change back to this organisation.
         if (this.claimPartyOrganisationList.stream()
-            .anyMatch(e -> e.getParty().getId() == party.getId())) {
+            .filter(e -> e.getActive() == YesOrNo.YES)
+            .anyMatch(e -> e.getParty().getId().equals(party.getId()))) {
             log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
                      party.getId(), this.getId());
             return;
