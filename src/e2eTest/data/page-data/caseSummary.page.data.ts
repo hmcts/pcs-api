@@ -15,6 +15,8 @@ export const caseSummary = {
   go: "Go",
   HistoryTab: 'History',
   serviceRequestTab: 'Service Request',
+  requestSupport: 'Request support',
+  manageSupport: 'Manage support',
   manageDocuments:{
     amend : 'Manage documents: Amend',
     upload : 'Manage documents: Upload'
