@@ -97,7 +97,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
 
         OrganisationEntity organisationEntity =
             organisationRepository
-                .findByPartyLinkedToOrganisationAndActive(representedPartyId)
+                .findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId, caseReference)
                 .orElseThrow();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);

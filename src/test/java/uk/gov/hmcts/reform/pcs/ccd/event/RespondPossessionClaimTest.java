@@ -75,7 +75,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -1015,9 +1014,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
             .counterClaimDocuments(counterClaimDocuments)
             .build();
-        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(representedPartyId)).thenReturn(
-            Optional.of(new OrganisationEntity())
-        );
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId,
+                                                                                    TEST_CASE_REFERENCE))
+            .thenReturn(
+                Optional.of(new OrganisationEntity())
+            );
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)

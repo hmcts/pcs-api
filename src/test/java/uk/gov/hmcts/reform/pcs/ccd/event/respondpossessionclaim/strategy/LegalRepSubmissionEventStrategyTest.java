@@ -241,7 +241,7 @@ class LegalRepSubmissionEventStrategyTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(representedPartyId))
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId, CASE_REFERENCE))
             .thenReturn(organisationEntity());
 
 
@@ -346,7 +346,8 @@ class LegalRepSubmissionEventStrategyTest {
             defendantResponse
         )).thenReturn(submitResponse);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
-        when(organisationRepository.findByPartyLinkedToOrganisationAndActive(any())).thenReturn(organisationEntity());
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(any(), anyLong()))
+            .thenReturn(organisationEntity());
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
