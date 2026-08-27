@@ -63,8 +63,8 @@ public class OrganisationEntity {
         if (this.claimPartyOrganisationList.stream()
             .filter(e -> e.getActive() == YesOrNo.YES)
             .anyMatch(e -> e.getParty().getId().equals(party.getId()))) {
-            log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
-                     party.getId(), this.getId());
+            log.warn("Party [{}] already has an active link to Legal Representative Organisation [{}], "
+                         + "skipping re-link.", party.getId(), this.getId());
             return;
         }
 
