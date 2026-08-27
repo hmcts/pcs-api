@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
@@ -50,6 +51,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -84,6 +86,11 @@ class PartyServiceTest {
 
     @BeforeEach
     void setUp() {
+        var orgDetails = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORG_ID)
+            .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
+            .build();
+        lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
         underTest = new PartyService(partyRepository, addressMapper, organisationService);
     }
 
@@ -282,19 +289,19 @@ class PartyServiceTest {
         void shouldReturnPartyRole() {
             // Given
             PartyEntity partyEntity = PartyEntity.builder()
-                    .id(UUID.randomUUID())
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                .id(UUID.randomUUID())
+                .pcsCase(pcsCaseEntity)
+                .build();
 
             PartyEntity differentPartyEntity = PartyEntity.builder()
-                    .id(UUID.randomUUID())
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                .id(UUID.randomUUID())
+                .pcsCase(pcsCaseEntity)
+                .build();
 
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
             when(claimEntity.getClaimParties()).thenReturn(List.of(
-                    ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build(),
-                    ClaimPartyEntity.builder().party(partyEntity).role(PartyRole.CLAIMANT).build()
+                ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build(),
+                ClaimPartyEntity.builder().party(partyEntity).role(PartyRole.CLAIMANT).build()
             ));
 
             // When
@@ -308,18 +315,18 @@ class PartyServiceTest {
         void shouldThrowExceptionIfPartyNotFoundOnMainClaim() {
             // Given
             PartyEntity partyEntity = PartyEntity.builder()
-                    .id(UUID.randomUUID())
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                .id(UUID.randomUUID())
+                .pcsCase(pcsCaseEntity)
+                .build();
 
             PartyEntity differentPartyEntity = PartyEntity.builder()
-                    .id(UUID.randomUUID())
-                    .pcsCase(pcsCaseEntity)
-                    .build();
+                .id(UUID.randomUUID())
+                .pcsCase(pcsCaseEntity)
+                .build();
 
             when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
             when(claimEntity.getClaimParties()).thenReturn(List.of(
-                    ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build()
+                ClaimPartyEntity.builder().party(differentPartyEntity).role(PartyRole.DEFENDANT).build()
             ));
 
             // When
@@ -597,7 +604,7 @@ class PartyServiceTest {
 
             // When
             Throwable throwable = catchThrowable(() -> underTest
-                .createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID));
+                .createAllParties(pcsCase, pcsCaseEntity, claimEntity));
 
             // Then
             assertThat(throwable)
@@ -614,18 +621,17 @@ class PartyServiceTest {
             initialisedClaimant.setClaimCreator(true);
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(initialisedClaimant));
 
-            when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn(null);
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
-                .claimantName("Claimant name")
-                .isClaimantNameCorrect(VerticalYesNo.YES)
-                .build());
+                                                                  .claimantName("Claimant name")
+                                                                  .isClaimantNameCorrect(VerticalYesNo.YES)
+                                                                  .build());
             when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
-                .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
-                .build());
+                                                                         .claimantContactEmail("test@test.com")
+                                                                         .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                                                                         .build());
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, null);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             assertThat(initialisedClaimant.getOrganisationId()).isEqualTo(ORG_ID);
@@ -642,16 +648,16 @@ class PartyServiceTest {
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(stub));
 
             when(pcsCase.getClaimantInformation()).thenReturn(ClaimantInformation.builder()
-                .claimantName("Claimant name")
-                .isClaimantNameCorrect(VerticalYesNo.YES)
-                .build());
+                                                                  .claimantName("Claimant name")
+                                                                  .isClaimantNameCorrect(VerticalYesNo.YES)
+                                                                  .build());
             when(pcsCase.getClaimantContactPreferences()).thenReturn(ClaimantContactPreferences.builder()
-                .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
-                .build());
+                                                                         .claimantContactEmail("test@test.com")
+                                                                         .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                                                                         .build());
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(partyRepository).save(partyEntityCaptor.capture());
@@ -677,7 +683,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(partyRepository).save(partyEntityCaptor.capture());
@@ -702,7 +708,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -776,7 +782,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -808,7 +814,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -834,7 +840,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -861,7 +867,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -888,7 +894,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -914,7 +920,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -940,7 +946,7 @@ class PartyServiceTest {
             when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
@@ -979,7 +985,7 @@ class PartyServiceTest {
 
             // When
             Throwable throwable = catchThrowable(() -> underTest
-                .createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID));
+                .createAllParties(pcsCase, pcsCaseEntity, claimEntity));
 
             // Then
             assertThat(throwable)
@@ -1002,7 +1008,7 @@ class PartyServiceTest {
             }
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
@@ -1073,7 +1079,7 @@ class PartyServiceTest {
                 .build();
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity, times(3))
@@ -1129,7 +1135,7 @@ class PartyServiceTest {
                 .build();
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
@@ -1237,8 +1243,7 @@ class PartyServiceTest {
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(null);
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest
-                .createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID));
+            Throwable throwable = catchThrowable(() -> underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity));
 
             // Then
             assertThat(throwable)
@@ -1253,7 +1258,7 @@ class PartyServiceTest {
             when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(UnderlesseeMortgageeDetails.builder().build());
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity, never()).addParty(any(PartyEntity.class), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
@@ -1276,7 +1281,7 @@ class PartyServiceTest {
             }
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
@@ -1346,7 +1351,7 @@ class PartyServiceTest {
                 .build();
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity, times(3))
@@ -1399,7 +1404,7 @@ class PartyServiceTest {
                 .build();
 
             // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity, ORG_ID);
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
@@ -1517,8 +1522,8 @@ class PartyServiceTest {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
                 .contactPreferences(ContactPreferencesEntity.builder()
-                    .contactByEmail(VerticalYesNo.YES)
-                    .build())
+                                        .contactByEmail(VerticalYesNo.YES)
+                                        .build())
                 .build();
 
             boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
@@ -1531,8 +1536,8 @@ class PartyServiceTest {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
                 .contactPreferences(ContactPreferencesEntity.builder()
-                    .contactByEmail(VerticalYesNo.NO)
-                    .build())
+                                        .contactByEmail(VerticalYesNo.NO)
+                                        .build())
                 .build();
 
             boolean result = underTest.canSendEmailNotification(party, PartyRole.CLAIMANT);
@@ -1545,8 +1550,8 @@ class PartyServiceTest {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress(null)
                 .contactPreferences(ContactPreferencesEntity.builder()
-                    .contactByEmail(VerticalYesNo.YES)
-                    .build())
+                                        .contactByEmail(VerticalYesNo.YES)
+                                        .build())
                 .build();
 
             boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
@@ -1571,8 +1576,8 @@ class PartyServiceTest {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
                 .contactPreferences(ContactPreferencesEntity.builder()
-                    .contactByEmail(null)
-                    .build())
+                                        .contactByEmail(null)
+                                        .build())
                 .build();
 
             boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
@@ -1585,8 +1590,8 @@ class PartyServiceTest {
             PartyEntity party = PartyEntity.builder()
                 .emailAddress("test@example.com")
                 .contactPreferences(ContactPreferencesEntity.builder()
-                    .contactByEmail(VerticalYesNo.NO)
-                    .build())
+                                        .contactByEmail(VerticalYesNo.NO)
+                                        .build())
                 .build();
 
             boolean result = underTest.canSendEmailNotification(party, PartyRole.DEFENDANT);
@@ -1612,8 +1617,6 @@ class PartyServiceTest {
         @Test
         void shouldAddClaimantCarryingOnlyTheOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
 
             underTest.createClaimantStub(caseEntity);
 
@@ -1628,9 +1631,9 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutAnOrganisation() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(null);
 
-            assertThatThrownBy(() ->
-                underTest.createClaimantStub(caseEntity))
+            assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Organisation must be provided");
 
@@ -1640,12 +1643,15 @@ class PartyServiceTest {
         @Test
         void shouldRejectCaseCreationWithoutOrganisationProfileId() {
             PcsCaseEntity caseEntity = new PcsCaseEntity();
-            when(organisationService.getOrganisationId(any())).thenReturn(ORG_ID);
-            when(organisationService.getOrgProfileId(any())).thenReturn(null);
+            var orgDetails = OrganisationDetailsResponse.builder()
+                .organisationIdentifier(ORG_ID)
+                .organisationProfileIds(List.of())
+                .build();
+            when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
 
             assertThatThrownBy(() -> underTest.createClaimantStub(caseEntity))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Organisation profile ID must be provided");
+                .hasMessageContaining("No organisation profile id found for organisation");
 
             assertThat(caseEntity.getParties()).isEmpty();
         }
