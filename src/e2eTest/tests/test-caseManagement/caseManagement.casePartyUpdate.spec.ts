@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 
@@ -52,7 +52,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Case management - Case Party Management e2e Journey @nightly', async () => {
-  test('Case management - Add a Party to the Case - Defendant @CM @regression', async () => {
+  test('Case management - Add a Party to the Case - Defendant @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
@@ -82,7 +82,11 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       nextPage: checkYourAnswersManageParties.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Defendant`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddParty', {
+      userType: `Defendant`,
+      name: `${firstName} ${lastName}`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
       firstName: firstName,
@@ -92,12 +96,12 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     });
   });
 
-  test('Case management - Add a Party to the Case - Claimant @CM @regression', async () => {
+  test('Case management - Add a Party to the Case - Claimant @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -125,7 +129,11 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       nextPage: checkYourAnswersManageParties.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Claimant`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddParty', {
+      userType: `Claimant`,
+      name: `${firstName} ${lastName}`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateClaimantDetails', {
       orgName: orgName,
@@ -141,7 +149,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
     let party = allPartyDetails[1];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -150,7 +158,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option1: manageParty.litigationFriendHiddenRadioOption,
       nextPage: addParty.mainHeader,
     });
-    await performAction('clickRadioButton', { question: addParty.litigationFriendQuestion, option: party });
+    await performAction('clickRadioButton', {question: addParty.litigationFriendQuestion, option: party});
     await performAction('reTryOnCallBackError', addParty.continueButton, partyDetails.mainHeader as string);
     await performAction('addNewParty', {
       orgLabel: partyDetails.orgNameHiddenTextLabel,
@@ -171,7 +179,11 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       nextPage: checkYourAnswersManageParties.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
-    await performAction('confirmAddParty', { userType: `Litigation friend`, name: `${firstName} ${lastName}`, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddParty', {
+      userType: `Litigation friend`,
+      name: `${firstName} ${lastName}`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
       firstName: firstName,
@@ -181,4 +193,63 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       subTable: 'Service address'
     });
   });
+
+  test('Case management - update party to the case - Defendants details @CM', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
+    let party= allPartyDetails[1];
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectParty', {
+      question1: manageParty.whatChangeQuestion,
+      option1: manageParty.updatePartyRadioOption,
+      question2: manageParty.whichPartyContactInformationHiddenQuestion,
+      option2: party,
+      nextPage: updatePartyDetails.mainHeader
+    });
+    await performAction('updatePartyDetails', {
+      DOBLabel: updatePartyDetails.dateOfBirthHiddenLabel,
+      date: date,
+      enterUKPostcodeTextLabel: updatePartyDetails.enterUKPostcodeTextLabel,
+      postcode: updatePartyDetails.englandPostCodeTextInput,
+      button: updatePartyDetails.findAddressButton,
+      addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
+      addressIndex: updatePartyDetails.defendantAddressIndex,
+      nextPage: checkYourAnswersManageParties.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+    await performAction('confirmPartyDetailsUpdated', {
+      userType: `Defendant's details`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
+  });
+
+  test('Case management - update party to the case- Claimant details @CM', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
+    let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
+    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performValidation('mainHeader', manageParty.mainHeader);
+    await performAction('selectParty', {
+      question1: manageParty.whatChangeQuestion,
+      option1: manageParty.updatePartyRadioOption,
+      question2: manageParty.whichPartyContactInformationHiddenQuestion,
+      option2: submitPayLoad.claimantName,
+      nextPage: updatePartyDetails.mainHeader
+    });
+    await performAction('updatePartyDetails', {
+      enterUKPostcodeTextLabel: updatePartyDetails.enterUKPostcodeTextLabel,
+      postcode: updatePartyDetails.englandPostCodeTextInput,
+      button: updatePartyDetails.findAddressButton,
+      addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
+      addressIndex: updatePartyDetails.claimantAddressIndex,
+      nextPage: checkYourAnswersManageParties.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+    await performAction('confirmPartyDetailsUpdated', {
+      userType: `Claimant's details`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
+  });
 });
+

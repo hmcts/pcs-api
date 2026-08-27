@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
+    private final OrganisationService organisationService;
     private final SecurityContextService securityContextService;
     private final DocumentService documentService;
     private final GenAppVisibilityService genAppVisibilityService;
@@ -53,7 +55,8 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(EventStates.uploadDocuments())
             .name("Upload additional documents")
             .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.DEFENDANT);
+            .grant(Permission.CRU, UserRole.DEFENDANT)
+            .grant(Permission.CRU, UserRole.GA_DEFENDANT_SOLICITOR);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -66,9 +69,10 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
         List<ListValue<RelatedApplicationOption>> options =
-            visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+            visibleGenAppsForUser(pcsCaseEntity, currentUserId, organisationId).stream()
                 .map(this::toOption)
                 .filter(Objects::nonNull)
                 .toList();
@@ -81,8 +85,15 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
-        return genAppVisibilityService.getVisibleGenAppsToUser(pcsCaseEntity.getGenApps(), currentUserId);
+    private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity,
+                                                     UUID currentUserId,
+                                                     String organisationId) {
+
+        return genAppVisibilityService.getVisibleGenAppsToUser(
+            pcsCaseEntity.getGenApps(),
+            currentUserId,
+            organisationId
+        );
     }
 
     private ListValue<RelatedApplicationOption> toOption(GenAppEntity genApp) {
@@ -118,8 +129,10 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
         PartyEntity uploadingParty = partyService.getPartyEntityByIdamId(currentUserId, caseReference);
-        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity, currentUserId);
+        GenAppEntity selectedGenApp = resolveSelectedGenApp(caseData, pcsCaseEntity, currentUserId, organisationId);
 
         documentService.linkAdditionalDocumentsToCase(
             caseData.getUploadedAdditionalDocuments(),
@@ -131,7 +144,11 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().build();
     }
 
-    private GenAppEntity resolveSelectedGenApp(PCSCase caseData, PcsCaseEntity pcsCaseEntity, UUID currentUserId) {
+    private GenAppEntity resolveSelectedGenApp(PCSCase caseData,
+                                               PcsCaseEntity pcsCaseEntity,
+                                               UUID currentUserId,
+                                               String organisationId) {
+
         DocumentUploadDetails details = caseData.getDocumentUploadDetails();
         if (details == null || details.getSelectedRelatedApplicationId() == null) {
             return null;
@@ -142,7 +159,7 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
         } catch (IllegalArgumentException e) {
             return null;
         }
-        return visibleGenAppsForUser(pcsCaseEntity, currentUserId).stream()
+        return visibleGenAppsForUser(pcsCaseEntity, currentUserId, organisationId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
             .orElse(null);

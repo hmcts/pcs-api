@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardContext;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -21,13 +22,16 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
 
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final OrganisationService organisationService;
 
     public ApplicationsTaskGroupEvaluator(
         UserRoleService userRoleService,
-        GenAppVisibilityService genAppVisibilityService
+        GenAppVisibilityService genAppVisibilityService,
+        OrganisationService organisationService
     ) {
         this.userRoleService = userRoleService;
         this.genAppVisibilityService = genAppVisibilityService;
+        this.organisationService = organisationService;
     }
 
     @Override
@@ -64,6 +68,7 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
             userRoles.userId(),
+            organisationService.getOrganisationIdForCurrentUser(),
             userRoles.roles()
         ).isEmpty();
     }

@@ -1,7 +1,17 @@
 package uk.gov.hmcts.reform.pcs.noc;
 
+import static java.util.Optional.of;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+
+import static java.util.Objects.isNull;
+
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ChallengeQuestion;
@@ -22,9 +32,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -39,40 +50,47 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
-    private static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
-    private static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
-    private static final String CHALLENGE_ID = "NoCChallenge";
+    static final String FIRST_NAME_QUESTION_ID = "pcs-defendant-first-name";
+    static final String LAST_NAME_QUESTION_ID = "pcs-defendant-last-name";
+    static final String CHALLENGE_ID = "NoCChallenge";
 
-    private static final int EXPECTED_ANSWER_COUNT = 2;
-    private static final UserRole CASE_ROLE = UserRole.DEFENDANT_SOLICITOR;
+    static final int EXPECTED_ANSWER_COUNT = 2;
 
-    private static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
+    static final String DUPLICATE_DEFENDANT_NAME_CODE = "duplicateDefendantName";
 
-    private static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
+    static final String DUPLICATE_DEFENDANT_NAME_MESSAGE = "A notice of change cannot be completed for this "
         + "defendant as there is more than one defendant with the same name on this case."
         + " Contact the issuing court for help.";
 
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE = "Your organisation already has access"
-        + " to this case. "
-        + "You or a colleague are already representing this client on this case."
-        + " Return to case list.";
+    static final String ORG_ALREADY_REPRESENTS_PARTY_MESSAGE =
+        "Your organisation already has access to this case. "
+        + "You or a colleague are already representing this client on this case. Return to case list.";
 
-    private static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+    static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
+    static final String ORG_NOT_FOUND_CODE = "organisationNotFound";
+    static final String ORG_NOT_FOUND_MESSAGE = "No organisation was found for the current user.";
 
-    private static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
+    static final String INVALID_ORG_TYPE_CODE = "invalidOrganisationType";
+    static final String INVALID_ORG_TYPE_MESSAGE =
+        "Only a Solicitor Organisation can become a legal representative for a party in a case";
+    static final String CONFLICT_OF_INTEREST_CODE = "conflictOfInterest";
+    static final String CONFLICT_OF_INTEREST_MESSAGE =
+        "Organisation cannot represent both claimant and defendant in the same case";
+    static final String FEATURE_FLAG_DISABLED_CODE = "feature-disabled";
 
-    private static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
+    static final String FEATURE_FLAG_DISABLED_MESSAGE = "The Notice of change feature is "
         + "currently disabled";
 
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
     private final OrganisationDetailsService organisationDetailsService;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
+    private final OrganisationRepository organisationRepository;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
@@ -84,12 +102,12 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         ChallengeQuestion.ChallengeBuilder<PCSCase, UserRole> challenge = noticeOfChange.challenge(CHALLENGE_ID);
         challenge
             .question(FIRST_NAME_QUESTION_ID, "Enter client first name")
-            .answer(CASE_ROLE)
+            .answer(DEFENDANT_SOLICITOR)
             .complex(PCSCase::getDefendant1)
             .field(DefendantDetails::getFirstName)
             .done()
             .question(LAST_NAME_QUESTION_ID, "Enter client last name")
-            .answer(CASE_ROLE)
+            .answer(DEFENDANT_SOLICITOR)
             .complex(PCSCase::getDefendant1)
             .field(DefendantDetails::getLastName);
     }
@@ -113,54 +131,62 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
         PartyEntity matchedParty = matches.getFirst();
         OrganisationDetailsResponse organisation = organisationDetailsService.getOrganisationDetails(context.userId());
+        if (isNull(organisation)) {
+            return NocAnswersResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
-        if (legalRepresentativeRepository.isRepresentativeOrganisationLinkedToPartyAndActive(
-            organisation.getOrganisationIdentifier(),
-            matchedParty.getId()
-        )) {
+        if (organisationRepository
+            .isOrganisationLinkedToPartyAndActive(organisation.getOrganisationIdentifier(), matchedParty.getId())) {
             return NocAnswersResponse.invalid(ORG_ALREADY_REPRESENTS_PARTY_CODE, ORG_ALREADY_REPRESENTS_PARTY_MESSAGE);
         }
 
-        return NocAnswersResponse.verified(new NocOrganisation(
-            organisation.getOrganisationIdentifier(),
-            organisation.getName()
-        ));
+        return checkConflictOfInterest(pcsCase, organisation)
+            .orElseGet(() -> NocAnswersResponse.verified(
+                new NocOrganisation(organisation.getOrganisationIdentifier(), organisation.getName())
+            ));
     }
 
     public NocSubmissionResponse submit(NocSubmitContext context, NocAnswersRequest request) {
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
         UUID currentUserId = currentUserId(context);
-        OrganisationDetailsResponse organisationDetails = organisationDetailsService.getOrganisationDetails(
-            currentUserId.toString());
+        OrganisationDetailsResponse organisationDetails =
+            organisationDetailsService.getOrganisationDetails(currentUserId.toString());
+
+        if (isNull(organisationDetails)) {
+            return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
+        }
 
         NocAccessChangePlan accessChangePlan = planAccessChanges(
             pcsCase,
             matchedParty,
             context.userId(),
+            context.email(),
             organisationDetails
         );
 
         scheduleAccessChanges(accessChangePlan);
 
-        return NocSubmissionResponse.approved(CASE_ROLE.getRole());
+        return NocSubmissionResponse.approved(DEFENDANT_SOLICITOR.getRole());
     }
 
     private NocAccessChangePlan planAccessChanges(
         PcsCaseEntity pcsCase,
         PartyEntity matchedParty,
         String currentUserIdString,
+        String currentUserEmail,
         OrganisationDetailsResponse organisationDetailsResponse
     ) {
         List<NocAccessChangeTaskData> changes = new ArrayList<>();
-        changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, organisationDetailsResponse,
-                                 matchedParty.getId()));
+        changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, currentUserEmail,
+                                 organisationDetailsResponse, matchedParty.getId()));
         return new NocAccessChangePlan(changes);
     }
 
     private NocAccessChangeTaskData accessChange(
         long caseReference,
         String userId,
+        String email,
         OrganisationDetailsResponse organisationDetailsResponse,
         UUID partyId
     ) {
@@ -168,6 +194,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             .caseReference(String.valueOf(caseReference))
             .organisationDetailsResponse(organisationDetailsResponse)
             .userId(userId)
+            .email(email)
             .partyId(partyId.toString())
             .build();
     }
@@ -190,22 +217,22 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> validateRequest(NocAnswersRequest request) {
         if (request == null || request.answers() == null || request.answers().isEmpty()) {
-            return Optional.of(NocAnswersResponse.answersEmpty());
+            return of(NocAnswersResponse.answersEmpty());
         }
 
         if (request.answers().size() != EXPECTED_ANSWER_COUNT) {
-            return Optional.of(NocAnswersResponse.answersMismatchQuestions(
+            return of(NocAnswersResponse.answersMismatchQuestions(
                 EXPECTED_ANSWER_COUNT,
                 request.answers().size()
             ));
         }
 
         if (request.answers().stream().noneMatch(answer -> FIRST_NAME_QUESTION_ID.equals(answer.questionId()))) {
-            return Optional.of(NocAnswersResponse.noAnswerProvidedForQuestion(FIRST_NAME_QUESTION_ID));
+            return of(NocAnswersResponse.noAnswerProvidedForQuestion(FIRST_NAME_QUESTION_ID));
         }
 
         if (request.answers().stream().noneMatch(answer -> LAST_NAME_QUESTION_ID.equals(answer.questionId()))) {
-            return Optional.of(NocAnswersResponse.noAnswerProvidedForQuestion(LAST_NAME_QUESTION_ID));
+            return of(NocAnswersResponse.noAnswerProvidedForQuestion(LAST_NAME_QUESTION_ID));
         }
 
         return Optional.empty();
@@ -225,21 +252,37 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         return pcsCase.getParties().stream()
             .filter(Objects::nonNull)
             .filter(this::isDefendant)
+            .filter(partyEntity -> partyEntity.getNameKnown() == YES
+                && isNotBlank(partyEntity.getFirstName()) && isNotBlank(partyEntity.getLastName()))
             .filter(party -> namesMatch(party, answersById))
             .toList();
     }
 
     private Optional<NocAnswersResponse> validateMatches(List<PartyEntity> matches) {
         if (matches.isEmpty()) {
-            return Optional.of(NocAnswersResponse.answersNotMatchedAnyLitigant());
+            return of(NocAnswersResponse.answersNotMatchedAnyLitigant());
         }
-
         if (matches.size() > 1) {
-            return Optional.of(NocAnswersResponse.invalid(DUPLICATE_DEFENDANT_NAME_CODE,
-                                                          DUPLICATE_DEFENDANT_NAME_MESSAGE
-            ));
+            return of(NocAnswersResponse.invalid(DUPLICATE_DEFENDANT_NAME_CODE, DUPLICATE_DEFENDANT_NAME_MESSAGE));
         }
+        return Optional.empty();
+    }
 
+    private Optional<NocAnswersResponse> checkConflictOfInterest(PcsCaseEntity caseEntity,
+                                                                 OrganisationDetailsResponse orgDetails) {
+        if (!SOLICITOR_PROFILE.equals(valueOf(orgDetails.getOrgProfileId()))) {
+            return of(NocAnswersResponse.invalid(INVALID_ORG_TYPE_CODE, INVALID_ORG_TYPE_MESSAGE));
+        }
+        PartyEntity claimant = caseEntity.getParties().stream()
+            .filter(PartyEntity::isClaimCreator)
+            .findFirst().orElseThrow(() -> {
+                log.error("Unable to find claimant Party");
+                return new PartyNotFoundException("Unable to find claimant Party");
+            });
+
+        if (orgDetails.getOrganisationIdentifier().equals(claimant.getOrganisationId())) {
+            return of(NocAnswersResponse.invalid(CONFLICT_OF_INTEREST_CODE, CONFLICT_OF_INTEREST_MESSAGE));
+        }
         return Optional.empty();
     }
 

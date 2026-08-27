@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossess
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
@@ -38,6 +39,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     private final RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     private final CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
     private final SecurityContextService securityContextService;
+    private final OrganisationService organisationService;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -52,13 +54,17 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         }
 
         Long caseReference = eventPayload.caseReference();
+        PCSCase pcsCase = eventPayload.caseData();
         UUID representedPartyId = selectedPartyRetriever
             .getCurrentRepresentedPartyId(eventPayload.caseData())
-            .or(() -> selectedPartyRetriever.getSelectedPartyId(caseReference))
+            .or(() -> selectedPartyRetriever.getSelectedPartyId(pcsCase))
             .orElseThrow(() -> new IllegalStateException("No selected responding party id for respond to claim"));
 
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
         PCSCase draftData = draftCaseDataService
-            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId)
+            .getUnsubmittedCaseData(caseReference, respondPossessionClaim, representedPartyId,
+                                    organisationId)
             .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
