@@ -440,6 +440,7 @@ public class TestingSupportController {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
+            userDetails.getSub(),
             organisationDetails
         );
         return ResponseEntity.ok().build();
