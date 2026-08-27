@@ -413,7 +413,6 @@ class RespondPossessionClaimSubmitServiceTest {
             .createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
     }
 
-
     @ParameterizedTest
     @EnumSource(JourneyType.class)
     void shouldScheduleDefendantResponseEmail(JourneyType journeyType) {
