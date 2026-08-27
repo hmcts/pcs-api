@@ -59,7 +59,8 @@ public class UploadDocuments implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(EventStates.uploadDocuments())
             .name("Upload additional documents")
             .showCondition(ShowConditions.NEVER_SHOW)
-            .grant(Permission.CRU, UserRole.DEFENDANT);
+            .grant(Permission.CRU, UserRole.DEFENDANT)
+            .grant(Permission.CRU, UserRole.GA_DEFENDANT_SOLICITOR);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
