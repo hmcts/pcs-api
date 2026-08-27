@@ -266,7 +266,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
         email === judicial.possessionFeePaid_Judge_email ||
         email === judicial.possession_Circuit_Judge_FeePaid_Judge_email
       ) {
-        await performAction('handleJudgeBookingPage');
+        await performAction('handleJudgeBookingPageForCaseFlags');
       }
       await performAction('navigateToCaseSummary', 'yes');
       await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
