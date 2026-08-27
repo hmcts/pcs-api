@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -30,6 +31,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class OrganisationEntity {
 
     @Id
@@ -57,18 +59,20 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        if (this.claimPartyOrganisationList.stream().anyMatch(e ->
-                                                                         e.getParty().getId().equals(party.getId()))) {
+        if (this.claimPartyOrganisationList.stream()
+            .anyMatch(e -> e.getParty().getId() == party.getId())) {
+            log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
+                     party.getId(), this.getId());
             return;
         }
 
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
-            .organisation(this)
-            .party(party)
-            .startDate(Instant.now())
-            .active(YesOrNo.YES)
-            .build();
+                .organisation(this)
+                .party(party)
+                .startDate(Instant.now())
+                .active(YesOrNo.YES)
+                .build();
         claimPartyOrganisationList.add(claimPartyOrganisationEntity);
         party.getClaimPartyOrganisationList().add(claimPartyOrganisationEntity);
     }

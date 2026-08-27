@@ -25,11 +25,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -61,6 +61,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .forAllStates()
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showSummary()
                 .endButtonLabel("Submit");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
