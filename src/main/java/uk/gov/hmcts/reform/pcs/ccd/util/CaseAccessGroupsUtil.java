@@ -66,14 +66,12 @@ public final class CaseAccessGroupsUtil {
                          .stream()
                          .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
                          .findFirst())
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .flatMap(Optional::stream)
             .map(ClaimPartyOrganisationEntity::getOrganisation)
             .map(legalRepOrg ->
                      caseAccessGroupIdFor(legalRepOrg.getOrganisationProfileId(),
                                           DEFENDANT, legalRepOrg.getOrganisationId()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .flatMap(Optional::stream)
             .peek(caseAccessGroupId ->
                       log.info("Found defendant case access group: {}", caseAccessGroupId))
             .forEach(caseAccessGroupId ->
