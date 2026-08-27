@@ -19,6 +19,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
@@ -77,7 +78,6 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private OAuth2AuthorizedClientManager authorizedClientManager;
     @MockitoBean
     private IdamClient idamClient;
-    // Creating a case needs the caller's organisation; the real lookup calls RD Professional
     @MockitoBean
     private OrganisationService organisationService;
 
@@ -87,11 +87,10 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
         FeeDetails feeDetails = FeeDetails.builder().code("FEE0001").feeAmount(new BigDecimal("123.45")).build();
         when(feeService.getFee(any(FeeType.class))).thenReturn(feeDetails);
-
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
-        when(organisationService.getOrgProfileIdForCurrentUser()).thenReturn("SOLICITOR_PROFILE");
-        when(organisationService.getOrganisationId(any())).thenReturn(ORGANISATION_ID);
-        when(organisationService.getOrgProfileId(any())).thenReturn("SOLICITOR_PROFILE");
+        OrganisationDetailsResponse orgDetails = new OrganisationDetailsResponse();
+        orgDetails.setOrganisationIdentifier(ORGANISATION_ID);
+        orgDetails.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+        when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
     }
 
     @AfterEach

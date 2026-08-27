@@ -167,14 +167,14 @@ class ManageCaseFlagsTest extends CftlibTest {
     }
 
     private void createCaseLevelFlag(long caseReference) {
-        StartEventResponse start = startEvent(caseReference, "createFlags");
-        Map<String, Object> data = eventFieldsOnly(start.getCaseDetails().getData());
-
         Map<String, Object> flags = new LinkedHashMap<>();
         flags.put("visibility", "Internal");
         List<Object> details = new ArrayList<>();
         details.add(Map.of("value", caseLevelFlagDetail(caseReference)));
         flags.put("details", details);
+
+        StartEventResponse start = startEvent(caseReference, "createFlags");
+        Map<String, Object> data = eventFieldsOnly(start.getCaseDetails().getData());
         data.put("caseFlags", flags);
 
         submit(caseReference, "createFlags", start.getToken(), data);
