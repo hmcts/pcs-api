@@ -76,8 +76,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         String countryCode = getSelectedCountryCode(caseData);
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
 
-        log.debug("Performing eligibility check for postcode: {} with selected country: {}",
-                postcode, selectedCountry);
+        log.debug("Performing eligibility check with selected country: {}", selectedCountry);
 
         EligibilityResult eligibilityResult =
             eligibilityService.checkEligibility(postcode, selectedCountry);
@@ -87,22 +86,22 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
 
         switch (eligibilityResult.getStatus()) {
             case ELIGIBLE -> {
-                log.debug("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
-                        + "Proceeding to normal flow", postcode, selectedCountry);
+                log.debug("Cross-border eligibility check: ELIGIBLE for country {}. "
+                        + "Proceeding to normal flow", selectedCountry);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NOT_ELIGIBLE -> {
-                log.debug("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
-                        + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
+                log.debug("Cross-border eligibility check: NOT_ELIGIBLE for country {}. "
+                        + "Redirecting to PropertyNotEligible page", selectedCountry);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NO_MATCH_FOUND -> {
-                log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
-                        + "Redirecting to PostcodeNotAssignedToCourt page", postcode, selectedCountry);
+                log.info("Cross-border eligibility check: NO_MATCH_FOUND for country {}. "
+                        + "Redirecting to PostcodeNotAssignedToCourt page", selectedCountry);
                 caseData.setLegislativeCountry(selectedCountry);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
@@ -119,9 +118,8 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 //TODO: HDPI-1838 will handle multiple matches
                 throw new EligibilityCheckException(
                     String.format(
-                        "Unexpected eligibility status: %s for postcode %s and country %s",
+                        "Unexpected eligibility status: %s for country %s",
                         eligibilityResult.getStatus(),
-                        postcode,
                         selectedCountry
                     )
                 );

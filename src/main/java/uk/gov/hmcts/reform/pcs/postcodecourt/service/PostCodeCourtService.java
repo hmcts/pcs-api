@@ -36,7 +36,7 @@ public class PostCodeCourtService {
     public Integer getCourtManagementLocation(String postCode, LegislativeCountry legislativeCountry) {
         List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode, legislativeCountry);
         if (results.isEmpty()) {
-            log.error("EpimId not found for postcode: {}", postCode);
+            log.error("EpimId not found for postcode");
             return null;
         }
         return results.getFirst().getId().getEpimsId();
@@ -52,7 +52,7 @@ public class PostCodeCourtService {
             ? postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate)
             : postCodeCourtRepository.findActiveByPostCodeIn(postcodes, legislativeCountry, currentDate);
         if (results.isEmpty()) {
-            log.warn("Postcode court mapping not found for postcode {}", postcode);
+            log.warn("Postcode court mapping not found for postcode");
             return List.of();
         }
 
@@ -65,14 +65,10 @@ public class PostCodeCourtService {
             .toList();
 
         if (filteredResults.size() > 1) {
-            log.error(
-                "Multiple active EpimIds found for postcode:{} count:{}",
-                longestPostcodeMatch,
-                filteredResults.size()
-            );
+            log.error("Multiple active EpimIds found for postcode. Count: {}", filteredResults.size());
             return List.of();
         }
-        log.info("Found court mapping of {} for postcode: {}", longestPostcodeMatch, postcode);
+        log.info("Found court mapping for postcode");
         return filteredResults;
     }
 }
