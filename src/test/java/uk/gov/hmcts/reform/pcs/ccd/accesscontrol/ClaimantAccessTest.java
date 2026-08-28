@@ -18,7 +18,8 @@ class ClaimantAccessTest {
         SetMultimap<HasRole, Permission> grants = claimantAccess.getGrants();
 
         // then
-        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEqualTo(Permission.CRU);
+        assertThat(grants.get(UserRole.CLAIMANT)).isEqualTo(Permission.CRU);
         assertThat(grants.get(UserRole.ORGANISATION_CASE_ACCESS_ADMINISTRATOR)).isEqualTo(Permission.CRU);
     }
 }
