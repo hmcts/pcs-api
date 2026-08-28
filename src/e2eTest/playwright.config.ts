@@ -32,9 +32,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
-  workers: process.env.ENVIRONMENT === 'preview' ? 1 : 4,
+  workers: process.env.ENVIRONMENT === 'preview' ? 1 : 2,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
