@@ -31,9 +31,8 @@
   </suppress>
   <suppress until="2026-09-15">
     <notes><![CDATA[
-    HDPI-8688: false positive. The Java OpenTelemetry artifacts match the generic
-    CPE opentelemetry:opentelemetry, whose CVEs are for the Go and Node.js SDKs.
-    Re-review by the until date.
+    HDPI-8688: false positive. CPE opentelemetry:opentelemetry covers the Go and
+    Node.js SDKs, not opentelemetry-java. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
     <cpe>cpe:/a:opentelemetry:opentelemetry</cpe>
