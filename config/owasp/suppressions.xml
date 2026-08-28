@@ -68,13 +68,31 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
     <cve>CVE-2026-54515</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-11-30">
     <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
-    Tomcat release published yet; suppression is temporary and MUST be
-    removed when tomcatEmbedVersion is bumped to the fixed version.
+    HDPI-7656 (PR traceability only - this finding is master-wide and unrelated to
+    Review Support Request): false positive. CVE-2026-41178 is an OpenTelemetry-Go
+    advisory (GHSA-5wrp-cwcj-q835); its NVD CPE carries target_software "go" and
+    covers < 1.42.0 plus exactly 1.43.0. PCS uses the Java semconv artifact, which is
+    already forced to the latest published 1.43.0 in build.gradle - no Java release
+    sits outside both Go ranges. Dependency Check matches it because
+    NvdCveAnalyzer.ecosystemMatchesTargetSoftware only applies target_software
+    filtering to the Node ecosystem. Re-review by the until date, or drop this entry
+    once a semconv > 1.43.0 is published.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
-    <cve>CVE-2026-66299</cve>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry\-semconv@.*$</packageUrl>
+    <cve>CVE-2026-41178</cve>
+  </suppress>
+  <suppress until="2026-11-30">
+    <notes><![CDATA[
+    HDPI-7656 (PR traceability only - this finding is master-wide and unrelated to
+    Review Support Request): false positive. CVE-2026-54285 is an OpenTelemetry JS
+    advisory (GHSA-8988-4f7v-96qf) against the npm @opentelemetry/core package; its
+    NVD CPE carries target_software "node.js" and covers < 2.8.0. PCS uses the
+    OpenTelemetry Java SDK, which is a 1.x line, so every Java artifact version falls
+    inside that range and no upgrade can clear it. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/.*$</packageUrl>
+    <cve>CVE-2026-54285</cve>
   </suppress>
 </suppressions>
