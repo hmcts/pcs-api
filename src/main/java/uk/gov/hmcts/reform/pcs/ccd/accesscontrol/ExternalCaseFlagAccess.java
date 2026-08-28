@@ -19,7 +19,6 @@ public class ExternalCaseFlagAccess implements HasAccessControl {
         for (UserRole externalRole : EXTERNAL_CASE_FLAG_ROLES) {
             grants.putAll(externalRole, Permission.CRU);
         }
-        // Group-access users reach the case through their organisation role alone (HDPI-8701).
         grants.putAll(CLAIMANT, Permission.CRU);
         grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CRU);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CRU);
