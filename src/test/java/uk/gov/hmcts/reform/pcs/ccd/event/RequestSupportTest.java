@@ -22,7 +22,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.requestSupport;
 
 @ExtendWith(MockitoExtension.class)
 class RequestSupportTest extends BaseEventTest {
@@ -55,7 +55,7 @@ class RequestSupportTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase, true);
+        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase.getPartySupport());
     }
 
     @Test
@@ -73,7 +73,7 @@ class RequestSupportTest extends BaseEventTest {
     @Test
     void shouldBeAvailableFromPendingCaseIssuedOnwards() {
         assertThat(configuredEvent.getPreState())
-            .containsExactlyInAnyOrder(CASE_FLAG_STATES)
+            .containsExactlyInAnyOrder(requestSupport())
             .doesNotContain(State.AWAITING_SUBMISSION_TO_HMCTS);
     }
 

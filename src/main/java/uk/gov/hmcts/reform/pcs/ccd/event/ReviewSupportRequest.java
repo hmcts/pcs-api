@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.SupportReviewService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SupportReviewRoles.SUPPORT_REVIEW_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.reviewSupportRequest;
 
 @Component
 @Slf4j
@@ -33,7 +33,7 @@ public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole>
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.reviewSupportRequest.name(), this::submit, this::start)
-                            .forStates(CASE_FLAG_STATES)
+                            .forStates(reviewSupportRequest())
                             .name("Review support request")
                             .description("To review requested support")
                             .showSummary()
@@ -63,7 +63,7 @@ public class ReviewSupportRequest implements CCDConfig<PCSCase, State, UserRole>
 
         log.debug("Caseworker reviewed support request for {}", caseReference);
 
-        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchReviewedSupportFlags(caseReference, pcsCase.getSupportReviewFlags());
 
         return SubmitResponse.defaultResponse();
     }
