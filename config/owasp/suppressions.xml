@@ -33,7 +33,7 @@
     <notes><![CDATA[
     CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry/opentelemetry-.*@.*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
   </suppress>
   <suppress until="2026-10-15">
