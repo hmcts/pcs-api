@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -87,6 +88,8 @@ class GenAppServiceTest {
     private DocumentTypeMapper documentTypeMapper;
     @Mock(strictness = LENIENT)
     private DocumentRepository documentRepository;
+    @Mock
+    private ClaimActivityLogService claimActivityLogService;
     @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
@@ -109,8 +112,8 @@ class GenAppServiceTest {
         stubUtcClock(TEST_UTC_DATE_TIME);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
-        underTest = new GenAppService(genAppRepository, documentNameService,
-                                      documentTypeMapper, documentRepository, utcClock
+        underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
+                                      documentRepository, claimActivityLogService, utcClock
         );
     }
 
@@ -1019,6 +1022,7 @@ class GenAppServiceTest {
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
             assertThat(documentEntity.getType()).isEqualTo(DocumentType.GENERAL_APPLICATION);
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
+            verify(claimActivityLogService).logGenerationSuccess(pcsCaseEntity, applicantParty);
         }
 
         @Test
@@ -1037,6 +1041,7 @@ class GenAppServiceTest {
             GenAppEntity genAppEntity = getSavedGenAppEntity();
             assertThat(genAppEntity.getSubmissionDocument()).isNull();
             verify(documentRepository, never()).save(any(DocumentEntity.class));
+            verify(claimActivityLogService, never()).logGenerationSuccess(any(), any());
         }
 
         @Test
