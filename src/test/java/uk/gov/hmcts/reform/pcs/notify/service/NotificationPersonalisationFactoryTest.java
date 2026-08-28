@@ -538,7 +538,6 @@ class NotificationPersonalisationFactoryTest {
     private OrganisationEntity createLegalRep(String organisationName) {
         OrganisationEntity legalRepresentativeOrganisationEntity = new
             OrganisationEntity();
-        //   legalRepresentativeOrganisationEntity.setId();
         legalRepresentativeOrganisationEntity.setOrganisationName(organisationName);
         return legalRepresentativeOrganisationEntity;
     }

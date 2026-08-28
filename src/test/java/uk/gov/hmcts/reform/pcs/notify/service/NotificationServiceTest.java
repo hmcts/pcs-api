@@ -423,7 +423,6 @@ class NotificationServiceTest {
     class WrapperEmailNotificationTests {
 
         private DefendantResponseEntity defendantResponse;
-        private OrganisationEntity organisationEntity;
 
         @BeforeEach
         void setUp() {
@@ -708,8 +707,8 @@ class NotificationServiceTest {
         }
 
         @Test
-        @DisplayName("Should send notification for organisation with counterclaim payment required")
-        void notificationSentForOrganisationCounterclaimPaymentRequired() {
+        @DisplayName("Should send counterclaim payment success email to organisation")
+        void shouldSendCounterclaimPaymentSuccessEmailToOrganisation() {
             PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();
             OrganisationEntity organisationEntity = anOrganisationEntity(pcsCaseEntity);
             DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
@@ -901,7 +900,7 @@ class NotificationServiceTest {
             return OrganisationEntity.builder()
                 .claimPartyContactDetails(List.of((ClaimPartyContactDetailsEntity.builder()
                     .id(NOTIFICATION_ID)
-                    .pcsCase(PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build())
+                    .pcsCase(pcsCaseEntity)
                     .emailAddress("myEmail@hmcts.net")
                     .build())))
                 .build();
