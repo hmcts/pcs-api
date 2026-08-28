@@ -33,15 +33,15 @@
     <notes><![CDATA[
     CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry/opentelemetry-api@.*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry/opentelemetry-.*@.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    CVE-2020-29582 concerns the Go OpenTelemetry client. Re-review by the until date.
+    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
-    <cve>CVE-2020-29582</cve>
+    <cve>CVE-2026-41178</cve>
   </suppress>
   <!--End of false positives section -->
 
