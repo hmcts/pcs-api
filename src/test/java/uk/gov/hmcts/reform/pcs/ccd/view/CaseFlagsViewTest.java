@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -327,6 +329,27 @@ class CaseFlagsViewTest {
     }
 
     @Test
+    void shouldReturnBothOtherDescriptionsForAStoredFlag() {
+
+        CaseFlagEntity caseFlagEntity = new CaseFlagEntity();
+        caseFlagEntity.setId(UUID.randomUUID());
+        caseFlagEntity.setFlagRefData(createMockRefDataFlagsEntity("OT0001", "Other"));
+        caseFlagEntity.setPaths(":Case");
+        caseFlagEntity.setOtherDescription("Retired judge on case");
+        caseFlagEntity.setOtherDescriptionWelsh("Barnwr wedi ymddeol ar yr achos");
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setCaseFlags(List.of(caseFlagEntity));
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        FlagDetail flagDetail = pcsCase.getCaseFlags().getDetails().getFirst().getValue();
+        assertEquals("Retired judge on case", flagDetail.getOtherDescription());
+        assertEquals("Barnwr wedi ymddeol ar yr achos", flagDetail.getOtherDescriptionCy());
+    }
+
+    @Test
     void shouldHandleNullCaseFlagsGracefully() {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         PCSCase pcsCase = PCSCase.builder().build();
@@ -408,6 +431,68 @@ class CaseFlagsViewTest {
             mappedClaimant.getPartyFlagsExternal().getDetails().getFirst().getValue().getFlagCode());
         assertEquals(1, pcsCase.getPartySupport().size());
         assertEquals(1, pcsCase.getPartySupport().getFirst().getValue().getSupportFlags().getDetails().size());
+    }
+
+    @Test
+    void shouldExposeExternalSupportForEveryPartyRegardlessOfTheAuthenticatedUser() {
+        CasePartyFlagEntity claimantExternalFlag = createMockCasePartyFlagsEntity();
+        claimantExternalFlag.setVisibility("External");
+        claimantExternalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+
+        CasePartyFlagEntity defendantExternalFlag = createMockCasePartyFlagsEntity();
+        defendantExternalFlag.setVisibility("External");
+        defendantExternalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0033", "Hearing loop"));
+
+        PartyEntity claimantEntity = createPartyEntity(null);
+        claimantEntity.setDefendantFlags(List.of(claimantExternalFlag));
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(defendantExternalFlag));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(claimantEntity), mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(claimantEntity, defendantEntity)));
+        setClaimParties(pcsCaseEntity,
+                        createClaimParty(claimantEntity, PartyRole.CLAIMANT),
+                        createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Both sides' external support is present, so the tab stays complete and the count stays correct
+        assertEquals(2, pcsCase.getPartySupport().size());
+        assertEquals("RA0042", pcsCase.getPartySupport().getFirst()
+            .getValue().getSupportFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals("RA0033", pcsCase.getPartySupport().get(1)
+            .getValue().getSupportFlags().getDetails().getFirst().getValue().getFlagCode());
+    }
+
+    /**
+     * Support is filtered by visibility only, never by status, so an inactivated flag stays on the Support
+     * tab and simply stops counting towards the active-flag total.
+     */
+    @Test
+    void shouldKeepInactiveSupportOnTheSupportTab() {
+        CasePartyFlagEntity inactiveFlag = createMockCasePartyFlagsEntity();
+        inactiveFlag.setVisibility("External");
+        inactiveFlag.setDefaultStatus("Inactive");
+        inactiveFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+
+        PartyEntity claimantEntity = createPartyEntity(null);
+        claimantEntity.setDefendantFlags(List.of(inactiveFlag));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(claimantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(claimantEntity)));
+        setClaimParties(pcsCaseEntity, createClaimParty(claimantEntity, PartyRole.CLAIMANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Flags supportFlags = pcsCase.getPartySupport().getFirst().getValue().getSupportFlags();
+        assertEquals(1, supportFlags.getDetails().size());
+        assertEquals("Inactive", supportFlags.getDetails().getFirst().getValue().getStatus());
     }
 
     @Test

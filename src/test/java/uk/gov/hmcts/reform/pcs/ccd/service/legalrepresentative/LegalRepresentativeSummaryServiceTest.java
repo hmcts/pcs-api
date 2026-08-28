@@ -184,6 +184,37 @@ class LegalRepresentativeSummaryServiceTest {
     }
 
     @Test
+    void handleLegalRepresentativeSummary_WithNonCaseLinkedState_ReturnsEmptyRespondMarkDown() {
+        // given
+        String organisationId = "org";
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(organisationId)
+                .build();
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.PENDING_CASE_ISSUED, organisationId);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
     void handleLegalRepresentativeSummary_WithLinkedAndNotActive_ReturnsEmptyMarkDown() {
         // given
         OrganisationEntity organisation =
