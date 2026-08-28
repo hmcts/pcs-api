@@ -1,0 +1,13 @@
+### Review Case Flag
+
+The following case flags have been added to the case:
+
+<ul class="govuk-list govuk-list--bullet">
+  {% for flag in flags %}
+  <li class="govuk-!-font-size-19">{{flag}}</li>
+  {% endfor %}
+</ul>
+
+Review the case flags on the <a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20flags">case flags tab</a>,
+check whether any action is required, and take the appropriate action. Only mark the task as complete once the case
+flags have been reviewed and any required action has been completed.

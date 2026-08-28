@@ -55,6 +55,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.DocumentsYouveUploadedChecklistPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
@@ -105,6 +106,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
     private final UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
     private final PreActionProtocol preActionProtocol;
     private final WantToUploadDocuments wantToUploadDocuments;
+    private final DocumentsYouveUploadedChecklistPage documentsYouveUploadedChecklistPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -163,6 +165,7 @@ public class ResumePossessionClaimConfigurer implements PageConfigurer {
             //TO DO will be routed later on correctly using tech debt ticket
             .add(wantToUploadDocuments)
             .add(uploadAdditionalDocumentsDetails)
+            .add(documentsYouveUploadedChecklistPage)
             .add(new GeneralApplication())
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())

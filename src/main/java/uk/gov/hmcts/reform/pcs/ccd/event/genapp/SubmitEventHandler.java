@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
@@ -29,8 +29,9 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -54,22 +55,24 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final GenAppRepository genAppRepository;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final GenAppFeeCalculator genAppFeeCalculator;
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final OrganisationRepository organisationRepository;
     private final ConfirmationScreenFactory confirmationScreenFactory;
     private final PaymentService paymentService;
     private final SchedulerClient schedulerClient;
     private final NotificationService notificationService;
+    private final GenAppWaTaskService genAppWaTaskService;
     private final ObjectMapper objectMapper;
+    private final OrganisationService organisationService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        PartyEntity applicantParty = getApplicantParty(caseReference, caseData);
-
         GenAppRequest createGenAppRequest = getGenAppRequest(caseData);
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        PartyEntity applicantParty = getApplicantParty(caseReference, caseData, createGenAppRequest);
 
         if (isDuplicateRequest(createGenAppRequest, pcsCaseEntity)) {
             return errorResponse("Application already exists for client reference");
@@ -84,6 +87,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         GenAppEntity genAppEntity = genAppService
             .createGenAppEntity(createGenAppRequest, pcsCaseEntity, applicantParty, initialState);
+
+        if (!paymentRequired) {
+            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+        }
 
         if (isXuiJourney(createGenAppRequest)) {
             return handleXuiSubmit(paymentRequired, caseReference, createGenAppRequest, genAppEntity, feeDetails);
@@ -100,6 +107,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
@@ -114,10 +122,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                                                   GenAppState initialState,
                                                   FeeDetails feeDetails) {
         if (!paymentRequired) {
-            genAppDocumentGenerator
-                .createSubmissionDocument(caseReference, genAppEntity);
-
+            genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             notificationService.sendGenAppReceivedEmail(genAppEntity);
+            genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
 
             MakeAnApplicationResponse response = MakeAnApplicationResponse.builder()
                 .state(initialState)
@@ -177,21 +184,27 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
     }
 
-    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData) {
+    private PartyEntity getApplicantParty(long caseReference, PCSCase caseData, GenAppRequest genAppRequest) {
+        if (genAppRequest.getApplicantPartyId() != null) {
+            UUID applicantPartyId = UUID.fromString(genAppRequest.getApplicantPartyId());
+            return partyService.getPartyEntityById(applicantPartyId, caseReference);
+        }
+
         UUID currentUserId = securityContextService.getCurrentUserId();
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
 
         if (caseData.getCurrentRepresentedPartyId() != null) {
             UUID representedPartyId = UUID.fromString(caseData.getCurrentRepresentedPartyId());
-            validateCurrentUserIsLegalRepForParty(currentUserId, representedPartyId);
+            validateCurrentUserIsLegalRepForParty(organisationIdForCurrentUser, representedPartyId);
             return partyService.getPartyEntityByEntityId(representedPartyId, caseReference);
         } else {
             return partyService.getPartyEntityByIdamId(currentUserId, caseReference);
         }
     }
 
-    private void validateCurrentUserIsLegalRepForParty(UUID currentUserId, UUID representedPartyId) {
-        boolean isLegalRepForParty = legalRepresentativeRepository
-            .isLegalRepresentativeLinkedToPartyAndActive(currentUserId, representedPartyId);
+    private void validateCurrentUserIsLegalRepForParty(String organisationIdForCurrentUser, UUID representedPartyId) {
+        boolean isLegalRepForParty = organisationRepository
+            .isOrganisationLinkedToPartyAndActive(organisationIdForCurrentUser, representedPartyId);
 
         if (!isLegalRepForParty) {
             throw new PartyNotFoundException("No matching party found represented by current user");

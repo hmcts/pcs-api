@@ -9,27 +9,30 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,8 +55,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 @Transactional
 public class DefendantResponseService {
 
-    private final PartyService partyService;
-    private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final DefendantResponseRepository defendantResponseRepository;
     private final DefendantResponseReadMapper defendantResponseReadMapper;
@@ -64,11 +65,10 @@ public class DefendantResponseService {
     private final DocumentService documentService;
     private final PartyAttributeAssertationService partyAttributeAssertationService;
     private final DefenceFormScheduler defenceFormScheduler;
+    private final TranslationWAService translationWAService;
     private final Clock utcClock;
 
-    public DefendantResponseService(PartyService partyService,
-                                    PartyRepository partyRepository,
-                                    ClaimRepository claimRepository,
+    public DefendantResponseService(ClaimRepository claimRepository,
                                     DefendantResponseRepository defendantResponseRepository,
                                     DefendantResponseReadMapper defendantResponseReadMapper,
                                     SecurityContextService securityContextService,
@@ -78,9 +78,8 @@ public class DefendantResponseService {
                                     DocumentService documentService,
                                     PartyAttributeAssertationService partyAttributeAssertationService,
                                     DefenceFormScheduler defenceFormScheduler,
+                                    TranslationWAService translationWAService,
                                     @Qualifier("utcClock") Clock utcClock) {
-        this.partyService = partyService;
-        this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.defendantResponseRepository = defendantResponseRepository;
         this.defendantResponseReadMapper = defendantResponseReadMapper;
@@ -91,6 +90,7 @@ public class DefendantResponseService {
         this.documentService = documentService;
         this.partyAttributeAssertationService = partyAttributeAssertationService;
         this.defenceFormScheduler = defenceFormScheduler;
+        this.translationWAService = translationWAService;
         this.utcClock = utcClock;
     }
 
@@ -116,46 +116,34 @@ public class DefendantResponseService {
      * @throws IllegalStateException if user ID is null, response already exists,
      *         party not found, or claim not found
      */
-    public void saveDefendantResponse(long caseReference,
-                                      PossessionClaimResponse possessionClaimResponse) {
+    public DefendantResponseEntity saveDefendantResponse(long caseReference,
+                                      PossessionClaimResponse possessionClaimResponse,
+                                      PartyEntity defendantParty,
+                                      JourneyType journeyType) {
 
         UUID userId = requireCurrentUserId();
+
+        if (defendantParty == null) {
+            throw new IllegalStateException("Defendant party is null for case: " + caseReference);
+        }
 
         DefendantResponseEntity savedResponse = saveDefendantResponseInternal(
             caseReference,
             possessionClaimResponse,
-            () -> partyService.getPartyEntityByIdamId(userId, caseReference),
+            defendantParty,
             String.format("Successfully saved defendant response for case %s user %s",
                           caseReference, userId)
         );
 
         // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
-        Integer defendantResponseId = savedResponse.getId();
-        UUID defendantPartyId = savedResponse.getParty().getId();
-        scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
-            caseReference, defendantResponseId, defendantPartyId));
-    }
+        if (JourneyType.CITIZEN.equals(journeyType)) {
+            Integer defendantResponseId = savedResponse.getId();
+            UUID defendantPartyId = savedResponse.getParty().getId();
+            scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
+                caseReference, defendantResponseId, defendantPartyId));
+        }
 
-    public void saveDefendantResponse(long caseReference,
-                                      PossessionClaimResponse possessionClaimResponse,
-                                      UUID partyId) {
-
-        requireCurrentUserId();
-
-        saveDefendantResponseInternal(
-            caseReference,
-            possessionClaimResponse,
-            () -> partyRepository
-                .findByIdAndPcsCaseCaseReference(partyId, caseReference)
-                .orElseThrow(() -> new IllegalStateException(
-                    "No party found for party ID: "
-                        + partyId
-                        + " and case reference: "
-                        + caseReference
-                )),
-            String.format("Successfully saved defendant response for case %s represented party %s",
-                          caseReference, partyId)
-        );
+        return savedResponse;
     }
 
     private void scheduleAfterCommit(Runnable schedule) {
@@ -174,47 +162,60 @@ public class DefendantResponseService {
     private DefendantResponseEntity saveDefendantResponseInternal(
         long caseReference,
         PossessionClaimResponse possessionClaimResponse,
-        Supplier<PartyEntity> partySupplier,
+        PartyEntity defendantParty,
         String successLogMessage
     ) {
-        PartyEntity partyRef = partySupplier.get();
-        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
+        ClaimEntity claimRef = claimRepository.findClaimByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
-                return new IllegalStateException(
-                    String.format("No claim found for case: %d", caseReference)
-                );
+                return new IllegalStateException(String.format("No claim found for case: %d", caseReference));
             });
-
-        ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         DefendantResponses responses = possessionClaimResponse.getDefendantResponses();
         LocalDateTime submittedAt = LocalDateTime.now(utcClock);
 
         DefendantResponseEntity responseEntity =
-            buildDefendantResponseEntity(claimRef, partyRef, responses, submittedAt);
+            buildDefendantResponseEntity(claimRef, claimRef.getPcsCase(), defendantParty, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
-        linkStatementOfTruth(responseEntity, responses, partyRef);
+        linkStatementOfTruth(responseEntity, responses, defendantParty);
 
         buildStatementOfTruth(responses, responseEntity);
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
         if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
-            documentService.createDefendantUploadedDocuments(
+            List<DocumentEntity> savedDocuments = documentService.createDefendantUploadedDocuments(
                 responses.getDefendantDocuments(),
                 savedResponse,
                 claimRef.getPcsCase(),
-                partyRef
+                defendantParty
             );
+
+            createTranslationTaskForResponse(savedResponse, savedDocuments, defendantParty, claimRef.getPcsCase());
         }
 
-        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, partyRef);
+        partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, defendantParty);
 
         log.info(successLogMessage);
 
         return savedResponse;
+    }
+
+    private void createTranslationTaskForResponse(DefendantResponseEntity savedResponse,
+                                                   List<DocumentEntity> responseDocuments,
+                                                   PartyEntity defendantParty,
+                                                   PcsCaseEntity pcsCaseEntity) {
+
+        if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
+            return;
+        }
+
+        List<DocumentEntity> documents = responseDocuments.stream()
+            .filter(document -> !document.isRemoved())
+            .toList();
+
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
     private UUID requireCurrentUserId() {
@@ -228,14 +229,16 @@ public class DefendantResponseService {
         return userId;
     }
 
-    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimRef,
-                                                                PartyEntity partyRef,
-                                                                DefendantResponses responses,
-                                                                LocalDateTime submittedAt) {
+    private DefendantResponseEntity buildDefendantResponseEntity(ClaimEntity claimEntity,
+                                                                 PcsCaseEntity pcsCase,
+                                                                 PartyEntity partyRef,
+                                                                 DefendantResponses responses,
+                                                                 LocalDateTime submittedAt) {
 
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
-            .claim(claimRef)
+            .claim(claimEntity)
             .party(partyRef)
+            .pcsCase(pcsCase)
             .status(DefendantResponseStatus.SUBMITTED)
             .responseSubmittedDate(submittedAt)
             .freeLegalAdvice(responses.getFreeLegalAdvice())
@@ -243,7 +246,7 @@ public class DefendantResponseService {
             .noticeReceivedDate(responses.getNoticeReceivedDate())
             .defendantNameConfirmation(responses.getDefendantNameConfirmation())
             .correspondenceAddressConfirmation(responses.getCorrespondenceAddressConfirmation())
-            .landlordRegistered(responses.getLandlordRegistered())
+            .exemptLandlord(ExemptLandlordResolver.fromResponses(responses))
             .writtenTerms(responses.getWrittenTerms())
             .disputeClaim(responses.getDisputeClaim())
             .disputeClaimDetails(responses.getDisputeClaimDetails())
@@ -258,8 +261,7 @@ public class DefendantResponseService {
             .otherConsiderationsDetails(responses.getOtherConsiderationsDetails())
             .build();
 
-        // link back to the case
-        claimRef.getPcsCase().addDefendantResponse(defendantResponse);
+        pcsCase.addDefendantResponse(defendantResponse);
 
         return defendantResponse;
     }
@@ -312,6 +314,7 @@ public class DefendantResponseService {
                 .accepted(YesOrNo.YES)
                 .fullName(fullName)
                 .completedDate(LocalDateTime.now(utcClock))
+                .claim(defendantResponse.getClaim())
                 .build()
         );
     }
@@ -324,7 +327,13 @@ public class DefendantResponseService {
             .accepted(toYesOrNo(responses.getStatementOfTruth().getAccepted()))
             .fullName(responses.getStatementOfTruth().getFullName())
             .completedDate(LocalDateTime.now(utcClock))
+            .positionHeld(responses.getStatementOfTruth().getPositionHeld())
+            .firmName(responses.getStatementOfTruth().getNameOfFirm())
+            .claim(responseEntity.getClaim())
             .build();
+        if (VerticalYesNo.YES.equals(responses.getStatementOfTruth().getHasLegalRepresentation())) {
+            sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        }
         responseEntity.setStatementOfTruth(sot);
     }
 

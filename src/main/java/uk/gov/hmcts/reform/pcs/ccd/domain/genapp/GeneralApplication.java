@@ -24,8 +24,12 @@ public class GeneralApplication {
 
     private LocalDateTime submittedOn;
 
+    private GenAppState state;
+
     private DocumentWithId submissionDocument;
 
     private List<ListValue<Document>> supportingDocuments;
+
+    private Integer rank;
 
 }

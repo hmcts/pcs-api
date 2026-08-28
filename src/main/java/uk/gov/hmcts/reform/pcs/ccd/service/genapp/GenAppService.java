@@ -1,11 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -17,9 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
+import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -31,22 +39,27 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 @Service
 public class GenAppService {
 
+    private static final String GENERAL_APPLICATION_FILENAME = "General Application";
+
     private final GenAppRepository genAppRepository;
     private final DocumentService documentService;
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
+    private final ClaimActivityLogService claimActivityLogService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
                          DocumentService documentService,
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
+                         ClaimActivityLogService claimActivityLogService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
         this.documentService = documentService;
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
+        this.claimActivityLogService = claimActivityLogService;
         this.utcClock = utcClock;
     }
 
@@ -120,6 +133,110 @@ public class GenAppService {
         return genAppRepository.save(genAppEntity);
     }
 
+    public void createGenAppEntity(PCSCase caseData,
+                                   PcsCaseEntity pcsCaseEntity,
+                                   PartyEntity applicantParty,
+                                   GenAppState initialState) {
+
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
+
+        GenAppEntity genAppEntity = GenAppEntity.builder()
+            .type(enterGenAppRequest.getApplicationTypeOption().getStandardGenAppType())
+            .party(applicantParty)
+            .applicationReceivedDate(enterGenAppRequest.getDateReceived())
+            .applicationSubmittedDate(LocalDateTime.now(utcClock))
+            .within14Days(enterGenAppRequest.getWithin14Days())
+            .state(initialState)
+            .feeAmountReceived(enterGenAppRequest.getFeeAmountReceived())
+            .appliedForHwf(enterGenAppRequest.getAppliedForHwf())
+            .otherPartiesAgreed(enterGenAppRequest.getAllPartiesAgree())
+            .build();
+
+        if (enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SOMETHING_ELSE) {
+            genAppEntity.setSomethingElseDetails(enterGenAppRequest.getSomethingElseDetails());
+        }
+
+        // Adding the Gen App to the PcsCaseEntity allocates it a rank,
+        // which we rely on later on in this method to rename the supporting documents
+        pcsCaseEntity.addGenApp(genAppEntity);
+
+        if (enterGenAppRequest.getAppliedForHwf() == VerticalYesNo.YES) {
+            HelpWithFeesEntity helpWithFeesEntity = new HelpWithFeesEntity();
+            helpWithFeesEntity.setHwfReference(enterGenAppRequest.getHwfReference());
+            genAppEntity.setHelpWithFeesEntity(helpWithFeesEntity);
+        }
+
+        if (enterGenAppRequest.getAllPartiesAgree() == VerticalYesNo.NO) {
+            genAppEntity.setWithoutNotice(enterGenAppRequest.getWithoutNotice());
+        }
+
+        Document uploadedGenApp = caseData.getUploadSingleDocument();
+        DocumentEntity submissionDocument = createSubmissionDocumentEntity(
+            uploadedGenApp, pcsCaseEntity, genAppEntity, applicantParty.getId()
+        );
+        genAppEntity.setSubmissionDocument(submissionDocument);
+
+        List<DocumentEntity> additionalEvidenceDocuments = createRelatedEvidenceDocumentEntities(
+            enterGenAppRequest.getRelatedEvidence(), pcsCaseEntity, genAppEntity, applicantParty.getId()
+        );
+        genAppEntity.setDocuments(additionalEvidenceDocuments);
+
+        genAppRepository.save(genAppEntity);
+        if (submissionDocument != null) {
+            claimActivityLogService.logGenerationSuccess(pcsCaseEntity, applicantParty);
+        }
+    }
+
+    public GenAppEntity loadGenApp(UUID genAppId) {
+        return genAppRepository.findById(genAppId)
+            .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
+    }
+
+    private DocumentEntity createSubmissionDocumentEntity(Document document,
+                                                          PcsCaseEntity pcsCaseEntity,
+                                                          GenAppEntity genAppEntity,
+                                                          UUID applicantPartyId) {
+
+        if (document == null) {
+            return null;
+        }
+
+        ClaimEntity mainClaimEntity = pcsCaseEntity.getClaims().getFirst();
+        String extension = FilenameUtils.getExtension(document.getFilename());
+        String newFileName = GENERAL_APPLICATION_FILENAME + "." + extension;
+        String renamedFilename = documentNameService
+            .appendGenAppPostfix(newFileName, genAppEntity, mainClaimEntity, applicantPartyId);
+
+        DocumentEntity documentEntity = buildDocumentEntity(document, pcsCaseEntity, genAppEntity, renamedFilename,
+            CaseFileCategory.APPLICATIONS.getId(), DocumentType.GENERAL_APPLICATION);
+
+        return documentRepository.save(documentEntity);
+    }
+
+    private List<DocumentEntity> createRelatedEvidenceDocumentEntities(
+        List<ListValue<Document>> relatedEvidenceDocuments, PcsCaseEntity pcsCaseEntity, GenAppEntity genAppEntity,
+        UUID applicantPartyId) {
+
+        if (relatedEvidenceDocuments == null) {
+            return List.of();
+        }
+
+        ClaimEntity mainClaimEntity = pcsCaseEntity.getClaims().getFirst();
+
+        List<DocumentEntity> documentEntities = relatedEvidenceDocuments.stream()
+            .map(ListValue::getValue)
+            .map(document -> {
+                String renamedFilename = documentNameService
+                    .appendGenAppPostfix(document.getFilename(), genAppEntity, mainClaimEntity, applicantPartyId);
+
+                return buildDocumentEntity(document, pcsCaseEntity, genAppEntity, renamedFilename,
+                    CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId(), null);
+            })
+            .toList();
+
+        return documentRepository.saveAll(documentEntities);
+    }
+
     private List<DocumentEntity> createDocumentEntities(List<ListValue<UploadedDocument>> uploadedDocuments,
                                                         PcsCaseEntity pcsCaseEntity,
                                                         GenAppEntity genAppEntity,
@@ -138,23 +255,34 @@ public class GenAppService {
                 String updatedFilename = documentNameService
                     .appendGenAppPostfix(originalFilename, genAppEntity, mainClaimEntity, applicantPartyId);
 
-                return DocumentEntity.builder()
-                    .pcsCase(pcsCaseEntity)
-                    .generalApplication(genAppEntity)
-                    .url(uploadedDocument.getDocument().getUrl())
-                    .fileName(updatedFilename)
-                    .binaryUrl(uploadedDocument.getDocument().getBinaryUrl())
-                    .categoryId(CaseFileCategory.APPLICATIONS.getId())
-                    .type(uploadedDocument.getDocumentType() != null
-                        ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
-                        : null)
-                    .contentType(uploadedDocument.getContentType())
-                    .size(uploadedDocument.getSizeInBytes())
-                    .build();
+                DocumentType type = uploadedDocument.getDocumentType() != null
+                    ? documentService.mapAdditionalDocumentTypeToDocumentType(uploadedDocument.getDocumentType())
+                    : null;
+
+                DocumentEntity documentEntity = buildDocumentEntity(uploadedDocument.getDocument(), pcsCaseEntity,
+                    genAppEntity, updatedFilename, CaseFileCategory.APPLICATIONS.getId(), type);
+                documentEntity.setContentType(uploadedDocument.getContentType());
+                documentEntity.setSize(uploadedDocument.getSizeInBytes());
+
+                return documentEntity;
             })
             .toList();
 
         return documentRepository.saveAll(documentEntities);
+    }
+
+    private DocumentEntity buildDocumentEntity(Document document, PcsCaseEntity pcsCaseEntity,
+                                               GenAppEntity genAppEntity, String fileName, String categoryId,
+                                               DocumentType type) {
+        return DocumentEntity.builder()
+            .pcsCase(pcsCaseEntity)
+            .generalApplication(genAppEntity)
+            .url(document.getUrl())
+            .fileName(fileName)
+            .binaryUrl(document.getBinaryUrl())
+            .categoryId(categoryId)
+            .type(type)
+            .build();
     }
 
 }

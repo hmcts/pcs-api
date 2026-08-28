@@ -8,8 +8,10 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseAccessGroup;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.ccd.sdk.type.CaseLocation;
+import uk.gov.hmcts.ccd.sdk.type.ChangeOrganisationRequest;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -20,20 +22,30 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentremoval.DocumentRemovalDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.DocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.CitizenGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
@@ -47,6 +59,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
+import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
@@ -59,7 +74,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -173,13 +190,6 @@ public class PCSCase {
     )
     @JsonProperty("LinkedCasesComponentLauncher")
     private ComponentLauncher linkedCasesComponentLauncher;
-
-    @CCD(
-        searchable = false,
-        access = {DefendantAccess.class}
-    )
-    @External
-    private String userPcqId;
 
     @CCD(
         searchable = false,
@@ -356,8 +366,14 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
     private List<ListValue<Party>> allDefendants;
+
+    /**
+     * Combined list of all litigation friends in the case.
+     */
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<Party>> allLitigationFriends;
 
     @JsonUnwrapped(prefix = "tenancy_")
     @CCD
@@ -365,6 +381,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false, access = DefendantSolicitorAccess.class)
+    private String summaryLegalRepresentativeMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
@@ -465,10 +484,22 @@ public class PCSCase {
     private VerticalYesNo wantToUploadDocuments;
 
     @CCD(
+        label = "Which documents have you uploaded as part of your claim?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "UploadedDocumentChecklistType"
+    )
+    private Set<UploadedDocumentChecklistType> documentsYouveUploaded;
+
+    @CCD(
         label = "Add document",
         hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD(searchable = false)
+    @JsonUnwrapped()
+    private CaseworkerDocument caseworkerDocument;
 
     @CCD
     @JsonUnwrapped(prefix = "walesDocs_")
@@ -483,8 +514,38 @@ public class PCSCase {
     @JsonUnwrapped
     private DocumentUploadDetails documentUploadDetails;
 
-    @JsonUnwrapped(prefix = "documentAmend_")
+    @JsonUnwrapped
     private DocumentAmendDetails documentAmendDetails;
+
+    @JsonUnwrapped(prefix = "documentRemoval_")
+    private DocumentRemovalDetails documentRemovalDetails;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList statementsOfCaseDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList propertyDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList evidenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList hearingDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList ordersAndNoticeOfHearingsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList applicationsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList appealsDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList correspondenceDocuments;
+
+    @CCD(searchable = false, typeOverride = DynamicRadioList)
+    private DynamicList uncategorisedDocuments;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
@@ -530,6 +591,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
+
+    @JsonUnwrapped
+    private LegalRepDocumentUploadDetails legalRepDocumentUploadDetails;
 
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;
@@ -584,6 +648,9 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
+    @JsonUnwrapped
+    private DefendantPaperResponseRequest defendantPaperResponse;
+
     @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
@@ -628,6 +695,18 @@ public class PCSCase {
     private CitizenGenAppRequest citizenGenAppRequest;
 
     @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_genapp_")
+    private EnterGenAppRequest enterGenAppRequest;
+
+    @CCD(label = "Which party made the application?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList partyRadioList;
+
+    @CCD(
         label = "Search Criteria",
         access = {GlobalSearchAccess.class}
     )
@@ -643,25 +722,25 @@ public class PCSCase {
 
     @CCD(
         label = "CaseNameHmctsInternal",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, CaseLinkingAccess.class, WAAccess.class}
     )
     private String caseNameHmctsInternal;
 
     @CCD(
         label = "CaseNamePublic",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private String caseNamePublic;
 
     @CCD(
         label = "CaseManagementLocation",
-        access = {GlobalSearchAccess.class, RasValidationAccess.class}
+        access = {GlobalSearchAccess.class, RasValidationAccess.class, WAAccess.class}
     )
     private CaseLocation caseManagementLocation;
 
     @CCD(
         label = "CaseManagementCategory",
-        access = {GlobalSearchAccess.class}
+        access = {GlobalSearchAccess.class, WAAccess.class}
     )
     private DynamicList caseManagementCategory;
 
@@ -671,7 +750,7 @@ public class PCSCase {
     @CCD(searchable = false, access = {ClaimantAccess.class})
     private YesOrNo showConfirmEvictionJourney;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = DocumentAccess.class)
     private List<ListValue<GeneralApplication>> genApps;
 
     @JsonUnwrapped(prefix = "casePartiesTab_")
@@ -701,6 +780,12 @@ public class PCSCase {
     List<ListValue<CaseNote>> caseNotes;
 
     @CCD(
+        label = "Review date",
+        min = 1
+    )
+    private List<ListValue<ReviewDate>> reviewDates;
+
+    @CCD(
         access = {InternalCaseFlagAccess.class},
         label = "Case Flags"
     )
@@ -713,8 +798,28 @@ public class PCSCase {
 
     private FlagLauncher flagLauncherInternal;
 
+    @CCD(
+        access = {InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class},
+        label = "Launch the external flags screen"
+    )
+    private FlagLauncher flagLauncherExternal;
+
+    @CCD(
+        access = {ExternalCaseFlagAccess.class},
+        label = "Party support"
+    )
+    private List<ListValue<PartySupport>> partySupport;
+
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
+
+    /**
+     * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
+     * than stored - the name must be CaseAccessGroups to match what data store expects.
+     */
+    @JsonProperty("CaseAccessGroups")
+    @CCD
+    private List<ListValue<CaseAccessGroup>> caseAccessGroups;
 
     @CCD
     private String postCode;
@@ -733,4 +838,74 @@ public class PCSCase {
         typeParameterOverride = "CaseStateOption"
     )
     private CaseStateOption targetState;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        searchable = false
+    )
+    private Document uploadSingleDocument;
+
+    @CCD(access = {AcaSystemUserAccess.class})
+    private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
+
+    @JsonUnwrapped
+    private AddPartyDetails addPartyDetails;
+
+    @JsonUnwrapped
+    private UpdatePartyDetails updatePartyDetails;
+
+
+    @CCD(
+        label = "Do you want to add, edit or cancel a hearing?",
+        searchable = false
+    )
+    private ManageHearingOption manageHearingOption;
+
+    @JsonUnwrapped(prefix = "hearing_")
+    @CCD(searchable = false)
+    private Hearing hearing;
+
+    @JsonUnwrapped(prefix = "mhDraft_")
+    @CCD(searchable = false)
+    private Hearing manageHearingDraft;
+
+    @CCD(searchable = false)
+    private List<ListValue<Hearing>> hearingList;
+
+    @CCD(searchable = false)
+    private VerticalYesNo showManageHearingPage;
+
+    @CCD(searchable = false)
+    private String selectedHearingId;
+
+    @CCD(searchable = false)
+    private String hearingLocation;
+
+    @CCD(
+        label = "Which defendant submitted this response?",
+        typeOverride = FieldType.DynamicRadioList
+    )
+    private DynamicList defendantRadioList;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList partyMultiSelectionList;
+
+    @CCD(
+        searchable = false,
+        typeOverride = FieldType.DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList mhDraftPartyList;
+
+    /**
+     * The legal representative for a defendant on the case.
+     */
+    @JsonUnwrapped
+    private LegalRepresentativeDetails legalRepresentativeDetails;
+
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo legalRepUpdatedDetails;
 }

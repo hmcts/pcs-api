@@ -1,18 +1,34 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+import uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -27,55 +43,129 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final TaskDescriptionService taskDescriptionService;
+    private final CamundaService camundaService;
+    private final TranslationWAService translationWAService;
+    private final OrganisationService organisationService;
+    private final SchedulerClient schedulerClient;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
         long caseReference,
-        PossessionClaimResponse responseDraftData
+        PossessionClaimResponse responseDraftData,
+        PartyEntity defendantParty,
+        JourneyType journeyType
     ) {
-        claimResponseService.saveDraftData(responseDraftData, caseReference);
-        defendantResponseService.saveDefendantResponse(caseReference, responseDraftData);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
+        DefendantResponseEntity savedDefendantResponseEntity = defendantResponseService.saveDefendantResponse(
+            caseReference, responseDraftData, defendantParty, journeyType);
 
         DefendantResponses defendantResponses = responseDraftData.getDefendantResponses();
         CounterClaim counterClaim = defendantResponses.getCounterClaim();
         Optional<CounterClaimEntity> savedCounterClaim =
-            counterClaimService.saveCounterClaim(caseReference, counterClaim);
+            counterClaimService.saveCounterClaim(caseReference, counterClaim, defendantParty);
 
-        savedCounterClaim.ifPresent(counterClaimEntity -> saveCounterClaimDocuments(
-            defendantResponses,
-            counterClaimEntity
-        ));
+        List<DocumentEntity> counterClaimDocuments = savedCounterClaim
+            .map(counterClaimEntity -> documentService.createCounterClaimUploadedDocuments(
+                defendantResponses.getCounterClaimDocuments(),
+                counterClaimEntity,
+                counterClaimEntity.getPcsCase(),
+                counterClaimEntity.getParty()
+            ))
+            .orElse(List.of());
 
         CounterClaimEntity counterClaimEntity = savedCounterClaim.orElse(null);
-        boolean issuedWithoutPayment = false;
 
-        if (counterClaimEntity != null
-            && !counterClaimFeeCalculator.isPaymentRequired(counterClaim)) {
-            counterClaimEntity = counterClaimService.issueCounterClaim(counterClaimEntity);
-            issuedWithoutPayment = true;
+        boolean paymentRequired = false;
+        FeeDetails feeDetails = null;
+
+        if (counterClaimEntity != null) {
+            feeDetails = counterClaimFeeCalculator.getFeeDetails(counterClaim);
+
+            boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
+            if (hwfReferencePresent) {
+                createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
+                createTranslationTaskForCounterClaim(
+                    counterClaimDocuments,
+                    savedDefendantResponseEntity,
+                    defendantParty
+                );
+            } else {
+                paymentRequired = true;
+            }
         }
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
+        if (JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
+            draftCaseDataService.deleteUnsubmittedCaseData(
+                caseReference,
+                respondPossessionClaim,
+                defendantParty.getId(),
+                organisationService.getOrganisationIdForCurrentUser()
+            );
+        } else {
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
+        }
+
         log.info("Successfully saved defendant response for case: {}", caseReference);
 
+        scheduleDefendantResponseSubmittedNotification(savedDefendantResponseEntity);
         return new RespondPossessionClaimSubmitPersistenceResult(
             responseDraftData,
             counterClaimEntity,
-            issuedWithoutPayment
+            feeDetails,
+            paymentRequired
         );
     }
 
-    private void saveCounterClaimDocuments(DefendantResponses defendantResponses,
-                                           CounterClaimEntity counterClaimEntity) {
-        if (CollectionUtils.isEmpty(defendantResponses.getCounterClaimDocuments())) {
+    private void createCounterClaimReviewWaTask(long caseReference,
+                                                CounterClaimEntity counterClaimEntity,
+                                                FeeDetails feeDetails) {
+
+        String taskDescription = taskDescriptionService.createReviewResponseAndCounterClaimDescription(
+            caseReference,
+            counterClaimEntity,
+            feeDetails
+        );
+
+        camundaService.createTask(
+            caseReference,
+            TaskType.REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM,
+            taskDescription);
+    }
+
+    private void createTranslationTaskForCounterClaim(List<DocumentEntity> counterClaimDocuments,
+                                                       DefendantResponseEntity savedResponse,
+                                                       PartyEntity defendantParty) {
+
+        if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
             return;
         }
 
-        documentService.createCounterClaimUploadedDocuments(
-            defendantResponses.getCounterClaimDocuments(),
-            counterClaimEntity,
-            counterClaimEntity.getPcsCase(),
-            counterClaimEntity.getParty()
+        List<DocumentEntity> documents = counterClaimDocuments.stream()
+            .filter(document -> !document.isRemoved())
+            .toList();
+
+        PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
+    }
+
+    private void scheduleDefendantResponseSubmittedNotification(DefendantResponseEntity defendantResponse) {
+        String taskId = UUID.randomUUID().toString();
+
+        Integer defendantResponseId = defendantResponse.getId();
+        log.info(
+            "Scheduling defendant response submitted notification for: {}, with task id: {}",
+            defendantResponseId,
+            taskId
+        );
+
+        schedulerClient.scheduleIfNotExists(
+            DefendantResponseSubmittedNotificationTaskComponent.DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(DefendantResponseTaskData.builder()
+                          .defendantResponseId(defendantResponseId)
+                          .build())
+                .scheduledTo(Instant.now())
         );
     }
 }

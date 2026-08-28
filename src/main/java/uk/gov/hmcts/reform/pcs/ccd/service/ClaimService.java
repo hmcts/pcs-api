@@ -9,15 +9,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -69,6 +73,17 @@ public class ClaimService {
                         walesDocuments.getNoEicrReason()
                     );
                 }
+            }
+
+            Set<UploadedDocumentChecklistType> documentsYouveUploaded = pcsCase.getDocumentsYouveUploaded();
+            if (documentsYouveUploaded != null && !documentsYouveUploaded.isEmpty()) {
+                claimEntity.addUploadedDocumentChecklist(
+                    documentsYouveUploaded.stream()
+                        .map(documentType -> ClaimUploadedDocumentChecklistEntity.builder()
+                            .documentType(documentType)
+                            .build())
+                        .collect(Collectors.toSet())
+                );
             }
         }
 

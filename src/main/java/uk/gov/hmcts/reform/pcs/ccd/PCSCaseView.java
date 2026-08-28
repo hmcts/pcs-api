@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -19,7 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -33,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -42,6 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -51,9 +55,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
@@ -90,16 +94,21 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final CaseFlagsView flagsView;
     private final DefendantResponseView defendantResponseView;
     private final FeatureFlagView featureFlagView;
+    private final CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
+    private final HearingView hearingView;
+    private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
+    private final OrganisationService organisationService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state
      */
     @Override
+    @Transactional(readOnly = true)
     public PCSCase getCase(CaseViewRequest<State> request) {
         long caseReference = request.caseRef();
         State state = request.state();
-        SubmittedCase submittedCase = getSubmittedCase(caseReference);
+        SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
@@ -115,13 +124,17 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         } else {
             caseTabView.setCaseTabFields(pcsCase);
         }
+        caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
 
         caseFieldsView.setCaseFields(pcsCase);
 
-        // Only the canonical PCS case type is indexed into the shared global_search index.
+        pcsCase.setCaseAccessGroups(
+            deriveCaseAccessGroups(submittedCase.pcsCaseEntity().getParties(), pcsCase.getAllDefendants())
+        );
+
         if (!CaseType.isSuffixedCaseType()) {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
@@ -137,7 +150,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return false;
     }
 
-    private SubmittedCase getSubmittedCase(long caseReference) {
+    private SubmittedCase getSubmittedCase(long caseReference, State state) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
@@ -152,9 +165,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
+        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
-        documentsView.setCaseFields(pcsCase, pcsCaseEntity);
+        documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -164,14 +179,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
-        genAppsView.setCaseFields(pcsCase, pcsCaseEntity);
+        genAppsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
         caseLinkView.setCaseFields(pcsCase, pcsCaseEntity);
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
         flagsView.setCaseFields(pcsCase, pcsCaseEntity);
         caseListView.setCaseFields(pcsCase);
         defendantResponseView.setCaseFields(pcsCase, pcsCaseEntity);
         featureFlagView.setCaseFields(pcsCase);
-
+        hearingView.setCaseFields(pcsCase, pcsCaseEntity);
+        legalRepresentativeSummaryService
+            .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, state, organisationIdForCurrentUser);
         return new SubmittedCase(pcsCase, pcsCaseEntity);
     }
 
@@ -274,7 +291,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
-            .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+            .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
+            .toList();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

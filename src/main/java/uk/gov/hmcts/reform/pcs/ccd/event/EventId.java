@@ -9,6 +9,7 @@ public enum EventId {
     respondPossessionClaim,
     submitDefendantResponse,
     makeAnApplication,
+    claimantMakeAnApplication,
     createTestCase,
     createCaseLink,
     maintainCaseLink,
@@ -17,8 +18,19 @@ public enum EventId {
     uploadDocuments,
     amendDocuments,
     addCaseNote,
+    addCaseReviewDate,
     createFlags,
     amendFlags,
+    requestSupport,
+    manageSupport,
     claimIssuePayment,
-    changeCaseState
+    changeCaseState,
+    manageHearing,
+    enterGenApp,
+    caseworkerUploadDocuments,
+    removeDocument,
+    legalRepDocumentUpload,
+    manageParties,
+    defendantPaperResponse,
+    legalRepresentativeContactDetails
 }

@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@2.4.4")
+@Library("Infrastructure@2.4.9")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
@@ -23,6 +23,8 @@ def secrets = [
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
+    secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
+    secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
   ]
 ]
 
@@ -49,20 +51,39 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
-  syncBranchesWithMaster(['ithc', 'perftest'])
+  //skipping sync with demo/perftest during SIT testing/DB migration
+  syncBranchesWithMaster(['ithc', 'perftest', 'demo'])
 
+  // WA DMN/BPMN upload for demo/ithc/perftest. Those branches never run sectionDeployToAKS,
+  // so there is no smoketest:/functionalTest: stage to hang this off.
+  afterSuccess('checkout') {
+    if (env.ENVIRONMENT == 'ithc' || env.ENVIRONMENT == 'demo' || env.ENVIRONMENT == 'perftest') {
+      withSubscription('nonprod') {
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+      }
+    }
+  }
 
   onPR() {
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    setPreviewEnvVars()
+    setPreviewEnvVars(githubApi)
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
       env.CCD_ENABLED = "false"
+    }
+    // Work Allocation preview (pr-values:wa) — WA pods and Camunda
+    env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
+    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+      env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
@@ -79,6 +100,9 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
       env.E2E_SUITE = "caseManagement"
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
+      env.E2E_SUITE = "noticeOfChange"
+    }
   }
 
   onMaster() {
@@ -86,8 +110,9 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup("", true)
+    enableHighLevelDataSetup()
     setAatEnvVars()
+    env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
     if (!shutterService) {
       enableE2eTest()
@@ -95,9 +120,8 @@ withPipeline(type, product, component) {
   }
 
   onDemo {
-// disabling new case definition uploads to demo during SIT testing
-//    setDemoEnvVars()
-//    enableHighLevelDataSetup()
+    setDemoEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onIthc {
@@ -106,8 +130,8 @@ withPipeline(type, product, component) {
   }
 
   onPerftest {
-    setPerftestEnvVars()
-    enableHighLevelDataSetup()
+     setPerftestEnvVars()
+     enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
@@ -119,13 +143,20 @@ withPipeline(type, product, component) {
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
     onMaster{
-      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
-      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-      env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
-      env.CASE_TYPE_SUFFIX="staging"
-      generateDefinitions(builder)
-      env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
-      env.CASE_TYPE_SUFFIX=""
+      if(env.ENVIRONMENT == "prod") {
+        env.SHUTTER_SERVICE = true
+        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
+        env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        env.CASE_TYPE_SUFFIX=""
+      } else {
+        env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
+        env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+        env.CASE_API_URL = "https://pcs-api-staging.aat.platform.hmcts.net"
+        env.CASE_TYPE_SUFFIX="staging"
+        generateDefinitions(builder)
+        env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
+        env.CASE_TYPE_SUFFIX=""
+      }
     }
     onPerftest{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
@@ -156,6 +187,33 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+  afterSuccess('akschartsinstall') {
+    onPR {
+      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
+        env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+        println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
+        uploadDmnDiagrams()
+        uploadBpmnDiagram()
+      }
+    }
+  }
+
+  // WA DMN/BPMN deployment for AAT. Unlike preview these always run — WA is part of the
+  // AAT/prod topology, not label-gated.
+  before('functionalTest:aat') {
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
+  }
+
+  // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
+  afterSuccess('functionalTest:aat') {
+    env.ENVIRONMENT = "prod"
+    env.CAMUNDA_BASE_URL = "http://camunda-api-prod.service.core-compute-prod.internal"
+    uploadDmnDiagrams()
+    uploadBpmnDiagram()
+  }
+
+
   afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
@@ -177,13 +235,26 @@ withPipeline(type, product, component) {
       postAllureResultsToSlack('master')
     }
   }
+
+  afterSuccess('E2eTest:aat') {
+    env.ENVIRONMENT= "prod"
+  }
 }
 
-def setPreviewEnvVars() {
+def setPreviewEnvVars(githubApi) {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
   env.ENABLE_TESTING_SUPPORT = "true"
   env.E2E_SUITE= "pr"
+
+  def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
+  if (frontendLabels && frontendLabels.size() > 0) {
+    def labelName = frontendLabels[0]
+    def PCS_FRONTEND_CHANGE_ID = labelName.replace("pcs-frontend-pr:", "")
+    env.PCS_FRONTEND_URL = "https://pcs-frontend-pr-${PCS_FRONTEND_CHANGE_ID}.preview.platform.hmcts.net"
+  } else {
+    env.PCS_FRONTEND_URL = "https://pcs.aat.platform.hmcts.net/"
+  }
 }
 
 def setAatEnvVars() {
@@ -193,22 +264,54 @@ def setAatEnvVars() {
   env.E2E_SUITE= "regression"
 }
 
+def setProdEnvVars() {
+  env.SHUTTER_SERVICE = true
+  env.ENVIRONMENT= "prod"
+  env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
+  env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
+}
+
 def setDemoEnvVars() {
   env.ENVIRONMENT= "demo"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-demo.service.core-compute-demo.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
 }
 
 def setIthcEnvVars() {
   env.ENVIRONMENT= "ithc"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-ithc.service.core-compute-ithc.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-ithc.service.core-compute-ithc.internal"
 }
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
+  env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
+  env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
 }
 
 def generateDefinitions(builder) {
   builder.gradle('--rerun-tasks generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
+}
+
+def uploadDmnDiagrams() {
+  dir("${WORKSPACE}/bin") {
+    tenantId = "pcs"
+    product = "pcs"
+    sh "./wa/import-dmn-diagrams.sh ${WORKSPACE} ${env.ENVIRONMENT} ${tenantId} ${product}"
+  }
+}
+
+def uploadBpmnDiagram() {
+  dir("${WORKSPACE}/bin") {
+    bpmnBranch = "master"
+    sh """
+      ./wa/pull-latest-camunda-wa-files.sh ${bpmnBranch}
+      ./wa/import-wa-bpmn-diagram.sh .
+    """
+  }
 }
 
 def archiveFunctionalTestReports() {
@@ -268,6 +371,5 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
-
 
 

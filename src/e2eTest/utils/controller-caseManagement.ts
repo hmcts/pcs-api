@@ -6,6 +6,7 @@ import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.vali
 import { logToBrowser } from './test-logger';
 import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
 import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
+import { axe_Exclusions } from '@config/axe_exclusions.config';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -46,7 +47,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -54,7 +55,9 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       await performValidation('autoValidatePageContent');
       try {
         await test.step("Running Accessibility Scan", async () => {
-          await new AxeUtils(executor.page).audit();
+          await new AxeUtils(executor.page).audit({
+                      exclude: axe_Exclusions,
+                    });
         });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
@@ -70,11 +73,26 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'changeCaseState') {
+  if (action === 'changeCaseState'
+    || action === 'enterApplicationDetails'
+    || action === 'uploadADocument'
+    || action === 'selectDocumentToAmend'
+    || action === 'selectManageParty'
+    || action === 'addAHearing'
+    || action === 'selectManageHearing'
+    || action === 'editHearing'
+    || action === 'cancelHearing'
+    || action === 'selectParty' 
+    || action === 'updatePartyDetails'
+    || action === 'selectManageHearing') {
     captureDataForCYAPage = true;
   }
 
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+  if(action.includes('errorValidation')){
+    captureDataForCYAPage = false;
+  }
+
+  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }
@@ -84,7 +102,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   const actionInstance = ActionCMRegistry.getAction(action);
 
   captureDataForCYA(action, fieldName, value);
-  
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -229,12 +230,14 @@ class NoticeOfPossessionViewTest {
     }
 
     @Test
-    void shouldSetNoticeServedDateForOtherElectronic() {
+    void shouldSetNoticeServedDateAndDetailsForOtherElectronic() {
         // Given
         LocalDateTime otherElectronicDateTime = mock(LocalDateTime.class);
+        String otherElectronicExplanation = "some other electronic details";
 
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(OTHER_ELECTRONIC);
         when(noticeOfPossessionEntity.getNoticeDateTime()).thenReturn(otherElectronicDateTime);
+        when(noticeOfPossessionEntity.getNoticeDetails()).thenReturn(otherElectronicExplanation);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -245,6 +248,7 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(OTHER_ELECTRONIC);
         assertThat(noticeServedDetails.getOtherElectronicDateTime()).isSameAs(otherElectronicDateTime);
+        assertThat(noticeServedDetails.getOtherElectronicExplanation()).isEqualTo(otherElectronicExplanation);
     }
 
     @Test
@@ -370,6 +374,11 @@ class NoticeOfPossessionViewTest {
                                 .build(),
                         DocumentEntity.builder()
                                 .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .generalApplication(GenAppEntity.builder().build())
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
                                 .type(DocumentType.POSSESSION_NOTICE)
                                 .description("Additional document uploaded")
                                 .build(),
