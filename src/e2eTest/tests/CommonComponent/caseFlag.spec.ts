@@ -63,6 +63,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
+    
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
   test('Case Flags - Create case level Flag', async ({ page }) => {

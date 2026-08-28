@@ -30,8 +30,6 @@ test.beforeEach(async ({page, context}) => {
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-
-  console.log("caseNumber",process.env.CASE_NUMBER);
 });
 
 test.afterEach(async () => {

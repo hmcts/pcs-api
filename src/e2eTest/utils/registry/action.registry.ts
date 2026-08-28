@@ -188,6 +188,7 @@ export class ActionRegistry {
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {
