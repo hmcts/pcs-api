@@ -424,6 +424,18 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder()
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isEqualTo("07700900982");
+        assertThat(testParty.getContactPreferences().getContactByText()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
     void shouldSavePcqId() {
         // Given
         final PossessionClaimResponse response = buildResponse(
@@ -436,11 +448,10 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getTextMessageNumber()).isEqualTo("07700900982");
-        assertThat(testParty.getContactPreferences().getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
     }
 
     @Test
@@ -453,10 +464,14 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder()
                 .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.NO)
+                .build()
+        );
+
+        // When
         underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+        assertThat(testParty.getTextMessageNumber()).isNull();
     }
 
     @Test
@@ -474,10 +489,10 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getTextMessageNumber()).isNull();
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
     }
 
     @Test
@@ -495,7 +510,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getTextMessageNumber()).isNull();
@@ -519,14 +534,10 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
-
-        // Then
-        assertThat(testParty.getTextMessageNumber()).isNull();
         underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
-        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+        assertThat(testParty.getTextMessageNumber()).isNull();
     }
 
     @Test
