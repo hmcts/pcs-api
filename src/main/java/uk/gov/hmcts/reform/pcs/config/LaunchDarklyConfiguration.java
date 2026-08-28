@@ -56,7 +56,8 @@ public class LaunchDarklyConfiguration {
         }
         Path[] existing = Stream.of(files)
             .map(this::getPathIfExists)
-            .flatMap(Optional::stream)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .toArray(Path[]::new);
         return existing.length > 0 ? Optional.of(existing) : Optional.empty();
     }

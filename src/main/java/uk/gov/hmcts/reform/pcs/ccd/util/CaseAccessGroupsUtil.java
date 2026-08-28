@@ -45,11 +45,11 @@ public final class CaseAccessGroupsUtil {
         parties.stream()
             .filter(CaseAccessGroupsUtil::isClaimant)
             .findFirst()
-            .flatMap(party ->
-                         caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId()))
-            .ifPresent(caseAccessGroupId -> {
-                log.info("Found claimant case access group: {}", caseAccessGroupId);
-                caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId));
+            .ifPresent(party -> {
+                var caseAccessGroup =
+                    caseAccessGroupIdFor(party.getOrganisationProfileId(), CLAIMANT, party.getOrganisationId());
+                log.info("Found claimant case access group: {}", caseAccessGroup);
+                caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroup));
             });
 
         Map<UUID, PartyEntity> partyEntitiesMap = parties.stream()
@@ -66,14 +66,13 @@ public final class CaseAccessGroupsUtil {
                          .stream()
                          .filter(legalRepOrg -> YesOrNo.YES == legalRepOrg.getActive())
                          .findFirst())
-            .flatMap(Optional::stream)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .map(ClaimPartyOrganisationEntity::getOrganisation)
             .map(legalRepOrg ->
                      caseAccessGroupIdFor(legalRepOrg.getOrganisationProfileId(),
                                           DEFENDANT, legalRepOrg.getOrganisationId()))
-            .flatMap(Optional::stream)
-            .peek(caseAccessGroupId ->
-                      log.info("Found defendant case access group: {}", caseAccessGroupId))
+            .peek(caseAccessGroupId -> log.info("Found defendant case access group: {}", caseAccessGroupId))
             .forEach(caseAccessGroupId ->
                          caseAccessGroups.add(new CaseAccessGroup(CCD_ALL_CASES_ACCESS, caseAccessGroupId)));;
 

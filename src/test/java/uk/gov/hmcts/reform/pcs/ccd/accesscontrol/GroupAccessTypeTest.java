@@ -32,9 +32,4 @@ class GroupAccessTypeTest {
                 accessType.getOrganisationProfileId(), accessType.getPartyRole(), "$ORGID$"))
                 .contains(accessType.getCaseAccessGroupIdTemplate()));
     }
-
-    @Test
-    void shouldReturnEmptyWhenOrganisationProfileIdIsNull() {
-        assertThat(GroupAccessType.caseAccessGroupIdFor(null, null, "ORG123")).isEmpty();
-    }
 }

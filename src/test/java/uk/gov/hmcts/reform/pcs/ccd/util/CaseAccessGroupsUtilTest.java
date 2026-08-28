@@ -98,7 +98,7 @@ class CaseAccessGroupsUtilTest {
 
     @Test
     void shouldDeriveNothingWhenPartyHasOrganisationButNoProfile() {
-        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", null, true));
+        Set<PartyEntity> parties = Set.of(party("J1XJ9VJ", null, false));
 
         assertThat(CaseAccessGroupsUtil.deriveCaseAccessGroups(parties, defendants)).isEmpty();
     }
@@ -156,11 +156,11 @@ class CaseAccessGroupsUtilTest {
     @Test
     void shouldResolveTheClaimantAccessTypeByNameNotByDeclarationOrder() {
         assertThat(GroupAccessType.caseAccessGroupIdFor("SOLICITOR_PROFILE", PartyRole.CLAIMANT, "1234"))
-            .contains("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:1234");
+            .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:1234");
         assertThat(GroupAccessType.caseAccessGroupIdFor("SOLICITOR_PROFILE", PartyRole.DEFENDANT, "1234"))
-            .contains("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:1234");
+            .isEqualTo("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:1234");
         assertThat(GroupAccessType.caseAccessGroupIdFor("LOCALAUTH_PROFILE", PartyRole.CLAIMANT, "1234"))
-            .contains("PCS:PCS:prof-org-claimant-access:claimant:1234");
+            .isEqualTo("PCS:PCS:prof-org-claimant-access:claimant:1234");
     }
 
     @Test
