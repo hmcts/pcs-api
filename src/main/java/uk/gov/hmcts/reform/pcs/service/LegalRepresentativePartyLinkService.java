@@ -206,6 +206,8 @@ public class LegalRepresentativePartyLinkService {
                 defendantParty
             ));
 
+        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendantParty);
+
         return partyLinkedToLegalRepresentativeOrganisationAndActive;
     }
 
