@@ -79,6 +79,7 @@ class PartySupportOwnershipResolverTest {
 
         // When / Then
         assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
+        verifyNoInteractions(organisationService);
     }
 
     @Test
@@ -112,12 +113,13 @@ class PartySupportOwnershipResolverTest {
     }
 
     @Test
-    void shouldNotOwnPartyWhenPartyHasNoActiveRepresentation() {
+    void shouldNotLookUpAnOrganisationWhenPartyHasNoActiveRepresentation() {
         // Given
         PartyEntity party = unrepresentedParty();
 
         // When / Then
         assertThat(underTest.isOwnedByUser(party, USER_ID)).isFalse();
+        verifyNoInteractions(organisationService);
     }
 
     @Test

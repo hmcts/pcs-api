@@ -42,7 +42,7 @@ test.afterEach(async () => {
 
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
-  test('Create and manage support events @smoke', async ({page}) => {
+  test('Create and manage support events', async ({page}) => {
     //Email needs changing to solicitor user to create support event
     await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
     await dismissCookieBanner(page, 'analytics');

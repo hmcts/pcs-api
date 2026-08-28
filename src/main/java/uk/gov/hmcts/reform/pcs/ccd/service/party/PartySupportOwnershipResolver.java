@@ -98,6 +98,11 @@ public class PartySupportOwnershipResolver {
             && partyOrganisationId.equals(authenticatedOrganisationId);
     }
 
+    /**
+     * Representation is held against the organisation acting for the party rather than against an
+     * individual representative, so a professional user acts for a party when their organisation holds a
+     * current link to it. Links that have been ended are excluded.
+     */
     private boolean isRepresentedByUserOrganisation(PartyEntity partyEntity,
                                                     String authenticatedOrganisationId) {
         List<OrganisationEntity> activeOrganisations =
