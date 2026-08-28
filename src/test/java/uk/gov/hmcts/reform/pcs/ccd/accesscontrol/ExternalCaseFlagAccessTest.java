@@ -41,7 +41,7 @@ class ExternalCaseFlagAccessTest {
         assertThat(grants.get(CLAIMANT)).containsAll(Permission.CRU);
         assertThat(grants.get(GA_CLAIMANT_SOLICITOR)).containsAll(Permission.CRU);
         assertThat(grants.get(GA_DEFENDANT_SOLICITOR)).containsAll(Permission.CRU);
-        assertThat(grants.asMap()).hasSize(ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES.length + 3);
+        assertThat(grants.asMap()).hasSize(ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES.length);
     }
 
     @Test
