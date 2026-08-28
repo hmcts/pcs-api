@@ -981,7 +981,7 @@ export class CreateCaseAction implements IAction {
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, submitPayload.claimantName)
+        defendant.set(`Name`, `Possession Claim Service Org1`);
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
