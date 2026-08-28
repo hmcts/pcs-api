@@ -13,7 +13,6 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import lombok.Getter;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
@@ -127,11 +126,6 @@ public enum GroupAccessType implements CCDAccessGroup {
     public static String caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole, String organisationId) {
         return CASE_ACCESS_GROUP_MAP.get(new Key(orgProfileId, partyRole))
             .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
-    }
-
-    // Hidden on the staging case type so ManageOrg does not show duplicate checkboxes.
-    public boolean isDisplay() {
-        return display && !CaseType.isSuffixedCaseType();
     }
 
     /**
