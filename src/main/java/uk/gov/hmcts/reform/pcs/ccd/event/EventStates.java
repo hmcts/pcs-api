@@ -124,6 +124,10 @@ public class EventStates {
         };
     }
 
+    public static State[] paperResponseDefendant() {
+        return createFlags();
+    }
+
     public static State[] maintainCaseLink() {
         return amendFlags();
     }

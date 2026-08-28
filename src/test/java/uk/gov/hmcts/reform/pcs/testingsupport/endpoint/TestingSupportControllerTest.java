@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -117,7 +116,6 @@ class TestingSupportControllerTest {
                                                  eligibilityService,
                                                  pcsCaseRepository, jdbcTemplate, partyRepository,
                                                  modelMapper, ccdTestCaseOrchestrator,
-                                                 caseRoleAssignmentService,
                                                  legalRepresentativePartyLinkService,
                                                  idamAuthenticator,
                                                  organisationDetailsService,
@@ -398,9 +396,6 @@ class TestingSupportControllerTest {
         );
 
         // then
-        verify(caseRoleAssignmentService).assignRasRole(caseReference, userUid.toString(),
-                                                        UserRole.DEFENDANT_SOLICITOR);
-
         verify(legalRepresentativePartyLinkService)
             .linkLegalRepresentativeToParty(caseReference, partyId, legalRepEmail, organisationDetails);
 
@@ -422,12 +417,8 @@ class TestingSupportControllerTest {
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 
         // when
-        ResponseEntity<Void> response = underTest.linkDefendantSolicitorToParty(
-            caseReference,
-            partyId,
-            authToken,
-            "testS2S"
-        );
+        ResponseEntity<Void> response =
+            underTest.linkDefendantSolicitorToParty(caseReference, partyId, authToken, "testS2S");
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
