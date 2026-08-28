@@ -374,7 +374,7 @@ ext {
   testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.16"
   lombokVersion = "1.18.46"
-  springSecurityVersion = "7.1.0"
+  springSecurityVersion = "7.1.1"
   pactVersion = "4.7.5"
   tomcatEmbedVersion = "11.0.24"
   nettyVersion = "4.1.136.Final"
@@ -608,6 +608,11 @@ tasks.withType(CftlibExec).configureEach {
 cftlibTest {
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'DB_SCHEDULER_POLLING_INTERVAL_SECONDS', '2'
+
+  // Group access is gated behind a flag in both CCD services, and they read different env vars:
+  // def store skips the AccessType sheets on import without it, data store skips the group matcher.
+  environment 'ENABLE_CASE_GROUP_ACCESS', 'true'
+  environment 'ENABLE_CASE_GROUP_ACCESS_FILTERING', 'true'
 
   // To match the fake document URLs returned by the shared Wiremock
   environment 'CCD_DOCUMENT_URL_PATTERN', 'https://docstore/document/[A-Za-z0-9-]+.*'

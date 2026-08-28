@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -50,6 +52,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,6 +83,8 @@ class GenAppDocumentGeneratorTest {
     private DocumentNameService documentNameService;
     @Mock
     private DocumentImportService documentImportService;
+    @Mock
+    private ClaimActivityLogService claimActivityLogService;
     @Mock
     private ModelMapper modelMapper;
     @Mock
@@ -112,7 +117,8 @@ class GenAppDocumentGeneratorTest {
 
         underTest = new GenAppDocumentGenerator(pcsCaseService, partyService, docAssemblyService, addressMapper,
                                                 addressFormatter, caseReferenceFormatter, caseNameFormatter,
-                                                documentNameService, documentImportService, modelMapper, ukClock);
+                                                documentNameService, documentImportService, claimActivityLogService,
+                                                modelMapper, ukClock);
     }
 
     private void stubUKClock() {
@@ -230,13 +236,11 @@ class GenAppDocumentGeneratorTest {
     @Test
     void shouldSetApplicantPartyDetails() {
         // Given
-        String firstName = "some first name";
-        String lastName = "some last name";
+        String partyName = "some party name";
         String emailAddress = "some email address";
         String phoneNumber = "some phone number";
 
-        when(applicantPartyEntity.getFirstName()).thenReturn(firstName);
-        when(applicantPartyEntity.getLastName()).thenReturn(lastName);
+        when(partyService.getPartyName(applicantPartyEntity)).thenReturn(partyName);
         when(applicantPartyEntity.getEmailAddress()).thenReturn(emailAddress);
         when(applicantPartyEntity.getPhoneNumber()).thenReturn(phoneNumber);
 
@@ -246,7 +250,7 @@ class GenAppDocumentGeneratorTest {
         // Then
         GenAppFormPayload formPayload = getFormPayload();
         Party applicantParty = formPayload.getApplicant();
-        assertThat(applicantParty.getName()).isEqualTo("%s %s", firstName, lastName);
+        assertThat(applicantParty.getName()).isEqualTo(partyName);
         assertThat(applicantParty.getEmailAddress()).isEqualTo(emailAddress);
         assertThat(applicantParty.getTelephoneNumber()).isEqualTo(phoneNumber);
     }
@@ -440,7 +444,22 @@ class GenAppDocumentGeneratorTest {
         verify(documentImportService)
             .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS);
         verify(genAppEntity).setSubmissionDocument(documentEntity);
+        verify(documentEntity).setType(DocumentType.GENERAL_APPLICATION);
         verify(documentEntity).setGeneralApplication(genAppEntity);
+        verify(claimActivityLogService).logGenerationSuccess(pcsCaseEntity, applicantPartyEntity);
+    }
+
+    @Test
+    void shouldLogDocumentsCreatedAfterSubmissionDocumentIsAttached() {
+        DocumentEntity documentEntity = mock(DocumentEntity.class);
+        when(documentImportService
+                 .addDocumentToCase(CASE_REFERENCE, CREATED_DOCUMENT_URL, CaseFileCategory.APPLICATIONS))
+            .thenReturn(documentEntity);
+
+        underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+
+        verify(pcsCaseService, atLeastOnce()).loadCase(CASE_REFERENCE);
+        verify(claimActivityLogService).logGenerationSuccess(pcsCaseEntity, applicantPartyEntity);
     }
 
     private void stubFormattedPropertyAddress(String expectedPropertyAddress) {

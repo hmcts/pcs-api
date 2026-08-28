@@ -17,6 +17,7 @@ import uk.gov.hmcts.ccd.sdk.type.LinkReason;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseLinkEntity;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,7 +60,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final String ORG_ID = "org123";
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -80,6 +81,8 @@ class PcsCaseServiceTest {
     private PostCodeCourtService postCodeCourtService;
     @Mock
     private LocationReferenceService locationReferenceService;
+    @Mock
+    private SecurityContextService securityContextService;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -99,7 +102,8 @@ class PcsCaseServiceTest {
             caseLinkService,
             caseFlagService,
             postCodeCourtService,
-            locationReferenceService
+            locationReferenceService,
+            securityContextService
         );
     }
 
@@ -197,7 +201,7 @@ class PcsCaseServiceTest {
             .build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(claimService).createMainClaimEntity(caseData);
@@ -213,10 +217,10 @@ class PcsCaseServiceTest {
         PCSCase caseData = PCSCase.builder().build();
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
-        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity, ORG_ID);
+        verify(partyService).createAllParties(caseData, pcsCaseEntity, mainClaimEntity);
     }
 
     @Test
@@ -231,7 +235,7 @@ class PcsCaseServiceTest {
         when(documentService.buildDocumentEntitiesForCase(caseData)).thenReturn(documentEntities);
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(pcsCaseEntity).addDocuments(documentEntities);
@@ -253,7 +257,7 @@ class PcsCaseServiceTest {
 
 
         // When
-        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData, ORG_ID);
+        underTest.createMainClaimOnCase(CASE_REFERENCE, caseData);
 
         // Then
         verify(pcsCaseEntity).setTenancyLicence(tenancyLicenceEntity);
@@ -285,7 +289,7 @@ class PcsCaseServiceTest {
 
         List<ListValue<CaseLink>> caseLinks = List.of(createCaseLinkValue(caseLink));
 
-        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()//mock(PcsCaseEntity.class);
+        PcsCaseEntity pcsCaseEntity =  PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .build();
 
@@ -311,7 +315,7 @@ class PcsCaseServiceTest {
                                                           () -> underTest.patchCaseFlags(CASE_REFERENCE, null));
 
         // Then
-        assertThat("PCSCase cannot be null").isEqualTo(exception.getMessage());
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
     }
 
     @Test
@@ -538,6 +542,69 @@ class PcsCaseServiceTest {
                 .name("Complex Case")
                 .build())
             .build();
+    }
+
+    @Test
+    void shouldNotMergeSupportFlagsOnTheInternalCaseFlagsPath() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(ListValue.<PartySupport>builder()
+                .id(UUID.randomUUID().toString())
+                .value(PartySupport.builder().build())
+                .build()))
+            .build();
+
+        // When
+        underTest.patchCaseFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
+    }
+
+    @Test
+    void shouldMergeSupportFlagsForTheAuthenticatedUser() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        UUID authenticatedUserId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
+
+        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
+            .id(UUID.randomUUID().toString())
+            .value(PartySupport.builder().build())
+            .build());
+        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService).mergePartySupportFlags(
+            partySupport, pcsCaseEntity.getParties(), authenticatedUserId);
+    }
+
+    @Test
+    void shouldNotMergeSupportFlagsWhenPartySupportIsAbsent() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
+    }
+
+    @Test
+    void shouldThrowExceptionPatchingSupportFlagsWithNullCaseData() {
+        // When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                         () -> underTest.patchSupportFlags(
+                                                             CASE_REFERENCE, null));
+
+        // Then
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
     }
 
     private PcsCaseEntity stubFindCase() {

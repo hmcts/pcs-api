@@ -57,6 +57,21 @@ public class EventStates {
         return createCaseLink();
     }
 
+    public static State[] claimantMakeAnApplication() {
+        return new State[] {
+            State.CASE_ISSUED,
+            State.CASE_PROGRESSION,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME,
+            State.ALL_FINAL_ORDERS_ISSUED,
+            State.CLOSED
+        };
+    }
+
     public static State[] resumePossessionClaim() {
         return new State[] {
             State.AWAITING_SUBMISSION_TO_HMCTS
@@ -93,6 +108,10 @@ public class EventStates {
             State.ALL_FINAL_ORDERS_ISSUED,
             State.CLOSED
         };
+    }
+
+    public static State[] paperResponseDefendant() {
+        return createFlags();
     }
 
     public static State[] maintainCaseLink() {

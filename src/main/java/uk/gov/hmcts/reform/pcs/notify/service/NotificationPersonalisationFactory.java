@@ -7,16 +7,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -24,6 +32,8 @@ import java.util.Locale;
 public class NotificationPersonalisationFactory {
 
     private final PartyService partyService;
+    private final AddressFormatter addressFormatter;
+    private final AddressMapper addressMapper;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -69,8 +79,70 @@ public class NotificationPersonalisationFactory {
             .build();
     }
 
+    public NoticeOfChangeCompletedPersonalisation noticeOfChangeCompleted(PartyEntity partyEntity,
+                                                                         PcsCaseEntity pcsCaseEntity) {
+
+        return NoticeOfChangeCompletedPersonalisation.builder()
+            .base(buildPersonalisation(partyEntity, pcsCaseEntity))
+            .address(formatPropertyAddress(pcsCaseEntity))
+            .build();
+    }
+
+    public NoticeOfChangeNoLongerRepresentingPersonalisation noticeOfChangeNoLongerRepresenting(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        String organisationName = legalRepresentativeOrganisation.getOrganisationName();
+
+        return NoticeOfChangeNoLongerRepresentingPersonalisation.builder()
+            .base(buildPersonalisation("", "", pcsCaseEntity))
+            .organisationName(organisationName != null ? organisationName : "")
+            .build();
+    }
+
+    public NoticeOfChangeCompleteLegalRepPersonalisation noticeOfChangeCompleteLegalRep(
+        OrganisationEntity legalRepresentativeOrganisation,
+        PartyEntity representedDefendant
+    ) {
+        String organisationName = legalRepresentativeOrganisation.getOrganisationName();
+
+        return NoticeOfChangeCompleteLegalRepPersonalisation.builder()
+            .base(buildPersonalisation("", "", representedDefendant.getPcsCase()))
+            .organisationName(organisationName != null ? organisationName : "")
+            .partyName(getDefendantName(
+                representedDefendant.getNameKnown() != null && representedDefendant.getNameKnown().toBoolean(),
+                representedDefendant.getFirstName(),
+                representedDefendant.getLastName()))
+            .build();
+    }
+
+    private String formatPropertyAddress(PcsCaseEntity pcsCaseEntity) {
+        AddressEntity propertyAddress = pcsCaseEntity.getPropertyAddress();
+
+        if (propertyAddress == null) {
+            return "";
+        }
+
+        return addressFormatter.formatFullAddressWithoutCountry(
+            addressMapper.toAddressUK(propertyAddress),
+            AddressFormatter.COMMA_DELIMITER
+        );
+    }
+
     private BasePersonalisation buildPersonalisation(
         PartyEntity emailRecipient,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        return buildPersonalisation(
+            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
+            Objects.toString(emailRecipient.getLastName(), ""),
+            pcsCaseEntity
+        );
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        String recipientFirstName,
+        String recipientLastName,
         PcsCaseEntity pcsCaseEntity
     ) {
         PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
@@ -86,10 +158,8 @@ public class NotificationPersonalisationFactory {
             primaryDefendant.getLastName());
 
         return BasePersonalisation.builder()
-            .firstName(emailRecipient.getFirstName() != null
-                           ? emailRecipient.getFirstName() : emailRecipient.getOrgName())
-            .lastName(emailRecipient.getLastName() != null
-                          ? emailRecipient.getLastName() : "")
+            .firstName(recipientFirstName)
+            .lastName(recipientLastName)
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
