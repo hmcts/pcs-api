@@ -168,6 +168,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // then
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
 
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
@@ -183,7 +184,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeCaseRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
-        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, 
+        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual,
             partyEntity, LEGAL_REP_EMAIL);
         verify(notificationService).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(partyEntity);
     }
