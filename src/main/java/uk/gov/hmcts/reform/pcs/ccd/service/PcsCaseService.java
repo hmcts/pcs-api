@@ -97,11 +97,14 @@ public class PcsCaseService {
         }
     }
 
-    public void patchSupportFlags(long caseReference, List<ListValue<PartySupport>> partySupport) {
+    public void patchSupportFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
-        if (partySupport != null) {
-            caseFlagService.mergePartySupportFlags(partySupport, pcsCaseEntity.getParties(),
+        if (pcsCase.getPartySupport() != null) {
+            caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
                                                   securityContextService.getCurrentUserId());
         }
     }

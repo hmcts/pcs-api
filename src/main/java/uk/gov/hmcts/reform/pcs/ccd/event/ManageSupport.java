@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagHistoryRoles.EXTERNAL_CASE_FLAG_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventStates.manageSupport;
+import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
 @Component
 @Slf4j
@@ -31,7 +31,7 @@ public class ManageSupport implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.manageSupport.name(), this::submit)
-                .forStates(manageSupport())
+                .forStates(CASE_FLAG_STATES)
                 .name("Manage support")
                 .description("To manage support")
                 .showSummary()
@@ -55,7 +55,7 @@ public class ManageSupport implements CCDConfig<PCSCase, State, UserRole> {
 
         log.debug("External user updated support for {}", caseReference);
 
-        pcsCaseService.patchSupportFlags(caseReference, pcsCase.getPartySupport());
+        pcsCaseService.patchSupportFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
