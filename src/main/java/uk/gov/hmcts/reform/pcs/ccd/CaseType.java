@@ -53,10 +53,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
+    // Every party-visible tab is granted to the group access profiles as well as the case roles, because a
+    // professional whose access to a case comes through their organisation's group access holds
+    // claimant-solicitor / defendant-solicitor / claimant rather than a case role. Support has to be
+    // granted the same way or the tab is absent for those users. Tab visibility only decides whether the
+    // tab renders; which party's support it shows is filtered per party by PartySupportOwnershipResolver.
     static final AccessProfile[] EXTERNAL_FLAG_TAB_ROLES = {
         AccessProfile.PCS_SOLICITOR,
         AccessProfile.CITIZEN,
-        AccessProfile.DEFENDANT
+        AccessProfile.DEFENDANT,
+        AccessProfile.CLAIMANT,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
+        AccessProfile.GA_DEFENDANT_SOLICITOR
     };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
