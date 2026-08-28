@@ -45,7 +45,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
             .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
                 .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
-                .optional(Party::getDefendantFlagsExternal, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
                 null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
