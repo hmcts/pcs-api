@@ -111,6 +111,8 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
