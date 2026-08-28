@@ -29,13 +29,19 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
-    HDPI-8688: false positive. CPE opentelemetry:opentelemetry covers the Go and
-    Node.js SDKs, not opentelemetry-java. Re-review by the until date.
+    CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
-    <cpe>cpe:/a:opentelemetry:opentelemetry</cpe>
+    <cve>CVE-2026-54285</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
+    <cve>CVE-2026-41178</cve>
   </suppress>
   <!--End of false positives section -->
 
@@ -75,5 +81,14 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
     <cve>CVE-2026-54515</cve>
+  </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
+    Tomcat release published yet; suppression is temporary and MUST be
+    removed when tomcatEmbedVersion is bumped to the fixed version.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
+    <cve>CVE-2026-66299</cve>
   </suppress>
 </suppressions>
