@@ -68,13 +68,15 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
     <cve>CVE-2026-54515</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress>
     <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
-    Tomcat release published yet; suppression is temporary and MUST be
-    removed when tomcatEmbedVersion is bumped to the fixed version.
+    HDPI-8677: false positives. dependency-check maps the Java OpenTelemetry artifacts
+    (io.opentelemetry / io.opentelemetry.semconv) to the generic CPE
+    cpe:/a:opentelemetry:opentelemetry, which NVD uses for the Go and Node.js SDKs.
+    Matched CVEs (2026-39882, 2026-39883, 2026-41178 = opentelemetry-go;
+    2026-54285 = opentelemetry-js) do not apply to opentelemetry-java.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
-    <cve>CVE-2026-66299</cve>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
+    <cpe>cpe:/a:opentelemetry:opentelemetry</cpe>
   </suppress>
 </suppressions>
