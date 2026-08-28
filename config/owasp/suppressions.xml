@@ -91,7 +91,7 @@
     <notes><![CDATA[
     HDPI-8473: test purposes
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\-*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
     <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-39882</cve>
