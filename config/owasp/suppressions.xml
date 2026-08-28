@@ -70,11 +70,15 @@
   </suppress>
   <suppress until="2026-09-15">
     <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
-    Tomcat release published yet; suppression is temporary and MUST be
-    removed when tomcatEmbedVersion is bumped to the fixed version.
+    HDPI-8150: temporary. CVEs against opentelemetry-api/context 1.49.0 and
+    opentelemetry-semconv 1.41.1, which arrive transitively. No coordinated
+    patched release resolves through our dependency graph yet. Remove once a
+    fixed opentelemetry version resolves transitively.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
-    <cve>CVE-2026-66299</cve>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
+    <cve>CVE-2026-54285</cve>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-39883</cve>
+    <cve>CVE-2026-41178</cve>
   </suppress>
 </suppressions>
