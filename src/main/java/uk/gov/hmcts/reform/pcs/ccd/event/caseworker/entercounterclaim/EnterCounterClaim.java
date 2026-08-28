@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CounterClaimAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CourtPermission;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.HelpWithFees;
@@ -46,7 +47,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(enterCounterClaim.name(), this::submit, this::start)
-            .forStates(State.CASE_ISSUED)
+            .forStates(EventStates.enterCounterClaim())
             .name("Enter a counterclaim")
             .grant(Permission.CRU, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
