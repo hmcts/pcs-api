@@ -457,6 +457,7 @@ public class CaseFlagService {
     private static boolean isCaseFlagRequested(FlagDetail flagDetail) {
         return Objects.equals(flagDetail.getStatus(), REQUESTED_STATUS);
     }
+
     /**
      * Whether the shared {@code flag_ref_data} row for a flag code may be rewritten from the incoming
      * payload. Caseworker events own that reference data; party-supplied flags may only reference it,
