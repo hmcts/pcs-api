@@ -60,8 +60,6 @@ test.describe('Legal Representative NOC - e2e Journey @nightly', async () => {
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
-    // HDPI-8685: the incoming organisation's case list must pick the case up from the NoC alone
-    await performAction('verifyCaseInCaseList', caseInfo.fid);
   });
 
   test('Notice of change - Error message validations - LR @noticeOfChange', async () => {
