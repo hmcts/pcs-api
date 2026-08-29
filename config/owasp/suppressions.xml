@@ -77,4 +77,18 @@
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
   </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-8685: false positive. CVE-2026-39882/39883/41178 are OpenTelemetry-Go
+    (otlp HTTP exporter / Parse) and CVE-2026-54285 is opentelemetry-js
+    (W3CBaggagePropagator, <2.8.0); they are matched to the Java
+    io.opentelemetry artifacts only through the generic opentelemetry CPE.
+    Spring Boot 3.5.16 manages opentelemetry 1.49.0. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry-(api|context|semconv)@.*$</packageUrl>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-39883</cve>
+    <cve>CVE-2026-41178</cve>
+    <cve>CVE-2026-54285</cve>
+  </suppress>
 </suppressions>
