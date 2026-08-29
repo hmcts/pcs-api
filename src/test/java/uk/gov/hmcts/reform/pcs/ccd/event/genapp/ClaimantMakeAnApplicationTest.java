@@ -43,6 +43,7 @@ class ClaimantMakeAnApplicationTest extends BaseEventTest {
     @Test
     void shouldNotGrantDefendantRoles() {
         assertThat(configuredEvent.getGrants().keySet())
+            .isNotEmpty()
             .doesNotContain(UserRole.DEFENDANT, UserRole.DEFENDANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
     }
 }
