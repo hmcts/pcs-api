@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.CaseReindexingService;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -36,7 +36,7 @@ class NocAccessChangeTaskComponentTest {
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
 
     @Mock
-    private CaseReindexingService caseReindexingService;
+    private NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService;
 
     @Mock
     private TaskInstance<NocAccessChangeTaskData> taskInstance;
@@ -53,7 +53,7 @@ class NocAccessChangeTaskComponentTest {
     void setUp() {
         nocAccessChangeTaskComponent = new NocAccessChangeTaskComponent(
             legalRepresentativePartyLinkService,
-            caseReindexingService,
+            noticeOfChangeAppliedEventService,
             MAX_RETRIES,
             BACKOFF_DELAY
         );
@@ -84,8 +84,8 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
-        // the rep change feeds derived CaseAccessGroups, so the case must be queued for reindexing
-        verify(caseReindexingService).reindexCase(1L);
+        // the rep change feeds derived CaseAccessGroups; only an event stores a fresh indexed snapshot
+        verify(noticeOfChangeAppliedEventService).submit(1L);
     }
 
     @Test
@@ -121,6 +121,6 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
-        verifyNoInteractions(caseReindexingService);
+        verifyNoInteractions(noticeOfChangeAppliedEventService);
     }
 }
