@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.MakeOrderAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
@@ -112,7 +113,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private FeatureFlags featureFlags;
 
-    @CCD(searchable = false, typeOverride = TextArea)
+    @CCD(searchable = false, typeOverride = TextArea, access = MakeOrderAccess.class)
     @External
     private String makeOrderPayload;
 

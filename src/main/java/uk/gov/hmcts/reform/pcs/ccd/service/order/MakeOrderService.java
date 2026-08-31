@@ -87,11 +87,12 @@ public class MakeOrderService {
         }
 
         order.setDraftPayload(writeJson(draftPayload));
-        order.setState(switch (submitted.action()) {
+        OrderState nextState = switch (submitted.action()) {
             case SAVE_DRAFT -> OrderState.DRAFT;
             case SUBMIT_FOR_REVIEW -> OrderState.SUBMITTED_FOR_REVIEW;
             case START_DRAFT -> throw new IllegalStateException("The start action was not handled");
-        });
+        };
+        order.setState(nextState);
         orderRepository.saveAndFlush(order);
         return submitted.action();
     }

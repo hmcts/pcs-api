@@ -14,18 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.MakeOrderService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeOrder;
-
 @Component
 @AllArgsConstructor
 public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
+
+    public static final String EVENT_ID = "ext:makeOrder";
 
     private final MakeOrderService makeOrderService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(makeOrder.name(), this::submit, this::start)
+            .decentralisedEvent(EVENT_ID, this::submit, this::start)
             .forStates(
                 State.CASE_ISSUED,
                 State.CASE_PROGRESSION,
