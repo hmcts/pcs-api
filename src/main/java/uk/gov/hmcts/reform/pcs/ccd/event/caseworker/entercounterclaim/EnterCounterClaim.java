@@ -8,10 +8,14 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -21,14 +25,21 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CounterClaimAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.CourtPermission;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.HelpWithFees;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.PartyCounterClaimAgainst;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.TypeOfCounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.UploadCounterClaimForm;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterCounterClaim;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Component
 @RequiredArgsConstructor
@@ -41,6 +52,8 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final TypeOfCounterClaim typeOfCounterClaim;
     private final CounterClaimAmount counterClaimAmount;
     private final HelpWithFees helpWithFees;
+    private final PartyCounterClaimAgainst partyCounterClaimAgainst;
+    private final UploadCounterClaimForm uploadCounterClaimForm;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -48,6 +61,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(enterCounterClaim.name(), this::submit, this::start)
             .forStates(State.CASE_ISSUED)
             .name("Enter a counterclaim")
+            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .endButtonLabel("Submit")
@@ -57,7 +71,9 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .add(courtPermission)
             .add(typeOfCounterClaim)
             .add(counterClaimAmount)
-            .add(helpWithFees);
+            .add(helpWithFees)
+            .add(partyCounterClaimAgainst)
+            .add(uploadCounterClaimForm);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -82,12 +98,31 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .courtPermissionGranted(counterClaimRequest.getCourtPermissionGranted())
             .permissionOrderDate(counterClaimRequest.getPermissionOrderDate())
             .claimReceivedDate(counterClaimRequest.getClaimReceivedDate())
+            .isClaimAmountKnown(VerticalYesNo.YES)
+            .claimAmount(counterClaimRequest.getCounterClaimAmount())
+            .appliedForHwf(counterClaimRequest.getAppliedForHwf())
+            .hwfReferenceNumber(counterClaimRequest.getAppliedForHwf() == VerticalYesNo.YES
+                ? counterClaimRequest.getHwfReferenceNumber() : null)
+            .counterClaimAgainst(buildCounterClaimAgainst(caseData.getPartyMultiSelectionList()))
             .build();
 
         counterClaimService.saveCounterClaim(caseReference, counterClaim, submittingParty);
 
         return SubmitResponse.<State>builder()
             .build();
+    }
+
+    private List<ListValue<Party>> buildCounterClaimAgainst(DynamicMultiSelectStringList selectedParties) {
+        if (selectedParties == null || selectedParties.getValue() == null) {
+            return List.of();
+        }
+
+        return selectedParties.getValue().stream()
+            .map(element -> ListValue.<Party>builder()
+                .id(element.getCode())
+                .value(Party.builder().build())
+                .build())
+            .toList();
     }
 
 
