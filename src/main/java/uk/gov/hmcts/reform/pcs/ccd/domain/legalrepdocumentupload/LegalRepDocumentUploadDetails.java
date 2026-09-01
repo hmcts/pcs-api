@@ -32,7 +32,8 @@ public class LegalRepDocumentUploadDetails {
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system"
+        hint = "Upload a document to the system",
+        min = 1
     )
     @JsonProperty("lrDocUpload_LegalRepDocuments")
     private List<ListValue<LegalRepDocument>> legalRepDocuments;

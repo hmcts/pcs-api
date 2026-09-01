@@ -55,7 +55,6 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", DOCUMENT_DETAILS_CONTENT)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getPartyType, NEVER_SHOW)
             .readonly(LegalRepDocumentUploadDetails::getIsWales, NEVER_SHOW)
             .list(LegalRepDocumentUploadDetails::getLegalRepDocuments)
             .mandatory(LegalRepDocument::getClaimantDocumentType, ShowConditions.and(
