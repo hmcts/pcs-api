@@ -66,7 +66,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
-  test('Case Flags - Create case level Flag @rerun', async ({ page }) => {
+  test('Case Flags - Create case level Flag', async ({ page }) => {
     await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
@@ -136,7 +136,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-  test('Case Flags - Create Party Level Case Flag @rerun', async ({ page }) => {
+  test('Case Flags - Create Party Level Case Flag', async ({ page }) => {
     await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
