@@ -1,6 +1,6 @@
-export const confirmIfTheseDocumentsRelateToAnApplication = {
+export const confirmIfTheseDocumentsRelateToAnApplication = (testTitle: string) => ({
   mainHeader: `Confirm if these documents relate to an existing application`,
-  weUsuallyParagraph: `We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
+  weUsuallyParagraph: testTitle.toLowerCase().includes('claimant') ? `We usually share anything you upload with the other parties, for example a tenant, landlord, housing association, or mortgage lender.`:`We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,
   doTheseDocumentsQuestion: `Do these documents relate to an existing application?`,
   relatedToAdjournRadioOptionHidden: `Yes, the documents I’m uploading relate to the application to adjourn the hearing - submitted on`,
@@ -12,4 +12,4 @@ export const confirmIfTheseDocumentsRelateToAnApplication = {
   cymraegLink: `Cymraeg`,
   cancelLink: `Cancel`,
   feedbackLink: `feedback`,
-};
+});

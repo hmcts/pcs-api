@@ -56,15 +56,15 @@ export class DocumentsAction implements IAction {
     page: Page,
     confirmDocumentData: actionRecord
   ) {
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: confirmIfTheseDocumentsRelateToAnApplication.weUsuallyParagraph,
-    });
+    // await performValidation('text', {
+    //   elementType: 'paragraph',
+    //   text: confirmIfTheseDocumentsRelateToAnApplication.weUsuallyParagraph,
+    // });
 
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: confirmIfTheseDocumentsRelateToAnApplication.ifYourApplicationParagraph,
-    });
+    // await performValidation('text', {
+    //   elementType: 'paragraph',
+    //   text: confirmIfTheseDocumentsRelateToAnApplication.ifYourApplicationParagraph,
+    // });
 
     const formattedDate = getFormattedDate();
 

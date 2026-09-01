@@ -1,6 +1,6 @@
-export const uploadAdditionalDocumentsInformation = {
+export const uploadAdditionalDocumentsInformation = (testTitle: string) => ({
   mainHeader: `Upload Additional Documents`,
-  youCanUploadParagraph: `You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
+  youCanUploadParagraph: testTitle.toLowerCase().includes('claimant') ? `We usually share anything you upload with the other parties, for example a tenant, landlord, housing association, or mortgage lender.` : `You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
   weUsuallyShareParagraph: `We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,
   whatYouCanUploadParagraph: `What you can upload`,
@@ -28,4 +28,4 @@ export const uploadAdditionalDocumentsInformation = {
   cymraegLink: `Cymraeg`,
   cancelLink: `Cancel`,
   feedbackLink: `feedback`,
-};
+});

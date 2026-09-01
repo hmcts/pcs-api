@@ -16,7 +16,8 @@ import {
   home,
   checkYourAnswers,
   resumeClaim,
-  user
+  user,
+  caseSummary
 } from '@data/page-data';
 import {
   claimantType,
@@ -152,7 +153,9 @@ export class CreateCaseAction implements IAction {
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
-      ['resumePartialClaim', () => this.resumePartialClaim()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -2032,4 +2035,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
   }
+
+  private async selectAnEvent(event: actionRecord) {
+      await performAction('select', caseSummary.nextStepEventList, event.eventType);
+      await performAction('clickButton', caseSummary.go);
+    }
 }

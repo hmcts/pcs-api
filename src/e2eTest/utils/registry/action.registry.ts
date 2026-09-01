@@ -24,6 +24,8 @@ import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolici
 import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
+
 
 
 
@@ -188,6 +190,8 @@ export class ActionRegistry {
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['selectAnEvent', new CreateCaseAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
   ]);
 
   static getAction(actionName: string): IAction {
