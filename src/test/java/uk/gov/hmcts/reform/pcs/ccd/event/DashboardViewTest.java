@@ -28,8 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +70,12 @@ class DashboardViewTest extends BaseEventTest {
     @Mock
     private DefendantResponseService defendantResponseService;
 
+    @Mock
+    private OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
+
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
@@ -77,6 +85,8 @@ class DashboardViewTest extends BaseEventTest {
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,
             defendantResponseService,
+            outstandingCounterClaimPaymentService,
+            featureToggleService,
             List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
