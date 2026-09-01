@@ -31,6 +31,20 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
+    <cve>CVE-2026-54285</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
+    <cve>CVE-2026-41178</cve>
+  </suppress>
   <!--End of false positives section -->
 
   <suppress until="2026-09-15">
@@ -78,5 +92,14 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
+  </suppress>
+  <suppress until="2026-09-30">
+    <notes><![CDATA[
+    CVE-2026-59313/59314: fix is Enterprise-only on Spring 6.2.x (6.2.20) / OSS in 7.x; PCS uses
+    neither SSE functional endpoints nor Content-Disposition built from input. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
+    <cve>CVE-2026-59313</cve>
+    <cve>CVE-2026-59314</cve>
   </suppress>
 </suppressions>

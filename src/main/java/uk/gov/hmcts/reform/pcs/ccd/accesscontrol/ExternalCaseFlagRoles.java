@@ -7,7 +7,10 @@ public final class ExternalCaseFlagRoles {
         UserRole.CITIZEN,
         UserRole.CLAIMANT_SOLICITOR,
         UserRole.DEFENDANT,
-        UserRole.DEFENDANT_SOLICITOR
+        UserRole.DEFENDANT_SOLICITOR,
+        UserRole.CLAIMANT,
+        UserRole.GA_CLAIMANT_SOLICITOR,
+        UserRole.GA_DEFENDANT_SOLICITOR
     };
 
     private ExternalCaseFlagRoles() {
