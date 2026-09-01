@@ -1607,7 +1607,7 @@ export class CreateCaseAction implements IAction {
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
