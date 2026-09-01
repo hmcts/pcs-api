@@ -54,12 +54,13 @@ class NoticeOfChangeAppliedEventServiceTest {
         when(coreCaseDataApi.createEvent(eq(USER_BEARER), eq(SERVICE_BEARER), eq("1234"), any(CaseDataContent.class)))
             .thenReturn(expected);
 
-        CaseResource result = underTest.submit(CASE_REFERENCE);
+        CaseResource result = underTest.submit(CASE_REFERENCE, "solicitor@example.com");
 
         assertThat(result).isSameAs(expected);
         ArgumentCaptor<CaseDataContent> captor = ArgumentCaptor.forClass(CaseDataContent.class);
         verify(coreCaseDataApi).createEvent(eq(USER_BEARER), eq(SERVICE_BEARER), eq("1234"), captor.capture());
         assertThat(captor.getValue().getEvent().getId()).isEqualTo(noticeOfChangeApplied.name());
         assertThat(captor.getValue().getEventToken()).isEqualTo(START_EVENT_REF);
+        assertThat(captor.getValue().getEvent().getSummary()).isEqualTo("Notice of change by solicitor@example.com");
     }
 }

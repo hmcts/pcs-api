@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.noticeOfChangeApplied;
 
 /**
@@ -41,7 +42,7 @@ public class NoticeOfChangeAppliedEventService {
         this.objectMapper = objectMapper;
     }
 
-    public CaseResource submit(long caseReference) {
+    public CaseResource submit(long caseReference, String actorEmail) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
         String caseId = String.valueOf(caseReference);
@@ -51,7 +52,9 @@ public class NoticeOfChangeAppliedEventService {
             idamToken, serviceAuthorization, caseId, noticeOfChangeApplied.name());
 
         CaseDataContent content = CaseDataContent.builder()
-            .event(Event.builder().id(noticeOfChangeApplied.name()).build())
+            .event(Event.builder().id(noticeOfChangeApplied.name())
+                       .summary(isNotBlank(actorEmail) ? "Notice of change by " + actorEmail : null)
+                       .build())
             .eventToken(startEventResponse.getToken())
             .data(objectMapper.valueToTree(PCSCase.builder().build()))
             .build();
