@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,7 +39,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,13 +71,18 @@ class EnterCounterClaimTest extends BaseEventTest {
     private PartyCounterClaimAgainst partyCounterClaimAgainst;
     @Mock
     private UploadCounterClaimForm uploadCounterClaimForm;
+    @Mock
+    private AddressFormatter addressFormatter;
 
     @BeforeEach
     void setUp() {
+        lenient().when(addressFormatter.formatShortAddress(any(), eq(", ")))
+            .thenReturn("1 High Street, London, W1 1AA");
+
         EnterCounterClaim enterCounterClaim = new EnterCounterClaim(
             pcsCaseService, partyService, counterClaimService,
             courtPermission, typeOfCounterClaim, counterClaimAmount, helpWithFees,
-            partyCounterClaimAgainst, uploadCounterClaimForm);
+            partyCounterClaimAgainst, uploadCounterClaimForm, addressFormatter);
         setEventUnderTest(enterCounterClaim);
     }
 
@@ -244,5 +253,69 @@ class EnterCounterClaimTest extends BaseEventTest {
         assertThat(counterClaimCaptor.getValue().getCounterClaimAgainst())
             .extracting(ListValue::getId)
             .containsExactly(claimantId.toString(), defendantId.toString());
+    }
+
+    @Test
+    void shouldReturnSubmittedConfirmationWhenNotAppliedForHwf() {
+        // Given
+        UUID submittingPartyId = UUID.randomUUID();
+        when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
+            .thenReturn(mock(PartyEntity.class));
+
+        PCSCase caseData = PCSCase.builder()
+            .enterCounterClaim(EnterCounterClaimDetails.builder()
+                .claimTypeOption(CounterClaimType.SOMETHING_ELSE)
+                .appliedForHwf(VerticalYesNo.NO)
+                .build())
+            .partyRadioList(DynamicList.builder()
+                .value(DynamicListElement.builder().code(submittingPartyId).build())
+                .build())
+            .caseNameHmctsInternal("Smith v Jones")
+            .build();
+
+        // When
+        SubmitResponse<?> response = callSubmitHandler(caseData);
+
+        // Then
+        assertThat(response.getConfirmationBody())
+            .contains("Counterclaim submitted")
+            .contains("Case number: " + TEST_CASE_REFERENCE)
+            .contains("1 High Street, London, W1 1AA")
+            .contains("Smith v Jones")
+            .doesNotContain("pending issue")
+            .doesNotContain("What happens next");
+    }
+
+    @Test
+    void shouldReturnPendingIssueConfirmationWhenAppliedForHwf() {
+        // Given
+        UUID submittingPartyId = UUID.randomUUID();
+        when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
+            .thenReturn(mock(PartyEntity.class));
+
+        PCSCase caseData = PCSCase.builder()
+            .enterCounterClaim(EnterCounterClaimDetails.builder()
+                .claimTypeOption(CounterClaimType.SOMETHING_ELSE)
+                .appliedForHwf(VerticalYesNo.YES)
+                .hwfReferenceNumber("HWF-123")
+                .build())
+            .partyRadioList(DynamicList.builder()
+                .value(DynamicListElement.builder().code(submittingPartyId).build())
+                .build())
+            .caseNameHmctsInternal("Smith v Jones")
+            .build();
+
+        // When
+        SubmitResponse<?> response = callSubmitHandler(caseData);
+
+        // Then
+        assertThat(response.getConfirmationBody())
+            .contains("Counterclaim pending issue")
+            .contains("Case number: " + TEST_CASE_REFERENCE)
+            .contains("Smith v Jones")
+            .contains("What happens next")
+            .contains("Help With Fees application")
+            .contains("you must issue the counterclaim")
+            .doesNotContain("Counterclaim submitted");
     }
 }

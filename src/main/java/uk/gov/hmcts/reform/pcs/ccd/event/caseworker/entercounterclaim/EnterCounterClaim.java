@@ -32,18 +32,28 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterCounterClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Component
 @RequiredArgsConstructor
 public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
+
+    private static final String PENDING_ISSUE_WHAT_HAPPENS_NEXT = """
+        <h3 class="govuk-heading-s">What happens next</h3>
+        <p class="govuk-body">The counterclaim will not be issued until the party’s Help With Fees application has
+        been reviewed and they’ve paid any outstanding fee.</p>
+        <p class="govuk-body govuk-!-margin-bottom-6">Once the party’s application has been approved or their fee
+        has been paid, you must issue the counterclaim.</p>
+        """;
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
@@ -54,6 +64,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final HelpWithFees helpWithFees;
     private final PartyCounterClaimAgainst partyCounterClaimAgainst;
     private final UploadCounterClaimForm uploadCounterClaimForm;
+    private final AddressFormatter addressFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -109,7 +120,30 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
         counterClaimService.saveCounterClaim(caseReference, counterClaim, submittingParty);
 
         return SubmitResponse.<State>builder()
+            .confirmationBody(buildConfirmationBody(caseData, caseReference))
             .build();
+    }
+
+    private String buildConfirmationBody(PCSCase caseData, long caseReference) {
+        boolean appliedForHwf = caseData.getEnterCounterClaim().getAppliedForHwf() == VerticalYesNo.YES;
+
+        String title = appliedForHwf ? "Counterclaim pending issue" : "Counterclaim submitted";
+        String whatHappensNext = appliedForHwf ? PENDING_ISSUE_WHAT_HAPPENS_NEXT : "";
+
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
+            <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
+            </div>
+            %s""".formatted(
+                title,
+                caseReference,
+                addressFormatter.formatShortAddress(caseData.getPropertyAddress(), COMMA_DELIMITER),
+                caseData.getCaseNameHmctsInternal(),
+                whatHappensNext);
     }
 
     private List<ListValue<Party>> buildCounterClaimAgainst(DynamicMultiSelectStringList selectedParties) {
