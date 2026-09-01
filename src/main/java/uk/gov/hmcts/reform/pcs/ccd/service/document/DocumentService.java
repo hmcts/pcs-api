@@ -645,7 +645,15 @@ public class DocumentService {
             );
 
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
-        } else if (selectedCounterClaim == null) {
+        } else if (selectedCounterClaim != null) {
+            String description = taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                documentEntities
+            );
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, description);
+        } else {
             String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
                 caseReference,
                 mainClaim,
@@ -654,8 +662,6 @@ public class DocumentService {
             );
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
         }
-        // No review task for counterclaim documents until HDPI-6591 defines it
-
-}
+    }
 
 }
