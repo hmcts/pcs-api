@@ -1,10 +1,10 @@
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
-import {test} from '@utils/test-fixtures';
-import {createCaseApiData, submitCaseApiData} from '@data/api-data';
-import {caseSummary, user} from '@data/page-data';
-import {staff, staffUsers} from '@data/user-data/staff.user.data';
-import {judicial, judicialUsers} from '@data/user-data/judicial.user.data';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { test } from '@utils/test-fixtures';
+import { createCaseApiData, paymentApiData, submitCaseApiData } from '@data/api-data';
+import { caseSummary, user } from '@data/page-data';
+import { staff, staffUsers } from '@data/user-data/staff.user.data';
+import { judicial, judicialUsers } from '@data/user-data/judicial.user.data';
 import {
   addCommentsForFlag,
   manageCaseFlags,
@@ -13,11 +13,12 @@ import {
   specialMeasureForFlag,
   updateFlagComments,
   viewCaseFlag,
-  whereShouldThisFlagBeAdded
+  whereShouldThisFlagBeAdded,
+  confirmStatusForFlag
 } from '@data/page-data-figma';
-import {dismissCookieBanner} from '@config/cookie-banner';
-import {BrowserContext, Page} from '@playwright/test';
-import {logUserTestResultsAndAssert, recordUserTestFailure, UserTestResult} from '@utils/common/userTestResults.utils';
+import { dismissCookieBanner } from '@config/cookie-banner';
+import { BrowserContext, Page } from '@playwright/test';
+import { logUserTestResultsAndAssert, recordUserTestFailure, UserTestResult } from '@utils/common/userTestResults.utils';
 
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
@@ -33,13 +34,13 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
   });
 }
 
-test.use({storageState: undefined});
+test.use({ storageState: undefined });
 
-test.beforeEach(async ({page, context}) => {
+test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
-  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
 });
@@ -52,8 +53,8 @@ test.afterEach(async () => {
 
 test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () => {
 
-  test('Case Flags - Verify the create and manage case flag menu @smoke', async ({page}) => {
-    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+  test('Case Flags - Create and Manage case flag menu @smoke', async ({ page }) => {
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -62,10 +63,11 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
+    
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
-  test('Case Flags - Create case level Flag', async ({page}) => {
-    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+  test('Case Flags - Create case level Flag', async ({ page }) => {
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -88,6 +90,12 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       input: addCommentsForFlag.addCommentTextInput,
       continueButton: addCommentsForFlag.continueButton
     });
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
     await performAction('clickChangeLinkForRow', {
       rowLabel: reviewFlagDetails.rowLabel,
@@ -99,13 +107,20 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: selectFlagType.continueButton
     });
     await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.requestedStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
     await performAction('viewCaseFlags', {
       viewFlagLink: viewCaseFlag.viewFlagLink
     });
+
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
@@ -113,16 +128,16 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: manageCaseFlags.continueButton
     });
     await performAction('makeFlagInactive', {
-      inactiveButton: updateFlagComments.makeInactiveButton,
+      statusOption: updateFlagComments.makeInactiveButton,
       continueButton: updateFlagComments.continueButton
     });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
-  test('Case Flags - Create Party Level Case Flag', async ({page}) => {
-    await performAction('login', {email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+  test('Case Flags - Create Party Level Case Flag', async ({ page }) => {
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
@@ -151,6 +166,12 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       input: addCommentsForFlag.addCommentTextInput,
       continueButton: addCommentsForFlag.continueButton
     });
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performValidation('mainHeader', reviewFlagDetails.mainHeader);
     await performAction('clickChangeLinkForRow', {
       rowLabel: reviewFlagDetails.rowLabel,
@@ -162,38 +183,40 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       continueButton: specialMeasureForFlag.continueButton
     });
     await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
+    await performAction('confirmStatusForFlag', {
+      statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
+      statusOption: confirmStatusForFlag.activeStatusRadioOption,
+      continueButton: confirmStatusForFlag.continueButton
+    });
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Create case flags');
-    await performAction('viewCaseFlags', {
-      viewFlagLink: viewCaseFlag.viewFlagLink
-    });
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
     await performAction('manageCaseFlags', {
       flagOption: manageCaseFlags.respondentRadioOption,
       continueButton: manageCaseFlags.continueButton
     });
-    await performAction('makeFlagInactive', {
-      inactiveButton: updateFlagComments.makeInactiveButton,
-      continueButton: updateFlagComments.continueButton
-    });
+    await performAction('clickButton', manageCaseFlags.continueButton);
     await performAction('reviewFlagDetails', {
-      saveButton: reviewFlagDetails.saveAndContinueButton
+      saveButton: reviewFlagDetails.submitButton
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case flags');
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
-  test('Staff users can create, manage and view case-level and party-level flags @release', async ({page, context}) => {
+  test('Staff users can create, manage and view case-level and party-level flags @release', async ({ page, context }) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     const runStaffUserTest = async (email: string) => {
-      await performAction('login', {email, password});
+      await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+      await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');
       await performAction('canCreateCaseLevelFlag', 'yes');
@@ -223,7 +246,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
             }
           }
         });
-        results.push({email, status: 'PASS'});
+        results.push({ email, status: 'PASS' });
       } catch (error) {
         recordUserTestFailure(results, email, error);
         await clearBrowserSession(page, context).catch(() => {
@@ -233,18 +256,18 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     logUserTestResultsAndAssert('STAFF USER RESULTS', results);
   });
 
-  test('Judicial users can only view case-level and party-level flags and cannot create or manage flags @release', async ({page, context}) => {
+  test('Judicial users can only view case-level and party-level flags and cannot create or manage flags @release', async ({ page, context }) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     const runJudicialUserTest = async (email: string) => {
-      await performAction('login', {email, password});
+      await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       if (
         email === judicial.possessionFeePaid_Judge_email ||
         email === judicial.possession_Circuit_Judge_FeePaid_Judge_email
       ) {
-        await performAction('handleJudgeBookingPage');
+        await performAction('handleJudgeBookingPageForCaseFlags');
       }
       await performAction('navigateToCaseSummary', 'yes');
       await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);
@@ -271,7 +294,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
             }
           }
         });
-        results.push({email, status: 'PASS'});
+        results.push({ email, status: 'PASS' });
       } catch (error) {
         recordUserTestFailure(results, email, error);
         await clearBrowserSession(page, context).catch(() => {
@@ -281,9 +304,9 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     logUserTestResultsAndAssert('JUDICIAL USER RESULTS', results);
   });
 
-  test('Solicitor user cannot view, create or manage case-level and party-level flags @nightly @CC', async ({page, context}) => {
-    const {email, password} = user.claimantSolicitor;
-    await performAction('login', {email, password});
+  test('Solicitor user cannot view, create or manage case-level and party-level flags @nightly @CC', async ({ page, context }) => {
+    const { email, password } = user.claimantSolicitor;
+    await performAction('login', { email, password });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
     await performAction('canCreateCaseLevelFlag', 'no');
@@ -294,9 +317,9 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
     await clearBrowserSession(page, context);
   });
 
-  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags @nightly @CC', async ({page, context}) => {
-    const {email, password} = user.caseworker;
-    await performAction('login', {email, password});
+  test('User with Caseworker IDAM role without AM roles cannot view, create or manage case-level and party-level flags @nightly @CC', async ({ page, context }) => {
+    const { email, password } = user.caseworker;
+    await performAction('login', { email, password });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'no');
     await clearBrowserSession(page, context);

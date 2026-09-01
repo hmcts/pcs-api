@@ -11,7 +11,7 @@ export class GlobalSearchCaseAction implements IAction {
       ['searchByCaseReference', () => this.searchByCaseReference(fieldName as string, page, value as string | undefined)],
       ['invalidCaseReferenceSearch', () => this.invalidCaseReferenceSearch(page)],
       ['changeSearchLink', () => this.changeSearchLink(page)],
-      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
+      ['handleJudgeBookingPageForGlobalSearch', () => this.handleJudgeBookingPageForGlobalSearch(page)],
       ['submitGlobalSearch', () => this.submitGlobalSearch(page)],
       ['executeSearch', () => this.executeSearch(page)],
       ['validateResults', () => this.validateResults(page)],
@@ -46,13 +46,14 @@ export class GlobalSearchCaseAction implements IAction {
     await performValidation('mainHeader', globalSearch.mainHeader);
   }
 
-  private async handleJudgeBookingPage(page: Page): Promise<void> {
+  private async handleJudgeBookingPageForGlobalSearch(page: Page): Promise<void> {
     await performValidation('mainHeader', workAccess.mainHeader);
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
-    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    await performValidation('mainHeader', caseList.mainHeader);
-  }
+    await performAction('clickButton', workAccess.continueButton);
+    await performAction('clickButton', home.globalSearchTab);
+    //await performValidation('text', { elementType: 'subHeader', text: workAccess.nextmainHeader});
+}
 
   private async submitGlobalSearch(page: Page): Promise<void> {
     await page.locator('button[type="submit"]').click();

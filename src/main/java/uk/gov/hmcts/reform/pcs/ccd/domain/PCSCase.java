@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -188,13 +190,6 @@ public class PCSCase {
     )
     @JsonProperty("LinkedCasesComponentLauncher")
     private ComponentLauncher linkedCasesComponentLauncher;
-
-    @CCD(
-        searchable = false,
-        access = {DefendantAccess.class}
-    )
-    @External
-    private String userPcqId;
 
     @CCD(
         searchable = false,
@@ -653,6 +648,9 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
+    @JsonUnwrapped
+    private DefendantPaperResponseRequest defendantPaperResponse;
+
     @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
@@ -800,18 +798,24 @@ public class PCSCase {
 
     private FlagLauncher flagLauncherInternal;
 
+    @CCD(
+        access = {InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class},
+        label = "Launch the external flags screen"
+    )
+    private FlagLauncher flagLauncherExternal;
+
+    @CCD(
+        access = {ExternalCaseFlagAccess.class},
+        label = "Party support"
+    )
+    private List<ListValue<PartySupport>> partySupport;
+
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
-     *
-     * <p>Left searchable even though nothing searches it. Marking it {@code searchable = false}
-     * emits the mapping as {@code {"enabled": false}}, and Elasticsearch cannot flip [enabled] on a
-     * field already mapped as an object - the put mapping returns 500 and the whole definition
-     * import fails. Any environment that has imported this field once, or has dynamically mapped it
-     * from a case document, would break on the next import.
      */
     @JsonProperty("CaseAccessGroups")
     @CCD
@@ -835,14 +839,12 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
         searchable = false
     )
     private Document uploadSingleDocument;
-
 
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
@@ -879,6 +881,12 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String hearingLocation;
+
+    @CCD(
+        label = "Which defendant submitted this response?",
+        typeOverride = FieldType.DynamicRadioList
+    )
+    private DynamicList defendantRadioList;
 
     @CCD(
         searchable = false,

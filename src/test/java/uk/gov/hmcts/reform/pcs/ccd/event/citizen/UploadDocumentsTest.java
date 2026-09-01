@@ -18,12 +18,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimVisibilityService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,18 +60,25 @@ class UploadDocumentsTest extends BaseEventTest {
     @Mock
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
+    private CounterClaimVisibilityService counterClaimVisibilityService;
+    @Mock
     private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
         UploadDocuments underTest = new UploadDocuments(pcsCaseService, partyService, organisationService,
                                                         securityContextService, documentService,
-                                                        genAppVisibilityService);
+                                                        genAppVisibilityService,
+                                                        counterClaimVisibilityService);
         setEventUnderTest(underTest);
+
+        // Default: no counterclaim on the case. Tests that need one override this.
+        lenient().when(counterClaimVisibilityService.getVisibleCounterClaimForUser(any(), any()))
+            .thenReturn(Optional.empty());
 
         // Default: visibility service is identity (returns input unchanged). Individual tests
         // override to simulate hiding without-notice gen apps or to control ordering.
-        lenient().when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+        lenient().when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
             .thenAnswer(invocation -> {
                 Collection<GenAppEntity> input = invocation.getArgument(0);
                 return input == null ? List.<GenAppEntity>of() : new ArrayList<>(input);
@@ -116,7 +126,8 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(uploadedDocs, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(
+                uploadedDocs, pcsCaseEntity, currentParty, null, null);
         }
 
         @Test
@@ -145,7 +156,104 @@ class UploadDocumentsTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             verify(documentService).linkAdditionalDocumentsToCase(
-                uploadedDocs, pcsCaseEntity, currentParty, selectedGenApp);
+                uploadedDocs, pcsCaseEntity, currentParty, selectedGenApp, null);
+        }
+
+        @Test
+        void shouldResolveSelectedCounterClaimAndPassToDocumentService() {
+            UUID selectedId = UUID.randomUUID();
+            CounterClaimEntity selectedCounterClaim = stubVisibleCounterClaim(selectedId);
+
+            UploadedDocument uploaded = UploadedDocument.builder()
+                .document(Document.builder().url("url-1").filename("f.pdf").binaryUrl("bin").build())
+                .build();
+            List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+                ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+            );
+
+            PCSCase caseData = PCSCase.builder()
+                .uploadedAdditionalDocuments(uploadedDocs)
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(selectedId.toString())
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).linkAdditionalDocumentsToCase(
+                uploadedDocs, pcsCaseEntity, currentParty, null, selectedCounterClaim);
+        }
+
+        @Test
+        void shouldPassNullCounterClaimWhenSelectedIdIsHiddenByVisibilityService() {
+            // Tampering guard: an id pointing at an unpaid counterclaim, or at one raised by
+            // another defendant, must not resolve to a real entity at submit time.
+            UUID hiddenId = UUID.randomUUID();
+
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(hiddenId.toString())
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
+        }
+
+        @Test
+        void shouldPassNullCounterClaimWhenSelectedIdMatchesADifferentCounterClaim() {
+            stubVisibleCounterClaim(UUID.randomUUID());
+
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(UUID.randomUUID().toString())
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
+        }
+
+        @Test
+        void shouldPreferGenAppOverCounterClaimWhenBothCouldMatchTheSelectedId() {
+            UUID selectedId = UUID.randomUUID();
+            GenAppEntity selectedGenApp = mock(GenAppEntity.class);
+            when(selectedGenApp.getId()).thenReturn(selectedId);
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(selectedGenApp));
+
+            // Lenient: proving the gen app short-circuits means this is never consulted
+            CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+            lenient().when(counterClaimVisibilityService.getVisibleCounterClaimForUser(any(), any()))
+                .thenReturn(Optional.of(counterClaim));
+
+            PCSCase caseData = PCSCase.builder()
+                .documentUploadDetails(DocumentUploadDetails.builder()
+                    .selectedRelatedApplicationId(selectedId.toString())
+                    .build())
+                .build();
+
+            PartyEntity currentParty = stubCurrentUserParty();
+
+            callSubmitHandler(caseData);
+
+            verify(documentService).linkAdditionalDocumentsToCase(
+                null, pcsCaseEntity, currentParty, selectedGenApp, null);
+        }
+
+        private CounterClaimEntity stubVisibleCounterClaim(UUID counterClaimId) {
+            CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+            lenient().when(counterClaim.getId()).thenReturn(counterClaimId);
+            when(counterClaimVisibilityService.getVisibleCounterClaimForUser(any(), any()))
+                .thenReturn(Optional.of(counterClaim));
+            return counterClaim;
         }
 
         @Test
@@ -165,7 +273,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
         }
 
         @Test
@@ -177,7 +285,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity hidden = mock(GenAppEntity.class);
             lenient().when(hidden.getId()).thenReturn(hiddenId);
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(hidden));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any())).thenReturn(List.of());
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any())).thenReturn(List.of());
 
             PCSCase caseData = PCSCase.builder()
                 .documentUploadDetails(DocumentUploadDetails.builder()
@@ -189,7 +297,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
         }
 
         @Test
@@ -204,7 +312,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
         }
 
         @Test
@@ -217,7 +325,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
         }
 
         @Test
@@ -227,7 +335,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
             callSubmitHandler(caseData);
 
-            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null);
+            verify(documentService).linkAdditionalDocumentsToCase(null, pcsCaseEntity, currentParty, null, null);
         }
 
         private PartyEntity stubCurrentUserParty() {
@@ -312,7 +420,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity oldest = stubGenApp(GenAppType.ADJOURN, now.minusDays(10));
 
             // Bypass the identity stub: return entities in the order the service would.
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(newest, middle, oldest));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(newest, middle, oldest));
 
@@ -333,7 +441,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity olderAdjourn = stubGenApp(GenAppType.ADJOURN, older);
             GenAppEntity newerAdjourn = stubGenApp(GenAppType.ADJOURN, newer);
 
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(newerAdjourn, olderAdjourn));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(newerAdjourn, olderAdjourn));
 
@@ -372,7 +480,7 @@ class UploadDocumentsTest extends BaseEventTest {
             // frontend skips the confirm page.
             GenAppEntity hidden = stubGenApp(GenAppType.SOMETHING_ELSE, LocalDateTime.now());
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(hidden));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any())).thenReturn(List.of());
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any())).thenReturn(List.of());
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -388,7 +496,7 @@ class UploadDocumentsTest extends BaseEventTest {
             GenAppEntity visibleWithNotice = stubGenApp(GenAppType.ADJOURN, now);
             GenAppEntity hiddenWithoutNotice = stubGenApp(GenAppType.SOMETHING_ELSE, now.minusDays(1));
             when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(visibleWithNotice, hiddenWithoutNotice));
-            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any()))
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
                 .thenReturn(List.of(visibleWithNotice));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -414,6 +522,75 @@ class UploadDocumentsTest extends BaseEventTest {
                 .isNotEmpty()
                 .extracting(option -> option.getValue().getCategory())
                 .doesNotContain(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
+        }
+
+        @Test
+        void shouldShowPageWithCounterClaimOptionWhenCounterClaimExistsAndNoGenAppsDo() {
+            LocalDateTime submittedDate = LocalDateTime.now();
+            UUID counterClaimId = UUID.randomUUID();
+            stubVisibleCounterClaim(counterClaimId, submittedDate);
+            when(pcsCaseEntity.getGenApps()).thenReturn(new HashSet<>());
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions())
+                .hasSize(1)
+                .first()
+                .satisfies(option -> {
+                    assertThat(option.getId()).isEqualTo(counterClaimId.toString());
+                    assertThat(option.getValue().getCounterClaimId()).isEqualTo(counterClaimId.toString());
+                    assertThat(option.getValue().getGenAppId()).isNull();
+                    assertThat(option.getValue().getCategory()).isEqualTo(DocumentUploadCategory.COUNTERCLAIM);
+                    assertThat(option.getValue().getSubmittedDate()).isEqualTo(submittedDate);
+                });
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldListCounterClaimAfterGenAppsWhenBothExist() {
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
+            stubVisibleCounterClaim(UUID.randomUUID(), LocalDateTime.now());
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCategory())
+                .containsExactly(
+                    DocumentUploadCategory.ADJOURN_HEARING_APPLICATION,
+                    DocumentUploadCategory.COUNTERCLAIM);
+        }
+
+        @Test
+        void shouldNotShowPageWhenVisibilityServiceHidesTheCounterClaimAndNoGenAppsExist() {
+            when(pcsCaseEntity.getGenApps()).thenReturn(new HashSet<>());
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            DocumentUploadDetails details = result.getDocumentUploadDetails();
+            assertThat(details.getRelatedApplicationOptions()).isEmpty();
+            assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void shouldNotStampCounterClaimIdOnGenAppOptions() {
+            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
+                .extracting(option -> option.getValue().getCounterClaimId())
+                .containsOnlyNulls();
+        }
+
+        private void stubVisibleCounterClaim(UUID counterClaimId, LocalDateTime submittedDate) {
+            CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+            when(counterClaim.getId()).thenReturn(counterClaimId);
+            lenient().when(counterClaim.getClaimSubmittedDate()).thenReturn(submittedDate);
+            when(counterClaimVisibilityService.getVisibleCounterClaimForUser(any(), any()))
+                .thenReturn(Optional.of(counterClaim));
         }
 
         private GenAppEntity stubGenApp(GenAppType type, LocalDateTime submittedDate) {
