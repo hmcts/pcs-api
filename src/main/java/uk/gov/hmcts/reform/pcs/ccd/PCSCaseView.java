@@ -139,6 +139,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
         pcsCase.setCourtTypeId(10);
+        pcsCase.setHmctsOrgId("AAA3");
         return pcsCase;
     }
 
