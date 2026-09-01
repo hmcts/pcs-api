@@ -12,6 +12,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
+import java.util.Optional;
 import lombok.Getter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
@@ -123,9 +124,13 @@ public enum GroupAccessType implements CCDAccessGroup {
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
      */
-    public static String caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole, String organisationId) {
-        return CASE_ACCESS_GROUP_MAP.get(new Key(orgProfileId, partyRole))
-            .getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId);
+    public static Optional<String> caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole,
+                                                        String organisationId) {
+        return Optional.ofNullable(orgProfileId)
+            .map(profileId -> new Key(profileId, partyRole))
+            .map(CASE_ACCESS_GROUP_MAP::get)
+            .map(groupAccessType ->
+                     groupAccessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
     }
 
     /**

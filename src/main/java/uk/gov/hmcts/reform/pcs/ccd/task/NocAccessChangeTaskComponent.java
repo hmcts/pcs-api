@@ -52,6 +52,7 @@ public class NocAccessChangeTaskComponent {
                     legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
                             caseReference,
                             taskData.getPartyId(),
+                            taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
 
                     return new CompletionHandler.OnCompleteRemove<>();
