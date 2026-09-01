@@ -11,35 +11,40 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
 public class MakeOrderService {
 
-    private static final String EMPTY_PAYLOAD = "{}";
-
     private final OrderRepository orderRepository;
     private final HearingRepository hearingRepository;
     private final ObjectMapper objectMapper;
+    private final AddressMapper addressMapper;
     private final Clock ukClock;
 
     public MakeOrderService(OrderRepository orderRepository,
                             HearingRepository hearingRepository,
                             ObjectMapper objectMapper,
+                            AddressMapper addressMapper,
                             @Qualifier("ukClock") Clock ukClock) {
         this.orderRepository = orderRepository;
         this.hearingRepository = hearingRepository;
         this.objectMapper = objectMapper;
+        this.addressMapper = addressMapper;
         this.ukClock = ukClock;
     }
 
@@ -53,7 +58,7 @@ public class MakeOrderService {
                 .pcsCase(hearing.getPcsCase())
                 .hearing(hearing)
                 .state(OrderState.DRAFT)
-                .draftPayload(EMPTY_PAYLOAD)
+                .draftPayload(writeJson(emptyDraftPayload()))
                 .build());
 
         return writeJson(toEnvelope(caseReference, pcsCase, order));
@@ -80,11 +85,8 @@ public class MakeOrderService {
 
         OrderEntity order = existingOrder(submitted, hearing);
 
-        JsonNode draftPayload = Objects.requireNonNullElseGet(
-            submitted.order().draftPayload(), objectMapper::createObjectNode);
-        if (!draftPayload.isObject()) {
-            throw new IllegalArgumentException("The order draft payload must be a JSON object");
-        }
+        MakeOrderDraftPayload draftPayload = validateDraftPayload(
+            submitted.order().draftPayload(), submitted.action());
 
         order.setDraftPayload(writeJson(draftPayload));
         OrderState nextState = switch (submitted.action()) {
@@ -110,7 +112,7 @@ public class MakeOrderService {
             .pcsCase(hearing.getPcsCase())
             .hearing(hearing)
             .state(OrderState.DRAFT)
-            .draftPayload(EMPTY_PAYLOAD)
+            .draftPayload(writeJson(emptyDraftPayload()))
             .build();
     }
 
@@ -151,10 +153,10 @@ public class MakeOrderService {
         return new MakeOrderEnvelope(
             null,
             new MakeOrderEnvelope.Order(
-                order.getId(), order.getState(), order.getVersion(), readJson(order.getDraftPayload())),
+                order.getId(), order.getState(), order.getVersion(), readDraftPayload(order.getDraftPayload())),
             new MakeOrderEnvelope.MakeOrderCaseContext(
                 caseReference,
-                pcsCase.getPropertyAddress(),
+                addressMapper.toAddressUK(order.getPcsCase().getPropertyAddress()),
                 toParties(pcsCase.getAllClaimants()),
                 toParties(pcsCase.getAllDefendants())
             )
@@ -198,11 +200,57 @@ public class MakeOrderService {
         }
     }
 
-    private JsonNode readJson(String payload) {
+    private MakeOrderDraftPayload readDraftPayload(String payload) {
         try {
-            return objectMapper.readTree(payload == null ? EMPTY_PAYLOAD : payload);
+            if (payload == null || payload.isBlank()) {
+                return emptyDraftPayload();
+            }
+            return objectMapper.readValue(payload, MakeOrderDraftPayload.class);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("The stored order draft payload is not valid JSON", exception);
+        }
+    }
+
+    private MakeOrderDraftPayload emptyDraftPayload() {
+        return new MakeOrderDraftPayload(
+            1, OrderType.OUTRIGHT_POSSESSION, objectMapper.createObjectNode(), Map.of());
+    }
+
+    private MakeOrderDraftPayload validateDraftPayload(MakeOrderDraftPayload draftPayload, Action action) {
+        if (draftPayload == null) {
+            throw new IllegalArgumentException("The order draft payload is missing");
+        }
+        if (draftPayload.version() != 1) {
+            throw new IllegalArgumentException("The order draft payload version is not supported");
+        }
+        if (draftPayload.orderType() == null) {
+            throw new IllegalArgumentException("The order type is missing");
+        }
+        if (draftPayload.fields() == null || !draftPayload.fields().isObject()) {
+            throw new IllegalArgumentException("The order draft fields must be a JSON object");
+        }
+        if (draftPayload.documents() == null
+            || draftPayload.documents().values().stream()
+                .anyMatch(document -> document == null || !document.isObject())) {
+            throw new IllegalArgumentException("The order documents must be JSON objects");
+        }
+        if (action == Action.SUBMIT_FOR_REVIEW) {
+            validateSubmissionDocument(draftPayload);
+        }
+        return draftPayload;
+    }
+
+    private void validateSubmissionDocument(MakeOrderDraftPayload draftPayload) {
+        if (draftPayload.orderType() != OrderType.OUTRIGHT_POSSESSION) {
+            throw new IllegalArgumentException("Only outright possession orders can be submitted for review");
+        }
+        JsonNode document = draftPayload.documents().get(OrderType.OUTRIGHT_POSSESSION);
+        if (document == null
+            || !"docweave-document".equals(document.path("schema").asText())
+            || document.path("version").asInt() != 1
+            || !document.path("current").isObject()
+            || !document.path("generated").isObject()) {
+            throw new IllegalArgumentException("The outright possession order document is invalid");
         }
     }
 

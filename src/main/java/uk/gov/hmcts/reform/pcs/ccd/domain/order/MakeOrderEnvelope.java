@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public record MakeOrderEnvelope(Action action, Order order, MakeOrderCaseContext
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Order(UUID id, OrderState state, long version, JsonNode draftPayload) {
+    public record Order(UUID id, OrderState state, long version, MakeOrderDraftPayload draftPayload) {
     }
 
     public record MakeOrderCaseContext(long caseReference,
