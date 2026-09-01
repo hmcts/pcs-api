@@ -246,7 +246,8 @@ public class DocumentService {
         List<ListValue<UploadedDocument>> uploadedDocuments,
         PcsCaseEntity pcsCase,
         PartyEntity party,
-        GenAppEntity selectedGenApp
+        GenAppEntity selectedGenApp,
+        CounterClaimEntity selectedCounterClaim
     ) {
         long caseReference = pcsCase.getCaseReference();
 
@@ -266,25 +267,8 @@ public class DocumentService {
             .filter(Objects::nonNull)
             .filter(uploaded -> uploaded.getDocument() != null)
             .filter(uploaded -> !existingUrls.contains(uploaded.getDocument().getUrl()))
-            .map(uploaded -> {
-                String originalFilename = uploaded.getDocument().getFilename();
-                String renamed = (selectedGenApp != null)
-                    ? documentNameService.appendGenAppPostfix(
-                        originalFilename, selectedGenApp, mainClaim, party.getId())
-                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
-                return DocumentEntity.builder()
-                    .pcsCase(pcsCase)
-                    .party(party)
-                    .generalApplication(selectedGenApp)
-                    .url(uploaded.getDocument().getUrl())
-                    .fileName(renamed)
-                    .binaryUrl(uploaded.getDocument().getBinaryUrl())
-                    .contentType(uploaded.getContentType())
-                    .size(uploaded.getSizeInBytes())
-                    .type(DocumentType.OTHER)
-                    .categoryId(selectedGenApp != null ? CaseFileCategory.APPLICATIONS.getId() : DEFAULT_CATEGORY_ID)
-                    .build();
-            })
+            .map(uploaded -> buildAdditionalDocument(
+                uploaded, pcsCase, mainClaim, party, selectedGenApp, selectedCounterClaim))
             .toList();
 
         if (documentEntities.isEmpty()) {
@@ -292,12 +276,64 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
-        createAdditionalDocsWATask(party, selectedGenApp, caseReference, mainClaim, documentEntities);
+        createAdditionalDocsWATask(
+            party,
+            selectedGenApp,
+            selectedCounterClaim,
+            caseReference,
+            mainClaim,
+            documentEntities
+        );
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
         log.info("Saved {} additional documents for case {} and party {}",
                  saved.size(), caseReference, party.getId());
         return saved;
+    }
+
+    private DocumentEntity buildAdditionalDocument(
+        UploadedDocument uploaded,
+        PcsCaseEntity pcsCase,
+        ClaimEntity mainClaim,
+        PartyEntity party,
+        GenAppEntity selectedGenApp,
+        CounterClaimEntity selectedCounterClaim
+    ) {
+        String originalFilename = uploaded.getDocument().getFilename();
+
+        String renamed;
+        DocumentType type;
+        String categoryId;
+
+        if (selectedGenApp != null) {
+            renamed = documentNameService.appendGenAppPostfix(
+                originalFilename, selectedGenApp, mainClaim, party.getId());
+            type = DocumentType.OTHER;
+            categoryId = CaseFileCategory.APPLICATIONS.getId();
+        } else if (selectedCounterClaim != null) {
+            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
+            // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
+            categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
+        } else {
+            renamed = documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+            type = DocumentType.OTHER;
+            categoryId = DEFAULT_CATEGORY_ID;
+        }
+
+        return DocumentEntity.builder()
+            .pcsCase(pcsCase)
+            .party(party)
+            .generalApplication(selectedGenApp)
+            .counterClaim(selectedCounterClaim)
+            .url(uploaded.getDocument().getUrl())
+            .fileName(renamed)
+            .binaryUrl(uploaded.getDocument().getBinaryUrl())
+            .contentType(uploaded.getContentType())
+            .size(uploaded.getSizeInBytes())
+            .type(type)
+            .categoryId(categoryId)
+            .build();
     }
 
     private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
@@ -585,6 +621,7 @@ public class DocumentService {
         createAdditionalDocsWATask(
             party,
             selectedGenApp,
+            null,
             pcsCaseEntity.getCaseReference(),
             pcsCaseEntity.getMainClaim(),
             documentEntities
@@ -593,6 +630,7 @@ public class DocumentService {
 
     private void createAdditionalDocsWATask(PartyEntity party,
                                             GenAppEntity selectedGenApp,
+                                            CounterClaimEntity selectedCounterClaim,
                                             long caseReference,
                                             ClaimEntity mainClaim,
                                             List<DocumentEntity> documentEntities) {
@@ -607,7 +645,7 @@ public class DocumentService {
             );
 
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
-        } else {
+        } else if (selectedCounterClaim == null) {
             String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
                 caseReference,
                 mainClaim,
@@ -616,6 +654,8 @@ public class DocumentService {
             );
             camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
         }
-    }
+        // No review task for counterclaim documents until HDPI-6591 defines it
+
+}
 
 }
