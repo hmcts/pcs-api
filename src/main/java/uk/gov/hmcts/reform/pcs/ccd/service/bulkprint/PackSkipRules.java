@@ -128,13 +128,19 @@ public class PackSkipRules {
     }
 
     private boolean hasIssuedCounterClaimWithHwf(PcsCaseEntity pcsCase) {
-        return issuedCounterClaims(pcsCase)
+        return hwfBlockingCounterClaims(pcsCase)
             .anyMatch(counterClaim -> isPopulated(counterClaim.getHwfReferenceNumber()));
     }
 
     private Stream<CounterClaimEntity> issuedCounterClaims(PcsCaseEntity pcsCase) {
         return streamOf(pcsCase.getCounterClaims())
             .filter(counterClaim -> counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED);
+    }
+
+    private Stream<CounterClaimEntity> hwfBlockingCounterClaims(PcsCaseEntity pcsCase) {
+        return streamOf(pcsCase.getCounterClaims())
+            .filter(counterClaim -> counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED
+                || counterClaim.getStatus() == CounterClaimState.PENDING_REVIEW);
     }
 
     private boolean hasActiveTranslationFlag(PcsCaseEntity pcsCase) {

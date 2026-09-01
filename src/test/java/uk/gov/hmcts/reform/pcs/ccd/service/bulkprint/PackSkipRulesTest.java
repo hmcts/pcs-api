@@ -242,8 +242,27 @@ class PackSkipRulesTest {
     }
 
     @Test
-    @DisplayName("Does not skip a pending counterclaim that has an HWF reference")
-    void shouldNotSkipPendingCounterClaimWithHwf() {
+    @DisplayName("Skips the defence pack when a pending-review counterclaim has an HWF reference")
+    void shouldSkipDefencePackWhenPendingReviewCounterClaimHasHwf() {
+        enableRelease13();
+        CounterClaimEntity pendingReview = CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_REVIEW)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .hwfReferenceNumber("HWF-123")
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .claims(List.of(ClaimEntity.builder().build()))
+            .defendantResponses(List.of(submittedDefence(LanguageUsed.ENGLISH)))
+            .counterClaims(List.of(pendingReview))
+            .build();
+
+        assertThat(underTest.shouldSkipDefencePack(pcsCase)).isTrue();
+    }
+
+    @Test
+    @DisplayName("Does not skip a payment-pending counterclaim that has an HWF reference")
+    void shouldNotSkipPaymentPendingCounterClaimWithHwf() {
         enableRelease13();
         CounterClaimEntity pending = CounterClaimEntity.builder()
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)

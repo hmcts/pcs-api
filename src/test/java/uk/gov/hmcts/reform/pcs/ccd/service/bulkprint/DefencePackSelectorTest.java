@@ -304,6 +304,25 @@ class DefencePackSelectorTest {
     }
 
     @Test
+    @DisplayName("Does not send defence packs when a pending-review counterclaim has an HWF reference")
+    void shouldSkipDefencePackWhenPendingReviewCounterClaimHasHwf() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        PartyEntity postalDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        DocumentEntity postalDefence = defenceForm(postalDefendant);
+        DocumentEntity postalCounterClaim = counterClaim(postalDefendant);
+        PcsCaseEntity pcsCase = caseWith(List.of(postalDefence, postalCounterClaim), claimant, postalDefendant);
+        pcsCase.setDefendantResponses(List.of(submittedDefence(postalDefendant, LanguageUsed.ENGLISH)));
+        pcsCase.setCounterClaims(List.of(CounterClaimEntity.builder()
+            .party(postalDefendant)
+            .status(CounterClaimState.PENDING_REVIEW)
+            .languageUsed(LanguageUsed.ENGLISH)
+            .hwfReferenceNumber("HWF-123")
+            .build()));
+
+        assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Does not send defence packs when an issued counterclaim has an HWF reference")
     void shouldSkipDefencePackWhenIssuedCounterClaimHasHwf() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
