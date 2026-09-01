@@ -12,16 +12,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 
 class DocumentAccessTest {
 
     private static final UserRole[] CREATE_READ_ROLES = {
-        PCS_SOLICITOR,
         CITIZEN,
         DEFENDANT,
         CLAIMANT_SOLICITOR,
-        DEFENDANT_SOLICITOR
+        DEFENDANT_SOLICITOR,
+        GA_CLAIMANT_SOLICITOR,
+        GA_DEFENDANT_SOLICITOR
     };
 
     private final DocumentAccess underTest = new DocumentAccess();

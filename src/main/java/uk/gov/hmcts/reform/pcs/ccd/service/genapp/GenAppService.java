@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -44,18 +45,21 @@ public class GenAppService {
     private final DocumentService documentService;
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
+    private final ClaimActivityLogService claimActivityLogService;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
                          DocumentService documentService,
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
+                         ClaimActivityLogService claimActivityLogService,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
         this.documentService = documentService;
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
+        this.claimActivityLogService = claimActivityLogService;
         this.utcClock = utcClock;
     }
 
@@ -178,6 +182,9 @@ public class GenAppService {
         genAppEntity.setDocuments(additionalEvidenceDocuments);
 
         genAppRepository.save(genAppEntity);
+        if (submissionDocument != null) {
+            claimActivityLogService.logGenerationSuccess(pcsCaseEntity, applicantParty);
+        }
     }
 
     public GenAppEntity loadGenApp(UUID genAppId) {

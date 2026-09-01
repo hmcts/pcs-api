@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 
 class AccessProfileTest {
 
@@ -38,10 +39,9 @@ class AccessProfileTest {
             Arguments.of(AccessProfile.RAS_VALIDATOR, "caseworker-ras-validation", Set.of(R)),
             Arguments.of(AccessProfile.CITIZEN, "citizen", CRU),
             Arguments.of(AccessProfile.DEFENDANT, "[DEFENDANT]", CRU),
-            Arguments.of(AccessProfile.CLAIMANT_SOLICITOR, "[CLAIMANTSOLICITOR]", CRU),
-            Arguments.of(AccessProfile.DEFENDANT_SOLICITOR, "[DEFENDANTSOLICITOR]", CRU),
+            Arguments.of(AccessProfile.GA_CLAIMANT_SOLICITOR, "claimant-solicitor", CRU),
+            Arguments.of(AccessProfile.GA_DEFENDANT_SOLICITOR, "defendant-solicitor", CRU),
             Arguments.of(AccessProfile.PCS_CASE_WORKER, "caseworker-pcs", Set.of(R)),
-            Arguments.of(AccessProfile.PCS_SOLICITOR, "caseworker-pcs-solicitor", CRU),
             Arguments.of(AccessProfile.JUDGE, "judge", CRU),
             Arguments.of(AccessProfile.FEE_PAID_JUDGE, "fee-paid-judge", CRU),
             Arguments.of(AccessProfile.CIRCUIT_JUDGE, "circuit-judge", CRU),
@@ -56,5 +56,20 @@ class AccessProfileTest {
             Arguments.of(AccessProfile.SYSTEM_USER, "pcs-system-update", CRU),
             Arguments.of(AccessProfile.ORGANISATION_CASE_ACCESS_ADMINISTRATOR, "caseworker-caa", CRU)
         );
+    }
+
+    @Test
+    void shouldDeclareAccessGroupsOnTheCanonicalCaseType() {
+        assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.accessGroupsFor(false))
+            .containsExactly(SOLICITOR_ORG_CLAIMANT_ACCESS);
+        assertThat(AccessProfile.PCS_SOLICITOR.accessGroupsFor(false)).isEmpty();
+    }
+
+    @Test
+    void shouldDeclareNoAccessGroupsOnASuffixedCaseType() {
+        // PCS-staging / PR previews: no AccessType rows, so PRM mints no org roles for them.
+        for (AccessProfile profile : AccessProfile.values()) {
+            assertThat(profile.accessGroupsFor(true)).as(profile.name()).isEmpty();
+        }
     }
 }
