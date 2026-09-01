@@ -39,6 +39,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 
 @Component
 @AllArgsConstructor
@@ -109,7 +110,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return caseData;
     }
 
-    DynamicStringListElement buildCategoryItem(
+    private DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         String code,
         LocalDateTime genAppDate
@@ -189,8 +190,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                                                                             organisationId);
     }
 
-    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseReference = eventPayload.caseReference();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
         UUID currentUserId = securityContextService.getCurrentUserId();
@@ -209,7 +210,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             party = selectedGenApp.getParty();
         }
 
-        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+        List<LegalRepDocument> legalRepDocuments
+            = unwrapListItems(pcsCase.getLegalRepDocumentUploadDetails().getLegalRepDocuments());
 
         boolean isDocumentNull = legalRepDocuments.stream()
             .anyMatch(doc -> doc == null || doc.getDocument() == null);
@@ -238,7 +240,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             """;
     }
 
-    @SuppressWarnings("SameParameterValue")
     private SubmitResponse<State> errorResponse(String message) {
         return SubmitResponse.<State>builder()
             .errors(List.of(message))
