@@ -261,7 +261,7 @@ def setAatEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
   env.ENABLE_TESTING_SUPPORT = "true"
-  env.E2E_SUITE= "regression"
+  env.E2E_SUITE= "healthCheck"
 }
 
 def setProdEnvVars() {
@@ -371,5 +371,4 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
-
 
