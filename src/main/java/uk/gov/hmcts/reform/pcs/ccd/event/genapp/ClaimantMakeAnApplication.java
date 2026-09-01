@@ -54,6 +54,8 @@ public class ClaimantMakeAnApplication implements CCDConfig<PCSCase, State, User
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3))
             .name("Make an application")
             .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
+            .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+            .grant(Permission.CRUD, UserRole.CLAIMANT)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .endButtonLabel("Submit")
             .showSummary();
