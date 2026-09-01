@@ -369,7 +369,6 @@ public class DraftCaseDataService {
         );
     }
 
-    @Transactional
     public void deleteUnsubmittedCaseDataBySystemUser(long caseReference, EventId eventId) {
         List<DraftCaseDataEntity> drafts =
                 draftCaseDataRepository.findByCaseReferenceAndEventId(caseReference, eventId);
