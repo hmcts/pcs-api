@@ -66,7 +66,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
-  test('Case Flags - Create case level Flag', async ({ page }) => {
+  test('Case Flags - Create case level Flag @rerun', async ({ page }) => {
     await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
