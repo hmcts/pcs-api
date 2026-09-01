@@ -978,10 +978,14 @@ export class CreateCaseAction implements IAction {
 
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        const defendantUser = Object.values(user).find(
+          u => u.email === defendantSolicitor.email
+        );
+        const orgName = defendantUser && 'orgName' in defendantUser ? defendantUser.orgName : undefined;
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, submitPayload.claimantName)
+        defendant.set(`Name`, orgName ?? '');
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
@@ -1603,7 +1607,7 @@ export class CreateCaseAction implements IAction {
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];

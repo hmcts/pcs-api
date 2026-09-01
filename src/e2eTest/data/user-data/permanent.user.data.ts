@@ -7,6 +7,7 @@ export const user = {
   defendantSolicitor:  {
     email: 'pcs-org1-solicitor2@test.com', 
     password: process.env.IDAM_PCS_USER_PASSWORD,
+    orgName: `Possession Claim Service Org1`
   },
   caseworker:  {
     email: 'pcs-caseworker@test.com',
