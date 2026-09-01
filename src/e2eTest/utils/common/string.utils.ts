@@ -34,18 +34,33 @@ export function stringToCamelCase(input: string): string {
  */
 export function getCurrentBSTTime(): string {
   const now = new Date();
-  const formatted = now.toLocaleString("en-GB", {
+
+  const day = now.toLocaleString("en-GB", {
     timeZone: "Europe/London",
     day: "numeric",
-    month: "short",
+  });
+
+  const month = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    month: "long",
+  }).format(now).slice(0, 3);
+
+  const year = now.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
     year: "numeric",
+  });
+
+  const time = now.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
     hour12: true,
   });
 
-  return formatted.replace(/am|pm/, (match) => match.toUpperCase());
+  const currentTime = `${day} ${month} ${year}, ${time}`.replace(/am|pm/i,match => match.toUpperCase());
+
+  return currentTime;
 }
 
 /* convert YYY-MM-DD to DD/MM/YYYY format or DD MONTH YYYY */
