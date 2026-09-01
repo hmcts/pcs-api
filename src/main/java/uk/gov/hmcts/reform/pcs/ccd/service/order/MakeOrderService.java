@@ -9,11 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.MakeOrderCaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
@@ -158,9 +164,64 @@ public class MakeOrderService {
                 caseReference,
                 addressMapper.toAddressUK(order.getPcsCase().getPropertyAddress()),
                 toParties(pcsCase.getAllClaimants()),
-                toParties(pcsCase.getAllDefendants())
+                toParties(pcsCase.getAllDefendants()),
+                toCaseFacts(pcsCase)
             )
         );
+    }
+
+    private MakeOrderCaseFacts toCaseFacts(PCSCase pcsCase) {
+        TenancyLicenceDetails tenancy = pcsCase.getTenancyLicenceDetails();
+        OccupationLicenceDetailsWales occupation = pcsCase.getOccupationLicenceDetailsWales();
+        RentDetails rent = pcsCase.getRentDetails();
+        RentArrearsSection arrears = pcsCase.getRentArrears();
+
+        return new MakeOrderCaseFacts(
+            tenancy != null && tenancy.getTenancyLicenceDate() != null
+                ? tenancy.getTenancyLicenceDate()
+                : occupation == null ? null : occupation.getLicenceStartDate(),
+            tenancy != null && tenancy.getTypeOfTenancyLicence() != null
+                ? tenancy.getTypeOfTenancyLicence().name()
+                : occupation == null || occupation.getOccupationLicenceTypeWales() == null
+                    ? null : occupation.getOccupationLicenceTypeWales().name(),
+            noticeDate(pcsCase.getNoticeServedDetails()),
+            rent == null ? null : rent.getCurrentRent(),
+            rent == null || rent.getFrequency() == null ? null : rent.getFrequency().name(),
+            groundsPleaded(pcsCase),
+            arrears == null ? null : arrears.getTotal()
+        );
+    }
+
+    private LocalDate noticeDate(NoticeServedDetails notice) {
+        if (notice == null || notice.getServiceMethod() == null) {
+            return null;
+        }
+        return switch (notice.getServiceMethod()) {
+            case FIRST_CLASS_POST -> notice.getPostedDate();
+            case DELIVERED_PERMITTED_PLACE -> notice.getDeliveredDate();
+            case PERSONALLY_HANDED -> notice.getHandedOverDateTime() == null
+                ? null : notice.getHandedOverDateTime().toLocalDate();
+            case EMAIL -> notice.getEmailSentDateTime() == null
+                ? null : notice.getEmailSentDateTime().toLocalDate();
+            case OTHER_ELECTRONIC -> notice.getOtherElectronicDateTime() == null
+                ? null : notice.getOtherElectronicDateTime().toLocalDate();
+            case OTHER -> notice.getOtherDateTime() == null ? null : notice.getOtherDateTime().toLocalDate();
+        };
+    }
+
+    private String groundsPleaded(PCSCase pcsCase) {
+        if (pcsCase.getClaimGroundSummaries() == null) {
+            return null;
+        }
+        String grounds = pcsCase.getClaimGroundSummaries().stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(summary -> summary.getLabel())
+            .filter(Objects::nonNull)
+            .filter(label -> !label.isBlank())
+            .distinct()
+            .collect(java.util.stream.Collectors.joining(", "));
+        return grounds.isEmpty() ? null : grounds;
     }
 
     private List<MakeOrderEnvelope.Party> toParties(List<ListValue<Party>> parties) {
