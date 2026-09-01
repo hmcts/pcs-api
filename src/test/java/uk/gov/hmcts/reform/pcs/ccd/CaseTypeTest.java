@@ -171,6 +171,8 @@ class CaseTypeTest {
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(supportTab.getForRoles()).containsExactlyInAnyOrder(CaseType.EXTERNAL_FLAG_TAB_ROLES);
         assertThat(supportTab.getForRoles())
+            .contains(AccessProfile.CLAIMANT, AccessProfile.GA_CLAIMANT_SOLICITOR,
+                      AccessProfile.GA_DEFENDANT_SOLICITOR)
             .doesNotContain(AccessProfile.CLAIMANT_SOLICITOR, AccessProfile.DEFENDANT_SOLICITOR);
         // A professional whose access to a case comes through their organisation's group access holds the
         // group access profile rather than a case role, so the Support tab has to be granted to those
