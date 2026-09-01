@@ -74,7 +74,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -1124,8 +1123,8 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldNotRaiseReviewTaskForCounterClaimAdditionalDocuments() {
-        // The counterclaim review task is HDPI-6591; nothing should be raised until then.
+    void shouldRaiseReviewTaskForCounterClaimAdditionalDocuments() {
+        // Given
         PartyEntity party = mock(PartyEntity.class);
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
@@ -1148,9 +1147,17 @@ class DocumentServiceTest {
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
+        String expectedTaskDescription = "some counterclaim task description";
+        when(taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
+        )).thenReturn(expectedTaskDescription);
+
+        // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
 
-        verifyNoInteractions(camundaService);
+        // Then
+        verify(camundaService)
+            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, expectedTaskDescription);
     }
 
     @Test
