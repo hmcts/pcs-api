@@ -18,6 +18,7 @@ public class OrganisationBasePersonalisation implements TemplatePersonalisation 
             "organisationName", organisationName,
             "caseNumber", caseNumber,
             "claimantName", claimantName,
-            "primaryDefendantName", primaryDefendantName);
+            "primaryDefendantName", primaryDefendantName
+        );
     }
 }

@@ -26,13 +26,13 @@ import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.LegalRepresentativeNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -108,8 +109,8 @@ public class NotificationService {
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
-        return sendEmailForLegalRepresentative(
-            legalRepresentativeRecipient(
+        return sendEmailForOrganisation(
+            organisationRecipient(
                 organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
@@ -126,8 +127,8 @@ public class NotificationService {
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
-        return sendEmailForLegalRepresentative(
-            legalRepresentativeRecipient(
+        return sendEmailForOrganisation(
+            organisationRecipient(
                 organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
@@ -144,8 +145,8 @@ public class NotificationService {
         PcsCaseEntity pcsCaseEntity,
         DefendantResponseEntity defendantResponse) {
 
-        return sendEmailForLegalRepresentative(
-            legalRepresentativeRecipient(
+        return sendEmailForOrganisation(
+            organisationRecipient(
                 organisationEntity,
                 pcsCaseEntity,
                 defendantResponse.getParty(),
@@ -155,6 +156,26 @@ public class NotificationService {
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forOrganisation(organisationEntity,
                                                                pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(
+        OrganisationEntity organisation,
+        String paymentReference,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForOrganisation(
+            organisationRecipient(
+                organisation,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponse,
+                                                                           paymentReference,
+                                                                           organisation));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -510,8 +531,8 @@ public class NotificationService {
         }
     }
 
-    public EmailNotificationResponse sendEmailForLegalRepresentative(
-        LegalRepresentativeNotificationRecipient recipient,
+    public EmailNotificationResponse sendEmailForOrganisation(
+        OrganisationNotificationRecipient recipient,
         EmailTemplate template,
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
@@ -616,30 +637,6 @@ public class NotificationService {
         );
     }
 
-    private LegalRepresentativeNotificationRecipient legalRepresentativeRecipient(
-        OrganisationEntity organisationEntity,
-        PcsCaseEntity pcsCaseEntity,
-        PartyEntity defendantParty,
-        DefendantResponseEntity defendantResponse) {
-
-        if (organisationEntity == null) {
-            throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
-        }
-
-        var contactDetails = organisationEntity.getClaimPartyContactDetails();
-        String emailAddress = contactDetails != null ? contactDetails.stream()
-            .filter(details -> pcsCaseEntity.getId().equals(details.getPcsCase().getId()))
-            .findFirst().map(
-                ClaimPartyContactDetailsEntity::getEmailAddress).orElse(null) : null;
-
-        return new LegalRepresentativeNotificationRecipient(
-            emailAddress,
-            defendantParty,
-            pcsCaseEntity,
-            defendantResponse.getClaim()
-        );
-    }
-
     private NotificationRecipient legalRepresentativeRecipient(
         PartyEntity representedDefendant,
         String legalRepEmail
@@ -668,6 +665,31 @@ public class NotificationService {
             response.getPcsCase(),
             response.getClaim(),
             PartyRole.DEFENDANT
+        );
+    }
+
+    private OrganisationNotificationRecipient organisationRecipient(
+        OrganisationEntity organisation,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity defendantParty,
+        DefendantResponseEntity defendantResponse) {
+
+        if (organisation == null) {
+            throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
+        }
+
+        ClaimPartyContactDetailsEntity contactDetails = organisation.getClaimPartyContactDetails().stream()
+            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
+                && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst()
+            .orElse(null);
+
+        String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
+
+        return new OrganisationNotificationRecipient(
+            emailAddress,
+            defendantParty,
+            pcsCaseEntity,
+            defendantResponse.getClaim()
         );
     }
 }

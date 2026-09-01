@@ -26,8 +26,10 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisati
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
+
 
 import java.util.Map;
 import java.util.UUID;
@@ -353,10 +355,35 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("paymentReferenceNumber", paymentReference)
                 .containsEntry("firstName", "John")
+                .containsEntry("lastName", "Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE");
         }
+    }
 
+    @Nested
+    @DisplayName("counterclaimSuccessLegalRep")
+    class CounterclaimSuccessForLegalRepTests {
+        @Test
+        @DisplayName("Should include base legal rep fields, organisationName, and paymentReferenceNumber")
+        void shouldIncludePaymentReferenceNumberForLegalRep() {
+            OrganisationEntity legalRepresentativeOrganisationEntity = createOrganisation("HMCTS");
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            String paymentReference = "PAY-456";
+
+            CounterclaimPaymentSuccessPersonalisationLegalRep result = factory.counterclaimSuccessOrganisation(
+                response, paymentReference, legalRepresentativeOrganisationEntity);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("paymentReferenceNumber", paymentReference)
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("organisationName", "HMCTS");
+        }
     }
 
     @Nested
