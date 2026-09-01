@@ -226,8 +226,8 @@ public class MakeOrderService {
         if (draftPayload.orderType() == null) {
             throw new IllegalArgumentException("The order type is missing");
         }
-        if (draftPayload.fields() == null || !draftPayload.fields().isObject()) {
-            throw new IllegalArgumentException("The order draft fields must be a JSON object");
+        if (draftPayload.formData() == null || !draftPayload.formData().isObject()) {
+            throw new IllegalArgumentException("The order draft form data must be a JSON object");
         }
         if (draftPayload.documents() == null
             || draftPayload.documents().values().stream()

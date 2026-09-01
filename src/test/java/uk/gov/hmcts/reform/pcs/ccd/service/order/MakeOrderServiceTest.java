@@ -77,7 +77,7 @@ class MakeOrderServiceTest {
             {
               "version": 1,
               "orderType": "SUSPENDED_POSSESSION",
-              "fields": {"hearing-notes": "Saved note"},
+              "formData": {"hearing-notes": "Saved note"},
               "documents": {}
             }
             """));
@@ -87,7 +87,7 @@ class MakeOrderServiceTest {
         JsonNode storedPayload = objectMapper.readTree(order.getDraftPayload());
         assertThat(storedPayload.path("version").asInt()).isEqualTo(1);
         assertThat(storedPayload.path("orderType").asText()).isEqualTo("SUSPENDED_POSSESSION");
-        assertThat(storedPayload.path("fields").path("hearing-notes").asText()).isEqualTo("Saved note");
+        assertThat(storedPayload.path("formData").path("hearing-notes").asText()).isEqualTo("Saved note");
         assertThat(storedPayload.path("documents").isObject()).isTrue();
         verify(orderRepository).saveAndFlush(order);
     }
@@ -100,7 +100,7 @@ class MakeOrderServiceTest {
             {
               "version": 1,
               "orderType": "OUTRIGHT_POSSESSION",
-              "fields": {},
+              "formData": {},
               "documents": {
                 "OUTRIGHT_POSSESSION": {
                   "schema": "docweave-document",
@@ -125,7 +125,7 @@ class MakeOrderServiceTest {
             {
               "version": 1,
               "orderType": "OUTRIGHT_POSSESSION",
-              "fields": {},
+              "formData": {},
               "documents": {}
             }
             """)))

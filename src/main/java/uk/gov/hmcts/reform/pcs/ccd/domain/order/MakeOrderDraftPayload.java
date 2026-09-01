@@ -8,7 +8,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record MakeOrderDraftPayload(int version,
                                     OrderType orderType,
-                                    JsonNode fields,
+                                    JsonNode formData,
                                     Map<OrderType, JsonNode> documents) {
 
     public enum OrderType {
