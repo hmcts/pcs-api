@@ -8,6 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService;
 import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService.ActorAttribution;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import static org.mockito.Mockito.verify;
@@ -23,6 +25,10 @@ class NoticeOfChangeAppliedEventServiceTest {
     private SystemEventRecordingService systemEventRecordingService;
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
+    @Mock
+    private IdamAuthenticator idamAuthenticator;
+    @Mock
+    private User systemUser;
 
     @InjectMocks
     private NoticeOfChangeAppliedEventService underTest;
@@ -30,6 +36,7 @@ class NoticeOfChangeAppliedEventServiceTest {
     @Test
     void shouldRecordTheEventAttributedToTheActingSolicitor() {
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("Bearer system");
+        when(idamAuthenticator.validateAuthToken("Bearer system")).thenReturn(systemUser);
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .caseReference(String.valueOf(CASE_REFERENCE))
             .userId("uid-1")
