@@ -104,6 +104,12 @@ class ManageSupportTest extends BaseEventTest {
     }
 
     @Test
+    void shouldGrantGroupAccessRoles() {
+        assertThat(configuredEvent.getGrants().keySet())
+            .contains(UserRole.CLAIMANT, UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+    }
+
+    @Test
     void shouldGrantHearingCentreRolesHistoryOnlyAccess() {
         assertThat(configuredEvent.getHistoryOnlyRoles())
             .contains(UserRole.HEARING_CENTRE_ADMIN.getRole(), UserRole.HEARING_CENTRE_TEAM_LEADER.getRole());
