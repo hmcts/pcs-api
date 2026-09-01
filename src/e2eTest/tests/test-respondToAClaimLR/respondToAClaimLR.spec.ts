@@ -45,7 +45,7 @@ test.afterEach(async () => {
 });
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
-  test('Trigger respond event @regression', async () => {
+  test('Trigger respond event @regression @healthCheck', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
