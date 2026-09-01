@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,14 +28,13 @@ class GroupAccessTypeTest {
     void shouldResolveTheGroupIdTemplateForEachDeclaredCombination() {
         Arrays.stream(GroupAccessType.values())
             .filter(accessType -> accessType.getPartyRole() != null)
-            .forEach(accessType -> assertThat(GroupAccessType.caseAccessGroupIdTemplateFor(
-                accessType.getOrganisationProfileId(), accessType.getPartyRole()))
+            .forEach(accessType -> assertThat(GroupAccessType.caseAccessGroupIdFor(
+                accessType.getOrganisationProfileId(), accessType.getPartyRole(), "$ORGID$"))
                 .contains(accessType.getCaseAccessGroupIdTemplate()));
     }
 
     @Test
-    void shouldNotResolveATemplateForACombinationThatHasNoAccessType() {
-        assertThat(GroupAccessType.caseAccessGroupIdTemplateFor(
-            OrganisationProfile.LOCALAUTH_PROFILE.getId(), PartyRole.DEFENDANT)).isEmpty();
+    void shouldReturnEmptyWhenOrganisationProfileIdIsNull() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor(null, null, "ORG123")).isEmpty();
     }
 }
