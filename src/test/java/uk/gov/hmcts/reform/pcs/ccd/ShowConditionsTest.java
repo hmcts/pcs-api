@@ -163,7 +163,12 @@ class ShowConditionsTest {
             arguments(List.of(RELEASE_1_DOT_2, CASEWORKER_EVENTS),
                       "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_2, WALES_MAKE_A_CLAIM),
-                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.walesMakeAClaimEnabled=\"YES\"")
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.walesMakeAClaimEnabled=\"YES\""),
+            arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\"")
         );
     }
 
