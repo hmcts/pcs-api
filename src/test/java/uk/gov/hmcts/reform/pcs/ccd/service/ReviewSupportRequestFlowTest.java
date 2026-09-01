@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
+import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ReviewSupportRequestFlowTest {
 
     private static final LocalDateTime CREATED = LocalDateTime.of(2026, 8, 21, 9, 47, 4);
+    private static final LocalDateTime REVIEWED = LocalDateTime.of(2026, 8, 28, 14, 12, 0);
 
     private final ModelMapper modelMapper = new MapperConfig().modelMapper();
 
@@ -192,6 +194,59 @@ class ReviewSupportRequestFlowTest {
      * configured {@code ModelMapper} first, so party identity reaches the projected parties, and the flag
      * view then populates the party flag collections against it.
      */
+    @Test
+    @DisplayName("keeps the requester's original comment on the Case Flags tab after a review")
+    void keepsTheOriginalCommentAfterReview() {
+        CasePartyFlagEntity requested =
+            supportFlag("RA0024", "A different type of chair", "Requested", FlagVisibility.EXTERNAL);
+        requested.setFlagComment("Wheelchair does not fit under the table");
+        requested.setFlagCommentWelsh("Nid yw'r cadair olwyn yn ffitio");
+        requested.setSubTypeKey("chair");
+        requested.setSubTypeValue("Different chair");
+        requested.setOtherDescription("Bariatric chair required");
+        defendant.setDefendantFlags(new ArrayList<>(List.of(requested)));
+
+        List<ListValue<PartySupport>> offered = supportReviewService.buildRequestedSupport(viewMappedCase());
+        assertThat(offered).hasSize(1);
+
+        String reviewedFlagId = offered.getFirst().getValue().getSupportFlags().getDetails().getFirst().getId();
+        caseFlagService().applyReviewedSupportFlags(
+            List.of(ListValue.<PartySupport>builder()
+                .id(defendant.getId().toString())
+                .value(PartySupport.builder()
+                    .supportFlags(Flags.builder()
+                        .details(List.of(ListValue.<FlagDetail>builder()
+                            .id(reviewedFlagId)
+                            .value(FlagDetail.builder()
+                                .status("Inactive")
+                                .flagUpdateComment("Adjustment no longer required")
+                                .dateTimeModified(REVIEWED)
+                                .build())
+                            .build()))
+                        .build())
+                    .build())
+                .build()),
+            Set.of(defendant));
+
+        FlagDetail onCaseFlagsTab = viewMappedCase().getParties().stream()
+            .filter(value -> defendant.getId().toString().equals(value.getId()))
+            .findFirst().orElseThrow()
+            .getValue().getPartyFlagsExternal().getDetails().getFirst().getValue();
+
+        assertThat(onCaseFlagsTab.getStatus()).isEqualTo("Inactive");
+        assertThat(onCaseFlagsTab.getFlagUpdateComment()).isEqualTo("Adjustment no longer required");
+        assertThat(onCaseFlagsTab.getFlagComment()).isEqualTo("Wheelchair does not fit under the table");
+        assertThat(onCaseFlagsTab.getFlagCommentCy()).isEqualTo("Nid yw'r cadair olwyn yn ffitio");
+        assertThat(onCaseFlagsTab.getOtherDescription()).isEqualTo("Bariatric chair required");
+        assertThat(onCaseFlagsTab.getSubTypeValue()).isEqualTo("Different chair");
+        assertThat(onCaseFlagsTab.getDateTimeCreated()).isEqualTo(CREATED);
+        assertThat(requested.getVisibility()).isEqualTo("External");
+    }
+
+    private CaseFlagService caseFlagService() {
+        return new CaseFlagService(null, null, null, null, null);
+    }
+
     private PCSCase viewMappedCase() {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         Set<PartyEntity> parties = new LinkedHashSet<>(List.of(claimant, defendant));
