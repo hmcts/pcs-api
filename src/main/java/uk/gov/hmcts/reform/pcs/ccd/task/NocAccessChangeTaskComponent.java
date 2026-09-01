@@ -61,7 +61,7 @@ public class NocAccessChangeTaskComponent {
 
                     // CaseAccessGroups is derived from the representation tables, but the search index
                     // is built from the last event's stored snapshot, so record an event for the change.
-                    noticeOfChangeAppliedEventService.submit(caseReference, taskData.getEmail());
+                    noticeOfChangeAppliedEventService.submit(caseReference, taskData);
 
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {

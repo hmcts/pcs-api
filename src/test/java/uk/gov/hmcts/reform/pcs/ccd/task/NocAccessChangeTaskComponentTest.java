@@ -85,7 +85,7 @@ class NocAccessChangeTaskComponentTest {
                                                                                    email,
                                                                                    organisationDetailsResponse);
         // the rep change feeds derived CaseAccessGroups; only an event stores a fresh indexed snapshot
-        verify(noticeOfChangeAppliedEventService).submit(1L, email);
+        verify(noticeOfChangeAppliedEventService).submit(1L, taskData);
     }
 
     @Test

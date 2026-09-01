@@ -14,5 +14,7 @@ public class NocAccessChangeTaskData {
     private String userId;
     private String partyId;
     private String email;
+    private String firstName;
+    private String lastName;
     private OrganisationDetailsResponse organisationDetailsResponse;
 }
