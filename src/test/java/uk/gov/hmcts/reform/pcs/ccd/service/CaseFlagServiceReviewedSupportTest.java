@@ -296,6 +296,36 @@ class CaseFlagServiceReviewedSupportTest {
         return reviewed;
     }
 
+    @Test
+    void shouldRecordTheReviewReasonWithoutDisturbingThePartysOwnComment() {
+        requestedFlag.setFlagComment("Tell us why you need a nearby parking space");
+        requestedFlag.setFlagCommentWelsh("Welsh original");
+        requestedFlag.setSubTypeValue("British Sign Language (BSL)");
+        requestedFlag.setOtherDescription("Other description");
+        LocalDateTime created = LocalDateTime.of(2026, 8, 28, 14, 57, 52);
+        requestedFlag.setDateTimeCreated(created);
+
+        UUID flagId = requestedFlag.getId();
+        LocalDateTime modified = LocalDateTime.of(2026, 8, 28, 15, 20, 36);
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(flagId, "Active", "Updated", modified),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getId()).isEqualTo(flagId);
+        assertThat(requestedFlag.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Updated");
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(requestedFlag.getDateTimeModified()).isEqualTo(modified);
+
+        assertThat(requestedFlag.getFlagComment())
+            .as("the party's own support comment must survive the review")
+            .isEqualTo("Tell us why you need a nearby parking space");
+        assertThat(requestedFlag.getFlagCommentWelsh()).isEqualTo("Welsh original");
+        assertThat(requestedFlag.getSubTypeValue()).isEqualTo("British Sign Language (BSL)");
+        assertThat(requestedFlag.getOtherDescription()).isEqualTo("Other description");
+        assertThat(requestedFlag.getDateTimeCreated()).isEqualTo(created);
+    }
+
     private CasePartyFlagEntity flagEntity(String status, FlagVisibility visibility) {
         CasePartyFlagEntity flag = new CasePartyFlagEntity();
         flag.setId(UUID.randomUUID());
