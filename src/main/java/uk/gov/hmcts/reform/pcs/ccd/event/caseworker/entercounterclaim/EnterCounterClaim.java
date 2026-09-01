@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -41,8 +40,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORK
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enterCounterClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Component
 @RequiredArgsConstructor
@@ -73,7 +70,6 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .decentralisedEvent(enterCounterClaim.name(), this::submit, this::start)
             .forStates(EventStates.enterCounterClaim())
             .name("Enter a counterclaim")
-            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .grant(Permission.CRU, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .endButtonLabel("Submit")
@@ -105,6 +101,10 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
         PartyEntity submittingParty = partyService.getPartyEntityByEntityId(
             caseData.getPartyRadioList().getValueCode(), caseReference);
 
+        String hwfReferenceNumber = counterClaimRequest.getAppliedForHwf() == VerticalYesNo.YES
+            ? counterClaimRequest.getHwfReferenceNumber()
+            : null;
+
         CounterClaim counterClaim = CounterClaim.builder()
             .claimType(counterClaimRequest.getClaimTypeOption())
             .courtPermissionGranted(counterClaimRequest.getCourtPermissionGranted())
@@ -113,20 +113,19 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .isClaimAmountKnown(VerticalYesNo.YES)
             .claimAmount(counterClaimRequest.getCounterClaimAmount())
             .appliedForHwf(counterClaimRequest.getAppliedForHwf())
-            .hwfReferenceNumber(counterClaimRequest.getAppliedForHwf() == VerticalYesNo.YES
-                ? counterClaimRequest.getHwfReferenceNumber() : null)
+            .hwfReferenceNumber(hwfReferenceNumber)
             .counterClaimAgainst(buildCounterClaimAgainst(caseData.getPartyMultiSelectionList()))
             .build();
 
-        counterClaimService.saveCounterClaim(caseReference, counterClaim, submittingParty);
+        counterClaimService.saveCaseworkerEnteredCounterClaim(caseReference, counterClaim, submittingParty);
 
         return SubmitResponse.<State>builder()
-            .confirmationBody(buildConfirmationBody(caseData, caseReference))
+            .confirmationBody(buildConfirmationBody(caseData, caseReference,hwfReferenceNumber))
             .build();
     }
 
-    private String buildConfirmationBody(PCSCase caseData, long caseReference) {
-        boolean appliedForHwf = caseData.getEnterCounterClaim().getAppliedForHwf() == VerticalYesNo.YES;
+    private String buildConfirmationBody(PCSCase caseData, long caseReference, String hwfReferenceNumber) {
+        boolean appliedForHwf = hwfReferenceNumber != null;
 
         String title = appliedForHwf ? "Counterclaim pending issue" : "Counterclaim submitted";
         String whatHappensNext = appliedForHwf ? PENDING_ISSUE_WHAT_HAPPENS_NEXT : "";

@@ -151,7 +151,7 @@ class EnterCounterClaimTest extends BaseEventTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -199,7 +199,7 @@ class EnterCounterClaimTest extends BaseEventTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -245,7 +245,7 @@ class EnterCounterClaimTest extends BaseEventTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
