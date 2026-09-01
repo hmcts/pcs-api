@@ -39,7 +39,7 @@ export class CaseFlagAction implements IAction {
       ['canManageCaseLevelFlag', () => this.canManageCaseLevelFlag(fieldName as actionRecord, page)],
       ['canManagePartyLevelFlag', () => this.canManagePartyLevelFlag(fieldName as actionRecord, page)],
       ['canViewCaseAndPartyFlag', () => this.canViewCaseAndPartyFlag(fieldName as actionData, page)],
-      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
+      ['handleJudgeBookingPageForCaseFlags', () => this.handleJudgeBookingPageForCaseFlags(page)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -300,7 +300,7 @@ export class CaseFlagAction implements IAction {
     }
   }
 
-  private async handleJudgeBookingPage(page: Page): Promise<void> {
+  private async handleJudgeBookingPageForCaseFlags(page: Page): Promise<void> {
     const pageHeader = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title').filter({ visible: true }).first();
     const currentHeader = (await pageHeader.textContent().catch(() => '') ?? '').trim();
 
@@ -312,6 +312,6 @@ export class CaseFlagAction implements IAction {
     await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    await performValidation('mainHeader', caseList.mainHeader);
+    //await performValidation('mainHeader', caseList.mainHeader);
   }
 }

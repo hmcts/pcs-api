@@ -6,10 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Builder
-public class CounterclaimPaymentSuccessPersonalisation implements TemplatePersonalisation {
-    private final BasePersonalisation base;
+public class CounterclaimPaymentSuccessPersonalisationLegalRep implements TemplatePersonalisation {
+    private final OrganisationBasePersonalisation base;
     private final String paymentReferenceNumber;
-    private final String organisationName;
 
     @Override
     public Map<String, Object> toMap() {
