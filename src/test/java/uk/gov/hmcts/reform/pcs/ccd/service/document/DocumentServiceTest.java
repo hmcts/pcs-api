@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
@@ -34,10 +35,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -49,7 +50,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.LocalDateTime;
@@ -64,11 +64,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.times;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -989,7 +989,7 @@ class DocumentServiceTest {
         )).thenReturn(description);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1041,7 +1041,7 @@ class DocumentServiceTest {
         )).thenReturn(expectedTaskDescription);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, selectedGenApp, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1055,6 +1055,88 @@ class DocumentServiceTest {
 
         verify(camundaService)
             .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, expectedTaskDescription);
+    }
+
+    @Test
+    void shouldAttachCounterClaimAndStatementsOfCaseCategoryWhenCounterClaimSelected() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(party.getId()).thenReturn(partyId);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+            .thenReturn("file-new - Defendant 1.pdf");
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .contentType("application/pdf")
+            .sizeInBytes(123L)
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM);
+        assertThat(entity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        assertThat(entity.getCounterClaim()).isSameAs(selectedCounterClaim);
+        assertThat(entity.getGeneralApplication()).isNull();
+        assertThat(entity.getFileName()).isEqualTo("file-new - Defendant 1.pdf");
+        assertThat(entity.getUrl()).isEqualTo("url-new");
+        assertThat(entity.getParty()).isSameAs(party);
+    }
+
+    @Test
+    void shouldRaiseReviewTaskForCounterClaimAdditionalDocuments() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+        UUID partyId = UUID.randomUUID();
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(party.getId()).thenReturn(partyId);
+        when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
+        when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+            .thenReturn("file-new - Defendant 1.pdf");
+
+        UploadedDocument uploaded = UploadedDocument.builder()
+            .document(Document.builder()
+                .url("url-new").filename("file-new.pdf").binaryUrl("bin-new").build())
+            .build();
+
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(uploaded).build()
+        );
+
+        when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
+
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+
+        String expectedTaskDescription = "some counterclaim task description";
+        when(taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(party), anyList()
+        )).thenReturn(expectedTaskDescription);
+
+        // When
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
+
+        // Then
+        verify(camundaService)
+            .createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, expectedTaskDescription);
     }
 
     @Test
@@ -1090,7 +1172,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
 
         // Then
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
@@ -1118,7 +1200,7 @@ class DocumentServiceTest {
         );
 
         // When
-        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1130,8 +1212,8 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         // When
-        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null);
-        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null);
+        underTest.linkAdditionalDocumentsToCase(null, pcsCase, party, null, null);
+        underTest.linkAdditionalDocumentsToCase(Collections.emptyList(), pcsCase, party, null, null);
 
         // Then
         verify(documentRepository, never()).saveAll(anyList());
@@ -1154,7 +1236,7 @@ class DocumentServiceTest {
 
         // When / Then
         assertThatThrownBy(() ->
-            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null))
+            underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, null))
             .isInstanceOf(ClaimNotFoundException.class)
             .hasMessageContaining(String.valueOf(CASE_REFERENCE));
 
