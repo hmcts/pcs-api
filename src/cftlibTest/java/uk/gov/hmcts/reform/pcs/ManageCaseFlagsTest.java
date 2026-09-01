@@ -80,9 +80,10 @@ class ManageCaseFlagsTest extends CftlibTest {
         Map<String, Object> amendData = eventFieldsOnly(amendStart.getCaseDetails().getData());
 
         Map<String, Object> party = partyById(amendData, partyId);
-        List<Map<String, Object>> details = listOf(mapOf(party.get("value")).get("defendantFlags") == null
-                                                       ? null
-                                                       : partyFlags(party).get("details"));
+        Map<String, Object> flags = partyFlags(party);
+        assertThat(flags).as("defendant flags projected on amendFlags start").isNotNull();
+
+        List<Map<String, Object>> details = listOf(flags.get("details"));
         assertThat(details).as("existing party-level flag visible on amendFlags start").isNotEmpty();
 
         String flagId = (String) details.getFirst().get("id");
@@ -105,7 +106,7 @@ class ManageCaseFlagsTest extends CftlibTest {
         StartEventResponse start = startEvent(caseReference, "createFlags");
         Map<String, Object> data = eventFieldsOnly(start.getCaseDetails().getData());
 
-        Map<String, Object> party = listOf(data.get("parties")).getFirst();
+        Map<String, Object> party = defendantParty(data);
         String partyId = (String) party.get("id");
         assertThat(partyId).as("party projected with a collection id").isNotNull();
 
@@ -121,6 +122,16 @@ class ManageCaseFlagsTest extends CftlibTest {
 
     private Map<String, Object> partyFlags(Map<String, Object> party) {
         return mapOf(mapOf(party.get("value")).get("defendantFlags"));
+    }
+
+    // parties is projected from a HashSet, so its order is not deterministic. Only defendants
+    // are given defendantFlags, so select the party on that rather than on collection position.
+    private Map<String, Object> defendantParty(Map<String, Object> data) {
+        List<Map<String, Object>> parties = listOf(data.get("parties"));
+        return parties.stream()
+            .filter(party -> partyFlags(party) != null)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("no defendant party with projected flags in " + parties));
     }
 
     private Map<String, Object> partyById(Map<String, Object> data, String partyId) {

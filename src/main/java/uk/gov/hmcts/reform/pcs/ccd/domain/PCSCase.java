@@ -810,6 +810,12 @@ public class PCSCase {
     )
     private List<ListValue<PartySupport>> partySupport;
 
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Requested support"
+    )
+    private List<ListValue<PartySupport>> supportReviewFlags;
+
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 

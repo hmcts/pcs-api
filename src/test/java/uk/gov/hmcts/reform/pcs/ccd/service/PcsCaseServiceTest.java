@@ -53,6 +53,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
@@ -605,6 +606,64 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+    }
+
+    @Test
+    void shouldTouchNothingButThePartiesWhenPatchingSupportFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+
+        // When
+        underTest.patchSupportFlags(CASE_REFERENCE, PCSCase.builder()
+            .partySupport(List.of(ListValue.<PartySupport>builder()
+                .id(UUID.randomUUID().toString())
+                .value(PartySupport.builder().build())
+                .build()))
+            .build());
+
+        // Then
+        verify(pcsCaseEntity).getParties();
+        verifyNoMoreInteractions(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldTouchNothingButThePartiesWhenPatchingReviewedSupportFlags() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, new ArrayList<>());
+
+        // Then
+        verify(pcsCaseEntity).getParties();
+        verifyNoMoreInteractions(pcsCaseEntity);
+        verify(pcsCaseRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldPatchReviewedSupportFlags() {
+        // Given
+        stubFindCase();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, new ArrayList<>());
+
+        // Then
+        verify(caseFlagService).applyReviewedSupportFlags(any(), any());
+    }
+
+    @Test
+    void shouldHandleNoFlagsWhenCallingPatchReviewedSupportFlags() {
+        // Given
+        stubFindCase();
+
+        // When
+        underTest.patchReviewedSupportFlags(CASE_REFERENCE, null);
+
+        // Then
+        verify(caseFlagService, never()).applyReviewedSupportFlags(any(), any());
     }
 
     private PcsCaseEntity stubFindCase() {

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,9 +51,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-//import static org.assertj.core.api.Assertions.assertE;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
@@ -77,8 +78,10 @@ class CaseFlagServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagService(flagRefDataRepository, camundaService, taskDescriptionService,
-                                        partySupportOwnershipResolver, translationWAService);
+        underTest = new CaseFlagService(
+            flagRefDataRepository, camundaService, taskDescriptionService,
+            partySupportOwnershipResolver, translationWAService
+        );
     }
 
     @Test
@@ -88,8 +91,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                      "Complicated case", "Active"))
+            .details(createFlagDetail(
+                null, "CF0002", "Complex Case",
+                "Complicated case", "Active"
+            ))
             .build();
 
         // When
@@ -113,8 +118,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null,"CF0007", "Urgent case",
-                                      "Urgent case test", "Active"))
+            .details(createFlagDetail(
+                null, "CF0007", "Urgent case",
+                "Urgent case test", "Active"
+            ))
             .build();
 
         // When
@@ -125,6 +132,37 @@ class CaseFlagServiceTest {
         assertThat(savedFlags.getFirst().getDefaultStatus()).isEqualTo("Active");
         assertThat(savedFlags).hasSize(1);
         assertThat(savedPaths).contains("Case");
+    }
+
+    @Test
+    void shouldCreateReviewCaseFlagRequestTaskWhenCaseFlagRequested() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .visibility(FlagVisibility.INTERNAL)
+            .details(createFlagDetail(null, "CF0002", "Complex Case",
+                                      "Complicated case", "Requested"))
+            .build();
+
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Complex Case"))
+        ).thenReturn("request description");
+
+        // When
+        underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
+
+        // Then
+        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(
+            CASE_REFERENCE, List.of("Complex Case")
+        );
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_CASE_FLAG_REQUEST,
+            "request description"
+        );
     }
 
     @Test
@@ -160,8 +198,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null,"CF0002", "Complex Case",
-                                      "Complicated case", "Active"))
+            .details(createFlagDetail(
+                null, "CF0002", "Complex Case",
+                "Complicated case", "Active"
+            ))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -243,6 +283,38 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldCreateOneReviewCaseFlagRequestTaskForMultipleRequestedReasonableAdjustments() {
+        // Given
+        List<ListValue<FlagDetail>> details = new ArrayList<>();
+        details.addAll(createFlagDetailsWithoutIds("RA0033", "Sign language interpreter", "Requested"));
+        details.addAll(createFlagDetailsWithoutIds("RA0012", "Braille documents", "Requested"));
+
+        List<String> requestedFlags = List.of("Sign language interpreter", "Braille documents");
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(CASE_REFERENCE, requestedFlags))
+            .thenReturn("request description");
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
+
+        // Then
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("RA0033", "RA0012");
+
+        verify(taskDescriptionService).createReviewCaseFlagRequestDescription(CASE_REFERENCE, requestedFlags);
+        verify(camundaService).createTask(
+            CASE_REFERENCE,
+            TaskType.REVIEW_CASE_FLAG_REQUEST,
+            "request description"
+        );
+        verifyNoMoreInteractions(camundaService);
+    }
+
+    @Test
     void shouldRetainExistingFlagsWhenNoReasonableAdjustmentsSupplied() {
         // Given
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
@@ -293,7 +365,7 @@ class CaseFlagServiceTest {
                                             .flagCode("RA0035")
                                             .name("Overwritten name")
                                             .nameCy("Overwritten welsh name")
-                                            .status("Requested")
+                                            .status("Inactive")
                                             .hearingRelevant(YesOrNo.NO)
                                             .availableExternally(YesOrNo.NO)
                                             .build())
@@ -352,8 +424,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "CF0002", "Complex case - renamed",
-                                      "Complicated case", "Active"))
+            .details(createFlagDetail(
+                null, "CF0002", "Complex case - renamed",
+                "Complicated case", "Active"
+            ))
             .build();
 
         // When
@@ -412,17 +486,22 @@ class CaseFlagServiceTest {
     }
 
     private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name) {
+        return createFlagDetailsWithoutIds(flagCode, name, "Active");
+    }
+
+    private List<ListValue<FlagDetail>> createFlagDetailsWithoutIds(String flagCode, String name, String status) {
         return List.of(ListValue.<FlagDetail>builder()
                            .value(FlagDetail.builder()
                                       .flagCode(flagCode)
                                       .name(name)
-                                      .status("Active")
+                                      .status(status)
                                       .hearingRelevant(YesOrNo.YES)
                                       .availableExternally(YesOrNo.YES)
                                       .dateTimeCreated(LocalDateTime.now())
                                       .path(List.of(
                                           ListValue.<String>builder().value("Party").build(),
-                                          ListValue.<String>builder().value("Reasonable adjustment").build()))
+                                          ListValue.<String>builder().value("Reasonable adjustment").build()
+                                      ))
                                       .build())
                            .build());
     }
@@ -474,8 +553,10 @@ class CaseFlagServiceTest {
 
         Flags updatedFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details((createFlagDetail(existingPartyId.toString(),"PF00015", "Language Interpreter ",
-                                       "Spanish Language Interpreter inactive", "Inactive")))
+            .details((createFlagDetail(
+                existingPartyId.toString(), "PF00015", "Language Interpreter ",
+                "Spanish Language Interpreter inactive", "Inactive"
+            )))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(updatedFlags).build();
@@ -511,8 +592,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
+            .details(createFlagDetail(
+                null, "PF0026",
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"
+            ))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -539,8 +622,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF00015", "Language Interpreter",
-                                      "Spanish Language Interpreter", "Active"))
+            .details(createFlagDetail(
+                null, "PF00015", "Language Interpreter",
+                "Spanish Language Interpreter", "Active"
+            ))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -567,8 +652,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(null, "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Inactive"))
+            .details(createFlagDetail(
+                null, "PF0026",
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Inactive"
+            ))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -603,8 +690,10 @@ class CaseFlagServiceTest {
 
         Flags incomingFlags = Flags.builder()
             .visibility(FlagVisibility.INTERNAL)
-            .details(createFlagDetail(existingWelshFlag.getId().toString(), "PF0026",
-                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"))
+            .details(createFlagDetail(
+                existingWelshFlag.getId().toString(), "PF0026",
+                "I want to receive communications and documents in Welsh", "Welsh comms", "Active"
+            ))
             .build();
 
         Party incomingParty = Party.builder().defendantFlags(incomingFlags).build();
@@ -639,14 +728,18 @@ class CaseFlagServiceTest {
         Party incomingParty = Party.builder()
             .defendantFlags(Flags.builder()
                                 .visibility(FlagVisibility.INTERNAL)
-                                .details(createFlagDetail(null, "PF0002", "Vulnerable user",
-                                                          "Internal only flag", "Active"))
+                                .details(createFlagDetail(
+                                    null, "PF0002", "Vulnerable user",
+                                    "Internal only flag", "Active"
+                                ))
                                 .build())
             .partyFlagsExternal(Flags.builder()
-                                        .visibility(FlagVisibility.EXTERNAL)
-                                        .details(createFlagDetail(null, "PF0015", "Language Interpreter",
-                                                                  "Externally visible flag", "Requested"))
-                                        .build())
+                                    .visibility(FlagVisibility.EXTERNAL)
+                                    .details(createFlagDetail(
+                                        null, "PF0015", "Language Interpreter",
+                                        "Externally visible flag", "Requested"
+                                    ))
+                                    .build())
             .build();
 
         underTest.mergePartyFlags(List.of(createPartyListValue(partyId.toString(), incomingParty)), partyEntities);
@@ -657,7 +750,8 @@ class CaseFlagServiceTest {
             .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
             .containsExactlyInAnyOrder(
                 tuple("Internal only flag", "Internal"),
-                tuple("Externally visible flag", "External"));
+                tuple("Externally visible flag", "External")
+            );
     }
 
     @Test
@@ -675,8 +769,10 @@ class CaseFlagServiceTest {
         Party incomingParty = Party.builder()
             .defendantFlags(Flags.builder()
                                 .visibility(FlagVisibility.INTERNAL)
-                                .details(createFlagDetail(null, "PF0002", "Vulnerable user",
-                                                          "New internal flag", "Active"))
+                                .details(createFlagDetail(
+                                    null, "PF0002", "Vulnerable user",
+                                    "New internal flag", "Active"
+                                ))
                                 .build())
             .build();
 
@@ -687,7 +783,8 @@ class CaseFlagServiceTest {
             .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
             .containsExactlyInAnyOrder(
                 tuple("New internal flag", "Internal"),
-                tuple("Existing external flag", "External"));
+                tuple("Existing external flag", "External")
+            );
     }
 
     @Test
@@ -704,10 +801,12 @@ class CaseFlagServiceTest {
 
         Party incomingParty = Party.builder()
             .partyFlagsExternal(Flags.builder()
-                                        .visibility(FlagVisibility.EXTERNAL)
-                                        .details(createFlagDetail(null, "PF0015", "Language Interpreter",
-                                                                  "New external flag", "Requested"))
-                                        .build())
+                                    .visibility(FlagVisibility.EXTERNAL)
+                                    .details(createFlagDetail(
+                                        null, "PF0015", "Language Interpreter",
+                                        "New external flag", "Requested"
+                                    ))
+                                    .build())
             .build();
 
         underTest.mergePartyFlags(
@@ -717,7 +816,8 @@ class CaseFlagServiceTest {
             .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
             .containsExactlyInAnyOrder(
                 tuple("Existing internal flag", "Internal"),
-                tuple("New external flag", "External"));
+                tuple("New external flag", "External")
+            );
     }
 
     @Test
@@ -795,8 +895,10 @@ class CaseFlagServiceTest {
         PartyEntity existingParty = createPartyWithFlags(partyId, existingFlag);
 
         Party incomingParty = Party.builder()
-            .defendantFlags(internalFlags(otherFlagDetail(flagId.toString(), "Retired judge on case",
-                                                          "Barnwr wedi ymddeol ar yr achos", "Comment")))
+            .defendantFlags(internalFlags(otherFlagDetail(
+                flagId.toString(), "Retired judge on case",
+                "Barnwr wedi ymddeol ar yr achos", "Comment"
+            )))
             .build();
 
         underTest.mergePartyFlags(
@@ -885,6 +987,11 @@ class CaseFlagServiceTest {
         assertThat(savedFlag.getDateTimeModified()).isEqualTo(LocalDateTime.of(2026, 8, 19, 9, 30));
     }
 
+    /**
+     * A caseworker emptying the comment box sends the field through as an empty value, which clears the
+     * stored comment. Contrast with a status-only update, which omits the field entirely - see
+     * {@link #shouldRetainAFlagCommentOmittedFromAStatusOnlyUpdate()}.
+     */
     @Test
     void shouldClearAFlagCommentTheCaseworkerHasRemoved() {
         UUID partyId = UUID.randomUUID();
@@ -893,7 +1000,7 @@ class CaseFlagServiceTest {
         PartyEntity existingParty = createPartyWithFlags(partyId, existingFlag);
 
         Party incomingParty = Party.builder()
-            .defendantFlags(internalFlags(otherFlagDetail(flagId.toString(), null, null, null)))
+            .defendantFlags(internalFlags(otherFlagDetail(flagId.toString(), null, null, "")))
             .build();
 
         underTest.mergePartyFlags(
@@ -903,13 +1010,103 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldRetainAFlagCommentOmittedFromAStatusOnlyUpdate() {
+        UUID partyId = UUID.randomUUID();
+        UUID flagId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createOtherFlagEntity(flagId);
+        PartyEntity existingParty = createPartyWithFlags(partyId, existingFlag);
+
+        ListValue<FlagDetail> statusOnlyUpdate = ListValue.<FlagDetail>builder()
+            .id(flagId.toString())
+            .value(FlagDetail.builder()
+                       .flagCode("OT0001")
+                       .name("Other")
+                       .status("Inactive")
+                       .flagUpdateComment("No longer required")
+                       .availableExternally(YesOrNo.NO)
+                       .hearingRelevant(YesOrNo.YES)
+                       .path(List.of(ListValue.<String>builder().value("Party").build()))
+                       .build())
+            .build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(
+                partyId.toString(),
+                Party.builder().defendantFlags(internalFlags(statusOnlyUpdate)).build()
+            )),
+            Set.of(existingParty)
+        );
+
+        CasePartyFlagEntity saved = existingParty.getDefendantFlags().getFirst();
+        assertThat(saved.getDefaultStatus()).isEqualTo("Inactive");
+        assertThat(saved.getFlagUpdateComment()).isEqualTo("No longer required");
+        assertThat(saved.getFlagComment()).isEqualTo("Stored comment");
+    }
+
+    @Test
+    void shouldClearTheWelshFlagCommentWhenThePayloadCarriesNoValue() {
+        UUID partyId = UUID.randomUUID();
+        UUID flagId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createOtherFlagEntity(flagId);
+        existingFlag.setFlagCommentWelsh("Sylw wedi'i storio");
+        PartyEntity existingParty = createPartyWithFlags(partyId, existingFlag);
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(
+                partyId.toString(),
+                Party.builder().defendantFlags(internalFlags(
+                    otherFlagDetail(flagId.toString(), null, null, "Still commented"))).build()
+            )),
+            Set.of(existingParty)
+        );
+
+        assertThat(existingParty.getDefendantFlags().getFirst().getFlagCommentWelsh()).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Active", "Inactive", "Not approved", "Requested"})
+    void shouldRetainAFlagCommentForEveryStatusOnlyUpdate(String newStatus) {
+        UUID partyId = UUID.randomUUID();
+        UUID flagId = UUID.randomUUID();
+        CasePartyFlagEntity existingFlag = createOtherFlagEntity(flagId);
+        PartyEntity existingParty = createPartyWithFlags(partyId, existingFlag);
+
+        ListValue<FlagDetail> statusOnlyUpdate = ListValue.<FlagDetail>builder()
+            .id(flagId.toString())
+            .value(FlagDetail.builder()
+                       .flagCode("OT0001")
+                       .name("Other")
+                       .status(newStatus)
+                       .flagUpdateComment("Reviewed")
+                       .availableExternally(YesOrNo.NO)
+                       .hearingRelevant(YesOrNo.YES)
+                       .path(List.of(ListValue.<String>builder().value("Party").build()))
+                       .build())
+            .build();
+
+        underTest.mergePartyFlags(
+            List.of(createPartyListValue(
+                partyId.toString(),
+                Party.builder().defendantFlags(internalFlags(statusOnlyUpdate)).build()
+            )),
+            Set.of(existingParty)
+        );
+
+        CasePartyFlagEntity saved = existingParty.getDefendantFlags().getFirst();
+        assertThat(saved.getDefaultStatus()).isEqualTo(newStatus);
+        assertThat(saved.getFlagComment()).isEqualTo("Stored comment");
+    }
+
+    @Test
     void shouldCreateANewOtherPartyFlagWithNoStoredFlagId() {
         UUID partyId = UUID.randomUUID();
         Set<PartyEntity> partyEntities = createPartyEntities(partyId);
 
         Party incomingParty = Party.builder()
-            .defendantFlags(internalFlags(otherFlagDetail(null, "Brand new other flag",
-                                                          "Baner arall newydd sbon", "New comment")))
+            .defendantFlags(internalFlags(otherFlagDetail(
+                null, "Brand new other flag",
+                "Baner arall newydd sbon", "New comment"
+            )))
             .build();
 
         underTest.mergePartyFlags(List.of(createPartyListValue(partyId.toString(), incomingParty)), partyEntities);
@@ -930,8 +1127,10 @@ class CaseFlagServiceTest {
             .caseFlags(new ArrayList<>(List.of(existingFlag)))
             .build();
 
-        Flags incomingFlags = internalFlags(otherFlagDetail(flagId.toString(), "Case other description",
-                                                            "Disgrifiad arall achos", "Comment"));
+        Flags incomingFlags = internalFlags(otherFlagDetail(
+            flagId.toString(), "Case other description",
+            "Disgrifiad arall achos", "Comment"
+        ));
 
         List<CaseFlagEntity> savedFlags = underTest.mergeCaseFlags(incomingFlags, pcsCaseEntity);
 
@@ -971,8 +1170,10 @@ class CaseFlagServiceTest {
         PartyEntity existingParty = createPartyWithFlags(partyId, existingExternalFlag);
 
         Party incomingParty = Party.builder()
-            .defendantFlags(internalFlags(otherFlagDetail(flagId.toString(), "Internal other description",
-                                                          null, "Internal comment")))
+            .defendantFlags(internalFlags(otherFlagDetail(
+                flagId.toString(), "Internal other description",
+                null, "Internal comment"
+            )))
             .build();
 
         underTest.mergePartyFlags(
@@ -983,7 +1184,8 @@ class CaseFlagServiceTest {
             .extracting(BaseCaseFlag::getVisibility, BaseCaseFlag::getOtherDescription)
             .containsExactlyInAnyOrder(
                 tuple("External", "Stored other description"),
-                tuple("Internal", "Internal other description"));
+                tuple("Internal", "Internal other description")
+            );
         assertThat(existingExternalFlag.getFlagComment()).isEqualTo("Stored comment");
     }
 
@@ -1149,8 +1351,10 @@ class CaseFlagServiceTest {
         PartySupport incomingSupport = PartySupport.builder()
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
-                              .details(createFlagDetail(null, "RA0042", "Reasonable adjustment",
-                                                        "New support request", "Requested"))
+                              .details(createFlagDetail(
+                                  null, "RA0042", "Reasonable adjustment",
+                                  "New support request", "Requested"
+                              ))
                               .build())
             .build();
 
@@ -1158,13 +1362,15 @@ class CaseFlagServiceTest {
 
         underTest.mergePartySupportFlags(
             List.of(createPartySupportListValue(partyId.toString(), incomingSupport)),
-            Set.of(existingParty), USER_ID);
+            Set.of(existingParty), USER_ID
+        );
 
         assertThat(existingParty.getDefendantFlags())
             .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
             .containsExactlyInAnyOrder(
                 tuple("Existing internal flag", "Internal"),
-                tuple("New support request", "External"));
+                tuple("New support request", "External")
+            );
     }
 
     @Test
@@ -1236,10 +1442,15 @@ class CaseFlagServiceTest {
 
         // When
         underTest.mergePartySupportFlags(
-            List.of(createPartySupportListValue(representedPartyId.toString(), supportRequest()),
-                    createPartySupportListValue(unrepresentedPartyId.toString(),
-                                                unchangedSupport(unrepresentedPartyFlag))),
-            new HashSet<>(List.of(representedParty, unrepresentedParty)), USER_ID);
+            List.of(
+                createPartySupportListValue(representedPartyId.toString(), supportRequest()),
+                createPartySupportListValue(
+                    unrepresentedPartyId.toString(),
+                    unchangedSupport(unrepresentedPartyFlag)
+                )
+            ),
+            new HashSet<>(List.of(representedParty, unrepresentedParty)), USER_ID
+        );
 
         // Then
         assertThat(representedParty.getDefendantFlags())
@@ -1268,13 +1479,13 @@ class CaseFlagServiceTest {
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(unrepresentedPartyFlag.getId().toString())
-                                  .value(FlagDetail.builder()
-                                      .status("Inactive")
-                                      .flagComment(unrepresentedPartyFlag.getFlagComment())
-                                      .flagUpdateComment("Withdrawn without authority")
-                                      .build())
-                                  .build()))
+                                                   .id(unrepresentedPartyFlag.getId().toString())
+                                                   .value(FlagDetail.builder()
+                                                              .status("Inactive")
+                                                              .flagComment(unrepresentedPartyFlag.getFlagComment())
+                                                              .flagUpdateComment("Withdrawn without authority")
+                                                              .build())
+                                                   .build()))
                               .build())
             .build();
 
@@ -1310,7 +1521,8 @@ class CaseFlagServiceTest {
         // When
         underTest.mergePartySupportFlags(
             List.of(createPartySupportListValue(partyId.toString(), null)),
-            Set.of(existingParty), USER_ID);
+            Set.of(existingParty), USER_ID
+        );
 
         // Then
         assertThat(existingParty.getDefendantFlags()).containsExactly(existingFlag);
@@ -1353,7 +1565,8 @@ class CaseFlagServiceTest {
 
         underTest.mergePartySupportFlags(
             List.of(createPartySupportListValue(partyId.toString(), supportRequest())),
-            Set.of(representedParty), USER_ID);
+            Set.of(representedParty), USER_ID
+        );
 
         assertThat(representedParty.getDefendantFlags())
             .extracting(BaseCaseFlag::getFlagComment, BaseCaseFlag::getVisibility)
@@ -1378,16 +1591,19 @@ class CaseFlagServiceTest {
         PartySupport inactivated = PartySupport.builder()
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
-                              .details(createFlagDetail(existingFlag.getId().toString(), "RA0042",
-                                                        "Reasonable adjustment",
-                                                        "Support previously requested", "Inactive"))
+                              .details(createFlagDetail(
+                                  existingFlag.getId().toString(), "RA0042",
+                                  "Reasonable adjustment",
+                                  "Support previously requested", "Inactive"
+                              ))
                               .build())
             .build();
 
         // When
         underTest.mergePartySupportFlags(
             List.of(createPartySupportListValue(partyId.toString(), inactivated)),
-            Set.of(representedParty), USER_ID);
+            Set.of(representedParty), USER_ID
+        );
 
         // Then
         assertThat(representedParty.getDefendantFlags())
@@ -1420,12 +1636,14 @@ class CaseFlagServiceTest {
     }
 
     private PartySupport unchangedSupport(CasePartyFlagEntity existingFlag) {
-        return echoedSupport(existingFlag.getId().toString(),
-                             FlagDetail.builder()
-                                 .status(existingFlag.getDefaultStatus())
-                                 .flagComment(existingFlag.getFlagComment())
-                                 .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                 .build());
+        return echoedSupport(
+            existingFlag.getId().toString(),
+            FlagDetail.builder()
+                .status(existingFlag.getDefaultStatus())
+                .flagComment(existingFlag.getFlagComment())
+                .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                .build()
+        );
     }
 
     private PartySupport echoedSupport(String detailId, FlagDetail flagDetail) {
@@ -1433,9 +1651,9 @@ class CaseFlagServiceTest {
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(detailId)
-                                  .value(flagDetail)
-                                  .build()))
+                                                   .id(detailId)
+                                                   .value(flagDetail)
+                                                   .build()))
                               .build())
             .build();
     }
@@ -1472,15 +1690,15 @@ class CaseFlagServiceTest {
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(existingFlag.getId().toString())
-                                  .value(FlagDetail.builder()
-                                      .flagCode("RA0042")
-                                      .name("A different flag type")
-                                      .status(existingFlag.getDefaultStatus())
-                                      .flagComment(existingFlag.getFlagComment())
-                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                      .build())
-                                  .build()))
+                                                   .id(existingFlag.getId().toString())
+                                                   .value(FlagDetail.builder()
+                                                              .flagCode("RA0042")
+                                                              .name("A different flag type")
+                                                              .status(existingFlag.getDefaultStatus())
+                                                              .flagComment(existingFlag.getFlagComment())
+                                                              .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                                              .build())
+                                                   .build()))
                               .build())
             .build();
 
@@ -1502,15 +1720,15 @@ class CaseFlagServiceTest {
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(existingFlag.getId().toString())
-                                  .value(FlagDetail.builder()
-                                      .flagCode("PF00015")
-                                      .status(existingFlag.getDefaultStatus())
-                                      .flagComment(existingFlag.getFlagComment())
-                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                      .otherDescription("Rewritten without authority")
-                                      .build())
-                                  .build()))
+                                                   .id(existingFlag.getId().toString())
+                                                   .value(FlagDetail.builder()
+                                                              .flagCode("PF00015")
+                                                              .status(existingFlag.getDefaultStatus())
+                                                              .flagComment(existingFlag.getFlagComment())
+                                                              .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                                              .otherDescription("Rewritten without authority")
+                                                              .build())
+                                                   .build()))
                               .build())
             .build();
 
@@ -1533,15 +1751,15 @@ class CaseFlagServiceTest {
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
                               .details(List.of(ListValue.<FlagDetail>builder()
-                                  .id(existingFlag.getId().toString())
-                                  .value(FlagDetail.builder()
-                                      .flagCode("PF00015")
-                                      .status(existingFlag.getDefaultStatus())
-                                      .flagComment(existingFlag.getFlagComment())
-                                      .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                      .subTypeValue("Changed without authority")
-                                      .build())
-                                  .build()))
+                                                   .id(existingFlag.getId().toString())
+                                                   .value(FlagDetail.builder()
+                                                              .flagCode("PF00015")
+                                                              .status(existingFlag.getDefaultStatus())
+                                                              .flagComment(existingFlag.getFlagComment())
+                                                              .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                                                              .subTypeValue("Changed without authority")
+                                                              .build())
+                                                   .build()))
                               .build())
             .build();
 
@@ -1560,13 +1778,15 @@ class CaseFlagServiceTest {
         CasePartyFlagEntity existingFlag = existingExternalFlag();
         existingFlag.setSubTypeValue("Stored sub type");
         existingFlag.setOtherDescription("Stored other description");
-        PartySupport echoedWithoutCarriedFields = echoedSupport(existingFlag.getId().toString(),
-                                                               FlagDetail.builder()
-                                                                   .status(existingFlag.getDefaultStatus())
-                                                                   .flagComment(existingFlag.getFlagComment())
-                                                                   .flagUpdateComment(
-                                                                       existingFlag.getFlagUpdateComment())
-                                                                   .build());
+        PartySupport echoedWithoutCarriedFields = echoedSupport(
+            existingFlag.getId().toString(),
+            FlagDetail.builder()
+                .status(existingFlag.getDefaultStatus())
+                .flagComment(existingFlag.getFlagComment())
+                .flagUpdateComment(
+                    existingFlag.getFlagUpdateComment())
+                .build()
+        );
 
         // When
         Throwable throwable = submissionForUnrepresentedParty(existingFlag, echoedWithoutCarriedFields);
@@ -1579,12 +1799,14 @@ class CaseFlagServiceTest {
     void shouldRejectCommentChangeToAnUnrepresentedPartysSupport() {
         // Given
         CasePartyFlagEntity existingFlag = existingExternalFlag();
-        PartySupport commentChanged = echoedSupport(existingFlag.getId().toString(),
-                                                    FlagDetail.builder()
-                                                        .status(existingFlag.getDefaultStatus())
-                                                        .flagComment("Reworded without authority")
-                                                        .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                                        .build());
+        PartySupport commentChanged = echoedSupport(
+            existingFlag.getId().toString(),
+            FlagDetail.builder()
+                .status(existingFlag.getDefaultStatus())
+                .flagComment("Reworded without authority")
+                .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                .build()
+        );
 
         // When
         Throwable throwable = submissionForUnrepresentedParty(existingFlag, commentChanged);
@@ -1599,12 +1821,14 @@ class CaseFlagServiceTest {
     void shouldRejectUpdateCommentChangeToAnUnrepresentedPartysSupport() {
         // Given
         CasePartyFlagEntity existingFlag = existingExternalFlag();
-        PartySupport updateCommentChanged = echoedSupport(existingFlag.getId().toString(),
-                                                          FlagDetail.builder()
-                                                              .status(existingFlag.getDefaultStatus())
-                                                              .flagComment(existingFlag.getFlagComment())
-                                                              .flagUpdateComment("Amended without authority")
-                                                              .build());
+        PartySupport updateCommentChanged = echoedSupport(
+            existingFlag.getId().toString(),
+            FlagDetail.builder()
+                .status(existingFlag.getDefaultStatus())
+                .flagComment(existingFlag.getFlagComment())
+                .flagUpdateComment("Amended without authority")
+                .build()
+        );
 
         // When
         Throwable throwable = submissionForUnrepresentedParty(existingFlag, updateCommentChanged);
@@ -1619,12 +1843,14 @@ class CaseFlagServiceTest {
     void shouldRejectUnrepresentedPartySubmissionReferencingAnUnknownFlagId() {
         // Given
         CasePartyFlagEntity existingFlag = existingExternalFlag();
-        PartySupport unknownFlagId = echoedSupport(UUID.randomUUID().toString(),
-                                                   FlagDetail.builder()
-                                                       .status(existingFlag.getDefaultStatus())
-                                                       .flagComment(existingFlag.getFlagComment())
-                                                       .flagUpdateComment(existingFlag.getFlagUpdateComment())
-                                                       .build());
+        PartySupport unknownFlagId = echoedSupport(
+            UUID.randomUUID().toString(),
+            FlagDetail.builder()
+                .status(existingFlag.getDefaultStatus())
+                .flagComment(existingFlag.getFlagComment())
+                .flagUpdateComment(existingFlag.getFlagUpdateComment())
+                .build()
+        );
 
         // When
         Throwable throwable = submissionForUnrepresentedParty(existingFlag, unknownFlagId);
@@ -1724,8 +1950,10 @@ class CaseFlagServiceTest {
         return PartySupport.builder()
             .supportFlags(Flags.builder()
                               .visibility(FlagVisibility.EXTERNAL)
-                              .details(createFlagDetail(null, "RA0042", "Reasonable adjustment",
-                                                        "New support request", "Requested"))
+                              .details(createFlagDetail(
+                                  null, "RA0042", "Reasonable adjustment",
+                                  "New support request", "Requested"
+                              ))
                               .build())
             .build();
     }
@@ -1751,9 +1979,11 @@ class CaseFlagServiceTest {
 
         @BeforeEach
         void setUp() {
-            caseFlagService = new CaseFlagService(flagRefDataRepository, camundaService, taskDescriptionService,
-                                                 new PartySupportOwnershipResolver(organisationService),
-                                                 translationWAService);
+            caseFlagService = new CaseFlagService(
+                flagRefDataRepository, camundaService, taskDescriptionService,
+                new PartySupportOwnershipResolver(organisationService),
+                translationWAService
+            );
         }
 
         @Test
@@ -1931,15 +2161,15 @@ class CaseFlagServiceTest {
                 .supportFlags(Flags.builder()
                                   .visibility(FlagVisibility.EXTERNAL)
                                   .details(List.of(ListValue.<FlagDetail>builder()
-                                      .id(raisedFlag.getId().toString())
-                                      .value(FlagDetail.builder()
-                                          .flagCode("PF0026")
-                                          .name("A different flag type")
-                                          .status(raisedFlag.getDefaultStatus())
-                                          .flagComment(raisedFlag.getFlagComment())
-                                          .flagUpdateComment(raisedFlag.getFlagUpdateComment())
-                                          .build())
-                                      .build()))
+                                                       .id(raisedFlag.getId().toString())
+                                                       .value(FlagDetail.builder()
+                                                                  .flagCode("PF0026")
+                                                                  .name("A different flag type")
+                                                                  .status(raisedFlag.getDefaultStatus())
+                                                                  .flagComment(raisedFlag.getFlagComment())
+                                                                  .flagUpdateComment(raisedFlag.getFlagUpdateComment())
+                                                                  .build())
+                                                       .build()))
                                   .build())
                 .build();
             assertRejected(catchThrowable(() -> merge(defendant, reusedId, SOLICITOR_USER_ID)));
@@ -1980,9 +2210,12 @@ class CaseFlagServiceTest {
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CLAIMANT_FIRM);
 
             caseFlagService.mergePartySupportFlags(
-                List.of(createPartySupportListValue(claimant.getId().toString(), supportRequest()),
-                        createPartySupportListValue(defendant.getId().toString(), echoed(untouched))),
-                new HashSet<>(List.of(claimant, defendant)), SOLICITOR_USER_ID);
+                List.of(
+                    createPartySupportListValue(claimant.getId().toString(), supportRequest()),
+                    createPartySupportListValue(defendant.getId().toString(), echoed(untouched))
+                ),
+                new HashSet<>(List.of(claimant, defendant)), SOLICITOR_USER_ID
+            );
 
             assertThat(claimant.getDefendantFlags())
                 .extracting(BaseCaseFlag::getFlagComment)
@@ -1993,7 +2226,8 @@ class CaseFlagServiceTest {
         private void merge(PartyEntity party, PartySupport incoming, UUID authenticatedUserId) {
             caseFlagService.mergePartySupportFlags(
                 List.of(createPartySupportListValue(party.getId().toString(), incoming)),
-                Set.of(party), authenticatedUserId);
+                Set.of(party), authenticatedUserId
+            );
         }
 
         private void assertRejected(Throwable throwable) {
@@ -2006,9 +2240,11 @@ class CaseFlagServiceTest {
             return PartySupport.builder()
                 .supportFlags(Flags.builder()
                                   .visibility(FlagVisibility.EXTERNAL)
-                                  .details(createFlagDetail(existing.getId().toString(), "RA0042",
-                                                            "Reasonable adjustment",
-                                                            existing.getFlagComment(), "Inactive"))
+                                  .details(createFlagDetail(
+                                      existing.getId().toString(), "RA0042",
+                                      "Reasonable adjustment",
+                                      existing.getFlagComment(), "Inactive"
+                                  ))
                                   .build())
                 .build();
         }
@@ -2018,13 +2254,13 @@ class CaseFlagServiceTest {
                 .supportFlags(Flags.builder()
                                   .visibility(FlagVisibility.EXTERNAL)
                                   .details(List.of(ListValue.<FlagDetail>builder()
-                                      .id(existing.getId().toString())
-                                      .value(FlagDetail.builder()
-                                          .status(existing.getDefaultStatus())
-                                          .flagComment(existing.getFlagComment())
-                                          .flagUpdateComment(existing.getFlagUpdateComment())
-                                          .build())
-                                      .build()))
+                                                       .id(existing.getId().toString())
+                                                       .value(FlagDetail.builder()
+                                                                  .status(existing.getDefaultStatus())
+                                                                  .flagComment(existing.getFlagComment())
+                                                                  .flagUpdateComment(existing.getFlagUpdateComment())
+                                                                  .build())
+                                                       .build()))
                                   .build())
                 .build();
         }
