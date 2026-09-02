@@ -42,9 +42,6 @@ export class ClickRadioButtonAction implements IAction {
   }
 
   private async clickWithRetry(locator: any): Promise<boolean> {
-    // `!== 1` not `> 0`: rejecting an ambiguous match is how a later, better-scoped
-    // pattern gets a turn. With `> 0`, page-global pattern 3 could click the wrong
-    // question on a page with two Yes/No questions.
     if ((await locator.count()) !== 1) {
       return false;
     }
