@@ -146,8 +146,7 @@ class CounterClaimServiceTest {
     @MethodSource("caseworkerEnteredStateScenarios")
     void shouldSetStateWhenCounterClaimEnteredByCaseworker(boolean hwfReferenceProvided,
                                                             CounterClaimState expectedState) {
-        // Given - there is no fee/payment step for a caseworker-entered counterclaim, so with no HwF
-        // reference it is issued immediately rather than left pending payment.
+        // Given
         stubClaimRepository();
 
         CounterClaim counterClaim = mock(CounterClaim.class);

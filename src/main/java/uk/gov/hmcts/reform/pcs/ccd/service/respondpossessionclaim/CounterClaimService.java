@@ -52,19 +52,6 @@ public class CounterClaimService {
         return saveCounterClaim(caseReference, counterClaim, partyRef, false);
     }
 
-    /**
-     * Saves a counterclaim entered directly by a caseworker: there is no fee/payment step in this event,
-     * so it is issued immediately when no Help With Fees reference is given.
-     */
-    public Optional<CounterClaimEntity> saveCaseworkerEnteredCounterClaim(
-        long caseReference,
-        CounterClaim counterClaim,
-        PartyEntity partyRef
-    ) {
-        return saveCounterClaim(caseReference, counterClaim, partyRef, true);
-    }
-
-
     private Optional<CounterClaimEntity> saveCounterClaim(
         long caseReference,
         CounterClaim counterClaim,
@@ -89,6 +76,18 @@ public class CounterClaimService {
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
         return Optional.of(savedCounterClaim);
+    }
+
+    /*
+    * Saves a counterclaim entered directly by a caseworker
+    * There is no fee/payment step in this event, so it is issued immediately when no Help With Fees reference is given
+    */
+    public Optional<CounterClaimEntity> saveCaseworkerEnteredCounterClaim(
+        long caseReference,
+        CounterClaim counterClaim,
+        PartyEntity partyRef
+    ) {
+        return saveCounterClaim(caseReference, counterClaim, partyRef, true);
     }
 
     private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
@@ -144,7 +143,8 @@ public class CounterClaimService {
             return CounterClaimState.PENDING_REVIEW;
         }
         return caseworkerEntered
-            ? CounterClaimState.COUNTER_CLAIM_ISSUED : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
+            ? CounterClaimState.COUNTER_CLAIM_ISSUED
+            : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
 
 }
