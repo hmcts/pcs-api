@@ -381,3 +381,5 @@ so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+<!-- HDPI-8713 build-timing baseline control. DO NOT MERGE. -->
