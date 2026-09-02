@@ -81,6 +81,7 @@ wa:
         DB_READER_USERNAME: "hmcts"
         SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
         SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
+        WA_S2S_AUTHORIZED_SERVICES: "wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,pcs_api"
       keyVaults:
         wa:
           secrets:
