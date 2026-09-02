@@ -36,7 +36,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Case not found", caseNotFoundException);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(new Error(caseNotFoundException.getMessage()));
+            .body(new Error("Case not found"));
     }
 
     @ExceptionHandler(FeePaymentNotFoundException.class)
@@ -52,7 +52,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Invalid access code validation attempt", ex);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(new Error(ex.getMessage()));
+            .body(new Error("Invalid access code"));
     }
 
     @ExceptionHandler(InvalidPartyForAccessCodeException.class)
@@ -60,31 +60,31 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Party validation failed", ex);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(new Error(ex.getMessage()));
+            .body(new Error("Party not found"));
     }
 
     @ExceptionHandler(InvalidAuthTokenException.class)
     public ResponseEntity<Error> handleInvalidAuth(InvalidAuthTokenException ex) {
         log.error("Invalid authentication token", ex);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error("Invalid authentication token"));
     }
 
     @ExceptionHandler(CaseAccessException.class)
     public ResponseEntity<Error> handleCaseAccess(CaseAccessException ex) {
         log.error("Case access denied", ex);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error("Access denied"));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Error> handleConflict(IllegalStateException ex) {
         log.error("Conflict state detected", ex);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error("Conflict state detected"));
     }
 
     @ExceptionHandler(AccessCodeAlreadyUsedException.class)
     public ResponseEntity<Error> handleAccessCodeAlreadyUsed(AccessCodeAlreadyUsedException ex) {
         log.error("Access code already used", ex);
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error("Access code already used"));
     }
 
     @ExceptionHandler(CaseAssignmentException.class)
@@ -92,7 +92,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Case assignment failed", ex);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new Error(ex.getMessage()));
+            .body(new Error("Case assignment failed"));
     }
 
     @ExceptionHandler(IdamException.class)
