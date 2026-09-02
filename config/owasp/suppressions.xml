@@ -100,9 +100,30 @@
     HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
     Tomcat release published yet; suppression is temporary and MUST be
     removed when tomcatEmbedVersion is bumped to the fixed version.
+    HDPI-6936: test purposes - wil revert before merge
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
+  </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-6936: test purposes - wil revert before merge
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
+    <cve>CVE-2026-54285</cve>
+    <cve>CVE-2026-39883</cve>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-41178</cve>
   </suppress>
   <suppress until="2026-09-30">
     <notes><![CDATA[
