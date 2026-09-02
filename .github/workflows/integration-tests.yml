@@ -1,0 +1,121 @@
+name: Integration tests
+
+# On PRs the integration and cftlibTest suites run here instead of in the Jenkins
+# "Static checks / Container build" stage, where they dominated the critical path.
+# Master still runs the full suite in Jenkins; this only runs there to populate the
+# Gradle cache, which GitHub shares with PRs only when written on the default branch.
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: integration-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: 21
+
+      # Pinned to a commit SHA: Sonar rule githubactions:S7637 raises a vulnerability on
+      # third-party actions referenced by a mutable tag.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Run integration tests
+        run: ./gradlew --no-daemon integration
+
+      # This exec file is the one that materially contributes Sonar coverage (291 lines).
+      - name: Upload integration jacoco exec
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-integration-exec
+          path: build/jacoco/integration.exec
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-results
+          path: |
+            build/test-results/integration/**
+            build/reports/tests/integration/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # Separate job so this gets its own runner: docker-compose-wiremock.yml binds a fixed host
+  # port (8083) and the cftlib stack binds 6432/9200/5062, so the two suites cannot share a
+  # machine. Wiremock is started by Gradle via `dockerCompose.isRequiredBy cftlibTest`.
+  cftlib-test:
+    name: Cftlib tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      # Required for the federated (OIDC) login to Azure below.
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: 21
+
+      # cftlib pulls xui/webapp, xui/mo-webapp and rse-idam-simulator from
+      # hmctsprod.azurecr.io, which has anonymous pull disabled. Without this the compose
+      # pull fails with UNAUTHORIZED and docker blocks until the job timeout.
+      # The federated credential is granted to hmcts/pcs-api on the "DTS Developers GitHub
+      # Actions ACR Puller 1" app registration (AcrPull on rpe-acr-prod-rg).
+      - name: Azure login (OIDC)
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        with:
+          client-id: 7dbe3da2-315b-4937-bac6-3ab22a9c7b91 # DTS Developers GitHub Actions ACR Puller 1
+          tenant-id: 531ff96d-0ae9-462a-8d2d-bec7c0b42082 # HMCTS.NET
+          allow-no-subscriptions: true
+
+      - name: ACR login - hmctsprod
+        run: az acr login --name hmctsprod
+
+      # Pinned to a commit SHA: see the integration job above.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Run cftlib tests
+        run: ./gradlew --no-daemon cftlibTest
+
+      - name: Upload cftlib test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cftlib-test-results
+          path: |
+            build/test-results/cftlibTest/**
+            build/reports/tests/cftlibTest/**
+          if-no-files-found: ignore
+          retention-days: 7
