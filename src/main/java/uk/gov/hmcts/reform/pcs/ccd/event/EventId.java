@@ -30,5 +30,6 @@ public enum EventId {
     manageParties,
     legalRepresentativeContactDetails,
     markCaseForDeletion,
-    confirmCaseDisposal
+    confirmCaseDisposal,
+    deleteThisCase
 }
