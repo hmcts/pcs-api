@@ -2,72 +2,38 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <!--Please add all the false positives under the below section-->
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: false positive. CVE-2026-54399/54428 are against httpcore5 (5.x);
-    this is httpcore 4.x, a separate artifact that is not affected. Re-review by
-    the until date, or drop this entry once httpcore 4.x leaves the graph.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\..*$</packageUrl>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: false positive. CVE-2025-7962 is reported against the Jakarta
-    Activation spec API rather than the angus-activation implementation we
-    depend on. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
     <cve>CVE-2025-7962</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: false positive. CVE-2020-29582 concerns kotlin-stdlib temp-file
-    permissions; kotlin-stdlib is a transitive dependency only and PCS creates
-    no temp files through it. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
   <suppress until="2026-10-15">
-    <notes><![CDATA[
-    CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
   </suppress>
   <suppress until="2026-10-15">
-    <notes><![CDATA[
-    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
     <cve>CVE-2026-41178</cve>
   </suppress>
   <!--End of false positives section -->
 
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. Waiting on httpcore5 5.4.3+ to arrive transitively via
-    the Spring Boot BOM. Remove once the resolved version is past the affected
-    range in the packageUrl above.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.([0-3](\..*)?|4(\.[0-2])?)$</packageUrl>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
-    published upstream yet. Remove when a patched kotlin-stdlib is available.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. jackson-databind 2.17.x still arrives transitively.
-    Remove once every consumer resolves to a patched 2.21.x.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.17(\..*)?$</packageUrl>
     <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
@@ -75,20 +41,10 @@
     <cve>CVE-2026-54515</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. CVE-2026-54515 is still reported against
-    jackson-databind 2.21.4. Remove when a fixed 2.21.x is released.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
     <cve>CVE-2026-54515</cve>
   </suppress>
   <suppress until="2026-11-30">
-    <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
-    Tomcat release published yet; suppression is temporary and MUST be
-    removed when tomcatEmbedVersion is bumped to the fixed version.
-    HDPI-6936: test purposes - wil revert before merge
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
     <cve>CVE-2026-65637</cve>
@@ -103,9 +59,6 @@
     <cve>CVE-2026-73180</cve>
   </suppress>
   <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-6936: test purposes - wil revert before merge
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
     <cve>CVE-2026-39883</cve>
@@ -113,27 +66,11 @@
     <cve>CVE-2026-41178</cve>
   </suppress>
   <suppress until="2026-09-30">
-    <notes><![CDATA[
-    CVE-2026-59313/59314: fix is Enterprise-only on Spring 6.2.x (6.2.20) / OSS in 7.x; PCS uses
-    neither SSE functional endpoints nor Content-Disposition built from input. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
     <cve>CVE-2026-59313</cve>
     <cve>CVE-2026-59314</cve>
   </suppress>
   <suppress until="2026-09-30">
-    <notes><![CDATA[
-    Fix is Enterprise-only on Spring Framework 6.2.x (6.2.20); OSS 6.2 stops at 6.2.19, so the only
-    open-source remedy is Spring 7.x, i.e. a Spring Boot 4.x upgrade tracked separately. None applies
-    to PCS as deployed:
-    CVE-2026-47892 and CVE-2026-47893 are WebFlux-only (functional endpoints behind DispatcherServlet,
-    and WebFlux WebSockets); spring-webflux is test scope here and resolves 0 times on
-    runtimeClasspath - PCS serves Spring MVC on embedded Tomcat.
-    CVE-2026-59283 is a SimpleEvaluationContext SpEL sandbox bypass; PCS evaluates no SpEL - there is
-    no ExpressionParser/EvaluationContext usage in the source.
-    CVE-2026-59280 is FreeMarker view path traversal; FreeMarker resolves 0 times on runtimeClasspath,
-    PCS templates use Pebble. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
     <cve>CVE-2026-47892</cve>
     <cve>CVE-2026-47893</cve>
@@ -141,24 +78,10 @@
     <cve>CVE-2026-59280</cve>
   </suppress>
   <suppress until="2026-09-30">
-    <notes><![CDATA[
-    CVE-2026-59270: fix is Enterprise-only on Spring Security 6.5.x (6.5.12); OSS 6.5 stops at 6.5.11,
-    so the only open-source remedy is Spring Security 7.x via a Spring Boot 4.x upgrade tracked
-    separately. The vulnerability is in the embedded UnboundID LDAP test server (UnboundIdContainer);
-    PCS uses neither - unboundid and spring-security-ldap resolve 0 times on runtimeClasspath.
-    Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
     <cve>CVE-2026-59270</cve>
   </suppress>
   <suppress until="2026-09-30">
-    <notes><![CDATA[
-    CVE-2026-59284: no allow list for property keys when the writable /actuator/env endpoint is
-    enabled. Fixed in Spring Cloud Commons 4.3.4, which is not published to Maven Central (OSS 4.3
-    stops at 4.3.3); the open-source remedy is Spring Cloud 2026.x / 5.0.3 via a Spring Boot 4.x
-    upgrade tracked separately. PCS does not enable the writable env endpoint - it is disabled by
-    default and nothing in application configuration turns it on. Re-review by the until date.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
     <cve>CVE-2026-59284</cve>
   </suppress>
