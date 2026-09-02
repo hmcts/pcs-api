@@ -639,8 +639,23 @@ tasks.register('e2eTest') {
   dependsOn('runE2eTests')
 }
 
-// Ensure we cover Cftlib dev & test with our CI checks
-check.dependsOn cftlibTest
+// Ensure we cover Cftlib dev & test with our CI checks.
+//
+// cftlibTest boots the whole CFT stack in-process (8 services + Flyway migrations) and is the
+// single most expensive thing in `check` — ~3m40s of the ~10m20s "Static checks / Container
+// build" stage, for 11 assertions. Because `check` is one serial Gradle invocation, that cost
+// lands directly on the PR critical path.
+//
+// Default (local dev, and any invocation that does not opt out): cftlibTest stays wired into
+// `check`, so `./gradlew check` is unchanged.
+//
+// CI sets CFTLIB_TEST_IN_CHECK=false (see Jenkinsfile_CNP) and instead runs `cftlibTest` as its
+// own parallel branch of the same stage, in its own workspace. The tests still run on every PR
+// and every master build — they just overlap the rest of the stage rather than serialising
+// inside it. Deleting the env var in Jenkinsfile_CNP restores the old serial behaviour.
+if (System.getenv('CFTLIB_TEST_IN_CHECK') != 'false') {
+  check.dependsOn cftlibTest
+}
 
 // Add wiremock docker compose dependency
 dockerCompose.isRequiredBy bootWithCCD

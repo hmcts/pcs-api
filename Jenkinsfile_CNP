@@ -48,6 +48,10 @@ withPipeline(type, product, component) {
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
+  // Take cftlibTest out of `check` so it does not serialise inside the "Unit tests and Sonar
+  // scan" branch. It is instead run by the afterSuccess('dockerbuild') hook below, which
+  // executes in the Docker Build branch of the same parallel stage. See build.gradle.
+  env.CFTLIB_TEST_IN_CHECK = "false"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
@@ -61,6 +65,35 @@ withPipeline(type, product, component) {
       withSubscription('nonprod') {
         uploadDmnDiagrams()
         uploadBpmnDiagram()
+      }
+    }
+  }
+
+  // cftlibTest, hoisted out of `check` (see env.CFTLIB_TEST_IN_CHECK above and build.gradle).
+  //
+  // The "Static checks / Container build" stage is built inside cnp-jenkins-library, so PCS
+  // cannot add a parallel branch to it directly. What it can do is hang work off a callback that
+  // the library invokes from inside one of the existing branches. 'dockerbuild' is the right host:
+  // it runs in the Docker Build branch, which finishes in ~2min and then sits idle for the rest of
+  // the ~10min stage, so cftlibTest overlaps the Unit tests / Sonar / OWASP branches instead of
+  // queueing behind them.
+  //
+  // It runs in its own workspace because parallel branches share $WORKSPACE, and two concurrent
+  // Gradle invocations in one project directory would contend on the build dir. This mirrors how
+  // the library itself runs the Fortify scan branch.
+  //
+  // This runs on PRs and on master (both go through onPathToLive -> Static checks).
+  afterSuccess('dockerbuild') {
+    ws("${env.WORKSPACE}@cftlib") {
+      deleteDir()
+      checkout scm
+      // No junit step: cftlibTest is a JavaExec running the JUnit ConsoleLauncher without
+      // --reports-dir, so it emits no JUnit XML (it did not emit any when it ran under `check`
+      // either). A test failure fails the launcher, which fails this gradle call, which fails the
+      // Docker Build branch and therefore the stage and the build. Failure detail is in the
+      // console log of this branch.
+      timeoutWithMsg(time: 30, unit: 'MINUTES', action: 'cftlibTest') {
+        builder.gradle('cftlibTest')
       }
     }
   }
