@@ -1,4 +1,4 @@
-name: Heavy tests
+name: Integration tests
 
 # The integration and cftlibTest suites run here rather than in the Jenkins
 # "Static checks / Container build" stage, where they dominated the PR critical path
@@ -15,7 +15,7 @@ on:
       - master
 
 concurrency:
-  group: heavy-tests-${{ github.event.pull_request.number || github.ref }}
+  group: integration-tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
