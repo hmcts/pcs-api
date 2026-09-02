@@ -3,11 +3,14 @@ package uk.gov.hmcts.reform.pcs;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
-import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
+import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -33,6 +36,11 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private IdamClient idamClient;
+    @Autowired
+    @Qualifier("systemUpdateUserTokenProvider")
+    private IdamTokenProvider systemUpdateUserTokenProvider;
+    @Autowired
+    private IdamAuthenticator idamAuthenticator;
 
     @Test
     void recordsTheEventFromABackgroundThread() throws Exception {
@@ -64,6 +72,11 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         assertThat(event.get("event_id")).isEqualTo("noticeOfChangeApplied");
         assertThat(event.get("summary")).isEqualTo("Notice of change by james-solicitor-user1@test.com");
         assertThat(event.get("user_id")).isEqualTo("40460563-4f42-479f-995f-4dc77399ade1");
-        assertThat(event.get("proxied_by")).isNotNull();
+        assertThat(event.get("proxied_by")).isEqualTo(systemUserId());
+    }
+
+    private String systemUserId() {
+        return idamAuthenticator.validateAuthToken(systemUpdateUserTokenProvider.getAuthToken())
+            .getUserDetails().getUid();
     }
 }

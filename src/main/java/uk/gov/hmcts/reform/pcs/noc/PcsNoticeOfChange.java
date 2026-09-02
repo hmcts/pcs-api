@@ -195,6 +195,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
             .firstName(context.givenName())
             .lastName(context.familyName())
             .partyId(partyId.toString())
+            .eventIdempotencyKey(UUID.randomUUID())
             .build();
     }
 

@@ -790,6 +790,7 @@ public class PcsNoticeOfChangeTest {
         assertThat(taskData.getUserId()).isEqualTo(userId);
         assertThat(taskData.getPartyId()).isEqualTo(partyId.toString());
         assertThat(taskData.getOrganisationDetailsResponse()).isEqualTo(organisationDetailsResponse);
+        assertThat(taskData.getEventIdempotencyKey()).isNotNull();
     }
 
     @SuppressWarnings("unchecked")

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -53,14 +54,7 @@ public class NocAccessChangeTaskComponent {
                 log.info("Applying NoC access change for case {}", caseReference);
 
                 try {
-                    legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-                            caseReference,
-                            taskData.getPartyId(),
-                            taskData.getEmail(),
-                            taskData.getOrganisationDetailsResponse());
-
-                    // CaseAccessGroups is derived from the representation tables, but the search index
-                    // is built from the last event's stored snapshot, so record an event for the change.
+                    linkLegalRepresentativeUnlessAlreadyLinked(caseReference, taskData);
                     noticeOfChangeAppliedEventService.submit(caseReference, taskData);
 
                     return new CompletionHandler.OnCompleteRemove<>();
@@ -73,5 +67,18 @@ public class NocAccessChangeTaskComponent {
                     throw e;
                 }
             });
+    }
+
+    private void linkLegalRepresentativeUnlessAlreadyLinked(long caseReference, NocAccessChangeTaskData taskData) {
+        try {
+            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+                    caseReference,
+                    taskData.getPartyId(),
+                    taskData.getEmail(),
+                    taskData.getOrganisationDetailsResponse());
+        } catch (LegalRepresentativeAlreadyLinkedToPartyException e) {
+            log.info("Legal representative already linked to party {} on case {}",
+                     taskData.getPartyId(), caseReference);
+        }
     }
 }

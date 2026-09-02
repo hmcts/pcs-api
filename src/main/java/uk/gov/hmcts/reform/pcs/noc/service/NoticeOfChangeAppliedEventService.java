@@ -2,17 +2,20 @@ package uk.gov.hmcts.reform.pcs.noc.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService;
-import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService.ActorAttribution;
-import java.util.Collections;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService;
+import uk.gov.hmcts.ccd.sdk.SystemEventRecordingService.ActorAttribution;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+
+import java.util.Collections;
+import java.util.Objects;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.noticeOfChangeApplied;
@@ -42,22 +45,41 @@ public class NoticeOfChangeAppliedEventService {
     public void submit(long caseReference, NocAccessChangeTaskData taskData) {
         log.debug("Recording {} for case {}", noticeOfChangeApplied, caseReference);
         String systemToken = systemUpdateUserTokenProvider.getAuthToken();
-        // The case view reads the security context; background threads have none, so run the
-        // recording as the authenticated system user, the same way IdamAuthenticationFilter does.
-        Authentication previous = SecurityContextHolder.getContext().getAuthentication();
+        runAsSystemUser(systemToken, () -> recordEvent(caseReference, taskData, systemToken));
+    }
+
+    private void runAsSystemUser(String systemToken, Runnable action) {
+        Authentication previousAuthentication = SecurityContextHolder.getContext().getAuthentication();
         try {
             User systemUser = idamAuthenticator.validateAuthToken(systemToken);
             SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(systemUser, null, Collections.emptyList()));
-            systemEventRecordingService.recordSystemEvent(
-                caseReference,
-                noticeOfChangeApplied.name(),
-                systemToken,
-                isNotBlank(taskData.getEmail()) ? "Notice of change by " + taskData.getEmail() : null,
-                new ActorAttribution(taskData.getUserId(), taskData.getFirstName(), taskData.getLastName())
-            );
+            action.run();
         } finally {
-            SecurityContextHolder.getContext().setAuthentication(previous);
+            SecurityContextHolder.getContext().setAuthentication(previousAuthentication);
         }
+    }
+
+    private void recordEvent(long caseReference, NocAccessChangeTaskData taskData, String systemToken) {
+        systemEventRecordingService.recordSystemEvent(
+            caseReference,
+            noticeOfChangeApplied.name(),
+            systemToken,
+            actingSolicitorSummary(taskData),
+            actingSolicitor(taskData),
+            retrySafeIdempotencyKey(taskData)
+        );
+    }
+
+    private static String actingSolicitorSummary(NocAccessChangeTaskData taskData) {
+        return isNotBlank(taskData.getEmail()) ? "Notice of change by " + taskData.getEmail() : null;
+    }
+
+    private static ActorAttribution actingSolicitor(NocAccessChangeTaskData taskData) {
+        return new ActorAttribution(taskData.getUserId(), taskData.getFirstName(), taskData.getLastName());
+    }
+
+    private static UUID retrySafeIdempotencyKey(NocAccessChangeTaskData taskData) {
+        return Objects.requireNonNullElseGet(taskData.getEventIdempotencyKey(), UUID::randomUUID);
     }
 }

@@ -33,8 +33,7 @@ public class NoticeOfChangeApplied implements CCDConfig<PCSCase, State, UserRole
         UserRole.DEFENDANT,
         UserRole.DEFENDANT_SOLICITOR,
         UserRole.GA_DEFENDANT_SOLICITOR,
-        UserRole.CITIZEN,
-        UserRole.PCS_CASE_WORKER
+        UserRole.CITIZEN
     };
 
     @Override
@@ -46,6 +45,7 @@ public class NoticeOfChangeApplied implements CCDConfig<PCSCase, State, UserRole
             .showCondition(ShowConditions.NEVER_SHOW)
             .grant(Permission.CRU, UserRole.SYSTEM_USER)
             .grantHistoryOnly(PARTY_ROLES)
+            .grantHistoryOnly(UserRole.PCS_CASE_WORKER)
             .grantHistoryOnly(CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
