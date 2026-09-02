@@ -78,7 +78,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return selectedParties.getValue().stream()
             .map(element -> ListValue.<Party>builder()
                 .id(element.getCode())
-                .value(Party.builder().build())
                 .build())
             .toList();
     }
