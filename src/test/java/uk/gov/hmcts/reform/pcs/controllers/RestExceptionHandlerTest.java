@@ -49,7 +49,6 @@ class RestExceptionHandlerTest {
         // Given
         long caseReference = 12345L;
         CaseNotFoundException caseNotFoundException = new CaseNotFoundException(caseReference);
-        String expectedErrorMessage = "No case found with reference " + caseReference;
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -58,7 +57,7 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Case not found");
     }
 
     @Test
@@ -78,8 +77,7 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleInvalidAccessCodeException() {
         // Given
-        String expectedErrorMessage = "Invalid access code";
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException("Invalid access code detail");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -88,15 +86,14 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Invalid access code");
     }
 
     @Test
     void shouldHandleInvalidAccessCodeExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Invalid access code";
         Throwable cause = new RuntimeException("Root cause");
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage, cause);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException("Invalid access code detail", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -105,14 +102,14 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Invalid access code");
     }
 
     @Test
     void shouldHandleInvalidPartyForCaseException() {
         // Given
-        String expectedErrorMessage = "Invalid party for access code";
-        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(expectedErrorMessage);
+        InvalidPartyForAccessCodeException exception =
+            new InvalidPartyForAccessCodeException("Invalid party for access code detail");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -121,15 +118,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Party not found");
     }
 
     @Test
     void shouldHandleInvalidPartyForCaseExceptionWithCause() {
         // Given
-        String errorMessage = "Invalid party for access code";
         Throwable cause = new RuntimeException("Root cause");
-        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(errorMessage, cause);
+        InvalidPartyForAccessCodeException exception =
+            new InvalidPartyForAccessCodeException("Invalid party for access code detail", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -138,14 +135,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(errorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Party not found");
     }
 
     @Test
     void shouldHandleInvalidAuthTokenException() {
         // Given
-        String expectedErrorMessage = "Invalid authentication token";
-        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage);
+        InvalidAuthTokenException exception = new InvalidAuthTokenException("Token detail that must not leak");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -154,15 +150,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Invalid authentication token");
     }
 
     @Test
     void shouldHandleInvalidAuthTokenExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Invalid authentication token";
         Exception cause = new RuntimeException("Root cause");
-        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage, cause);
+        InvalidAuthTokenException exception =
+            new InvalidAuthTokenException("Token detail that must not leak", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -171,14 +167,14 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Invalid authentication token");
     }
 
     @Test
     void shouldHandleIllegalStateException() {
         // Given
-        String expectedErrorMessage = "Conflict state detected";
-        IllegalStateException exception = new IllegalStateException(expectedErrorMessage);
+        IllegalStateException exception =
+            new IllegalStateException("No party found for party ID: abc and case reference: 1");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -187,15 +183,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Conflict state detected");
     }
 
     @Test
     void shouldHandleIllegalStateExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Conflict state detected";
         Throwable cause = new RuntimeException("Root cause");
-        IllegalStateException exception = new IllegalStateException(expectedErrorMessage, cause);
+        IllegalStateException exception =
+            new IllegalStateException("No party found for party ID: abc and case reference: 1", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -204,14 +200,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Conflict state detected");
     }
 
     @Test
     void shouldHandleAccessCodeAlreadyUsedException() {
         // Given
-        String expectedErrorMessage = "Access code already used";
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException("Detail must not leak");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -220,15 +215,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Access code already used");
     }
 
     @Test
     void shouldHandleAccessCodeAlreadyUsedExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Access code already used";
         Throwable cause = new RuntimeException("Root cause");
-        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage, cause);
+        AccessCodeAlreadyUsedException exception =
+            new AccessCodeAlreadyUsedException("Detail must not leak", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -237,7 +232,7 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Access code already used");
     }
 
     @Test
@@ -302,14 +297,13 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo("Conflict state detected");
     }
 
     @Test
     void shouldHandleExceptionWithEmptyMessage() {
         // Given
-        String expectedErrorMessage = "";
-        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException("");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -318,14 +312,14 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Invalid access code");
     }
 
     @Test
     void shouldHandleCaseAccessException() {
         // Given
-        String expectedErrorMessage = "User is not linked as a defendant on this case";
-        CaseAccessException exception = new CaseAccessException(expectedErrorMessage);
+        CaseAccessException exception =
+            new CaseAccessException("User is not linked as a defendant on this case");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -334,15 +328,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Access denied");
     }
 
     @Test
     void shouldHandleCaseAccessExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "No defendants associated with this case";
         Throwable cause = new RuntimeException("Root cause");
-        CaseAccessException exception = new CaseAccessException(expectedErrorMessage, cause);
+        CaseAccessException exception =
+            new CaseAccessException("No defendants associated with this case", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -351,14 +345,14 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Access denied");
     }
 
     @Test
     void shouldHandleCaseAssignmentException() {
         // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage);
+        CaseAssignmentException exception =
+            new CaseAssignmentException("Failed to establish case access for case 123456789012");
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -367,15 +361,15 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Case assignment failed");
     }
 
     @Test
     void shouldHandleCaseAssignmentExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Failed to establish case access for case 123456789012";
         Throwable cause = new RuntimeException("CCD assignment API failure");
-        CaseAssignmentException exception = new CaseAssignmentException(expectedErrorMessage, cause);
+        CaseAssignmentException exception =
+            new CaseAssignmentException("Failed to establish case access for case 123456789012", cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -384,7 +378,7 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo("Case assignment failed");
         assertThat(exception.getCause()).isEqualTo(cause);
     }
 
