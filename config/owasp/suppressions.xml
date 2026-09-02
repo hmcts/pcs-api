@@ -121,4 +121,45 @@
     <cve>CVE-2026-59313</cve>
     <cve>CVE-2026-59314</cve>
   </suppress>
+  <suppress until="2026-09-30">
+    <notes><![CDATA[
+    Fix is Enterprise-only on Spring Framework 6.2.x (6.2.20); OSS 6.2 stops at 6.2.19, so the only
+    open-source remedy is Spring 7.x, i.e. a Spring Boot 4.x upgrade tracked separately. None applies
+    to PCS as deployed:
+    CVE-2026-47892 and CVE-2026-47893 are WebFlux-only (functional endpoints behind DispatcherServlet,
+    and WebFlux WebSockets); spring-webflux is test scope here and resolves 0 times on
+    runtimeClasspath - PCS serves Spring MVC on embedded Tomcat.
+    CVE-2026-59283 is a SimpleEvaluationContext SpEL sandbox bypass; PCS evaluates no SpEL - there is
+    no ExpressionParser/EvaluationContext usage in the source.
+    CVE-2026-59280 is FreeMarker view path traversal; FreeMarker resolves 0 times on runtimeClasspath,
+    PCS templates use Pebble. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
+    <cve>CVE-2026-47892</cve>
+    <cve>CVE-2026-47893</cve>
+    <cve>CVE-2026-59283</cve>
+    <cve>CVE-2026-59280</cve>
+  </suppress>
+  <suppress until="2026-09-30">
+    <notes><![CDATA[
+    CVE-2026-59270: fix is Enterprise-only on Spring Security 6.5.x (6.5.12); OSS 6.5 stops at 6.5.11,
+    so the only open-source remedy is Spring Security 7.x via a Spring Boot 4.x upgrade tracked
+    separately. The vulnerability is in the embedded UnboundID LDAP test server (UnboundIdContainer);
+    PCS uses neither - unboundid and spring-security-ldap resolve 0 times on runtimeClasspath.
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
+    <cve>CVE-2026-59270</cve>
+  </suppress>
+  <suppress until="2026-09-30">
+    <notes><![CDATA[
+    CVE-2026-59284: no allow list for property keys when the writable /actuator/env endpoint is
+    enabled. Fixed in Spring Cloud Commons 4.3.4, which is not published to Maven Central (OSS 4.3
+    stops at 4.3.3); the open-source remedy is Spring Cloud 2026.x / 5.0.3 via a Spring Boot 4.x
+    upgrade tracked separately. PCS does not enable the writable env endpoint - it is disabled by
+    default and nothing in application configuration turns it on. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
+    <cve>CVE-2026-59284</cve>
+  </suppress>
 </suppressions>
