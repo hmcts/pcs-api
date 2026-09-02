@@ -152,7 +152,7 @@ public class NotificationService {
                 defendantResponse.getParty(),
                 defendantResponse
             ),
-            EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP,
+            EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED,
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forOrganisation(organisationEntity,
                                                                pcsCaseEntity));
