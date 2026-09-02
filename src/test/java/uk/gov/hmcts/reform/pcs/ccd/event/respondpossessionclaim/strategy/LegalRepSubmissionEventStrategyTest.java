@@ -57,6 +57,7 @@ class LegalRepSubmissionEventStrategyTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
     private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID REPRESENTED_PARTY_ID = UUID.randomUUID();
     private static final String HWF_REFERENCE_NUMBER = "myHwfReferenceNumber";
 
     @Mock
@@ -109,6 +110,9 @@ class LegalRepSubmissionEventStrategyTest {
         // given
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
             .build();
 
         setupHappyPath(counterClaimEntity);
@@ -129,6 +133,9 @@ class LegalRepSubmissionEventStrategyTest {
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
             .status(PENDING_COUNTER_CLAIM_ISSUED)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
             .hwfReferenceNumber(HWF_REFERENCE_NUMBER)
             .build();
 
@@ -152,6 +159,9 @@ class LegalRepSubmissionEventStrategyTest {
         // given
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
             .status(PENDING_COUNTER_CLAIM_ISSUED)
             .build();
 
@@ -176,6 +186,9 @@ class LegalRepSubmissionEventStrategyTest {
         // given
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
             .status(counterClaimState)
             .build();
 
@@ -197,14 +210,12 @@ class LegalRepSubmissionEventStrategyTest {
 
     private void setupHappyPath(CounterClaimEntity counterClaimEntity) {
         // given
-        UUID representedPartyId = UUID.randomUUID();
-
-        PcsCaseEntity pcsCaseEntity = pcsCaseEntity(representedPartyId);
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntity(REPRESENTED_PARTY_ID);
         pcsCaseEntity.setCounterClaims(List.of(counterClaimEntity));
 
         String organisationId = "org";
 
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty = PartyEntity.builder().id(REPRESENTED_PARTY_ID).build();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -232,8 +243,9 @@ class LegalRepSubmissionEventStrategyTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
+            .thenReturn(Optional.of(REPRESENTED_PARTY_ID));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, REPRESENTED_PARTY_ID,
                                                          organisationId))
             .thenReturn(Optional.of(caseData));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
@@ -241,11 +253,12 @@ class LegalRepSubmissionEventStrategyTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId, CASE_REFERENCE))
+        when(organisationRepository
+                 .findByPartyLinkedToOrganisationAndCaseAndActive(REPRESENTED_PARTY_ID, CASE_REFERENCE))
             .thenReturn(organisationEntity());
 
 
-        when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
+        when(partyService.getPartyEntityById(REPRESENTED_PARTY_ID, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,
             possessionClaimResponse,

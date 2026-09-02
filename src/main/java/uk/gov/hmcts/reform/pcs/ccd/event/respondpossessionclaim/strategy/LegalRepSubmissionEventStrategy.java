@@ -111,7 +111,7 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
 
         // Schedule this as a task
-        sendNotification(organisationEntity, pcsCaseEntity, defendantResponse);
+        sendNotification(organisationEntity, pcsCaseEntity, defendantResponse, defendantParty);
 
         return submitResponse;
     }
@@ -148,8 +148,11 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
     }
 
     private void sendNotification(OrganisationEntity organisationEntity,
-                                  PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse) {
-        Optional<CounterClaimEntity> counterClaimEntityOptional = pcsCaseEntity.getCounterClaims().stream().findFirst();
+                                  PcsCaseEntity pcsCaseEntity, DefendantResponseEntity defendantResponse,
+                                  PartyEntity defendantParty) {
+        Optional<CounterClaimEntity> counterClaimEntityOptional = pcsCaseEntity.getCounterClaims().stream()
+            .filter(counterClaimEntity -> defendantParty.getId()
+                .equals(counterClaimEntity.getParty().getId())).findFirst();
 
         counterClaimEntityOptional
             .ifPresentOrElse(
