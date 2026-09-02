@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
-import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -209,24 +208,13 @@ class ReviewSupportRequestFlowTest {
         List<ListValue<PartySupport>> offered = supportReviewService.buildRequestedSupport(viewMappedCase());
         assertThat(offered).hasSize(1);
 
-        String reviewedFlagId = offered.getFirst().getValue().getSupportFlags().getDetails().getFirst().getId();
-        caseFlagService().applyReviewedSupportFlags(
-            List.of(ListValue.<PartySupport>builder()
-                .id(defendant.getId().toString())
-                .value(PartySupport.builder()
-                    .supportFlags(Flags.builder()
-                        .details(List.of(ListValue.<FlagDetail>builder()
-                            .id(reviewedFlagId)
-                            .value(FlagDetail.builder()
-                                .status("Inactive")
-                                .flagUpdateComment("Adjustment no longer required")
-                                .dateTimeModified(REVIEWED)
-                                .build())
-                            .build()))
-                        .build())
-                    .build())
-                .build()),
-            Set.of(defendant));
+        ListValue<FlagDetail> reviewedDetail =
+            offered.getFirst().getValue().getSupportFlags().getDetails().getFirst();
+        reviewedDetail.getValue().setStatus("Inactive");
+        reviewedDetail.getValue().setFlagUpdateComment("Adjustment no longer required");
+        reviewedDetail.getValue().setDateTimeModified(REVIEWED);
+
+        caseFlagService().applyReviewedSupportFlags(offered, Set.of(defendant));
 
         FlagDetail onCaseFlagsTab = viewMappedCase().getParties().stream()
             .filter(value -> defendant.getId().toString().equals(value.getId()))
@@ -241,6 +229,38 @@ class ReviewSupportRequestFlowTest {
         assertThat(onCaseFlagsTab.getSubTypeValue()).isEqualTo("Different chair");
         assertThat(onCaseFlagsTab.getDateTimeCreated()).isEqualTo(CREATED);
         assertThat(requested.getVisibility()).isEqualTo("External");
+    }
+
+    @Test
+    @DisplayName("exposes the reviewer's edited comment on the Case Flags tab, separately from the reason")
+    void projectsTheEditedCommentOntoTheCaseFlagsTab() {
+        CasePartyFlagEntity requested =
+            supportFlag("RA0033", "Private waiting area", "Requested", FlagVisibility.EXTERNAL);
+        requested.setFlagComment("For test car parking");
+        defendant.setDefendantFlags(new ArrayList<>(List.of(requested)));
+
+        List<ListValue<PartySupport>> offered = supportReviewService.buildRequestedSupport(viewMappedCase());
+        FlagDetail reviewedDetail = offered.getFirst().getValue().getSupportFlags().getDetails()
+            .getFirst().getValue();
+        assertThat(reviewedDetail.getFlagComment()).isEqualTo("For test car parking");
+
+        reviewedDetail.setStatus("Inactive");
+        reviewedDetail.setFlagComment("For test car parking, review comment");
+        reviewedDetail.setFlagUpdateComment("Test reason to update status to inactive");
+        reviewedDetail.setDateTimeModified(REVIEWED);
+
+        caseFlagService().applyReviewedSupportFlags(offered, Set.of(defendant));
+
+        FlagDetail onCaseFlagsTab = viewMappedCase().getParties().stream()
+            .filter(value -> defendant.getId().toString().equals(value.getId()))
+            .findFirst().orElseThrow()
+            .getValue().getPartyFlagsExternal().getDetails().getFirst().getValue();
+
+        assertThat(onCaseFlagsTab.getFlagComment()).isEqualTo("For test car parking, review comment");
+        assertThat(onCaseFlagsTab.getFlagUpdateComment()).isEqualTo("Test reason to update status to inactive");
+        assertThat(onCaseFlagsTab.getStatus()).isEqualTo("Inactive");
+        assertThat(onCaseFlagsTab.getDateTimeCreated()).isEqualTo(CREATED);
+        assertThat(onCaseFlagsTab.getDateTimeModified()).isEqualTo(REVIEWED);
     }
 
     private CaseFlagService caseFlagService() {

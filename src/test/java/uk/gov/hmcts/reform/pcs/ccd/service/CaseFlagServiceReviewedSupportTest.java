@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
@@ -11,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
@@ -277,6 +280,14 @@ class CaseFlagServiceReviewedSupportTest {
 
     private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, String status, String reason,
                                                           LocalDateTime modified) {
+        return reviewedSupport(flagId, FlagDetail.builder()
+            .status(status)
+            .flagUpdateComment(reason)
+            .dateTimeModified(modified)
+            .build());
+    }
+
+    private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, FlagDetail reviewedFlagDetail) {
         List<ListValue<PartySupport>> reviewed = new ArrayList<>();
         reviewed.add(ListValue.<PartySupport>builder()
             .id(partyEntity.getId().toString())
@@ -284,11 +295,7 @@ class CaseFlagServiceReviewedSupportTest {
                 .supportFlags(Flags.builder()
                     .details(List.of(ListValue.<FlagDetail>builder()
                         .id(flagId.toString())
-                        .value(FlagDetail.builder()
-                            .status(status)
-                            .flagUpdateComment(reason)
-                            .dateTimeModified(modified)
-                            .build())
+                        .value(reviewedFlagDetail)
                         .build()))
                     .build())
                 .build())
@@ -308,7 +315,12 @@ class CaseFlagServiceReviewedSupportTest {
         UUID flagId = requestedFlag.getId();
         LocalDateTime modified = LocalDateTime.of(2026, 8, 28, 15, 20, 36);
         underTest.applyReviewedSupportFlags(
-            reviewedSupport(flagId, "Active", "Updated", modified),
+            reviewedSupport(flagId, FlagDetail.builder()
+                .status("Active")
+                .flagCommentCy("Welsh original")
+                .flagUpdateComment("Updated")
+                .dateTimeModified(modified)
+                .build()),
             Set.of(partyEntity));
 
         assertThat(requestedFlag.getId()).isEqualTo(flagId);
@@ -324,6 +336,144 @@ class CaseFlagServiceReviewedSupportTest {
         assertThat(requestedFlag.getSubTypeValue()).isEqualTo("British Sign Language (BSL)");
         assertThat(requestedFlag.getOtherDescription()).isEqualTo("Other description");
         assertThat(requestedFlag.getDateTimeCreated()).isEqualTo(created);
+    }
+
+    @Test
+    void shouldPersistTheEditedFlagCommentAlongsideTheStatusChangeReason() {
+        requestedFlag.setFlagComment("Original support comment");
+        LocalDateTime modified = LocalDateTime.of(2026, 9, 2, 10, 14, 16);
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Inactive")
+                .flagComment("Updated support comment")
+                .flagUpdateComment("Reason for changing status")
+                .dateTimeModified(modified)
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("Updated support comment");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Reason for changing status");
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Inactive");
+        assertThat(requestedFlag.getDateTimeModified()).isEqualTo(modified);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Requested", "Active", "Inactive", "Not approved"})
+    void shouldPersistTheEditedFlagCommentForEveryReviewOutcome(String reviewedStatus) {
+        requestedFlag.setFlagComment("For test car parking");
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status(reviewedStatus)
+                .flagComment("For test car parking, review comment")
+                .flagUpdateComment("Test reason to update status")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo(reviewedStatus);
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("For test car parking, review comment");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Test reason to update status");
+    }
+
+    @Test
+    void shouldPersistTheEditedFlagCommentWhenTheStatusIsUnchanged() {
+        requestedFlag.setFlagComment("Original support comment");
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Requested")
+                .flagComment("Test review comment")
+                .flagUpdateComment("Still under consideration")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Requested");
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("Test review comment");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Still under consideration");
+    }
+
+    @Test
+    void shouldClearTheFlagCommentTheReviewerHasRemoved() {
+        requestedFlag.setFlagComment("Original support comment");
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Active")
+                .flagComment("")
+                .flagUpdateComment("Comment withdrawn")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getFlagComment()).isNull();
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Comment withdrawn");
+    }
+
+    @Test
+    void shouldPersistAWelshFlagCommentSuppliedByTheReview() {
+        requestedFlag.setFlagComment("Original support comment");
+        requestedFlag.setFlagCommentWelsh("Welsh original");
+
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Active")
+                .flagComment("Original support comment")
+                .flagCommentCy("Welsh translation added at review")
+                .flagUpdateComment("Translation supplied")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("Original support comment");
+        assertThat(requestedFlag.getFlagCommentWelsh()).isEqualTo("Welsh translation added at review");
+    }
+
+    @Test
+    void shouldChangeOnlyTheReviewedFieldsWhenPersistingAnEditedComment() {
+        LocalDateTime created = LocalDateTime.of(2026, 8, 28, 14, 57, 52);
+        requestedFlag.setFlagRefData(FlagRefDataEntity.builder().flagCode("RA0033").build());
+        requestedFlag.setFlagComment("Original support comment");
+        requestedFlag.setFlagCommentWelsh("Welsh original");
+        requestedFlag.setSubTypeKey("waitingArea");
+        requestedFlag.setSubTypeValue("Private waiting area");
+        requestedFlag.setSubTypeValueWelsh("Ardal aros breifat");
+        requestedFlag.setOtherDescription("Other description");
+        requestedFlag.setOtherDescriptionWelsh("Disgrifiad arall");
+        requestedFlag.setDateTimeCreated(created);
+        requestedFlag.setPaths(":Party");
+
+        UUID flagId = requestedFlag.getId();
+        LocalDateTime modified = LocalDateTime.of(2026, 9, 2, 11, 5, 0);
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(flagId, FlagDetail.builder()
+                .status("Inactive")
+                .flagComment("Updated support comment")
+                .flagCommentCy("Welsh original")
+                .flagUpdateComment("Reason for changing status")
+                .dateTimeModified(modified)
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getId()).isEqualTo(flagId);
+        assertThat(requestedFlag.getFlagRefData().getFlagCode()).isEqualTo("RA0033");
+        assertThat(requestedFlag.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+        assertThat(requestedFlag.getSubTypeKey()).isEqualTo("waitingArea");
+        assertThat(requestedFlag.getSubTypeValue()).isEqualTo("Private waiting area");
+        assertThat(requestedFlag.getSubTypeValueWelsh()).isEqualTo("Ardal aros breifat");
+        assertThat(requestedFlag.getOtherDescription()).isEqualTo("Other description");
+        assertThat(requestedFlag.getOtherDescriptionWelsh()).isEqualTo("Disgrifiad arall");
+        assertThat(requestedFlag.getDateTimeCreated()).isEqualTo(created);
+        assertThat(requestedFlag.getPaths()).isEqualTo(":Party");
+        assertThat(requestedFlag.getFlagCommentWelsh()).isEqualTo("Welsh original");
+
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("Updated support comment");
+        assertThat(requestedFlag.getFlagUpdateComment()).isEqualTo("Reason for changing status");
+        assertThat(requestedFlag.getDefaultStatus()).isEqualTo("Inactive");
+        assertThat(requestedFlag.getDateTimeModified()).isEqualTo(modified);
+
+        assertThat(partyEntity.getDefendantFlags())
+            .containsExactlyInAnyOrder(requestedFlag, activeFlag, internalRequestedFlag);
+        assertThat(activeFlag.getFlagComment()).isNull();
+        assertThat(internalRequestedFlag.getFlagComment()).isNull();
     }
 
     private CasePartyFlagEntity flagEntity(String status, FlagVisibility visibility) {
