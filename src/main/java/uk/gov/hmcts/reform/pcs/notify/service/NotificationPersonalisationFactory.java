@@ -106,6 +106,8 @@ public class NotificationPersonalisationFactory {
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentUrl(paymentUrl)
+            .build();
+    }
 
     public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessOrganisation(
         DefendantResponseEntity defendantResponse, String paymentReference,
