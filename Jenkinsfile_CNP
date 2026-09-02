@@ -66,6 +66,9 @@ withPipeline(type, product, component) {
   }
 
   onPR() {
+    // On PRs these run in GitHub Actions instead. Master still runs them here.
+    env.INTEGRATION_TESTS_ENABLED = "false"
+
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
