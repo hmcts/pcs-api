@@ -18,6 +18,7 @@ public class FeatureFlagView {
         pcsCase.setFeatureFlags(FeatureFlags.builder()
                                     .release1dot2Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_2))
                                     .release1dot3Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_3))
+                                    .release1dot4Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_4))
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
                                     .build());

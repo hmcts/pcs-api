@@ -21,6 +21,7 @@ import static org.junit.jupiter.params.provider.EnumSource.Mode.INCLUDE;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
 class ShowConditionsTest {
@@ -107,7 +108,7 @@ class ShowConditionsTest {
 
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
         mode = INCLUDE)
     void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
         // When / Then
@@ -117,7 +118,7 @@ class ShowConditionsTest {
     @ParameterizedTest
     @EnumSource(
         value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM"},
         mode = EXCLUDE
     )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
@@ -139,6 +140,8 @@ class ShowConditionsTest {
                       "featureFlags.release1dot2Enabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_3),
                       "featureFlags.release1dot3Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_4),
+                      "featureFlags.release1dot4Enabled=\"YES\""),
             arguments(List.of(CASEWORKER_EVENTS),
                       "featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(WALES_MAKE_A_CLAIM),
