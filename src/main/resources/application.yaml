@@ -341,13 +341,13 @@ caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
 camunda:
-  url: ${CAMUNDA_BASE_URL:http://camunda-local-bpm/engine-rest}
   request:
     max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
     backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
 
-bankHoliday:
-  url: https://www.gov.uk/bank-holidays
+work-allocation:
+  workflow-api:
+    url: ${WA_WORKFLOW_API:http://localhost:8099}
 
 shutter:
   service: ${SHUTTER_SERVICE:false}
