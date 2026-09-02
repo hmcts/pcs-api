@@ -26,15 +26,15 @@ public class ReferenceDataService {
      */
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
-            log.info("Retrieving organisation details for userId: {}", userId);
+            log.debug("Retrieving organisation details");
 
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
 
-            log.info("Successfully retrieved organisation details for userId: {}", userId);
+            log.debug("Successfully retrieved organisation details");
             return details;
 
         } catch (Exception ex) {
-            log.error("Failed to retrieve organisation details for userId: {}", userId, ex);
+            log.error("Failed to retrieve organisation details", ex);
             throw ex;
         }
     }
@@ -46,15 +46,15 @@ public class ReferenceDataService {
      */
     public String getOrganisationName(String userId) {
         try {
-            log.info("Retrieving organisation name for userId: {}", userId);
+            log.debug("Retrieving organisation name");
 
             String organisationName = organisationDetailsService.getOrganisationName(userId);
 
-            log.info("Successfully retrieved organisation name: {} for userId: {}", organisationName, userId);
+            log.debug("Successfully retrieved organisation name");
             return organisationName;
 
         } catch (Exception ex) {
-            log.error("Failed to retrieve organisation name for userId: {}", userId, ex);
+            log.error("Failed to retrieve organisation name", ex);
             throw ex;
         }
     }
@@ -66,16 +66,15 @@ public class ReferenceDataService {
      */
     public String getOrganisationIdentifier(String userId) {
         try {
-            log.info("Retrieving organisation identifier for userId: {}", userId);
+            log.debug("Retrieving organisation identifier");
 
             String organisationIdentifier = organisationDetailsService.getOrganisationIdentifier(userId);
 
-            log.info("Successfully retrieved organisation identifier: {} for userId: {}",
-                organisationIdentifier, userId);
+            log.debug("Successfully retrieved organisation identifier");
             return organisationIdentifier;
 
         } catch (Exception ex) {
-            log.error("Failed to retrieve organisation identifier for userId: {}", userId, ex);
+            log.error("Failed to retrieve organisation identifier", ex);
             throw ex;
         }
     }
@@ -87,12 +86,12 @@ public class ReferenceDataService {
      */
     public ClaimantInformation populateClaimantInformation(String userId) {
         try {
-            log.info("Populating claimant information for userId: {}", userId);
+            log.debug("Populating claimant information");
 
             OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
 
             if (isNull(details)) {
-                log.warn("No organisation details found for userId: {}", userId);
+                log.warn("No organisation details found");
                 return null;
             }
 
@@ -103,11 +102,11 @@ public class ReferenceDataService {
                 .sraRegulated(details.getSraRegulated())
                 .build();
 
-            log.info("Successfully populated claimant information for userId: {}", userId);
+            log.debug("Successfully populated claimant information");
             return claimantInfo;
 
         } catch (Exception ex) {
-            log.error("Failed to populate claimant information for userId: {}", userId, ex);
+            log.error("Failed to populate claimant information", ex);
             throw ex;
         }
     }
