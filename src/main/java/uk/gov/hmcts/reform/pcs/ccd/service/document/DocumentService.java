@@ -25,13 +25,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -277,26 +276,14 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
-        if (selectedGenApp != null) {
-            String description = taskDescriptionService.createGenAppAdditionalDocumentsDescription(
-                caseReference,
-                mainClaim,
-                party,
-                selectedGenApp,
-                documentEntities
-            );
-
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
-        } else if (selectedCounterClaim == null) {
-            String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
-                caseReference,
-                mainClaim,
-                party,
-                documentEntities
-            );
-            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
-        }
-        // No review task for counterclaim documents until HDPI-6591 defines it
+        createAdditionalDocsWATask(
+            party,
+            selectedGenApp,
+            selectedCounterClaim,
+            caseReference,
+            mainClaim,
+            documentEntities
+        );
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
         log.info("Saved {} additional documents for case {} and party {}",
@@ -581,13 +568,6 @@ public class DocumentService {
         private String description;
     }
 
-    public List<LegalRepDocument> createLegalRepDocuments(PCSCase pcsCase) {
-        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
-
-        return legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
-            .map(ListValue::getValue).toList();
-    }
-
     public DocumentType resolveDocumentType(LegalRepDocument legalRepDoc) {
         if (legalRepDoc.getLegalRepDocumentTypeWales() != null) {
             return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentTypeWales());
@@ -610,7 +590,7 @@ public class DocumentService {
                     .map(CaseFileCategory::getId)
                     .orElse(null);
 
-                ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+                ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
 
                 String documentUrl = legalRepDoc.getDocument().getUrl();
                 String originalFilename = legalRepDoc.getDocument().getFilename();
@@ -637,5 +617,51 @@ public class DocumentService {
             .toList();
 
         pcsCaseEntity.addDocuments(documentEntities);
+
+        createAdditionalDocsWATask(
+            party,
+            selectedGenApp,
+            null,
+            pcsCaseEntity.getCaseReference(),
+            pcsCaseEntity.getMainClaim(),
+            documentEntities
+        );
     }
+
+    private void createAdditionalDocsWATask(PartyEntity party,
+                                            GenAppEntity selectedGenApp,
+                                            CounterClaimEntity selectedCounterClaim,
+                                            long caseReference,
+                                            ClaimEntity mainClaim,
+                                            List<DocumentEntity> documentEntities) {
+
+        if (selectedGenApp != null) {
+            String description = taskDescriptionService.createGenAppAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                selectedGenApp,
+                documentEntities
+            );
+
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
+        } else if (selectedCounterClaim != null) {
+            String description = taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                documentEntities
+            );
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM, description);
+        } else {
+            String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                documentEntities
+            );
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
+        }
+    }
+
 }
