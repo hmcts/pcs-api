@@ -1,6 +1,7 @@
 #!groovy
 
 @Library("Infrastructure@2.4.9")
+import uk.gov.hmcts.contino.AppPipelineConfig
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
@@ -36,6 +37,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
     envVariable: envVar
   ]
 }
+
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
@@ -187,6 +189,14 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+
+  afterSuccess('dbmigrate:demo') {
+    runDemoSmokeTests(builder, secrets)
+  }
+
+  afterAlways('dbmigrate:demo') {
+    archiveSmokeTestReports()
+  }
   afterSuccess('akschartsinstall') {
     onPR {
       if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
@@ -276,6 +286,27 @@ def setDemoEnvVars() {
   env.ENVIRONMENT= "demo"
   env.CAMUNDA_BASE_URL = "http://camunda-api-demo.service.core-compute-demo.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-demo.service.core-compute-demo.internal"
+}
+
+
+// Runs the Gradle `smoke` task (JUnit tag "Smoke") against the flux-deployed demo pcs-api.
+def runDemoSmokeTests(builder, Map secrets) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  withTeamSecrets(vaultConfig, 'demo', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-demo.service.core-compute-demo.internal",
+      "ENVIRONMENT_NAME=demo",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-demo.service.core-compute-demo.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-demo.service.core-compute-demo.internal",
+      "IDAM_API_URL=https://idam-api.demo.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
 }
 
 def setIthcEnvVars() {
