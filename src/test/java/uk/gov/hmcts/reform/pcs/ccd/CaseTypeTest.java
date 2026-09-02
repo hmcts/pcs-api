@@ -172,8 +172,6 @@ class CaseTypeTest {
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(AccessProfile.GA_CLAIMANT_SOLICITOR,
                                        AccessProfile.GA_DEFENDANT_SOLICITOR);
-        // One tab definition is generated per access profile, each with its own tab id and the same
-        // label, so a profile listed twice would render the tab twice.
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
@@ -186,11 +184,6 @@ class CaseTypeTest {
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
     }
 
-    /**
-     * The config generator writes one CCD tab definition per access profile, giving each its own tab id
-     * while they all share the tab label. A profile repeated within a role set therefore renders the tab
-     * more than once for a user holding it.
-     */
     @Test
     void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
         assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).doesNotHaveDuplicates();

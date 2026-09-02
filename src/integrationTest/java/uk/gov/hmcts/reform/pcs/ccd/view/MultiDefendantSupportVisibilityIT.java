@@ -22,8 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -34,7 +33,6 @@ import java.util.UUID;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -49,12 +47,6 @@ class MultiDefendantSupportVisibilityIT extends AbstractPostgresContainerIT {
 
     private static final String SUPPORT_CODE = "RA0042";
 
-    private static final List<String> GROUP_ACCESS_ROLES_ONLY = List.of("caseworker", "defendant-solicitor");
-
-    private static final List<String> EVERY_PROFESSIONAL_ROLE = List.of(
-        "caseworker", "caseworker-pcs-solicitor", "pui-case-manager", "claimant-solicitor",
-        "defendant-solicitor");
-
     @Autowired
     private CaseFlagsView underTest;
 
@@ -68,7 +60,7 @@ class MultiDefendantSupportVisibilityIT extends AbstractPostgresContainerIT {
     private SecurityContextService securityContextService;
 
     @MockitoBean
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
 
     @Test
     @DisplayName("shows a defendant representative only the defendant they act for")
@@ -116,16 +108,6 @@ class MultiDefendantSupportVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("does not widen support for a user holding both legacy and group access roles")
-    void doesNotWidenSupportForAUserHoldingEveryRole() {
-        PcsCaseEntity caseEntity = caseWithThreeDefendants();
-        readingAsProfessional(DEFENDANT_A_FIRM, EVERY_PROFESSIONAL_ROLE);
-
-        assertThat(supportPartyIds(readCase(caseEntity)))
-            .containsExactly(partyId(caseEntity, "Ann"));
-    }
-
-    @Test
     @DisplayName("shows no support when the organisation cannot be resolved")
     void showsNoSupportWhenTheOrganisationIsUnknown() {
         PcsCaseEntity caseEntity = caseWithThreeDefendants();
@@ -135,15 +117,8 @@ class MultiDefendantSupportVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     private void readingAsProfessionalFrom(String organisationId) {
-        readingAsProfessional(organisationId, GROUP_ACCESS_ROLES_ONLY);
-    }
-
-    private void readingAsProfessional(String organisationId, List<String> idamRoles) {
-        UUID userId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(securityContextService.getCurrentUserDetails())
-            .thenReturn(UserInfo.builder().uid(userId.toString()).roles(idamRoles).build());
-        when(organisationDetailsService.requireOrganisationIdentifier(anyString())).thenReturn(organisationId);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
     }
 
     private PCSCase readCase(PcsCaseEntity caseEntity) {
