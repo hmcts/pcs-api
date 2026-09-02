@@ -156,8 +156,9 @@ public class PartiesView {
         // organisation has ever been party to (one query per row), which is O(cases per organisation).
         Optional<ClaimPartyContactDetailsEntity> contactDetails = caseRef == null
             ? Optional.empty()
-            : claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
-                orgEntity.getOrganisationId(), caseRef);
+            : claimPartyContactDetailsRepository
+                .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
+                    orgEntity.getOrganisationId(), caseRef);
 
         return LegalRepresentative.builder()
             .organisationName(orgEntity.getOrganisationName())

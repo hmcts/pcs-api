@@ -198,7 +198,8 @@ class PartiesViewTest {
                 .organisationId("ORG1")
                 .organisationName("org name")
                 .build();
-        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG1", 1L))
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc("ORG1", 1L))
             .thenReturn(Optional.of(contactDetailsForThisCase));
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
@@ -255,7 +256,8 @@ class PartiesViewTest {
                 .organisationId("ORG1")
                 .organisationName("org name")
                 .build();
-        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG1", 1L))
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc("ORG1", 1L))
             .thenReturn(Optional.empty());
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
@@ -311,7 +313,8 @@ class PartiesViewTest {
         assertThat(legalRepresentative.getOrganisationName()).isEqualTo("org name");
         assertThat(legalRepresentative.getTelephoneNumber()).isNull();
         assertThat(legalRepresentative.getEmailAddress()).isNull();
-        verify(claimPartyContactDetailsRepository, never()).findByOrganisationIdAndCaseReference(any(), anyLong());
+        verify(claimPartyContactDetailsRepository, never())
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(any(), anyLong());
     }
 
     @Test
@@ -374,7 +377,8 @@ class PartiesViewTest {
         LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
             .getValue().getLegalRepresentative();
         assertThat(legalRepresentative).isNull();
-        verify(claimPartyContactDetailsRepository, never()).findByOrganisationIdAndCaseReference(any(), anyLong());
+        verify(claimPartyContactDetailsRepository, never())
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(any(), anyLong());
     }
 
     @Test
@@ -399,7 +403,8 @@ class PartiesViewTest {
                 .organisationId("ORG2")
                 .organisationName("org name2")
                 .build();
-        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG2", 1L))
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc("ORG2", 1L))
             .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
                                         .phoneNumber("phone2")
                                         .emailAddress("email2@test.com")

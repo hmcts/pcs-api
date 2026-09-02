@@ -90,7 +90,8 @@ class LegalRepresentativeSummaryServiceTest {
             OrganisationEntity.builder()
             .organisationId(ORGANISATION_ID)
             .build();
-        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(ORGANISATION_ID, caseRef))
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
             .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
                                         .pcsCase(pcsCaseEntity)
                                         .contactDetailsCorrectConfirmation(YesOrNo.NO)
@@ -127,7 +128,8 @@ class LegalRepresentativeSummaryServiceTest {
             OrganisationEntity.builder()
                 .organisationId(ORGANISATION_ID)
                 .build();
-        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(ORGANISATION_ID, caseRef))
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
             .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
                                         .pcsCase(pcsCaseEntity)
                                         .contactDetailsCorrectConfirmation(YesOrNo.YES)

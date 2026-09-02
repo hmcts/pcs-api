@@ -79,7 +79,8 @@ public class LegalRepresentativeSummaryService {
         // Direct lookup: walking the organisation's contact details loads every case it has ever been
         // party to (one query per row), which is O(cases per organisation).
         YesOrNo hasAmendedContactDetails = claimPartyContactDetailsRepository
-            .findByOrganisationIdAndCaseReference(partyLink.getOrganisation().getOrganisationId(), caseReference)
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
+                partyLink.getOrganisation().getOrganisationId(), caseReference)
             .map(ClaimPartyContactDetailsEntity::getContactDetailsCorrectConfirmation)
             .orElse(YesOrNo.NO);
 
