@@ -38,20 +38,6 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
-// Secrets the perftest smoke run needs from the pcs-perftest vault. Deliberately a subset of
-// the main `secrets` map: the perftest vault holds no idam-testing-support-url,
-// idam-expired-user-token or s2s-expired-service-token, so those are supplied separately in
-// runPerftestSmokeTests.
-def perftestSmokeSecrets = [
-  'pcs-${env}': [
-    secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
-    secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
-    secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-    secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
-    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
-  ]
-]
-
 GradleBuilder builder = new GradleBuilder(this, product)
 
 // Shutters the PCS case type across all environments (bakes shutterService() into the generated
@@ -202,17 +188,8 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
-  // pcs-api is deployed to perftest by flux, not by this pipeline, so the perftest branch
-  // goes down onAutoDeployBranch (High Level Data Setup -> Build Infrastructure -> DB
-  // Migration) and never reaches sectionDeployToAKS. That means the library never creates a
-  // smoketest:perftest stage, never sets TEST_URL (normally derived from helmInstall) and
-  // never injects the team secrets (loadVaultSecrets only registers the map; withTeamSecrets
-  // is what injects it). So run the smoke suite against the flux-deployed service here,
-  // after Flyway has brought the perftest schema up to date. Hooking the environment-suffixed
-  // dbmigrate:perftest token means no onPerftest{} guard is needed - unlike the unsuffixed
-  // highleveldatasetup token, this only ever fires on the perftest branch.
   afterSuccess('dbmigrate:perftest') {
-    runPerftestSmokeTests(builder, perftestSmokeSecrets)
+    runPerftestSmokeTests(builder, secrets)
   }
 
   afterAlways('dbmigrate:perftest') {
@@ -322,14 +299,9 @@ def setPerftestEnvVars() {
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
 }
 
-// Runs the Gradle `smoke` task (JUnit tag "Smoke") against the flux-deployed perftest pcs-api.
-// This hook runs on the perftest environment agent, so withTeamSecrets reads the vault via
-// that agent's managed identity and needs no withSubscription wrapper.
-// Uses withEnv rather than env.X = so the perftest IdAM/S2S URLs do not leak into later
-// stages - the pipeline sets those globally to aat at the top of withPipeline.
-def runPerftestSmokeTests(builder, Map perftestSmokeSecrets) {
+def runPerftestSmokeTests(builder, Map secrets) {
   def vaultConfig = new AppPipelineConfig()
-  vaultConfig.vaultSecrets = perftestSmokeSecrets
+  vaultConfig.vaultSecrets = secrets
 
   withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
     withEnv([
@@ -338,15 +310,6 @@ def runPerftestSmokeTests(builder, Map perftestSmokeSecrets) {
       "DATA_STORE_URL_BASE=http://ccd-data-store-api-perftest.service.core-compute-perftest.internal",
       "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal",
       "IDAM_API_URL=https://idam-api.perftest.platform.hmcts.net",
-      // Not held in the perftest vault, but derivable - same slug convention the e2e suite
-      // uses in src/e2eTest/config/global-setup.config.ts.
-      "IDAM_TESTING_SUPPORT_URL=https://idam-testing-support-api.perftest.platform.hmcts.net",
-      // Unused by the Smoke-tagged suite (it never sends an expired token) but TestConstants
-      // resolves both in eager static initialisers that throw on a missing var, so they must
-      // be set for the class to load. Not in the perftest vault, hence placeholders.
-      "IDAM_EXPIRED_USER_TOKEN=unused-on-perftest",
-      "S2S_EXPIRED_TOKEN=unused-on-perftest",
-      // perftest runs the unsuffixed PCS case type (aat uses PCS-STAGING).
       "CASE_TYPE_SUFFIX="
     ]) {
       echo "Running smoke tests against ${env.TEST_URL}"
