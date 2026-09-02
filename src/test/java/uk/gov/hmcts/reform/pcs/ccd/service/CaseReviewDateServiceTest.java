@@ -188,6 +188,19 @@ public class CaseReviewDateServiceTest {
     @Test
     void shouldOnlyAddNewReviewDatesWhenPreviousCaseDataContainsExistingRows() {
         // Given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        pcsCaseEntity.addCaseReviewDate(
+            CaseReviewDateEntity.builder()
+                .date(LocalDate.of(2026, 2, 1))
+                .reason(ReviewReason.DISMISS_CASE)
+                .description("existing review description")
+                .build()
+        );
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().name("Case Worker").build());
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 2)).thenReturn("task description");
+
         ListValue<ReviewDate> existingReviewDate = ListValue.<ReviewDate>builder()
             .value(
                 ReviewDate.builder()
@@ -205,19 +218,6 @@ public class CaseReviewDateServiceTest {
                     .description("new review description")
                     .build()
             ).build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-        pcsCaseEntity.addCaseReviewDate(
-            CaseReviewDateEntity.builder()
-                .date(LocalDate.of(2026, 2, 1))
-                .reason(ReviewReason.DISMISS_CASE)
-                .description("existing review description")
-                .build()
-        );
-        long caseReference = 12345L;
-        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().name("Case Worker").build());
-        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 2)).thenReturn("task description");
 
         PCSCase pcsCase = PCSCase.builder()
             .reviewDates(List.of(existingReviewDate, newReviewDate))
