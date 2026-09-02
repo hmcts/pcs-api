@@ -139,16 +139,11 @@ On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` b
 
 ### Parallel workers
 
-Worker count defaults to **2 on preview** and **4 everywhere else** (AAT nightly etc.). Preview is lower because every pcs-api PR release runs its own single-replica CCD stack (see `charts/pcs-api/values.ccd.preview.template.yaml`), so N workers means N concurrent journeys against one Elasticsearch / data-store / role-assignment pod.
-
-Export **`E2E_WORKERS`** to override either default — locally or as a Jenkins env var — without changing code:
+Defaults to 2 workers on preview, 4 elsewhere. Set `E2E_WORKERS` to override:
 
 ```bash
-E2E_WORKERS=1 yarn test:pr   # serialise, e.g. when debugging a flaky spec
-E2E_WORKERS=3 yarn test:pr   # push preview concurrency higher
+E2E_WORKERS=1 yarn test:pr
 ```
-
-Non-integer or non-positive values are ignored with a warning and the environment default is used.
 
 ### Environment variables (local)
 
