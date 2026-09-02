@@ -52,8 +52,10 @@ public class ShowConditions {
         return switch (featureFlag) {
             case RELEASE_1_DOT_2 -> "release1dot2Enabled";
             case RELEASE_1_DOT_3 -> "release1dot3Enabled";
+            case RELEASE_1_DOT_4 -> "release1dot4Enabled";
             case CASEWORKER_EVENTS -> "caseWorkerEventsEnabled";
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";
+            case CUI_RESPOND_TO_CLAIM_LR -> "cuiRespondToClaimLrEnabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };
