@@ -67,7 +67,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppEntity.getState()).thenReturn(GenAppState.PENDING_GEN_APP_ISSUED);
 
         when(feePaymentEntity.getRelatedEntityId()).thenReturn(genAppId);
-        when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+        when(genAppRepository.findByIdForUpdate(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
         underTest.handle(paymentStatusCallback, feePaymentEntity);
@@ -92,7 +92,7 @@ class GenAppPaymentCallbackHandlerTest {
         when(genAppEntity.getState()).thenReturn(GenAppState.GEN_APP_ISSUED);
 
         when(feePaymentEntity.getRelatedEntityId()).thenReturn(genAppId);
-        when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+        when(genAppRepository.findByIdForUpdate(genAppId)).thenReturn(Optional.of(genAppEntity));
 
         // When
         underTest.handle(paymentStatusCallback, feePaymentEntity);
@@ -110,7 +110,7 @@ class GenAppPaymentCallbackHandlerTest {
         FeePaymentEntity feePaymentEntity = mock(FeePaymentEntity.class);
         when(feePaymentEntity.getRelatedEntityId()).thenReturn(unknownGenAppId);
         when(feePaymentEntity.getPaymentStatus()).thenReturn(PaymentStatus.PAID);
-        when(genAppRepository.findById(unknownGenAppId)).thenReturn(Optional.empty());
+        when(genAppRepository.findByIdForUpdate(unknownGenAppId)).thenReturn(Optional.empty());
 
         // When
         Throwable throwable = catchThrowable(() -> underTest.handle(paymentStatusCallback, feePaymentEntity));
