@@ -64,7 +64,7 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 1)).thenReturn("task description");
 
         // When
         caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
@@ -111,14 +111,15 @@ public class CaseReviewDateServiceTest {
                     .build()
             ).build();
 
-        PCSCase pcsCase = PCSCase.builder()
+        final PCSCase pcsCase = PCSCase.builder()
             .reviewDates(List.of(reviewDate1, reviewDate2))
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 1)).thenReturn("task description 1");
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 2)).thenReturn("task description 2");
 
         // When
         caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
@@ -131,7 +132,7 @@ public class CaseReviewDateServiceTest {
         verify(camundaService).createTask(
             caseReference,
             TaskType.REVIEW_DATE_DUE,
-            "task description",
+            "task description 1",
             taskCreationTime1
         );
 
@@ -139,7 +140,7 @@ public class CaseReviewDateServiceTest {
         verify(camundaService).createTask(
             caseReference,
             TaskType.REVIEW_DATE_DUE,
-            "task description",
+            "task description 2",
             taskCreationTime2
         );
 
@@ -157,5 +158,66 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity2.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity2.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity2.getDescription()).isEqualTo("review description 2");
+    }
+
+    @Test
+    void shouldUseNextReviewDateNumberWhenCaseAlreadyHasReviewDates() {
+        // Given
+        ListValue<ReviewDate> existingReviewDate = ListValue.<ReviewDate>builder()
+            .id("existing-review-date-id")
+            .value(
+                ReviewDate.builder()
+                    .date(LocalDate.of(2026, 1, 1))
+                    .reason(ReviewReason.DISMISS_CASE)
+                    .description("existing review description")
+                    .build()
+            ).build();
+
+        ListValue<ReviewDate> reviewDate = ListValue.<ReviewDate>builder()
+            .id("new-review-date-id")
+            .value(
+                ReviewDate.builder()
+                    .date(LocalDate.of(2026, 4, 3))
+                    .reason(ReviewReason.OTHER)
+                    .description("new review description")
+                    .build()
+            ).build();
+
+        final PCSCase pcsCase = PCSCase.builder()
+            .reviewDates(List.of(existingReviewDate, reviewDate))
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        pcsCaseEntity.addCaseReviewDate(CaseReviewDateEntity.builder()
+                                        .date(LocalDate.of(2026, 1, 1))
+                                        .reason(ReviewReason.DISMISS_CASE)
+                                        .description("existing review description")
+                                        .build());
+
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference, 2)).thenReturn("task description 2");
+
+        // When
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
+
+        // Then
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        Instant taskCreationTime = LocalDateTime.of(2026, 4, 3, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description 2",
+            taskCreationTime
+        );
+
+        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(persistedCaseEntity.getReviewDates()).hasSize(2);
+        CaseReviewDateEntity newCaseReviewDateEntity = persistedCaseEntity.getReviewDates().getLast();
+        assertThat(newCaseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 4, 3));
+        assertThat(newCaseReviewDateEntity.getReason()).isEqualTo(ReviewReason.OTHER);
+        assertThat(newCaseReviewDateEntity.getDescription()).isEqualTo("new review description");
     }
 }

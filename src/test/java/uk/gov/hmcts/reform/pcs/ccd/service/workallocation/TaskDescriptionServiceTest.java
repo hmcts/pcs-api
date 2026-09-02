@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.workallocation;
 
 import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.loader.ClasspathLoader;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -601,7 +602,7 @@ class TaskDescriptionServiceTest {
             );
 
             // When
-            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE, 1);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -609,7 +610,8 @@ class TaskDescriptionServiceTest {
             verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
-                .containsEntry("caseReference", CASE_REFERENCE);
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("reviewDateNumber", 1);
         }
 
         @Test
@@ -625,13 +627,38 @@ class TaskDescriptionServiceTest {
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE, 1));
 
             // Then
             assertThat(throwable)
                 .isInstanceOf(TemplateRenderingException.class)
                 .hasMessage("Failed to render template")
                 .hasCause(pebbleException);
+        }
+
+        @Test
+        void shouldRenderReviewDateNumberInTaskDescription() {
+            // Given
+            ClasspathLoader loader = new ClasspathLoader();
+            loader.setPrefix("templates/");
+            loader.setSuffix(".peb");
+            PebbleEngine realPebbleEngine = new PebbleEngine.Builder()
+                .loader(loader)
+                .build();
+            TaskDescriptionService service = new TaskDescriptionService(
+                partyService,
+                realPebbleEngine,
+                claimRepository
+            );
+
+            // When
+            String description = service.createReviewDueDateDescription(CASE_REFERENCE, 3);
+
+            // Then
+            assertThat(description)
+                .contains("The following review date has been added to the case:")
+                .contains("Review date 3")
+                .contains("Review the case note</a> about");
         }
     }
 
