@@ -20,7 +20,7 @@ public class HearingInNext14Days implements CcdPageConfiguration {
             .page("hearingInNext14Days")
             .pageLabel("Is the court hearing in the next 14 days?")
             .showCondition(fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
-            .label("hearingInNext14Days-lineSeparator", "---")
+            .label("cma-hearingInNext14Days-lineSeparator", "---")
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWithin14Days, null, null,
                        "Is the court hearing in the next 14 days?",
