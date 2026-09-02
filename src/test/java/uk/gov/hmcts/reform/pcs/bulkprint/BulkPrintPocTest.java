@@ -70,7 +70,7 @@ class BulkPrintPocTest {
         );
 
         LetterWithPdfsRequest letter2 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "CPC-01-IN0", additionalData);
+            new LetterWithPdfsRequest(List.of(encodedPdf), "CPC-01-IN0", additionalData2);
 
         System.out.println(sendLetterApi.sendLetter(s2sToken, letter2).letterId);
 
@@ -81,7 +81,7 @@ class BulkPrintPocTest {
         );
 
         LetterWithPdfsRequest letter3 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "DEF-01-IN0", additionalData);
+            new LetterWithPdfsRequest(List.of(encodedPdf), "DEF-01-IN0", additionalData3);
 
         System.out.println(sendLetterApi.sendLetter(s2sToken, letter3).letterId);
 
@@ -92,7 +92,7 @@ class BulkPrintPocTest {
         );
 
         LetterWithPdfsRequest letter4 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "GEN-00-IN0", additionalData);
+            new LetterWithPdfsRequest(List.of(encodedPdf), "GEN-00-IN0", additionalData4);
 
         System.out.println(sendLetterApi.sendLetter(s2sToken, letter4).letterId);
     }
