@@ -1,15 +1,14 @@
 name: Integration tests
 
-# The integration and cftlibTest suites run here rather than in the Jenkins
-# "Static checks / Container build" stage, where they dominated the PR critical path
-# (~3m14s and ~3m40s of a ~7m23s stage). Jenkins keeps the unit test suite, which Sonar needs.
+# On PRs the integration and cftlibTest suites run here instead of in the Jenkins
+# "Static checks / Container build" stage, where they dominated the critical path.
+# Master still runs the full suite in Jenkins; this only runs there to populate the
+# Gradle cache, which GitHub shares with PRs only when written on the default branch.
 
 on:
   pull_request:
     branches:
       - master
-  # Master runs are the post-merge safety net, and GitHub only shares a Gradle cache across
-  # branches when it was written on the default branch.
   push:
     branches:
       - master

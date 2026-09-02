@@ -48,9 +48,6 @@ withPipeline(type, product, component) {
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
-  // integration and cftlibTest run in .github/workflows/integration-tests.yml instead. The unit
-  // test suite stays here because Sonar needs its coverage.
-  env.INTEGRATION_TESTS_ENABLED = "false"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
@@ -69,6 +66,9 @@ withPipeline(type, product, component) {
   }
 
   onPR() {
+    // On PRs these run in GitHub Actions instead. Master still runs them here.
+    env.INTEGRATION_TESTS_ENABLED = "false"
+
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
