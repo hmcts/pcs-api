@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -171,16 +170,8 @@ class CaseTypeTest {
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(supportTab.getForRoles()).containsExactlyInAnyOrder(CaseType.EXTERNAL_FLAG_TAB_ROLES);
         assertThat(supportTab.getForRoles())
-            .contains(AccessProfile.CLAIMANT, AccessProfile.GA_CLAIMANT_SOLICITOR,
-                      AccessProfile.GA_DEFENDANT_SOLICITOR)
-            .doesNotContain(AccessProfile.CLAIMANT_SOLICITOR, AccessProfile.DEFENDANT_SOLICITOR);
-        // A professional whose access to a case comes through their organisation's group access holds the
-        // group access profile rather than a case role, so the Support tab has to be granted to those
-        // profiles or it is absent for them. Which party's support the tab shows stays filtered per party.
-        assertThat(supportTab.getForRoles())
-            .contains(AccessProfile.CLAIMANT,
-                      AccessProfile.GA_CLAIMANT_SOLICITOR,
-                      AccessProfile.GA_DEFENDANT_SOLICITOR);
+            .containsExactlyInAnyOrder(AccessProfile.GA_CLAIMANT_SOLICITOR,
+                                       AccessProfile.GA_DEFENDANT_SOLICITOR);
         // One tab definition is generated per access profile, each with its own tab id and the same
         // label, so a profile listed twice would render the tab twice.
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
@@ -207,19 +198,25 @@ class CaseTypeTest {
         assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
     }
 
-    /**
-     * Support is a party-visible tab, so every external profile that can reach a case has to be able to
-     * reach it. Internal-only profiles stay off it: internal users review support through Case flags.
-     */
     @Test
-    void shouldGrantTheSupportTabToEveryExternalPartyVisibleProfile() {
-        List<AccessProfile> externalPartyVisible = Arrays.stream(CaseType.PARTY_VISIBLE_TAB_ROLES)
-            .filter(profile -> !Arrays.asList(CaseType.INTERNAL_TAB_ROLES).contains(profile))
-            .toList();
+    void shouldGrantTheSupportTabOnlyToTheTwoLegalRepresentativeProfiles() {
+        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).containsExactlyInAnyOrder(
+            AccessProfile.GA_CLAIMANT_SOLICITOR,
+            AccessProfile.GA_DEFENDANT_SOLICITOR);
+        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES)
+            .doesNotContain(AccessProfile.PCS_SOLICITOR,
+                            AccessProfile.CLAIMANT_SOLICITOR,
+                            AccessProfile.DEFENDANT_SOLICITOR,
+                            AccessProfile.CLAIMANT,
+                            AccessProfile.CITIZEN,
+                            AccessProfile.DEFENDANT)
+            .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
+    }
 
-        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).containsAll(externalPartyVisible);
-        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).doesNotContainAnyElementsOf(
-            Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
+    @Test
+    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
+        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
+            .contains(CaseType.EXTERNAL_FLAG_TAB_ROLES);
     }
 
     @Test

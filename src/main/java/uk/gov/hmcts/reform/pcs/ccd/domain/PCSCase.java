@@ -30,12 +30,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SupportAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -799,13 +799,13 @@ public class PCSCase {
     private FlagLauncher flagLauncherInternal;
 
     @CCD(
-        access = {InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class},
+        access = {InternalCaseFlagAccess.class, SupportAccess.class},
         label = "Launch the external flags screen"
     )
     private FlagLauncher flagLauncherExternal;
 
     @CCD(
-        access = {ExternalCaseFlagAccess.class},
+        access = {SupportAccess.class},
         label = "Party support"
     )
     private List<ListValue<PartySupport>> partySupport;

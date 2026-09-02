@@ -9,8 +9,11 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 class ExternalCaseFlagReadAccessTest {
 
@@ -22,12 +25,21 @@ class ExternalCaseFlagReadAccessTest {
     }
 
     @Test
-    void shouldGrantReadToEveryExternalCaseFlagRole() {
+    void shouldGrantReadToEverySupportRole() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        Arrays.stream(ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES)
-            .forEach(externalRole -> assertThat(grants.get(externalRole)).containsExactly(Permission.R));
-        assertThat(grants.asMap()).hasSize(ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES.length);
+        Arrays.stream(ExternalCaseFlagRoles.SUPPORT_ROLES)
+            .forEach(supportRole -> assertThat(grants.get(supportRole)).containsExactly(Permission.R));
+        assertThat(grants.asMap()).hasSize(ExternalCaseFlagRoles.SUPPORT_ROLES.length);
+    }
+
+    @Test
+    void shouldNotGrantReadToThePreGroupAccessSolicitorRoles() {
+        SetMultimap<HasRole, Permission> grants = underTest.getGrants();
+
+        assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
+        assertThat(grants.get(CLAIMANT_SOLICITOR)).isEmpty();
+        assertThat(grants.get(DEFENDANT_SOLICITOR)).isEmpty();
     }
 
     @Test

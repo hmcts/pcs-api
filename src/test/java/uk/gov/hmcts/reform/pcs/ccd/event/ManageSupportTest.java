@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.SUPPORT_ROLES;
 
 @ExtendWith(MockitoExtension.class)
 class ManageSupportTest extends BaseEventTest {
@@ -98,15 +98,27 @@ class ManageSupportTest extends BaseEventTest {
     }
 
     @Test
-    void shouldGrantEveryExternalPersona() {
+    void shouldGrantEverySupportRole() {
         assertThat(configuredEvent.getGrants().keySet())
-            .containsAll(List.of(EXTERNAL_CASE_FLAG_ROLES));
+            .containsAll(List.of(SUPPORT_ROLES));
     }
 
     @Test
-    void shouldGrantGroupAccessRoles() {
+    void shouldGrantTheGroupAccessLegalRepresentativeProfiles() {
         assertThat(configuredEvent.getGrants().keySet())
-            .contains(UserRole.CLAIMANT, UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+            .contains(UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+    }
+
+    @Test
+    void shouldNotGrantThePreGroupAccessSolicitorRoles() {
+        assertThat(configuredEvent.getGrants().keySet())
+            .doesNotContain(UserRole.PCS_SOLICITOR, UserRole.CLAIMANT_SOLICITOR, UserRole.DEFENDANT_SOLICITOR);
+    }
+
+    @Test
+    void shouldNotGrantThePartiesActingForThemselves() {
+        assertThat(configuredEvent.getGrants().keySet())
+            .doesNotContain(UserRole.CLAIMANT, UserRole.CITIZEN, UserRole.DEFENDANT);
     }
 
     @Test

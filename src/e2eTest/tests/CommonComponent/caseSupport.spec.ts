@@ -126,6 +126,9 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
+    await expect(page.getByRole('tab', {name: createAndManageSupport.supportTab, exact: true}))
+      .toHaveCount(1);
+
     await performAction('clickTab', createAndManageSupport.supportTab);
 
     const supportTabContent = page.locator('.mat-tab-body-active');

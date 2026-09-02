@@ -8,13 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.SUPPORT_ROLES;
 
-public class ExternalCaseFlagReadAccess implements HasAccessControl {
+public class SupportAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         for (UserRole supportRole : SUPPORT_ROLES) {
-            grants.put(supportRole, Permission.R);
+            grants.putAll(supportRole, Permission.CRU);
         }
 
         return grants;
