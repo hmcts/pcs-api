@@ -51,14 +51,49 @@ class BulkPrintPocTest {
     void sendToBulkPrint() throws IOException {
         byte[] pdfBytes = Files.readAllBytes(Paths.get("test-document.pdf"));
         String encodedPdf = Base64.getEncoder().encodeToString(pdfBytes);
+
+        //1
         Map<String, Object> additionalData = Map.of(
-            "recipients", List.of("Joe Bloggs"),
+            "recipients", List.of("Al Bloggs"),
             "isInternational", false
         );
 
         LetterWithPdfsRequest letter =
             new LetterWithPdfsRequest(List.of(encodedPdf), "CPD-01-IN1", additionalData);
 
-        sendLetterApi.sendLetter(s2sToken, letter);
+        System.out.println(sendLetterApi.sendLetter(s2sToken, letter).letterId);
+
+        //2
+        Map<String, Object> additionalData2 = Map.of(
+            "recipients", List.of("Bob Bloggs"),
+            "isInternational", false
+        );
+
+        LetterWithPdfsRequest letter2 =
+            new LetterWithPdfsRequest(List.of(encodedPdf), "CPC-01-IN0", additionalData);
+
+        System.out.println(sendLetterApi.sendLetter(s2sToken, letter2).letterId);
+
+        //3
+        Map<String, Object> additionalData3 = Map.of(
+            "recipients", List.of("Cam Bloggs"),
+            "isInternational", false
+        );
+
+        LetterWithPdfsRequest letter3 =
+            new LetterWithPdfsRequest(List.of(encodedPdf), "DEF-01-IN0", additionalData);
+
+        System.out.println(sendLetterApi.sendLetter(s2sToken, letter3).letterId);
+
+        //4
+        Map<String, Object> additionalData4 = Map.of(
+            "recipients", List.of("Dave Bloggs"),
+            "isInternational", false
+        );
+
+        LetterWithPdfsRequest letter4 =
+            new LetterWithPdfsRequest(List.of(encodedPdf), "GEN-00-IN0", additionalData);
+
+        System.out.println(sendLetterApi.sendLetter(s2sToken, letter4).letterId);
     }
 }
