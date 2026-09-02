@@ -134,4 +134,59 @@
     <cve>CVE-2026-59313</cve>
     <cve>CVE-2026-59314</cve>
   </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    Spring Framework 6.2.19. No bump possible: every fix for the 6.2.x line (6.2.20) is
+    Enterprise Support Only and is not published to Maven Central; the OSS fix is 7.0.9,
+    which requires Spring Boot 4.x. Boot 3.5.16 (current, latest 3.5.x) pins 6.2.19.
+    None of the four are reachable in PCS:
+      CVE-2026-47893 - WebFlux WebSocket exception reason. spring-webflux is test-only,
+                       not on runtimeClasspath; PCS has no WebSocket endpoints.
+      CVE-2026-47892 - WebFlux functional endpoints deployed with DispatcherServlet.
+                       PCS is WebMVC with annotated controllers only; no RouterFunctions.
+      CVE-2026-59283 - SpEL SimpleEvaluationContext guard bypass with the SpEL compiler
+                       active. PCS evaluates no SpEL and does not enable the compiler.
+      CVE-2026-59280 - FreeMarker path traversal via SpringTemplateLoader. FreeMarker is
+                       not on any classpath (PCS templating is Pebble); no view name is
+                       derived from untrusted input.
+    Remove once the CCD SDK / Boot BOM moves PCS onto a Spring Framework 7.x line.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
+    <cve>CVE-2026-47893</cve>
+    <cve>CVE-2026-47892</cve>
+    <cve>CVE-2026-59283</cve>
+    <cve>CVE-2026-59280</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-59270: Spring Security 6.5.11 embedded UnboundID LDAP server
+    (UnboundIdContainer) registers an admin credential and binds to all interfaces.
+    No bump possible: the 6.5.x fix (6.5.12) is Enterprise Support Only and is not on
+    Maven Central; the OSS fixes (7.0.7 / 7.1.1) require Spring Boot 4.x. Boot 3.5.16
+    pins 6.5.11.
+    Not reachable: PCS does not use LDAP at all - neither spring-security-ldap nor
+    unboundid-ldapsdk is on runtimeClasspath, and no spring.ldap.embedded.* properties
+    are set, so UnboundIdContainer is never instantiated.
+    Remove once PCS moves onto a Spring Security 7.x line.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
+    <cve>CVE-2026-59270</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-59284: Spring Cloud Commons 4.3.3 has no allow list for property keys when
+    the writable /actuator/env endpoint is enabled.
+    No bump possible: the 4.3.x fix (4.3.4) is Enterprise Support Only and is not on
+    Maven Central; the OSS fix is 5.0.3, which requires Spring Boot 4.x. 4.3.3 arrives
+    transitively via spring-cloud-dependencies 2025.0.0 / core-case-data-store-client.
+    Not reachable: the writable env endpoint is opt-in and PCS does not enable it -
+    application.yaml exposes only health, info and prometheus over the web.
+    The pattern covers every spring-cloud-* artifact on the 4.3.x line, not just
+    spring-cloud-commons: dependency-check assigns the broadcom:spring_cloud_commons
+    CPE to sibling jars too, and reported this CVE against spring-cloud-starter@4.3.3.
+    Remove once PCS moves onto a Spring Cloud 2026.x / Commons 5.x line.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
+    <cve>CVE-2026-59284</cve>
+  </suppress>
 </suppressions>
