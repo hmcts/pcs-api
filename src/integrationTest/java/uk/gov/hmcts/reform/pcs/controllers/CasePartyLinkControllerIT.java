@@ -348,10 +348,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath(
-                "$.message", is("The party this access code was generated for"
-                                    + " is not a defendant in this case")
-            ));
+            .andExpect(jsonPath("$.message", is("Party not found")));
     }
 
     @Test
@@ -397,7 +394,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+            .andExpect(jsonPath("$.message", is("Access code already used")));
     }
 
     @Test
@@ -421,10 +418,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath(
-                "$.message",
-                is("This user is already linked to another party in this case.")
-            ));
+            .andExpect(jsonPath("$.message", is("Access code already used")));
     }
 
     @Test
@@ -504,7 +498,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict())
-            .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+            .andExpect(jsonPath("$.message", is("Access code already used")));
 
         // Then - Verify transaction rolled back: database state unchanged
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)

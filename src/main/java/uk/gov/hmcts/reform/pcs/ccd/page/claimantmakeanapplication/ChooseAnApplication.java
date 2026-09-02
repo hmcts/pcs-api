@@ -43,8 +43,8 @@ public class ChooseAnApplication implements CcdPageConfiguration {
         pageBuilder
             .page("chooseAnApplication", this::midEvent)
             .pageLabel("Choose an application")
-            .label("chooseAnApplication-lineSeparator", "---")
-            .label("chooseAnApplication-info", INFO_MARKDOWN)
+            .label("cma-chooseAnApplication-lineSeparator", "---")
+            .label("cma-chooseAnApplication-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .readonly(XuiGenAppRequest::getStandardFee, NEVER_SHOW, true)
             .readonly(XuiGenAppRequest::getMaxFee, NEVER_SHOW, true)
