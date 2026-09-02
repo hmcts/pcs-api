@@ -74,12 +74,17 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
     void removeCommittedTestData() {
         transactionTemplate().executeWithoutResult(transactionStatus -> {
             createdCaseReferences.forEach(caseReference ->
-                                              pcsCaseRepository.findByCaseReference(caseReference).ifPresent(
-                                                  pcsCaseRepository::delete));
+                                              pcsCaseRepository.findByCaseReference(caseReference)
+                                                  .ifPresent(pcsCaseRepository::delete)
+            );
             pcsCaseRepository.flush();
+
             createdFlagCodes.forEach(flagCode ->
-                            flagRefDataRepository.findByFlagCode(flagCode).ifPresent(flagRefDataRepository::delete));
+                                         flagRefDataRepository.findByFlagCode(flagCode)
+                                             .ifPresent(flagRefDataRepository::delete)
+            );
         });
+
         createdCaseReferences.clear();
         createdFlagCodes.clear();
     }
