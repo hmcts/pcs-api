@@ -1,11 +1,19 @@
-export const createAndManageSupport = {
+export const reviewSupport = {
     mainHeader: `Request support`,
     mainHeaderManage: `Manage support`,
+    reviewSupportHeader: `Review support request`,
     continueButton: `Continue`,
+    submitButton: `Submit`,
+    optionOne: `Possession Claims Solicitor Org (Claimant)`,
+    optionTwo: `Reasonable adjustment`,
+    optionThree: `I need to bring support with me to a hearing`,
+    optionFour: `Friend or family with me`,
     addCommentLabel: `Tell us more about the request`,
     addCommentHintText: `Explain why you are creating this support request. Do not include any sensitive information such as personal details.`,
     addCommentText: `Claimant Test Create Support`,
     updateCommentLabel: `Please provide your comments below`,
     updateCommentHintText: `Do not include any sensitive information such as personal details.`,
     updateCommentText: `Test Change Manage Support`,
+    reviewCommentLabel: `Please provide your comments below`,
+    reviewCommentText: `Test Change Review Support`,
 };

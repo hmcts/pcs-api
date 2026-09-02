@@ -3,11 +3,10 @@ import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, user} from '@data/page-data';
-import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
+import {reviewSupport} from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
-
-const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
+import { staff } from '@data/user-data/staff.user.data';
 
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
   await context.clearCookies();
@@ -30,8 +29,6 @@ test.beforeEach(async ({page, context}) => {
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-
-  console.log("caseNumber",process.env.CASE_NUMBER);
 });
 
 test.afterEach(async () => {
@@ -43,54 +40,51 @@ test.afterEach(async () => {
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
   test('Create and manage support events', async ({page}) => {
-    //Email needs changing to solicitor user to create support event
     await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
     await dismissCookieBanner(page, 'analytics');
-    
-    // Create RequestSupport Event
+
     await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+
     await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupport);
     await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    // Select the Possession Claims Solicitor Org (Claimant) radio option
-    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant)' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Select 'Reasonable adjustment' and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'Reasonable adjustment' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Choose to bring support to a hearing and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'I need to bring support with me to a hearing' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Select type of support and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'Friend or family with me' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Enter support details and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('inputText', createAndManageSupport.addCommentLabel, createAndManageSupport.addCommentText);
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Submit the request
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('clickRadioButton', { option: reviewSupport.optionOne });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('clickRadioButton', { option: reviewSupport.optionTwo });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('clickRadioButton', { option: reviewSupport.optionThree });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('clickRadioButton', { option: reviewSupport.optionFour });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
     await performAction('clickButton', 'Submit');
-    // Validate success header after submission
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
-    // Now create ManageSupport Event
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
-    // Select the Support request and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Add comments and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
-    await performAction('inputText', createAndManageSupport.updateCommentLabel, createAndManageSupport.updateCommentText);
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Submit and validate success message
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Staff users can not see Support tab', async ({page}) => {
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags'] });
   });
 
 });
