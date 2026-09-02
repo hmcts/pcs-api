@@ -63,6 +63,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
     await performAction('clickButton', manageCaseFlags.goButton);
+    
     await performAction('clickButton', manageCaseFlags.cancelButton);
   });
   test('Case Flags - Create case level Flag', async ({ page }) => {
@@ -206,7 +207,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
   });
 });
 
-test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags', async () => {
+test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags', async () => {
   test.describe.configure({ retries: 0 });
   test('Staff users can create, manage and view case-level and party-level flags @release', async ({ page, context }) => {
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
@@ -266,7 +267,7 @@ test.describe('[Common Component Case Flags - Access Management] @CC @caseFlags'
         email === judicial.possessionFeePaid_Judge_email ||
         email === judicial.possession_Circuit_Judge_FeePaid_Judge_email
       ) {
-        await performAction('handleJudgeBookingPage');
+        await performAction('handleJudgeBookingPageForCaseFlags');
       }
       await performAction('navigateToCaseSummary', 'yes');
       await performValidation('elementNotToBeVisible', caseSummary.nextStepEventList);

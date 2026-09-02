@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
@@ -37,8 +39,11 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonali
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Service
 @Slf4j
@@ -95,6 +100,26 @@ public class NotificationService {
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
+    }
+
+    public EmailNotificationResponse sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(
+        OrganisationEntity organisation,
+        String paymentReference,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForOrganisation(
+            organisationRecipient(
+                organisation,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponse,
+                                                                           paymentReference,
+                                                                           organisation));
     }
 
     public EmailNotificationResponse sendClaimantDraftSavedForLaterEmailNotification(
@@ -450,6 +475,31 @@ public class NotificationService {
         }
     }
 
+    public EmailNotificationResponse sendEmailForOrganisation(
+        OrganisationNotificationRecipient recipient,
+        EmailTemplate template,
+        NotificationClaimType claimType,
+        TemplatePersonalisation personalisation
+    ) {
+
+        if (isBlank(recipient.email())) {
+            log.info("Skipping email notification because recipient email is null");
+            return null;
+        }
+
+        return scheduleEmailNotification(
+            buildRequest(
+                templateConfiguration.getTemplateId(template),
+                recipient.email(),
+                claimType,
+                personalisation
+            ),
+            recipient.pcsCase(),
+            recipient.claim(),
+            recipient.party()
+        );
+    }
+
     public EmailNotificationResponse sendEmail(
         NotificationRecipient recipient,
         EmailTemplate template,
@@ -533,7 +583,7 @@ public class NotificationService {
 
     private NotificationRecipient legalRepresentativeRecipient(
         OrganisationEntity legalRepresentativeOrganisation,
-        PartyEntity representedDefendant,   
+        PartyEntity representedDefendant,
         String legalRepEmail
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
@@ -560,6 +610,31 @@ public class NotificationService {
             response.getPcsCase(),
             response.getClaim(),
             PartyRole.DEFENDANT
+        );
+    }
+
+    private OrganisationNotificationRecipient organisationRecipient(
+        OrganisationEntity organisation,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity defendantParty,
+        DefendantResponseEntity defendantResponse) {
+
+        if (organisation == null) {
+            throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
+        }
+
+        ClaimPartyContactDetailsEntity contactDetails = organisation.getClaimPartyContactDetails().stream()
+            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
+                && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst()
+            .orElse(null);
+
+        String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
+
+        return new OrganisationNotificationRecipient(
+            emailAddress,
+            defendantParty,
+            pcsCaseEntity,
+            defendantResponse.getClaim()
         );
     }
 }
