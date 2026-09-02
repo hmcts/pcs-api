@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
- * Sends the defence-phase packs for one case. Recipients (the responding defendant, the claimant, or a
- * co-defendant served the counter-claim) are resolved up front (in a read-only transaction inside {@link
- * PackRecipientResolver}); the render/fetch/merge/post then runs here with no transaction open, so no DB
- * connection is held across the external calls. {@link PackSendRecorder} records each document and isolates a
- * failure so one skip never aborts the case.
+ * Sends the defence-phase packs for one case. Eligible recipients are selected by {@link DefencePackSelector}
+ * (postal defendants once the recipient rule is enabled; otherwise the previous all-party fan-out). Recipients
+ * are resolved in a read-only transaction inside {@link PackRecipientResolver}; render/fetch/merge/post then
+ * runs with no transaction open. {@link PackSendRecorder} records each document and isolates failures so one
+ * skip never aborts the case.
  */
 @Service
 public class DefencePackSender {

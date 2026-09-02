@@ -55,6 +55,7 @@ public class ShowConditions {
             case CASEWORKER_EVENTS -> "caseWorkerEventsEnabled";
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";
             case EXEMPT_LANDLORD_QUESTION -> "exemptLandlordQuestionEnabled";
+            case CUI_RESPOND_TO_CLAIM_LR -> "cuiRespondToClaimLrEnabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };

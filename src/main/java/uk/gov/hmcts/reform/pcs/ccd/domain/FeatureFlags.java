@@ -12,5 +12,6 @@ public class FeatureFlags {
     private VerticalYesNo caseWorkerEventsEnabled;
     private VerticalYesNo walesMakeAClaimEnabled;
     private VerticalYesNo exemptLandlordQuestionEnabled;
+    private VerticalYesNo cuiRespondToClaimLrEnabled;
 
 }
