@@ -2,6 +2,9 @@ import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 import { actionRetries } from '../../../playwright.config';
 
+// Ceiling for the radio to register as checked, matching the 500ms sleep it replaced.
+const RADIO_CHECKED_TIMEOUT = 500;
+
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
     const idx = params.index !== undefined ? Number(params.index) : 0;
@@ -35,8 +38,14 @@ export class ClickRadioButtonAction implements IAction {
     do {
       attempt++;
       await locator.click({ timeout: 2000, force: attempt > 1 });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      radioIsChecked = await locator.isChecked();
+      // toBeChecked polls, so it returns as soon as the radio registers rather than
+      // always paying 500ms and reading the state once.
+      try {
+        await expect(locator).toBeChecked({ timeout: RADIO_CHECKED_TIMEOUT });
+        radioIsChecked = true;
+      } catch {
+        radioIsChecked = false;
+      }
     } while (!radioIsChecked && attempt < actionRetries);
     expect(radioIsChecked, radioIsChecked
       ? `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`

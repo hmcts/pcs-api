@@ -21,23 +21,30 @@ export class ClickButtonAction implements IAction {
     await actionToPerform();
   }
 
-  private async clickButton(page: Page, button: Locator): Promise<void> {   
-      await page.waitForLoadState();
+  private async clickButton(page: Page, button: Locator): Promise<void> {
       await button.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });    
+      // XUI renders a full-screen .spinner-container overlay that intercepts clicks.
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
-    const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
+    const pageElement = page.locator(`h1:has-text("${nextPageElement}")`).first();
     let attempt = 0;
     let nextPageElementIsVisible = false;
     do {
       attempt++;
       await this.clickButton(page, button);
-      //Adding sleep to slow down execution when the application behaves abnormally
-      await page.waitForTimeout(waitForPageRedirectionTimeout);
-      nextPageElementIsVisible = await pageElement.isVisible();
+      // Same per-attempt budget as the old fixed sleep, but returns as soon as the
+      // page lands. isVisible() silently ignored its timeout, so it never waited.
+      try {
+        await pageElement.waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout });
+        nextPageElementIsVisible = true;
+      } catch (error: unknown) {
+        // Only a timeout means "retry the click"; anything else is a real fault.
+        if ((error as Error)?.name !== 'TimeoutError') throw error;
+        nextPageElementIsVisible = false;
+      }
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
       throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);

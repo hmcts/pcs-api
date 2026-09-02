@@ -7,6 +7,7 @@ import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePay
 import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
 import {getCaseTypeId} from '@utils/common/caseType.utils';
+import { SHORT_TIMEOUT } from 'playwright.config';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -87,13 +88,15 @@ export class FeeAndPayAction implements IAction {
     ) {
       await performAction('clickTab', caseSummary.serviceRequestTab);
       const payNowLocator = page.getByText(payNowText,{ exact: true });
+      // Wait for the link rather than polling isVisible() around fixed 500ms sleeps.
+      // Same overall budget as the old 10 x 500ms loop, but returns as soon as it appears.
       let isPayNowVisible = false;
-      for (let i = 0; i < 10; i++) {
-        isPayNowVisible = await payNowLocator.isVisible();
-        if (isPayNowVisible) {
-          break;
-        }
-        await page.waitForTimeout(500);
+      try {
+        await payNowLocator.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT });
+        isPayNowVisible = true;
+      } catch (error: unknown) {
+        // Not yet visible on this tab - fall through to the History-tab retry below.
+        if ((error as Error)?.name !== 'TimeoutError') throw error;
       }
       if (isPayNowVisible) {
         await payNowLocator.scrollIntoViewIfNeeded();

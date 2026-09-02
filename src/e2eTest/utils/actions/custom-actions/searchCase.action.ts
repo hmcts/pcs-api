@@ -32,7 +32,11 @@ export class SearchCaseAction implements IAction {
     await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
     await performAction('select', caseList.stateLabel, caseState);
     await performAction('clickButton', caseList.apply);
-    await page.waitForTimeout(waitForPageRedirectionTimeout);
+    // Callers read #search-result next, so that is the readiness signal. Timeout is
+    // swallowed to keep the old contract of "wait a moment, then let the caller assert".
+    await page.locator('#search-result thead')
+      .waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout })
+      .catch(() => {});
   }
 
   async searchCase(page: Page, caseNumber: actionData): Promise<void> {

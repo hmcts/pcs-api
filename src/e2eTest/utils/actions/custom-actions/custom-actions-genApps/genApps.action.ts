@@ -23,6 +23,7 @@ import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
 import {caseSummary, home} from "@data/page-data";
+import { SHORT_TIMEOUT } from 'playwright.config';
 
 
 export const addressInfo = {
@@ -302,13 +303,15 @@ export class GenAppsAction implements IAction {
         .nth(1);
 
       const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
+      // Wait for the link rather than polling isVisible() around fixed 500ms sleeps.
+      // Same overall budget as the old 10 x 500ms loop, but returns as soon as it appears.
       let isPayNowVisible = false;
-      for (let i = 0; i < 10; i++) {
-        isPayNowVisible = await payNowLocator.isVisible();
-        if (isPayNowVisible) {
-          break;
-        }
-        await page.waitForTimeout(500);
+      try {
+        await payNowLocator.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT });
+        isPayNowVisible = true;
+      } catch (error: unknown) {
+        // Not yet visible - fall through to the case-summary retry below.
+        if ((error as Error)?.name !== 'TimeoutError') throw error;
       }
       if (isPayNowVisible) {
         await payNowLocator.scrollIntoViewIfNeeded();
