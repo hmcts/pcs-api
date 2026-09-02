@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -39,6 +40,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
+
 
 @Component
 @AllArgsConstructor
@@ -62,6 +67,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showSummary()
+                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR))
                 .endButtonLabel("Submit");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
@@ -109,7 +115,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return caseData;
     }
 
-    DynamicStringListElement buildCategoryItem(
+    private DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         String code,
         LocalDateTime genAppDate
@@ -189,8 +195,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                                                                             organisationId);
     }
 
-    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseReference = eventPayload.caseReference();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
         UUID currentUserId = securityContextService.getCurrentUserId();
@@ -209,7 +215,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             party = selectedGenApp.getParty();
         }
 
-        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
+        List<LegalRepDocument> legalRepDocuments
+            = unwrapListItems(pcsCase.getLegalRepDocumentUploadDetails().getLegalRepDocuments());
 
         boolean isDocumentNull = legalRepDocuments.stream()
             .anyMatch(doc -> doc == null || doc.getDocument() == null);
@@ -238,7 +245,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             """;
     }
 
-    @SuppressWarnings("SameParameterValue")
     private SubmitResponse<State> errorResponse(String message) {
         return SubmitResponse.<State>builder()
             .errors(List.of(message))
