@@ -218,3 +218,5 @@ Pages passed: 2
 Pages failed: 1
 Missing elements: Submit button, Continue link
 ```
+
+<!-- HDPI-8713 e2e timing baseline control. DO NOT MERGE. -->
