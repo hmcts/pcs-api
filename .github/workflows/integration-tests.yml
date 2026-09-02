@@ -35,8 +35,10 @@ jobs:
           distribution: corretto
           java-version: 21
 
+      # Pinned to a commit SHA: Sonar rule githubactions:S7637 raises a vulnerability on
+      # third-party actions referenced by a mutable tag.
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
@@ -71,6 +73,10 @@ jobs:
     name: Cftlib tests
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    permissions:
+      contents: read
+      # Required for the federated (OIDC) login to Azure below.
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -80,8 +86,24 @@ jobs:
           distribution: corretto
           java-version: 21
 
+      # cftlib pulls xui/webapp, xui/mo-webapp and rse-idam-simulator from
+      # hmctsprod.azurecr.io, which has anonymous pull disabled. Without this the compose
+      # pull fails with UNAUTHORIZED and docker blocks until the job timeout.
+      # The federated credential is granted to hmcts/pcs-api on the "DTS Developers GitHub
+      # Actions ACR Puller 1" app registration (AcrPull on rpe-acr-prod-rg).
+      - name: Azure login (OIDC)
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        with:
+          client-id: 7dbe3da2-315b-4937-bac6-3ab22a9c7b91 # DTS Developers GitHub Actions ACR Puller 1
+          tenant-id: 531ff96d-0ae9-462a-8d2d-bec7c0b42082 # HMCTS.NET
+          allow-no-subscriptions: true
+
+      - name: ACR login - hmctsprod
+        run: az acr login --name hmctsprod
+
+      # Pinned to a commit SHA: see the integration job above.
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         with:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
