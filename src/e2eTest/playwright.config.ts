@@ -1,6 +1,5 @@
 import * as process from 'node:process';
 import * as path from 'path';
-import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
 
@@ -13,7 +12,6 @@ export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
-const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
 // Nightly (Jenkins): E2E_TEST_SCOPE = tag grep; E2E_SPEC = comma/semicolon path keywords → testMatch globs.
 const e2eSpecKeys = (process.env.E2E_SPEC ?? '')
@@ -37,7 +35,7 @@ export default defineConfig({
   workers: process.env.ENVIRONMENT === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
+  use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, storageState: STORAGE_STATE_PATH },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
