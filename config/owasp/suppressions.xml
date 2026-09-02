@@ -168,9 +168,12 @@
     transitively via spring-cloud-dependencies 2025.0.0 / core-case-data-store-client.
     Not reachable: the writable env endpoint is opt-in and PCS does not enable it -
     application.yaml exposes only health, info and prometheus over the web.
+    The pattern covers every spring-cloud-* artifact on the 4.3.x line, not just
+    spring-cloud-commons: dependency-check assigns the broadcom:spring_cloud_commons
+    CPE to sibling jars too, and reported this CVE against spring-cloud-starter@4.3.3.
     Remove once PCS moves onto a Spring Cloud 2026.x / Commons 5.x line.
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-(commons|context)@4\.3\..*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
     <cve>CVE-2026-59284</cve>
   </suppress>
 </suppressions>
