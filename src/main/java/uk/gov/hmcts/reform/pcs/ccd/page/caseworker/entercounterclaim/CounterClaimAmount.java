@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
@@ -24,6 +26,9 @@ public class CounterClaimAmount implements CcdPageConfiguration {
             .page("counterClaimAmount")
             .pageLabel("Counterclaim amount")
             .showCondition(AMOUNT_APPLIES)
-            .label("counterClaimAmount-placeholder", "Placeholder - to be implemented");
+            .label("counterClaimAmount-lineSeparator", "---")
+            .complex(PCSCase::getEnterCounterClaim)
+                .mandatory(EnterCounterClaimDetails::getCounterClaimAmount)
+            .done();
     }
 }

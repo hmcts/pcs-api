@@ -142,6 +142,32 @@ class CounterClaimServiceTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("caseworkerEnteredStateScenarios")
+    void shouldSetStateWhenCounterClaimEnteredByCaseworker(boolean hwfReferenceProvided,
+                                                            CounterClaimState expectedState) {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+        when(counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)).thenReturn(hwfReferenceProvided);
+
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(expectedState);
+    }
+
+    private static Stream<Arguments> caseworkerEnteredStateScenarios() {
+        return Stream.of(
+            Arguments.argumentSet("HwF reference provided", true, CounterClaimState.PENDING_REVIEW),
+            Arguments.argumentSet("HwF reference not provided", false, CounterClaimState.COUNTER_CLAIM_ISSUED)
+        );
+    }
 
     @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
