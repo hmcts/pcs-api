@@ -138,7 +138,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (!CaseType.isSuffixedCaseType()) {
             pcsCase.setSearchCriteria(searchCriteriaIndexer.buildSearchCriteria(pcsCase));
         }
-        pcsCase.setCourtTypeId(10);
         pcsCase.setHmctsOrgId("AAA3");
         return pcsCase;
     }

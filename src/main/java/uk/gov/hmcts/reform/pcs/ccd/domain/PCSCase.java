@@ -208,12 +208,6 @@ public class PCSCase {
     private Integer regionId;
 
     @CCD(
-        label = "Court Type ID"
-    )
-    @JsonProperty("court_type_id")
-    private Integer courtTypeId;
-
-    @CCD(
         label = "Service ID"
     )
     @JsonProperty("hmctsOrgId")
