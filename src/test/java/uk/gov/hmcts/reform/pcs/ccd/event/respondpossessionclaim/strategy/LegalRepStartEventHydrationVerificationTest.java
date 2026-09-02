@@ -127,6 +127,7 @@ class LegalRepStartEventHydrationVerificationTest {
         assertThat(result.getNoticeServed()).isEqualTo(YesOrNo.YES);
         assertThat(result.getNoticeServedDetails()).isNotNull();
         assertThat(result.getNoticeServedDetails().getPostedDate()).isEqualTo(noticePosted);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
     @Test
