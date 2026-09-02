@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.entercounterclaim;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -32,10 +33,12 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Component
+@AllArgsConstructor
 public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final PartyService partyService;
+    @Qualifier("enterCounterClaimSubmitEventHandler")
     private final SubmitEventHandler submitEventHandler;
     private final CourtPermission courtPermission;
     private final TypeOfCounterClaim typeOfCounterClaim;
@@ -43,26 +46,6 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final HelpWithFees helpWithFees;
     private final PartyCounterClaimAgainst partyCounterClaimAgainst;
     private final UploadCounterClaimForm uploadCounterClaimForm;
-
-    public EnterCounterClaim(PcsCaseService pcsCaseService,
-                             PartyService partyService,
-                             @Qualifier("enterCounterClaimSubmitEventHandler") SubmitEventHandler submitEventHandler,
-                             CourtPermission courtPermission,
-                             TypeOfCounterClaim typeOfCounterClaim,
-                             CounterClaimAmount counterClaimAmount,
-                             HelpWithFees helpWithFees,
-                             PartyCounterClaimAgainst partyCounterClaimAgainst,
-                             UploadCounterClaimForm uploadCounterClaimForm) {
-        this.pcsCaseService = pcsCaseService;
-        this.partyService = partyService;
-        this.submitEventHandler = submitEventHandler;
-        this.courtPermission = courtPermission;
-        this.typeOfCounterClaim = typeOfCounterClaim;
-        this.counterClaimAmount = counterClaimAmount;
-        this.helpWithFees = helpWithFees;
-        this.partyCounterClaimAgainst = partyCounterClaimAgainst;
-        this.uploadCounterClaimForm = uploadCounterClaimForm;
-    }
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {

@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.entercounterclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -208,6 +211,48 @@ class SubmitEventHandlerTest {
         assertThat(counterClaimCaptor.getValue().getCounterClaimAgainst())
             .extracting(ListValue::getId)
             .containsExactly(claimantId.toString(), defendantId.toString());
+    }
+
+    @ParameterizedTest
+    @MethodSource("emptyCounterClaimAgainstSelections")
+    void shouldSaveNoCounterClaimAgainstPartiesWhenNothingSelected(DynamicMultiSelectStringList selectedParties) {
+        // Given
+        UUID submittingPartyId = UUID.randomUUID();
+        PartyEntity submittingParty = mock(PartyEntity.class);
+
+        when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
+            .thenReturn(submittingParty);
+
+        DynamicList submittingPartyList = DynamicList.builder()
+            .value(DynamicListElement.builder().code(submittingPartyId).build())
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .enterCounterClaim(EnterCounterClaimDetails.builder()
+                .claimTypeOption(CounterClaimType.SOMETHING_ELSE)
+                .build())
+            .partyRadioList(submittingPartyList)
+            .partyMultiSelectionList(selectedParties)
+            .build();
+
+        // When
+        submit(caseData);
+
+        // Then
+        ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
+            eq(TEST_CASE_REFERENCE),
+            counterClaimCaptor.capture(),
+            eq(submittingParty));
+
+        assertThat(counterClaimCaptor.getValue().getCounterClaimAgainst()).isEmpty();
+    }
+
+    private static Stream<DynamicMultiSelectStringList> emptyCounterClaimAgainstSelections() {
+        return Stream.of(
+            null,                                          // selection list not set
+            DynamicMultiSelectStringList.builder().build() // selection list present but no value
+        );
     }
 
     @Test
