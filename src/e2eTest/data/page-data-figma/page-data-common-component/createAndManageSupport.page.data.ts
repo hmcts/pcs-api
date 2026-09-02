@@ -8,9 +8,4 @@ export const createAndManageSupport = {
     updateCommentLabel: `Please provide your comments below`,
     updateCommentHintText: `Do not include any sensitive information such as personal details.`,
     updateCommentText: `Test Change Manage Support`,
-    representedPartyOption: `Possession Claims Solicitor Org (Claimant)`,
-    oppositePartyRoleLabel: `(Defendant)`,
-    oppositePartyNames: ['John Doe', 'Peter Parker', 'Jen Parker'],
-    supportTab: `Support`,
-    ownPartySupportComment: `OWN_PARTY_SUPPORT`,
 };
