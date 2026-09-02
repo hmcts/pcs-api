@@ -3,7 +3,7 @@ import {chromium, expect} from '@playwright/test';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
-import {LONG_TIMEOUT} from "../playwright.config";
+import {LONG_TIMEOUT, VERY_LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
@@ -53,6 +53,7 @@ async function authenticateAndSaveState(): Promise<string> {
   const authDir = path.dirname(STORAGE_STATE_PATH);
   fs.mkdirSync(authDir, { recursive: true });
 
+  const manageCaseOrigin = new URL(baseUrl).origin;
   const browser = await chromium.launch({ headless: !!process.env.CI });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   const page = await context.newPage();
@@ -70,9 +71,14 @@ async function authenticateAndSaveState(): Promise<string> {
     await page.locator('#password').fill(user.claimantSolicitor.password);
     await page.getByRole('button', { name: 'Continue' }).click(); 
 
-    await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
-
+    await page.waitForURL((url) => url.href.startsWith(manageCaseOrigin), { timeout: VERY_LONG_TIMEOUT });
     await page.waitForLoadState('load');
+    await expect(
+      page.getByText('Sign out', { exact: true })
+        .or(page.getByRole('tab', { name: 'Create case' }))
+        .or(page.getByRole('link', { name: 'Create case' }))
+        .first()
+    ).toBeVisible({ timeout: LONG_TIMEOUT });
 
     await dismissCookieBanner(page, 'analytics');
 
