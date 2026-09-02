@@ -113,6 +113,10 @@ tasks.withType(JavaExec).configureEach {
   javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
+// Default every Test task to a single fork. The integration, cftlibTest, functional
+// and contract suites share fixed resources (Wiremock on 8083/9400, the Testcontainers
+// Postgres in AbstractPostgresContainerIT, the cftlib stack) and would collide on
+// ports and DB state if forked, so they must stay serialised.
 tasks.withType(Test).configureEach {
   useJUnitPlatform()
   maxParallelForks = 1
@@ -124,6 +128,12 @@ tasks.withType(Test).configureEach {
 
 test {
   failFast = true
+  // The unit suite is pure-JVM: no Spring contexts, no fixed ports, no shared DB
+  // (only per-test @TempDir), so it is safe to fork. Half the available processors
+  // keeps room for other work on the agent; the cap of 8 is where measured wall
+  // time stops improving (8 and 16 forks are indistinguishable) and avoids
+  // spawning dozens of test JVMs on high-core machines.
+  maxParallelForks = Math.min(8, Math.max(1, Runtime.runtime.availableProcessors().intdiv(2)))
   useJUnitPlatform {
     excludeTags 'enforcement-domain-entity-alignment'
   }
