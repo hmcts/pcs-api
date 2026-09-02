@@ -88,6 +88,9 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_healthCheck").size() > 0) {
+      env.E2E_SUITE = "healthCheck"
+    }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
     }
@@ -371,4 +374,3 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
-
