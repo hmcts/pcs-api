@@ -24,6 +24,47 @@ const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.t
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
+/*
+ * Worker count.
+ *
+ * Defaults: preview gets 2, every other environment (AAT nightly etc.) gets 4.
+ *
+ * Preview is deliberately lower than AAT because each pcs-api PR release runs its own
+ * single-replica CCD stack — see charts/pcs-api/values.ccd.preview.template.yaml:
+ * elasticsearch replicas: 1 with esJavaOpts "-Xmx512m -Xms512m", ccd-data-store-api and
+ * am-role-assignment-service both autoscaling.enabled: false / maxReplicas: 1, and small
+ * DB pools (DATA_STORE_DB_MAX_POOL_SIZE 5, DEFINITION_STORE_DB_MAX_POOL_SIZE 2) against a
+ * Postgres flexible server shared by ~70 preview releases. N workers means N concurrent
+ * journeys against that, so the ceiling is real.
+ *
+ * E2E_WORKERS overrides both defaults so the count can be tuned from the Jenkinsfile
+ * (or locally) without a code change. Invalid or non-positive values fall back to the
+ * environment default rather than failing the run.
+ */
+const DEFAULT_PREVIEW_WORKERS = 2;
+const DEFAULT_WORKERS = 4;
+
+function resolveWorkers(): number {
+  const environmentDefault =
+    process.env.ENVIRONMENT === 'preview' ? DEFAULT_PREVIEW_WORKERS : DEFAULT_WORKERS;
+  const override = process.env.E2E_WORKERS?.trim();
+
+  if (!override) {
+    return environmentDefault;
+  }
+
+  const parsed = Number(override);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    console.warn(
+      `Ignoring invalid E2E_WORKERS="${override}" (expected a positive integer); using ${environmentDefault}.`
+    );
+    return environmentDefault;
+  }
+  return parsed;
+}
+
+const resolvedWorkers = resolveWorkers();
+
 export default defineConfig({
   testDir: 'tests/',
   ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
@@ -33,8 +74,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
-  workers: process.env.ENVIRONMENT === 'preview' ? 1 : 4,
+  workers: resolvedWorkers,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },

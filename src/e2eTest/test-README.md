@@ -137,6 +137,19 @@ await performValidationGroup(
 
 On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
 
+### Parallel workers
+
+Worker count defaults to **2 on preview** and **4 everywhere else** (AAT nightly etc.). Preview is lower because every pcs-api PR release runs its own single-replica CCD stack (see `charts/pcs-api/values.ccd.preview.template.yaml`), so N workers means N concurrent journeys against one Elasticsearch / data-store / role-assignment pod.
+
+Export **`E2E_WORKERS`** to override either default — locally or as a Jenkins env var — without changing code:
+
+```bash
+E2E_WORKERS=1 yarn test:pr   # serialise, e.g. when debugging a flaky spec
+E2E_WORKERS=3 yarn test:pr   # push preview concurrency higher
+```
+
+Non-integer or non-positive values are ignored with a warning and the environment default is used.
+
 ### Environment variables (local)
 
 **With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, IdAM, and S2S URLs from standard HMCTS patterns (same idea as the nightly job). You can still override any of those by exporting them first.
