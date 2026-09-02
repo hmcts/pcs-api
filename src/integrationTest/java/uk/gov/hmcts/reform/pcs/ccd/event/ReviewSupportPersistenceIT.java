@@ -51,42 +51,34 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
 
     private static final LocalDateTime CREATED = LocalDateTime.of(2026, 8, 28, 14, 57, 52);
     private static final LocalDateTime REVIEWED = LocalDateTime.of(2026, 9, 2, 10, 14, 16);
-
-    @Autowired
-    private PcsCaseService pcsCaseService;
-
-    @Autowired
-    private PcsCaseRepository pcsCaseRepository;
-
-    @Autowired
-    private FlagRefDataRepository flagRefDataRepository;
-
-    @Autowired
-    private SupportReviewService supportReviewService;
-
-    @Autowired
-    private CaseFlagsView caseFlagsView;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private PlatformTransactionManager transactionManager;
-
     private final List<Long> createdCaseReferences = new ArrayList<>();
     private final List<String> createdFlagCodes = new ArrayList<>();
+    @Autowired
+    private PcsCaseService pcsCaseService;
+    @Autowired
+    private PcsCaseRepository pcsCaseRepository;
+    @Autowired
+    private FlagRefDataRepository flagRefDataRepository;
+    @Autowired
+    private SupportReviewService supportReviewService;
+    @Autowired
+    private CaseFlagsView caseFlagsView;
+    @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
+    private EntityManager entityManager;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @AfterEach
     void removeCommittedTestData() {
         transactionTemplate().executeWithoutResult(transactionStatus -> {
             createdCaseReferences.forEach(caseReference ->
-                pcsCaseRepository.findByCaseReference(caseReference).ifPresent(pcsCaseRepository::delete));
+                                              pcsCaseRepository.findByCaseReference(caseReference).ifPresent(
+                                                  pcsCaseRepository::delete));
             pcsCaseRepository.flush();
             createdFlagCodes.forEach(flagCode ->
-                flagRefDataRepository.findByFlagCode(flagCode).ifPresent(flagRefDataRepository::delete));
+                                         flagRefDataRepository.findByFlagCode(flagCode).ifPresent(flagRefDataRepository::delete));
         });
         createdCaseReferences.clear();
         createdFlagCodes.clear();
@@ -98,27 +90,34 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         long caseReference = 1781000000019362L;
         Fixture fixture = storeRequestedSupportFlag(
             caseReference, "RA9001", "Private waiting area",
-            "DA persistence proof - original comment");
+            "DA persistence proof - original comment"
+        );
 
         Object[] before = readFlagRow(fixture.flagId());
-        report("SCENARIO 1 - IDENTIFIERS", "case reference: " + caseReference
-            + " | party id: " + fixture.partyId() + " | flag id: " + fixture.flagId());
+        report(
+            "SCENARIO 1 - IDENTIFIERS", "case reference: " + caseReference
+                + " | party id: " + fixture.partyId() + " | flag id: " + fixture.flagId()
+        );
         report("SCENARIO 1 - BEFORE REVIEW", format(before));
 
         assertThat(before[1]).isEqualTo("Requested");
         assertThat(before[3]).isEqualTo("DA persistence proof - original comment");
         assertThat(before[4]).isNull();
 
-        reviewSupport(caseReference, fixture.flagId(),
-                      "DA persistence proof - UPDATED comment",
-                      "Inactive",
-                      "DA persistence proof - status reason");
+        reviewSupport(
+            caseReference, fixture.flagId(),
+            "DA persistence proof - UPDATED comment",
+            "Inactive",
+            "DA persistence proof - status reason"
+        );
 
         Object[] after = readFlagRow(fixture.flagId());
-        report("SCENARIO 1 - REVIEW INPUT",
-               "comments: DA persistence proof - UPDATED comment"
-                   + " | status: Inactive"
-                   + " | reason: DA persistence proof - status reason");
+        report(
+            "SCENARIO 1 - REVIEW INPUT",
+            "comments: DA persistence proof - UPDATED comment"
+                + " | status: Inactive"
+                + " | reason: DA persistence proof - status reason"
+        );
         report("SCENARIO 1 - AFTER REVIEW", format(after));
 
         assertThat(after[0]).isEqualTo(before[0]);
@@ -130,10 +129,12 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(after[6]).isNotEqualTo(before[6]);
 
         FlagDetail projected = readFromCaseFlagsView(caseReference, fixture.partyId());
-        report("SCENARIO 1 - CASE FLAGS VIEW",
-               "flagComment: " + projected.getFlagComment()
-                   + " | flagUpdateComment: " + projected.getFlagUpdateComment()
-                   + " | status: " + projected.getStatus());
+        report(
+            "SCENARIO 1 - CASE FLAGS VIEW",
+            "flagComment: " + projected.getFlagComment()
+                + " | flagUpdateComment: " + projected.getFlagUpdateComment()
+                + " | status: " + projected.getStatus()
+        );
 
         assertThat(projected.getFlagComment()).isEqualTo("DA persistence proof - UPDATED comment");
         assertThat(projected.getFlagUpdateComment()).isEqualTo("DA persistence proof - status reason");
@@ -147,26 +148,33 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         long caseReference = 1781000000019363L;
         Fixture fixture = storeRequestedSupportFlag(
             caseReference, "RA9002", "Sign language interpreter",
-            "DA persistence proof - requested original");
+            "DA persistence proof - requested original"
+        );
 
         Object[] before = readFlagRow(fixture.flagId());
-        report("SCENARIO 2 - IDENTIFIERS", "case reference: " + caseReference
-            + " | party id: " + fixture.partyId() + " | flag id: " + fixture.flagId());
+        report(
+            "SCENARIO 2 - IDENTIFIERS", "case reference: " + caseReference
+                + " | party id: " + fixture.partyId() + " | flag id: " + fixture.flagId()
+        );
         report("SCENARIO 2 - BEFORE REVIEW", format(before));
 
         assertThat(before[1]).isEqualTo("Requested");
         assertThat(before[3]).isEqualTo("DA persistence proof - requested original");
 
-        reviewSupport(caseReference, fixture.flagId(),
-                      "DA persistence proof - requested UPDATED",
-                      "Requested",
-                      "DA persistence proof - still being considered");
+        reviewSupport(
+            caseReference, fixture.flagId(),
+            "DA persistence proof - requested UPDATED",
+            "Requested",
+            "DA persistence proof - still being considered"
+        );
 
         Object[] after = readFlagRow(fixture.flagId());
-        report("SCENARIO 2 - REVIEW INPUT",
-               "comments: DA persistence proof - requested UPDATED"
-                   + " | status: Requested"
-                   + " | reason: DA persistence proof - still being considered");
+        report(
+            "SCENARIO 2 - REVIEW INPUT",
+            "comments: DA persistence proof - requested UPDATED"
+                + " | status: Requested"
+                + " | reason: DA persistence proof - still being considered"
+        );
         report("SCENARIO 2 - AFTER REVIEW", format(after));
 
         assertThat(after[1]).isEqualTo("Requested");
@@ -176,10 +184,12 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(after[5]).isEqualTo(before[5]);
 
         FlagDetail projected = readFromCaseFlagsView(caseReference, fixture.partyId());
-        report("SCENARIO 2 - CASE FLAGS VIEW",
-               "flagComment: " + projected.getFlagComment()
-                   + " | flagUpdateComment: " + projected.getFlagUpdateComment()
-                   + " | status: " + projected.getStatus());
+        report(
+            "SCENARIO 2 - CASE FLAGS VIEW",
+            "flagComment: " + projected.getFlagComment()
+                + " | flagUpdateComment: " + projected.getFlagUpdateComment()
+                + " | status: " + projected.getStatus()
+        );
 
         assertThat(projected.getFlagComment()).isEqualTo("DA persistence proof - requested UPDATED");
         assertThat(projected.getStatus()).isEqualTo("Requested");
@@ -192,10 +202,12 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         Fixture fixture = storeRequestedSupportFlag(
             caseReference, "RA9003", "Hearing loop", "DA persistence proof - not approved original");
 
-        reviewSupport(caseReference, fixture.flagId(),
-                      "DA persistence proof - not approved UPDATED",
-                      "Not approved",
-                      "DA persistence proof - cannot be accommodated");
+        reviewSupport(
+            caseReference, fixture.flagId(),
+            "DA persistence proof - not approved UPDATED",
+            "Not approved",
+            "DA persistence proof - cannot be accommodated"
+        );
 
         Object[] after = readFlagRow(fixture.flagId());
         report("SCENARIO 3 - AFTER REVIEW (Not approved)", format(after));
@@ -205,11 +217,6 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(after[4]).isEqualTo("DA persistence proof - cannot be accommodated");
     }
 
-    /**
-     * Runs the Review Support Request event over the stored case: the start callback offers the
-     * requested support the view projects, the reviewer edits the offered flag detail exactly as the
-     * flags component does, and the submit callback persists it.
-     */
     private void reviewSupport(long caseReference, UUID flagId, String comments, String status,
                                String statusChangeReason) {
         transactionTemplate().executeWithoutResult(transactionStatus -> {
@@ -243,18 +250,14 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
             .getValue());
     }
 
-    /**
-     * The two steps {@code PCSCaseView} performs for these fields when CCD loads a case: the parties
-     * are mapped and wrapped from the stored entities, then the flags view projects the stored flags.
-     */
     private PCSCase retrieveCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference).orElseThrow();
 
         PCSCase pcsCase = PCSCase.builder().build();
         pcsCase.setParties(pcsCaseEntity.getParties().stream()
-            .map(entity -> modelMapper.map(entity, Party.class))
-            .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
-            .toList());
+                               .map(entity -> modelMapper.map(entity, Party.class))
+                               .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
+                               .toList());
         caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
@@ -318,11 +321,11 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
     private FlagRefDataEntity refData(FlagSpec flagSpec) {
         return flagRefDataRepository.findByFlagCode(flagSpec.flagCode())
             .orElseGet(() -> flagRefDataRepository.save(FlagRefDataEntity.builder()
-                .flagCode(flagSpec.flagCode())
-                .flagName(flagSpec.flagName())
-                .hearingRelevant(true)
-                .availableExternally(true)
-                .build()));
+                                                            .flagCode(flagSpec.flagCode())
+                                                            .flagName(flagSpec.flagName())
+                                                            .hearingRelevant(true)
+                                                            .availableExternally(true)
+                                                            .build()));
     }
 
     private TransactionTemplate transactionTemplate() {
@@ -343,26 +346,20 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         System.out.println("[DA-EVIDENCE] " + heading + " :: " + detail);
     }
 
-    private record Fixture(UUID partyId, List<UUID> flagIds) {
-
-        private UUID flagId() {
-            return flagIds.getFirst();
-        }
-    }
-
-    private record FlagSpec(String flagCode, String flagName, String flagComment) {
-    }
-
     @Test
     @DisplayName("leaves an unrelated requested flag on the same party untouched")
     void leavesUnrelatedFlagsUntouched() {
         long caseReference = 1781000000019365L;
-        Fixture fixture = storeRequestedSupportFlags(caseReference,
+        Fixture fixture = storeRequestedSupportFlags(
+            caseReference,
             new FlagSpec("RA9004", "Large print", "DA persistence proof - reviewed flag"),
-            new FlagSpec("RA9005", "Documents in braille", "DA persistence proof - untouched flag"));
+            new FlagSpec("RA9005", "Documents in braille", "DA persistence proof - untouched flag")
+        );
 
-        reviewSupport(caseReference, fixture.flagIds().getFirst(),
-                      "DA persistence proof - reviewed UPDATED", "Inactive", "Reviewed");
+        reviewSupport(
+            caseReference, fixture.flagIds().getFirst(),
+            "DA persistence proof - reviewed UPDATED", "Inactive", "Reviewed"
+        );
 
         Object[] reviewedRow = readFlagRow(fixture.flagIds().getFirst());
         Object[] untouchedRow = readFlagRow(fixture.flagIds().getLast());
@@ -375,6 +372,16 @@ class ReviewSupportPersistenceIT extends AbstractPostgresContainerIT {
         assertThat(untouchedRow[3]).isEqualTo("DA persistence proof - untouched flag");
         assertThat(untouchedRow[4]).isNull();
         assertThat(untouchedRow[6]).isNull();
+    }
+
+    private record Fixture(UUID partyId, List<UUID> flagIds) {
+
+        private UUID flagId() {
+            return flagIds.getFirst();
+        }
+    }
+
+    private record FlagSpec(String flagCode, String flagName, String flagComment) {
     }
 
 }
