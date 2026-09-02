@@ -62,14 +62,13 @@ public class OrganisationService {
             String organisationName = organisationDetailsService.getOrganisationName(userId.toString());
 
             if (organisationName == null || organisationName.isEmpty()) {
-                log.warn("Organisation name is null or empty for user ID: {}", userId);
+                log.warn("Organisation name is null or empty");
             }
 
             return organisationName;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation name from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation name from rd-professional API", ex);
             // Return null instead of throwing to allow graceful degradation
             return null;
         }
@@ -90,8 +89,7 @@ public class OrganisationService {
             ).orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
         }
     }
@@ -133,8 +131,7 @@ public class OrganisationService {
             return organisationDetailsService.getOrganisationDetails(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation details from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation details from rd-professional API", ex);
             return null;
         }
     }
@@ -214,15 +211,14 @@ public class OrganisationService {
 
             // Return null if address is null or all key address fields to be displayed are empty
             if (keyAddressFieldsEmpty(organisationAddress)) {
-                log.warn("Organisation address is null or empty for user ID: {}", userId);
+                log.warn("Organisation address is null or empty");
                 return null;
             }
 
             return organisationAddress;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation address from rd-professional API. Error: {}",
-                      ex.getMessage(), ex);
+            log.error("Error retrieving organisation address from rd-professional API", ex);
             return null;
         }
     }
