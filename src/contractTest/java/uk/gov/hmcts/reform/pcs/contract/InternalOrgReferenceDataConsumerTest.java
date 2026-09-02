@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 
 import java.io.IOException;
 import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
@@ -48,31 +49,6 @@ public class InternalOrgReferenceDataConsumerTest {
     private static final String USER_ID = "4d318f91-5591-44e3-870b-ad5616f65627";
 
     private final RdProfessionalApi rdProfessionalApi;
-
-    @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
-    public V4Pact getOrganisationById(PactDslWithProvider builder) throws IOException {
-        return builder
-            .given("Organisation exists for given Id")
-            .uponReceiving("a request to get an organisation by id")
-            .path("/refdata/internal/v1/organisations/orgDetails/" + USER_ID)
-            .method(HttpMethod.GET.toString())
-            .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
-                     "Authorization", AUTHORIZATION_TOKEN)
-                .willRespondWith()
-                .status(200)
-                .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
-            .body(buildOrganisationResponseDsl())
-            .toPact(V4Pact.class);
-    }
-
-    @Test
-    @PactTestFor(pactMethod = "getOrganisationById")
-    public void verifyInternalOrganisation() {
-        OrganisationDetailsResponse response =
-            rdProfessionalApi.getOrganisationDetails(USER_ID, SERVICE_AUTH_TOKEN, AUTHORIZATION_TOKEN);
-
-        assertThat(response.getName()).isEqualTo("Possession Claims Solicitor Org");
-    }
 
     static PactDslJsonBody buildOrganisationResponseDsl() {
         return (PactDslJsonBody) new PactDslJsonBody()
@@ -103,5 +79,32 @@ public class InternalOrgReferenceDataConsumerTest {
             .stringValue("PBA0078010")
             .stringValue("PBA0078011")
             .closeArray();
+    }
+
+    @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
+    public V4Pact getOrganisationById(PactDslWithProvider builder) throws IOException {
+        return builder
+            .given("Organisation exists for given Id")
+            .uponReceiving("a request to get an organisation by id")
+            .path("/refdata/internal/v1/organisations/orgDetails/" + USER_ID)
+            .method(HttpMethod.GET.toString())
+            .headers(
+                "ServiceAuthorization", SERVICE_AUTH_TOKEN,
+                "Authorization", AUTHORIZATION_TOKEN
+            )
+            .willRespondWith()
+            .status(200)
+            .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
+            .body(buildOrganisationResponseDsl())
+            .toPact(V4Pact.class);
+    }
+
+    @Test
+    @PactTestFor(pactMethod = "getOrganisationById")
+    public void verifyInternalOrganisation() {
+        OrganisationDetailsResponse response =
+            rdProfessionalApi.getOrganisationDetails(USER_ID, SERVICE_AUTH_TOKEN, AUTHORIZATION_TOKEN);
+
+        assertThat(response.getName()).isEqualTo("Possession Claims Solicitor Org");
     }
 }
