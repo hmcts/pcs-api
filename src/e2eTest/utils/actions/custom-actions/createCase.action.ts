@@ -13,7 +13,10 @@ import {
   userIneligible,
   whatAreYourGroundsForPossessionWales,
   addressCheckYourAnswers,
-  home
+  home,
+  checkYourAnswers,
+  resumeClaim,
+  user
 } from '@data/page-data';
 import {
   claimantType,
@@ -52,6 +55,8 @@ import {
   underlesseeMortgageeDetails,
   checkingNoticeWales,
   addCaseNote,
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
@@ -61,10 +66,11 @@ import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatU
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
-import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
+import { dismissCookieBanner } from '@config/cookie-banner';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -145,6 +151,8 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],   
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -167,6 +175,9 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
+    console.log ("get value:" );
+    console.log (createCase.caseType.civilPossessions);
+    console.log (" value printed" );
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
@@ -967,10 +978,14 @@ export class CreateCaseAction implements IAction {
 
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        const defendantUser = Object.values(user).find(
+          u => u.email === defendantSolicitor.email
+        );
+        const orgName = defendantUser && 'orgName' in defendantUser ? defendantUser.orgName : undefined;
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, 'Possession Claim Service Org1')
+        defendant.set(`Name`, orgName ?? '');
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
@@ -1592,7 +1607,7 @@ export class CreateCaseAction implements IAction {
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
@@ -1896,5 +1911,125 @@ export class CreateCaseAction implements IAction {
     expect(actual).toBe(
       `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
     );
+  }
+
+  private async createPartialClaimDetails() {
+    await performAction('clickTab', home.createCaseTab);
+    await performAction('selectJurisdictionCaseTypeEvent');
+    await performAction('housingPossessionClaim');
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performValidation('mainHeader', claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
+  }
+
+  private async resumePartialClaim() {
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimType.noRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
+    await performValidation('mainHeader', contactPreferences.mainHeader)
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
+    });
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      day: tenancyLicenceDetails.dayTextInput,
+      month: tenancyLicenceDetails.monthTextInput,
+      year: tenancyLicenceDetails.yearTextInput,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
+    await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.noRadioOption });
+    await performAction('selectYourPossessionGrounds', {
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
+    });
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
+      whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
+    });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', { rentFrequencyOption: 'Weekly', rentAmount: '800' });
+    await performValidation('mainHeader', rentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession');
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption
+    });
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
+    await performAction('selectLanguageUsed', {
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
+    });
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
+    await performAction('clickButton', checkYourAnswers.submitClaim);
+    await performAction('payClaimFee');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+
   }
 }
