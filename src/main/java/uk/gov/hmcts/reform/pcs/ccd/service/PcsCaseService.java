@@ -100,7 +100,6 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    @Transactional
     public void deleteCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
         pcsCaseRepository.delete(pcsCaseEntity);
