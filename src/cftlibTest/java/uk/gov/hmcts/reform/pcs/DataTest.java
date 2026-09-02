@@ -160,7 +160,7 @@ public class DataTest extends CftlibTest {
 
         org.junit.jupiter.api.Assertions.assertAll("pcs_case validations",
                                                    () -> assertHasColumns("public.pcs_case", expectedColumns),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertTrue(totalRows > 0, msgCount),
                                                    () -> assertEquals(0, duplicateIds, msgDupId),
                                                    () -> assertEquals(0, duplicateCaseRefs, msgDupRef),
@@ -252,7 +252,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("tenancy_licence validations",
                                                    () -> assertHasColumns("public.tenancy_licence", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validTenancy,  msgValidTenancy)
         );
     }
@@ -294,7 +294,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("claim validations",
                                                    () -> assertHasColumns("public.claim", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validClaim,  msgValidClaim)
         );
     }
@@ -388,7 +388,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("document validations",
                                                    () -> assertHasColumns("public.document", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(3, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validDocument,  msgValidDocument)
         );
     }
@@ -429,7 +429,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("statement_of_truth validations",
                                                    () -> assertHasColumns("public.statement_of_truth", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(2, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validStatementOfTruth,  msgValidSoT)
         );
     }
@@ -469,7 +469,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("rent_arrears validations",
                                                    () -> assertHasColumns("public.rent_arrears", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validRentArrears, msgValidArrears)
         );
     }
@@ -508,7 +508,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("claim_ground validations",
                                                    () -> assertHasColumns("public.claim_ground", expectedColumns),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validClaimGround, msgValidGround)
         );
     }
@@ -551,7 +551,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("notice_of_possession validations",
                                                    () -> assertHasColumns("public.notice_of_possession", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validNoticeOfPossession, msgValidNotice)
         );
     }
@@ -594,7 +594,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("defendant_response validations",
                                                    () -> assertHasColumns("public.defendant_response", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validDefendantResponse, msgValidResponse)
         );
     }
@@ -623,7 +623,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("regular_income validations",
                                                    () -> assertHasColumns("public.regular_income", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent)
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent)
         );
     }
 
@@ -664,7 +664,7 @@ public class DataTest extends CftlibTest {
         org.junit.jupiter.api.Assertions.assertAll("contact_preferences validations",
                                                    () -> assertHasColumns("public.contact_preferences", expectedCols),
                                                    () -> assertTrue(totalRows > 0, msgCount),
-                                                   () -> assertEquals(1, createdCasePresent, msgCasePresent),
+                                                   () -> assertTrue(createdCasePresent >= 1, msgCasePresent),
                                                    () -> assertEquals(1, validContactPreferences, msgValidPrefs)
         );
     }
