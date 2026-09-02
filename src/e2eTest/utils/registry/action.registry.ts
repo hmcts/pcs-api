@@ -150,6 +150,7 @@ export class ActionRegistry {
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
     ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],
@@ -164,7 +165,8 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
-    ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
@@ -187,6 +189,7 @@ export class ActionRegistry {
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {
