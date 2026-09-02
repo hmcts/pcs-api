@@ -32,6 +32,12 @@ function resolveWorkers(): number {
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
 
+// Cheap suites keep a second retry; large label-expanded ones get one, so a hard failure
+// costs two attempts not three. Allowlist because E2E_SUITE is free-form.
+const CHEAP_E2E_SUITES = new Set(['pr', 'noticeOfChange']);
+const e2eSuite = process.env.E2E_SUITE?.trim() || 'pr';
+const ciRetries = CHEAP_E2E_SUITES.has(e2eSuite) ? 2 : 1;
+
 export default defineConfig({
   testDir: 'tests/',
   ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
@@ -39,8 +45,8 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry on CI only; budget depends on how expensive the selected suite is */
+  retries: process.env.CI ? ciRetries : 0,
   workers: resolveWorkers(),
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
