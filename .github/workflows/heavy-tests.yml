@@ -1,0 +1,100 @@
+name: Heavy tests
+
+# The integration and cftlibTest suites run here rather than in the Jenkins
+# "Static checks / Container build" stage, where they dominated the PR critical path
+# (~3m14s and ~3m40s of a ~7m23s stage). Jenkins keeps the unit test suite, which Sonar needs.
+
+on:
+  pull_request:
+    branches:
+      - master
+  # Master runs are the post-merge safety net, and GitHub only shares a Gradle cache across
+  # branches when it was written on the default branch.
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: heavy-tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Run integration tests
+        run: ./gradlew --no-daemon integration
+
+      # This exec file is the one that materially contributes Sonar coverage (291 lines).
+      - name: Upload integration jacoco exec
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-integration-exec
+          path: build/jacoco/integration.exec
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: integration-test-results
+          path: |
+            build/test-results/integration/**
+            build/reports/tests/integration/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # Separate job so this gets its own runner: docker-compose-wiremock.yml binds a fixed host
+  # port (8083) and the cftlib stack binds 6432/9200/5062, so the two suites cannot share a
+  # machine. Wiremock is started by Gradle via `dockerCompose.isRequiredBy cftlibTest`.
+  cftlib-test:
+    name: Cftlib tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Run cftlib tests
+        run: ./gradlew --no-daemon cftlibTest
+
+      - name: Upload cftlib test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cftlib-test-results
+          path: |
+            build/test-results/cftlibTest/**
+            build/reports/tests/cftlibTest/**
+          if-no-files-found: ignore
+          retention-days: 7
