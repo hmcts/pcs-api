@@ -20,12 +20,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -34,6 +34,7 @@ public class PartiesView {
 
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+    private final ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<ClaimEntity> claims = pcsCaseEntity.getClaims();
@@ -151,14 +152,12 @@ public class PartiesView {
     }
 
     private LegalRepresentative toLegalRepresentative(OrganisationEntity orgEntity, Long caseRef) {
-        Optional<ClaimPartyContactDetailsEntity> contactDetails =
-            Optional.ofNullable(orgEntity.getClaimPartyContactDetails())
-                .orElseGet(Collections::emptyList)
-                .stream()
-                .filter(contactDetail -> contactDetail != null
-                    && contactDetail.getPcsCase() != null
-                    && Objects.equals(contactDetail.getPcsCase().getCaseReference(), caseRef))
-                .findFirst();
+        // Look the row up directly: walking orgEntity.getClaimPartyContactDetails() loads every case the
+        // organisation has ever been party to (one query per row), which is O(cases per organisation).
+        Optional<ClaimPartyContactDetailsEntity> contactDetails = caseRef == null
+            ? Optional.empty()
+            : claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference(
+                orgEntity.getOrganisationId(), caseRef);
 
         return LegalRepresentative.builder()
             .organisationName(orgEntity.getOrganisationName())

@@ -24,15 +24,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,13 +53,15 @@ class PartiesViewTest {
     private ClaimEntity claimEntity;
     @Mock
     private UserInfo userInfo;
+    @Mock
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
 
     private PCSCase pcsCase;
     private PartiesView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PartiesView(securityContextService, modelMapper);
+        underTest = new PartiesView(securityContextService, modelMapper, claimPartyContactDetailsRepository);
         pcsCase = PCSCase.builder().build();
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
     }
@@ -182,32 +187,19 @@ class PartiesViewTest {
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
         AddressEntity addressEntity = AddressEntity.builder().build();
+        ClaimPartyContactDetailsEntity contactDetailsForThisCase = ClaimPartyContactDetailsEntity.builder()
+            .phoneNumber("phone")
+            .emailAddress("email@test.com")
+            .address(addressEntity)
+            .pcsCase(PcsCaseEntity.builder().caseReference(1L).build())
+            .build();
         OrganisationEntity organisationEntity =
             OrganisationEntity.builder()
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                                                                   .builder()
-                                                                   .phoneNumber("phone")
-                                                                   .emailAddress("email@test.com")
-                                                                   .address(addressEntity)
-                                .pcsCase(PcsCaseEntity
-                                             .builder()
-                                             .caseReference(1L)
-                                             .build())
-                                                                   .build(),
-                        ClaimPartyContactDetailsEntity
-                                        .builder()
-                                        .phoneNumber("phone2")
-                                        .emailAddress("email@test.com2")
-                                        .address(addressEntity)
-                                        .pcsCase(PcsCaseEntity
-                                                     .builder()
-                                                     .caseReference(2L)
-                                                     .build())
-                                        .build()))
-            .organisationName("org name")
-            .build();
+                .organisationId("ORG1")
+                .organisationName("org name")
+                .build();
+        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG1", 1L))
+            .thenReturn(Optional.of(contactDetailsForThisCase));
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
                 .organisation(organisationEntity)
@@ -254,29 +246,17 @@ class PartiesViewTest {
     }
 
     @Test
-    void shouldMapLegalRepresentative_NoPcsCaseOnContactDetails() {
+    void shouldMapLegalRepresentative_NoContactDetailsForThisCase() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        AddressEntity addressEntity = AddressEntity.builder().build();
         OrganisationEntity organisationEntity =
             OrganisationEntity.builder()
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                                .builder()
-                                .phoneNumber("phone")
-                                .emailAddress("email@test.com")
-                                .address(addressEntity)
-                                .build(),
-                        ClaimPartyContactDetailsEntity
-                                .builder()
-                                .phoneNumber("phone2")
-                                .emailAddress("email@test.com2")
-                                .address(addressEntity)
-                                .build()))
+                .organisationId("ORG1")
                 .organisationName("org name")
                 .build();
+        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG1", 1L))
+            .thenReturn(Optional.empty());
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
                 .organisation(organisationEntity)
@@ -340,16 +320,9 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        AddressEntity addressEntity = AddressEntity.builder().build();
         OrganisationEntity organisationEntity =
             OrganisationEntity.builder()
-                .claimPartyContactDetails(
-                    List.of(ClaimPartyContactDetailsEntity
-                                                                   .builder()
-                                                                   .phoneNumber("phone")
-                                                                   .emailAddress("email@test.com")
-                                                                   .address(addressEntity)
-                                                                   .build()))
+                .organisationId("ORG1")
                 .organisationName("org name")
             .build();
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
@@ -369,6 +342,7 @@ class PartiesViewTest {
         LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
             .getValue().getLegalRepresentative();
         assertThat(legalRepresentative).isNull();
+        verify(claimPartyContactDetailsRepository, never()).findByOrganisationIdAndCaseReference(any(), anyLong());
     }
 
     @Test
@@ -376,18 +350,11 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        AddressEntity addressEntity1 = AddressEntity.builder().build();
         OrganisationEntity organisationEntity =
             OrganisationEntity.builder()
-                .claimPartyContactDetails(
-                    List.of(ClaimPartyContactDetailsEntity
-                                                                   .builder()
-                                                                   .phoneNumber("phone")
-                                                                   .emailAddress("email@test.com")
-                                                                   .address(addressEntity1)
-                                                                   .build()))
-            .organisationName("org name")
-            .build();
+                .organisationId("ORG1")
+                .organisationName("org name")
+                .build();
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
             ClaimPartyOrganisationEntity.builder()
                 .organisation(organisationEntity)
@@ -397,19 +364,16 @@ class PartiesViewTest {
         AddressEntity addressEntity2 = AddressEntity.builder().build();
         OrganisationEntity organisationEntity2 =
             OrganisationEntity.builder()
-                .claimPartyContactDetails(
-                    List.of(ClaimPartyContactDetailsEntity
-                                                                   .builder()
-                                                                   .phoneNumber("phone2")
-                                                                   .emailAddress("email2@test.com")
-                                                                   .address(addressEntity2)
-                                .pcsCase(PcsCaseEntity
-                                             .builder()
-                                             .caseReference(1L)
-                                             .build())
-                                                                   .build()))
-            .organisationName("org name2")
-            .build();
+                .organisationId("ORG2")
+                .organisationName("org name2")
+                .build();
+        when(claimPartyContactDetailsRepository.findByOrganisationIdAndCaseReference("ORG2", 1L))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .phoneNumber("phone2")
+                                        .emailAddress("email2@test.com")
+                                        .address(addressEntity2)
+                                        .pcsCase(PcsCaseEntity.builder().caseReference(1L).build())
+                                        .build()));
         ClaimPartyOrganisationEntity claimPartyOrganisationEntity2 =
             ClaimPartyOrganisationEntity.builder()
                 .organisation(organisationEntity2)
