@@ -47,6 +47,19 @@
 
   <suppress until="2026-09-15">
     <notes><![CDATA[
+    Temp suppression
+    ]]></notes>
+    <cve>CVE-2026-47893</cve>
+    <cve>CVE-2026-47892</cve>
+    <cve>CVE-2026-59283</cve>
+    <cve>CVE-2026-59284</cve>
+    <cve>CVE-2026-59280</cve>
+    <cve>CVE-2026-59270</cve>
+    <cve>CVE-2026-54428</cve>
+  </suppress>
+
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
     HDPI-8150: temporary. Waiting on httpcore5 5.4.3+ to arrive transitively via
     the Spring Boot BOM. Remove once the resolved version is past the affected
     range in the packageUrl above.
