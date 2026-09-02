@@ -50,6 +50,7 @@ java:
     SEND_LETTER_URL: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+    NOTIFY_URL: https://api.notifications.service.gov.uk
     CCD_SDK_DECENTRALISED: "true"
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update

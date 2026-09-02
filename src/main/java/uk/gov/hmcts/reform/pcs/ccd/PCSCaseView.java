@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
-import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
@@ -56,7 +55,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
@@ -293,7 +291,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
-            .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+            .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
+            .toList();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
