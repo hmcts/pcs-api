@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -705,6 +706,12 @@ public class PCSCase {
         typeOverride = DynamicRadioList
     )
     private DynamicList partyRadioList;
+
+    @CCD(
+        searchable = false
+    )
+    @JsonUnwrapped(prefix = "enter_cc_")
+    private EnterCounterClaimDetails enterCounterClaim;
 
     @CCD(
         label = "Search Criteria",
