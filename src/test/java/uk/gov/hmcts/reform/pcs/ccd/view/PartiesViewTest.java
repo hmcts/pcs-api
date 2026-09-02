@@ -283,6 +283,38 @@ class PartiesViewTest {
     }
 
     @Test
+    void shouldNotLookUpContactDetailsWhenCaseReferenceIsMissing() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        OrganisationEntity organisationEntity =
+            OrganisationEntity.builder()
+                .organisationId("ORG1")
+                .organisationName("org name")
+                .build();
+        ClaimPartyOrganisationEntity claimPartyOrganisationEntity =
+            ClaimPartyOrganisationEntity.builder()
+                .organisation(organisationEntity)
+                .active(YesOrNo.YES)
+                .build();
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setPcsCase(PcsCaseEntity.builder().build());
+        defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        LegalRepresentative legalRepresentative = pcsCase.getAllDefendants().getFirst()
+            .getValue().getLegalRepresentative();
+        assertThat(legalRepresentative.getOrganisationName()).isEqualTo("org name");
+        assertThat(legalRepresentative.getTelephoneNumber()).isNull();
+        assertThat(legalRepresentative.getEmailAddress()).isNull();
+        verify(claimPartyContactDetailsRepository, never()).findByOrganisationIdAndCaseReference(any(), anyLong());
+    }
+
+    @Test
     void shouldMapLegalRepresentative_WithNoContactDetails() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
