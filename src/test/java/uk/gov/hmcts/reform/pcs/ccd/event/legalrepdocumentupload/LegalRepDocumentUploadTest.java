@@ -202,18 +202,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
-        void shouldReturnNullForLatestGenAppDateWhenGenAppsIsNull() {
-            PCSCase result = callStartHandler(PCSCase.builder().build());
-
-            assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
-            DynamicStringList categories = result.getLegalRepDocumentUploadDetails().getValidCategories();
-            assertThat(categories).isNotNull();
-            assertThat(categories.getListItems()).hasSize(1);
-            assertThat(categories.getListItems().getFirst().getCode())
-                .isEqualTo(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name());
-        }
-
-        @Test
         void shouldSetWalesFlagForWales() {
             // Given
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(WALES);

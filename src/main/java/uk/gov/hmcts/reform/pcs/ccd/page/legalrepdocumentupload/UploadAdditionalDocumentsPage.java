@@ -20,7 +20,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 @AllArgsConstructor
 public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdPage {
 
-    public static final String DOCUMENT_DETAILS_CONTENT  = """
+    private static final String PARTY_TYPE_FIELD = "lrDocUpload_PartyType";
+    private static final String IS_WALES_FIELD = "lrDocUpload_IsWales";
+
+    private static final String DOCUMENT_DETAILS_CONTENT  = """
                     <p class="govuk-body">
                         You should only upload documents that are relevant to the claim.
                     </p>
@@ -58,20 +61,20 @@ public class UploadAdditionalDocumentsPage implements CcdPageConfiguration, CcdP
             .readonly(LegalRepDocumentUploadDetails::getIsWales, NEVER_SHOW)
             .list(LegalRepDocumentUploadDetails::getLegalRepDocuments)
             .mandatory(LegalRepDocument::getClaimantDocumentType, ShowConditions.and(
-                fieldEquals("lrDocUpload_PartyType", PartyType.CLAIMANT),
-                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.NO)
+                fieldEquals(PARTY_TYPE_FIELD, PartyType.CLAIMANT),
+                fieldEquals(IS_WALES_FIELD, VerticalYesNo.NO)
             ))
             .mandatory(LegalRepDocument::getClaimantDocumentTypeWales, ShowConditions.and(
-                fieldEquals("lrDocUpload_PartyType", PartyType.CLAIMANT),
-                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.YES)
+                fieldEquals(PARTY_TYPE_FIELD, PartyType.CLAIMANT),
+                fieldEquals(IS_WALES_FIELD, VerticalYesNo.YES)
             ))
             .mandatory(LegalRepDocument::getDefendantDocumentType, ShowConditions.and(
-                fieldEquals("lrDocUpload_PartyType", PartyType.DEFENDANT),
-                fieldEquals("lrDocUpload_IsWales", VerticalYesNo.NO)
+                fieldEquals(PARTY_TYPE_FIELD, PartyType.DEFENDANT),
+                fieldEquals(IS_WALES_FIELD, VerticalYesNo.NO)
             ))
             .mandatory(LegalRepDocument::getDefendantDocumentTypeWales, ShowConditions.and(
-                fieldEquals("lrDocUpload_PartyType", PartyType.DEFENDANT),
-                fieldEquals("lrDocUpload_IsWales", YesOrNo.YES)
+                fieldEquals(PARTY_TYPE_FIELD, PartyType.DEFENDANT),
+                fieldEquals(IS_WALES_FIELD, YesOrNo.YES)
             ))
             .mandatory(LegalRepDocument::getDocument)
             .mandatory(LegalRepDocument::getDescription)

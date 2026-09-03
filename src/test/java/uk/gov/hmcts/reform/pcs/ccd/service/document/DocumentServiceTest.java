@@ -1335,12 +1335,11 @@ class DocumentServiceTest {
             when(documentTypeMapper.mapToDocumentType(DefendantDocumentType.PHOTOGRAPHIC_EVIDENCE))
                 .thenReturn(expectedDocumentType);
 
-            PartyEntity party = mock(PartyEntity.class);
             UUID partyId = UUID.randomUUID();
+            when(party.getId()).thenReturn(partyId);
 
             final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
-            when(party.getId()).thenReturn(partyId);
             UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
             when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
 
