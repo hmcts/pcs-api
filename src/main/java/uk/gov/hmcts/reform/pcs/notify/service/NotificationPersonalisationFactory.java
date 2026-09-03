@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
@@ -37,6 +39,9 @@ public class NotificationPersonalisationFactory {
     private final PartyService partyService;
     private final AddressFormatter addressFormatter;
     private final AddressMapper addressMapper;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -85,6 +90,22 @@ public class NotificationPersonalisationFactory {
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
+        DefendantResponseEntity defendantResponse
+    ) {
+        String caseRef = defendantResponse.getPcsCase().getCaseReference().toString();
+        String paymentUrl = String.format(
+            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+            frontendUrl,
+            caseRef
+        );
+
+        return CounterclaimPaymentRequiredPersonalisation.builder()
+            .base(forDefendant(defendantResponse))
+            .paymentUrl(paymentUrl)
             .build();
     }
 
