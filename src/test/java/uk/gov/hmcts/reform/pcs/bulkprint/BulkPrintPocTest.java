@@ -7,7 +7,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -47,53 +48,25 @@ class BulkPrintPocTest {
         this.s2sToken = "Bearer " + s2sToken;
     }
 
-    @Test
-    void sendToBulkPrint() throws IOException {
+    @ParameterizedTest
+    @CsvSource({
+        "Al Bloggs, CPD-01-IN1, false",
+        "Bob Bloggs, CPC-01-IN0, true",
+        "Cam Bloggs, DEF-01-IN0, false",
+        "Dave Bloggs, GEN-00-IN0, true"
+    })
+    void sendToBulkPrint(String name, String letterType, boolean isInternational) throws IOException {
         byte[] pdfBytes = Files.readAllBytes(Paths.get("test-document.pdf"));
         String encodedPdf = Base64.getEncoder().encodeToString(pdfBytes);
 
-        //1
         Map<String, Object> additionalData = Map.of(
-            "recipients", List.of("Al Bloggs"),
-            "isInternational", false
+            "recipients", List.of(name),
+            "isInternational", isInternational
         );
 
         LetterWithPdfsRequest letter =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "CPD-01-IN1", additionalData);
+            new LetterWithPdfsRequest(List.of(encodedPdf), letterType, additionalData);
 
         System.out.println(sendLetterApi.sendLetter(s2sToken, letter).letterId);
-
-        //2
-        Map<String, Object> additionalData2 = Map.of(
-            "recipients", List.of("Bob Bloggs"),
-            "isInternational", false
-        );
-
-        LetterWithPdfsRequest letter2 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "CPC-01-IN0", additionalData2);
-
-        System.out.println(sendLetterApi.sendLetter(s2sToken, letter2).letterId);
-
-        //3
-        Map<String, Object> additionalData3 = Map.of(
-            "recipients", List.of("Cam Bloggs"),
-            "isInternational", false
-        );
-
-        LetterWithPdfsRequest letter3 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "DEF-01-IN0", additionalData3);
-
-        System.out.println(sendLetterApi.sendLetter(s2sToken, letter3).letterId);
-
-        //4
-        Map<String, Object> additionalData4 = Map.of(
-            "recipients", List.of("Dave Bloggs"),
-            "isInternational", false
-        );
-
-        LetterWithPdfsRequest letter4 =
-            new LetterWithPdfsRequest(List.of(encodedPdf), "GEN-00-IN0", additionalData4);
-
-        System.out.println(sendLetterApi.sendLetter(s2sToken, letter4).letterId);
     }
 }
