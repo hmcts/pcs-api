@@ -306,7 +306,6 @@ export class CaseManagementAction implements IAction {
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
-    await page.waitForTimeout(timeout);
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {

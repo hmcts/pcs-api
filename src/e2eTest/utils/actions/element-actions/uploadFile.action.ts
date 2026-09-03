@@ -25,7 +25,6 @@
       await fileInput.last().setInputFiles(filePath);
       let timeout = 6000;
       await performValidation('waitUntilElementDisappears', 'Uploading...');
-      await page.waitForTimeout(timeout);
       await expect(async () => {
         const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
