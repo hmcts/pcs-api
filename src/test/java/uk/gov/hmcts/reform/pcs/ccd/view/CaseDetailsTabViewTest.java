@@ -742,7 +742,7 @@ class CaseDetailsTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
             .featureFlags(FeatureFlags.builder()
-                .exemptLandlordQuestionEnabled(VerticalYesNo.YES).build())
+                .release1dot4Enabled(VerticalYesNo.NO).build())
             .claimantType(
                 DynamicStringList.builder().value(
                         DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
@@ -1051,7 +1051,7 @@ class CaseDetailsTabViewTest {
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
             .featureFlags(FeatureFlags.builder()
-                .exemptLandlordQuestionEnabled(VerticalYesNo.NO).build())
+                .release1dot4Enabled(VerticalYesNo.YES).build())
             .build();
 
         // When

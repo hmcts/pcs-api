@@ -21,7 +21,6 @@ public class FeatureFlagView {
                                     .release1dot4Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_4))
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
-                                    .exemptLandlordQuestionEnabled(getFlag(FeatureFlag.EXEMPT_LANDLORD_QUESTION))
                                     .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
                                     .build());
     }

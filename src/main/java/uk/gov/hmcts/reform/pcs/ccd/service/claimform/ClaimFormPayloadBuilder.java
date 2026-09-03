@@ -643,7 +643,7 @@ public class ClaimFormPayloadBuilder {
     }
 
     private boolean showExemptLandlordQuestion() {
-        return featureToggleService.isEnabled(FeatureFlag.EXEMPT_LANDLORD_QUESTION);
+        return !featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4);
     }
 
 }

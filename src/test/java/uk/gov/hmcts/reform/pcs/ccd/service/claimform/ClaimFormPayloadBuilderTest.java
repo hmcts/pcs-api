@@ -63,7 +63,7 @@ class ClaimFormPayloadBuilderTest {
     @BeforeEach
     void setUp() {
         featureToggleService = mock(FeatureToggleService.class);
-        when(featureToggleService.isEnabled(FeatureFlag.EXEMPT_LANDLORD_QUESTION)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
 
         builder = new ClaimFormPayloadBuilder(
             new CaseReferenceFormatter(),
@@ -913,25 +913,25 @@ class ClaimFormPayloadBuilderTest {
         }
 
         @Test
-        void walesCaseShowsExemptLandlordQuestionWhenFeatureFlagEnabled() {
-            when(featureToggleService.isEnabled(FeatureFlag.EXEMPT_LANDLORD_QUESTION)).thenReturn(true);
-
-            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
-            ClaimFormPayload payload = builder.build(pcsCase);
-
-            assertThat(payload.isWales()).isTrue();
-            assertThat(payload.isShowExemptLandlordQuestion()).isTrue();
-        }
-
-        @Test
-        void walesCaseHidesExemptLandlordQuestionWhenFeatureFlagDisabled() {
-            when(featureToggleService.isEnabled(FeatureFlag.EXEMPT_LANDLORD_QUESTION)).thenReturn(false);
+        void walesCaseHidesExemptLandlordQuestionWhenFeatureFlagEnabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
 
             PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
             ClaimFormPayload payload = builder.build(pcsCase);
 
             assertThat(payload.isWales()).isTrue();
             assertThat(payload.isShowExemptLandlordQuestion()).isFalse();
+        }
+
+        @Test
+        void walesCaseShowsExemptLandlordQuestionWhenFeatureFlagDisabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
+            ClaimFormPayload payload = builder.build(pcsCase);
+
+            assertThat(payload.isWales()).isTrue();
+            assertThat(payload.isShowExemptLandlordQuestion()).isTrue();
         }
     }
 

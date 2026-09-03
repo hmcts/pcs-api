@@ -12,7 +12,6 @@ public class FeatureFlags {
     private VerticalYesNo release1dot4Enabled;
     private VerticalYesNo caseWorkerEventsEnabled;
     private VerticalYesNo walesMakeAClaimEnabled;
-    private VerticalYesNo exemptLandlordQuestionEnabled;
     private VerticalYesNo cuiRespondToClaimLrEnabled;
 
 }

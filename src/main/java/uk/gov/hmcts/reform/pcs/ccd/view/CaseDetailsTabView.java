@@ -544,9 +544,9 @@ public class CaseDetailsTabView {
             return null;
         }
 
-        // tab view is now hidden behind a feature flag, so if the flag is not enabled, return null
+        // The exempt-landlord question is removed when release 1.4 is enabled.
         if (pcsCase.getFeatureFlags() == null
-            || pcsCase.getFeatureFlags().getExemptLandlordQuestionEnabled() != VerticalYesNo.YES) {
+            || pcsCase.getFeatureFlags().getRelease1dot4Enabled() != VerticalYesNo.NO) {
             return null;
         }
 

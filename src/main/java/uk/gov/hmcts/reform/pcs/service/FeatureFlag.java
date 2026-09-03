@@ -10,8 +10,7 @@ public enum FeatureFlag {
     RELEASE_1_DOT_3("release-1.3-enabled", false),
     RELEASE_1_DOT_4("release-1.4-enabled", false),
     WALES_MAKE_A_CLAIM("wales-make-a-claim-enabled", false),
-    CASEWORKER_WA("caseworker-wa-enabled", false),
-    EXEMPT_LANDLORD_QUESTION("exempt-landlord-question-enabled", false);
+    CASEWORKER_WA("caseworker-wa-enabled", false);
 
     private final String key;
     private final boolean defaultValue;
