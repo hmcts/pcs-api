@@ -13,6 +13,10 @@ const ELEMENT_TYPES = [
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
 
+// Paid once per element that is genuinely absent, and pages declare up to 45 elements,
+// so this stays small deliberately. See isElementVisible.
+const ELEMENT_VISIBLE_POLL_TIMEOUT = 1000;
+
 export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();
   private static validationExecuted = false;
@@ -279,8 +283,17 @@ export class PageContentValidation implements IValidation {
     if (!pattern) return false;
     try {
       const locator = pattern(page, expectedValue);
-      const firstVisible = locator.filter({ visible: true }).first();
-      return await firstVisible.isVisible({ timeout: 5000 });
+      // isVisible reads the DOM once (its timeout only cancels), so an element still
+      // rendering read as absent. waitFor polls, but a page's expected elements are
+      // legitimately absent often enough — and addressDetails alone declares 45 — that a
+      // 5s wait each would add minutes. Poll briefly: enough to absorb a render, cheap
+      // when the element really is not there.
+      return await locator
+        .filter({ visible: true })
+        .first()
+        .waitFor({ state: 'visible', timeout: ELEMENT_VISIBLE_POLL_TIMEOUT })
+        .then(() => true)
+        .catch(() => false);
     } catch {
       return false;
     }
