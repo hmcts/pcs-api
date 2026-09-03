@@ -59,10 +59,7 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        // Inactive links are history and must not block re-linking after a NoC back to this organisation.
-        if (this.claimPartyOrganisationList.stream()
-            .filter(e -> e.getActive() == YesOrNo.YES)
-            .anyMatch(e -> e.getParty().getId().equals(party.getId()))) {
+        if (hasActiveLinkToParty(party)) {
             log.warn("Party [{}] already has an active link to Legal Representative Organisation [{}], "
                          + "skipping re-link.", party.getId(), this.getId());
             return;
@@ -77,6 +74,12 @@ public class OrganisationEntity {
                 .build();
         claimPartyOrganisationList.add(claimPartyOrganisationEntity);
         party.getClaimPartyOrganisationList().add(claimPartyOrganisationEntity);
+    }
+
+    private boolean hasActiveLinkToParty(PartyEntity party) {
+        return this.claimPartyOrganisationList.stream()
+            .filter(e -> e.getActive() == YesOrNo.YES)
+            .anyMatch(e -> e.getParty().getId().equals(party.getId()));
     }
 
     public void addClaimPartyContactDetails(ClaimPartyContactDetailsEntity contactDetails) {
