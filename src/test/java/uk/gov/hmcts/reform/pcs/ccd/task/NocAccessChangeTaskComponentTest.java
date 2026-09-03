@@ -11,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -22,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +35,9 @@ class NocAccessChangeTaskComponentTest {
 
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+
+    @Mock
+    private NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService;
 
     @Mock
     private TaskInstance<NocAccessChangeTaskData> taskInstance;
@@ -48,6 +54,7 @@ class NocAccessChangeTaskComponentTest {
     void setUp() {
         nocAccessChangeTaskComponent = new NocAccessChangeTaskComponent(
             legalRepresentativePartyLinkService,
+            noticeOfChangeAppliedEventService,
             MAX_RETRIES,
             BACKOFF_DELAY
         );
@@ -73,11 +80,38 @@ class NocAccessChangeTaskComponentTest {
         CompletionHandler<NocAccessChangeTaskData> completionHandler =
             task.execute(taskInstance, executionContext);
 
-        // then - access is granted through the case access groups, so the task only links the representative
+        // then
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
+        verify(noticeOfChangeAppliedEventService).submit(1L, taskData);
+    }
+
+    @Test
+    void nocAccessChangeTask_shouldStillRecordTheEvent_whenTheRepresentativeIsAlreadyLinked() {
+        // given
+        String partyId = UUID.randomUUID().toString();
+        NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
+            .partyId(partyId)
+            .organisationDetailsResponse(organisationDetailsResponse)
+            .userId(UUID.randomUUID().toString())
+            .email("solicitor@example.com")
+            .caseReference("1")
+            .build();
+        when(taskInstance.getData()).thenReturn(taskData);
+        doThrow(new LegalRepresentativeAlreadyLinkedToPartyException("already linked"))
+            .when(legalRepresentativePartyLinkService)
+            .linkLegalRepresentativeToParty(1L, partyId, "solicitor@example.com", organisationDetailsResponse);
+
+        // when - a retry after the link committed but the event recording failed
+        CustomTask<NocAccessChangeTaskData> task = nocAccessChangeTaskComponent.nocAccessChangeTask();
+        CompletionHandler<NocAccessChangeTaskData> completionHandler =
+            task.execute(taskInstance, executionContext);
+
+        // then
+        assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        verify(noticeOfChangeAppliedEventService).submit(1L, taskData);
     }
 
     @Test
@@ -113,5 +147,6 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
+        verifyNoInteractions(noticeOfChangeAppliedEventService);
     }
 }

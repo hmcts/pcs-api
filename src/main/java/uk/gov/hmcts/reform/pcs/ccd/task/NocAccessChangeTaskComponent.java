@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 @Slf4j
@@ -26,13 +28,16 @@ public class NocAccessChangeTaskComponent {
     private final int maxRetries;
     private final Duration backoffDelay;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+    private final NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService;
 
     public NocAccessChangeTaskComponent(
         LegalRepresentativePartyLinkService legalRepresentativePartyLinkService,
+        NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.legalRepresentativePartyLinkService = legalRepresentativePartyLinkService;
+        this.noticeOfChangeAppliedEventService = noticeOfChangeAppliedEventService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -49,11 +54,8 @@ public class NocAccessChangeTaskComponent {
                 log.info("Applying NoC access change for case {}", caseReference);
 
                 try {
-                    legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-                            caseReference,
-                            taskData.getPartyId(),
-                            taskData.getEmail(),
-                            taskData.getOrganisationDetailsResponse());
+                    linkLegalRepresentativeUnlessAlreadyLinked(caseReference, taskData);
+                    noticeOfChangeAppliedEventService.submit(caseReference, taskData);
 
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
@@ -65,5 +67,18 @@ public class NocAccessChangeTaskComponent {
                     throw e;
                 }
             });
+    }
+
+    private void linkLegalRepresentativeUnlessAlreadyLinked(long caseReference, NocAccessChangeTaskData taskData) {
+        try {
+            legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
+                    caseReference,
+                    taskData.getPartyId(),
+                    taskData.getEmail(),
+                    taskData.getOrganisationDetailsResponse());
+        } catch (LegalRepresentativeAlreadyLinkedToPartyException e) {
+            log.info("Legal representative already linked to party {} on case {}",
+                     taskData.getPartyId(), caseReference);
+        }
     }
 }

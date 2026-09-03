@@ -160,8 +160,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         NocAccessChangePlan accessChangePlan = planAccessChanges(
             pcsCase,
             matchedParty,
-            context.userId(),
-            context.email(),
+            context,
             organisationDetails
         );
 
@@ -173,29 +172,30 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     private NocAccessChangePlan planAccessChanges(
         PcsCaseEntity pcsCase,
         PartyEntity matchedParty,
-        String currentUserIdString,
-        String currentUserEmail,
+        NocSubmitContext context,
         OrganisationDetailsResponse organisationDetailsResponse
     ) {
         List<NocAccessChangeTaskData> changes = new ArrayList<>();
-        changes.add(accessChange(pcsCase.getCaseReference(), currentUserIdString, currentUserEmail,
-                                 organisationDetailsResponse, matchedParty.getId()));
+        changes.add(accessChange(pcsCase.getCaseReference(), context, organisationDetailsResponse,
+                                 matchedParty.getId()));
         return new NocAccessChangePlan(changes);
     }
 
     private NocAccessChangeTaskData accessChange(
         long caseReference,
-        String userId,
-        String email,
+        NocSubmitContext context,
         OrganisationDetailsResponse organisationDetailsResponse,
         UUID partyId
     ) {
         return NocAccessChangeTaskData.builder()
             .caseReference(String.valueOf(caseReference))
             .organisationDetailsResponse(organisationDetailsResponse)
-            .userId(userId)
-            .email(email)
+            .userId(context.userId())
+            .email(context.email())
+            .firstName(context.givenName())
+            .lastName(context.familyName())
             .partyId(partyId.toString())
+            .eventIdempotencyKey(UUID.randomUUID())
             .build();
     }
 
