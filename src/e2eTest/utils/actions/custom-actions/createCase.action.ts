@@ -208,7 +208,12 @@ export class CreateCaseAction implements IAction {
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
-    const text = await page.locator('div.alert-message').innerText();
+    // innerText does not poll, so without the wait this read the alert before it
+    // rendered and threw "Case ID not found". .first() because the banner region can
+    // hold more than one alert.
+    const alert = page.locator('div.alert-message').first();
+    await alert.waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
+    const text = await alert.innerText();
     caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
     if (!caseNumber) {
       throw new Error(`Case ID not found in alert message: "${text}"`);
