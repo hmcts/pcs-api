@@ -40,5 +40,13 @@
       }).toPass({
         timeout: VERY_LONG_TIMEOUT,
       });
+
+      // CCD enables "Cancel upload" only while an upload is in flight
+      // (write-document-field.html binds [disabled]="!isUploadInProgress()"), so this is
+      // the signal that the row has committed. Callers that upload in a loop — documentsLR
+      // passes two files — click "Add new" again straight away, and returning early left
+      // the previous row half-built. The 6s sleep removed here was pacing that.
+      await expect(page.getByRole('button', { name: 'Cancel upload' }).last())
+        .toBeDisabled({ timeout: VERY_LONG_TIMEOUT });
     }
   }
