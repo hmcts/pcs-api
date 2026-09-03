@@ -60,8 +60,8 @@ java:
     RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     CAMUNDA_BASE_URL: "http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest"
     DECENTRALISED_CASE_TYPE_CONFIG: >-
-      {"PCS": {"webUrl": "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
-    PCS_FRONTEND_URL: "https://pcs-{{ .Values.global.environment }}.platform.hmcts.net"
+      {"PCS": {"webUrl": "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
+    PCS_FRONTEND_URL: "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net"
 servicebus:
   enabled: false
 ccd:
