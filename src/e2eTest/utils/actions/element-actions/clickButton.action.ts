@@ -35,9 +35,13 @@ export class ClickButtonAction implements IAction {
     do {
       attempt++;
       await this.clickButton(page, button);
-      //Adding sleep to slow down execution when the application behaves abnormally
-      await page.waitForTimeout(waitForPageRedirectionTimeout);
-      nextPageElementIsVisible = await pageElement.isVisible();
+      // waitFor polls; isVisible does not, so the fixed sleep was the only thing giving
+      // the next page time to render. Same per-attempt budget.
+      nextPageElementIsVisible = await pageElement
+        .first()
+        .waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
       throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
