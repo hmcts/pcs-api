@@ -69,6 +69,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show-sql: ${SPRING_JPA_SHOW_SQL:false}
+        # Load lazy associations for up to this many entities per query (IN clause)
+        # instead of one query per entity — collapses N+1 selects on collections such
+        # as each party's or claim's children during case hydration.
+        default_batch_fetch_size: ${HIBERNATE_DEFAULT_BATCH_FETCH_SIZE:32}
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
