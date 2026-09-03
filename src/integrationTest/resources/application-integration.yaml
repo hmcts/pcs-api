@@ -3,6 +3,10 @@ security:
     - "/**"
 
 spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 1
   flyway:
     enabled: true
     locations: classpath:db/migration

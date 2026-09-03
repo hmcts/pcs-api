@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -66,6 +67,28 @@ class DefendantResponseReadMapperTest {
         assertThat(response.getClaimIssuedDate()).isEqualTo(LocalDate.of(2026, 2, 5));
     }
 
+    @Test
+    void shouldMapResponseDocumentId() {
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getId()).thenReturn(null);
+        when(party.getAddressSameAsProperty()).thenReturn(null);
+        when(party.getAddress()).thenReturn(null);
+        when(party.getDateOfBirth()).thenReturn(null);
+        when(party.getContactPreferences()).thenReturn(null);
+
+        UUID documentId = UUID.randomUUID();
+        DefendantResponseEntity entity = DefendantResponseEntity.builder()
+            .party(party)
+            .pcsCase(null)
+            .submissionDocument(DocumentEntity.builder().id(documentId).build())
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(entity, List.of());
+
+        assertThat(response.getResponseDocumentId()).isEqualTo(documentId.toString());
+    }
+    
     @Test
     void shouldMapHouseholdIncomeExpensesPaymentAgreementAddressAndCounterClaim() {
         final AddressMapper addressMapper = mock(AddressMapper.class);

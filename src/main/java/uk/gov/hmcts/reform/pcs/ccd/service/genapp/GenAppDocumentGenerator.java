@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -52,6 +54,7 @@ public class GenAppDocumentGenerator {
     private final CaseNameFormatter caseNameFormatter;
     private final DocumentNameService documentNameService;
     private final DocumentImportService documentImportService;
+    private final ClaimActivityLogService claimActivityLogService;
     private final ModelMapper modelMapper;
     private final Clock ukClock;
 
@@ -64,6 +67,7 @@ public class GenAppDocumentGenerator {
                                    CaseNameFormatter caseNameFormatter,
                                    DocumentNameService documentNameService,
                                    DocumentImportService documentImportService,
+                                   ClaimActivityLogService claimActivityLogService,
                                    ModelMapper modelMapper,
                                    @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
@@ -75,6 +79,7 @@ public class GenAppDocumentGenerator {
         this.caseNameFormatter = caseNameFormatter;
         this.documentNameService = documentNameService;
         this.documentImportService = documentImportService;
+        this.claimActivityLogService = claimActivityLogService;
         this.modelMapper = modelMapper;
         this.ukClock = ukClock;
     }
@@ -96,8 +101,10 @@ public class GenAppDocumentGenerator {
             CaseFileCategory.APPLICATIONS
         );
 
+        importedDocumentEntity.setType(DocumentType.GENERAL_APPLICATION);
         importedDocumentEntity.setGeneralApplication(genAppEntity);
         genAppEntity.setSubmissionDocument(importedDocumentEntity);
+        claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), applicantParty);
     }
 
     private String generateSubmissionDocument(long caseReference,
@@ -131,7 +138,7 @@ public class GenAppDocumentGenerator {
         String caseName = buildCaseName(mainClaim);
 
         PartyEntity applicantPartyEntity = partyService.getPartyEntityByEntityId(applicantPartyId, caseReference);
-        String applicantName = applicantPartyEntity.getFirstName() + " " + applicantPartyEntity.getLastName();
+        String applicantName = partyService.getPartyName(applicantPartyEntity);
         String formattedPropertyAddress = getFormattedPropertyAddress(pcsCaseEntity);
         String formattedApplicantAddress = getFormattedApplicantAddress(applicantPartyEntity, formattedPropertyAddress);
 

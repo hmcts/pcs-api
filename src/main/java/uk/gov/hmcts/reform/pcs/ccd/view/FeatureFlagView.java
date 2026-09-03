@@ -17,7 +17,10 @@ public class FeatureFlagView {
     public void setCaseFields(PCSCase pcsCase) {
         pcsCase.setFeatureFlags(FeatureFlags.builder()
                                     .release1dot2Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_2))
+                                    .release1dot3Enabled(getFlag(FeatureFlag.RELEASE_1_DOT_3))
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
+                                    .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
+                                    .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
                                     .build());
     }
 

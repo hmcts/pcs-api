@@ -163,6 +163,11 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimUploadedDocumentChecklistEntity> uploadedDocumentChecklist = new HashSet<>();
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
@@ -278,12 +283,17 @@ public class ClaimEntity {
     }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
+        addParty(party, partyRole, null);
+    }
+
+    public void addParty(PartyEntity party, PartyRole partyRole, PartyEntity actingForParty) {
         int rank = countNumberOfExistingPartiesWithRole(partyRole) + 1;
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .rank(rank)
             .claim(this)
             .party(party)
             .role(partyRole)
+            .actingForParty(actingForParty)
             .build();
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
@@ -293,6 +303,13 @@ public class ClaimEntity {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
+        }
+    }
+
+    public void addUploadedDocumentChecklist(Set<ClaimUploadedDocumentChecklistEntity> checklistItems) {
+        for (ClaimUploadedDocumentChecklistEntity checklistItem : checklistItems) {
+            checklistItem.setClaim(this);
+            this.uploadedDocumentChecklist.add(checklistItem);
         }
     }
 

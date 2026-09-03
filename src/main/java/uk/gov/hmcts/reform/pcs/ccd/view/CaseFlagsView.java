@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -19,19 +20,20 @@ import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNullElse;
-import static java.util.stream.Collectors.toSet;
+import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
 @Component
 @AllArgsConstructor
 public class CaseFlagsView {
 
     private static final String DEFENDANT = "Defendant";
+    private static final String CLAIMANT = "Claimant";
     public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";
 
@@ -54,7 +56,7 @@ public class CaseFlagsView {
         pcsCase.setCaseFlags(caseFlags);
     }
 
-    private List<ListValue<FlagDetail>> mapFlagDetails(List<BaseCaseFlag> flagsEntities) {
+    private List<ListValue<FlagDetail>> mapFlagDetails(List<? extends BaseCaseFlag> flagsEntities) {
 
         return flagsEntities.stream()
             .map(caseFlagEntity -> ListValue.<FlagDetail>builder()
@@ -84,10 +86,12 @@ public class CaseFlagsView {
             .toList();
     }
 
+    // The limit of 2 keeps a value containing the path delimiter intact
     private List<ListValue<String>> getPaths(String entityPaths) {
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
-                .map(pathPairs -> pathPairs.split(PATH_DELIMITER))
+                .map(pathPairs -> pathPairs.split(PATH_DELIMITER, 2))
+                .filter(paths -> paths.length > 1)
                 .map(paths -> ListValue.<String>builder()
                     .id(paths[0])
                     .value(paths[1])
@@ -96,37 +100,103 @@ public class CaseFlagsView {
     }
 
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        Map<UUID, PartyRole> supportedPartyRoles = getSupportedPartyRoles(pcsCaseEntity);
+
+        pcsCase.setPartySupport(mapPartySupport(pcsCaseEntity, supportedPartyRoles));
+
         List<ListValue<Party>> partyListValues = pcsCase.getParties();
         if (CollectionUtils.isEmpty(partyListValues)) {
             return;
         }
 
-        // pcsCase.parties is wrapped from pcsCaseEntity.getParties() in iteration order, but the
-        // entity id is dropped during the entity->domain mapping. Re-attach it onto each ListValue
-        // so the entity can be matched back, then apply the defendant flags.
-        List<PartyEntity> partyEntities = new ArrayList<>(pcsCaseEntity.getParties());
-        Set<UUID> defendantPartyIds = getDefendantPartyIds(pcsCaseEntity);
-        for (int i = 0; i < partyListValues.size() && i < partyEntities.size(); i++) {
-            PartyEntity partyEntity = partyEntities.get(i);
-            ListValue<Party> partyListValue = partyListValues.get(i);
-            partyListValue.setId(partyEntity.getId().toString());
-            if (defendantPartyIds.contains(partyEntity.getId())) {
-                partyListValue.getValue().setDefendantFlags(mapDefendantFlags(partyEntity));
+        Map<UUID, PartyEntity> partyEntitiesById = new LinkedHashMap<>();
+        pcsCaseEntity.getParties()
+            .forEach(partyEntity -> partyEntitiesById.putIfAbsent(partyEntity.getId(), partyEntity));
+
+        for (ListValue<Party> partyListValue : partyListValues) {
+            Party party = partyListValue.getValue();
+            PartyEntity partyEntity = partyEntitiesById.get(toPartyId(party));
+            if (partyEntity == null) {
+                continue;
             }
+
+            partyListValue.setId(partyEntity.getId().toString());
+
+            PartyRole partyRole = supportedPartyRoles.get(partyEntity.getId());
+            if (partyRole == null) {
+                continue;
+            }
+
+            String roleOnCase = roleOnCase(partyRole);
+            party.setDefendantFlags(mapPartyFlags(partyEntity, roleOnCase, FlagVisibility.INTERNAL));
+            party.setPartyFlagsExternal(mapPartyFlags(partyEntity, roleOnCase, FlagVisibility.EXTERNAL));
         }
     }
 
-    private Set<UUID> getDefendantPartyIds(PcsCaseEntity pcsCaseEntity) {
-        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
-        if (CollectionUtils.isEmpty(claims)) {
-            return Set.of();
+    private UUID toPartyId(Party party) {
+        if (party == null || party.getId() == null) {
+            return null;
         }
 
-        return claims.getFirst().getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(this::getPartyId)
-            .filter(Objects::nonNull)
-            .collect(toSet());
+        try {
+            return UUID.fromString(party.getId());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    private List<ListValue<PartySupport>> mapPartySupport(PcsCaseEntity pcsCaseEntity,
+                                                          Map<UUID, PartyRole> supportedPartyRoles) {
+        List<ListValue<PartySupport>> partySupport = new ArrayList<>();
+
+        for (PartyEntity partyEntity : pcsCaseEntity.getParties()) {
+            PartyRole partyRole = supportedPartyRoles.get(partyEntity.getId());
+            if (partyRole == null) {
+                continue;
+            }
+
+            partySupport.add(ListValue.<PartySupport>builder()
+                .id(partyEntity.getId().toString())
+                .value(PartySupport.builder()
+                    .supportFlags(mapPartyFlags(partyEntity, roleOnCase(partyRole), FlagVisibility.EXTERNAL))
+                    .build())
+                .build());
+        }
+
+        return partySupport;
+    }
+
+    private Map<UUID, PartyRole> getSupportedPartyRoles(PcsCaseEntity pcsCaseEntity) {
+        List<ClaimEntity> claims = pcsCaseEntity.getClaims();
+        if (CollectionUtils.isEmpty(claims)) {
+            return Map.of();
+        }
+
+        Map<UUID, PartyRole> partyRoles = new LinkedHashMap<>();
+        for (ClaimPartyEntity claimParty : claims.getFirst().getClaimParties()) {
+            if (claimParty.getRole() != PartyRole.CLAIMANT && claimParty.getRole() != PartyRole.DEFENDANT) {
+                continue;
+            }
+            UUID partyId = getPartyId(claimParty);
+            if (partyId != null) {
+                partyRoles.putIfAbsent(partyId, claimParty.getRole());
+            }
+        }
+
+        return partyRoles;
+    }
+
+    private String roleOnCase(PartyRole partyRole) {
+        return partyRole == PartyRole.CLAIMANT ? CLAIMANT : DEFENDANT;
+    }
+
+    private String partyName(PartyEntity partyEntity) {
+        if (partyEntity.getOrgName() != null) {
+            return partyEntity.getOrgName();
+        }
+
+        return requireNonNullElse(partyEntity.getFirstName(), "Person")
+            + " " + requireNonNullElse(partyEntity.getLastName(), "Unknown");
     }
 
     private UUID getPartyId(ClaimPartyEntity claimParty) {
@@ -138,25 +208,19 @@ public class CaseFlagsView {
         return party == null ? null : party.getId();
     }
 
-    private Flags mapDefendantFlags(PartyEntity partyEntity) {
-        if (CollectionUtils.isEmpty(partyEntity.getDefendantFlags())) {
-            return Flags.builder()
-                .partyName((requireNonNullElse(partyEntity.getFirstName(), "Person")
-                    + " " + requireNonNullElse(partyEntity.getLastName(), "Unknown")))
-                .roleOnCase(DEFENDANT)
-                .details(new ArrayList<>())
-                .build();
-        }
-
-        List<BaseCaseFlag> defendantFlags = new ArrayList<>(partyEntity.getDefendantFlags());
+    private Flags mapPartyFlags(PartyEntity partyEntity, String roleOnCase, FlagVisibility visibility) {
+        List<? extends BaseCaseFlag> partyFlags = CollectionUtils.isEmpty(partyEntity.getDefendantFlags())
+            ? List.of()
+            : partyEntity.getDefendantFlags().stream()
+                .filter(partyFlag -> visibility == toFlagVisibility(partyFlag.getVisibility()))
+                .toList();
 
         return Flags.builder()
-            .partyName((requireNonNullElse(partyEntity.getFirstName(), "Person")
-                + " " + requireNonNullElse(partyEntity.getLastName(), "Unknown")))
-            .roleOnCase(
-                DEFENDANT)
-            .details(mapFlagDetails(defendantFlags))
-            .visibility(FlagVisibility.INTERNAL)
+            .partyName(partyName(partyEntity))
+            .roleOnCase(roleOnCase)
+            .groupId(partyEntity.getId())
+            .visibility(visibility)
+            .details(mapFlagDetails(partyFlags))
             .build();
     }
 }

@@ -13,12 +13,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
 
 import java.util.Optional;
 
 /**
- * Service for managing defendant contact preferences.
- * Handles saving contact preferences and updating party contact details.
+ * Applies a submitted defendant response to their party record: contact preferences, contact
+ * details, date of birth, and the reasonable adjustment flags supplied through the cui-ra microsite.
  */
 @Service
 @Slf4j
@@ -26,13 +27,16 @@ import java.util.Optional;
 public class ClaimResponseService {
 
     private final ModelMapper modelMapper;
+    private final CaseFlagService caseFlagService;
 
     /**
-     * Saves defendant's contact preferences and contact details for the given defendant party.
+     * Saves the defendant's contact preferences, contact details and reasonable adjustment flags
+     * against the given defendant party.
      *
      * @throws IllegalStateException if no party is found
      */
-    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty,
+                                      long caseReference) {
 
         if (defendantParty == null) {
             throw new IllegalStateException("defendant party is null");
@@ -41,11 +45,27 @@ public class ClaimResponseService {
         saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
+        updatePcqId(defendantParty, dataFromDraftTable.getDefendantContactDetails());
+
+        caseFlagService
+            .saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags(), caseReference);
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
             defendantParty.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
             log.debug("Updated date of birth from defendantResponses for party ID: {}", defendantParty.getId());
+        }
+    }
+
+    /**
+     * Stores the PCQ ID captured during the defendant's response journey.
+     * Only set when supplied, so an existing ID is never cleared by a response that omits it.
+     */
+    private void updatePcqId(PartyEntity party, DefendantContactDetails defendantContactDetails) {
+        String pcqId = defendantContactDetails.getParty().getPcqId();
+
+        if (StringUtils.isNotBlank(pcqId)) {
+            party.setPcqId(pcqId);
         }
     }
 

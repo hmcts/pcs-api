@@ -18,6 +18,6 @@ public class CcdCallbackExceptionHandler {
     @ExceptionHandler(CaseAccessException.class)
     public ResponseEntity<RestExceptionHandler.Error> handleCaseAccess(CaseAccessException ex) {
         log.error("Case access denied on CCD callback", ex);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new RestExceptionHandler.Error(ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new RestExceptionHandler.Error("Access denied"));
     }
 }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -380,6 +381,11 @@ class NoticeOfPossessionViewTest {
                                 .build(),
                         DocumentEntity.builder()
                                 .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .generalApplication(GenAppEntity.builder().build())
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
                                 .type(DocumentType.POSSESSION_NOTICE)
                                 .description("Additional document uploaded")
                                 .build(),

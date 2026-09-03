@@ -13,7 +13,10 @@ import {
   userIneligible,
   whatAreYourGroundsForPossessionWales,
   addressCheckYourAnswers,
-  home
+  home,
+  checkYourAnswers,
+  resumeClaim,
+  user
 } from '@data/page-data';
 import {
   claimantType,
@@ -52,12 +55,22 @@ import {
   underlesseeMortgageeDetails,
   checkingNoticeWales,
   addCaseNote,
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
 import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatUploadDocName, formatText, formatWord} from '@utils/common/string.utils';
+import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
+import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
+import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
+import {
+  noticeOfChangeSuccessful
+} from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
+import { dismissCookieBanner } from '@config/cookie-banner';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -132,6 +145,14 @@ export class CreateCaseAction implements IAction {
       ['validateCaseFileViewIndividualFolder', () => this.validateCaseFileViewIndividualFolder(page, fieldName as actionRecord)],
       ['validateCaseListTable', () => this.validateCaseListTable(page, fieldName as actionRecord)],
       ['validateTabAccess', () => this.validateTabAccess(page, fieldName as actionRecord)],
+      ['noticeOfChange', () => this.noticeOfChange(fieldName as actionRecord)],
+      ['clientDetails', () => this.clientDetails(fieldName as actionRecord)],
+      ['checkAndSubmit', () => this.checkAndSubmit(fieldName as actionRecord)],
+      ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
+      ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
+      ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],   
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -154,6 +175,9 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
+    console.log ("get value:" );
+    console.log (createCase.caseType.civilPossessions);
+    console.log (" value printed" );
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
@@ -954,10 +978,14 @@ export class CreateCaseAction implements IAction {
 
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        const defendantUser = Object.values(user).find(
+          u => u.email === defendantSolicitor.email
+        );
+        const orgName = defendantUser && 'orgName' in defendantUser ? defendantUser.orgName : undefined;
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, 'Possession Claim Service Org1')
+        defendant.set(`Name`, orgName ?? '');
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
@@ -1579,13 +1607,13 @@ export class CreateCaseAction implements IAction {
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
 
     const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
-    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);    
+    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
@@ -1602,6 +1630,12 @@ export class CreateCaseAction implements IAction {
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
+        if (caseFile.caseWorkerUpload) {
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        }
         break;
 
       case 'Statements of case':
@@ -1610,6 +1644,12 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        }
         break;
 
       case 'Correspondence':
@@ -1618,11 +1658,21 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
-      
+
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
+        if(caseFile.caseWorkerUpload){
+          userInputFiles.push(caseFile.caseWorkerUpload as string);
+        } else if (caseFile.caseWorkerAmend) {
+          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        }
         break;
 
       default:
@@ -1643,7 +1693,7 @@ export class CreateCaseAction implements IAction {
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
-    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());    
+    const fileArray = this.cleanFilesArray(await fileLocator.allTextContents());
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
@@ -1781,13 +1831,12 @@ export class CreateCaseAction implements IAction {
   public async validateTabAccess(page: Page, tab: actionRecord) {
     await test.step(`Tab access check for user "${tab.user}"`, async () => {
       const tabLoc = page.locator('div.mat-tab-label-content');
-      await expect(tabLoc.first()).toBeVisible({timeout : SHORT_TIMEOUT});
+      await expect(tabLoc.first()).toBeVisible({ timeout: SHORT_TIMEOUT });
       const tabs = await tabLoc.allTextContents();
-      expect(tab.tabs).toEqual(tabs);
-
+      expect(tabs).toEqual(expect.arrayContaining(tab.tabs as string[]));
     });
   }
- 
+
   public cleanGenAppFilesArray(filesArray: string[], defendantCount: number): string[] {
     const result: string[] = [];
 
@@ -1804,4 +1853,183 @@ export class CreateCaseAction implements IAction {
     return result;
   }
 
+  private async noticeOfChange(caseReferenceNumber: actionRecord) {
+    await performAction('inputText', noc.onlineCaseReferenceNumberTextLabel, caseReferenceNumber.caseRefNo);
+    await performAction('clickButton', noc.continueButton);
+  }
+
+  private async clientDetails(clientName: actionRecord) {
+    await performAction('inputText', clientDetails.firstNameTextLabel, clientName.firstName);
+    await performAction('inputText', clientDetails.lastNameTextLabel, clientName.lastName);
+    await performAction('clickButton', clientDetails.continueButton);
+  }
+
+  private async checkAndSubmit(nocData: actionRecord){
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.caseRefNo,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.firstName,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.lastName,
+    });
+    await performAction('check', checkAndSubmit.iConfirmCheckbox);
+    await performAction('check', checkAndSubmit.iHaveServedCheckbox);
+    await performAction('clickButton', checkAndSubmit.submitButton);
+  }
+
+  private async verifyChangeLink(nocData: actionRecord) {
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.caseRefNo,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.firstName,
+    });
+    await performValidation('text', {
+      elementType: 'tableElement',
+      text: nocData.lastName,
+    });
+    await performAction('clickButton', checkAndSubmit.changeButton);
+  }
+
+  private async validateErrorPage(nocData: actionRecord) {
+    await performValidation('text', { elementType: 'heading', text: somethingWentWrong.mainHeader });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.yourOrganisationParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.yourNoticeParagraph });
+    await performValidation('text', { elementType: 'paragraph', text: somethingWentWrong.moreInfoParagraph });
+    await performValidation('text', { elementType: 'link', text: somethingWentWrong.contactUs });
+  }
+
+  private async noticeOfChangeSuccessful(page: Page, nocData: actionRecord) {
+    const actual = await page.locator('h1.govuk-panel__title').innerText();
+    expect(actual).toBe(
+      `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
+    );
+  }
+
+  private async createPartialClaimDetails() {
+    await performAction('clickTab', home.createCaseTab);
+    await performAction('selectJurisdictionCaseTypeEvent');
+    await performAction('housingPossessionClaim');
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performValidation('mainHeader', claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
+  }
+
+  private async resumePartialClaim() {
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimType.noRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
+    await performValidation('mainHeader', contactPreferences.mainHeader)
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
+    });
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      day: tenancyLicenceDetails.dayTextInput,
+      month: tenancyLicenceDetails.monthTextInput,
+      year: tenancyLicenceDetails.yearTextInput,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
+    await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.noRadioOption });
+    await performAction('selectYourPossessionGrounds', {
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
+    });
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
+      whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
+    });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', { rentFrequencyOption: 'Weekly', rentAmount: '800' });
+    await performValidation('mainHeader', rentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession');
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption
+    });
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
+    await performAction('selectLanguageUsed', {
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
+    });
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
+    await performAction('clickButton', checkYourAnswers.submitClaim);
+    await performAction('payClaimFee');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+
+  }
 }

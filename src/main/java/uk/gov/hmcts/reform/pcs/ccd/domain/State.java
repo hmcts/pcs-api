@@ -7,9 +7,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 
 /**
  * All possible PCS case states.
@@ -21,15 +23,23 @@ public enum State {
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
 
     @CCD(
+        label = "Awaiting Resubmission to HMCTS",
+        access = {ClaimantAccess.class, CitizenAccess.class, RasValidationAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    AWAITING_RESUBMISSION_TO_HMCTS,
+
+    @CCD(
         label = "Pending Case Issued",
         access = {ClaimantAccess.class, CitizenAccess.class,  RasValidationAccess.class,
-            InternalCaseFlagAccess.class, GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class,
+            WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PENDING_CASE_ISSUED,
@@ -37,7 +47,7 @@ public enum State {
     @CCD(
         label = "Case Issued",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class, RasValidationAccess.class,
-            InternalCaseFlagAccess.class, GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED,
@@ -45,7 +55,7 @@ public enum State {
     @CCD(
         label = "Judicial Referral",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     JUDICIAL_REFERRAL,
@@ -53,7 +63,7 @@ public enum State {
     @CCD(
         label = "Hearing Readiness",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     HEARING_READINESS,
@@ -61,7 +71,7 @@ public enum State {
     @CCD(
         label = "Prepare For Hearing Conduct Hearing",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     PREPARE_FOR_HEARING_CONDUCT_HEARING,
@@ -69,7 +79,7 @@ public enum State {
     @CCD(
         label = "Decision Outcome",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     DECISION_OUTCOME,
@@ -77,7 +87,7 @@ public enum State {
     @CCD(
         label = "Case Progression",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_PROGRESSION,
@@ -85,7 +95,7 @@ public enum State {
     @CCD(
         label = "All Final Orders",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     ALL_FINAL_ORDERS_ISSUED,
@@ -93,7 +103,7 @@ public enum State {
     @CCD(
         label = "Case Stayed",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_STAYED,
@@ -101,9 +111,14 @@ public enum State {
     @CCD(
         label = "Breathing Space",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, RasValidationAccess.class,
-            GlobalSearchAccess.class},
+            InternalCaseFlagAccess.class, ExternalCaseFlagAccess.class, GlobalSearchAccess.class, WAAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    BREATHING_SPACE
-}
+    BREATHING_SPACE,
 
+    @CCD(
+        label = "Closed",
+        hint = "${caseTitleMarkdown}"
+    )
+    CLOSED
+}

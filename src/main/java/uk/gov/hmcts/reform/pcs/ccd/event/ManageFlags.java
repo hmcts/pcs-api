@@ -28,23 +28,27 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
-                            .forState(State.PENDING_CASE_ISSUED)
+                            .forStates(EventStates.amendFlags())
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()
+                            .endButtonLabel("Submit")
                             .grant(Permission.CRU,
                                    UserRole.CTSC_ADMIN,
                                    UserRole.HEARING_CENTRE_ADMIN,
                                    UserRole.WLU_ADMIN)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("caseworkerCaseFlag")
+            .pageLabel("Manage case flags")
+            .label("caseworkerCaseFlag-lineSeparator", "---")
             .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
             .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
             .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
                 .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
             .done()
             .optional(PCSCase::getFlagLauncherInternal,null, null,
-                null, null, "#ARGUMENT(UPDATE)");
+                null, null, "#ARGUMENT(UPDATE,VERSION2.1)");
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
