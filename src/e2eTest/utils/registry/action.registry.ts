@@ -24,6 +24,7 @@ import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolici
 import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 
 
 
@@ -191,6 +192,7 @@ export class ActionRegistry {
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
     ['confirmStatusForFlag', new CaseFlagAction()],
+    ['selectRadioButtonInYourSupport', new YourSupportAction()],
   ]);
 
   static getAction(actionName: string): IAction {
