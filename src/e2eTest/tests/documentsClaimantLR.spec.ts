@@ -22,7 +22,7 @@ import { home } from '@data/page-data';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 
-
+let uploadAdditionalDocumentsInformationCL: ReturnType<typeof uploadAdditionalDocumentsInformation>;
 test.beforeEach(async ({ page, context }, testInfo) => {
   initializeExecutor(page);
   initializeCMExecutor(page);
@@ -52,6 +52,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
    // }
   }
   await performAction('navigateToSummaryPage');
+  uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
 });
 
 test.afterEach(async () => {
@@ -67,11 +68,11 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
   test('Claimant LR Upload documents when GenApps submitted - Multi def - ADJOURN @smoke @regression', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
-    const uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    //const uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
-    // await performValidation('mainHeader', claimantUploadConfirmation.mainHeader);
     await performAction('selectDocumentRelatingTo', {
       question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
       option: docRelatedToOption,
@@ -91,7 +92,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
-      //caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName,'',appType)
     });
     
   });
