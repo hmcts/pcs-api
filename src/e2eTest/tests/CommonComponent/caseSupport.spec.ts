@@ -39,7 +39,7 @@ test.afterEach(async () => {
 
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
-  test('Create and manage support events', async ({page}) => {
+  test('Create and manage support events - Special measure', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
     await dismissCookieBanner(page, 'analytics');
 
@@ -47,23 +47,120 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
-    await performAction('clickRadioButton', { option: reviewSupport.optionOne });
-    await performAction('clickButtonAndWaitForElement', reviewSupport.continueButton, reviewSupport.supporTypeHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
     await performValidation('mainHeader', reviewSupport.mainHeader);
-    await performAction('clickRadioButton', { option: reviewSupport.optionTwo });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.specialMeasureOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.specialMeasureHeader
+    });
     await performValidation('mainHeader', reviewSupport.mainHeader);
-    await performAction('clickRadioButton', { option: reviewSupport.optionThree });
-    await performAction('clickButton', reviewSupport.continueButton);
-    await performValidation('mainHeader', reviewSupport.mainHeader);
-    await performAction('clickRadioButton', { option: reviewSupport.optionFour });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.evidenceByLiveLinkOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.addCommentLabel
+    });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('inputText', reviewSupport.addCommentLabel, reviewSupport.addCommentText);
     await performAction('clickButton', reviewSupport.continueButton);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Special measure, Evidence by live link (Claimant Test Create Support)' });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Create and manage support events - Reasonable adjustment', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.reasonableAdjustmentOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.reasonableAdjustmentHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.iNeedToBringSupportOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.iNeedToBringSupportHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.friendOrFamilyOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.addCommentLabel
+    });
+
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
+
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Create and manage support events - Language Interpreter', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.languageInterpreterOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.languageInterpreterHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.languageInterpreterHeader, reviewSupport.languageInterpreterText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentOptionalLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
