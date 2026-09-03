@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -14,11 +15,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
@@ -34,6 +39,9 @@ public class NotificationPersonalisationFactory {
     private final PartyService partyService;
     private final AddressFormatter addressFormatter;
     private final AddressMapper addressMapper;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
 
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
@@ -70,12 +78,107 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(partyEntity, pcsCaseEntity);
     }
 
+    public OrganisationBasePersonalisation forLegalRepresentative(
+        OrganisationEntity legalRepresentativeOrganisationEntity, PcsCaseEntity pcsCaseEntity) {
+
+        return buildPersonalisation(pcsCaseEntity,legalRepresentativeOrganisationEntity);
+    }
+
     public CounterclaimPaymentSuccessPersonalisation counterclaimSuccess(DefendantResponseEntity defendantResponse,
                                                                          String paymentReference) {
 
         return CounterclaimPaymentSuccessPersonalisation.builder()
             .base(forDefendant(defendantResponse))
             .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
+        DefendantResponseEntity defendantResponse
+    ) {
+        String caseRef = defendantResponse.getPcsCase().getCaseReference().toString();
+        String paymentUrl = String.format(
+            ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+            frontendUrl,
+            caseRef
+        );
+
+        return CounterclaimPaymentRequiredPersonalisation.builder()
+            .base(forDefendant(defendantResponse))
+            .paymentUrl(paymentUrl)
+            .build();
+    }
+
+    public CounterclaimPaymentSuccessPersonalisationLegalRep counterclaimSuccessOrganisation(
+        DefendantResponseEntity defendantResponse, String paymentReference,
+        OrganisationEntity legalRepresentativeOrganisationEntity
+    ) {
+
+        return  CounterclaimPaymentSuccessPersonalisationLegalRep.builder()
+            .base(buildPersonalisation(defendantResponse.getPcsCase(),legalRepresentativeOrganisationEntity))
+            .paymentReferenceNumber(paymentReference)
+            .build();
+    }
+
+    private OrganisationBasePersonalisation buildPersonalisation(
+        PcsCaseEntity pcsCaseEntity, OrganisationEntity legalRepresentativeOrganisationEntity
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            YesOrNoConverter.toBoolean(primaryDefendant.getNameKnown()),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        String organisationName = legalRepresentativeOrganisationEntity.getOrganisationName();
+
+        return OrganisationBasePersonalisation.builder()
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
+            .organisationName(organisationName)
+            .build();
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        PartyEntity emailRecipient,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        return buildPersonalisation(
+            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
+            Objects.toString(emailRecipient.getLastName(), ""),
+            pcsCaseEntity
+        );
+    }
+
+    private BasePersonalisation buildPersonalisation(
+        String recipientFirstName,
+        String recipientLastName,
+        PcsCaseEntity pcsCaseEntity
+    ) {
+        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
+
+        String claimantName = primaryClaimant.getOrgName() != null
+            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
+            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
+
+        String primaryDefendantName = getDefendantName(
+            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
+            primaryDefendant.getFirstName(),
+            primaryDefendant.getLastName());
+
+        return BasePersonalisation.builder()
+            .firstName(recipientFirstName)
+            .lastName(recipientLastName)
+            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .claimantName(claimantName)
+            .primaryDefendantName(primaryDefendantName)
             .build();
     }
 
@@ -127,43 +230,6 @@ public class NotificationPersonalisationFactory {
             addressMapper.toAddressUK(propertyAddress),
             AddressFormatter.COMMA_DELIMITER
         );
-    }
-
-    private BasePersonalisation buildPersonalisation(
-        PartyEntity emailRecipient,
-        PcsCaseEntity pcsCaseEntity
-    ) {
-        return buildPersonalisation(
-            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
-            Objects.toString(emailRecipient.getLastName(), ""),
-            pcsCaseEntity
-        );
-    }
-
-    private BasePersonalisation buildPersonalisation(
-        String recipientFirstName,
-        String recipientLastName,
-        PcsCaseEntity pcsCaseEntity
-    ) {
-        PartyEntity primaryClaimant = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
-        PartyEntity primaryDefendant = partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity);
-
-        String claimantName = primaryClaimant.getOrgName() != null
-            ? primaryClaimant.getOrgName().toUpperCase(Locale.ROOT)
-            : formatNameUpperForNotification(primaryClaimant.getFirstName(), primaryClaimant.getLastName());
-
-        String primaryDefendantName = getDefendantName(
-            primaryDefendant.getNameKnown() != null && primaryDefendant.getNameKnown().toBoolean(),
-            primaryDefendant.getFirstName(),
-            primaryDefendant.getLastName());
-
-        return BasePersonalisation.builder()
-            .firstName(recipientFirstName)
-            .lastName(recipientLastName)
-            .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
-            .claimantName(claimantName)
-            .primaryDefendantName(primaryDefendantName)
-            .build();
     }
 
     private static String getClaimantName(ClaimantInformation claimantInformation) {
