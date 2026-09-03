@@ -1045,7 +1045,7 @@ class NotificationServiceTest {
             assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
 
             verify(templateConfiguration).getTemplateId(EmailTemplate
-                                                            .RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED_LEGAL_REP);
+                                                            .RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED);
             verify(notificationRepository, times(2)).save(any());
             verify(schedulerClient).scheduleIfNotExists(any());
         }
