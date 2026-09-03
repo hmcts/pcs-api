@@ -186,6 +186,8 @@ export class ActionRegistry {
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['uploadAdditionalDocsLR', new DocumentsAction()],
+    ['selectDocumentRelatingTo', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],

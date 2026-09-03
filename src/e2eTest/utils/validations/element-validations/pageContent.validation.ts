@@ -1,4 +1,4 @@
-import {Page} from '@playwright/test';
+import test, {Page} from '@playwright/test';
 import {IValidation} from '@utils/interfaces';
 import { escapeForRegex, exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
 import * as fs from 'fs';
@@ -114,7 +114,7 @@ export class PageContentValidation implements IValidation {
       return;
     }
 
-    const pageData = await this.getPageData(page);
+    const pageData = await this.getPageData(page, test.info().title);
 
     if (!pageData) return;
 
@@ -144,7 +144,7 @@ export class PageContentValidation implements IValidation {
     }
   }
 
-  private async getPageData(page: Page): Promise<any> {
+  private async getPageData(page: Page,testTitle: string): Promise<any> {
     const urlSegment = this.getUrlSegment(page.url());
     const fileName = await this.getFileName(urlSegment, page);
 
@@ -155,7 +155,7 @@ export class PageContentValidation implements IValidation {
 
     PageContentValidation.pageToFileNameMap.set(page.url(), fileName);
 
-    return this.loadPageDataFile(fileName, page);
+    return this.loadPageDataFile(fileName, page, testTitle);
   }
 
   private getUrlSegment(url: string): string {
@@ -243,7 +243,8 @@ export class PageContentValidation implements IValidation {
     }
   }
 
-  private async loadPageDataFile(fileName: string, page: Page): Promise<any> {
+  private async loadPageDataFile(fileName: string, page: Page, testTitle = ''): Promise<any> {
+    console.log('filename is :'+fileName);
     let filePath;
     if (page.url().includes("enforceTheOrder")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
@@ -268,7 +269,8 @@ export class PageContentValidation implements IValidation {
     try {
       delete require.cache[require.resolve(filePath)];
       const module = require(filePath);
-      return module.default || module[fileName] || module[Object.keys(module)[0]];
+      const pageData = module.default || module[fileName] || module[Object.keys(module)[0]]
+      return typeof pageData === 'function' ? pageData(testTitle) : pageData;
     } catch {
       return null;
     }
@@ -402,6 +404,9 @@ export class PageContentValidation implements IValidation {
           url.includes(str)
         )) {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-caseManagement-figma/urlToFileMappingCM.ts');
+      }
+      else if (url.includes("legalRepDocumentUpload")) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
       else {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');

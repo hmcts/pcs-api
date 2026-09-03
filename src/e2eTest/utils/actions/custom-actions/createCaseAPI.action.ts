@@ -681,6 +681,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
+      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL`)
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;

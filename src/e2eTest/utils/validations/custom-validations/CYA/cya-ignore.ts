@@ -19,5 +19,6 @@ export const cyaIgnoreQuestions = [
   'Do you know the underlessee or mortgagee’s correspondence address?',
   'Do you know the underlessee or mortgagee’s name?',
   'Do you want to resume your claim using your saved answers?',
-  'Do you know the underlessee or mortgagee’s address for service?'
+  'Do you know the underlessee or mortgagee’s address for service?',
+  'Add document'
 ];

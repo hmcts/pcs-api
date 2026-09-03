@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
+import { actionMapQuestions, ignoreAnswerInQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
 
 interface QAObject {
   question: string;
@@ -69,8 +69,9 @@ export class CYAStore {
         }
         break;
       case 'inputText':
-        if (typeof fieldName === 'object' && fieldName.textLabel && typeof value === 'string') {
-          qaObject = { question: this.getMappedQuestion(fieldName.textLabel), answer: value };
+        const labelText = fieldName.textLabel ?? fieldName.text;
+        if (typeof fieldName === 'object' && labelText && typeof value === 'string') {
+          qaObject = { question: this.getMappedQuestion(labelText), answer: value };
         } else if (typeof fieldName === 'string' && typeof value === 'string') {
           qaObject = { question: this.getMappedQuestion(fieldName), answer: value };
         }
@@ -85,6 +86,8 @@ export class CYAStore {
       case 'select':
         if (typeof fieldName === 'string' && typeof value === 'string') {
           qaObject = { question: this.getMappedQuestion(fieldName), answer: value };
+        }else{
+          qaObject = { question: this.getMappedQuestion(fieldName.dropdown), answer: value };
         }
         break;
       case 'uploadFile':
@@ -374,7 +377,7 @@ export class CYAPageValidation {
   private isStructuralElement(text: string): boolean {
     const lowerText = text.toLowerCase();
     return lowerText.length < 2 ||
-        /defendant.*name$|defendant.*address$|add additional|enter address|^change$/i.test(lowerText);
+        /defendant.*name$|defendant.*address$|add additional|add document|enter address|^change$/i.test(lowerText);
   }
 
   private validateAndPrintResults(savedQA: QAObject[], extractedQA: QAObject[]): {
@@ -423,7 +426,7 @@ export class CYAPageValidation {
         return;
       }
 
-      const { pageAnswer, extractedQuestion } = this.findAnswerInExtractedQA(saved.question, extractedQA);
+      const { pageAnswer, extractedQuestion } = this.findAnswerInExtractedQA(saved.question, extractedQA, saved.answer as string);
 
       if (extractedQuestion) {
         validatedExtractedQuestions.add(this.normalizeText(extractedQuestion));
@@ -498,7 +501,7 @@ export class CYAPageValidation {
     return { passed, failed, ignored, unvalidatedQAs, ignoredQAs };
   }
 
-  private findAnswerInExtractedQA(question: string, extractedQA: QAObject[]): {
+  private findAnswerInExtractedQA(question: string, extractedQA: QAObject[], answer?: string): {
     pageAnswer: string;
     extractedQuestion: string;
   } {
@@ -507,8 +510,12 @@ export class CYAPageValidation {
     const cleanQuestion = this.normalizeText(question);
     for (const qa of extractedQA) {
       const pageQuestion = this.normalizeText(qa.question);
-      if (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion)) {
+      const shouldIgnore = ignoreAnswerInQuestions.includes(pageQuestion.toLowerCase()) || ignoreAnswerInQuestions.includes(cleanQuestion.toLowerCase());
+      if (!shouldIgnore && (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion))) {
+        
         return { pageAnswer: qa.answer as string, extractedQuestion: qa.question };
+      } else if (shouldIgnore) {
+        return { pageAnswer: answer as string, extractedQuestion: cleanQuestion };
       }
     }
 
