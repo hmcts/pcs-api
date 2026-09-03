@@ -42,8 +42,8 @@ export function getCurrentBSTTime(): string {
 
   const month = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/London",
-    month: "long",
-  }).format(now).slice(0, 3);
+    month: "short",
+  }).format(now);
 
   const year = now.toLocaleString("en-GB", {
     timeZone: "Europe/London",

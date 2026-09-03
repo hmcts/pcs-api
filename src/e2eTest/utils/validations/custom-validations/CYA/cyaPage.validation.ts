@@ -228,8 +228,7 @@ export class CYAStore {
     Number(month) - 1,
     Number(day)
   )
-    .toLocaleString('en-GB', { month: 'long' })
-    .substring(0, 3);
+    .toLocaleString('en-GB', { month: 'short' });
 
   // Format: dd/MM/yyyy/HH/mm/ss
   if (parts.length === 6) {
