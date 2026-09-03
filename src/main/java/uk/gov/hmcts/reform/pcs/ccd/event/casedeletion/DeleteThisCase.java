@@ -30,9 +30,9 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
                 .ttlIncrement(-1)
                 .showCondition(draftClaimStateCondition())
                 .grant(Permission.CRU, UserRole.CREATOR)
-                .grant(Permission.CRU, UserRole.SYSTEM_USER)
+                .grant(Permission.CRU, UserRole.CLAIMANT_SOLICITOR)
                 .endButtonLabel("Continue"))
-                .page("deleteThisCaae")
+                .page("deleteThisCase")
                 .pageLabel("Delete this case")
                 .label("deleteDraftClaim-separator", "---")
                 .mandatory(PCSCase::getDeleteDraftClaim);
