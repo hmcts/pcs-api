@@ -4,8 +4,11 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '12.11.0'
-    serenityBddVersion = '5.3.9'
+    flywayVersion = '13.5.0'
+    serenityBddVersion = '5.3.11'
+    // The serenity-gradle-plugin marker is only published up to 5.3.9 on the plugin
+    // portal, so the plugin trails the libraries. Both stay on the 5.3.x line.
+    serenityPluginVersion = '5.3.9'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -17,14 +20,15 @@ plugins {
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '3.5.16'
-  id 'com.github.ben-manes.versions' version '0.56.0'
+  // The com.github.ben-manes.versions id is deprecated in favour of io.github.*
+  id 'io.github.ben-manes.versions' version '0.61.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
-  id 'org.sonarqube' version '7.3.1.8318'
-  id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.33.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2315'
+  id 'org.sonarqube' version '7.5.0.8588'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
+  id 'hmcts.ccd.sdk' version '6.36.0'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2360'
   id 'io.freefair.lombok' version '9.5.0'
-  id 'au.com.dius.pact' version '4.7.4'
+  id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
@@ -306,6 +310,16 @@ static def getCheckedOutGitCommitHash() {
 // Unset means they stay wired into check, so a local ./gradlew check still runs everything.
 def integrationTestsEnabled = System.getenv('INTEGRATION_TESTS_ENABLED') != 'false'
 
+jacoco {
+  toolVersion = '0.8.15'
+}
+
+// NOTE: checkstyle is left on the 10.24.0 that the uk.gov.hmcts.java plugin pins.
+// Overriding toolVersion to 14.1.0 makes checkstyleMain/Test fail: checkstyle 12+
+// tightened IndentationCheck, VariableDeclarationUsageDistanceCheck and the Javadoc
+// parser, so existing source picks up new violations. That is a source cleanup, not a
+// dependency bump - and the version belongs to the shared HMCTS plugin anyway.
+
 jacocoTestReport {
   // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
@@ -376,20 +390,63 @@ repositories {
 
 ext {
   log4JVersion = "2.26.1"
-  logbackVersion = "1.6.1"
+  logbackVersion = "1.6.3"
   testcontainersVersion = "2.0.5"
   testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.16"
-  lombokVersion = "1.18.46"
-  springSecurityVersion = "7.1.1"
+  lombokVersion = "1.18.48"
+  // Boot 3.5.16 pins Spring Security 6.5.11; a 7.x pin here would be silently
+  // downgraded by the BOM on runtimeClasspath, so track the Boot line instead.
+  springSecurityVersion = "6.5.11"
   pactVersion = "4.7.5"
   tomcatEmbedVersion = "11.0.25"
-  nettyVersion = "4.1.136.Final"
+  nettyVersion = "4.1.137.Final"
   httpClient5Version = "5.6.4"
+  httpCore5Version = "5.4.3"
+  jacksonVersion = "2.22.2"
+  mockitoVersion = "5.23.0"
+  junitVersion = "6.1.3"
+  jackson3Version = "3.1.6"
+  cucumberVersion = "7.34.7"
 }
 
-ext['snakeyaml.version'] = '2.0'
+ext['snakeyaml.version'] = '2.7'
 ext['netty.version'] = nettyVersion
+// Boot 3.5.16 pins httpcore5 5.3.6, which is inside the CVE-2026-54399 / CVE-2026-54428
+// affected range. httpclient5 5.6.4 already asks for 5.4.3; pin it so the BOM stops
+// downgrading it (and so core5 / core5-h2 stay in step with each other).
+ext['httpcore5.version'] = httpCore5Version
+// tomcat-embed-core / -websocket are pinned to 11.0.x below, but the BOM would leave
+// tomcat-embed-el on the 10.1.x line. Keep the whole embedded Tomcat set consistent.
+ext['tomcat.version'] = tomcatEmbedVersion
+// Boot 3.5.16 pins jackson-bom 2.21.4; move the whole Jackson 2.x set to the latest
+// patched release rather than pinning jackson-databind on its own.
+ext['jackson-bom.version'] = jacksonVersion
+ext['mockito.version'] = mockitoVersion
+ext['logback.version'] = logbackVersion
+// The repo already declares junit-bom / junit-jupiter-api / junit-platform-suite-api at
+// 6.1.3, but Boot 3.5.16 pins junit-jupiter 5.12.2, so the engine was silently resolving
+// to 5.12.2 against a 6.1.3 API. Align the whole JUnit set on 6.1.3.
+ext['junit-jupiter.version'] = junitVersion
+
+// Flyway 13.5.0 brings the Jackson 3.x (tools.jackson) tree in optionally, but the
+// version that wins here is 3.1.0, which is inside the CVE-2026-54512..54518 range
+// (all fixed in 3.1.4). Constrain the whole tools.jackson BOM to a patched release.
+// Separately, befta-fw pulls cucumber 7.18.0, whose cucumber-core shades
+// jackson-databind 2.17.1 - also inside that range. cucumber 7.34.7 shades 2.22.2.
+dependencies {
+  constraints {
+    implementation("tools.jackson:jackson-bom:$jackson3Version")
+    implementation("tools.jackson.core:jackson-databind:$jackson3Version")
+    implementation("tools.jackson.core:jackson-core:$jackson3Version")
+    implementation("io.cucumber:cucumber-core:$cucumberVersion")
+    implementation("io.cucumber:cucumber-java:$cucumberVersion")
+    implementation("io.cucumber:cucumber-junit:$cucumberVersion")
+    implementation("io.cucumber:cucumber-plugin:$cucumberVersion")
+    implementation("io.cucumber:cucumber-gherkin:$cucumberVersion")
+    implementation("io.cucumber:cucumber-gherkin-messages:$cucumberVersion")
+  }
+}
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
@@ -401,15 +458,15 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: springFrameworkBootVersion
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.15.0'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.16.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.0'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.1.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
-  implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
+  implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: httpClient5Version
 
   implementation group: 'io.opentelemetry', name: 'opentelemetry-api', version: '1.65.0'
   implementation group: 'io.opentelemetry', name: 'opentelemetry-context', version: '1.65.0'
@@ -453,7 +510,10 @@ dependencies {
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
   testImplementation group: 'org.instancio', name: 'instancio', version: '5.6.0'
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.0'
-  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-jre8-standalone', version: '2.35.2'
+  // com.github.tomakehurst:wiremock-jre8-standalone is abandoned (last 3.0.1); the
+  // maintained coordinate is org.wiremock:wiremock-standalone. Package names are
+  // unchanged (com.github.tomakehurst.wiremock.*, shaded wiremock.*).
+  testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.13.2'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.10') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
@@ -468,18 +528,18 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '6.1.3'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: junitVersion
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   // contractTest does not extend testImplementation, so it needs the CVE-2026-64607
   // httpclient5 pin of its own (pact pulls in 5.5.2 transitively).
   contractTestImplementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: httpClient5Version
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.3')
+  contractTestImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:6.1.3'))
+  testImplementation(platform("org.junit:junit-bom:$junitVersion"))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
