@@ -293,7 +293,7 @@ public class PCSCase {
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class, DefendantReadAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(

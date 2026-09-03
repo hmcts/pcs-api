@@ -66,6 +66,7 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
+        pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
         return pcsCase;
     }
 

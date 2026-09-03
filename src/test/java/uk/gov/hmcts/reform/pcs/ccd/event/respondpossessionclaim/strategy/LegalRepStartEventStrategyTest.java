@@ -142,9 +142,9 @@ class LegalRepStartEventStrategyTest {
     void shouldBuildSubmittedResponseWhenResponseAlreadySubmitted() {
         // Given
         UUID defendantId = UUID.randomUUID();
-        UUID representativeId = UUID.randomUUID();
         PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
         List<PartyEntity> defendantParties = List.of(defendantEntity);
+        PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         String organisationId = "org";
 
@@ -154,8 +154,8 @@ class LegalRepStartEventStrategyTest {
             .thenReturn(defendantParties);
         when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(true);
+        when(legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendantParties)).thenReturn(pcsCase);
 
-        PCSCase pcsCase = PCSCase.builder().build();
         // When
         underTest.loadDraft(CASE_REFERENCE, pcsCase);
 
