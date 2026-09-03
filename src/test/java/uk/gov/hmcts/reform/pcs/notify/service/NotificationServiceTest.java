@@ -1054,7 +1054,7 @@ class NotificationServiceTest {
             return OrganisationEntity.builder()
                 .claimPartyContactDetails(List.of((ClaimPartyContactDetailsEntity.builder()
                     .id(NOTIFICATION_ID)
-                    .pcsCase(PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build())
+                    .pcsCase(pcsCaseEntity)
                     .emailAddress("myEmail@hmcts.net")
                     .build())))
                 .build();
