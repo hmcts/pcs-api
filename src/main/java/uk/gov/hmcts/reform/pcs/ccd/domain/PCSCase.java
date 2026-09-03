@@ -367,7 +367,7 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class, DefendantReadAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     /**
