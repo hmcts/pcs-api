@@ -3,6 +3,26 @@
   <!--Please add all the false positives under the below section-->
   <suppress until="2026-10-15">
     <notes><![CDATA[
+    HDPI-8150: false positive. CVE-2026-54399/54428 are against httpcore5 (5.x);
+    this is httpcore 4.x, a separate artifact that is not affected. 4.4.16 still
+    arrives transitively. Re-review by the until date, or drop this entry once
+    httpcore 4.x leaves the graph.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\..*$</packageUrl>
+    <cve>CVE-2026-54399</cve>
+    <cve>CVE-2026-54428</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    HDPI-8150: false positive. CVE-2025-7962 is reported against the Jakarta
+    Activation spec API rather than the angus-activation implementation we
+    depend on (2.0.3, transitive). Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
+    <cve>CVE-2025-7962</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
     HDPI-8150: false positive. CVE-2020-29582 concerns kotlin-stdlib temp-file
     permissions; kotlin-stdlib is a transitive dependency only and PCS creates
     no temp files through it. The resolved version is 1.9.25, which is what the
@@ -40,6 +60,38 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    Embedded Tomcat 11.0.25 (tomcatEmbedVersion), which is the latest release -
+    no fixed Tomcat is published for these yet, so no bump clears them. This
+    block is unchanged from master apart from dropping the stale "HDPI-6936:
+    test purposes - wil revert before merge" note that was never actioned.
+    MUST be re-reviewed when tomcatEmbedVersion moves.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
+    <cve>CVE-2026-66299</cve>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-39883/39882 concern the OpenTelemetry Collector and the JS client,
+    not the Java libraries PCS depends on. Kept from master: the shared NVD
+    database these are matched against changes between runs, so absence from a
+    single dependency-check run is not proof the entry is dead.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
+    <cve>CVE-2026-39883</cve>
+    <cve>CVE-2026-39882</cve>
   </suppress>
   <suppress until="2026-09-30">
     <notes><![CDATA[
