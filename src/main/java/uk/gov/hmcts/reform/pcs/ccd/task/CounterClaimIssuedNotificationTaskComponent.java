@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.CounterClaimNotificationService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 
@@ -21,8 +21,8 @@ import java.util.UUID;
 public class CounterClaimIssuedNotificationTaskComponent {
     private static final String COUNTER_CLAIM_ISSUED_TASK_NAME = "counter-claim-issued-task";
 
-    public static final TaskDescriptor<CounterClaimStatusChangeTaskData> COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR =
-        TaskDescriptor.of(COUNTER_CLAIM_ISSUED_TASK_NAME, CounterClaimStatusChangeTaskData.class);
+    public static final TaskDescriptor<CounterClaimTaskData> COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR =
+        TaskDescriptor.of(COUNTER_CLAIM_ISSUED_TASK_NAME, CounterClaimTaskData.class);
 
     private final PaymentNotificationService paymentNotificationService;
     private final CounterClaimNotificationService counterClaimNotificationService;
@@ -43,14 +43,14 @@ public class CounterClaimIssuedNotificationTaskComponent {
     }
 
     @Bean
-    public CustomTask<CounterClaimStatusChangeTaskData> counterClaimIssuedNotificationTask() {
+    public CustomTask<CounterClaimTaskData> counterClaimIssuedNotificationTask() {
         return Tasks.custom(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetries,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                CounterClaimStatusChangeTaskData taskData = taskInstance.getData();
+                CounterClaimTaskData taskData = taskInstance.getData();
                 UUID counterClaimId = taskData.getCounterClaimId();
                 String paymentReference = taskData.getPaymentReference();
                 log.info("Processing counter claim issued notification for: {}", counterClaimId);
