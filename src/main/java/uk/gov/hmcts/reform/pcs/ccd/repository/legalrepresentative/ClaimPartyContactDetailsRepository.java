@@ -23,5 +23,11 @@ public interface ClaimPartyContactDetailsRepository extends JpaRepository<ClaimP
     Optional<ClaimPartyContactDetailsEntity> findByOrganisationIdAndCaseReference(
         @Param("organisationId") String organisationId, @Param("caseReference") long caseReference);
 
+    /**
+     * Newest contact details row for the organisation on the case. There is no unique constraint on
+     * (organisation, case), so this is limited to one row rather than expecting exactly one.
+     */
+    Optional<ClaimPartyContactDetailsEntity> findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
+        String organisationId, long caseReference);
 
 }

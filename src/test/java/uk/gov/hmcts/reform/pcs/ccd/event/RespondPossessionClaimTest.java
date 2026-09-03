@@ -28,8 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -37,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
@@ -72,11 +71,12 @@ import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -160,6 +160,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
+    private SchedulerClient schedulerClient;
+    @Mock
     private CaseDetailsTabView caseDetailsTabView;
     @Mock
     private TenancyLicenceView tenancyLicenceView;
@@ -167,8 +169,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
-    @Mock
-    private SchedulerClient schedulerClient;
     @Mock
     private OrganisationRepository organisationRepository;
     @Mock
@@ -216,11 +216,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
             feeCalculator,
             documentService,
             draftCaseDataService,
+            schedulerClient,
             taskDescriptionService,
             camundaService,
             translationWAService,
-            organisationService,
-            schedulerClient
+            organisationService
         );
 
         lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
