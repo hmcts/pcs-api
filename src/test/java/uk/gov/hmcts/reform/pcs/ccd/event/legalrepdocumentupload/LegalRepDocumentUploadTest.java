@@ -285,6 +285,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Given
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of());
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             PCSCase pcsCase = PCSCase.builder().build();
 
@@ -300,6 +301,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Given
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             PCSCase pcsCase = PCSCase.builder().build();
 

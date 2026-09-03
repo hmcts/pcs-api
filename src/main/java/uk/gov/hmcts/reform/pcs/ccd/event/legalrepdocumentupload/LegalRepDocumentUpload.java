@@ -216,8 +216,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         PartyEntity uploadingParty;
         try {
             uploadingParty = getUploadingParty(pcsCaseEntity, organisationId);
-        } catch (MultiplePartiesException multiplePartiesException) {
-            return errorResponse(multiplePartiesException.getMessage());
+        } catch (MultiplePartiesException | PartyNotFoundException partyException) {
+            return errorResponse(partyException.getMessage());
         }
 
         List<LegalRepDocument> legalRepDocuments
