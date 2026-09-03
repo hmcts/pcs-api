@@ -55,7 +55,7 @@ test.describe('Legal Representative NOC - e2e Journey @nightly', async () => {
     await performAction('validateErrorPage' );
   });
 
-  test('Notice of change - successful - LR - @regression @smoke @noticeOfChange', async () => {
+  test('Notice of change - successful - LR - @smoke @noticeOfChange', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );

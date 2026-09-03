@@ -75,7 +75,7 @@ public class NotificationService {
             defendantRecipient(defendantResponse),
             EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED,
             NotificationClaimType.COUNTER_CLAIM,
-            notificationPersonalisationFactory.forDefendant(defendantResponse)
+            notificationPersonalisationFactory.counterclaimPaymentRequired(defendantResponse)
         );
     }
 
