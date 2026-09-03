@@ -71,6 +71,45 @@ class PcsCaseEntityTest {
     }
 
     @Test
+    void shouldAddCaseReviewDateEntityAndSetCaseLevelRank() {
+        // Given
+        CaseReviewDateEntity reviewDateEntity1 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity2 = mock(CaseReviewDateEntity.class);
+        CaseReviewDateEntity reviewDateEntity3 = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity1);
+        underTest.addCaseReviewDate(reviewDateEntity2);
+        underTest.addCaseReviewDate(reviewDateEntity3);
+
+        // Then
+        verify(reviewDateEntity1).setRank(1);
+        verify(reviewDateEntity1).setPcsCase(underTest);
+
+        verify(reviewDateEntity2).setRank(2);
+        verify(reviewDateEntity2).setPcsCase(underTest);
+
+        verify(reviewDateEntity3).setRank(3);
+        verify(reviewDateEntity3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCaseReviewDateCaseLevelRankFromExistingReviewDates() {
+        // Given
+        for (int i = 0; i < 5; i++) {
+            underTest.getReviewDates().add(mock(CaseReviewDateEntity.class));
+        }
+        CaseReviewDateEntity reviewDateEntity = mock(CaseReviewDateEntity.class);
+
+        // When
+        underTest.addCaseReviewDate(reviewDateEntity);
+
+        // Then
+        verify(reviewDateEntity).setRank(6);
+        verify(reviewDateEntity).setPcsCase(underTest);
+    }
+
+    @Test
     void shouldAddHearing() {
         // Given
         HearingEntity hearingEntity = mock(HearingEntity.class);

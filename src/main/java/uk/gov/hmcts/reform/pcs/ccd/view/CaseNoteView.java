@@ -9,12 +9,19 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Locale;
 
 @Component
 public class CaseNoteView {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+        DateTimeFormatter.ofPattern("d MMM yyyy, h:mm:ss a", Locale.ENGLISH);
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         setCaseNoteFields(pcsCase, pcsCaseEntity.getCaseNotes());
@@ -46,14 +53,15 @@ public class CaseNoteView {
             ))
             .toList();
 
-        List<ListValue<CaseReviewDate>> reviewDates = IntStream.range(0, orderedReviewDateEntities.size())
-            .mapToObj(index -> toListValue(orderedReviewDateEntities.get(index), index))
+        List<ListValue<CaseReviewDate>> reviewDates = orderedReviewDateEntities.stream()
+            .map(this::toListValue)
             .toList();
 
         pcsCase.setCaseReviewDates(reviewDates);
+        pcsCase.setCaseReviewDatesMarkdown(toMarkdown(orderedReviewDateEntities));
     }
 
-    private ListValue<CaseReviewDate> toListValue(CaseReviewDateEntity reviewDateEntity, int index) {
+    private ListValue<CaseReviewDate> toListValue(CaseReviewDateEntity reviewDateEntity) {
         CaseReviewDate reviewDate = CaseReviewDate.builder()
             .createdBy(reviewDateEntity.getCreatedBy())
             .createdDate(reviewDateEntity.getCreatedDate())
@@ -62,6 +70,50 @@ public class CaseNoteView {
             .description(reviewDateEntity.getDescription())
             .build();
 
-        return new ListValue<>("Review date " + (index + 1), reviewDate);
+        return new ListValue<>("Review date " + reviewDateEntity.getRank(), reviewDate);
+    }
+
+    private String toMarkdown(List<CaseReviewDateEntity> reviewDateEntities) {
+        if (reviewDateEntities.isEmpty()) {
+            return "";
+        }
+
+        return reviewDateEntities.stream()
+            .map(this::toMarkdown)
+            .reduce((first, second) -> first + "\n\n" + second)
+            .orElse("");
+    }
+
+    private String toMarkdown(CaseReviewDateEntity reviewDateEntity) {
+        return """
+            ### Review date %s
+
+            |  |  |
+            | --- | --- |
+            | Created by | %s |
+            | Created date | %s |
+            | Date of review | %s |
+            | Reason | %s |
+            | Description of review | %s |
+            """.formatted(
+                reviewDateEntity.getRank(),
+                escape(reviewDateEntity.getCreatedBy()),
+                formatDateTime(reviewDateEntity.getCreatedDate()),
+                formatDate(reviewDateEntity.getDate()),
+                reviewDateEntity.getReason() == null ? "" : reviewDateEntity.getReason().getLabel(),
+                escape(reviewDateEntity.getDescription())
+            );
+    }
+
+    private String formatDate(LocalDate date) {
+        return date == null ? "" : date.format(DATE_FORMATTER);
+    }
+
+    private String formatDateTime(LocalDateTime dateTime) {
+        return dateTime == null ? "" : dateTime.format(DATE_TIME_FORMATTER);
+    }
+
+    private String escape(String value) {
+        return value == null ? "" : value.replace("|", "\\|").replace("\n", "<br>");
     }
 }

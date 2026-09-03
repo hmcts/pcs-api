@@ -786,6 +786,9 @@ public class PCSCase {
         typeParameterOverride = "CaseReviewDate")
     private List<ListValue<CaseReviewDate>> caseReviewDates;
 
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String caseReviewDatesMarkdown;
+
     @CCD(
         label = "Review date",
         min = 1

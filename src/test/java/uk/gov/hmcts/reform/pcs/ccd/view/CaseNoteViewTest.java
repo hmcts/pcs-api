@@ -121,6 +121,7 @@ class CaseNoteViewTest {
     @Test
     void shouldMapReviewDateEntitiesToCaseReviewDatesWithNewestFirst() {
         CaseReviewDateEntity olderReviewDate = CaseReviewDateEntity.builder()
+            .rank(1)
             .createdBy("Older Worker")
             .createdDate(LocalDateTime.of(2026, 1, 15, 12, 0))
             .date(LocalDate.of(2026, 8, 20))
@@ -128,6 +129,7 @@ class CaseNoteViewTest {
             .description("older review")
             .build();
         CaseReviewDateEntity newerReviewDate = CaseReviewDateEntity.builder()
+            .rank(2)
             .createdBy("Newer Worker")
             .createdDate(LocalDateTime.of(2026, 4, 22, 22, 0))
             .date(LocalDate.of(2026, 9, 15))
@@ -144,7 +146,7 @@ class CaseNoteViewTest {
 
         List<ListValue<CaseReviewDate>> reviewDates = pcsCase.getCaseReviewDates();
         assertThat(reviewDates).hasSize(2);
-        assertThat(reviewDates.getFirst().getId()).isEqualTo("Review date 1");
+        assertThat(reviewDates.getFirst().getId()).isEqualTo("Review date 2");
         assertThat(reviewDates.getFirst().getValue().getCreatedBy()).isEqualTo("Newer Worker");
         assertThat(reviewDates.getFirst().getValue().getCreatedDate())
             .isEqualTo(LocalDateTime.of(2026, 4, 22, 22, 0));
@@ -152,7 +154,18 @@ class CaseNoteViewTest {
         assertThat(reviewDates.getFirst().getValue().getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(reviewDates.getFirst().getValue().getDescription()).isEqualTo("newer review");
 
-        assertThat(reviewDates.getLast().getId()).isEqualTo("Review date 2");
+        assertThat(reviewDates.getLast().getId()).isEqualTo("Review date 1");
         assertThat(reviewDates.getLast().getValue().getCreatedBy()).isEqualTo("Older Worker");
+
+        assertThat(pcsCase.getCaseReviewDatesMarkdown()).containsSubsequence(
+            "### Review date 2",
+            "| Created by | Newer Worker |",
+            "| Created date | 22 Apr 2026, 10:00:00 PM |",
+            "| Date of review | 15 Sep 2026 |",
+            "| Reason | Other |",
+            "| Description of review | newer review |",
+            "### Review date 1",
+            "| Created by | Older Worker |"
+        );
     }
 }

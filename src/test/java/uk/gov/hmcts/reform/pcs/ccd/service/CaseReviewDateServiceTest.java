@@ -104,6 +104,7 @@ public class CaseReviewDateServiceTest {
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(1);
         CaseReviewDateEntity caseReviewDateEntity = persistedCaseEntity.getReviewDates().getFirst();
         assertThat(caseReviewDateEntity.getPcsCase()).isEqualTo(persistedCaseEntity);
+        assertThat(caseReviewDateEntity.getRank()).isEqualTo(1);
         assertThat(caseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("review description 1");
@@ -170,6 +171,7 @@ public class CaseReviewDateServiceTest {
 
         CaseReviewDateEntity caseReviewDateEntity1 = persistedCaseEntity.getReviewDates().getFirst();
         assertThat(caseReviewDateEntity1.getPcsCase()).isEqualTo(persistedCaseEntity);
+        assertThat(caseReviewDateEntity1.getRank()).isEqualTo(1);
         assertThat(caseReviewDateEntity1.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity1.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity1.getDescription()).isEqualTo("review description 1");
@@ -178,6 +180,7 @@ public class CaseReviewDateServiceTest {
 
         CaseReviewDateEntity caseReviewDateEntity2 = persistedCaseEntity.getReviewDates().getLast();
         assertThat(caseReviewDateEntity2.getPcsCase()).isEqualTo(persistedCaseEntity);
+        assertThat(caseReviewDateEntity2.getRank()).isEqualTo(2);
         assertThat(caseReviewDateEntity2.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity2.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity2.getDescription()).isEqualTo("review description 2");
@@ -186,7 +189,7 @@ public class CaseReviewDateServiceTest {
     }
 
     @Test
-    void shouldOnlyAddNewReviewDatesWhenPreviousCaseDataContainsExistingRows() {
+    void shouldContinueReviewDateRankFromExistingRows() {
         // Given
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         pcsCaseEntity.addCaseReviewDate(
@@ -201,15 +204,6 @@ public class CaseReviewDateServiceTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().name("Case Worker").build());
         when(taskDescriptionService.createReviewDueDateDescription(caseReference, 2)).thenReturn("task description");
 
-        ListValue<ReviewDate> existingReviewDate = ListValue.<ReviewDate>builder()
-            .value(
-                ReviewDate.builder()
-                    .date(LocalDate.of(2026, 2, 1))
-                    .reason(ReviewReason.DISMISS_CASE)
-                    .description("existing review description")
-                    .build()
-            ).build();
-
         ListValue<ReviewDate> newReviewDate = ListValue.<ReviewDate>builder()
             .value(
                 ReviewDate.builder()
@@ -220,7 +214,7 @@ public class CaseReviewDateServiceTest {
             ).build();
 
         PCSCase pcsCase = PCSCase.builder()
-            .reviewDates(List.of(existingReviewDate, newReviewDate))
+            .reviewDates(List.of(newReviewDate))
             .build();
 
         // When
@@ -241,6 +235,7 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(2);
         CaseReviewDateEntity caseReviewDateEntity = persistedCaseEntity.getReviewDates().getLast();
+        assertThat(caseReviewDateEntity.getRank()).isEqualTo(2);
         assertThat(caseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("new review description");

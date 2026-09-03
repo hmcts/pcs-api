@@ -185,6 +185,8 @@ public class PcsCaseEntity {
     }
 
     public void addCaseReviewDate(CaseReviewDateEntity reviewDate) {
+        int rank = reviewDates.size() + 1;
+        reviewDate.setRank(rank);
         reviewDates.add(reviewDate);
         reviewDate.setPcsCase(this);
     }
