@@ -45,12 +45,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('navigateToCaseSummary');
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
-
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupport);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('clickRadioButton', { option: reviewSupport.optionOne });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndWaitForElement', reviewSupport.continueButton, reviewSupport.supporTypeHeader);
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('clickRadioButton', { option: reviewSupport.optionTwo });
     await performAction('clickButton', reviewSupport.continueButton);
@@ -82,7 +80,6 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
   test('Staff users can not see Support tab', async ({page}) => {
     await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
-
     await performAction('navigateToCaseSummary');
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags'] });
   });

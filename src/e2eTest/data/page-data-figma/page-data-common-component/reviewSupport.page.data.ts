@@ -4,6 +4,7 @@ export const reviewSupport = {
     reviewSupportHeader: `Review support request`,
     continueButton: `Continue`,
     submitButton: `Submit`,
+    supporTypeHeader: `Select support type`,
     optionOne: `Possession Claims Solicitor Org (Claimant)`,
     optionTwo: `Reasonable adjustment`,
     optionThree: `I need to bring support with me to a hearing`,
