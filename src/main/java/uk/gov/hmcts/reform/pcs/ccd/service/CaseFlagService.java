@@ -450,11 +450,7 @@ public class CaseFlagService {
             .filter(existingFlag -> existingFlag.getId() != null
                 && existingFlag.getId().toString().equals(reviewedDetail.getId()))
             .findFirst()
-            .ifPresent(existingFlag -> {
-                existingFlag.setDefaultStatus(reviewedFlagDetail.getStatus());
-                existingFlag.setFlagUpdateComment(reviewedFlagDetail.getFlagUpdateComment());
-                existingFlag.setDateTimeModified(reviewedFlagDetail.getDateTimeModified());
-            });
+            .ifPresent(existingFlag -> applyEditedFlagFields(existingFlag, reviewedFlagDetail));
     }
 
     private boolean changesSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
