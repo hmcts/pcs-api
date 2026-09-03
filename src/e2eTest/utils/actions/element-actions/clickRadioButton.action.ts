@@ -1,5 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
+import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
 import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
@@ -14,6 +15,22 @@ export class ClickRadioButtonAction implements IAction {
       () => this.radioPattern4(page, question, option, idx),
       () => this.radioPattern3(page, question, option, idx),
     ];
+
+    // count() below never retries, so wait for a settled DOM first. Only the
+    // question-scoped patterns are waited on: pattern 3 ignores `question`, so it would
+    // be satisfied by the previous page's Yes/No labels.
+    if (question) {
+      await waitForInteractive(
+        anyOf(
+          this.radioPattern1(page, question, option, idx),
+          this.radioPattern2(page, question, option, idx),
+          this.radioPattern4(page, question, option, idx),
+        ),
+      );
+    } else {
+      // Callers that pass only an option: pattern 3 is the sole available signal.
+      await waitForInteractive(this.radioPattern3(page, question, option, idx));
+    }
 
     for (const getLocator of patterns) {
       const locator = getLocator();
