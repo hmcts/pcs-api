@@ -226,3 +226,5 @@ Pages passed: 2
 Pages failed: 1
 Missing elements: Submit button, Continue link
 ```
+
+<!-- HDPI-8713 sleep-arms control. DO NOT MERGE. -->
