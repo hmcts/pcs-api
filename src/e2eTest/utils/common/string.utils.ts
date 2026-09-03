@@ -40,10 +40,11 @@ export function getCurrentBSTTime(): string {
     day: "numeric",
   });
 
+  // en-GB abbreviates September as "Sept", which slicing "September" to 3 chars would miss.
   const month = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/London",
-    month: "long",
-  }).format(now).slice(0, 3);
+    month: "short",
+  }).format(now);
 
   const year = now.toLocaleString("en-GB", {
     timeZone: "Europe/London",

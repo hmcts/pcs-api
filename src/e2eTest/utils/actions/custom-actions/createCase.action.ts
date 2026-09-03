@@ -58,7 +58,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -1604,11 +1604,8 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
     let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
-    await expect(async () => {
-      expect(await folderLocator.count()).toBeGreaterThan(0)
-    }).toPass({
-      timeout: MEDIUM_TIMEOUT,
-    });
+    // The tree renders only after CDAM document metadata resolves, which outruns MEDIUM_TIMEOUT.
+    await expect(folderLocator.first()).toBeVisible({ timeout: LONG_TIMEOUT });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
 
@@ -1683,13 +1680,16 @@ export class CreateCaseAction implements IAction {
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
-    const text = await folder.innerText();
+    await expect(folder.first()).toBeVisible({ timeout: LONG_TIMEOUT });
+    const text = await folder.first().innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
-    await folder.click();
+    await folder.first().click();
+    // The tree expands asynchronously, so poll until the rendered file count settles.
+    await expect(fileLocator).toHaveCount(fileCount, { timeout: LONG_TIMEOUT });
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
@@ -1697,9 +1697,9 @@ export class CreateCaseAction implements IAction {
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
-    if ((await folder.getAttribute('aria-expanded')) === 'true') {
-      await folder.click();
-      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    if ((await folder.first().getAttribute('aria-expanded')) === 'true') {
+      await folder.first().click();
+      await expect(folder.first()).toHaveAttribute('aria-expanded', 'false');
     }
   }
 

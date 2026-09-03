@@ -1,6 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { hasPageHeading } from '@utils/common/locator.utils';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
@@ -52,7 +53,7 @@ export class ClickButtonAction implements IAction {
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {
     await page.locator('.spinner-container').waitFor({ state: 'detached' });
-    if (await page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l').textContent() === currentPageHeader) {
+    if (await hasPageHeading(page, currentPageHeader)) {
       await this.clickButton(page, button);
     }
   }

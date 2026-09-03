@@ -1,5 +1,6 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { IValidation, validationData } from '../../interfaces/validation.interface';
+import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
 
 export class InputErrorValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
@@ -28,6 +29,9 @@ export class InputErrorValidation implements IValidation {
       )
     ];
 
+
+    // Error messages render a tick after submit; count() would read 0 without this wait.
+    await waitForInteractive(anyOf(...locators));
 
     for (const locator of locators) {
 
