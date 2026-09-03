@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 
 class AccessProfileTest {
 
@@ -56,20 +55,5 @@ class AccessProfileTest {
             Arguments.of(AccessProfile.SYSTEM_USER, "pcs-system-update", CRU),
             Arguments.of(AccessProfile.ORGANISATION_CASE_ACCESS_ADMINISTRATOR, "caseworker-caa", CRU)
         );
-    }
-
-    @Test
-    void shouldDeclareAccessGroupsOnTheCanonicalCaseType() {
-        assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.accessGroupsFor(false))
-            .containsExactly(SOLICITOR_ORG_CLAIMANT_ACCESS);
-        assertThat(AccessProfile.PCS_SOLICITOR.accessGroupsFor(false)).isEmpty();
-    }
-
-    @Test
-    void shouldDeclareNoAccessGroupsOnASuffixedCaseType() {
-        // PCS-staging / PR previews: no AccessType rows, so PRM mints no org roles for them.
-        for (AccessProfile profile : AccessProfile.values()) {
-            assertThat(profile.accessGroupsFor(true)).as(profile.name()).isEmpty();
-        }
     }
 }

@@ -19,7 +19,6 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
 @Getter
 public enum AccessProfile implements HasRole {
@@ -88,20 +87,5 @@ public enum AccessProfile implements HasRole {
 
     public String getCaseTypePermissions() {
         return Permission.toString(caseTypePermissions);
-    }
-
-    /**
-     * Group access is configured on the canonical PCS case type only. A suffixed case type
-     * (PCS-staging, PR previews) shares the jurisdiction, so emitting the same AccessType rows there
-     * makes PRM mint a second set of organisation roles against that case type - and XUI's case list
-     * then defaults to it, showing no cases. Emit nothing so no such roles exist to pick.
-     */
-    @Override
-    public List<CCDAccessGroup> getAccessGroups() {
-        return accessGroupsFor(CaseType.isSuffixedCaseType());
-    }
-
-    List<CCDAccessGroup> accessGroupsFor(boolean suffixedCaseType) {
-        return suffixedCaseType ? List.of() : accessGroups;
     }
 }
