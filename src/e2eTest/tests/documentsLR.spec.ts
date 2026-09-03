@@ -7,7 +7,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm, uploadYourDocuments
+  confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm, uploadAdditionalDocumentsInformation, uploadYourDocuments
 } from "@data/page-data-figma/page-data-legalRepresentative";
 import {makeAnApplicationApiData} from "@data/api-data";
 import {initializeCMExecutor} from "@utils/controller-caseManagement";
@@ -17,11 +17,14 @@ import {
   checkYourAnswersUploadAdditionalDocs,
 } from "@data/page-data-figma/page-data-legalRepresentative/checkYourAnswersUploadAdditionalDocs.page.data";
 import { FieldsStore } from '@utils/actions/custom-actions/recordAnsweredFields.action';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
+import { getFormattedDate } from '@utils/common/string.utils';
+import { home } from '@data/page-data';
 
 
 
 test.use({ storageState: undefined })
-
+let uploadAdditionalDocumentsInformationCL: ReturnType<typeof uploadAdditionalDocumentsInformation>;
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -74,6 +77,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('login', user.defendantSolicitor);
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToSummaryPage');
+  uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
   await page.waitForLoadState();
 });
 
@@ -88,9 +92,13 @@ test.afterEach(async () => {
 test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
 
   test('Upload documents when GenApps submitted - Multi def @smoke @regression', async () => {
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
-    await performAction('uploadAdditionalDocumentsInfo');
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
       question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
@@ -98,17 +106,29 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       count: defendantUserDetails.length,
     });
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-    await performAction('uploadFiles', {
+    // await performAction('uploadFiles', {
+    //   documents: [
+    //     {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
+    //     {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
+    //   ]
+    // });
+
+    await performAction('uploadAdditionalDocsLR', {
       documents: [
-        {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
-        {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
+        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementDropDownInput },
       ]
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-    await performAction('retrieveCYATableDataLR', { name: 'check your answers table' });
-    await performAction('validateCYAForLR');
-    await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
     await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
   });
 
   test('Upload documents when GenApps submitted - Single def @regression', async () => {

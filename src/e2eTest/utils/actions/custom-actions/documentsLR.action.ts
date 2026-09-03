@@ -267,7 +267,7 @@ export class DocumentsAction implements IAction {
         lines.push(line);
       }
     });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState();
   }
 
   private async validateCYAForLR(page: Page) {
@@ -303,7 +303,7 @@ export class DocumentsAction implements IAction {
     await test.step('Waiting for CYA page to be fully settled before Submit', async () => {
       const cyaTable = page.locator('//table[@aria-describedby="check your answers table"]');
       await expect(cyaTable.first()).toBeVisible({ timeout: 15000 });
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState();
     });
     await performAction(
       'clickButton',
@@ -335,7 +335,7 @@ export class DocumentsAction implements IAction {
         }
 
         await locator.click();
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState();
 
         const landedOnCorrectPage = await this.isQuestionFieldVisible(page, key);
         if (!landedOnCorrectPage) {
