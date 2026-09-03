@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.MultiplePartiesException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -248,6 +249,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
             if (partyEntities.size() == 1) {
                 return partyEntities.getFirst();
+            } else if (partyEntities.isEmpty()) {
+                throw new PartyNotFoundException("No represented party found");
             } else {
                 throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
             }

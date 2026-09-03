@@ -281,6 +281,21 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
+        void shouldReturnErrorIfLrRepresentsZeroDefendants() {
+            // Given
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of());
+
+            PCSCase pcsCase = PCSCase.builder().build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors()).contains("No represented party found");
+        }
+
+        @Test
         void shouldReturnErrorIfLrRepresentsMultipleDefendants() {
             // Given
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
