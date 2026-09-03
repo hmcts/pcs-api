@@ -280,9 +280,9 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
                 return new PartyNotFoundException("Unable to find claimant Party");
             });
 
-        if (orgDetails.getOrganisationIdentifier().equals(claimant.getOrganisationId())) {
-            return of(NocAnswersResponse.invalid(CONFLICT_OF_INTEREST_CODE, CONFLICT_OF_INTEREST_MESSAGE));
-        }
+//        if (orgDetails.getOrganisationIdentifier().equals(claimant.getOrganisationId())) {
+//            return of(NocAnswersResponse.invalid(CONFLICT_OF_INTEREST_CODE, CONFLICT_OF_INTEREST_MESSAGE));
+//        }
         return Optional.empty();
     }
 
