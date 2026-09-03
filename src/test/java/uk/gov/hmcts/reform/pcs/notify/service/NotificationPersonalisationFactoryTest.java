@@ -59,7 +59,7 @@ class NotificationPersonalisationFactoryTest {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         factory = new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
-        ReflectionTestUtils.setField(factory, "frontendUrl", "http://localhost:3209");
+        ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
     }
 
     @Nested
@@ -515,7 +515,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
                 .containsEntry("paymentUrl",
-                               "null/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
         }
 
         @Test
@@ -535,7 +535,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
                 .containsEntry("paymentUrl",
-                               "null/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
         }
     }
 
@@ -549,7 +549,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            String paymentUrl = "http://localhost:3209/case/1234567890/"
+            String paymentUrl = "frontEndUrl/case/1234567890/"
                 + "respond-to-claim/counter-claim-application-fee-amount";
 
             CounterclaimPaymentRequiredPersonalisation result = factory.counterclaimPaymentRequired(response);
