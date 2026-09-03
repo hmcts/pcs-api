@@ -323,6 +323,14 @@ export class PageContentValidation implements IValidation {
     PageContentValidation.testCounter++;
 
     if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
+      // CYAStore is a process-wide singleton and its failure flag is sticky, so it has to
+      // be cleared even when there is no page-content state to report. Otherwise a CYA
+      // failure here is thrown by the next test on this worker.
+      const cyaFailed = cyaValidation.hasValidationFailed();
+      CYAStore.getInstance().clearAll();
+      if (cyaFailed) {
+        throw new Error('CYA page validation failed');
+      }
       return;
     }
 
