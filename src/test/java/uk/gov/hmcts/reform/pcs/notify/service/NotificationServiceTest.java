@@ -36,22 +36,26 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
-import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -461,7 +465,19 @@ class NotificationServiceTest {
                     .claimantName("JANE SMITH")
                     .primaryDefendantName("JOHN DOE")
                     .build());
-
+            lenient().when(notificationPersonalisationFactory.counterclaimPaymentRequired(any()))
+                .thenReturn(CounterclaimPaymentRequiredPersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                              .firstName("John")
+                              .lastName("Doe")
+                              .caseNumber("1234567890")
+                              .claimantName("JANE SMITH")
+                              .primaryDefendantName("JOHN DOE")
+                              .build())
+                    .paymentUrl(
+                        "http://localhost:3209/case/1234567890/respond-to-claim/counter-claim-application-fee-amount"
+                    )
+                    .build());
             lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any(), any()))
                 .thenReturn(CounterclaimPaymentSuccessPersonalisation.builder()
                     .base(BasePersonalisation.builder()
@@ -702,6 +718,58 @@ class NotificationServiceTest {
         }
 
         @Test
+        @DisplayName("Should send counterclaim payment success email to organisation")
+        void shouldSendCounterclaimPaymentSuccessEmailToOrganisation() {
+            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().id(PROVIDER_NOTIFICATION_ID).build();
+            OrganisationEntity organisationEntity = anOrganisationEntity(pcsCaseEntity);
+            DefendantResponseEntity defendantResponseEntity = DefendantResponseEntity.builder().build();
+
+            String paymentReference = "PAY-123";
+
+            CaseNotification savedNotification = createCaseNotification();
+            when(notificationRepository.save(any())).thenReturn(savedNotification);
+
+            OrganisationBasePersonalisation organisationBasePersonalisation = OrganisationBasePersonalisation.builder()
+                .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build();
+
+            when(notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponseEntity,
+                                                                                    paymentReference,
+                                                                                    organisationEntity))
+                     .thenReturn(CounterclaimPaymentSuccessPersonalisationLegalRep.builder()
+                        .base(organisationBasePersonalisation)
+                        .paymentReferenceNumber(paymentReference)
+                        .build()
+                );
+
+            EmailNotificationResponse response = notificationService
+                .sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(organisationEntity,
+                                                                                       paymentReference,
+                                                                                       pcsCaseEntity,
+                                                                                       defendantResponseEntity);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULED.toString());
+
+            verify(templateConfiguration).getTemplateId(EmailTemplate
+                                                            .COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP);
+            verify(notificationRepository, times(2)).save(any());
+            verify(schedulerClient).scheduleIfNotExists(any());
+        }
+
+
+        @Test
+        @DisplayName("Recipient Email is blank, return null")
+        void emailIsBlank_returnNull() {
+            OrganisationNotificationRecipient legalRepresentativeNotificationRecipient =
+                new OrganisationNotificationRecipient(null, null, null, null);
+
+            assertThat(notificationService
+                           .sendEmailForOrganisation(legalRepresentativeNotificationRecipient,
+                                                            null, null, null))
+                .isNull();
+        }
+
+        @Test
         @DisplayName("Should send counterclaim no payment required email")
         void shouldSendCounterclaimNoPaymentRequiredEmail() {
             when(partyService.canSendEmailNotification(any(), any())).thenReturn(true);
@@ -837,6 +905,16 @@ class NotificationServiceTest {
 
             // Then
             verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        private OrganisationEntity anOrganisationEntity(PcsCaseEntity pcsCaseEntity) {
+            return OrganisationEntity.builder()
+                .claimPartyContactDetails(List.of((ClaimPartyContactDetailsEntity.builder()
+                    .id(NOTIFICATION_ID)
+                    .pcsCase(pcsCaseEntity)
+                    .emailAddress("myEmail@hmcts.net")
+                    .build())))
+                .build();
         }
     }
 

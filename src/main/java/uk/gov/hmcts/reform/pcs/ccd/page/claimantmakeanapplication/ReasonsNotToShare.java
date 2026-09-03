@@ -51,8 +51,8 @@ public class ReasonsNotToShare implements CcdPageConfiguration {
             .page("reasonsNotToShare")
             .pageLabel("Are there any reasons that this application should not be shared with other parties?")
             .showCondition(fieldEquals("xui_genapp_OtherPartiesAgreed", VerticalYesNo.NO))
-            .label("reasonsNotToShare-lineSeparator", "---")
-            .label("reasonsNotToShare-info", INFO_MARKDOWN)
+            .label("cma-reasonsNotToShare-lineSeparator", "---")
+            .label("cma-reasonsNotToShare-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWithoutNotice)
             .mandatory(XuiGenAppRequest::getWithoutNoticeReason,

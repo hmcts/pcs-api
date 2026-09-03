@@ -302,7 +302,12 @@ static def getCheckedOutGitCommitHash() {
   'git rev-parse --verify --short HEAD'.execute().text.trim()
 }
 
+// integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
+// Unset means they stay wired into check, so a local ./gradlew check still runs everything.
+def integrationTestsEnabled = System.getenv('INTEGRATION_TESTS_ENABLED') != 'false'
+
 jacocoTestReport {
+  // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
   reports {
     xml.required = true
@@ -315,8 +320,10 @@ tasks.named('sonarqube') {
   dependsOn jacocoTestReport
 }
 
-tasks.named('check') {
-  dependsOn integration
+if (integrationTestsEnabled) {
+  tasks.named('check') {
+    dependsOn integration
+  }
 }
 
 sonarqube {
@@ -639,8 +646,10 @@ tasks.register('e2eTest') {
   dependsOn('runE2eTests')
 }
 
-// Ensure we cover Cftlib dev & test with our CI checks
-check.dependsOn cftlibTest
+// Ensure a local check covers Cftlib dev & test. See integrationTestsEnabled above.
+if (integrationTestsEnabled) {
+  check.dependsOn cftlibTest
+}
 
 // Add wiremock docker compose dependency
 dockerCompose.isRequiredBy bootWithCCD

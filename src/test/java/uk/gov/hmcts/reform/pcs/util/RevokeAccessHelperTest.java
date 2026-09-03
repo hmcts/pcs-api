@@ -179,8 +179,8 @@ class RevokeAccessHelperTest {
         // then
         verify(caseRoleAssignmentService).revokeCaseRole(
             eq(caseReference), eq(idamId.toString()), eq(UserRole.DEFENDANT));
-        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-            eq(caseReference), eq(EventId.respondPossessionClaim), eq(idamId), eq(partyId));
+        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
+            eq(caseReference), eq(EventId.respondPossessionClaim), eq(idamId));
         verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 
@@ -207,8 +207,8 @@ class RevokeAccessHelperTest {
         // then
         verify(caseRoleAssignmentService, never()).revokeCaseRole(
             eq(caseReference), anyString(), eq(UserRole.DEFENDANT));
-        verify(draftCaseDataRepository, never()).deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-            eq(caseReference), eq(EventId.respondPossessionClaim), any(), any());
+        verify(draftCaseDataRepository, never()).deleteByCaseReferenceAndEventIdAndIdamUserId(
+            eq(caseReference), eq(EventId.respondPossessionClaim), any());
         verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
     }
 }

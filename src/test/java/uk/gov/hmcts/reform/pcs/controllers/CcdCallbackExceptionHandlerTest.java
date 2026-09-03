@@ -13,25 +13,25 @@ class CcdCallbackExceptionHandlerTest {
 
     @Test
     void shouldReturnForbiddenWhenCaseAccessExceptionThrownOnCallback() {
-        String message = "User is not linked as a defendant on this case";
-        CaseAccessException exception = new CaseAccessException(message);
+        CaseAccessException exception =
+            new CaseAccessException("User is not linked as a defendant on this case");
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleCaseAccess(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo(message);
+        assertThat(response.getBody().message()).isEqualTo("Access denied");
     }
 
     @Test
     void shouldReturnForbiddenWhenCaseAccessExceptionHasCause() {
-        String message = "No defendants associated with this case";
-        CaseAccessException exception = new CaseAccessException(message, new RuntimeException("root cause"));
+        CaseAccessException exception = new CaseAccessException(
+            "No defendants associated with this case", new RuntimeException("root cause"));
 
         ResponseEntity<RestExceptionHandler.Error> response = underTest.handleCaseAccess(exception);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().message()).isEqualTo(message);
+        assertThat(response.getBody().message()).isEqualTo("Access denied");
     }
 }

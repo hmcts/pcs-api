@@ -15,11 +15,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactD
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +35,12 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
+
+    @Mock
+    private FeatureToggleService featureToggleService;
+
+    @Mock
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -58,10 +69,14 @@ class LegalRepresentativeSummaryServiceTest {
 
     @BeforeEach
     void setUp() {
-        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor);
+        legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
+                                                                                 featureToggleService,
+                                                                                 claimPartyContactDetailsRepository);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
     }
 
     @Test
@@ -74,15 +89,13 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity organisation =
             OrganisationEntity.builder()
             .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.NO)
-                            .build()
-                    ))
             .build();
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.NO)
+                                        .build()));
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                             .claimPartyOrganisationList(List.of(
                                                 ClaimPartyOrganisationEntity.builder()
@@ -114,15 +127,13 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity organisation =
             OrganisationEntity.builder()
                 .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.YES)
-                            .build()
-                    ))
                 .build();
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.YES)
+                                        .build()));
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .claimPartyOrganisationList(List.of(
                                                   ClaimPartyOrganisationEntity.builder()
@@ -154,14 +165,6 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity legalRepresentativeOrg =
             OrganisationEntity.builder()
                 .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.YES)
-                            .build()
-                    ))
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                                 .claimPartyOrganisationList(List.of(
@@ -330,6 +333,38 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithCuiRespondToClaimLrDisabled_ReturnsEmptyMarkDown() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, "org");
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithRelease1dot3Disabled_ReturnsEmptyMarkDown() {
+        // given
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, "org");
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
 }

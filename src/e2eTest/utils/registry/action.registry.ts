@@ -167,7 +167,8 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
-    ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
@@ -194,6 +195,7 @@ export class ActionRegistry {
     ['readDocumentsSubmit', new DocumentsAction()],
     ['selectAnEvent', new CreateCaseAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
   ]);
 
   static getAction(actionName: string): IAction {

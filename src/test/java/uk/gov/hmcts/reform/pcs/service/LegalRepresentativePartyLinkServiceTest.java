@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRe
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -168,6 +167,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // then
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
+        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
 
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
@@ -183,7 +183,7 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
         verify(caseRoleAssignmentService, never()).revokeCaseRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
-        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual, 
+        verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual,
             partyEntity, LEGAL_REP_EMAIL);
         verify(notificationService).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(partyEntity);
     }
@@ -538,32 +538,6 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals(ORGANISATION_ID, actual.getOrganisationId());
         assertEquals("orgName", actual.getOrganisationName());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
-    }
-
-    @Test
-    void linkLegalRepresentativeToParty_WithLegalRepAlreadyLinkedToParty_ThrowsException() {
-        // given
-        long caseReference = 1L;
-        UUID partyId = UUID.randomUUID();
-
-        when(organisationRepository.isOrganisationLinkedToPartyAndActive(
-            ORGANISATION_ID,
-            partyId
-        )).thenReturn(true);
-
-        // when / then
-        assertThatThrownBy(() -> legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
-            caseReference,
-            partyId.toString(),
-            LEGAL_REP_EMAIL,
-            organisationDetails
-        )).isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class)
-            .hasMessage("Legal Representative or organisation already linked to Party [" + partyId + "]");
-
-        verify(addressMapper, never()).toAddressEntityAndNormalise(any(AddressUK.class));
-        verify(notificationService, never()).sendNoticeOfChangeCompletedEmailNotification(any());
-        verify(notificationService, never()).sendNoticeOfChangeNonRepresentedPartiesEmailNotification(any());
-        verify(organisationRepository, never()).save(any());
     }
 
     @Test

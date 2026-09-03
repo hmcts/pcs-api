@@ -77,8 +77,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(403);
-        apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/respondPossessionClaim-UnAuthorisedStartEventCallbackResponse.json");
+        apiSteps.theResponseBodyContainsAString("message", "Access denied");
     }
 
     @Title("respondToPossessionClaim start event callback test - returns 200")

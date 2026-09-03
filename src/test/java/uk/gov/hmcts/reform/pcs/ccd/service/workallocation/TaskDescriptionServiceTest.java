@@ -619,6 +619,86 @@ class TaskDescriptionServiceTest {
             .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
     }
 
+    @Nested
+    @DisplayName("Get description for Counter Claim Additional Documents task")
+    class CounterClaimAdditionalDocumentsTests {
+        @Mock
+        private ClaimEntity mainClaim;
+        @Mock
+        private PartyEntity partyEntity;
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+
+            List<DocumentEntity> documentEntityList = List.of(
+                DocumentEntity.builder().fileName("filename1.pdf").build(),
+                DocumentEntity.builder().fileName("filename2.csv").build()
+            );
+
+            String expectedPartyLabel = "some party label";
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(expectedPartyLabel);
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "counterclaim-review-additional-docs",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createCounterClaimAdditionalDocumentsDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity,
+                    documentEntityList
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("partyLabel", expectedPartyLabel)
+                .containsEntry("filenames", List.of("filename1.pdf", "filename2.csv"));
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "counterclaim-review-additional-docs",
+                "some content"
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            UUID partyId = UUID.randomUUID();
+            when(partyEntity.getId()).thenReturn(partyId);
+            when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("some party label");
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createCounterClaimAdditionalDocumentsDescription(
+                    CASE_REFERENCE,
+                    mainClaim,
+                    partyEntity,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
     private PebbleTemplate stubPebbleTemplate(String templateName, String renderedContent) throws IOException {
         PebbleTemplate pebbleTemplate = mock(PebbleTemplate.class, withSettings().strictness(Strictness.LENIENT));
         when(pebbleEngine.getTemplate("workallocation/" + templateName)).thenReturn(pebbleTemplate);

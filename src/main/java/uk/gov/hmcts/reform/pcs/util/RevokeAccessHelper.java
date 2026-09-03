@@ -67,9 +67,9 @@ public class RevokeAccessHelper {
         if (defendantParty.getIdamId() != null) {
             caseRoleAssignmentService.revokeCaseRole(
                 caseEntity.getCaseReference(), defendantParty.getIdamId().toString(), UserRole.DEFENDANT);
-            draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+            draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(
                 caseEntity.getCaseReference(), respondPossessionClaim,
-                defendantParty.getIdamId(), defendantParty.getId()
+                defendantParty.getIdamId()
             );
             log.info("Revoked access for defendant [{}] to respond to claim for case [{}]",
                       defendantParty.getId(), caseEntity.getCaseReference());

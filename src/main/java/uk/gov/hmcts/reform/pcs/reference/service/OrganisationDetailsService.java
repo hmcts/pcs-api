@@ -102,20 +102,19 @@ public class OrganisationDetailsService {
             );
 
             if (details == null) {
-                log.warn("Organisation details response is null for userId: {}", userId);
+                log.warn("Organisation details response is null");
             }
             return details;
 
         } catch (FeignException.NotFound ex) {
-            log.error("No organisation held in rd-professional for userId: {}", userId);
+            // Normal for citizens (no organisation), so not logged as an error.
+            log.debug("No organisation held in rd-professional");
             return null;
         } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
-                      userId, ex.status(), ex.getMessage(), ex);
+            log.error("Feign error retrieving organisation details. Status: {}", ex.status(), ex);
             return null;
         } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
-                      userId, ex.getMessage(), ex);
+            log.error("Unexpected error retrieving organisation details", ex);
             return null;
         }
     }

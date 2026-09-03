@@ -86,6 +86,15 @@ public class TaskDescriptionService {
         return createDocumentDescription(caseReference, mainClaim, partyEntity, documentEntities, templateName, null);
     }
 
+    public String createCounterClaimAdditionalDocumentsDescription(long caseReference,
+                                                                    ClaimEntity mainClaim,
+                                                                    PartyEntity partyEntity,
+                                                                    List<DocumentEntity> documentEntities) {
+
+        String templateName = "counterclaim-review-additional-docs";
+        return createDocumentDescription(caseReference, mainClaim, partyEntity, documentEntities, templateName, null);
+    }
+
     public String createTranslateClaimantDocumentDescription(long caseReference,
                                                               List<DocumentEntity> documentEntities) {
 
