@@ -46,16 +46,9 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.*;
 import uk.gov.hmcts.reform.pcs.notify.template.EmailTemplate;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -1090,6 +1083,8 @@ class NotificationServiceTest {
                 .thenReturn(mock(NoticeOfChangeNoLongerRepresentingPersonalisation.class));
             lenient().when(notificationPersonalisationFactory.forParty(any(), any()))
                 .thenReturn(mock(BasePersonalisation.class));
+            lenient().when(notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(any(), any()))
+                .thenReturn(mock(NoticeOfChangeCompleteLegalRepPersonalisation.class));
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_CHANGE_COMPLETED))
                 .thenReturn(TEMPLATE_ID);
             lenient().when(templateConfiguration.getTemplateId(
@@ -1165,6 +1160,15 @@ class NotificationServiceTest {
             assertThat(created.getRecipient()).isEqualTo(OUTGOING_REPRESENTATIVE_EMAIL);
             assertThat(created.getPartyId()).isEqualTo(representedDefendant);
             assertThat(created.getPcsCase()).isEqualTo(pcsCase);
+        }
+
+        @Test
+        @DisplayName("Should email the outgoing legal representative on notice of change completed")
+        void shouldEmailOutgoingLegalRepresentativeOnNoticeOfChangeCompleted() {
+            notificationService.sendNoticeOfChangeCompleteLegalRepEmailNotification(
+                    legalRepresentative(OUTGOING_REPRESENTATIVE_EMAIL), representedDefendant, "legalrepwm");
+
+            verify(notificationPersonalisationFactory).noticeOfChangeCompleteLegalRep(any(), any());
         }
 
         @Test
