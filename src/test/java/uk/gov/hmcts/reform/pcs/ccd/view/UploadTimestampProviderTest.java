@@ -13,7 +13,9 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
-class DocumentViewUtilTest {
+class UploadTimestampProviderTest {
+
+    private final UploadTimestampProvider underTest = new UploadTimestampProvider();
 
     @Test
     void shouldReturnNullWhenNoSubmittedDate() {
@@ -21,7 +23,7 @@ class DocumentViewUtilTest {
         DocumentEntity documentEntity = DocumentEntity.builder().submittedDate(null).build();
 
         // When
-        LocalDateTime uploadTimestamp = DocumentViewUtil.uploadTimestamp(documentEntity);
+        LocalDateTime uploadTimestamp = underTest.uploadTimestamp(documentEntity);
 
         // Then
         assertThat(uploadTimestamp).isNull();
@@ -34,7 +36,7 @@ class DocumentViewUtilTest {
         DocumentEntity documentEntity = DocumentEntity.builder().submittedDate(submittedDate).build();
 
         // When
-        LocalDateTime uploadTimestamp = DocumentViewUtil.uploadTimestamp(documentEntity);
+        LocalDateTime uploadTimestamp = underTest.uploadTimestamp(documentEntity);
 
         // Then
         assertThat(uploadTimestamp).isEqualTo(expectedResult);

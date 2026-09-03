@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -20,7 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class TenancyLicenceView {
+
+    private final UploadTimestampProvider uploadTimestampProvider;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         TenancyLicenceEntity tenancyLicence = pcsCaseEntity.getTenancyLicence();
@@ -36,8 +40,8 @@ public class TenancyLicenceView {
         }
     }
 
-    private static void setTenancyLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence,
-                                                PcsCaseEntity pcsCaseEntity) {
+    private void setTenancyLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence,
+                                         PcsCaseEntity pcsCaseEntity) {
         List<ListValue<Document>> documents = getTenancyLicenceDocument(pcsCaseEntity);
         CombinedLicenceType combinedLicenceType = tenancyLicence.getType();
         TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
@@ -52,8 +56,8 @@ public class TenancyLicenceView {
         pcsCase.setTenancyLicenceDetails(tenancyLicenceDetails);
     }
 
-    private static void setOccupationLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence,
-                                                   PcsCaseEntity pcsCaseEntity) {
+    private void setOccupationLicenceFields(PCSCase pcsCase, TenancyLicenceEntity tenancyLicence,
+                                            PcsCaseEntity pcsCaseEntity) {
         CombinedLicenceType combinedLicenceType = tenancyLicence.getType();
         List<ListValue<Document>> documents = getOccupationLicenceDocument(pcsCaseEntity);
 
@@ -67,7 +71,7 @@ public class TenancyLicenceView {
         pcsCase.setOccupationLicenceDetailsWales(occupationLicence);
     }
 
-    private static List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getTenancyLicenceDocument(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
@@ -77,7 +81,7 @@ public class TenancyLicenceView {
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
-            .map(TenancyLicenceView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
@@ -85,7 +89,7 @@ public class TenancyLicenceView {
         return documentEntity.getType() == DocumentType.TENANCY_AGREEMENT;
     }
 
-    private static List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getOccupationLicenceDocument(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
@@ -95,7 +99,7 @@ public class TenancyLicenceView {
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
-            .map(TenancyLicenceView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
@@ -103,7 +107,7 @@ public class TenancyLicenceView {
         return documentEntity.getType() == DocumentType.OCCUPATION_LICENCE;
     }
 
-    private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
+    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
             .id(documentEntity.getId().toString())
             .value(
@@ -112,7 +116,7 @@ public class TenancyLicenceView {
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
                     .categoryId(documentEntity.getCategoryId())
-                    .uploadTimestamp(DocumentViewUtil.uploadTimestamp(documentEntity))
+                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
                     .build()
             ).build();
     }

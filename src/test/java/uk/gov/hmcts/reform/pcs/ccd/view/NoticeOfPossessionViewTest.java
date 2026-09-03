@@ -22,14 +22,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -45,7 +44,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_
 @ExtendWith(MockitoExtension.class)
 class NoticeOfPossessionViewTest {
 
-    private static final Instant DOCUMENT_SUBMITTED_DATE = Instant.parse("2026-05-14T09:30:00Z");
+    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
 
     @Mock
     private PCSCase pcsCase;
@@ -55,6 +54,8 @@ class NoticeOfPossessionViewTest {
     private ClaimEntity mainClaimEntity;
     @Mock(strictness = LENIENT)
     private NoticeOfPossessionEntity noticeOfPossessionEntity;
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
     @Captor
     private ArgumentCaptor<NoticeServedDetails> noticeServedDetailsCaptor;
 
@@ -65,7 +66,7 @@ class NoticeOfPossessionViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
         when(mainClaimEntity.getNoticeOfPossession()).thenReturn(noticeOfPossessionEntity);
 
-        underTest = new NoticeOfPossessionView();
+        underTest = new NoticeOfPossessionView(uploadTimestampProvider);
     }
 
     @Test
@@ -285,12 +286,12 @@ class NoticeOfPossessionViewTest {
 
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
         when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
                     .type(DocumentType.POSSESSION_NOTICE)
-                    .submittedDate(DOCUMENT_SUBMITTED_DATE)
                     .build()
             )
         );
@@ -307,8 +308,7 @@ class NoticeOfPossessionViewTest {
         List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
         assertThat(noticeDocuments).hasSize(1);
         assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
-        assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp())
-            .isEqualTo(LocalDateTime.ofInstant(DOCUMENT_SUBMITTED_DATE, ZoneOffset.UTC));
+        assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
     }
 
     @Test

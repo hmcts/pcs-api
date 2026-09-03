@@ -26,6 +26,7 @@ public class DocumentsView {
 
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final UploadTimestampProvider uploadTimestampProvider;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
@@ -51,7 +52,7 @@ public class DocumentsView {
                            .url(entity.getUrl())
                            .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(DocumentViewUtil.uploadTimestamp(entity))
+                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
                            .build())
                 .build())
             .collect(Collectors.toList());
