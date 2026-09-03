@@ -45,7 +45,7 @@ test.afterEach(async () => {
 });
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
-  test('Trigger respond event @regression', async () => {
+  test('Trigger respond event @regression @healthCheck', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
@@ -56,9 +56,8 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     });
     await performAction('clickButton', 'Close and Return to case details');
     await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
-    //Below lines are commenting out as preview env has limitation with event, these lines will be enabled once code is merged
-    /*await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', startNow.mainHeader);*/
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', startNow.mainHeader);
   });
 
   test('Update LR Details @regression', async () => {

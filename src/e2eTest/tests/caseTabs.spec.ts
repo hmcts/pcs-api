@@ -67,7 +67,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Case tabs - England Journey] @nightly', async () => {
-  test('Case tabs - Case parties tab test @MAC', async () => {
+  test('Case tabs - Case parties tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseParties);
     await performAction('validateDefendantDetails', {
@@ -93,7 +93,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - Notes tab test @MAC', async ({ page, context }) => {
+  test('Case tabs - Notes tab test @MAC @regression', async ({ page, context }) => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
@@ -128,7 +128,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - Summary tab test @smoke @MAC', async () => {
+  test('Case tabs - Summary tab test @smoke @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
     await performValidation('mainHeader', home.caseSummary)
     await performAction('validateCaseSummaryDetails', {
@@ -195,7 +195,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
   });
 
-  test('Case tabs - Case Details tab test @MAC', async () => {
+  test('Case tabs - Case Details tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {
@@ -371,7 +371,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - CaseList view test @MAC', async () => {
+  test('Case tabs - CaseList view test @MAC @regression', async () => {
     await performValidation('mainHeader', home.mainHeader);
     await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
     await performAction('validateCaseListTable', {
