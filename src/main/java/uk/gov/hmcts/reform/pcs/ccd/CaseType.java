@@ -209,7 +209,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(INTERNAL_TAB_ROLES)
             .label("caseReviewDatesMarkdownLabel", null, "${caseReviewDatesMarkdown}")
             .field("caseReviewDatesMarkdown", NEVER_SHOW)
-            .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
     }
 
