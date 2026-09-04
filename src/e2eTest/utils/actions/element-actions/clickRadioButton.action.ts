@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
-import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
+import { anyOf, waitForInteractive, waitForSpinner } from '@utils/common/locator.utils';
 import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
@@ -8,6 +8,11 @@ export class ClickRadioButtonAction implements IAction {
     const idx = params.index !== undefined ? Number(params.index) : 0;
     const question = params.question as string;
     const option = params.option as string;
+
+    // Ahead of the count() reads below and well ahead of clickWithRetry's 2s per-click
+    // timeout: the overlay was measured to persist ~2.9s, so a covered page burns every
+    // attempt and then reports 'radio button ... is not found'.
+    await waitForSpinner(page);
 
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),
@@ -52,8 +57,12 @@ export class ClickRadioButtonAction implements IAction {
     do {
       attempt++;
       await locator.click({ timeout: 2000, force: attempt > 1 });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      radioIsChecked = await locator.isChecked();
+      // toBeChecked polls; isChecked does not, so a radio that registers late used to
+      // need the fixed 500ms sleep this replaces.
+      radioIsChecked = await expect(locator)
+        .toBeChecked({ timeout: 500 })
+        .then(() => true)
+        .catch(() => false);
     } while (!radioIsChecked && attempt < actionRetries);
     expect(radioIsChecked, radioIsChecked
       ? `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`

@@ -13,6 +13,8 @@ const ELEMENT_TYPES = [
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
 
+const PAGE_RENDER_TIMEOUT = 5000;
+
 export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();
   private static validationExecuted = false;
@@ -118,15 +120,23 @@ export class PageContentValidation implements IValidation {
 
     if (!pageData) return;
 
-    const pageResults: ValidationResult[] = [];
-    for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden') || key.includes('Dynamic') || key.includes('errorValidation')|| key.includes('ErrorMessageHeader') || key.includes('NewTab')) continue;
-      if (typeof value === 'string' && value.trim() !== '') {
-        const elementType = this.getElementType(key);
-        const isVisible = await this.isElementVisible(page, value as string, elementType);
-        pageResults.push({element: key, expected: value as string, status: isVisible ? 'pass' : 'fail'});
-      }
-    }
+    // The page's elements all arrive together when it renders, so wait once for the
+    // heading rather than giving each of up to 45 probes its own timeout.
+    await this.waitForPageToRender(page, pageData);
+
+    const pageResults: ValidationResult[] = await Promise.all(
+      Object.entries(pageData)
+        .filter(([key, value]) =>
+          !/Input|Hidden|Dynamic|errorValidation|ErrorMessageHeader|NewTab/.test(key) &&
+          typeof value === 'string' && value.trim() !== '')
+        .map(async ([key, value]) => ({
+          element: key,
+          expected: value as string,
+          status: (await this.isElementVisible(page, value as string, this.getElementType(key)))
+            ? 'pass' as const
+            : 'fail' as const,
+        }))
+    );
 
     PageContentValidation.validationResults.set(pageUrl, pageResults);
   }
@@ -221,19 +231,18 @@ export class PageContentValidation implements IValidation {
 
   private async getHeaderText(page: Page): Promise<string | null> {
     try {
-      const h1Element = page.locator('h1').first();
-      if (await h1Element.isVisible({timeout: 2000})) {
-        const h1Text = await h1Element.textContent();
-        if (h1Text && h1Text.trim() !== '') {
-          return h1Text.trim();
-        }
-      }
+      // This resolves which page-data file to validate against, so losing the race here
+      // silently validates nothing. Wait once for either heading to render, then read.
+      await page
+        .locator('h1, h2')
+        .first()
+        .waitFor({ state: 'visible', timeout: PAGE_RENDER_TIMEOUT })
+        .catch(() => undefined);
 
-      const h2Element = page.locator('h2').first();
-      if (await h2Element.isVisible({timeout: 2000})) {
-        const h2Text = await h2Element.textContent();
-        if (h2Text && h2Text.trim() !== '') {
-          return h2Text.trim();
+      for (const selector of ['h1', 'h2']) {
+        const text = await page.locator(selector).first().textContent().catch(() => null);
+        if (text && text.trim() !== '') {
+          return text.trim();
         }
       }
 
@@ -274,13 +283,30 @@ export class PageContentValidation implements IValidation {
     }
   }
 
+  /**
+   * Waits for the page's own heading before probing its elements. `isVisible` does not
+   * poll — its timeout only cancels — so without this the probes raced the render and
+   * reported elements as missing. One wait covers every element on the page.
+   */
+  private async waitForPageToRender(page: Page, pageData: Record<string, unknown>): Promise<void> {
+    const heading = pageData.mainHeader;
+    if (typeof heading !== 'string' || heading.trim() === '') {
+      return;
+    }
+    await page
+      .getByRole('heading', { name: exactTextWithOptionalWhitespaceRegex(heading) })
+      .first()
+      .waitFor({ state: 'visible', timeout: PAGE_RENDER_TIMEOUT })
+      .catch(() => undefined);
+  }
+
   private async isElementVisible(page: Page, expectedValue: string, elementType: string): Promise<boolean> {
     const pattern = this.locatorPatterns[elementType as keyof typeof this.locatorPatterns];
     if (!pattern) return false;
     try {
       const locator = pattern(page, expectedValue);
       const firstVisible = locator.filter({ visible: true }).first();
-      return await firstVisible.isVisible({ timeout: 5000 });
+      return await firstVisible.isVisible();
     } catch {
       return false;
     }
@@ -297,6 +323,14 @@ export class PageContentValidation implements IValidation {
     PageContentValidation.testCounter++;
 
     if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
+      // CYAStore is a process-wide singleton and its failure flag is sticky, so it has to
+      // be cleared even when there is no page-content state to report. Otherwise a CYA
+      // failure here is thrown by the next test on this worker.
+      const cyaFailed = cyaValidation.hasValidationFailed();
+      CYAStore.getInstance().clearAll();
+      if (cyaFailed) {
+        throw new Error('CYA page validation failed');
+      }
       return;
     }
 
