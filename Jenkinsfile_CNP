@@ -2,6 +2,7 @@
 
 @Library("Infrastructure@2.4.9")
 
+import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
 import uk.gov.hmcts.contino.GradleBuilder
@@ -193,6 +194,14 @@ withPipeline(type, product, component) {
     env.CCD_ENABLED = "true"
   }
 
+  afterSuccess('dbmigrate:perftest') {
+    runPerftestSmokeTests(builder, secrets)
+  }
+
+  afterAlways('dbmigrate:perftest') {
+    archiveSmokeTestReports()
+  }
+
   afterSuccess('akschartsinstall') {
     onPR {
       if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
@@ -294,6 +303,25 @@ def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
   env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
+}
+
+def runPerftestSmokeTests(builder, Map secrets) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-perftest.service.core-compute-perftest.internal",
+      "ENVIRONMENT_NAME=perftest",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-perftest.service.core-compute-perftest.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal",
+      "IDAM_API_URL=https://idam-api.perftest.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
 }
 
 def generateDefinitions(builder) {

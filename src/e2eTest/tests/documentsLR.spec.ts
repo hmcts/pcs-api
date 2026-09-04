@@ -88,10 +88,10 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 
 });
-
+ /* The skipped tests will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755 */
 test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
 
-  test('Upload documents when GenApps submitted - Multi def @smoke @regression', async () => {
+  test.skip('Upload documents when GenApps submitted - Multi def', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -155,7 +155,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('readDocumentsSubmit');
   });
 
-  test('Upload documents when GenApps submitted With Out Notice - Multi def @regression', async ({page}) => {
+  test.skip('Upload documents when GenApps submitted With Out Notice - Multi def', async ({page}) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -200,7 +200,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps not submitted - Multi def @regression', async () => {
+  test.skip('Upload documents when GenApps not submitted - Multi def', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
