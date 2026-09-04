@@ -792,6 +792,45 @@ public class PcsNoticeOfChangeTest {
         assertThat(taskData.getUserId()).isEqualTo(userId);
         assertThat(taskData.getPartyId()).isEqualTo(partyId.toString());
         assertThat(taskData.getOrganisationDetailsResponse()).isEqualTo(organisationDetailsResponse);
+        assertThat(taskData.getEventIdempotencyKey()).isNotNull();
+    }
+
+    @Test
+    void submit_CarriesTheActingSolicitorNamesIntoTaskData() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(nocSubmitContext.givenName()).thenReturn("James");
+        when(nocSubmitContext.familyName()).thenReturn("Solicitor");
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", firstName),
+                    new NocAnswer("pcs-defendant-last-name", lastName)));
+
+        // when
+        pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        NocAccessChangeTaskData taskData = getCapturedRoleAssignmentTaskData();
+        assertThat(taskData.getFirstName()).isEqualTo("James");
+        assertThat(taskData.getLastName()).isEqualTo("Solicitor");
     }
 
     @Test
