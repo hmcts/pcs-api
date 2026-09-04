@@ -23,7 +23,7 @@ import { performAction } from '@utils/controller';
 import { fetchCurrentUserTokenApiData } from '@data/api-data/fetchCurrentUser.api.data';
 import { formatDateTimeBST } from '@utils/common/string.utils';
 import { IdamUtils } from '@hmcts/playwright-common';
-import { actionRetries, VERY_SHORT_TIMEOUT } from 'playwright.config';
+import { actionRetries, SHORT_TIMEOUT } from 'playwright.config';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -524,8 +524,13 @@ export class CreateCaseAPIAction implements IAction {
 
   private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
+    // pcs-api writes the service-request record asynchronously after case submission, so
+    // this is a poll for something that does not exist yet, not a retry of a failed call.
+    // 10 attempts x a flat 1s only covered ~10s, and "No payment information found" was
+    // the fast-failure signature on caseWorkerGenApps:54 and manageDocumentsWales:57/:164
+    // — each dying at ~12s and then passing on retry, which took 40-75s.
     const maxRetries = actionRetries + actionRetries;
-    const delayMs = VERY_SHORT_TIMEOUT;
+    const delayMs = SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
