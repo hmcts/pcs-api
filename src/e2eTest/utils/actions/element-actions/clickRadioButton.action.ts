@@ -47,26 +47,56 @@ export class ClickRadioButtonAction implements IAction {
     // "is not found" text, which reads as a bad selector even when the real cause was a
     // pattern matching several elements or the page not having arrived.
     const resolved: string[] = [];
+    let foundButUncheckable = false;
     for (const [index, getLocator] of patterns.entries()) {
       const locator = getLocator();
       const count = await locator.count();
       resolved.push(`pattern${index + 1}=${count}`);
-      if (count === 1 && await this.clickWithRetry(locator)) {
+      if (count !== 1) {
+        continue;
+      }
+      if (await this.clickWithRetry(locator)) {
         return;
       }
+      // Resolved to exactly one radio and still could not check it after every attempt.
+      foundButUncheckable = true;
     }
-    throw new Error(`The radio button with question: "${question}" and option: "${option}" is not found `
+    const cause = foundButUncheckable
+      ? `was found but could not be checked after ${actionRetries} attempts`
+      : 'is not found';
+    throw new Error(`The radio button with question: "${question}" and option: "${option}" ${cause} `
       + `(index ${idx}; matches per pattern: ${resolved.join(', ')})`);
   }
 
-  // Callers check count() === 1 before calling, so the guard that used to live here is gone.
+  /**
+   * Callers check count() === 1 before calling, so the guard that used to live here is gone.
+   *
+   * Returns false rather than throwing when the radio cannot be checked, so the caller can
+   * try its remaining patterns. Two measured problems with the previous shape:
+   *
+   * - `click()` was not caught, so a radio covered by an overlay threw at 2003ms on attempt 1
+   *   and never reached attempt 2 — where `force: attempt > 1` is exactly what would have
+   *   worked. Measured against a replica overlay.
+   * - the trailing `expect(...).toBe(true)` threw on failure, so the function could only
+   *   return true or throw. `return radioIsChecked` was unreachable and the caller's
+   *   fall-through to later patterns was dead code. Measured: an uncheckable radio threw
+   *   'Radio was not checked after 5 attempts' at 2565ms instead of returning.
+   */
   private async clickWithRetry(locator: any): Promise<boolean> {
     let attempt = 0;
     let radioIsChecked = false;
 
     do {
       attempt++;
-      await locator.click({ timeout: 2000, force: attempt > 1 });
+      // Caught so a failed click costs one attempt, not the whole loop: the retry exists to
+      // get a second go with force:true.
+      const clicked = await locator
+        .click({ timeout: 2000, force: attempt > 1 })
+        .then(() => true)
+        .catch(() => false);
+      if (!clicked) {
+        continue;
+      }
       // toBeChecked polls; isChecked does not, so a radio that registers late used to
       // need the fixed 500ms sleep this replaces.
       radioIsChecked = await expect(locator)
@@ -74,9 +104,7 @@ export class ClickRadioButtonAction implements IAction {
         .then(() => true)
         .catch(() => false);
     } while (!radioIsChecked && attempt < actionRetries);
-    expect(radioIsChecked, radioIsChecked
-      ? `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`
-      : `Radio was not checked after ${actionRetries} attempts`).toBe(true);
+
     return radioIsChecked;
   }
 
