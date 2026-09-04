@@ -306,6 +306,8 @@ export class CaseManagementAction implements IAction {
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
+    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
+    await page.waitForTimeout(timeout);
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
