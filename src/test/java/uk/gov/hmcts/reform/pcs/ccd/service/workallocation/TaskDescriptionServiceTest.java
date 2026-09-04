@@ -542,7 +542,7 @@ class TaskDescriptionServiceTest {
             );
 
             // When
-            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE);
+            String description = underTest.createReviewDueDateDescription(CASE_REFERENCE, 1);
 
             // Then
             assertThat(description).isEqualTo(expectedRenderedContent);
@@ -550,7 +550,8 @@ class TaskDescriptionServiceTest {
             verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
             Map<String, Object> contextMap = contextMapCaptor.getValue();
             assertThat(contextMap)
-                .containsEntry("caseReference", CASE_REFERENCE);
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("reviewDateNumber", 1);
         }
 
         @Test
@@ -566,7 +567,7 @@ class TaskDescriptionServiceTest {
             doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
 
             // When
-            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE));
+            Throwable throwable = catchThrowable(() -> underTest.createReviewDueDateDescription(CASE_REFERENCE, 1));
 
             // Then
             assertThat(throwable)
