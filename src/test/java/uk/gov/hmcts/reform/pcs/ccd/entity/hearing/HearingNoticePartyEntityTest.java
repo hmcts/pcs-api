@@ -26,8 +26,6 @@ public class HearingNoticePartyEntityTest {
         hearingNoticePartyEntity.removeHearingNoticeParty();
 
         // Then
-        assertThat(hearingNoticePartyEntity.getHearing()).isNull();
-        assertThat(hearingNoticePartyEntity.getParty()).isNull();
         assertThat(hearingEntity.getHearingNoticeParties()).isEmpty();
         assertThat(partyEntity.getHearingNoticeParties()).isEmpty();
     }

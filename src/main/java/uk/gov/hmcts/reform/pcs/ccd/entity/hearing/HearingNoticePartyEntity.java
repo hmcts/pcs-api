@@ -39,7 +39,5 @@ public class HearingNoticePartyEntity {
     public void removeHearingNoticeParty() {
         party.getHearingNoticeParties().remove(this);
         hearing.getHearingNoticeParties().remove(this);
-        party = null;
-        hearing = null;
     }
 }
