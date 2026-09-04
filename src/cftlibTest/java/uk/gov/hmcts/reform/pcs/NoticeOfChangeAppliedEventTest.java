@@ -39,7 +39,6 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     private static final String ORGANISATION_ID = "TEST-123";
     private static final String EXPECTED_ACCESS_GROUP =
         "PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:" + ORGANISATION_ID;
-    private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
     private static final Instant EXECUTION_TIME = Instant.parse("2026-09-04T09:30:00Z");
 
     @Autowired
@@ -122,7 +121,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             .containsEntry("event_name", "Notice of change applied")
             .containsEntry("summary", "Notice of change by " + LEGAL_REP_EMAIL)
             .containsEntry("user_id", ACTING_SOLICITOR_ID)
-            .containsEntry("proxied_by", SYSTEM_USER_ID);
+            .containsEntry("proxied_by", systemUserId());
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
@@ -153,6 +152,11 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             Integer.class
         )).isEqualTo(1);
         assertThat(activeOrganisationLinks(defendantId)).isEqualTo(1);
+    }
+
+    private String systemUserId() {
+        String token = idamClient.getAccessToken("pcs-system-user@localhost", "password");
+        return idamClient.getUserInfo(token).getUid();
     }
 
     private void runTaskInBackground(
