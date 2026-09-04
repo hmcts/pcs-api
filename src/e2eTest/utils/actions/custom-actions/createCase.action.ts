@@ -94,7 +94,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(page, fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -351,7 +351,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continueButton);
   }
 
-  private async addDefendantDetails(defendantData: actionRecord) {
+  private async addDefendantDetails(page: Page, defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -391,11 +391,22 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // 'Add new' appends a defendant block and every lookup below addresses it by index,
+        // while clickRadioButton resolves its patterns with count(), which does not poll. So
+        // if this block has not arrived, nth(index) matches nothing.
+        //
+        // Defence in depth, not the fix for createCaseWales:604 — I originally claimed it was.
+        // The per-pattern diagnostics from that failure read pattern2=2, pattern4=7, so the
+        // block had rendered and the patterns simply disagreed about which element to take.
+        // That is fixed in the pattern definitions themselves; this wait only covers the
+        // genuinely-not-yet-rendered case.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+        // Clicked once. This was two identical calls in a row: the second re-clicked a radio
+        // already checked, so it was pure cost, and its retry loop could only ever confirm
+        // what the first had done.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
