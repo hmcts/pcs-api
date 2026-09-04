@@ -168,10 +168,8 @@ class CaseTypeTest {
         assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(supportTab.getForRoles()).containsExactlyInAnyOrder(CaseType.EXTERNAL_FLAG_TAB_ROLES);
         assertThat(supportTab.getForRoles())
-            .containsExactlyInAnyOrder(AccessProfile.GA_CLAIMANT_SOLICITOR,
-                                       AccessProfile.GA_DEFENDANT_SOLICITOR);
+            .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
@@ -186,30 +184,33 @@ class CaseTypeTest {
 
     @Test
     void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
-        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).doesNotHaveDuplicates();
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
         assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
         assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
     }
 
     @Test
-    void shouldGrantTheSupportTabOnlyToTheTwoLegalRepresentativeProfiles() {
-        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES).containsExactlyInAnyOrder(
-            AccessProfile.GA_CLAIMANT_SOLICITOR,
+    void shouldGrantTheSupportTabToEveryDefendantSideProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).containsExactlyInAnyOrder(
+            AccessProfile.CITIZEN,
+            AccessProfile.DEFENDANT,
             AccessProfile.GA_DEFENDANT_SOLICITOR);
-        assertThat(CaseType.EXTERNAL_FLAG_TAB_ROLES)
-            .doesNotContain(AccessProfile.PCS_SOLICITOR,
+    }
+
+    @Test
+    void shouldNotGrantTheSupportTabToAnyClaimantSideOrInternalProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES)
+            .doesNotContain(AccessProfile.CLAIMANT,
+                            AccessProfile.GA_CLAIMANT_SOLICITOR,
                             AccessProfile.CLAIMANT_SOLICITOR,
-                            AccessProfile.DEFENDANT_SOLICITOR,
-                            AccessProfile.CLAIMANT,
-                            AccessProfile.CITIZEN,
-                            AccessProfile.DEFENDANT)
+                            AccessProfile.PCS_SOLICITOR)
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
     }
 
     @Test
     void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
         assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
-            .contains(CaseType.EXTERNAL_FLAG_TAB_ROLES);
+            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
     }
 
     @Test

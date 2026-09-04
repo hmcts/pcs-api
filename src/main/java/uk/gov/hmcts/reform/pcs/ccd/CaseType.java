@@ -53,8 +53,9 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
-    static final AccessProfile[] EXTERNAL_FLAG_TAB_ROLES = {
-        AccessProfile.GA_CLAIMANT_SOLICITOR,
+    static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
+        AccessProfile.CITIZEN,
+        AccessProfile.DEFENDANT,
         AccessProfile.GA_DEFENDANT_SOLICITOR
     };
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
@@ -194,7 +195,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("support", "Support")
-            .forRoles(EXTERNAL_FLAG_TAB_ROLES)
+            .forRoles(DEFENDANT_SUPPORT_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
             .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");

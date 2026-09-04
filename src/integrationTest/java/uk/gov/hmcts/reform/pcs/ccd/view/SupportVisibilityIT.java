@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -96,6 +97,57 @@ class SupportVisibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("keeps the defendant out of a claimant professional who also holds the defendant solicitor role")
+    void keepsDefendantSupportFromAClaimantProfessionalHoldingBothSolicitorRoles() {
+        PcsCaseEntity caseEntity = caseWithSupportOnBothSides();
+        readingAsUserFromOrganisation(CLAIMANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        PCSCase pcsCase = readCase(caseEntity);
+
+        assertThat(supportPartyIds(pcsCase)).containsExactly(claimantPartyId(caseEntity).toString());
+        assertThat(supportPartyIds(pcsCase)).doesNotContain(defendantPartyId(caseEntity).toString());
+    }
+
+    @Test
+    @DisplayName("keeps the claimant out of a defendant professional who also holds the claimant solicitor role")
+    void keepsClaimantSupportFromADefendantProfessionalHoldingBothSolicitorRoles() {
+        PcsCaseEntity caseEntity = caseWithSupportOnBothSides();
+        readingAsUserFromOrganisation(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        PCSCase pcsCase = readCase(caseEntity);
+
+        assertThat(supportPartyIds(pcsCase)).containsExactly(defendantPartyId(caseEntity).toString());
+        assertThat(supportPartyIds(pcsCase)).doesNotContain(claimantPartyId(caseEntity).toString());
+    }
+
+    @Test
+    @DisplayName("keeps both parties out of an unrelated professional who holds both solicitor roles")
+    void keepsBothPartiesFromAnUnrelatedProfessionalHoldingBothSolicitorRoles() {
+        PcsCaseEntity caseEntity = caseWithSupportOnBothSides();
+        readingAsUserFromOrganisation(UNRELATED_FIRM);
+        holdingBothSolicitorRoles();
+
+        PCSCase pcsCase = readCase(caseEntity);
+
+        assertThat(pcsCase.getPartySupport()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("shows no support once representation has ended even while both solicitor roles are held")
+    void keepsSupportFromAProfessionalWhoseRepresentationHasEndedDespiteBothSolicitorRoles() {
+        PcsCaseEntity caseEntity = caseWithSupportOnBothSides();
+        endDefendantRepresentation(caseEntity);
+        readingAsUserFromOrganisation(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        PCSCase pcsCase = readCase(caseEntity);
+
+        assertThat(pcsCase.getPartySupport()).isEmpty();
+    }
+
+    @Test
     @DisplayName("shows no support to a professional from an organisation that represents neither party")
     void showsNoSupportToAnUnrelatedProfessional() {
         PcsCaseEntity caseEntity = caseWithSupportOnBothSides();
@@ -141,6 +193,15 @@ class SupportVisibilityIT extends AbstractPostgresContainerIT {
         PCSCase pcsCase = readCase(caseEntity);
 
         assertThat(supportPartyIds(pcsCase)).containsExactly(claimantPartyId(caseEntity).toString());
+    }
+
+    private void holdingBothSolicitorRoles() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(
+            UserInfo.builder()
+                .uid(CLAIMANT_SOLICITOR_USER_ID.toString())
+                .roles(List.of("caseworker-pcs-solicitor", "claimant-solicitor", "defendant-solicitor",
+                               "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]"))
+                .build());
     }
 
     private void readingAsUserFromOrganisation(String organisationId) {

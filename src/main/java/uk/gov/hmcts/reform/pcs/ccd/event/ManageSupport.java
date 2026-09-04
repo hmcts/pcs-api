@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.SUPPORT_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagHistoryRoles.EXTERNAL_CASE_FLAG_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
@@ -36,7 +36,7 @@ public class ManageSupport implements CCDConfig<PCSCase, State, UserRole> {
                 .description("To manage support")
                 .showSummary()
                 .endButtonLabel("Submit")
-                .grant(Permission.CRU, SUPPORT_ROLES)
+                .grant(Permission.CRU, EXTERNAL_CASE_FLAG_ROLES)
                 .grantHistoryOnly(EXTERNAL_CASE_FLAG_HISTORY_ROLES))
                 .page("externalCaseFlag")
                 .pageLabel("Manage support")

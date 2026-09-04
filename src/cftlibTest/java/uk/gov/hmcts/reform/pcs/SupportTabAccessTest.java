@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
-import uk.gov.hmcts.reform.pcs.CftlibConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,8 +64,7 @@ class SupportTabAccessTest extends CftlibTest {
 
     @BeforeAll
     void setUp() {
-        claimantSolicitorToken = idamClient.getAccessToken(CftlibConfig.EXTERNAL_PROFESSIONAL_USER,
-                                                          CftlibConfig.LOCAL_IDAM_PASSWORD);
+        claimantSolicitorToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
     }
 
     @Test
