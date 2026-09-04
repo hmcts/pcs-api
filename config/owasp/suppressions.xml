@@ -81,6 +81,16 @@
     <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-39882</cve>
   </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-8685: false positive. CVE-2026-39882/39883 are OpenTelemetry-Go (otlp HTTP
+    exporter) and match the Java opentelemetry-semconv jar only through the generic
+    opentelemetry CPE. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-39883</cve>
+  </suppress>
   <suppress until="2026-09-30">
     <notes><![CDATA[
     CVE-2026-59313/59314: fix is Enterprise-only on Spring 6.2.x (6.2.20) / OSS in 7.x; PCS uses
