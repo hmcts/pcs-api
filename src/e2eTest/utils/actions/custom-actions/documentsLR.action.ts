@@ -274,23 +274,31 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally, because `cyaMap.clear()` used to sit after the throw below: a CYA failure left
+    // the module-level map populated, and the next test on that worker compared its own
+    // FieldsStore against the previous test's leftover CYA rows. FieldsStore is cleared per
+    // test in beforeEach; cyaMap is module-private, so specs cannot clear it and nothing did.
+    // Only the failure path leaked, which is why it presents as one test failing and then an
+    // unrelated later one.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
 
     // click each row's Change link, confirm it lands on the page where that
     // question was originally answered, then return to the CYA table.

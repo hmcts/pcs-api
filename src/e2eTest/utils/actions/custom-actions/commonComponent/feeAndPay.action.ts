@@ -7,6 +7,7 @@ import { backDateTheCasePaymentApiData } from '@data/api-data/backDateTheCasePay
 import { refundAndRemission } from '@data/user-data/staff.user.data';
 import Axios from "axios";
 import {getCaseTypeId} from '@utils/common/caseType.utils';
+import { SHORT_TIMEOUT } from '../../../../playwright.config';
 
 export class FeeAndPayAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -87,14 +88,10 @@ export class FeeAndPayAction implements IAction {
     ) {
       await performAction('clickTab', caseSummary.serviceRequestTab);
       const payNowLocator = page.getByText(payNowText,{ exact: true });
-      let isPayNowVisible = false;
-      for (let i = 0; i < 10; i++) {
-        isPayNowVisible = await payNowLocator.isVisible();
-        if (isPayNowVisible) {
-          break;
-        }
-        await page.waitForTimeout(500);
-      }
+      const isPayNowVisible = await payNowLocator
+        .waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
+        .then(() => true)
+        .catch(() => false);
       if (isPayNowVisible) {
         await payNowLocator.scrollIntoViewIfNeeded();
         await payNowLocator.click();

@@ -43,7 +43,8 @@ export class TextValidation implements IValidation {
         data.elementType = 'span.govuk-hint'
         break;
       case 'warningText':
-        const locator = page.locator('.govuk-warning-text__text');
+        const locator = page.locator('.govuk-warning-text__text').filter({ visible: true }).first();
+        await locator.waitFor({ state: 'visible' });
         const actualText = (await locator.textContent())
           ?.replace(/^Warning\s*/, '')
           .trim();
