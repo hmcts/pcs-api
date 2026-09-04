@@ -97,8 +97,6 @@ public class LegalRepresentativePartyLinkService {
                         caseEntity, legalRepOrg, legalRepEmail, orgDetails);
 
                 legalRepOrg.addClaimPartyContactDetails(legalRepOrgContactDetails);
-            } else {
-                updateContactEmail(existingContactDetails.get(), legalRepEmail);
             }
         } else {
             legalRepOrg = createNewLegalRepresentative(orgId, legalRepEmail, orgDetails, caseEntity);
@@ -166,12 +164,6 @@ public class LegalRepresentativePartyLinkService {
         }
         if (isNull(legalRepOrg.getOrganisationProfileId())) {
             legalRepOrg.setOrganisationProfileId(orgDetails.getOrgProfileId());
-        }
-    }
-
-    private void updateContactEmail(ClaimPartyContactDetailsEntity contactDetails, String legalRepEmail) {
-        if (isNotBlank(legalRepEmail)) {
-            contactDetails.setEmailAddress(legalRepEmail);
         }
     }
 
