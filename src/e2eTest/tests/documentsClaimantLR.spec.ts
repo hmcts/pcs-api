@@ -30,7 +30,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const title = testInfo.title;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   //await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
@@ -46,13 +46,13 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   if (genAppPayload) {
     //for (const defendant of defendantUserDetails) {
-      await performAction('makeAnApplicationAPI', {
-        data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      });
-   // }
+    await performAction('makeAnApplicationAPI', {
+      data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+    });
+    // }
   }
   await performAction('navigateToSummaryPage');
-  uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
+  uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation(test.info().title);
 });
 
 test.afterEach(async () => {
@@ -69,7 +69,6 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
-    //const uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation( test.info().title );
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -92,123 +91,103 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
-      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName,'',appType)
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
-    
+
   });
 
-  // test('Upload documents when GenApps submitted - Single def', async () => {
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-  //   await performAction('clickButton', caseSummary.go);
-  //   await performAction('uploadAdditionalDocumentsInfo');
-  //   await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
-  //   await performAction('verifyDocumentRelatesToApplication', {
-  //     question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
-  //     option: confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden,
-  //     count: defendantUserDetails.length,
-  //   });
-  //   await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-  //   await performAction('uploadFiles', {
-  //     documents: [
-  //       { type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput },
-  //       { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput },
-  //     ]
-  //   });
-  //   await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-  //   await performAction('retrieveCYATableDataLR', { name: 'check your answers table' });
-  //   await performAction('validateCYAForLR');
-  //   await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
-  //   await performAction('readDocumentsSubmit');
-  // });
+  test('Claimant LR Upload documents when GenApps submitted - SET_ASIDE', async () => {
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await performAction('selectDocumentRelatingTo', {
+      question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
+      option: docRelatedToOption,
+      nextPage: uploadYourDocuments.mainHeader,
+    });
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+      ]
+    });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
 
-  // test('Upload documents when GenApps submitted With Out Notice - Multi def', async ({ page }) => {
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-  //   await performAction('clickButton', caseSummary.go);
-  //   await performAction('uploadAdditionalDocumentsInfo');
-  //   await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
-  //   await performAction('verifyDocumentRelatesToApplication', {
-  //     question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
-  //     option: confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden,
-  //     count: defendantUserDetails.length,
-  //   });
-  //   await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-  //   await performAction('uploadFiles', {
-  //     documents: [
-  //       { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput },
-  //     ]
-  //   });
-  //   await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-  //   await performAction('retrieveCYATableDataLR', { name: 'check your answers table' });
-  //   await performAction('validateCYAForLR');
-  //   await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
-  //   await performAction('readDocumentsSubmit');
-  //   await performAction('clickLink', documentsUploadConfirm.signOutLink);
-  //   await page.context().clearCookies();
-  //   await page.evaluate(() => {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   });
-  //   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  //   await performAction('login', user.defendantSolicitor2);
-  //   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  //   await expect(async () => {
-  //     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  //   }).toPass({
-  //     timeout: VERY_LONG_TIMEOUT,
-  //   });
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-  //   await performAction('clickButton', caseSummary.go);
-  //   await performAction('uploadAdditionalDocumentsInfo');
-  //   await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
-  //   await performValidation('elementNotToBeVisible', {
-  //     elementType: 'text',
-  //     text: confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden,
-  //   });
-  // });
+  });
 
-  // test('Upload documents when GenApps not submitted - Multi def', async () => {
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-  //   await performAction('clickButton', caseSummary.go);
-  //   await performAction('uploadAdditionalDocumentsInfo');
-  //   await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-  //   await performAction('uploadFiles', {
-  //     documents: [
-  //       { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput },
-  //       { type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput },
-  //       { type: uploadYourDocuments.tenancyAgreementDropDownInput, fileName: 'tenancy.pdf', description: uploadYourDocuments.tenancyAgreementDropDownInput },
-  //       { type: uploadYourDocuments.correspondenceFromClaimantDropDownInput, fileName: 'correspondenceFromClaimant.pdf', description: uploadYourDocuments.correspondenceFromClaimantDropDownInput },
-  //       { type: uploadYourDocuments.correspondenceFromDefendantDropDownInput, fileName: 'correspondenceFromDefendant.pdf', description: uploadYourDocuments.correspondenceFromDefendantDropDownInput },
-  //       { type: uploadYourDocuments.photographicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: uploadYourDocuments.photographicEvidenceDropDownInput },
-  //       { type: uploadYourDocuments.certificateOfSuitabilityDropDownInput, fileName: 'certificateOfSuitability.pdf', description: uploadYourDocuments.certificateOfSuitabilityDropDownInput },
-  //       { type: uploadYourDocuments.legalAidCertificateDropDownInput, fileName: 'legalAidCertificate.pdf', description: uploadYourDocuments.legalAidCertificateDropDownInput },
-  //       { type: uploadYourDocuments.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: uploadYourDocuments.otherDocumentDropDownInput },
-  //     ]
-  //   });
-  //   await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-  // });
+  test('Claimant LR Upload documents when GenApps submitted - SOMETHING_ELSE', async () => {
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToApplicationRadioOptionHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await performAction('selectDocumentRelatingTo', {
+      question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
+      option: docRelatedToOption,
+      nextPage: uploadYourDocuments.mainHeader,
+    });
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementDropDownInput },
+      ]
+    });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
 
-  // test('Upload documents when GenApps not submitted - Single def', async () => {
-  //   await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-  //   await performAction('clickButton', caseSummary.go);
-  //   await performAction('uploadAdditionalDocumentsInfo');
-  //   await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-  //   await performAction('uploadFiles', {
-  //     documents: [
-  //       { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput },
-  //       { type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput },
-  //       { type: uploadYourDocuments.tenancyAgreementDropDownInput, fileName: 'tenancy.pdf', description: uploadYourDocuments.tenancyAgreementDropDownInput },
-  //       { type: uploadYourDocuments.correspondenceFromClaimantDropDownInput, fileName: 'correspondenceFromClaimant.pdf', description: uploadYourDocuments.correspondenceFromClaimantDropDownInput },
-  //       { type: uploadYourDocuments.correspondenceFromDefendantDropDownInput, fileName: 'correspondenceFromDefendant.pdf', description: uploadYourDocuments.correspondenceFromDefendantDropDownInput },
-  //       { type: uploadYourDocuments.photographicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: uploadYourDocuments.photographicEvidenceDropDownInput },
-  //       { type: uploadYourDocuments.certificateOfSuitabilityDropDownInput, fileName: 'certificateOfSuitability.pdf', description: uploadYourDocuments.certificateOfSuitabilityDropDownInput },
-  //       { type: uploadYourDocuments.legalAidCertificateDropDownInput, fileName: 'legalAidCertificate.pdf', description: uploadYourDocuments.legalAidCertificateDropDownInput },
-  //       { type: uploadYourDocuments.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: uploadYourDocuments.otherDocumentDropDownInput },
-  //     ]
-  //   });
-  //   await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-  //   await performAction('retrieveCYATableDataLR', { name: 'check your answers table' });
-  //   await performAction('validateCYAForLR');
-  //   await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
-  //   await performAction('readDocumentsSubmit');
-  // });
+  });
+
+  test('Claimant LR Upload documents for Claim or CounterClaim submitted - SOMETHING_ELSE', async () => {
+    let docRelatedToOption = confirmIfTheseDocumentsRelateToAnApplication.noRadioOption;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[2];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await performAction('selectDocumentRelatingTo', {
+      question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
+      option: docRelatedToOption,
+      nextPage: uploadYourDocuments.mainHeader,
+    });
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementDropDownInput },
+      ]
+    });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
+
+  });
+
+
 });
