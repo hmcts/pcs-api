@@ -41,8 +41,6 @@ java:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
     IDAM_CLIENT_ID: "pcs-api"
-    PCS_IDAM_SYSTEM_FIRST_NAME: "Service"
-    PCS_IDAM_SYSTEM_LAST_NAME: "Account"
     DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     DOC_ASSEMBLY_URL: "http://dg-docassembly-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
