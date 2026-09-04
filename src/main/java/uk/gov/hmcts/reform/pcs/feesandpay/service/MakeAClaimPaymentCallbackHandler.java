@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
@@ -28,7 +28,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
  * with the case snapshot and the history entry. The CCPay callback can be re-fired safely - the
  * idempotency key is derived from the service request reference, so a replay records nothing twice.
  */
-@AllArgsConstructor
 @Component
 @Slf4j
 public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy {
@@ -40,6 +39,20 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
     private final PartyService partyService;
     private final FeePaymentRepository feePaymentRepository;
     private final ObjectMapper objectMapper;
+
+    // The executor is @Lazy to break the startup cycle: the event configs reach PaymentService,
+    // and the executor's internals depend on the resolved event config registry.
+    public MakeAClaimPaymentCallbackHandler(@Lazy SystemEventExecutor systemEventExecutor,
+                                            CaseIssueService caseIssueService,
+                                            PartyService partyService,
+                                            FeePaymentRepository feePaymentRepository,
+                                            ObjectMapper objectMapper) {
+        this.systemEventExecutor = systemEventExecutor;
+        this.caseIssueService = caseIssueService;
+        this.partyService = partyService;
+        this.feePaymentRepository = feePaymentRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public boolean handlesOwnTransaction(PaymentStatusCallback paymentStatusCallback) {
