@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CcdCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CcdCaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -39,7 +40,7 @@ public class CcdCaseDataDeletionService {
     private final ObjectMapper objectMapper;
     private final CcdCaseRepository ccdCaseRepository;
 
-    public List<Long> findExpiredDraftCasesBatch(int discardAfterDays, int limit) {
+    public List<DeletionCaseData> findExpiredDraftCasesBatch(int discardAfterDays, int limit) {
         return ccdCaseRepository.findExpiredDraftCases(discardAfterDays, limit);
     }
 
