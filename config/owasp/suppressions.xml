@@ -55,6 +55,38 @@
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
+    HDPI-8150: temporary. jackson-databind 2.17.x still arrives transitively.
+    Remove once every consumer resolves to a patched 2.21.x.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.17(\..*)?$</packageUrl>
+    <cve>CVE-2026-54512</cve>
+    <cve>CVE-2026-54513</cve>
+    <cve>CVE-2026-54514</cve>
+    <cve>CVE-2026-54515</cve>
+  </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-8150: temporary. CVE-2026-54515 is still reported against
+    jackson-databind 2.21.4. Remove when a fixed 2.21.x is released.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
+    <cve>CVE-2026-54515</cve>
+  </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
+    HDPI-8150: temporary. CVEs against opentelemetry-api/context 1.49.0 and
+    opentelemetry-semconv 1.41.1, which arrive transitively. No coordinated
+    patched release resolves through our dependency graph yet. Remove once a
+    fixed opentelemetry version resolves transitively.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
+    <cve>CVE-2026-54285</cve>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-39883</cve>
+    <cve>CVE-2026-41178</cve>
+  </suppress>
+  <suppress until="2026-09-15">
+    <notes><![CDATA[
     HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.25. No fixed
     Tomcat release published yet; suppression is temporary and MUST be
     removed when tomcatEmbedVersion is bumped to the fixed version.
