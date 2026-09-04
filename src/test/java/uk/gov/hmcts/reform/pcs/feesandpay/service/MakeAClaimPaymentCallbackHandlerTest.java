@@ -4,34 +4,36 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.SystemEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseIssueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.Payment;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
 
-import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -40,103 +42,139 @@ import static org.mockito.Mockito.when;
 class MakeAClaimPaymentCallbackHandlerTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final String CCD_CASE_NUMBER = "1111-2222-3333-4444";
-    private static final String RESPONSIBLE_PARTY = "Claimant Org Ltd";
+    private static final String SERVICE_REQUEST_REFERENCE = "2026-1750000000000";
+    private static final String PAYMENT_REFERENCE = "RC-1111-2222-3333-4444";
     private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
+    private static final UUID EXPECTED_IDEMPOTENCY_KEY = UUID.nameUUIDFromBytes(
+        ("claimIssuePayment:" + SERVICE_REQUEST_REFERENCE).getBytes(StandardCharsets.UTF_8));
 
     @Mock
-    private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
+    private SystemEventExecutor systemEventExecutor;
+    @Mock
+    private CaseIssueService caseIssueService;
     @Mock
     private PartyService partyService;
+    @Mock
+    private FeePaymentRepository feePaymentRepository;
     @Mock
     private ObjectMapper objectMapper;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
 
-    @ParameterizedTest
-    @MethodSource("paymentStatus")
-    void shouldHandle(PaymentStatus paymentStatus) throws Exception {
-        // Given
+    @Test
+    void paidCallback_RecordsAClaimIssuePaymentSystemEvent() throws Exception {
+        // given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = new ObjectMapper().writeValueAsString(taskData);
-
-        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).orgName(RESPONSIBLE_PARTY).build();
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        FeePaymentEntity feePaymentEntity = feePayment();
 
-        ClaimEntity claimEntity = new ClaimEntity();
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
-        claimEntity.setPcsCase(pcsCase);
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
-            .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+        // when
+        underTest.handle(paidCallback(), feePaymentEntity);
 
-        // When
-        underTest.handle(callback, feePaymentEntity);
+        // then - the executor is given the change keyed by the service request reference
+        ArgumentCaptor<SystemEventAction> actionCaptor = ArgumentCaptor.forClass(SystemEventAction.class);
+        verify(systemEventExecutor).execute(eq(CASE_REFERENCE), eq(EXPECTED_IDEMPOTENCY_KEY),
+                                            actionCaptor.capture());
 
-        // Then
+        // running the action applies the fee update, issues the case and describes the event
+        SystemEventResult result = actionCaptor.getValue().execute(null);
+        assertThat(feePaymentEntity.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(feePaymentEntity.getExternalReference()).isEqualTo(PAYMENT_REFERENCE);
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
-        if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
-        } else {
-            verifyNoInteractions(ccdPaymentStateUpdateService);
-        }
+        verify(feePaymentRepository).save(feePaymentEntity);
+        verify(caseIssueService).issueCaseIfNotIssued(CASE_REFERENCE);
+        assertThat(result.eventId()).isEqualTo("claimIssuePayment");
+        assertThat(result.eventName()).isEqualTo("Payment Confirmation");
+        assertThat(result.state().orElseThrow()).isEqualTo(State.CASE_ISSUED);
+    }
+
+    @Test
+    void notPaidCallback_SetsThePartyAndRecordsNoEvent() throws Exception {
+        // given
+        FeesAndPayTaskData taskData = buildTaskData();
+        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+        when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE)).thenReturn(partyEntity);
+        FeePaymentEntity feePaymentEntity = feePayment();
+
+        // when
+        underTest.handle(callbackWithStatus("Not paid"), feePaymentEntity);
+
+        // then
+        assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
+        verifyNoInteractions(systemEventExecutor, caseIssueService, feePaymentRepository);
+    }
+
+    @Test
+    void handlesItsOwnTransactionOnlyWhenPaid() {
+        assertThat(underTest.handlesOwnTransaction(paidCallback())).isTrue();
+        assertThat(underTest.handlesOwnTransaction(callbackWithStatus("Partially paid"))).isFalse();
+        assertThat(underTest.handlesOwnTransaction(callbackWithStatus("Not paid"))).isFalse();
     }
 
     @Test
     void shouldThrowPaymentCallbackExceptionWhenTaskDataIsInvalidJson() throws Exception {
-        // Given
+        // given
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class)))
             .thenThrow(new JsonProcessingException("Invalid JSON") {});
         FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(new ClaimEntity()).taskData("aasdfsdf{{")
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
 
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
-
-        // When / Then
+        // when / then
         assertThatExceptionOfType(PaymentCallbackException.class)
-            .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
+            .isThrownBy(() -> underTest.handle(paidCallback(), feePaymentEntity))
             .withMessageContaining("Unable to process");
-        verifyNoInteractions(ccdPaymentStateUpdateService);
+        verifyNoInteractions(systemEventExecutor, caseIssueService);
     }
 
     @Test
     void shouldPropagatePartyNotFoundExceptionWhenNoPartyMatchesResponsibleParty() throws Exception {
-        // Given
+        // given
         FeesAndPayTaskData taskData = buildTaskData();
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        String taskDataJson = "some task json";
-
-        PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
         when(partyService.getPartyEntityByEntityId(RESPONSIBLE_PARTY_ID, CASE_REFERENCE))
-            .thenThrow(expectedException);
+            .thenThrow(new PartyNotFoundException("no party"));
 
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().taskData(taskDataJson)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
+        // when / then
+        assertThatExceptionOfType(PartyNotFoundException.class)
+            .isThrownBy(() -> underTest.handle(paidCallback(), feePayment()));
+        verifyNoInteractions(systemEventExecutor, caseIssueService);
+    }
 
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
+    private PaymentStatusCallback paidCallback() {
+        return callbackWithStatus("Paid");
+    }
 
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.handle(callback, feePaymentEntity));
+    private PaymentStatusCallback callbackWithStatus(String status) {
+        return PaymentStatusCallback.builder()
+            .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+            .serviceRequestStatus(status)
+            .payment(Payment.builder().paymentReference(PAYMENT_REFERENCE).build())
+            .build();
+    }
 
-        // Then
-        assertThat(throwable).isEqualTo(expectedException);
-        verifyNoInteractions(ccdPaymentStateUpdateService);
+    private FeePaymentEntity feePayment() {
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setPcsCase(PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build());
+        return FeePaymentEntity.builder()
+            .claim(claimEntity)
+            .serviceRequestReference(SERVICE_REQUEST_REFERENCE)
+            .taskData("{}")
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+            .build();
     }
 
     private FeesAndPayTaskData buildTaskData() {
         return FeesAndPayTaskData.builder()
             .caseReference(CASE_REFERENCE)
-            .ccdCaseNumber(CCD_CASE_NUMBER)
+            .ccdCaseNumber(String.valueOf(CASE_REFERENCE))
             .responsiblePartyId(RESPONSIBLE_PARTY_ID)
+            .responsiblePartyName("Claimant Org Ltd")
+            .feeDetails(FeeDetails.builder().build())
             .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
-            .feeDetails(FeeDetails.builder().feeAmount(new BigDecimal("232.00")).code("FEE0412").build())
             .build();
     }
-
-    private static Stream<PaymentStatus> paymentStatus() {
-        return Stream.of(PaymentStatus.values());
-    }
-
 }
