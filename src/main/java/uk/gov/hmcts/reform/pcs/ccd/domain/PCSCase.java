@@ -367,7 +367,8 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class,
+        AcaSystemUserAccess.class, DefendantReadAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     /**
@@ -779,6 +780,13 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
+
+    @CCD (
+        label = "Review date",
+        access = {InternalTabAccess.class},
+        typeOverride = Collection,
+        typeParameterOverride = "CaseReviewDate")
+    private List<ListValue<CaseReviewDate>> caseReviewDates;
 
     @CCD(
         label = "Review date",

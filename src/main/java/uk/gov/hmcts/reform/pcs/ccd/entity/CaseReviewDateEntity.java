@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,6 +19,7 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -38,6 +40,11 @@ public class CaseReviewDateEntity {
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
+
+    private String createdBy;
+
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
 
     private LocalDate date;
 

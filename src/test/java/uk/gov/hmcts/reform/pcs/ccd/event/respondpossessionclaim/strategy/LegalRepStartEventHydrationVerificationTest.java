@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -29,7 +30,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +49,9 @@ class LegalRepStartEventHydrationVerificationTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
+
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
@@ -58,9 +61,9 @@ class LegalRepStartEventHydrationVerificationTest {
             legalRepForDefendantAccessValidator,
             legalRepPartySelectionService,
             organisationService,
-            new TenancyLicenceView(),
-            new NoticeOfPossessionView(),
-            new RentArrearsView()
+            new TenancyLicenceView(uploadTimestampProvider),
+            new NoticeOfPossessionView(uploadTimestampProvider),
+            new RentArrearsView(uploadTimestampProvider)
         );
     }
 
@@ -111,11 +114,11 @@ class LegalRepStartEventHydrationVerificationTest {
         when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(false);
         when(legalRepPartySelectionService.getDraftCaseData(
-            eq(CASE_REFERENCE),
-            eq(incomingCase),
-            eq(defendant),
-            eq(List.of(defendant)),
-            eq("test-org-id")
+            CASE_REFERENCE,
+            incomingCase,
+            defendant,
+            List.of(defendant),
+            "test-org-id"
         )).thenReturn(incomingCase);
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, incomingCase);
