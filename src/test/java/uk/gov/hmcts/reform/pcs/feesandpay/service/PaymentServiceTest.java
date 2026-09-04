@@ -118,20 +118,12 @@ class PaymentServiceTest {
     @Captor
     private ArgumentCaptor<PBAServiceRequestDTO> pbaPaymentRequestCaptor;
 
-    @Mock
-    private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
-
     @InjectMocks
     private PaymentService underTest;
 
     @BeforeEach
     void setUp() {
         lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_BEARER);
-        lenient().doAnswer(invocation -> {
-            invocation.<java.util.function.Consumer<org.springframework.transaction.TransactionStatus>>getArgument(0)
-                .accept(null);
-            return null;
-        }).when(transactionTemplate).executeWithoutResult(any());
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -251,32 +243,6 @@ class PaymentServiceTest {
             assertThat(paymentEntity.getServiceRequestReference()).isEqualTo(requestReference);
             assertThat(paymentEntity.getPaymentStatus()).isEqualTo(status);
             assertThat(paymentEntity.getExternalReference()).isEqualTo(paymentReference);
-        }
-
-        @Test
-        void shouldLeaveTheWholeUpdateToAStrategyThatHandlesItsOwnTransaction() {
-            // Given
-            String requestReference = UUID.randomUUID().toString();
-            PaymentStatusCallback paymentStatusCallback = PaymentStatusCallback.builder()
-                .serviceRequestReference(requestReference).serviceRequestStatus("Paid").build();
-            FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-                .serviceRequestReference(requestReference)
-                .paymentCallbackHandlerType(CLAIM)
-                .build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
-                .thenReturn(Optional.of(feePaymentEntity));
-            PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
-            when(strategy.handlesOwnTransaction(paymentStatusCallback)).thenReturn(true);
-            when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
-
-            // When
-            underTest.processPaymentResponse(paymentStatusCallback);
-
-            // Then - no outer transaction, no fee update outside the strategy
-            verify(strategy).handle(paymentStatusCallback, feePaymentEntity);
-            verify(feePaymentRepository, never()).save(any());
-            verify(transactionTemplate, never()).executeWithoutResult(any());
-            assertThat(feePaymentEntity.getPaymentStatus()).isNull();
         }
 
         @Test

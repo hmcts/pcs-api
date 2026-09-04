@@ -7,12 +7,4 @@ public interface PaymentCallbackStrategy {
 
     void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity);
 
-    /**
-     * A strategy that records a system event manages its own transaction (the executor refuses to
-     * join an existing one), so the caller must not wrap it and must leave the fee update to it.
-     */
-    default boolean handlesOwnTransaction(PaymentStatusCallback paymentStatusCallback) {
-        return false;
-    }
-
 }

@@ -35,7 +35,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final OrganisationDetailsService organisationDetailsService;
     private final IdamAuthenticator idamAuthenticator;
-    private final TransactionTemplate transactionTemplate;
 
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
@@ -68,8 +66,7 @@ public class PaymentService {
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
                           OrganisationDetailsService organisationDetailsService,
-                          IdamAuthenticator idamAuthenticator,
-                          TransactionTemplate transactionTemplate) {
+                          IdamAuthenticator idamAuthenticator) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
         this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
@@ -79,7 +76,6 @@ public class PaymentService {
         this.objectMapper = objectMapper;
         this.organisationDetailsService = organisationDetailsService;
         this.idamAuthenticator = idamAuthenticator;
-        this.transactionTemplate = transactionTemplate;
     }
 
     /**
@@ -209,33 +205,34 @@ public class PaymentService {
         }
     }
 
+    @Transactional
     public void processPaymentResponse(PaymentStatusCallback paymentStatusCallback) {
         log.info("PaymentStatusCallback status: {}", paymentStatusCallback.getServiceRequestStatus());
 
         getFeePaymentEntity(paymentStatusCallback.getServiceRequestReference())
-            .ifPresent(feePaymentEntity -> {
-                PaymentCallbackStrategy strategy = paymentCallbackStrategyFactory
-                    .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
-
-                if (strategy != null && strategy.handlesOwnTransaction(paymentStatusCallback)) {
-                    strategy.handle(paymentStatusCallback, feePaymentEntity);
-                    return;
-                }
-
-                transactionTemplate.executeWithoutResult(status -> {
+            .ifPresent(
+                feePaymentEntity -> {
                     feePaymentEntity.setExternalReference(paymentStatusCallback.getPaymentReference());
                     feePaymentEntity
                         .setPaymentStatus(PaymentStatus.fromValue(paymentStatusCallback.getServiceRequestStatus()));
 
-                    if (strategy != null) {
-                        strategy.handle(paymentStatusCallback, feePaymentEntity);
-                    } else {
-                        log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
-                    }
+                    callPaymentCallbackHandler(paymentStatusCallback, feePaymentEntity);
 
                     feePaymentRepository.save(feePaymentEntity);
                 });
-            });
+    }
+
+    private void callPaymentCallbackHandler(PaymentStatusCallback paymentStatusCallback,
+                                            FeePaymentEntity feePaymentEntity) {
+
+        PaymentCallbackStrategy paymentCallbackStrategy = paymentCallbackStrategyFactory
+            .getStrategy(feePaymentEntity.getPaymentCallbackHandlerType());
+
+        if (paymentCallbackStrategy != null) {
+            paymentCallbackStrategy.handle(paymentStatusCallback, feePaymentEntity);
+        } else {
+            log.warn("No handler found for type {}", feePaymentEntity.getPaymentCallbackHandlerType());
+        }
     }
 
     @Transactional
