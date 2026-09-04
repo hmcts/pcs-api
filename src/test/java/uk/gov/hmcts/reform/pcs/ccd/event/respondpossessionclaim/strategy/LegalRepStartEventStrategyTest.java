@@ -12,6 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
@@ -38,6 +41,15 @@ class LegalRepStartEventStrategyTest {
 
     @Mock
     private OrganisationService organisationService;
+
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+
+    @Mock
+    private NoticeOfPossessionView noticeOfPossessionView;
+
+    @Mock
+    private RentArrearsView rentArrearsView;
 
     @InjectMocks
     private LegalRepStartEventStrategy underTest;
@@ -93,6 +105,9 @@ class LegalRepStartEventStrategyTest {
 
         verify(legalRepPartySelectionService).getDraftCaseData(CASE_REFERENCE, pcsCase, defendant, defendants,
                                                                organisationId);
+        verify(tenancyLicenceView).setCaseFields(pcsCase, caseEntity);
+        verify(noticeOfPossessionView).setCaseFields(pcsCase, caseEntity);
+        verify(rentArrearsView).setCaseFields(pcsCase, caseEntity);
     }
 
     @Test
@@ -127,9 +142,9 @@ class LegalRepStartEventStrategyTest {
     void shouldBuildSubmittedResponseWhenResponseAlreadySubmitted() {
         // Given
         UUID defendantId = UUID.randomUUID();
-        UUID representativeId = UUID.randomUUID();
         PartyEntity defendantEntity = PartyEntity.builder().id(defendantId).build();
         List<PartyEntity> defendantParties = List.of(defendantEntity);
+        PCSCase pcsCase = PCSCase.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         String organisationId = "org";
 
@@ -139,8 +154,8 @@ class LegalRepStartEventStrategyTest {
             .thenReturn(defendantParties);
         when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(true);
+        when(legalRepPartySelectionService.buildSubmittedResponseCase(pcsCase, defendantParties)).thenReturn(pcsCase);
 
-        PCSCase pcsCase = PCSCase.builder().build();
         // When
         underTest.loadDraft(CASE_REFERENCE, pcsCase);
 
