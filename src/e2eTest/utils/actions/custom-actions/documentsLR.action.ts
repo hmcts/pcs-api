@@ -186,10 +186,24 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
-        const typeDropdown = page.locator(
-          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
-        );
-        await typeDropdown.waitFor({ state: 'attached' });
+        // id^= also prefix-matches the sibling Wales field on the same row —
+        // LegalRepDocument declares both defendantDocumentType and
+        // defendantDocumentTypeWales — and neither carries a disabled attribute, so
+        // :not([disabled]) did not disambiguate. Observed as:
+        //   strict mode violation: ... resolved to 2 elements
+        //     1) <select id="..._legalRepDocumentType">
+        //     2) <select id="..._legalRepDocumentTypeWales">
+        // Match either id exactly and take whichever is present.
+        const idBase = `lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType`;
+        const englandDropdown = page.locator(`select#${idBase}`);
+        const walesDropdown = page.locator(`select#${idBase}Wales`);
+        // Whichever of the two the journey actually rendered.
+        await expect
+          .poll(async () => (await englandDropdown.count()) + (await walesDropdown.count()), {
+            timeout: 60000,
+          })
+          .toBeGreaterThan(0);
+        const typeDropdown = (await englandDropdown.count()) > 0 ? englandDropdown : walesDropdown;
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });
 
         await typeDropdown.selectOption({ label: document.type });
