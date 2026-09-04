@@ -116,12 +116,13 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
                 """,
             Map.of("caseReference", caseReference, "eventId", EVENT_ID)
         );
+        // the audit swap shows the acting solicitor as the event's user, proxied by the system user
         assertThat(event)
             .containsEntry("event_id", EVENT_ID)
             .containsEntry("event_name", "Notice of change applied")
             .containsEntry("summary", "Notice of change by " + LEGAL_REP_EMAIL)
-            .containsEntry("user_id", SYSTEM_USER_ID)
-            .containsEntry("proxied_by", ACTING_SOLICITOR_ID);
+            .containsEntry("user_id", ACTING_SOLICITOR_ID)
+            .containsEntry("proxied_by", SYSTEM_USER_ID);
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();

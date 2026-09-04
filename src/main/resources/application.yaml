@@ -358,7 +358,7 @@ ccd:
       enabled: true
     system-user:
       id: ${PCS_IDAM_SYSTEM_USER_ID:78acf0a0-079b-3112-8cad-549c81b83510}
-      username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+      username: ${idam.system-user.username}
       first-name: ${PCS_IDAM_SYSTEM_FIRST_NAME:PCS}
       last-name: ${PCS_IDAM_SYSTEM_LAST_NAME:System}
 
