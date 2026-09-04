@@ -24,7 +24,16 @@
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await fileInput.last().setInputFiles(filePath);
-      let timeout = 6000;
+      // 8s, not 6s. XUI returns 429 when a document POST arrives within 5s of the previous
+      // upload completing (rpx-xui-webapp api/documents/index.ts handleRequest), and it
+      // DOUBLES that window on every 429 it issues, up to 180s. This sleep is what keeps
+      // consecutive uploads apart, so at 6s there was only ~1s of margin against the 5s
+      // threshold — and the penalty for losing that margin is exponential, not linear:
+      // one 429 pushes the window to 10s, which makes the next upload more likely to 429
+      // as well, cascading toward the ceiling. Widening the gap avoids the 429 rather than
+      // trying to recover from it, which is the cheaper direction: the retry loop below
+      // re-uploads, and each re-upload re-arms the window it is waiting on.
+      let timeout = 8000;
       await performValidation('waitUntilElementDisappears', 'Uploading...');
       // Deliberately kept. "Uploading..." disappearing is not the end of the upload —
       // CCD is still committing the row, and documentsLR uploads two files in a loop, so
