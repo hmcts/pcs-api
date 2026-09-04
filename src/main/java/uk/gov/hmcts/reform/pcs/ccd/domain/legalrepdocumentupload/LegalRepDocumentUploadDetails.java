@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.util.List;
@@ -27,26 +27,27 @@ public class LegalRepDocumentUploadDetails {
         label = "Do these documents relate to an existing application?",
         typeOverride = DynamicRadioList
     )
-    @JsonProperty("DocumentUploadCategories")
+    @JsonProperty("lrDocUpload_ValidCategories")
     private DynamicStringList validCategories;
-
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system"
+        hint = "Upload a document to the system",
+        min = 1
     )
+    @JsonProperty("lrDocUpload_LegalRepDocuments")
     private List<ListValue<LegalRepDocument>> legalRepDocuments;
 
     @CCD(searchable = false)
-    private YesOrNo showExistingApplicationPage;
+    @JsonProperty("lrDocUpload_ShowExistingApplicationPage")
+    private VerticalYesNo showExistingApplicationPage;
 
     @CCD(searchable = false)
-    private  YesOrNo isWales;
+    @JsonProperty("lrDocUpload_PartyType")
+    private PartyType partyType;
 
-    @CCD(
-        access = {DefendantAccess.class},
-        searchable = false
-    )
-    private String selectedLegalRepRelatedApplicationId;
+    @CCD(searchable = false)
+    @JsonProperty("lrDocUpload_IsWales")
+    private VerticalYesNo isWales;
 
 }
