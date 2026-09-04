@@ -242,8 +242,12 @@ xui-webapp:
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
-      FEATURE_REDIS_ENABLED: false
-      REDISCLOUD_URL: http://dummyrediscloudurl
+      # File-store sessions live on the pod's own filesystem and go missing mid-journey —
+      # 21 x "ENOENT ... /tmp/sessions/<id>.json" in one E2E run, which logs the user out
+      # part-way through a test. REDISCLOUD_URL comes from the pcs vault below (the
+      # shared-infra Redis that pcs-frontend already uses).
+      FEATURE_REDIS_ENABLED: true
+      REDIS_KEY_PREFIX: 'xui-${SERVICE_NAME}'
       FEATURE_APP_INSIGHTS_ENABLED: false
       FEATURE_SECURE_COOKIE_ENABLED: false
       FEATURE_HELMET_ENABLED: false
@@ -269,6 +273,10 @@ xui-webapp:
           - system-user-password
           - mc-session-secret
           - appinsights-connection-string-mc
+      pcs:
+        secrets:
+          - name: redis-connection-string
+            alias: REDISCLOUD_URL
 
 
 ccd-case-document-am-api:
