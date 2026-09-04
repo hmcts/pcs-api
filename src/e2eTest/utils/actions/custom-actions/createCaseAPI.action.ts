@@ -46,6 +46,7 @@ export class CreateCaseAPIAction implements IAction {
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
+      ['pollRespondEventTriggerAPI', () => this.pollRespondEventTriggerAPI()],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -529,7 +530,7 @@ export class CreateCaseAPIAction implements IAction {
 
   private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
-    const maxRetries = actionRetries + actionRetries;
+    const maxRetries = 120; // 120 attempts x 1 s delay = 120 s total poll window (preview is slow)
     const delayMs = VERY_SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -559,6 +560,62 @@ export class CreateCaseAPIAction implements IAction {
       }
     }
     throw new Error('Payment API failed after multiple retries');
+  }
+
+  /**
+   * Polls `GET /cases/<caseRef>/event-triggers/respondPossessionClaim` using the defendant
+   * solicitor's access token (set by getCaseAPI) until the data store returns HTTP 200, or the
+   * 60-second window elapses. Non-fatal on timeout: logs a warning and returns so that the UI
+   * step can proceed and produce the real Playwright error if the trigger is still unavailable.
+   *
+   * This guards against the propagation race seen in AAT nightlies 598 and 599 where the data
+   * store returned 404 on respondPossessionClaim shortly after LINK SOLICITOR TO DEFENDANT
+   * succeeded, then 200 on the next attempt (nightly 600).
+   */
+  private async pollRespondEventTriggerAPI(): Promise<void> {
+    const caseRef = process.env.CASE_NUMBER;
+    const dataStoreBase = process.env.DATA_STORE_URL_BASE;
+    const solicitorToken = process.env.SOLICITOR_ACCESS_TOKEN;
+    const s2sToken = process.env.SERVICE_AUTH_TOKEN;
+
+    if (!caseRef || !dataStoreBase || !solicitorToken || !s2sToken) {
+      console.warn('pollRespondEventTriggerAPI: one or more required env vars (CASE_NUMBER, DATA_STORE_URL_BASE, SOLICITOR_ACCESS_TOKEN, SERVICE_AUTH_TOKEN) are not set: skipping poll');
+      return;
+    }
+
+    const triggerUrl = `/cases/${caseRef}/event-triggers/respondPossessionClaim?ignore-warning=false`;
+    const pollApi = Axios.create({
+      baseURL: dataStoreBase,
+      headers: {
+        Authorization: `Bearer ${solicitorToken}`,
+        ServiceAuthorization: `Bearer ${s2sToken}`,
+        'Content-Type': 'application/json',
+        experimental: 'true',
+        Accept: '*/*',
+      },
+    });
+
+    const maxAttempts = 12;   // 12 x 5 s = 60 s ceiling
+    const intervalMs  = 5000;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const res = await pollApi.get(triggerUrl);
+        if (res.status === 200) {
+          console.log(`\n✅ pollRespondEventTriggerAPI: respondPossessionClaim trigger ready after ${attempt} attempt(s)`);
+          return;
+        }
+      } catch (error: unknown) {
+        const status = Axios.isAxiosError(error) ? error.response?.status : undefined;
+        console.warn(`pollRespondEventTriggerAPI: attempt ${attempt}/${maxAttempts}: status ${status ?? 'no response'}`);
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise(res => setTimeout(res, intervalMs));
+      }
+    }
+
+    console.warn('pollRespondEventTriggerAPI: respondPossessionClaim trigger not ready after 60 s: continuing; the UI step will surface the real error');
   }
   private defendantIds: string[] = [];
   private def1Details: { id: string; name: string } | null = null;
