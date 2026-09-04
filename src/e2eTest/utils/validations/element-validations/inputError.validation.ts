@@ -1,5 +1,7 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { IValidation, validationData } from '../../interfaces/validation.interface';
+import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
+import { MEDIUM_TIMEOUT } from '../../../playwright.config';
 
 export class InputErrorValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
@@ -7,7 +9,10 @@ export class InputErrorValidation implements IValidation {
     const valueLocator = await this.findFieldValueLocator(page, fieldName, data);
 
     if (data !== undefined) {
-      await expect(valueLocator).toHaveText(String(data));
+      // Bounded for the same reason as errorMessage: this runs inside 60s `toPass` loops
+      // alongside a click that can take the full 40s actionTimeout, so the 30s global
+      // default made the wrapper's budget unachievable. See error-message.validation.ts.
+      await expect(valueLocator).toHaveText(String(data), { timeout: MEDIUM_TIMEOUT });
     } else {
       const value = await valueLocator.textContent();
       if (!value?.trim()) {
@@ -28,6 +33,9 @@ export class InputErrorValidation implements IValidation {
       )
     ];
 
+
+    // Error messages render a tick after submit; count() would read 0 without this wait.
+    await waitForInteractive(anyOf(...locators));
 
     for (const locator of locators) {
 

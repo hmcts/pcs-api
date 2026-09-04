@@ -1,10 +1,10 @@
 import { Page, expect } from '@playwright/test';
 import { IValidation} from '../../interfaces/validation.interface';
+import { pageHeading } from '@utils/common/locator.utils';
 
 export class MainHeaderValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string): Promise<void> {
-    const locator = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title').filter({ visible: true }).first();
-    await expect(locator).toHaveText(fieldName);
+    await expect(pageHeading(page, fieldName)).toHaveText(fieldName);
   }
 }
 

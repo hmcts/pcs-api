@@ -289,7 +289,8 @@ export class CaseManagementAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
-    let timeout = 6000;
+    // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
+    let timeout = 8000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     await expect(async () => {
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
@@ -306,6 +307,7 @@ export class CaseManagementAction implements IAction {
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
+    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
     await page.waitForTimeout(timeout);
   }
 
@@ -377,7 +379,11 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', {
       textLabel: editHearingData.hourLabel,
       index: 1
-    }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
+      // From 1, not 0. getRandomNumberAsString is inclusive of min, and a zero-hours
+      // duration is not rendered on the check-your-answers page, so the CYA comparison
+      // failed with "Hours | 0 / NOT FOUND" roughly one run in eleven. Days and Minutes
+      // above and below already start at 1 for the same reason.
+    }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
       textLabel: editHearingData.minutesLabel,
       index: 1
@@ -915,7 +921,6 @@ export class CaseManagementAction implements IAction {
     }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
-      await page.waitForTimeout(6000);
     }
   }
 
