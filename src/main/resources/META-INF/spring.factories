@@ -1,1 +1,0 @@
-org.springframework.boot.env.EnvironmentPostProcessor=uk.gov.hmcts.reform.pcs.config.SystemUserEnvironmentPostProcessor
