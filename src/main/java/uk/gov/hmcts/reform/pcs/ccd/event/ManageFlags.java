@@ -34,9 +34,8 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
                             .showSummary()
                             .endButtonLabel("Submit")
                             .grant(Permission.CRU,
-                                   UserRole.CTSC_ADMIN,
                                    UserRole.HEARING_CENTRE_ADMIN,
-                                   UserRole.WLU_ADMIN)
+                                   UserRole.HEARING_CENTRE_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("caseworkerCaseFlag")
             .pageLabel("Manage case flags")
