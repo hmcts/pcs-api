@@ -34,6 +34,7 @@ import {
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import { MAX_UPLOAD_BACKOFF } from '@utils/actions/element-actions/uploadFile.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
@@ -289,23 +290,40 @@ export class CaseManagementAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
-    let timeout = 6000;
+    // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
+    let timeout = 8000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    await expect(async () => {
-      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
-                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-      let limit = await rateLimit.count();
-
-      while (limit > 0) {
-        timeout *= 2;
-        await page.waitForTimeout(timeout);
-        await fileInput.last().setInputFiles(filePath);
-        await performValidation('waitUntilElementDisappears', 'Uploading...');
-        limit = await rateLimit.count();
+    // Same three defects uploadFile.action.ts already had fixed, left behind in this copy:
+    //
+    // 1. count() does not poll and the banner renders a moment after the POST returns, so it
+    //    read 0 and the loop never ran at all. Measured against a banner appearing at 400ms:
+    //    count() returns 0 after 14ms, waitFor catches it at 482ms. This retry has therefore
+    //    never fired, which is consistent with caseWorkerGenApps:54 flaking on uploadFile in
+    //    almost every measurement run.
+    // 2. `timeout *= 2` was unbounded, so a persistent banner could sleep past the 600s test
+    //    timeout. XUI's own throttle ceiling is 180s, so match that.
+    // 3. the surrounding toPass allowed 60s while the doubling sleeps inside it reach 16s,
+    //    32s then 64s — killed mid-sleep on the third pass. The bounded for-loop replaces it,
+    //    so there is no wrapper budget to outgrow.
+    const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                         span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+    const maxRateLimitRetries = 5;
+    for (let attempt = 0; attempt < maxRateLimitRetries; attempt++) {
+      const rateLimited = await rateLimit
+        .first()
+        .waitFor({ state: 'visible', timeout: 1000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!rateLimited) {
+        break;
       }
-    }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
-    });
+      timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+      await page.waitForTimeout(timeout);
+      await fileInput.last().setInputFiles(filePath);
+      await performValidation('waitUntilElementDisappears', 'Uploading...');
+    }
+    await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
+    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
     await page.waitForTimeout(timeout);
   }
 
@@ -377,7 +395,11 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', {
       textLabel: editHearingData.hourLabel,
       index: 1
-    }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
+      // From 1, not 0. getRandomNumberAsString is inclusive of min, and a zero-hours
+      // duration is not rendered on the check-your-answers page, so the CYA comparison
+      // failed with "Hours | 0 / NOT FOUND" roughly one run in eleven. Days and Minutes
+      // above and below already start at 1 for the same reason.
+    }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
       textLabel: editHearingData.minutesLabel,
       index: 1
@@ -915,7 +937,6 @@ export class CaseManagementAction implements IAction {
     }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
-      await page.waitForTimeout(6000);
     }
   }
 

@@ -22,6 +22,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
+import { SHORT_TIMEOUT } from '../../../../playwright.config';
 import {caseSummary, home} from "@data/page-data";
 
 
@@ -302,14 +303,10 @@ export class GenAppsAction implements IAction {
         .nth(1);
 
       const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
-      let isPayNowVisible = false;
-      for (let i = 0; i < 10; i++) {
-        isPayNowVisible = await payNowLocator.isVisible();
-        if (isPayNowVisible) {
-          break;
-        }
-        await page.waitForTimeout(500);
-      }
+      const isPayNowVisible = await payNowLocator
+        .waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
+        .then(() => true)
+        .catch(() => false);
       if (isPayNowVisible) {
         await payNowLocator.scrollIntoViewIfNeeded();
         await payNowLocator.click();

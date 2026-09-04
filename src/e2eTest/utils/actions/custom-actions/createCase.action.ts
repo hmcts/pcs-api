@@ -58,7 +58,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -94,7 +94,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(page, fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -130,7 +130,7 @@ export class CreateCaseAction implements IAction {
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
-      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(fieldName as actionRecord)],
+      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(page, fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
@@ -208,7 +208,12 @@ export class CreateCaseAction implements IAction {
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
-    const text = await page.locator('div.alert-message').innerText();
+    // innerText does not poll, so without the wait this read the alert before it
+    // rendered and threw "Case ID not found". .first() because the banner region can
+    // hold more than one alert.
+    const alert = page.locator('div.alert-message').first();
+    await alert.waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
+    const text = await alert.innerText();
     caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
     if (!caseNumber) {
       throw new Error(`Case ID not found in alert message: "${text}"`);
@@ -346,7 +351,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continueButton);
   }
 
-  private async addDefendantDetails(defendantData: actionRecord) {
+  private async addDefendantDetails(page: Page, defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -386,11 +391,22 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // 'Add new' appends a defendant block and every lookup below addresses it by index,
+        // while clickRadioButton resolves its patterns with count(), which does not poll. So
+        // if this block has not arrived, nth(index) matches nothing.
+        //
+        // Defence in depth, not the fix for createCaseWales:604 — I originally claimed it was.
+        // The per-pattern diagnostics from that failure read pattern2=2, pattern4=7, so the
+        // block had rendered and the patterns simply disagreed about which element to take.
+        // That is fixed in the pattern definitions themselves; this wait only covers the
+        // genuinely-not-yet-rendered case.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+        // Clicked once. This was two identical calls in a row: the second re-clicked a radio
+        // already checked, so it was pure cost, and its retry loop could only ever confirm
+        // what the first had done.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -852,7 +868,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeMortgageeDetails.continueButton);
   }
 
-  private async selectUnderlesseeMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+  private async selectUnderlesseeMortgageeDetails(page: Page, underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -885,11 +901,17 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = underlesseeMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeMortgageeDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // Same shape as addDefendantDetails: 'Add new' appends the block and every lookup
+        // below addresses it by index, but clickRadioButton resolves patterns with count(),
+        // which does not poll. Until the block exists nth(index) matches nothing and the
+        // failure is reported as 'The radio button ... is not found'. Measured on the
+        // defendant equivalent: nth(1) count=0 immediately after Add new, 1 after the wait.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+        // Clicked once. This was two identical calls in a row, so the second re-clicked a
+        // radio that was already checked.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -1604,11 +1626,8 @@ export class CreateCaseAction implements IAction {
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
     let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
-    await expect(async () => {
-      expect(await folderLocator.count()).toBeGreaterThan(0)
-    }).toPass({
-      timeout: MEDIUM_TIMEOUT,
-    });
+    // The tree renders only after CDAM document metadata resolves, which outruns MEDIUM_TIMEOUT.
+    await expect(folderLocator.first()).toBeVisible({ timeout: LONG_TIMEOUT });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
 
@@ -1683,13 +1702,16 @@ export class CreateCaseAction implements IAction {
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
-    const text = await folder.innerText();
+    await expect(folder.first()).toBeVisible({ timeout: LONG_TIMEOUT });
+    const text = await folder.first().innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
-    await folder.click();
+    await folder.first().click();
+    // The tree expands asynchronously, so poll until the rendered file count settles.
+    await expect(fileLocator).toHaveCount(fileCount, { timeout: LONG_TIMEOUT });
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
@@ -1697,9 +1719,9 @@ export class CreateCaseAction implements IAction {
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
-    if ((await folder.getAttribute('aria-expanded')) === 'true') {
-      await folder.click();
-      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    if ((await folder.first().getAttribute('aria-expanded')) === 'true') {
+      await folder.first().click();
+      await expect(folder.first()).toHaveAttribute('aria-expanded', 'false');
     }
   }
 
