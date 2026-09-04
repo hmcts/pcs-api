@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <!--Please add all the false positives under the below section-->
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2026-54399/54428 are against httpcore5 (5.x);
     this is httpcore 4.x, a separate artifact that is not affected. Re-review by
@@ -11,7 +11,7 @@
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2025-7962 is reported against the Jakarta
     Activation spec API rather than the angus-activation implementation we
@@ -20,7 +20,7 @@
     <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
     <cve>CVE-2025-7962</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2020-29582 concerns kotlin-stdlib temp-file
     permissions; kotlin-stdlib is a transitive dependency only and PCS creates
@@ -45,17 +45,7 @@
   </suppress>
   <!--End of false positives section -->
 
-  <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. Waiting on httpcore5 5.4.3+ to arrive transitively via
-    the Spring Boot BOM. Remove once the resolved version is past the affected
-    range in the packageUrl above.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.([0-3](\..*)?|4(\.[0-2])?)$</packageUrl>
-    <cve>CVE-2026-54399</cve>
-    <cve>CVE-2026-54428</cve>
-  </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
     published upstream yet. Remove when a patched kotlin-stdlib is available.
@@ -63,31 +53,11 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
-    HDPI-8150: temporary. jackson-databind 2.17.x still arrives transitively.
-    Remove once every consumer resolves to a patched 2.21.x.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.17(\..*)?$</packageUrl>
-    <cve>CVE-2026-54512</cve>
-    <cve>CVE-2026-54513</cve>
-    <cve>CVE-2026-54514</cve>
-    <cve>CVE-2026-54515</cve>
-  </suppress>
-  <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. CVE-2026-54515 is still reported against
-    jackson-databind 2.21.4. Remove when a fixed 2.21.x is released.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
-    <cve>CVE-2026-54515</cve>
-  </suppress>
-  <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.24. No fixed
+    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.25. No fixed
     Tomcat release published yet; suppression is temporary and MUST be
     removed when tomcatEmbedVersion is bumped to the fixed version.
-    HDPI-6936: test purposes - wil revert before merge
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
@@ -102,15 +72,14 @@
     <cve>CVE-2026-68763</cve>
     <cve>CVE-2026-73180</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
-    HDPI-6936: test purposes - wil revert before merge
+    CVE-2026-39883/39882 concern the OpenTelemetry Collector and the Javascript
+    client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
-    <cve>CVE-2026-54285</cve>
     <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-39882</cve>
-    <cve>CVE-2026-41178</cve>
   </suppress>
   <suppress until="2026-09-30">
     <notes><![CDATA[
