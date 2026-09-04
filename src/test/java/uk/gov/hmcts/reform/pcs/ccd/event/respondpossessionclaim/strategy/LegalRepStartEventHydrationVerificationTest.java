@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValid
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
@@ -49,6 +50,9 @@ class LegalRepStartEventHydrationVerificationTest {
     @Mock
     private OrganisationService organisationService;
 
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
+
     private LegalRepStartEventStrategy underTest;
 
     @BeforeEach
@@ -58,9 +62,9 @@ class LegalRepStartEventHydrationVerificationTest {
             legalRepForDefendantAccessValidator,
             legalRepPartySelectionService,
             organisationService,
-            new TenancyLicenceView(),
-            new NoticeOfPossessionView(),
-            new RentArrearsView()
+            new TenancyLicenceView(uploadTimestampProvider),
+            new NoticeOfPossessionView(uploadTimestampProvider),
+            new RentArrearsView(uploadTimestampProvider)
         );
     }
 
