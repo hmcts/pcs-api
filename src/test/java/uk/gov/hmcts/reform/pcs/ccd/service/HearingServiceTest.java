@@ -785,6 +785,101 @@ public class HearingServiceTest {
     }
 
     @Test
+    void shouldNotInitialiseEditableHearingWithoutExistingHearing() {
+        // Given
+        long caseReference = 12345L;
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .manageHearingDraft(Hearing.builder().build())
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        // When
+        hearingService.initialiseEditableHearing(caseReference, pcsCase, "1");
+
+        // Then
+        assertThat(pcsCase.getHearing()).isNull();
+    }
+
+    @Test
+    void shouldNotInitialiseEditableHearingWithACancelledHearing() {
+        // Given
+        long caseReference = 12345L;
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .hearingDate(LocalDateTime.of(2026, 8, 3, 14, 30))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(30)
+            .notes("existing notes")
+            .issueNotice(VerticalYesNo.NO)
+            .additionalInformation("existing information")
+            .cancelled(true)
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .manageHearingDraft(Hearing.builder().build())
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                                         .listItems(List.of(DynamicStringListElement.builder()
+                                                                .code(UUID.randomUUID().toString())
+                                                                .build()))
+                                         .build())
+            .build();
+
+        // When
+        hearingService.initialiseEditableHearing(caseReference, pcsCase, null);
+
+        // Then
+        assertThat(pcsCase.getSelectedHearingId()).isNull();
+        assertThat(pcsCase.getHearing()).isNull();
+    }
+
+    @Test
+    void shouldNotInitialiseEditableHearingWithANullHearingDate() {
+        // Given
+        long caseReference = 12345L;
+        HearingEntity selectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.APPLICATION)
+            .noticeWording(HearingNoticeWording.TPL)
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(30)
+            .notes("existing notes")
+            .issueNotice(VerticalYesNo.NO)
+            .additionalInformation("existing information")
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(selectedHearing))
+            .build();
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PCSCase pcsCase = PCSCase.builder()
+            .manageHearingDraft(Hearing.builder().build())
+            .partyMultiSelectionList(DynamicMultiSelectStringList.builder()
+                                         .listItems(List.of(DynamicStringListElement.builder()
+                                                                .code(UUID.randomUUID().toString())
+                                                                .build()))
+                                         .build())
+            .build();
+
+        // When
+        hearingService.initialiseEditableHearing(caseReference, pcsCase, null);
+
+        // Then
+        assertThat(pcsCase.getSelectedHearingId()).isNull();
+        assertThat(pcsCase.getHearing()).isNull();
+    }
+
+    @Test
     void shouldStoreDraftHearingForm() {
         // Given
         DynamicMultiSelectStringList selectedParties = DynamicMultiSelectStringList.builder()
@@ -959,5 +1054,104 @@ public class HearingServiceTest {
         assertThat(throwable)
             .isInstanceOf(HearingNotFoundException.class)
             .hasMessage("Hearing not found with ID " + hearingId);
+    }
+
+    @Test
+    void shouldUpdateHearingWithAdditionalNoticeParties() {
+        // Given
+        final Hearing hearing = Hearing.builder()
+            .type(HearingType.OTHER)
+            .otherHearingType("updated other hearing type")
+            .noticeWording(HearingNoticeWording.RES)
+            .date(LocalDateTime.of(2026, 3, 4, 10, 15, 0))
+            .durationDays(2)
+            .durationHours(3f)
+            .durationMinutes(45f)
+            .notes("updated notes")
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.YES)
+            .additionalInformation("updated additional information")
+            .build();
+
+        final UUID existingPartyId = UUID.randomUUID();
+        final UUID newPartyId = UUID.randomUUID();
+        final DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+            .value(
+                List.of(
+                    DynamicStringListElement.builder().code(newPartyId.toString()).build(),
+                    DynamicStringListElement.builder().code(existingPartyId.toString()).build()
+                ))
+            .build();
+
+        final PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("2")
+            .hearing(hearing)
+            .partyMultiSelectionList(partyList)
+            .build();
+
+        final HearingEntity nonSelectedHearing = HearingEntity.builder()
+            .id(1)
+            .type(HearingType.POSSESSION)
+            .hearingDate(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
+            .build();
+        final HearingEntity selectedHearing = HearingEntity.builder()
+            .id(2)
+            .type(HearingType.APPLICATION)
+            .otherHearingType("old other hearing type")
+            .noticeWording(HearingNoticeWording.ADJ)
+            .hearingDate(LocalDateTime.of(2026, 2, 2, 9, 0, 0))
+            .durationDays(0)
+            .durationHours(1)
+            .durationMinutes(30)
+            .notes("old notes")
+            .issueNotice(VerticalYesNo.NO)
+            .isWithoutNotice(VerticalYesNo.NO)
+            .additionalInformation("old additional information")
+            .build();
+
+        final PartyEntity partyEntity1 = PartyEntity.builder().id(existingPartyId).build();
+        final PartyEntity partyEntity2 = PartyEntity.builder().id(newPartyId).build();
+
+        final HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+            .party(partyEntity1)
+            .hearing(selectedHearing)
+            .build();
+        selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
+
+        final PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(nonSelectedHearing, selectedHearing))
+            .build();
+        final long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        when(partyRepository.findAllById(Set.of(newPartyId))).thenReturn(List.of(partyEntity2));
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(persistedCaseEntity.getHearings()).hasSize(2);
+        assertThat(persistedCaseEntity.getHearings().getFirst()).isSameAs(nonSelectedHearing);
+
+        // Then
+        HearingEntity hearingEntity = persistedCaseEntity.getHearings().getLast();
+        assertThat(hearingEntity.getId()).isEqualTo(2);
+        assertThat(hearingEntity.getType()).isEqualTo(HearingType.OTHER);
+        assertThat(hearingEntity.getOtherHearingType()).isEqualTo("updated other hearing type");
+        assertThat(hearingEntity.getNoticeWording()).isEqualTo(HearingNoticeWording.RES);
+        assertThat(hearingEntity.getHearingDate()).isEqualTo(LocalDateTime.of(2026, 3, 4, 10, 15, 0));
+        assertThat(hearingEntity.getDurationDays()).isEqualTo(2);
+        assertThat(hearingEntity.getDurationHours()).isEqualTo(3);
+        assertThat(hearingEntity.getDurationMinutes()).isEqualTo(45);
+        assertThat(hearingEntity.getNotes()).isEqualTo("updated notes");
+        assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
+        assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.YES);
+        assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("updated additional information");
+        assertThat(hearingEntity.getHearingNoticeParties()).hasSize(2);
+        assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity1);
+        assertThat(hearingEntity.getHearingNoticeParties().getLast().getParty()).isEqualTo(partyEntity2);
     }
 }
