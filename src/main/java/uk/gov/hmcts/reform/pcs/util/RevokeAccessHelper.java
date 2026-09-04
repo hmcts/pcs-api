@@ -38,7 +38,7 @@ public class RevokeAccessHelper {
      * - but only if the organisation does not represent any other defendant for the case
      * 3. deactivate the party legal representative organisation entities linked to the defendant to the LRO
      */
-    public void revokeOrganisationAccessToRespondToClaim(
+    public void withdrawOutgoingFirmsAccessToRespondToClaim(
         PcsCaseEntity caseEntity,
         OrganisationEntity organisationEntity,
         PartyEntity defendantParty
@@ -65,7 +65,7 @@ public class RevokeAccessHelper {
      * 2. delete the defendant's draft response to the claim
      * 3. invalidate the PIN
      */
-    public void revokeDefendantsAccessToRespondToClaim(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
+    public void closeDefendantsSelfRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
         if (defendantParty.getIdamId() != null) {
             scheduleDefendantRoleRevocation(caseEntity.getCaseReference(), defendantParty.getIdamId().toString());
             draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(

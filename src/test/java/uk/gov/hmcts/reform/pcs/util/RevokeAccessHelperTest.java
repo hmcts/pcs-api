@@ -55,7 +55,7 @@ class RevokeAccessHelperTest {
     private ArgumentCaptor<List<ClaimPartyOrganisationEntity>> saveAllCaptor;
 
     @Test
-    void revokeOrganisationAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
+    void withdrawOutgoingFirmsAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
         // given
         long caseReference = 123L;
         UUID partyId = UUID.randomUUID();
@@ -82,7 +82,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingFirmsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion always called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
@@ -106,7 +106,7 @@ class RevokeAccessHelperTest {
     }
 
     @Test
-    void revokeOrganisationAccessToRespondToClaim_WithNoOtherDefendants_RevokeRasRolesInvalidateEntities() {
+    void withdrawOutgoingFirmsAccessToRespondToClaim_WithNoOtherDefendants_RevokeRasRolesInvalidateEntities() {
         // given
         long caseReference = 456L;
         UUID partyId = UUID.randomUUID();
@@ -135,7 +135,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingFirmsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
@@ -174,7 +174,7 @@ class RevokeAccessHelperTest {
             .build();
 
         // when
-        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendant);
+        revokeAccessHelper.closeDefendantsSelfRepresentation(caseEntity, defendant);
 
         // then
         ArgumentCaptor<SchedulableInstance<?>> scheduledCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
@@ -209,7 +209,7 @@ class RevokeAccessHelperTest {
             .build();
 
         // when
-        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendant);
+        revokeAccessHelper.closeDefendantsSelfRepresentation(caseEntity, defendant);
 
         // then
         verify(schedulerClient, never()).scheduleIfNotExists(any());

@@ -163,7 +163,7 @@ class LegalRepresentativePartyLinkServiceTest {
 
         // then
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
-        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
+        verify(revokeAccessHelper).closeDefendantsSelfRepresentation(pcsCaseEntity, partyEntity);
 
         OrganisationEntity actual = legalRepresentativeOrganisationEntityCaptor.getValue();
 
@@ -232,7 +232,7 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then - access revocation is the helper's job (it schedules the role revoke task)
-        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
+        verify(revokeAccessHelper).closeDefendantsSelfRepresentation(pcsCaseEntity, partyEntity);
     }
 
     @Test
@@ -670,7 +670,7 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(revokeAccessHelper).revokeOrganisationAccessToRespondToClaim(
+        verify(revokeAccessHelper).withdrawOutgoingFirmsAccessToRespondToClaim(
             pcsCaseEntity, existingLinkedLegalRep, partyEntity);
         verify(notificationService)
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(existingLinkedLegalRep, partyEntity);
@@ -771,8 +771,8 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference, partyId.toString(), LEGAL_REP_EMAIL, organisationDetails);
 
-        verify(revokeAccessHelper).revokeOrganisationAccessToRespondToClaim(pcsCaseEntity, outgoingOrg, partyEntity);
-        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
+        verify(revokeAccessHelper).withdrawOutgoingFirmsAccessToRespondToClaim(pcsCaseEntity, outgoingOrg, partyEntity);
+        verify(revokeAccessHelper).closeDefendantsSelfRepresentation(pcsCaseEntity, partyEntity);
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
         OrganisationEntity newOrg = legalRepresentativeOrganisationEntityCaptor.getValue();
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
