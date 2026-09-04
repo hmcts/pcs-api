@@ -12,6 +12,8 @@ export const reviewSupport = {
     reasonableAdjustmentHeader: `Reasonable adjustment`,
     languageInterpreterOption: `Language interpreter`,
     languageInterpreterHeader: `Language interpreter`,
+    enterLanguageCheckBox: `Enter the language manually`,
+    languageInterpreterLabel: `Enter the language`,
     languageInterpreterText: `Telugu`,
     iNeedToBringSupportOption: `I need to bring support with me to a hearing`,
     iNeedToBringSupportHeader: `I need to bring support with me to a hearing`,
