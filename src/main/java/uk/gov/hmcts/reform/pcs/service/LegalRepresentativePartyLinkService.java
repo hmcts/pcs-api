@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.service;
 
 import static java.util.Objects.isNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
