@@ -41,10 +41,9 @@ public class CaseRoleAssignmentTaskComponent {
     @Bean
     public CustomTask<RoleAssignmentTaskData> roleAssignmentTask() {
         return Tasks.custom(ROLE_ASSIGNMENT_TASK_DESCRIPTOR)
-            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
-            ))
+            .onFailure(FailureHandler.<RoleAssignmentTaskData>maxRetries(maxRetries)
+                           .withBackoff(backoffDelay)
+                           .thenRemove())
             .execute((taskInstance, executionContext) -> {
                 RoleAssignmentTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());
