@@ -16,9 +16,7 @@ import uk.gov.hmcts.ccd.sdk.SystemEventAction;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
-import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
-import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -43,7 +41,6 @@ class NocAccessChangeTaskComponentTest {
     private static final int MAX_RETRIES = 3;
     private static final Duration BACKOFF_DELAY = Duration.ofSeconds(10);
     private static final UUID IDEMPOTENCY_KEY = UUID.fromString("6f4a7b7e-1111-2222-3333-444455556666");
-    private static final String SYSTEM_USER_ID = "system-uid";
 
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
@@ -68,10 +65,7 @@ class NocAccessChangeTaskComponentTest {
             legalRepresentativePartyLinkService,
             systemEventExecutor,
             MAX_RETRIES,
-            BACKOFF_DELAY,
-            SYSTEM_USER_ID,
-            "Service",
-            "Account"
+            BACKOFF_DELAY
         );
     }
 
@@ -180,25 +174,6 @@ class NocAccessChangeTaskComponentTest {
         // then - the action was never invoked by the executor, so the link is untouched
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         verifyNoInteractions(legalRepresentativePartyLinkService);
-    }
-
-    @Test
-    void runsTheExecutorAsTheSystemUserAndRestoresTheSecurityContext() {
-        // given - the case projection inside the executor reads the current user from the context
-        NocAccessChangeTaskData taskData = taskData().build();
-        when(taskInstance.getData()).thenReturn(taskData);
-        when(systemEventExecutor.execute(anyLong(), any(ActorAttribution.class), any(UUID.class), any()))
-            .thenAnswer(invocation -> {
-                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                assertThat(((User) principal).getUserDetails().getUid()).isEqualTo(SYSTEM_USER_ID);
-                return executed();
-            });
-
-        // when
-        nocAccessChangeTaskComponent.nocAccessChangeTask().execute(taskInstance, executionContext);
-
-        // then
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
     private SystemEventExecutionResult executed() {

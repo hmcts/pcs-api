@@ -12,9 +12,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.ActorAttribution;
 import uk.gov.hmcts.ccd.sdk.SystemEventAction;
@@ -22,13 +19,7 @@ import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
-import uk.gov.hmcts.reform.pcs.idam.User;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Supplier;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -48,27 +39,17 @@ public class NocAccessChangeTaskComponent {
     private final Duration backoffDelay;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final SystemEventExecutor systemEventExecutor;
-    private final User systemUser;
 
     public NocAccessChangeTaskComponent(
         LegalRepresentativePartyLinkService legalRepresentativePartyLinkService,
         SystemEventExecutor systemEventExecutor,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
-        @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay,
-        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId,
-        @Value("${ccd.decentralised-runtime.system-user.first-name}") String systemUserFirstName,
-        @Value("${ccd.decentralised-runtime.system-user.last-name}") String systemUserLastName
+        @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.legalRepresentativePartyLinkService = legalRepresentativePartyLinkService;
         this.systemEventExecutor = systemEventExecutor;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
-        this.systemUser = new User(null, UserInfo.builder()
-            .uid(systemUserId)
-            .givenName(systemUserFirstName)
-            .familyName(systemUserLastName)
-            .roles(List.of())
-            .build());
     }
 
     @Bean
@@ -105,23 +86,9 @@ public class NocAccessChangeTaskComponent {
         SystemEventAction action = context -> applyAccessChange(caseReference, taskData);
         ActorAttribution actor = actingSolicitor(taskData);
 
-        return runAsSystemUser(() -> actor != null
+        return actor != null
             ? systemEventExecutor.execute(caseReference, actor, idempotencyKey, action)
-            : systemEventExecutor.execute(caseReference, idempotencyKey, action));
-    }
-
-    // The case projection reads the current user from the security context, which a scheduler
-    // thread does not have.
-    private SystemEventExecutionResult runAsSystemUser(
-        Supplier<SystemEventExecutionResult> execution) {
-        Authentication previousAuthentication = SecurityContextHolder.getContext().getAuthentication();
-        try {
-            SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(systemUser, null, Collections.emptyList()));
-            return execution.get();
-        } finally {
-            SecurityContextHolder.getContext().setAuthentication(previousAuthentication);
-        }
+            : systemEventExecutor.execute(caseReference, idempotencyKey, action);
     }
 
     private SystemEventResult applyAccessChange(long caseReference, NocAccessChangeTaskData taskData) {
