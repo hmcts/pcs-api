@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 

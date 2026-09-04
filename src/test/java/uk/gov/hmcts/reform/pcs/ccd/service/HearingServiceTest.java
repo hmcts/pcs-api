@@ -249,7 +249,7 @@ public class HearingServiceTest {
     @Test
     void shouldUpdateSelectedHearingAndPreserveOtherHearings() {
         // Given
-        Hearing hearing = Hearing.builder()
+        final Hearing hearing = Hearing.builder()
             .type(HearingType.OTHER)
             .otherHearingType("updated other hearing type")
             .noticeWording(HearingNoticeWording.RES)
@@ -263,23 +263,23 @@ public class HearingServiceTest {
             .additionalInformation("updated additional information")
             .build();
 
-        UUID partyId = UUID.randomUUID();
-        DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
+        final UUID partyId = UUID.randomUUID();
+        final DynamicMultiSelectStringList partyList = DynamicMultiSelectStringList.builder()
             .value(List.of(DynamicStringListElement.builder().code(partyId.toString()).build()))
             .build();
 
-        PCSCase pcsCase = PCSCase.builder()
+        final PCSCase pcsCase = PCSCase.builder()
             .selectedHearingId("2")
             .hearing(hearing)
             .partyMultiSelectionList(partyList)
             .build();
 
-        HearingEntity nonSelectedHearing = HearingEntity.builder()
+        final HearingEntity nonSelectedHearing = HearingEntity.builder()
             .id(1)
             .type(HearingType.POSSESSION)
             .hearingDate(LocalDateTime.of(2026, 2, 1, 9, 0, 0))
             .build();
-        HearingEntity selectedHearing = HearingEntity.builder()
+        final HearingEntity selectedHearing = HearingEntity.builder()
             .id(2)
             .type(HearingType.APPLICATION)
             .otherHearingType("old other hearing type")
@@ -294,16 +294,16 @@ public class HearingServiceTest {
             .additionalInformation("old additional information")
             .build();
 
-        HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+        final HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
             .party(PartyEntity.builder().id(UUID.randomUUID()).build())
             .hearing(selectedHearing)
             .build();
         selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+        final PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .hearings(List.of(nonSelectedHearing, selectedHearing))
             .build();
-        long caseReference = 12345L;
+        final long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
