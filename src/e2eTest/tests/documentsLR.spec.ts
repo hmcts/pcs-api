@@ -89,7 +89,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
   test.skip('Upload documents when GenApps submitted - Multi def', {
     annotation: {
-      type: 'issue',
+      type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   },async () => {
@@ -142,7 +142,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
   test.skip('Upload documents when GenApps submitted With Out Notice - Multi def',{
     annotation: {
-      type: 'issue',
+      type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async ({page}) => {
@@ -192,7 +192,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
   test.skip('Upload documents when GenApps not submitted - Multi def',{
     annotation: {
-      type: 'issue',
+      type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async () => {
