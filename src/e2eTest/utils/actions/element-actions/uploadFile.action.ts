@@ -3,7 +3,7 @@
   import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
   import { performAction, performValidation } from '@utils/controller';
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
-  const MAX_UPLOAD_BACKOFF = 180000;
+  export const MAX_UPLOAD_BACKOFF = 180000;
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
