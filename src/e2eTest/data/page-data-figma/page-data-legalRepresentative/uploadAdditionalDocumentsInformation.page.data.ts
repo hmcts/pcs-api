@@ -1,6 +1,4 @@
 export const uploadAdditionalDocumentsInformation = {
-  // Matches UploadAdditionalDocumentsInformationPage.java:113 exactly. The heading
-  // comparison is case-sensitive, so title case here never matched the rendered text.
   mainHeader: `Upload additional documents`,
   youCanUploadParagraph: `You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
   weUsuallyShareParagraph: `We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
