@@ -15,6 +15,7 @@ import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.da
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {staff} from '@data/user-data/staff.user.data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 let caseNumbers: string[] = [];
 
@@ -50,6 +51,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 //Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095

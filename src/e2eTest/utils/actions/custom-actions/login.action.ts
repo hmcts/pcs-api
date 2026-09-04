@@ -30,7 +30,7 @@ export class LoginAction implements IAction {
     await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
     await performAction('clickButton', signInOrCreateAnAccount.continueButton);
-    const signOut = page.getByText('Sign out', { exact: true });
+    const signOut = page.getByText('Sign out', { exact: true }).first();
     await expect(signOut).toBeVisible({ timeout: LONG_TIMEOUT });
   }
 

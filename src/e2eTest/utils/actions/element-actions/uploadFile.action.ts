@@ -25,6 +25,12 @@
       await fileInput.last().setInputFiles(filePath);
       let timeout = 6000;
       await performValidation('waitUntilElementDisappears', 'Uploading...');
+      // Deliberately kept. "Uploading..." disappearing is not the end of the upload —
+      // CCD is still committing the row, and documentsLR uploads two files in a loop, so
+      // returning here lets the next "Add new" build on a half-finished row. Removing this
+      // failed 5 documentsLR tests in PR-2581 (36.2m, 7 failed) against a 22.8m / 1 failed
+      // control. Waiting on the Cancel upload button's disabled state did not fix it
+      // either. Needs the documentsLR upload lifecycle sorted out first.
       await page.waitForTimeout(timeout);
       await expect(async () => {
         const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),

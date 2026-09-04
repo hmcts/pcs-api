@@ -306,6 +306,7 @@ export class CaseManagementAction implements IAction {
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
+    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
     await page.waitForTimeout(timeout);
   }
 
@@ -915,7 +916,6 @@ export class CaseManagementAction implements IAction {
     }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
-      await page.waitForTimeout(6000);
     }
   }
 

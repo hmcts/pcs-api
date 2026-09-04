@@ -8,7 +8,7 @@ export class signOutAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
     await performAction('clickButton', home.signOutButton);
     await expect(async () => {
-      const signOut = page.getByText(home.signOutButton);
+      const signOut = page.getByText(home.signOutButton).first();
       if (await signOut.isVisible().catch(() => false)) {
         await performAction('clickButton', home.signOutButton);
       }
