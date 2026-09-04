@@ -670,7 +670,7 @@ class LegalRepresentativePartyLinkServiceTest {
         );
 
         // then
-        verify(revokeAccessHelper).withdrawOutgoingFirmsAccessToRespondToClaim(
+        verify(revokeAccessHelper).withdrawOutgoingOrganisationsAccessToRespondToClaim(
             pcsCaseEntity, existingLinkedLegalRep, partyEntity);
         verify(notificationService)
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(existingLinkedLegalRep, partyEntity);
@@ -771,7 +771,8 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference, partyId.toString(), LEGAL_REP_EMAIL, organisationDetails);
 
-        verify(revokeAccessHelper).withdrawOutgoingFirmsAccessToRespondToClaim(pcsCaseEntity, outgoingOrg, partyEntity);
+        verify(revokeAccessHelper)
+            .withdrawOutgoingOrganisationsAccessToRespondToClaim(pcsCaseEntity, outgoingOrg, partyEntity);
         verify(revokeAccessHelper).closeDefendantsSelfRepresentation(pcsCaseEntity, partyEntity);
         verify(organisationRepository).save(legalRepresentativeOrganisationEntityCaptor.capture());
         OrganisationEntity newOrg = legalRepresentativeOrganisationEntityCaptor.getValue();

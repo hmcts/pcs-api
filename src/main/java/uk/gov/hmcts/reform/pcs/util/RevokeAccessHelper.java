@@ -38,7 +38,7 @@ public class RevokeAccessHelper {
      * - but only if the organisation does not represent any other defendant for the case
      * 3. deactivate the party legal representative organisation entities linked to the defendant to the LRO
      */
-    public void withdrawOutgoingFirmsAccessToRespondToClaim(
+    public void withdrawOutgoingOrganisationsAccessToRespondToClaim(
         PcsCaseEntity caseEntity,
         OrganisationEntity organisationEntity,
         PartyEntity defendantParty

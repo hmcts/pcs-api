@@ -182,9 +182,9 @@ public class LegalRepresentativePartyLinkService {
                     defendantParty.getId(), caseEntity.getCaseReference());
 
         partyLinkedToLegalRepresentativeOrganisationAndActive
-            .ifPresent(outgoingFirm -> revokeAccessHelper.withdrawOutgoingFirmsAccessToRespondToClaim(
+            .ifPresent(outgoingOrganisation -> revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(
                 caseEntity,
-                outgoingFirm,
+                outgoingOrganisation,
                 defendantParty
             ));
 

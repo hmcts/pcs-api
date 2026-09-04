@@ -55,7 +55,7 @@ class RevokeAccessHelperTest {
     private ArgumentCaptor<List<ClaimPartyOrganisationEntity>> saveAllCaptor;
 
     @Test
-    void withdrawOutgoingFirmsAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
+    void withdrawOutgoingOrganisationsAccess_WithOtherDefendants_DoesNotScheduleRoleRevocation() {
         // given
         long caseReference = 123L;
         UUID partyId = UUID.randomUUID();
@@ -82,7 +82,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.withdrawOutgoingFirmsAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion always called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
@@ -106,7 +106,7 @@ class RevokeAccessHelperTest {
     }
 
     @Test
-    void withdrawOutgoingFirmsAccessToRespondToClaim_WithNoOtherDefendants_RevokeRasRolesInvalidateEntities() {
+    void withdrawOutgoingOrganisationsAccess_WithNoOtherDefendants_InvalidatesEntities() {
         // given
         long caseReference = 456L;
         UUID partyId = UUID.randomUUID();
@@ -135,7 +135,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.withdrawOutgoingFirmsAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
