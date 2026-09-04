@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
-import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
+import { anyOf, waitForInteractive, waitForSpinner } from '@utils/common/locator.utils';
 import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
@@ -8,6 +8,12 @@ export class ClickRadioButtonAction implements IAction {
     const idx = params.index !== undefined ? Number(params.index) : 0;
     const question = params.question as string;
     const option = params.option as string;
+
+    // Ahead of waitForInteractive below, which only has a 5s budget, and well ahead of the
+    // 2s per-click timeout in clickWithRetry — both are shorter than a spinner commonly
+    // stays up for, so a covered page burns every retry attempt and then reports
+    // "radio button ... is not found" as if the selector were wrong.
+    await waitForSpinner(page);
 
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),

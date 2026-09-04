@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-import { SHORT_TIMEOUT } from '../../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT } from '../../playwright.config';
 import { exactTextWithOptionalWhitespaceRegex } from './string.utils';
 
 const HEADING_SELECTOR = 'h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title';
@@ -50,5 +50,27 @@ export async function waitForInteractive(locator: Locator, timeout: number = SHO
   await locator
     .first()
     .waitFor({ state: 'visible', timeout })
+    .catch(() => undefined);
+}
+
+/**
+ * Waits for XUI's loading spinner to detach before interacting with the page.
+ *
+ * `.spinner-container` (ccd-case-ui-toolkit loading-spinner.component.scss) is
+ * `position: fixed`, full viewport, `z-index: 99` — a real overlay that swallows pointer
+ * events. Playwright gates `click`, `fill`, `selectOption` and `check` on the target
+ * actually receiving those events, so a spinner left up by the previous action blocks any
+ * of them for the whole 40s `actionTimeout`. Adding this before the click in
+ * `clickButton` measured 0 flaky / 49 passed against a 7-flaky control, and the
+ * `locator.fill: Timeout 40000ms exceeded` seen on createCase.spec.ts:1043 is the same
+ * failure through a different verb.
+ *
+ * Swallows its own timeout: if the spinner genuinely never clears, the caller's action
+ * reports the useful error against the element the test actually wanted.
+ */
+export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT): Promise<void> {
+  await page
+    .locator('.spinner-container')
+    .waitFor({ state: 'detached', timeout })
     .catch(() => undefined);
 }

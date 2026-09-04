@@ -1,9 +1,12 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
+import { waitForSpinner } from '@utils/common/locator.utils';
 
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
-
+    // Before resolving the locator, not just before fill(): the branches below use count(),
+    // which does not poll, so a spinner still covering the page also makes them read 0.
+    await waitForSpinner(page);
 
     let locator;
     if (typeof fieldParams !== 'string' && fieldParams.index !== null) {
