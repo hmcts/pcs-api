@@ -289,7 +289,8 @@ export class CaseManagementAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
-    let timeout = 6000;
+    // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
+    let timeout = 8000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     await expect(async () => {
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),

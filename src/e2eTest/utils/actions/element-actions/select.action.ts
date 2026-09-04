@@ -10,10 +10,17 @@ export class SelectAction implements IAction {
       : page.locator(`:has-text("${fieldName.dropdown}") + select,
                                   :has-text("${fieldName.dropdown}") ~ select,
                                   select[name="${fieldName.dropdown}"]`).nth(Number(fieldName.index));
+    // .first() on the index path too. `:has-text()` matches ancestors as well as siblings, so
+    // on a page with more than one <select> this locator resolves to several elements and
+    // selectOption - being strict - waits out its whole timeout and then fails, reported as
+    // "locator.selectOption: Timeout 5000ms exceeded" rather than as an ambiguous selector.
+    // Verified locally: two selects on a page, index path times out; with .first() it selects.
+    // The string path already had .first(); only the { index } path was missing it.
+    const select = locator.first();
     if (typeof option === 'number') {
-      await locator.selectOption({ index: option });
-    } else {
-      await locator.first().selectOption(option);
+      await select.selectOption({ index: option });
+      return;
     }
+    await select.selectOption(option);
   }
 }
