@@ -14,6 +14,13 @@ global:
 
 java:
   environment:
+    # global.environment is the release name in preview, so LAUNCHDARKLY_ENV arrives as
+    # e.g. "pcs-api-pr-2164". No LaunchDarkly targeting rule matches that, so every flag
+    # falls back to its code default. RELEASE_1_DOT_2 defaults to false, which hides the
+    # "Respond to claim" event and makes respondToAClaimLR.spec.ts:48 unpassable in
+    # preview — the same test passes in AAT nightly, where the flag is on. Point LD at the
+    # aat environment so preview evaluates the flags the tests were written against.
+    LAUNCHDARKLY_ENV: aat
     PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
     # HDPI-8115: preview shares one small flexible server across ~70 releases;
     # shrink per-pod pools so idle stacks hold no connections.
