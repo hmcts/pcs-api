@@ -115,11 +115,6 @@ tasks.withType(JavaExec).configureEach {
 }
 
 tasks.withType(Test).configureEach {
-  configurations.cftlibTestRuntimeClasspath {
-    resolutionStrategy {
-      force 'org.junit.platform:junit-platform-console-standalone:1.12.2'
-    }
-  }
   useJUnitPlatform()
   maxParallelForks = 1
 
