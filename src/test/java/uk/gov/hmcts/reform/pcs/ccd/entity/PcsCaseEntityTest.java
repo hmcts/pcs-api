@@ -83,13 +83,13 @@ class PcsCaseEntityTest {
         underTest.addCaseReviewDate(reviewDateEntity3);
 
         // Then
-        verify(reviewDateEntity1).setRank(1);
+        verify(reviewDateEntity1).setReviewDateNumber(1);
         verify(reviewDateEntity1).setPcsCase(underTest);
 
-        verify(reviewDateEntity2).setRank(2);
+        verify(reviewDateEntity2).setReviewDateNumber(2);
         verify(reviewDateEntity2).setPcsCase(underTest);
 
-        verify(reviewDateEntity3).setRank(3);
+        verify(reviewDateEntity3).setReviewDateNumber(3);
         verify(reviewDateEntity3).setPcsCase(underTest);
     }
 
@@ -105,7 +105,7 @@ class PcsCaseEntityTest {
         underTest.addCaseReviewDate(reviewDateEntity);
 
         // Then
-        verify(reviewDateEntity).setRank(6);
+        verify(reviewDateEntity).setReviewDateNumber(6);
         verify(reviewDateEntity).setPcsCase(underTest);
     }
 

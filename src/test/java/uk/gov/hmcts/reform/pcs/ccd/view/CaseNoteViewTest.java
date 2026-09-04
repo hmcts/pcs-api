@@ -121,7 +121,7 @@ class CaseNoteViewTest {
     @Test
     void shouldMapReviewDateEntitiesToCaseReviewDatesWithNewestFirst() {
         CaseReviewDateEntity olderReviewDate = CaseReviewDateEntity.builder()
-            .rank(1)
+            .reviewDateNumber(1)
             .createdBy("Older Worker")
             .createdDate(LocalDateTime.of(2026, 1, 15, 12, 0))
             .date(LocalDate.of(2026, 8, 20))
@@ -129,7 +129,7 @@ class CaseNoteViewTest {
             .description("older review")
             .build();
         CaseReviewDateEntity newerReviewDate = CaseReviewDateEntity.builder()
-            .rank(2)
+            .reviewDateNumber(2)
             .createdBy("Newer Worker")
             .createdDate(LocalDateTime.of(2026, 4, 22, 22, 0))
             .date(LocalDate.of(2026, 9, 15))

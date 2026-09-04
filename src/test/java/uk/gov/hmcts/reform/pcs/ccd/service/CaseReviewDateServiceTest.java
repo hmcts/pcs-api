@@ -27,7 +27,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -60,8 +62,29 @@ public class CaseReviewDateServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(ukClock.instant()).thenReturn(FIXED_INSTANT);
-        when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
+        lenient().when(ukClock.instant()).thenReturn(FIXED_INSTANT);
+        lenient().when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
+    }
+
+    @Test
+    void shouldNotAddCaseReviewDatesWhenReviewDatesAreNull() {
+        // Given
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(PcsCaseEntity.builder().build());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
+
+        // Then
+        verify(pcsCaseService).loadCase(caseReference);
+        verifyNoInteractions(
+            pcsCaseRepository,
+            securityContextService,
+            camundaService,
+            taskDescriptionService
+        );
     }
 
     @Test
@@ -104,7 +127,7 @@ public class CaseReviewDateServiceTest {
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(1);
         CaseReviewDateEntity caseReviewDateEntity = persistedCaseEntity.getReviewDates().getFirst();
         assertThat(caseReviewDateEntity.getPcsCase()).isEqualTo(persistedCaseEntity);
-        assertThat(caseReviewDateEntity.getRank()).isEqualTo(1);
+        assertThat(caseReviewDateEntity.getReviewDateNumber()).isEqualTo(1);
         assertThat(caseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("review description 1");
@@ -171,7 +194,7 @@ public class CaseReviewDateServiceTest {
 
         CaseReviewDateEntity caseReviewDateEntity1 = persistedCaseEntity.getReviewDates().getFirst();
         assertThat(caseReviewDateEntity1.getPcsCase()).isEqualTo(persistedCaseEntity);
-        assertThat(caseReviewDateEntity1.getRank()).isEqualTo(1);
+        assertThat(caseReviewDateEntity1.getReviewDateNumber()).isEqualTo(1);
         assertThat(caseReviewDateEntity1.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity1.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity1.getDescription()).isEqualTo("review description 1");
@@ -180,7 +203,7 @@ public class CaseReviewDateServiceTest {
 
         CaseReviewDateEntity caseReviewDateEntity2 = persistedCaseEntity.getReviewDates().getLast();
         assertThat(caseReviewDateEntity2.getPcsCase()).isEqualTo(persistedCaseEntity);
-        assertThat(caseReviewDateEntity2.getRank()).isEqualTo(2);
+        assertThat(caseReviewDateEntity2.getReviewDateNumber()).isEqualTo(2);
         assertThat(caseReviewDateEntity2.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity2.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity2.getDescription()).isEqualTo("review description 2");
@@ -235,7 +258,7 @@ public class CaseReviewDateServiceTest {
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(2);
         CaseReviewDateEntity caseReviewDateEntity = persistedCaseEntity.getReviewDates().getLast();
-        assertThat(caseReviewDateEntity.getRank()).isEqualTo(2);
+        assertThat(caseReviewDateEntity.getReviewDateNumber()).isEqualTo(2);
         assertThat(caseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("new review description");

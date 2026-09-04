@@ -70,7 +70,7 @@ public class CaseNoteView {
             .description(reviewDateEntity.getDescription())
             .build();
 
-        return new ListValue<>("Review date " + reviewDateEntity.getRank(), reviewDate);
+        return new ListValue<>("Review date " + reviewDateEntity.getReviewDateNumber(), reviewDate);
     }
 
     private String toMarkdown(List<CaseReviewDateEntity> reviewDateEntities) {
@@ -96,7 +96,7 @@ public class CaseNoteView {
             | Reason | %s |
             | Description of review | %s |
             """.formatted(
-                reviewDateEntity.getRank(),
+                reviewDateEntity.getReviewDateNumber(),
                 escape(reviewDateEntity.getCreatedBy()),
                 formatDateTime(reviewDateEntity.getCreatedDate()),
                 formatDate(reviewDateEntity.getDate()),

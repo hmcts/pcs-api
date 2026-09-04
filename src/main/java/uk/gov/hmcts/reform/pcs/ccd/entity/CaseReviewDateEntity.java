@@ -41,7 +41,8 @@ public class CaseReviewDateEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    private Integer rank;
+    @Column(name = "review_date_number")
+    private Integer reviewDateNumber;
 
     private String createdBy;
 

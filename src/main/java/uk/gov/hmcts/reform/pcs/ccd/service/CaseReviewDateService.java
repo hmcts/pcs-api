@@ -48,7 +48,7 @@ public class CaseReviewDateService {
 
             String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescription(
                 caseReference,
-                caseReviewDateEntity.getRank()
+                caseReviewDateEntity.getReviewDateNumber()
             );
             Instant waTaskCreationDate = reviewDate.getDate().atStartOfDay().atZone(UK_ZONE_ID).toInstant();
             camundaService.createTask(
