@@ -20,14 +20,12 @@ export class ClickRadioButtonAction implements IAction {
     // question-scoped patterns are waited on: pattern 3 ignores `question`, so it would
     // be satisfied by the previous page's Yes/No labels.
     //
-    // MEDIUM_TIMEOUT, not SHORT_TIMEOUT: this wait is the only thing standing between a
-    // not-yet-rendered page and the `count() !== 1` guard, which rejects every pattern and
-    // reports `The radio button ... is not found` — indistinguishable from a wrong selector.
-    // Of the 7 calls into selectOccupationContractOrLicenceDetails in createCaseWales.spec,
-    // only 1 validates the page heading first; the failing one at :639 does not, so 5s was
-    // the entire budget for the page to arrive. Verified that this action's patterns do
-    // resolve against the real markup once it is present (p1/p4 count=1), so what failed
-    // was the timing, not the selectors.
+    // MEDIUM_TIMEOUT rather than SHORT_TIMEOUT because most callers do not validate the page
+    // heading first — of the 7 calls into selectOccupationContractOrLicenceDetails in
+    // createCaseWales.spec, only one does. This is defence in depth, not the fix: the
+    // diagnostics below showed the failing page had already rendered (pattern2=2,
+    // pattern4=7), so timing was not what broke createCaseWales:604. The pattern
+    // definitions were.
     if (question) {
       await waitForInteractive(
         anyOf(
