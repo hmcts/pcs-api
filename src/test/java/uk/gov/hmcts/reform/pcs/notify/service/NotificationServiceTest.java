@@ -593,7 +593,7 @@ class NotificationServiceTest {
 
             CaseNotification firstSave = notificationCaptor.getAllValues().get(0);
             assertThat(firstSave.getPartyId()).isEqualTo(claimantParty);
-            assertThat(firstSave.getClaimId()).isEqualTo(claim);
+            assertThat(firstSave.getClaim()).isEqualTo(claim);
             assertThat(firstSave.getClaimType()).isEqualTo(NotificationClaimType.POSSESSION_CLAIM);
             assertThat(firstSave.getStatus()).isEqualTo(NotificationStatus.PENDING_SCHEDULE);
 
@@ -1397,7 +1397,7 @@ class NotificationServiceTest {
             CaseNotification saved = captor.getAllValues().getFirst();
 
             assertThat(saved.getPcsCase()).isEqualTo(pcsCase);
-            assertThat(saved.getClaimId()).isEqualTo(claim);
+            assertThat(saved.getClaim()).isEqualTo(claim);
             assertThat(saved.getPartyId()).isEqualTo(party);
         }
     }

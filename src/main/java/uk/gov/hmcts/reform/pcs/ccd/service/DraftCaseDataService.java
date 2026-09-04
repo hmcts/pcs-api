@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -366,6 +367,18 @@ public class DraftCaseDataService {
                     partyId
                 )
         );
+    }
+
+    public void deleteUnsubmittedCaseDataBySystemUser(long caseReference, EventId eventId) {
+        List<DraftCaseDataEntity> drafts =
+                draftCaseDataRepository.findByCaseReferenceAndEventId(caseReference, eventId);
+
+        drafts.forEach(draft -> {
+            log.debug("Deleting draft case data for caseReference={}, eventId={}, userId={}",
+                    caseReference, eventId, draft.getIdamUserId());
+            draftCaseDataRepository.delete(draft);
+        });
+
     }
 
     public PCSCase parseCaseDataJson(String caseDataJson) {

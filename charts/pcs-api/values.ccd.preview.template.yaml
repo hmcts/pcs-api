@@ -18,7 +18,7 @@ java:
     # HDPI-8115: preview shares one small flexible server across ~70 releases;
     # shrink per-pod pools so idle stacks hold no connections.
     PCS_DB_POOL_MIN_IDLE: "0"
-    PCS_DB_POOL_MAX_SIZE: "4"
+    PCS_DB_POOL_MAX_SIZE: "15"
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
@@ -107,7 +107,7 @@ ccd:
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
-        DATA_STORE_DB_MAX_POOL_SIZE: 5
+        DATA_STORE_DB_MAX_POOL_SIZE: 15
         DATA_STORE_DB_MIN_IDLE: 1
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
@@ -334,3 +334,59 @@ aac-manage-case-assignment:
             alias: IDAM_NOC_APPROVER_PASSWORD
           - name: notify-mca-api-key-secret
             alias: NOTIFY_MCA_API_KEY
+
+# LAU's ccd-case-disposer, pointed at THIS preview environment's CCD database and Elasticsearch.
+# LAU's own scheduled instance can never reach a preview env (the CCD DB is on a private endpoint
+# in the preview VNet and ES is an in-cluster service), so we run their chart here instead.
+# Hard-deletes PCS cases whose resolved_ttl has passed, i.e. cases deleted via deleteThisCase.
+# Preview only: disabled by default in values.yaml. Credentials come from the ccd key vault.
+ccd-case-disposer:
+  enabled: true
+  global:
+    jobKind: CronJob
+    enableKeyVaults: true
+    # preview is not an "active cron cluster", so without this the job chart suspends the CronJob
+    disableActiveClusterCheck: true
+  job:
+    kind: CronJob
+    suspend: false
+    schedule: "*/5 * * * *"
+    startingDeadlineSeconds: 180
+    concurrencyPolicy: Forbid
+    releaseNameOverride: ${SERVICE_NAME}-case-disposer
+    image: hmctsprod.azurecr.io/ccd/case-disposer:latest
+    aadIdentityName: ccd
+    keyVaults:
+      ccd:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: idam-case-disposer-system-user-username
+            alias: IDAM_CASE_DISPOSER_SYSTEM_USER_USERNAME
+          - name: idam-case-disposer-system-user-password
+            alias: IDAM_CASE_DISPOSER_SYSTEM_USER_PASSWORD
+          - name: idam-case-disposer-client-secret
+            alias: IDAM_CASE_DISPOSER_CLIENT_SECRET
+          - name: ccd-case-disposer-s2s-secret
+            alias: IDAM_KEY_CCD_CASE_DISPOSER
+    secrets:
+      DATA_STORE_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+    environment:
+      DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $ }}'
+      DATA_STORE_DB_PORT: 5432
+      DATA_STORE_DB_NAME: "{{ .Values.global.databaseNamePrefix }}data-store"
+      DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername }}"
+      DATA_STORE_DB_OPTIONS: "?sslmode=require"
+      ELASTIC_SEARCH_ENABLED: true
+      ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+      DELETE_CASE_TYPES: "PCS"
+      SIMULATED_CASE_TYPES:
+      CASE_COLLECTOR_VERSION: 2
+      DEFINITION_STORE_HOST: http://${SERVICE_NAME}-ccd-definition-store
+      DOCUMENT_STORE_HOST: http://dm-store-aat.service.core-compute-aat.internal
+      ROLE_ASSIGNMENT_HOST: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      LOG_AND_AUDIT_HOST: http://lau-case-backend-aat.service.core-compute-aat.internal
+      IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
+      IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
