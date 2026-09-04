@@ -6,6 +6,8 @@ CREATE TABLE public.hearing_notice_party
   CONSTRAINT hearing_notice_party_pkey PRIMARY KEY (hearing_id, party_id)
 );
 
+CREATE INDEX idx_hearing_notice_party ON public.hearing_notice_party(party_id);
+
 -- Migrate existing hearing notice party data
 INSERT INTO public.hearing_notice_party (hearing_id, party_id)
 SELECT
