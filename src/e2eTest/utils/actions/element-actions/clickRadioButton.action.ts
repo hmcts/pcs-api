@@ -73,7 +73,11 @@ export class ClickRadioButtonAction implements IAction {
   }
 
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+    // .nth(idx) matters: a page can ask the same question of several parties, and callers
+    // pass index to pick one. Without it this always resolved to the first match, so the
+    // count() !== 1 guard in clickWithRetry rejected it and the pattern never contributed.
+    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`)
+      .nth(idx);
   }
 
   private radioPattern4(page: Page, question: string, option: string, idx: number) {
@@ -82,9 +86,12 @@ export class ClickRadioButtonAction implements IAction {
       .locator('input[type="radio"]');
   }
 
+  // Deliberately not indexed. This pattern ignores `question`, so it is the last-resort
+  // fallback; making it .nth(idx) would let it always satisfy the count() !== 1 guard and
+  // click a same-labelled radio belonging to a different question.
   private radioPattern3(page: Page, question: string, option: string, idx: number) {
     return page.locator(`label >> text=${option}`);
-  } 
+  }
 }
 
  
