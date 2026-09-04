@@ -15,12 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
 @Component
 @Slf4j
@@ -36,8 +32,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
                             .forStates(EventStates.createCaseLink())
                             .name("Link cases")
                             .description("To link related cases")
-                            .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
-                                   CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
+                            .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("createCaseLink")
             .pageLabel("Link cases")
