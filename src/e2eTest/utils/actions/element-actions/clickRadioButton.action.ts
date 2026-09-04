@@ -72,12 +72,24 @@ export class ClickRadioButtonAction implements IAction {
       .getByRole('radio', { name: option as string, exact: true });
   }
 
+  // Indexed. The per-pattern diagnostics from the failing run read
+  // `pattern1=0, pattern2=2, pattern3=0, pattern4=7`: this pattern finds BOTH defendants'
+  // radios, so unindexed it is 2 and the `count() !== 1` guard throws it away — even though
+  // the wanted element is sitting at nth(idx). Verified: p2=2 and p2.nth(1) is the correct
+  // second-defendant radio.
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`)
+      .nth(idx);
   }
 
+  // Innermost matching fieldset only. `fieldset:has-text(q)` also matches every ANCESTOR
+  // fieldset, which is why the diagnostics showed pattern4=7 for a two-defendant page: the
+  // wrappers inflate the list and .nth(idx) lands on a wrapper instead of the second block.
+  // Excluding fieldsets that themselves contain a matching fieldset collapsed 4 → 2 in
+  // reproduction and made .nth(1) resolve to the intended radio.
   private radioPattern4(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`fieldset:has-text("${question}")`).nth(idx)
+    return page.locator(`fieldset:has-text("${question}"):not(:has(fieldset:has-text("${question}")))`)
+      .nth(idx)
       .locator('label', { hasText: option })
       .locator('input[type="radio"]');
   }
