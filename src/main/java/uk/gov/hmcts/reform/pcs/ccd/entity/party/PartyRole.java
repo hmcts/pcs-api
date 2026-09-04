@@ -6,5 +6,4 @@ public enum PartyRole {
     DEFENDANT,
     UNDERLESSEE_OR_MORTGAGEE,
     LITIGATION_FRIEND
-
 }
