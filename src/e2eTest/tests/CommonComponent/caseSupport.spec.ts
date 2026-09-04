@@ -44,7 +44,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await dismissCookieBanner(page, 'analytics');
 
     await performAction('navigateToCaseSummary');
-    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request'] });
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
@@ -88,7 +88,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await dismissCookieBanner(page, 'analytics');
 
     await performAction('navigateToCaseSummary');
-    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request'] });
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
@@ -139,7 +139,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await dismissCookieBanner(page, 'analytics');
 
     await performAction('navigateToCaseSummary');
-    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request'] });
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
@@ -154,7 +154,8 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
       headerToCheck: reviewSupport.languageInterpreterHeader
     });
     await performValidation('mainHeader', reviewSupport.mainHeader);
-    await performAction('inputText', reviewSupport.languageInterpreterHeader, reviewSupport.languageInterpreterText);
+    await performAction('check', reviewSupport.enterLanguageCheckBox);
+    await performAction('inputText', reviewSupport.languageInterpreterLabel, reviewSupport.languageInterpreterText);
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('inputText', reviewSupport.addCommentOptionalLabel, reviewSupport.addCommentText);
@@ -164,7 +165,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
-    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
+    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Language Interpreter, Telugu (Claimant Test Create Support)' });
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
