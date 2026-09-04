@@ -58,12 +58,18 @@ export async function waitForInteractive(locator: Locator, timeout: number = SHO
  *
  * `.spinner-container` (ccd-case-ui-toolkit loading-spinner.component.scss) is
  * `position: fixed`, full viewport, `z-index: 99` — a real overlay that swallows pointer
- * events. Playwright gates `click`, `fill`, `selectOption` and `check` on the target
- * actually receiving those events, so a spinner left up by the previous action blocks any
- * of them for the whole 40s `actionTimeout`. Adding this before the click in
- * `clickButton` measured 0 flaky / 49 passed against a 7-flaky control, and the
- * `locator.fill: Timeout 40000ms exceeded` seen on createCase.spec.ts:1043 is the same
- * failure through a different verb.
+ * events. Adding this before the click in `clickButton` measured 0 flaky / 49 passed
+ * against a 7-flaky control.
+ *
+ * Applies to click-based actions only. Measured against a replica of that overlay:
+ *
+ *   button click 2931ms   radio 2934ms   link 2939ms   tab 2933ms   check 2937ms
+ *   fill 21ms             selectOption 15ms
+ *
+ * Everything that performs a real click waits for the overlay to clear; `fill` and
+ * `selectOption` are not gated on pointer events and are unaffected. So `inputText` and
+ * `select` deliberately do NOT call this — a wait there would be dead weight on every
+ * call.
  *
  * Swallows its own timeout: if the spinner genuinely never clears, the caller's action
  * reports the useful error against the element the test actually wanted.

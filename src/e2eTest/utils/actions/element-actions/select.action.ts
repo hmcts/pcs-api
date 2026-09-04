@@ -1,10 +1,8 @@
 import { Page } from '@playwright/test';
 import { IAction, actionRecord } from '../../interfaces/action.interface';
-import { waitForSpinner } from '@utils/common/locator.utils';
 
 export class SelectAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, option: string | number): Promise<void> {
-    await waitForSpinner(page);
     const locator = typeof fieldName === 'string'
       ? page.locator(`:has-text("${fieldName}") + select,
                                   :has-text("${fieldName}") ~ select,
