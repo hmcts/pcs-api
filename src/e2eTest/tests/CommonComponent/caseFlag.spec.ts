@@ -213,9 +213,14 @@ test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags',
     test.setTimeout(ACCESS_CONTROL_TEST_TIMEOUT);
     const results: UserTestResult[] = [];
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
+    // One case for all 24 users, as the judicial test below already does. Creating a case
+    // per user cost ~3.75 min each, so only 8 of 24 were reached before the 30 min
+    // timeout — the test could not pass. The flags created are per-user and the
+    // assertions are about permissions, so a shared case is sufficient.
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+
     const runStaffUserTest = async (email: string) => {
-      await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');
