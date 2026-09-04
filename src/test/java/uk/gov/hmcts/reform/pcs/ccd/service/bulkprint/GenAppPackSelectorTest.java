@@ -2,14 +2,17 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
@@ -20,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.HelpWithFeesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -27,6 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -47,11 +54,21 @@ class GenAppPackSelectorTest {
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @Spy
     private SentPackDocuments sentPackDocuments = new SentPackDocuments(new ObjectMapper());
 
-    @InjectMocks
     private GenAppPackSelector underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new GenAppPackSelector(
+            claimActivityLogRepository,
+            sentPackDocuments,
+            new PackSkipRules(featureToggleService, new CaseFlagService(null, null, null, null, null)));
+    }
 
     private final PartyEntity claimant = party();
     private final PartyEntity defendant = party();
@@ -265,6 +282,77 @@ class GenAppPackSelectorTest {
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().id(CASE_ID).caseReference(CASE_REF).claims(List.of()).build();
 
         assertThat(underTest.findGenAppPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    @DisplayName("Does not send a gen-app pack when the application requires translation")
+    void shouldSkipGenAppPackWhenTranslationRequired(LanguageUsed languageUsed) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        genApp.setLanguageUsed(languageUsed);
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(
+            List.of(genApp), claimant, defendant))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Does not send a gen-app pack when translation is required even if HWF is provided")
+    void shouldSkipGenAppPackWhenTranslationAndHwf() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        genApp.setLanguageUsed(LanguageUsed.WELSH);
+        genApp.setHelpWithFeesEntity(HelpWithFeesEntity.builder().hwfReference("HWF-123").build());
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(
+            List.of(genApp), claimant, defendant))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Still sends an English with-notice gen app that has HWF")
+    void shouldStillSendEnglishGenAppWithHwf() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        genApp.setLanguageUsed(LanguageUsed.ENGLISH);
+        genApp.setHelpWithFeesEntity(HelpWithFeesEntity.builder().hwfReference("HWF-123").build());
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(
+            List.of(genApp), claimant, defendant))).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Sends a Welsh gen app when the rollout flag is off")
+    void shouldSendWelshGenAppWhenRolloutFlagOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(false);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity genApp = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        genApp.setLanguageUsed(LanguageUsed.WELSH);
+
+        assertThat(underTest.findGenAppPackCandidates(caseWith(
+            List.of(genApp), claimant, defendant))).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Skips only the gen app that requires translation when another English GA is ready")
+    void shouldSkipOnlyTheGenAppThatNeedsTranslation() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        GenAppEntity welshGa = defendantCuiWithNoticeGa(withNoticePdf, defendant);
+        welshGa.setRank(1);
+        welshGa.setLanguageUsed(LanguageUsed.WELSH);
+        GenAppEntity englishGa = defendantCuiWithNoticeGa(secondGaPdf, defendant);
+        englishGa.setRank(2);
+        englishGa.setLanguageUsed(LanguageUsed.ENGLISH);
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(caseWith(
+            List.of(welshGa, englishGa), claimant, defendant));
+
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(GenAppPackCandidate::documents)
+            .containsExactly(List.of(secondGaPdf), List.of(secondGaPdf));
     }
 
     @Test
