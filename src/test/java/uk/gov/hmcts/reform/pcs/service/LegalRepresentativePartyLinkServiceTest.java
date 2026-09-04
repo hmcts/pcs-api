@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -23,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
@@ -46,8 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -82,9 +78,6 @@ class LegalRepresentativePartyLinkServiceTest {
     private AddressMapper addressMapper;
 
     @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
-
-    @Mock
     private NotificationService notificationService;
 
     @Mock
@@ -112,7 +105,6 @@ class LegalRepresentativePartyLinkServiceTest {
             organisationDetailsService,
             addressMapper,
             revokeAccessHelper,
-            caseRoleAssignmentService,
             notificationService,
             FIXED_UTC_CLOCK
         );
@@ -185,7 +177,6 @@ class LegalRepresentativePartyLinkServiceTest {
         assertEquals("orgName", actual.getOrganisationName());
         assertEquals(ORG_PROFILE_ID, actual.getOrganisationProfileId());
         assertEquals(partyEntity, actual.getClaimPartyOrganisationList().getFirst().getParty());
-        verify(caseRoleAssignmentService, never()).revokeCaseRole(anyLong(), anyString(), any(UserRole.class));
         verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
         verify(notificationService).sendNoticeOfChangeCompleteLegalRepEmailNotification(actual,
             partyEntity, LEGAL_REP_EMAIL);
@@ -240,12 +231,8 @@ class LegalRepresentativePartyLinkServiceTest {
             organisationDetails
         );
 
-        // then
-        verify(caseRoleAssignmentService).revokeCaseRole(
-            caseReference,
-            defendantIdamId.toString(),
-            UserRole.DEFENDANT
-        );
+        // then - access revocation is the helper's job (it schedules the role revoke task)
+        verify(revokeAccessHelper).revokeDefendantsAccessToRespondToClaim(pcsCaseEntity, partyEntity);
     }
 
     @Test
@@ -763,7 +750,7 @@ class LegalRepresentativePartyLinkServiceTest {
             .isInstanceOf(LegalRepresentativeAlreadyLinkedToPartyException.class);
 
         verify(organisationRepository, never()).save(any());
-        verifyNoInteractions(pcsCaseService, revokeAccessHelper, caseRoleAssignmentService, notificationService);
+        verifyNoInteractions(pcsCaseService, revokeAccessHelper, notificationService);
     }
 
     @Test
@@ -832,10 +819,8 @@ class LegalRepresentativePartyLinkServiceTest {
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference, partyId.toString(), LEGAL_REP_EMAIL, organisationDetails);
 
-        InOrder inOrder = inOrder(organisationRepository, caseRoleAssignmentService, notificationService);
+        InOrder inOrder = inOrder(organisationRepository, notificationService);
         inOrder.verify(organisationRepository).save(any(OrganisationEntity.class));
-        inOrder.verify(caseRoleAssignmentService)
-            .revokeCaseRole(caseReference, defendantIdamId.toString(), UserRole.DEFENDANT);
         inOrder.verify(notificationService).sendNoticeOfChangeCompletedEmailNotification(partyEntity);
         inOrder.verify(notificationService)
             .sendNoticeOfChangeCompleteLegalRepEmailNotification(any(), any(), any());

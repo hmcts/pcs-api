@@ -49,10 +49,11 @@ public class CaseRoleAssignmentTaskComponent {
                 RoleAssignmentTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());
                 String userId = taskData.getUserId();
-                log.debug("Revoking creator role for case: {}", caseReference);
+                UserRole role = taskData.getRole() != null ? taskData.getRole() : UserRole.CREATOR;
+                log.debug("Revoking {} role for case: {}", role, caseReference);
 
                 try {
-                    caseRoleAssignmentService.revokeCaseRole(caseReference, userId, UserRole.CREATOR);
+                    caseRoleAssignmentService.revokeCaseRole(caseReference, userId, role);
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
