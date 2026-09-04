@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -115,11 +114,11 @@ class LegalRepStartEventHydrationVerificationTest {
         when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(false);
         when(legalRepPartySelectionService.getDraftCaseData(
-            eq(CASE_REFERENCE),
-            eq(incomingCase),
-            eq(defendant),
-            eq(List.of(defendant)),
-            eq("test-org-id")
+            CASE_REFERENCE,
+            incomingCase,
+            defendant,
+            List.of(defendant),
+            "test-org-id"
         )).thenReturn(incomingCase);
 
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, incomingCase);
