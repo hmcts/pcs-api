@@ -134,13 +134,13 @@ export class CreateCaseAPIAction implements IAction {
   private async enforceCaseAPI(caseData: actionData): Promise<void> {
     const enforceCaseApi = Axios.create(enforceOrderEventTokenApiData.submitCaseEventTokenApiInstance());
     try {
-      process.env.ENFORCE_EVENT_TOKEN = (await enforceCaseApi.get(enforceOrderEventTokenApiData.enforceEventTokenApiEndPoint())).data.token;
+      process.env.ENFORCE_EVENT_TOKEN = (await this.apiRetry(() => enforceCaseApi.get(enforceOrderEventTokenApiData.enforceEventTokenApiEndPoint()))).data.token;
       const enforceCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const enforceResponse = await enforceCaseApi.post(enforceWarrantApiData.enforceCaseApiEndPoint(), {
+      const enforceResponse = await this.apiRetry(() => enforceCaseApi.post(enforceWarrantApiData.enforceCaseApiEndPoint(), {
         data: enforceCasePayloadData,
         event: { id: enforceWarrantApiData.enforceCaseEventName },
         event_token: process.env.ENFORCE_EVENT_TOKEN,
-      });
+      }));
       caseInfo.id = enforceResponse.data.id;
       caseInfo.fid = enforceResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = enforceResponse.data.state;
@@ -208,7 +208,7 @@ export class CreateCaseAPIAction implements IAction {
   private async getCaseAPI(getDetails: actionData): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     try {
-      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      const createResponse = await this.apiRetry(() => getCaseApi.get(getCaseApiData.getCaseApiEndPoint()));
       if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
         process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
@@ -264,7 +264,7 @@ export class CreateCaseAPIAction implements IAction {
   private async getCaseAPIDynamic(getDetails: actionRecord): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
-      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      const createResponse = await this.apiRetry(() => getCaseApi.get(getCaseApiData.getCaseApiEndPoint()));
       if (typeof getDetails.req === 'string' && getDetails.req === 'Claim Submission Time') {
         process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
@@ -320,17 +320,17 @@ export class CreateCaseAPIAction implements IAction {
 
     try {
       if (typeof getUser === 'string' && getUser === 'Claimant') {
-        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint());
+        const userResponse = await this.apiRetry(() => fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchCurrentUserApiEndPoint()));
         process.env.Display_NAME = await userResponse.data.displayName;
         console.log(`\n✅ FETCH CURRENT USER:`);
         console.log(`\n SUCCESSFULLY FETCHED THE CURRENT USER: "${process.env.Display_NAME}"`);
       } else if (typeof getUser === 'string' && getUser === 'CaseWorker') {
-        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantCaseWorkerUserApiEndPoint());
+        const userResponse = await this.apiRetry(() => fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantCaseWorkerUserApiEndPoint()));
         process.env.Display_NAME = await userResponse.data.displayName;
         console.log(`\n✅ FETCH CURRENT USER:`);
         console.log(`\n SUCCESSFULLY FETCHED THE CURRENT USER: "${process.env.Display_NAME}"`);
       } else {
-        const userResponse = await fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantSolicitorUserApiEndPoint());
+        const userResponse = await this.apiRetry(() => fetchUserCaseApi.get(fetchCurrentUserTokenApiData.fetchDefendantSolicitorUserApiEndPoint()));
         process.env.Defendant_SOLICITOR = JSON.stringify(await userResponse.data);
         process.env.Display_NAME = await userResponse.data.displayName;
         console.log(`\n✅ FETCH CURRENT USER:`);
@@ -361,14 +361,14 @@ export class CreateCaseAPIAction implements IAction {
     await this.getAccessToken(caseData.email as string, caseData.password as string);
     const createCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
-      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenDynamicApiData.createCaseEventTokenApiEndPoint)).data.token;
+      process.env.CREATE_EVENT_TOKEN = (await this.apiRetry(() => createCaseApi.get(createCaseEventTokenDynamicApiData.createCaseEventTokenApiEndPoint))).data.token;
       const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
 
-      const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+      const createResponse = await this.apiRetry(() => createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
         data: createCasePayloadData,
         event: { id: createCaseApiData.createCaseEventName },
         event_token: process.env.CREATE_EVENT_TOKEN,
-      });
+      }));
       process.env.CASE_NUMBER = createResponse.data.id;
       caseInfo.id = createResponse.data.id;
       caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
@@ -398,13 +398,13 @@ export class CreateCaseAPIAction implements IAction {
     const submitCaseApi = Axios.create(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiInstance());
     let submitCasePayloadData;
     try {
-      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      process.env.SUBMIT_EVENT_TOKEN = (await this.apiRetry(() => submitCaseApi.get(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiEndPoint()))).data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+      const submitResponse = await this.apiRetry(() => submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
         event_token: process.env.SUBMIT_EVENT_TOKEN,
-      });
+      }));
       caseInfo.id = submitResponse.data.id;
       caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = submitResponse.data.state;
@@ -492,13 +492,13 @@ export class CreateCaseAPIAction implements IAction {
     const manageHearingApi = Axios.create(manageHearingEventTokenApiData.manageHearingEventTokenApiInstance());
     let manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
-      process.env.Hearing_EVENT_TOKEN = (await manageHearingApi.get(manageHearingEventTokenApiData.manageHearingEventTokenApiEndPoint())).data.token;
+      process.env.Hearing_EVENT_TOKEN = (await this.apiRetry(() => manageHearingApi.get(manageHearingEventTokenApiData.manageHearingEventTokenApiEndPoint()))).data.token;
       manageHearingPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const hearingResponse = await manageHearingApi.post(manageHearingApiData.manageHearingApiEndPoint(), {
+      const hearingResponse = await this.apiRetry(() => manageHearingApi.post(manageHearingApiData.manageHearingApiEndPoint(), {
         data: manageHearingPayloadData,
         event: {id: manageHearingApiData.manageHearingEventName},
         event_token: process.env.Hearing_EVENT_TOKEN,
-      });
+      }));
       caseInfo.id = hearingResponse.data.id;
       caseInfo.fid = hearingResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = hearingResponse.data.state;
@@ -571,7 +571,7 @@ export class CreateCaseAPIAction implements IAction {
   private async getCaseAPIForLR(getDetails: actionData): Promise<void> {
     const getCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     try {
-      const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
+      const createResponse = await this.apiRetry(() => getCaseApi.get(getCaseApiData.getCaseApiEndPoint()));
       if (typeof getDetails === 'string' && getDetails === 'Claim Submission Time') {
         process.env.Submission_TIME = formatDateTimeBST(createResponse.data.last_state_modified_on);
         console.log(`\n✅ The claim was submitted on "${process.env.Submission_TIME}"`)
@@ -681,13 +681,13 @@ export class CreateCaseAPIAction implements IAction {
 
     const makeAnApplicationApi = Axios.create(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiInstance());
     try {
-      process.env.MAA_EVENT_TOKEN = (await makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint())).data.token;
+      process.env.MAA_EVENT_TOKEN = (await this.apiRetry(() => makeAnApplicationApi.get(makeAnApplicationEventTokenApiData.makeAnApplicationEventTokenApiEndPoint()))).data.token;
       makeAnApplicationPayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-      const genAppResponse = await makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
+      const genAppResponse = await this.apiRetry(() => makeAnApplicationApi.post(makeAnApplicationApiData.makeAnApplicationApiEndPoint(), {
         data: makeAnApplicationPayloadData,
         event: { id: makeAnApplicationApiData.makeAnApplicationEventName },
         event_token: process.env.MAA_EVENT_TOKEN,
-      });
+      }));
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
