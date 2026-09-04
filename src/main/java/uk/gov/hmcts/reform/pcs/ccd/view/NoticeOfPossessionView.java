@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -21,7 +22,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class NoticeOfPossessionView {
+
+    private final UploadTimestampProvider uploadTimestampProvider;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
@@ -89,7 +93,7 @@ public class NoticeOfPossessionView {
             .findFirst();
     }
 
-    private static List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return List.of();
         }
@@ -99,7 +103,7 @@ public class NoticeOfPossessionView {
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
-            .map(NoticeOfPossessionView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
@@ -107,7 +111,7 @@ public class NoticeOfPossessionView {
         return documentEntity.getType() == DocumentType.POSSESSION_NOTICE;
     }
 
-    private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
+    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
             .id(documentEntity.getId().toString())
             .value(
@@ -116,6 +120,7 @@ public class NoticeOfPossessionView {
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
                     .categoryId(documentEntity.getCategoryId())
+                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
                     .build()
             ).build();
     }
