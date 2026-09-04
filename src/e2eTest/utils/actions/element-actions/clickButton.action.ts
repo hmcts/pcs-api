@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { actionRetries, LONG_TIMEOUT, waitForPageRedirectionTimeout } from '../../../playwright.config';
-import { hasPageHeading } from '@utils/common/locator.utils';
+import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { hasPageHeading, waitForSpinner } from '@utils/common/locator.utils';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
@@ -24,13 +24,8 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
       await page.waitForLoadState();
-      // Also wait BEFORE clicking. XUI's loading spinner is position:fixed, full viewport,
-      // z-index 99 (ccd-case-ui-toolkit loading-spinner.component.scss), so it intercepts
-      // pointer events. A spinner still up from the previous action blocked the click for
-      // the whole 40s actionTimeout — seen on createCaseWales.spec.ts:604 as
-      // "locator.click: Timeout 40000ms exceeded" on 'Submit claim'.
-      await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: LONG_TIMEOUT })
-        .catch(() => undefined);
+      // Also wait BEFORE clicking, not only after — see waitForSpinner for why.
+      await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
       await page.locator('.spinner-container').waitFor({ state: 'detached' });
