@@ -31,7 +31,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   initializeCMExecutor(page);
   FieldsStore.clear();
 
-  const title = testInfo.title.toLowerCase();
+  const title = testInfo.title;
 
   const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
 
@@ -39,16 +39,17 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   const isMultiDef = title.includes('multi def');
 
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadDefault });
 
-  await performAction('submitCaseAPI', {
-    data: isMultiDef
-      ? submitCaseApiData.submitCasePayload
-      : submitCaseApiData.submitCasePayloadDefault,
-  });
+  // await performAction('submitCaseAPI', {
+  //   data: isMultiDef
+  //     ? submitCaseApiData.submitCasePayload
+  //     : submitCaseApiData.submitCasePayloadDefault,
+  // });
 
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
-  await performAction('getCaseAPIForLR', 'Link Solicitor');
+  await performAction('getCaseAPI', 'Link Solicitor');
 
  const genAppPayload =
     title.includes('ADJOURN')
@@ -121,7 +122,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadDefault,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
   });
