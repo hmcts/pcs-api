@@ -2,7 +2,7 @@ import {expect, Page} from '@playwright/test';
 import {IAction} from '@utils/interfaces/action.interface';
 import {performAction} from '@utils/controller';
 import {home} from '@data/page-data/home.page.data';
-import {MEDIUM_TIMEOUT} from '../../../playwright.config';
+import {LONG_TIMEOUT, SHORT_TIMEOUT} from '../../../playwright.config';
 
 export class signOutAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
@@ -13,9 +13,13 @@ export class signOutAction implements IAction {
         await performAction('clickButton', home.signOutButton);
       }
 
-      await expect(page.locator('input#email')).toBeVisible();
+      // Bounded per attempt. Without an explicit timeout this inherits the global expect
+      // default of 30s (playwright.config.ts), which is longer than the whole toPass
+      // budget below — so a slow sign-out was cut off part-way through its first attempt
+      // and never got the retry the wrapper exists to provide.
+      await expect(page.locator('input#email')).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: MEDIUM_TIMEOUT,
+      timeout: LONG_TIMEOUT,
     });
 
   }
