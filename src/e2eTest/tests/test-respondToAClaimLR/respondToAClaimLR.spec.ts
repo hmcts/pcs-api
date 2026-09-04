@@ -21,6 +21,9 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
+  // Wait for CCD to propagate the solicitor link before the UI attempts to load the respond event
+  // trigger. On AAT nightlies this race caused 404s from the data store immediately after linking.
+  await performAction('pollRespondEventTriggerAPI');
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
@@ -45,7 +48,16 @@ test.afterEach(async () => {
 });
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
-  test('Trigger respond event @healthCheck', async () => {
+  test('Trigger respond event @regression @healthCheck', async () => {
+    // Skip on preview builds that do not have a paired frontend PR: without pcs-frontend-pr-<n>
+    // Jenkins sets PCS_FRONTEND_URL to the AAT frontend, which cannot see a case that exists only
+    // in the pull request's preview CCD, producing "You do not have access to this page".
+    // Add the pcs-frontend-pr:<n> label to the pull request to enable this test on preview.
+    test.skip(
+      process.env.ENVIRONMENT === 'preview' &&
+        !(process.env.PCS_FRONTEND_URL ?? '').includes('pcs-frontend-pr-'),
+      'Legal representative journey needs a paired frontend: add the pcs-frontend-pr:<n> label to the pull request'
+    );
     await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
