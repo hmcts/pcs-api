@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -25,12 +24,11 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.deleteThisCase.name(), this::submit)
-                .forAllStates()
+                .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED)
                 .name("Delete this case")
                 .ttlIncrement(-1)
-                .showCondition(draftClaimStateCondition())
-                .grant(Permission.CRU, UserRole.CREATOR)
-                .grant(Permission.CRU, UserRole.CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CREATOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
                 .endButtonLabel("Continue"))
                 .page("deleteThisCase")
                 .pageLabel("Delete this case")
@@ -50,11 +48,5 @@ public class DeleteThisCase implements CCDConfig<PCSCase, State, UserRole> {
                 Case number: %s
                 """.formatted(eventPayload.caseReference()))
                 .build();
-    }
-
-    private static String draftClaimStateCondition() {
-        return ShowConditions.stateEquals(State.AWAITING_SUBMISSION_TO_HMCTS)
-                + " OR "
-                + ShowConditions.stateEquals(State.PENDING_CASE_ISSUED);
     }
 }
