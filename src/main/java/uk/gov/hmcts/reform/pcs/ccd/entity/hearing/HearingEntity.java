@@ -1,6 +1,8 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +23,8 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -74,16 +79,22 @@ public class HearingEntity {
 
     private String additionalInformation;
 
+    @OneToMany(fetch = LAZY, cascade = CascadeType.ALL, mappedBy = "hearing", orphanRemoval = true)
     @Builder.Default
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<UUID> noticeParties = new ArrayList<>();
+    @JsonManagedReference
+    private List<HearingNoticePartyEntity> hearingNoticeParties = new ArrayList<>();
 
     private Boolean cancelled;
 
     private String cancellationReason;
 
-    public void addParty(UUID partyId) {
-        noticeParties.add(partyId);
+    public void addParty(PartyEntity party) {
+        HearingNoticePartyEntity hearingNoticePartyEntity = HearingNoticePartyEntity.builder()
+            .hearing(this)
+            .party(party)
+            .build();
+        hearingNoticeParties.add(hearingNoticePartyEntity);
+        party.getHearingNoticeParties().add(hearingNoticePartyEntity);
     }
 
 }

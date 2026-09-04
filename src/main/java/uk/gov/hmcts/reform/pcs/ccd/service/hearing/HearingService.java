@@ -8,12 +8,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -25,10 +27,12 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,17 +42,20 @@ public class HearingService {
     private final PcsCaseService pcsCaseService;
     private final PcsCaseRepository pcsCaseRepository;
     private final HearingRepository hearingRepository;
+    private final PartyRepository partyRepository;
     private final PartyService partyService;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
                           PcsCaseRepository pcsCaseRepository,
                           HearingRepository hearingRepository,
+                          PartyRepository partyRepository,
                           PartyService partyService,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
         this.pcsCaseRepository = pcsCaseRepository;
         this.hearingRepository = hearingRepository;
+        this.partyRepository = partyRepository;
         this.partyService = partyService;
         this.ukClock = ukClock;
     }
@@ -139,9 +146,14 @@ public class HearingService {
             Hearing hearing = mapToHearing(selectedHearing);
             hearing.setHearingSummaryMarkdown(hearingSummaryMarkdown);
             pcsCase.setHearing(hearing);
+            List<UUID> selectedPartyIds = selectedHearing.getHearingNoticeParties()
+                .stream()
+                .map(HearingNoticePartyEntity::getParty)
+                .map(PartyEntity::getId)
+                .toList();
             pcsCase.setPartyMultiSelectionList(preselectNoticeRecipients(
                 partyListForPrepopulation(pcsCase, pcsCaseEntity),
-                selectedHearing.getNoticeParties()
+                selectedPartyIds
             ));
         });
     }
@@ -205,7 +217,6 @@ public class HearingService {
         hearingEntity.setNotes(hearing.getNotes());
         hearingEntity.setIsWithoutNotice(isWithoutNotice);
         hearingEntity.setAdditionalInformation(hearing.getAdditionalInformation());
-        hearingEntity.setNoticeParties(new ArrayList<>());
 
         if (hearingType == HearingType.OTHER) {
             hearingEntity.setOtherHearingType(hearing.getOtherHearingType());
@@ -213,8 +224,24 @@ public class HearingService {
             hearingEntity.setOtherHearingType(null);
         }
 
+        List<HearingNoticePartyEntity> hearingNoticeParties = new ArrayList<>(hearingEntity.getHearingNoticeParties());
+
         if (issueNotice == VerticalYesNo.YES && isWithoutNotice == VerticalYesNo.YES) {
-            selectedNoticePartyIds(pcsCase).forEach(hearingEntity::addParty);
+            Set<UUID> partyIds = selectedNoticePartyIds(pcsCase);
+
+            for (HearingNoticePartyEntity hearingNoticeParty : hearingNoticeParties) {
+                UUID id = hearingNoticeParty.getParty().getId();
+                if (partyIds.contains(id)) {
+                    partyIds.remove(id);
+                } else {
+                    hearingNoticeParty.removeHearingNoticeParty();
+                }
+            }
+
+            List<PartyEntity> partyEntities = partyRepository.findAllById(partyIds);
+            partyEntities.forEach(hearingEntity::addParty);
+        } else {
+            hearingNoticeParties.forEach(HearingNoticePartyEntity::removeHearingNoticeParty);
         }
 
         return hearingEntity;
@@ -239,17 +266,17 @@ public class HearingService {
             .build();
     }
 
-    private List<UUID> selectedNoticePartyIds(PCSCase pcsCase) {
+    private Set<UUID> selectedNoticePartyIds(PCSCase pcsCase) {
         DynamicMultiSelectStringList selectedParties = pcsCase.getPartyMultiSelectionList();
         if (selectedParties != null && !CollectionUtils.isEmpty(selectedParties.getValue())) {
             return selectedParties.getValue().stream()
                 .map(DynamicStringListElement::getCode)
                 .filter(Objects::nonNull)
                 .map(UUID::fromString)
-                .toList();
+                .collect(Collectors.toSet());
         }
 
-        return List.of();
+        return new HashSet<>();
     }
 
     private Optional<HearingEntity> editableHearing(PcsCaseEntity pcsCaseEntity, String selectedHearingId) {

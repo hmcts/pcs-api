@@ -13,13 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -30,8 +32,10 @@ import uk.gov.hmcts.reform.pcs.exception.HearingNotFoundException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,6 +59,8 @@ public class HearingServiceTest {
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private HearingRepository hearingRepository;
+    @Mock
+    private PartyRepository partyRepository;
 
     @Mock
     private PartyService partyService;
@@ -67,6 +73,7 @@ public class HearingServiceTest {
             pcsCaseService,
             pcsCaseRepository,
             hearingRepository,
+            partyRepository,
             partyService,
             FIXED_UK_CLOCK
         );
@@ -108,6 +115,9 @@ public class HearingServiceTest {
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
+        PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
+        when(partyRepository.findAllById(Set.of(partyId))).thenReturn(List.of(partyEntity));
+
         // When
         hearingService.addHearing(caseReference, pcsCase);
 
@@ -130,8 +140,8 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
-        assertThat(hearingEntity.getNoticeParties()).hasSize(1);
-        assertThat(hearingEntity.getNoticeParties().getFirst()).isEqualTo(partyId);
+        assertThat(hearingEntity.getHearingNoticeParties()).hasSize(1);
+        assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity);
     }
 
     @Test
@@ -192,7 +202,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.NO);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
-        assertThat(hearingEntity.getNoticeParties()).isEmpty();
+        assertThat(hearingEntity.getHearingNoticeParties()).isEmpty();
     }
 
     @Test
@@ -233,7 +243,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
         assertThat(hearingEntity.getOtherHearingType()).isNull();
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.NO);
-        assertThat(hearingEntity.getNoticeParties()).isEmpty();
+        assertThat(hearingEntity.getHearingNoticeParties()).isEmpty();
     }
 
     @Test
@@ -282,13 +292,22 @@ public class HearingServiceTest {
             .issueNotice(VerticalYesNo.NO)
             .isWithoutNotice(VerticalYesNo.NO)
             .additionalInformation("old additional information")
-            .noticeParties(List.of(UUID.randomUUID()))
             .build();
+
+        HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+            .party(PartyEntity.builder().id(UUID.randomUUID()).build())
+            .hearing(selectedHearing)
+            .build();
+        selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .hearings(List.of(nonSelectedHearing, selectedHearing))
             .build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
+        when(partyRepository.findAllById(Set.of(partyId))).thenReturn(List.of(partyEntity));
 
         // When
         hearingService.updateHearing(caseReference, pcsCase);
@@ -314,7 +333,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getIsWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("updated additional information");
-        assertThat(hearingEntity.getNoticeParties()).containsExactly(partyId);
+        assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity);
     }
 
     @Test
@@ -337,8 +356,14 @@ public class HearingServiceTest {
             .otherHearingType("old custom type")
             .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.YES)
-            .noticeParties(List.of(oldPartyId))
             .build();
+
+        HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+            .party(PartyEntity.builder().id(oldPartyId).build())
+            .hearing(selectedHearing)
+            .build();
+        selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .hearings(List.of(selectedHearing))
             .build();
@@ -367,7 +392,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getType()).isEqualTo(HearingType.APPLICATION);
         assertThat(hearingEntity.getOtherHearingType()).isNull();
         assertThat(hearingEntity.getIssueNotice()).isEqualTo(VerticalYesNo.NO);
-        assertThat(hearingEntity.getNoticeParties()).isEmpty();
+        assertThat(hearingEntity.getHearingNoticeParties()).isEmpty();
     }
 
     @Test
@@ -514,9 +539,15 @@ public class HearingServiceTest {
             .notes("existing notes")
             .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.YES)
-            .noticeParties(List.of(selectedPartyId))
             .additionalInformation("existing information")
             .build();
+
+        HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+            .party(PartyEntity.builder().id(selectedPartyId).build())
+            .hearing(selectedHearing)
+            .build();
+        selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .hearings(List.of(selectedHearing))
             .build();
@@ -804,8 +835,14 @@ public class HearingServiceTest {
             .durationMinutes(45)
             .issueNotice(VerticalYesNo.YES)
             .isWithoutNotice(VerticalYesNo.YES)
-            .noticeParties(List.of(selectedPartyId))
             .build();
+
+        HearingNoticePartyEntity hearingNoticeParty = HearingNoticePartyEntity.builder()
+            .party(PartyEntity.builder().id(selectedPartyId).build())
+            .hearing(selectedHearing)
+            .build();
+        selectedHearing.setHearingNoticeParties(new ArrayList<>(List.of(hearingNoticeParty)));
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .claims(List.of(mainClaim))
             .hearings(List.of(selectedHearing))
@@ -849,13 +886,16 @@ public class HearingServiceTest {
 
         HearingEntity selectedHearing = HearingEntity.builder()
             .id(10)
-            .noticeParties(List.of())
+            .hearingNoticeParties(new ArrayList<>())
             .build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .hearings(List.of(selectedHearing))
             .build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
+        when(partyRepository.findAllById(Set.of(partyId))).thenReturn(List.of(partyEntity));
 
         PCSCase pcsCase = PCSCase.builder()
             .selectedHearingId("10")
@@ -874,8 +914,9 @@ public class HearingServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         // Then
-        assertThat(pcsCaseEntityCaptor.getValue().getHearings().getFirst().getNoticeParties())
-            .containsExactly(partyId);
+        assertThat(
+            pcsCaseEntityCaptor.getValue().getHearings().getFirst().getHearingNoticeParties().getFirst().getParty()
+        ).isEqualTo(partyEntity);
     }
 
     @Test

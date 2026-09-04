@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.hearing;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -19,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -28,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
-import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,15 +46,13 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final HearingSummaryRenderer hearingSummaryRenderer;
     private final ConfirmationBodyRenderer confirmationBodyRenderer;
-    private final Clock ukClock;
 
     public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
                          HearingService hearingService,
                          LocationReferenceService locationReferenceService,
                          PcsCaseService pcsCaseService,
                          HearingSummaryRenderer hearingSummaryRenderer,
-                         ConfirmationBodyRenderer confirmationBodyRenderer,
-                         @Qualifier("ukClock") Clock ukClock) {
+                         ConfirmationBodyRenderer confirmationBodyRenderer) {
 
         this.manageHearingConfigurer = manageHearingConfigurer;
         this.hearingService = hearingService;
@@ -64,7 +60,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         this.pcsCaseService = pcsCaseService;
         this.hearingSummaryRenderer = hearingSummaryRenderer;
         this.confirmationBodyRenderer = confirmationBodyRenderer;
-        this.ukClock = ukClock;
     }
 
     @Override
