@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 import { performAction } from '@utils/controller';
-import { SHORT_TIMEOUT, MEDIUM_TIMEOUT } from 'playwright.config';
+import { SHORT_TIMEOUT, LONG_TIMEOUT } from 'playwright.config';
 
 export class RetryOnCallBackError implements IAction {
   async execute(page: Page, action: string, button: string, nextPageElement: string,): Promise<void> {
@@ -15,7 +15,11 @@ export class RetryOnCallBackError implements IAction {
 
       await expect(page.locator(`//h1[text()="${nextPageElement}"]`), `If the ${nextPageElement} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: MEDIUM_TIMEOUT + MEDIUM_TIMEOUT,
+      // One attempt costs the click plus both SHORT_TIMEOUT waits, so ~13s worst case.
+      // The old 20s budget therefore allowed one attempt and a truncated second, meaning a
+      // callback error needing two real retries could never clear — the point of the retry.
+      // LONG_TIMEOUT x3 leaves room for three full attempts.
+      timeout: LONG_TIMEOUT * 3,
     });
   }
 }
