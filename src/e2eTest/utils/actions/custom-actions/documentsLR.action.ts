@@ -186,8 +186,12 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
+        // Exact id, not a `^=` prefix. The prefix also matches the ...defendantDocumentTypeWales
+        // sibling, so on a page rendering both this resolves to 2 elements and selectOption -
+        // being strict - throws immediately. Measured: prefix count=2 and a strict-mode
+        // violation in 7ms; exact count=1.
         const typeDropdown = page.locator(
-          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
+          `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
         await typeDropdown.waitFor({ state: 'attached' });
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });
