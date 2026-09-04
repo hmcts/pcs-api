@@ -16,7 +16,7 @@ import {
   confirmStatusForFlag,
 
 } from '@data/page-data-figma';
-import { workAccess } from "@data/page-data-figma/page-data-common-component/workAccess.page.data";
+import { completeJudgeBooking } from '@utils/common/judgeBooking.utils';
 import { createCaseApiData } from "@data/api-data";
 import { formatTheCaseNumber } from "@utils/common/string.utils";
 
@@ -301,17 +301,6 @@ export class CaseFlagAction implements IAction {
   }
 
   private async handleJudgeBookingPageForCaseFlags(page: Page): Promise<void> {
-    const pageHeader = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title').filter({ visible: true }).first();
-    const currentHeader = (await pageHeader.textContent().catch(() => '') ?? '').trim();
-
-    if (currentHeader === caseList.mainHeader) {
-      return;
-    }
-
-    await performValidation('mainHeader', workAccess.mainHeader);
-    await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
-    await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
-    await page.getByRole('button', { name: workAccess.continueButton, exact: true }).click();
-    //await performValidation('mainHeader', caseList.mainHeader);
+    await completeJudgeBooking(page);
   }
 }

@@ -17,5 +17,7 @@ export class RemoveFileAction implements IAction {
     await button.click();
     await expect(removeButton).toBeVisible({ timeout: 5000 });
     await removeButton.click();
+    // Wait for the removal to complete rather than leaving callers to sleep for it.
+    await expect(removeButton).toBeHidden({ timeout: 10000 });
   }
 }

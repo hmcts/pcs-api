@@ -21,6 +21,7 @@ import { history } from '@data/page-data/history.page.data';
 import {BrowserContext, Page} from "@playwright/test";
 import {refundAndRemission} from "@data/user-data/staff.user.data";
 import {dismissCookieBanner} from '@config/cookie-banner';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.use({ storageState: undefined });
 
@@ -58,6 +59,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async () => {

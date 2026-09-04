@@ -6,6 +6,7 @@ import {caseSummary, user} from '@data/page-data';
 import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
 
@@ -38,6 +39,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {

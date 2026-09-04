@@ -14,6 +14,7 @@ import {
 } from '@data/page-data-figma';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
@@ -43,6 +44,9 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  // PageContentValidation accumulates in static state; without this the results leak
+  // into whichever test next runs on this worker and calls finaliseTest.
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Group Access Resume Case] @nightly @MAC @CC @groupAccess', async () => {
