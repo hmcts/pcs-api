@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRe
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -71,7 +72,10 @@ public class LegalRepresentativePartyLinkService {
                                                String legalRepEmail,
                                                OrganisationDetailsResponse orgDetails) {
         String orgId = orgDetails.getOrganisationIdentifier();
-
+        if (isAlreadyLinkedToParty(partyId, orgId)) {
+            throw new LegalRepresentativeAlreadyLinkedToPartyException(
+                "Legal Representative or organisation already linked to Party [" + partyId + "]");
+        }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
