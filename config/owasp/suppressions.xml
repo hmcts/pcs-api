@@ -4,9 +4,8 @@
   <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2026-54399/54428 are against httpcore5 (5.x);
-    this is httpcore 4.x, a separate artifact that is not affected. 4.4.16 still
-    arrives transitively. Re-review by the until date, or drop this entry once
-    httpcore 4.x leaves the graph.
+    this is httpcore 4.x, a separate artifact that is not affected. Re-review by
+    the until date, or drop this entry once httpcore 4.x leaves the graph.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\..*$</packageUrl>
     <cve>CVE-2026-54399</cve>
@@ -16,7 +15,7 @@
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2025-7962 is reported against the Jakarta
     Activation spec API rather than the angus-activation implementation we
-    depend on (2.0.3, transitive). Re-review by the until date.
+    depend on. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
     <cve>CVE-2025-7962</cve>
@@ -25,27 +24,21 @@
     <notes><![CDATA[
     HDPI-8150: false positive. CVE-2020-29582 concerns kotlin-stdlib temp-file
     permissions; kotlin-stdlib is a transitive dependency only and PCS creates
-    no temp files through it. The resolved version is 1.9.25, which is what the
-    Spring Boot 3.5.16 BOM pins (kotlin.version=1.9.25) - Kotlin 2.x would need
-    Boot 4.x. Re-review by the until date.
+    no temp files through it. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2020-29582</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    CVE-2026-54285 concerns the Javascript OpenTelemetry client, not the Java one.
-    Reported against io.opentelemetry:opentelemetry-api / -common / -context 1.65.0,
-    which is already the latest release. Re-review by the until date.
+    CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    CVE-2026-41178 concerns the Go OpenTelemetry client, not the Java one. Reported
-    against io.opentelemetry.semconv:opentelemetry-semconv 1.43.0, which arrives
-    transitively and is the latest release. Re-review by the until date.
+    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
     <cve>CVE-2026-41178</cve>
@@ -55,19 +48,16 @@
   <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
-    published upstream yet. The resolved version is 1.9.25 (pinned by the Boot
-    3.5.16 BOM). Remove when a patched kotlin-stdlib is available.
+    published upstream yet. Remove when a patched kotlin-stdlib is available.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    Embedded Tomcat 11.0.25 (tomcatEmbedVersion), which is the latest release -
-    no fixed Tomcat is published for these yet, so no bump clears them. This
-    block is unchanged from master apart from dropping the stale "HDPI-6936:
-    test purposes - wil revert before merge" note that was never actioned.
-    MUST be re-reviewed when tomcatEmbedVersion moves.
+    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.25. No fixed
+    Tomcat release published yet; suppression is temporary and MUST be
+    removed when tomcatEmbedVersion is bumped to the fixed version.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
@@ -84,10 +74,8 @@
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    CVE-2026-39883/39882 concern the OpenTelemetry Collector and the JS client,
-    not the Java libraries PCS depends on. Kept from master: the shared NVD
-    database these are matched against changes between runs, so absence from a
-    single dependency-check run is not proof the entry is dead.
+    CVE-2026-39883/39882 concern the OpenTelemetry Collector and the Javascript
+    client. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
     <cve>CVE-2026-39883</cve>
@@ -145,15 +133,13 @@
     CVE-2026-59284: Spring Cloud Commons 4.3.3 has no allow list for property keys when
     the writable /actuator/env endpoint is enabled.
     No bump possible: the 4.3.x fix (4.3.4) is Enterprise Support Only and is not on
-    Maven Central; the OSS fix is 5.0.3, which requires Spring Boot 4.x. 4.3.3 is the
-    highest Commons release published for the line, and is what spring-cloud-dependencies
-    2025.0.3 (the latest 2025.0.x, i.e. the Boot 3.5-compatible train) pins.
+    Maven Central; the OSS fix is 5.0.3, which requires Spring Boot 4.x. 4.3.3 arrives
+    transitively via spring-cloud-dependencies 2025.0.0 / core-case-data-store-client.
     Not reachable: the writable env endpoint is opt-in and PCS does not enable it -
     application.yaml exposes only health, info and prometheus over the web.
     The pattern covers every spring-cloud-* artifact on the 4.3.x line, not just
     spring-cloud-commons: dependency-check assigns the broadcom:spring_cloud_commons
-    CPE to sibling jars too, and reported this CVE against spring-cloud-starter@4.3.3
-    and spring-cloud-context@4.3.3 as well.
+    CPE to sibling jars too, and reported this CVE against spring-cloud-starter@4.3.3.
     Remove once PCS moves onto a Spring Cloud 2026.x / Commons 5.x line.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring-cloud-.*@4\.3\..*$</packageUrl>
@@ -171,9 +157,9 @@
                        text/event-stream producer anywhere in src/main) and has no view
                        layer to emit fragments from.
       CVE-2026-47891 - WebFlux maxInMemorySize bypass via the Aalto XML processor.
-                       spring-boot-starter-webflux is testImplementation only,
-                       so spring-webflux is not on runtimeClasspath, and Aalto is not
-                       on any classpath.
+                       spring-boot-starter-webflux is testImplementation only
+                       (build.gradle:482), so spring-webflux is not on runtimeClasspath,
+                       and Aalto is not on any classpath.
       CVE-2026-59281 - reflected XSS via the no-argument Errors.getFieldErrors() /
                        getFieldError() accessors rendered into an HTML view. PCS calls
                        neither accessor, is @RestController-only (its four @Controller*
