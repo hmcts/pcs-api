@@ -1,7 +1,7 @@
 export const uploadAdditionalDocumentsInformation = (testTitle: string) =>({
   mainHeader: `Upload additional documents`,
   youCanUploadParagraph: testTitle.toLowerCase().includes('claimant')?`You can upload a document to support an application, or to show proof that you have done something.`:`You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
-  weUsuallyShareParagraph: testTitle.toLowerCase().includes('claimant')?`We usually share anything you upload with the other party, for example your tenant or the mortgage payer.`:`We usually share anything you upload with the other parties, for example a tenant, landlord, housing association, or mortgage lender.`,
+  weUsuallyShareParagraph: testTitle.toLowerCase().includes('claimant')?`We usually share anything you upload with the other party, for example your tenant or the mortgage payer.`:`We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,
   whatYouCanUploadParagraph: `What you can upload`,
   youCanUploadAnyDocsParagraph: `You can upload any documents that you think are relevant.`,

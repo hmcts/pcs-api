@@ -1638,6 +1638,9 @@ export class CreateCaseAction implements IAction {
          } else if (caseFile.claimantLRUpload) {
           userInputFiles.push(caseFile.claimantLRUpload as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+          userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
         }
         break;
 

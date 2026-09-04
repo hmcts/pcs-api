@@ -50,26 +50,21 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPIForLR', 'Link Solicitor');
 
-  if (isGenAppsSubmitted) {
-    const defendant = defendantUserDetails[0];
-    await performAction('makeAnApplicationAPIForLR', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload(
-        defendant.id,
-        defendant.name
-      ),
+ const genAppPayload =
+    title.includes('ADJOURN')
+      ? makeAnApplicationApiData.makeAnApplicationAdjournPayload
+      : title.includes('SET_ASIDE')
+        ? makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload
+        : title.includes('SOMETHING_ELSE')
+          ? makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload
+          : undefined;
+
+  if (genAppPayload) {
+    //for (const defendant of defendantUserDetails) {
+    await performAction('makeAnApplicationAPI', {
+      data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
-    await performAction('makeAnApplicationAPIForLR', {
-      data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
-        defendant.id,
-        defendant.name
-      ),
-    });
-    await performAction('makeAnApplicationAPIForLR', {
-      data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
-        defendant.id,
-        defendant.name
-      ),
-    });
+    // }
   }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -127,32 +122,39 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
-      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
-    await performAction('uploadAdditionalDocumentsInfo');
-    await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
-    await performAction('verifyDocumentRelatesToApplication', {
+  test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression', async () => {
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await performAction('selectDocumentRelatingTo', {
       question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
-      option: confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden,
-      count: defendantUserDetails.length,
+      option: docRelatedToOption,
+      nextPage: uploadYourDocuments.mainHeader,
     });
-    await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-    await performAction('uploadFiles', {
+    await performAction('uploadAdditionalDocsLR', {
       documents: [
-        {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
-        {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
+        { type: uploadYourDocuments.rentStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
       ]
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-    await performAction('retrieveCYATableDataLR', { name: 'check your answers table' });
-    await performAction('validateCYAForLR');
-    await performValidation('mainHeader', documentsUploadConfirm.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
     await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
+
   });
 
   test.skip('Upload documents when GenApps submitted With Out Notice - Multi def', async ({page}) => {
