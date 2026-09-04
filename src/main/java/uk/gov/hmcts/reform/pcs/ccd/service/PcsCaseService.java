@@ -20,9 +20,12 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.Set;
 import java.util.Objects;
 
 @Service
@@ -41,6 +44,7 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
+    private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -105,6 +109,28 @@ public class PcsCaseService {
             caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
                                                   securityContextService.getCurrentUserId());
         }
+    }
+
+    public void patchRequestedSupportFlags(long caseReference, PCSCase pcsCase) {
+        if (pcsCase == null) {
+            throw new IllegalArgumentException("PCSCase cannot be null");
+        }
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (pcsCase.getPartySupport() != null) {
+            UUID authenticatedUserId = securityContextService.getCurrentUserId();
+            caseFlagService.mergePartySupportFlags(
+                pcsCase.getPartySupport(),
+                pcsCaseEntity.getParties(),
+                authenticatedUserId,
+                defendantSupportEligibilityResolver
+                    .resolveEligibleDefendantPartyIds(pcsCaseEntity, authenticatedUserId));
+        }
+    }
+
+    public Set<UUID> resolveEligibleDefendantPartyIds(long caseReference) {
+        return defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
+            loadCase(caseReference), securityContextService.getCurrentUserId());
     }
 
     public PcsCaseEntity loadCase(long caseReference) {

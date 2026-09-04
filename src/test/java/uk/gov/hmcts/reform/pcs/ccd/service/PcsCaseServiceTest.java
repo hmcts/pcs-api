@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
@@ -83,6 +84,8 @@ class PcsCaseServiceTest {
     private LocationReferenceService locationReferenceService;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -103,7 +106,8 @@ class PcsCaseServiceTest {
             caseFlagService,
             postCodeCourtService,
             locationReferenceService,
-            securityContextService
+            securityContextService,
+            defendantSupportEligibilityResolver
         );
     }
 

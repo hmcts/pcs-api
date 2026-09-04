@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -16,7 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_REQUEST_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagHistoryRoles.EXTERNAL_CASE_FLAG_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
@@ -30,13 +35,13 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                .decentralisedEvent(EventId.requestSupport.name(), this::submit)
+                .decentralisedEvent(EventId.requestSupport.name(), this::submit, this::start)
                 .forStates(CASE_FLAG_STATES)
                 .name("Request support")
                 .description("To request support")
                 .showSummary()
                 .endButtonLabel("Submit")
-                .grant(Permission.CRU, EXTERNAL_CASE_FLAG_ROLES)
+                .grant(Permission.CRU, DEFENDANT_SUPPORT_REQUEST_ROLES)
                 .grantHistoryOnly(EXTERNAL_CASE_FLAG_HISTORY_ROLES))
                 .page("externalCaseFlag")
                 .pageLabel("Request support")
@@ -49,13 +54,41 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
                       "#ARGUMENT(CREATE,EXTERNAL)");
     }
 
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+
+        Set<UUID> eligibleDefendantPartyIds =
+            pcsCaseService.resolveEligibleDefendantPartyIds(eventPayload.caseReference());
+
+        List<ListValue<PartySupport>> partySupport = caseData.getPartySupport();
+        if (partySupport != null) {
+            caseData.setPartySupport(partySupport.stream()
+                .filter(listValue -> isEligible(listValue, eligibleDefendantPartyIds))
+                .toList());
+        }
+
+        return caseData;
+    }
+
+    private boolean isEligible(ListValue<PartySupport> listValue, Set<UUID> eligibleDefendantPartyIds) {
+        if (listValue.getId() == null) {
+            return false;
+        }
+
+        try {
+            return eligibleDefendantPartyIds.contains(UUID.fromString(listValue.getId()));
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
         log.debug("External user requested support for {}", caseReference);
 
-        pcsCaseService.patchSupportFlags(caseReference, pcsCase);
+        pcsCaseService.patchRequestedSupportFlags(caseReference, pcsCase);
 
         return SubmitResponse.defaultResponse();
     }

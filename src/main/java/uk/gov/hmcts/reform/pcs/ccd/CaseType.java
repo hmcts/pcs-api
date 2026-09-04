@@ -207,7 +207,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("support", "Support")
-            .forRoles(EXTERNAL_FLAG_TAB_ROLES)
+            .forRoles(DEFENDANT_SUPPORT_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
             .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
@@ -215,7 +215,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
-            .forRoles(INTERNAL_TAB_ROLES)
+            .forRoles(CASE_NOTE_TAB_ROLES)
             .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
     }

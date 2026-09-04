@@ -13,6 +13,13 @@ public final class ExternalCaseFlagRoles {
         UserRole.GA_DEFENDANT_SOLICITOR
     };
 
+    public static final UserRole[] DEFENDANT_SUPPORT_REQUEST_ROLES = {
+        UserRole.CITIZEN,
+        UserRole.DEFENDANT,
+        UserRole.DEFENDANT_SOLICITOR,
+        UserRole.GA_DEFENDANT_SOLICITOR
+    };
+
     private ExternalCaseFlagRoles() {
     }
 }
