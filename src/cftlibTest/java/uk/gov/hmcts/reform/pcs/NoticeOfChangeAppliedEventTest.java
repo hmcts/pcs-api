@@ -133,7 +133,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             caseParameters,
             Long.class
         );
+        // retries only rethrow AssertionError by default; a 404 or partial read while the
+        // indexer catches up must retry too
         await()
+            .ignoreExceptions()
             .pollInterval(Duration.ofSeconds(1))
             .atMost(Duration.ofSeconds(75))
             .untilAsserted(() -> assertThat(hasExpectedAccessGroup(indexedCase(caseDataId))).isTrue());
