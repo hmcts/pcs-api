@@ -16,7 +16,8 @@ public class EventStates {
             State.JUDICIAL_REFERRAL,
             State.HEARING_READINESS,
             State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
-            State.DECISION_OUTCOME
+            State.DECISION_OUTCOME,
+            State.CLOSED
         };
     }
 
