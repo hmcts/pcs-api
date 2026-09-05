@@ -53,6 +53,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
+
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
@@ -62,8 +63,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
-    static final AccessProfile[] EXTERNAL_FLAG_TAB_ROLES = {
-        AccessProfile.PCS_SOLICITOR,
+
+    static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
         AccessProfile.GA_DEFENDANT_SOLICITOR
