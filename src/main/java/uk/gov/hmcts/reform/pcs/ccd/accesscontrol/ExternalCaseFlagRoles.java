@@ -20,6 +20,10 @@ public final class ExternalCaseFlagRoles {
         UserRole.GA_DEFENDANT_SOLICITOR
     };
 
+    public static final UserRole[] DEFENDANT_SUPPORT_MANAGE_ROLES = {
+        UserRole.GA_DEFENDANT_SOLICITOR
+    };
+
     private ExternalCaseFlagRoles() {
     }
 }
