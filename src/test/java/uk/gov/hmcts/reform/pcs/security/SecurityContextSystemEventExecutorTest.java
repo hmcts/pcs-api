@@ -11,9 +11,7 @@ import uk.gov.hmcts.ccd.sdk.ActorAttribution;
 import uk.gov.hmcts.ccd.sdk.SystemEventAction;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
-import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 
 import java.util.UUID;
 
@@ -35,19 +33,14 @@ class SecurityContextSystemEventExecutorTest {
     private SystemEventExecutor delegate;
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
-    @Mock
-    private IdamAuthenticator idamAuthenticator;
 
     private SecurityContextSystemEventExecutor underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new SecurityContextSystemEventExecutor(
-            delegate, systemUpdateUserTokenProvider, idamAuthenticator);
+            delegate, systemUpdateUserTokenProvider, "system-uid", "Service", "Account");
         when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("Bearer system");
-        User systemUser = new User("Bearer system",
-            UserInfo.builder().uid("system-uid").givenName("Service").familyName("Account").build());
-        when(idamAuthenticator.validateAuthToken("Bearer system")).thenReturn(systemUser);
     }
 
     @AfterEach
@@ -56,7 +49,7 @@ class SecurityContextSystemEventExecutorTest {
     }
 
     @Test
-    void delegatesWithTheResolvedSystemUserInTheSecurityContext() {
+    void delegatesWithTheAuthenticatedSystemUserInTheSecurityContext() {
         SystemEventExecutionResult expected =
             new SystemEventExecutionResult(1L, SystemEventExecutionResult.Outcome.EXECUTED);
         when(delegate.execute(anyLong(), any(UUID.class), any())).thenAnswer(invocation -> {

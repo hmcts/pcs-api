@@ -39,6 +39,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     private static final String ORGANISATION_ID = "TEST-123";
     private static final String EXPECTED_ACCESS_GROUP =
         "PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:" + ORGANISATION_ID;
+    private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
     private static final Instant EXECUTION_TIME = Instant.parse("2026-09-04T09:30:00Z");
 
     @Autowired
@@ -52,13 +53,6 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
 
     @Autowired
     private IdamClient idamClient;
-
-    @Autowired
-    private uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator idamAuthenticator;
-
-    @Autowired
-    @org.springframework.beans.factory.annotation.Qualifier("systemUpdateUserTokenProvider")
-    private uk.gov.hmcts.reform.pcs.security.IdamTokenProvider systemUpdateUserTokenProvider;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -117,7 +111,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             .containsEntry("event_name", "Notice of change applied")
             .containsEntry("summary", "Notice of change by " + LEGAL_REP_EMAIL)
             .containsEntry("user_id", ACTING_SOLICITOR_ID)
-            .containsEntry("proxied_by", systemUserId());
+            .containsEntry("proxied_by", SYSTEM_USER_ID);
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
@@ -165,11 +159,6 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             caseParameters,
             UUID.class
         );
-    }
-
-    private String systemUserId() {
-        return idamAuthenticator.validateAuthToken(systemUpdateUserTokenProvider.getAuthToken())
-            .getUserDetails().getUid();
     }
 
     private void runTaskInBackground(
