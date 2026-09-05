@@ -1,10 +1,12 @@
 export const reviewSupport = {
+    viewThisCase: `View this case`,
+    casePartiesHeader: `Case Parties`,
     mainHeader: `Request support`,
     mainHeaderManage: `Manage support`,
     reviewSupportHeader: `Review support request`,
     continueButton: `Continue`,
     submitButton: `Submit`,
-    whoIsTheSupportForOption: `Possession Claims Solicitor Org (Claimant)`,
+    whoIsTheSupportForOption: `Peter Parker (Defendant)`,
     supporTypeHeader: `Select support type`,
     specialMeasureOption: `Special measure`,
     specialMeasureHeader: `Special measure`,
