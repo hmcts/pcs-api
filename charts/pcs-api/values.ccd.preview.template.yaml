@@ -152,6 +152,8 @@ ccd:
   ccd-admin-web:
     nodejs:
       image: hmctsprod.azurecr.io/ccd/admin-web:latest
+      devmemoryRequests: '256Mi'
+      devmemoryLimits: '1024Mi'
       ingressHost: admin-web-${SERVICE_FQDN}
       environment:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
