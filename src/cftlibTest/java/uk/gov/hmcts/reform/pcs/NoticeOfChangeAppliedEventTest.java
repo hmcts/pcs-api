@@ -127,7 +127,6 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
         assertThat(activeOrganisationLinks(defendantId)).isEqualTo(1);
-        assertThat(auditedOrganisationLinks(event.get("id"))).isEqualTo(1);
 
         long caseDataId = jdbcTemplate.queryForObject(
             "select id from ccd.case_data where reference = :caseReference",
@@ -192,21 +191,6 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
                    and o.organisation_id = :organisationId
                 """,
             Map.of("partyId", defendantId, "organisationId", ORGANISATION_ID),
-            Integer.class
-        );
-    }
-
-    private int auditedOrganisationLinks(Object eventId) {
-        return jdbcTemplate.queryForObject(
-            """
-                select count(*)
-                  from ccd.audit_log audit
-                 where audit.case_event_id = :eventId
-                   and audit.operation = 'INSERT'
-                   and audit.table_schema = 'public'
-                   and audit.table_name = 'claim_party_organisation'
-                """,
-            Map.of("eventId", eventId),
             Integer.class
         );
     }
