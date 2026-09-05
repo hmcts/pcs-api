@@ -23,6 +23,7 @@ public enum EventId {
     amendFlags,
     requestSupport,
     manageSupport,
+    reviewSupportRequest,
     claimIssuePayment,
     changeCaseState,
     manageHearing,
