@@ -41,18 +41,18 @@ public class CaseRoleAssignmentTaskComponent {
     @Bean
     public CustomTask<RoleAssignmentTaskData> roleAssignmentTask() {
         return Tasks.custom(ROLE_ASSIGNMENT_TASK_DESCRIPTOR)
-            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
-            ))
+            .onFailure(FailureHandler.<RoleAssignmentTaskData>maxRetries(maxRetries)
+                           .withBackoff(backoffDelay)
+                           .thenRemove())
             .execute((taskInstance, executionContext) -> {
                 RoleAssignmentTaskData taskData = taskInstance.getData();
                 long caseReference = Long.parseLong(taskData.getCaseReference());
                 String userId = taskData.getUserId();
-                log.debug("Revoking creator role for case: {}", caseReference);
+                UserRole role = taskData.getRole() != null ? taskData.getRole() : UserRole.CREATOR;
+                log.debug("Revoking {} role for case: {}", role, caseReference);
 
                 try {
-                    caseRoleAssignmentService.revokeCaseRole(caseReference, userId, UserRole.CREATOR);
+                    caseRoleAssignmentService.revokeCaseRole(caseReference, userId, role);
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {

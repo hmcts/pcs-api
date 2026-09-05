@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.util;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,10 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisa
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 
 import java.time.Instant;
 
@@ -27,7 +29,7 @@ public class RevokeAccessHelper {
 
     private final ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
     private final DraftCaseDataRepository draftCaseDataRepository;
-    private final CaseRoleAssignmentService caseRoleAssignmentService;
+    private final SchedulerClient schedulerClient;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
 
     /**
@@ -36,7 +38,7 @@ public class RevokeAccessHelper {
      * - but only if the organisation does not represent any other defendant for the case
      * 3. deactivate the party legal representative organisation entities linked to the defendant to the LRO
      */
-    public void revokeOrganisationAccessToRespondToClaim(
+    public void withdrawOutgoingOrganisationsAccessToRespondToClaim(
         PcsCaseEntity caseEntity,
         OrganisationEntity organisationEntity,
         PartyEntity defendantParty
@@ -63,10 +65,9 @@ public class RevokeAccessHelper {
      * 2. delete the defendant's draft response to the claim
      * 3. invalidate the PIN
      */
-    public void revokeDefendantsAccessToRespondToClaim(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
+    public void closeDefendantsSelfRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
         if (defendantParty.getIdamId() != null) {
-            caseRoleAssignmentService.revokeCaseRole(
-                caseEntity.getCaseReference(), defendantParty.getIdamId().toString(), UserRole.DEFENDANT);
+            scheduleDefendantRoleRevocation(caseEntity.getCaseReference(), defendantParty.getIdamId().toString());
             draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(
                 caseEntity.getCaseReference(), respondPossessionClaim,
                 defendantParty.getIdamId()
@@ -76,6 +77,19 @@ public class RevokeAccessHelper {
         }
         partyAccessCodeRepository.deleteByPcsCase_IdAndPartyId(caseEntity.getId(), defendantParty.getId());
         defendantParty.setIdamId(null);
+    }
+
+    private void scheduleDefendantRoleRevocation(long caseReference, String idamUserId) {
+        schedulerClient.scheduleIfNotExists(
+            CaseRoleAssignmentTaskComponent.ROLE_ASSIGNMENT_TASK_DESCRIPTOR
+                .instance("revoke-defendant-%s-%s".formatted(caseReference, idamUserId))
+                .data(RoleAssignmentTaskData.builder()
+                          .caseReference(String.valueOf(caseReference))
+                          .userId(idamUserId)
+                          .role(UserRole.DEFENDANT)
+                          .build())
+                .scheduledTo(Instant.now())
+        );
     }
 
     private void invalidatePartyLegalRepresentativeOrganisation(ClaimPartyOrganisationEntity partyLegalRepOrg) {

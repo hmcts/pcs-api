@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
@@ -15,9 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToPartyException;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -39,7 +38,6 @@ public class LegalRepresentativePartyLinkService {
     private final OrganisationDetailsService organisationDetailsService;
     private final AddressMapper addressMapper;
     private final RevokeAccessHelper revokeAccessHelper;
-    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final NotificationService notificationService;
     private final Clock utcClock;
 
@@ -51,7 +49,6 @@ public class LegalRepresentativePartyLinkService {
                                                OrganisationDetailsService organisationDetailsService,
                                                AddressMapper addressMapper,
                                                RevokeAccessHelper revokeAccessHelper,
-                                               CaseRoleAssignmentService caseRoleAssignmentService,
                                                NotificationService notificationService,
                                                @Qualifier("utcClock") Clock utcClock) {
         this.pcsCaseService = pcsCaseService;
@@ -60,7 +57,6 @@ public class LegalRepresentativePartyLinkService {
         this.organisationDetailsService = organisationDetailsService;
         this.addressMapper = addressMapper;
         this.revokeAccessHelper = revokeAccessHelper;
-        this.caseRoleAssignmentService = caseRoleAssignmentService;
         this.notificationService = notificationService;
         this.utcClock = utcClock;
     }
@@ -70,7 +66,10 @@ public class LegalRepresentativePartyLinkService {
                                                String legalRepEmail,
                                                OrganisationDetailsResponse orgDetails) {
         String orgId = orgDetails.getOrganisationIdentifier();
-
+        if (isAlreadyLinkedToParty(partyId, orgId)) {
+            throw new LegalRepresentativeAlreadyLinkedToPartyException(
+                "Legal Representative or organisation already linked to Party [" + partyId + "]");
+        }
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         PartyEntity defendantPartyEntity = getDefendantPartyEntity(caseEntity, partyId);
@@ -102,7 +101,6 @@ public class LegalRepresentativePartyLinkService {
         }
         legalRepOrg.addParty(defendantPartyEntity);
         organisationRepository.save(legalRepOrg);
-        revokeDefendantAccessForRepresentedParty(caseReference, defendantPartyEntity);
         notificationService.sendNoticeOfChangeCompletedEmailNotification(defendantPartyEntity);
         outgoingRepresentative.ifPresent(outgoing -> notificationService
             .sendNoticeOfChangeNoLongerRepresentingEmailNotification(outgoing, defendantPartyEntity));
@@ -116,18 +114,6 @@ public class LegalRepresentativePartyLinkService {
 
         return organisationRepository
             .isOrganisationLinkedToPartyAndActive(organisationId, targetPartyId);
-    }
-
-    private void revokeDefendantAccessForRepresentedParty(long caseReference, PartyEntity defendantPartyEntity) {
-        if (defendantPartyEntity.getIdamId() == null) {
-            return;
-        }
-
-        caseRoleAssignmentService.revokeCaseRole(
-            caseReference,
-            defendantPartyEntity.getIdamId().toString(),
-            UserRole.DEFENDANT
-        );
     }
 
     private OrganisationEntity createNewLegalRepresentative(String id,
@@ -187,13 +173,13 @@ public class LegalRepresentativePartyLinkService {
                     defendantParty.getId(), caseEntity.getCaseReference());
 
         partyLinkedToLegalRepresentativeOrganisationAndActive
-            .ifPresent(legalRepresentativeOrganisation -> revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(
+            .ifPresent(outgoingOrganisation -> revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(
                 caseEntity,
-                legalRepresentativeOrganisation,
+                outgoingOrganisation,
                 defendantParty
             ));
 
-        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendantParty);
+        revokeAccessHelper.closeDefendantsSelfRepresentation(caseEntity, defendantParty);
 
         return partyLinkedToLegalRepresentativeOrganisationAndActive;
     }
