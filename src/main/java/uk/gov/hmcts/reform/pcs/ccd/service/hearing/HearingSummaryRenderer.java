@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;

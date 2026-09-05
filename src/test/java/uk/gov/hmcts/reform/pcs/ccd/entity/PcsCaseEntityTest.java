@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
