@@ -108,6 +108,8 @@ public class PartyEntity {
 
     private String phoneNumber;
 
+    private String textMessageNumber;
+
     private String emailAddress;
 
     private String pcqId;
