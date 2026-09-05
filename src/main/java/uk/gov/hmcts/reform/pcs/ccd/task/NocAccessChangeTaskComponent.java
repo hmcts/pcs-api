@@ -82,7 +82,7 @@ public class NocAccessChangeTaskComponent {
 
     private SystemEventExecutionResult recordAccessChangeAsSystemEvent(long caseReference,
                                                                        NocAccessChangeTaskData taskData) {
-        UUID idempotencyKey = retrySafeIdempotencyKey(taskData);
+        UUID idempotencyKey = getIdempotencyKey(taskData);
         SystemEventAction action = context -> applyAccessChange(caseReference, taskData);
         ActorAttribution actor = actingSolicitor(taskData);
 
@@ -115,7 +115,7 @@ public class NocAccessChangeTaskComponent {
         return new ActorAttribution(taskData.getUserId(), taskData.getFirstName(), taskData.getLastName());
     }
 
-    private UUID retrySafeIdempotencyKey(NocAccessChangeTaskData taskData) {
+    private UUID getIdempotencyKey(NocAccessChangeTaskData taskData) {
         return Objects.requireNonNullElseGet(taskData.getEventIdempotencyKey(), UUID::randomUUID);
     }
 }

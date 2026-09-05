@@ -69,18 +69,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             idamClient.getAccessToken("pcs-solicitor1@test.com", "password")
         );
         Map<String, Object> caseParameters = Map.of("caseReference", caseReference);
-        UUID defendantId = jdbcTemplate.queryForObject(
-            """
-                select cp.party_id
-                  from pcs_case pc
-                  join claim c on c.case_id = pc.id
-                  join claim_party cp on cp.claim_id = c.id
-                 where pc.case_reference = :caseReference
-                   and cp.role = 'DEFENDANT'
-                """,
-            caseParameters,
-            UUID.class
-        );
+        UUID defendantId = defendantPartyId(caseParameters);
 
         NocAccessChangeTaskData taskData = NocAccessChangeTaskData.builder()
             .partyId(defendantId.toString())
@@ -132,7 +121,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
 
         JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
-        assertThat(activeOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
 
         long caseDataId = jdbcTemplate.queryForObject(
             "select id from ccd.case_data where reference = :caseReference",
@@ -160,7 +149,22 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             Map.of("caseReference", caseReference, "eventId", EVENT_ID),
             Integer.class
         )).isEqualTo(1);
-        assertThat(activeOrganisationLinks(defendantId)).isEqualTo(1);
+        assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
+    }
+
+    private UUID defendantPartyId(Map<String, Object> caseParameters) {
+        return jdbcTemplate.queryForObject(
+            """
+                select cp.party_id
+                  from pcs_case pc
+                  join claim c on c.case_id = pc.id
+                  join claim_party cp on cp.claim_id = c.id
+                 where pc.case_reference = :caseReference
+                   and cp.role = 'DEFENDANT'
+                """,
+            caseParameters,
+            UUID.class
+        );
     }
 
     private String systemUserId() {
@@ -194,7 +198,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             .build();
     }
 
-    private int activeOrganisationLinks(UUID defendantId) {
+    private int countActiveOrganisationLinks(UUID defendantId) {
         return jdbcTemplate.queryForObject(
             """
                 select count(*)
