@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_MANAGE_ROLES;
 
 @ExtendWith(MockitoExtension.class)
 class ManageSupportTest extends BaseEventTest {
@@ -98,15 +98,32 @@ class ManageSupportTest extends BaseEventTest {
     }
 
     @Test
-    void shouldGrantEveryExternalPersona() {
+    void shouldGrantOnlyTheDefendantLegalRepresentative() {
         assertThat(configuredEvent.getGrants().keySet())
-            .containsAll(List.of(EXTERNAL_CASE_FLAG_ROLES));
+            .containsAll(List.of(DEFENDANT_SUPPORT_MANAGE_ROLES));
+        for (UserRole defendantRole : DEFENDANT_SUPPORT_MANAGE_ROLES) {
+            assertThat(configuredEvent.getGrants().get(defendantRole))
+                .containsExactlyInAnyOrderElementsOf(Permission.CRU);
+        }
     }
 
     @Test
-    void shouldGrantGroupAccessRoles() {
+    void shouldNotGrantClaimantSideProfilesAnyExecution() {
         assertThat(configuredEvent.getGrants().keySet())
-            .contains(UserRole.CLAIMANT, UserRole.GA_CLAIMANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+            .doesNotContain(UserRole.CLAIMANT,
+                            UserRole.GA_CLAIMANT_SOLICITOR,
+                            UserRole.CLAIMANT_SOLICITOR,
+                            UserRole.PCS_SOLICITOR);
+    }
+
+    @Test
+    void shouldNotGrantCreateOrUpdateToAnyProfileOutsideTheManageSet() {
+        assertThat(configuredEvent.getGrants().asMap())
+            .allSatisfy((userRole, permissions) -> {
+                if (permissions.contains(Permission.C) || permissions.contains(Permission.U)) {
+                    assertThat(userRole).isIn(List.of(DEFENDANT_SUPPORT_MANAGE_ROLES));
+                }
+            });
     }
 
     @Test
