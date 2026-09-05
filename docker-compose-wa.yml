@@ -14,6 +14,7 @@ services:
     environment:
       CAMUNDA_URL: "http://host.docker.internal:8097/engine-rest"
       S2S_URL: "http://host.docker.internal:8489"
+      WA_S2S_AUTHORIZED_SERVICES: "wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,pcs_api"
       POSTGRES_HOST: "host.docker.internal"
       POSTGRES_PORT: 6432
   wa-task-monitor:
