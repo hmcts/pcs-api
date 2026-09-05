@@ -195,7 +195,7 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('dbmigrate:perftest') {
-    runPerftestSmokeTests(builder, secrets)
+    runPerftestSmokeTests(builder, secrets, product)
   }
 
   afterAlways('dbmigrate:perftest') {
@@ -305,11 +305,12 @@ def setPerftestEnvVars() {
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
 }
 
-def runPerftestSmokeTests(builder, Map secrets) {
+def runPerftestSmokeTests(builder, Map secrets, String product) {
   def vaultConfig = new AppPipelineConfig()
   vaultConfig.vaultSecrets = secrets
 
-  withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
+  stageWithEnvironmentAgent('Smoke Test - perftest', product, 'perftest') {
+    withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
     withEnv([
       "TEST_URL=http://pcs-api-perftest.service.core-compute-perftest.internal",
       "ENVIRONMENT_NAME=perftest",
@@ -322,6 +323,7 @@ def runPerftestSmokeTests(builder, Map secrets) {
       builder.smokeTest()
     }
   }
+}
 }
 
 def generateDefinitions(builder) {
