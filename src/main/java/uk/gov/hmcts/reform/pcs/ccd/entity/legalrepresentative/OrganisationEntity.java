@@ -59,10 +59,9 @@ public class OrganisationEntity {
     private LocalDateTime lastModifiedDate;
 
     public void addParty(PartyEntity party) {
-        if (this.claimPartyOrganisationList.stream()
-            .anyMatch(e -> e.getParty().getId() == party.getId())) {
-            log.warn("Party [{}] is already linked to Legal Representative Organisation [{}] and is active.",
-                     party.getId(), this.getId());
+        if (hasActiveLinkToParty(party)) {
+            log.warn("Party [{}] already has an active link to Legal Representative Organisation [{}], "
+                         + "skipping re-link.", party.getId(), this.getId());
             return;
         }
 
@@ -75,6 +74,12 @@ public class OrganisationEntity {
                 .build();
         claimPartyOrganisationList.add(claimPartyOrganisationEntity);
         party.getClaimPartyOrganisationList().add(claimPartyOrganisationEntity);
+    }
+
+    private boolean hasActiveLinkToParty(PartyEntity party) {
+        return this.claimPartyOrganisationList.stream()
+            .filter(e -> e.getActive() == YesOrNo.YES)
+            .anyMatch(e -> e.getParty().getId().equals(party.getId()));
     }
 
     public void addClaimPartyContactDetails(ClaimPartyContactDetailsEntity contactDetails) {
