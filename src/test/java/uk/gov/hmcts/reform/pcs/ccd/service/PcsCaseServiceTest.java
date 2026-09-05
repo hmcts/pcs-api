@@ -36,11 +36,13 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -83,6 +85,8 @@ class PcsCaseServiceTest {
     private LocationReferenceService locationReferenceService;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -103,7 +107,8 @@ class PcsCaseServiceTest {
             caseFlagService,
             postCodeCourtService,
             locationReferenceService,
-            securityContextService
+            securityContextService,
+            defendantSupportEligibilityResolver
         );
     }
 
@@ -594,6 +599,72 @@ class PcsCaseServiceTest {
 
         // Then
         verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
+    }
+
+    @Test
+    void shouldMergeRequestedSupportFlagsForEligibleDefendantPartiesOnly() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        UUID authenticatedUserId = UUID.randomUUID();
+        UUID eligibleDefendantPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
+        when(defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
+            pcsCaseEntity, authenticatedUserId)).thenReturn(Set.of(eligibleDefendantPartyId));
+
+        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
+            .id(eligibleDefendantPartyId.toString())
+            .value(PartySupport.builder().build())
+            .build());
+        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
+
+        // When
+        underTest.patchRequestedSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService).mergePartySupportFlags(
+            partySupport, pcsCaseEntity.getParties(), authenticatedUserId,
+            Set.of(eligibleDefendantPartyId));
+    }
+
+    @Test
+    void shouldNotMergeRequestedSupportFlagsWhenPartySupportIsAbsent() {
+        // Given
+        stubFindCase();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.patchRequestedSupportFlags(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), any());
+    }
+
+    @Test
+    void shouldThrowExceptionPatchingRequestedSupportFlagsWithNullCaseData() {
+        // When
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                                                         () -> underTest.patchRequestedSupportFlags(
+                                                             CASE_REFERENCE, null));
+
+        // Then
+        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
+    }
+
+    @Test
+    void shouldResolveEligibleDefendantPartyIdsForTheAuthenticatedUser() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = stubFindCase();
+        UUID authenticatedUserId = UUID.randomUUID();
+        UUID eligibleDefendantPartyId = UUID.randomUUID();
+        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
+        when(defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
+            pcsCaseEntity, authenticatedUserId)).thenReturn(Set.of(eligibleDefendantPartyId));
+
+        // When
+        Set<UUID> eligiblePartyIds = underTest.resolveEligibleDefendantPartyIds(CASE_REFERENCE);
+
+        // Then
+        assertThat(eligiblePartyIds).containsExactly(eligibleDefendantPartyId);
     }
 
     @Test

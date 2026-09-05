@@ -274,6 +274,7 @@ class PCSCaseViewTest {
 
     @Test
     void shouldSetCollectionItemIdFromPartyId() {
+        // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
         when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
 
@@ -282,8 +283,10 @@ class PCSCaseViewTest {
         when(party.getId()).thenReturn(partyId);
         when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
 
+        // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
+        // Then
         assertThat(pcsCase.getParties().getFirst().getId()).isEqualTo(partyId);
     }
 

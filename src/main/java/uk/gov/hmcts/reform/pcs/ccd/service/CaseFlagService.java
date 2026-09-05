@@ -333,6 +333,13 @@ public class CaseFlagService {
     public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
                                        Set<PartyEntity> existingParties,
                                        UUID authenticatedUserId) {
+        mergePartySupportFlags(incomingPartySupport, existingParties, authenticatedUserId, null);
+    }
+
+    public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
+                                       Set<PartyEntity> existingParties,
+                                       UUID authenticatedUserId,
+                                       Set<UUID> eligiblePartyIds) {
         Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
 
         for (ListValue<PartySupport> incomingSupportValue : incomingPartySupport) {
@@ -342,7 +349,7 @@ public class CaseFlagService {
 
             PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
 
-            if (!partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
+            if (!isSupportChangeAllowed(partyEntity, authenticatedUserId, eligiblePartyIds)) {
                 if (changesSupport(incomingSupportFlags, partyEntity)) {
                     throw new CaseAccessException(SUPPORT_NOT_REPRESENTED_MESSAGE);
                 }
@@ -354,6 +361,16 @@ public class CaseFlagService {
         }
     }
 
+
+    private boolean isSupportChangeAllowed(PartyEntity partyEntity,
+                                           UUID authenticatedUserId,
+                                           Set<UUID> eligiblePartyIds) {
+        if (!partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
+            return false;
+        }
+
+        return eligiblePartyIds == null || eligiblePartyIds.contains(partyEntity.getId());
+    }
 
     private boolean changesSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
         if (incomingSupportFlags == null || incomingSupportFlags.getDetails() == null) {
