@@ -818,7 +818,7 @@ else
       </rule>
       <rule id="DecisionRule_1rvkjkh">
         <inputEntry id="UnaryTests_17av78h">
-          <text>Defendant Submit response, External professional user adding flag via manage cases</text>
+          <text>Defendant Submit response (CUI), External professional user adding flag via manage case flags</text>
         </inputEntry>
         <inputEntry id="UnaryTests_093wyty">
           <text></text>
@@ -830,7 +830,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_02pgpxn">
-          <text>Flag default status is 'Requested'</text>
+          <text>Flag raised has default status is 'Requested'</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xam2wk">
           <text></text>

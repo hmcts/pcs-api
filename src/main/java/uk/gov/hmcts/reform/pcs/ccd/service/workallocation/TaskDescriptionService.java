@@ -167,6 +167,16 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createReviewCaseFlagRequestDescription(long caseReference, List<String> flags) {
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "flags", flags
+        );
+
+        String templateName = "review-case-flag-request";
+        return renderTemplate(templateName, context);
+    }
+
     public String createReviewResponseAndCounterClaimDescription(long caseReference,
                                                                  CounterClaimEntity counterClaimEntity,
                                                                  FeeDetails feeDetails) {
