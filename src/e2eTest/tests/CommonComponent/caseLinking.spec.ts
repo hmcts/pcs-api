@@ -8,7 +8,7 @@ import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { caseSummary } from '@data/page-data';
+import { caseSummary, user } from '@data/page-data';
 import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { selectCasesToLink } from '@data/page-data/selectCaseToLink.page.data';
 import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.data';
@@ -36,7 +36,7 @@ test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', {email: staff.pcs_ctsc_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
+  await performAction('login', {email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD});
   await dismissCookieBanner(page, 'analytics');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   await expect(async () => {
