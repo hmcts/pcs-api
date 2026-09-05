@@ -10,6 +10,8 @@
     <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\..*$</packageUrl>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
+    <cve>CVE-2026-71290</cve>
+    <cve>CVE-2026-64607</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
