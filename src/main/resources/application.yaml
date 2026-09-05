@@ -359,10 +359,9 @@ ccd:
     noc:
       enabled: true
     system-user:
-      id: ${PCS_IDAM_SYSTEM_USER_ID:78acf0a0-079b-3112-8cad-549c81b83510}
-      username: ${idam.system-user.username}
-      first-name: ${PCS_IDAM_SYSTEM_FIRST_NAME:Service}
-      last-name: ${PCS_IDAM_SYSTEM_LAST_NAME:Account}
+      # Placeholder to satisfy the SDK's @ConditionalOnProperty guard; the identity actually
+      # stamped on events is resolved from the system user's IDAM token at record time.
+      id: pcs-system-event
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}

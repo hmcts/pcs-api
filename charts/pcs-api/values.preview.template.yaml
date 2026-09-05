@@ -19,8 +19,6 @@ java:
           alias: PCS_IDAM_SYSTEM_USERNAME
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
-        - name: idam-system-user-id
-          alias: PCS_IDAM_SYSTEM_USER_ID
         - name: pcs-prd-admin-username
           alias: PCS_PRD_ADMIN_USERNAME
         - name: pcs-prd-admin-password
