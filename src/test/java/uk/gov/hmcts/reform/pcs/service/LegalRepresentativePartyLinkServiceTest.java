@@ -837,11 +837,12 @@ class LegalRepresentativePartyLinkServiceTest {
     }
 
     @Test
-    void linkLegalRepresentativeToParty_WithNonBlankEmail_UpdatesExistingContactEmailAddress() {
+    void linkLegalRepresentativeToParty_WithNonBlankEmail_DoesNotOverwriteExistingContactEmailAddress() {
+        // HDPI-8760: an existing org contact's email is preserved, not overwritten on re-link
         ClaimPartyContactDetailsEntity existingContactDetails =
             linkToExistingOrganisationWithContactDetails(LEGAL_REP_EMAIL);
 
-        assertThat(existingContactDetails.getEmailAddress()).isEqualTo(LEGAL_REP_EMAIL);
+        assertThat(existingContactDetails.getEmailAddress()).isEqualTo("existing@example.com");
     }
 
     @Test
