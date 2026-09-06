@@ -23,7 +23,7 @@ import static org.awaitility.Awaitility.await;
 class ClaimIssuePaymentSystemEventTest extends CftlibTest {
 
     private static final String EVENT_ID = "claimIssuePayment";
-    private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
+    private static final String SYSTEM_USER_ID = "pcs-system-event";
 
     @Autowired
     private CaseCreationService caseCreationService;
