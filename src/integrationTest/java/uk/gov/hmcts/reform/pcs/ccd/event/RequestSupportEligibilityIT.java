@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
-@DisplayName("Request Support defendant eligibility")
+@DisplayName("Support event defendant eligibility")
 class RequestSupportEligibilityIT extends AbstractPostgresContainerIT {
 
     private static final UUID USER_ID = UUID.randomUUID();
@@ -157,6 +158,95 @@ class RequestSupportEligibilityIT extends AbstractPostgresContainerIT {
             .isInstanceOf(CaseAccessException.class);
     }
 
+    @Test
+    @DisplayName("M-A: dual-role user with only an active claimant relationship cannot manage claimant support")
+    void dualRoleWithClaimantAffiliationOnlyCannotManageClaimantSupport() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented();
+        actingAs(CLAIMANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        assertThatThrownBy(() -> manageSupportFor(caseEntity, claimantPartyOf(caseEntity)))
+            .isInstanceOf(CaseAccessException.class);
+    }
+
+    @Test
+    @DisplayName("M-B: dual-role user with an active defendant relationship can manage that defendant's support")
+    void dualRoleWithDefendantAffiliationCanManageDefendantSupport() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented();
+        actingAs(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        assertThatCode(() -> manageSupportFor(caseEntity, defendantPartyOf(caseEntity)))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("M-C: a user representing both sides may manage support for the defendant only")
+    void userRepresentingBothSidesMayManageDefendantSupportOnly() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented(DEFENDANT_FIRM);
+        actingAs(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        assertThatCode(() -> manageSupportFor(caseEntity, defendantPartyOf(caseEntity)))
+            .doesNotThrowAnyException();
+        assertThatThrownBy(() -> manageSupportFor(caseEntity, claimantPartyOf(caseEntity)))
+            .isInstanceOf(CaseAccessException.class);
+    }
+
+    @Test
+    @DisplayName("M-E: ended defendant representation cannot manage support")
+    void endedDefendantRepresentationCannotManageSupport() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented();
+        defendantPartyOf(caseEntity).getClaimPartyOrganisationList()
+            .forEach(representation -> representation.setActive(YesOrNo.NO));
+        pcsCaseRepository.saveAndFlush(caseEntity);
+        actingAs(DEFENDANT_FIRM);
+
+        assertThatThrownBy(() -> manageSupportFor(caseEntity, defendantPartyOf(caseEntity)))
+            .isInstanceOf(CaseAccessException.class);
+    }
+
+    @Test
+    @DisplayName("M-G: a crafted manage payload naming the claimant party is rejected")
+    void craftedManagePayloadNamingTheClaimantPartyIsRejected() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented();
+        actingAs(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        assertThatThrownBy(() -> manageSupportFor(caseEntity, claimantPartyOf(caseEntity)))
+            .isInstanceOf(CaseAccessException.class);
+    }
+
+    @Test
+    @DisplayName("M-S: the start callback offers only eligible defendant parties to manage")
+    void startCallbackOffersOnlyEligibleDefendantPartiesToManage() {
+        PcsCaseEntity caseEntity = caseWithBothSidesRepresented();
+        actingAs(DEFENDANT_FIRM);
+        holdingBothSolicitorRoles();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(supportEntryFor(claimantPartyOf(caseEntity)),
+                                  supportEntryFor(defendantPartyOf(caseEntity))))
+            .build();
+
+        underTest.retainEligibleDefendantSupport(caseEntity.getCaseReference(), pcsCase);
+
+        assertThat(pcsCase.getPartySupport())
+            .extracting(ListValue::getId)
+            .containsExactly(defendantPartyOf(caseEntity).getId().toString());
+    }
+
+    private void manageSupportFor(PcsCaseEntity caseEntity, PartyEntity partyEntity) {
+        requestSupportFor(caseEntity, partyEntity);
+    }
+
+    private ListValue<PartySupport> supportEntryFor(PartyEntity partyEntity) {
+        return ListValue.<PartySupport>builder()
+            .id(partyEntity.getId().toString())
+            .value(PartySupport.builder().supportFlags(newExternalSupport()).build())
+            .build();
+    }
+
     private void requestSupportFor(PcsCaseEntity caseEntity, PartyEntity partyEntity) {
         PCSCase pcsCase = PCSCase.builder()
             .partySupport(List.of(ListValue.<PartySupport>builder()
@@ -167,7 +257,7 @@ class RequestSupportEligibilityIT extends AbstractPostgresContainerIT {
                                       .build()))
             .build();
 
-        underTest.patchRequestedSupportFlags(caseEntity.getCaseReference(), pcsCase);
+        underTest.patchSupportFlags(caseEntity.getCaseReference(), pcsCase);
     }
 
     private Flags newExternalSupport() {

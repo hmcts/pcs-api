@@ -564,45 +564,11 @@ class PcsCaseServiceTest {
         underTest.patchCaseFlags(CASE_REFERENCE, pcsCase);
 
         // Then
-        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
+        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), any());
     }
 
     @Test
-    void shouldMergeSupportFlagsForTheAuthenticatedUser() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = stubFindCase();
-        UUID authenticatedUserId = UUID.randomUUID();
-        when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
-
-        List<ListValue<PartySupport>> partySupport = List.of(ListValue.<PartySupport>builder()
-            .id(UUID.randomUUID().toString())
-            .value(PartySupport.builder().build())
-            .build());
-        PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
-
-        // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(caseFlagService).mergePartySupportFlags(
-            partySupport, pcsCaseEntity.getParties(), authenticatedUserId);
-    }
-
-    @Test
-    void shouldNotMergeSupportFlagsWhenPartySupportIsAbsent() {
-        // Given
-        stubFindCase();
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any());
-    }
-
-    @Test
-    void shouldMergeRequestedSupportFlagsForEligibleDefendantPartiesOnly() {
+    void shouldMergeSupportFlagsForEligibleDefendantPartiesOnly() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
         UUID authenticatedUserId = UUID.randomUUID();
@@ -618,7 +584,7 @@ class PcsCaseServiceTest {
         PCSCase pcsCase = PCSCase.builder().partySupport(partySupport).build();
 
         // When
-        underTest.patchRequestedSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
 
         // Then
         verify(caseFlagService).mergePartySupportFlags(
@@ -627,31 +593,20 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldNotMergeRequestedSupportFlagsWhenPartySupportIsAbsent() {
+    void shouldNotMergeSupportFlagsWhenPartySupportIsAbsent() {
         // Given
         stubFindCase();
         PCSCase pcsCase = PCSCase.builder().build();
 
         // When
-        underTest.patchRequestedSupportFlags(CASE_REFERENCE, pcsCase);
+        underTest.patchSupportFlags(CASE_REFERENCE, pcsCase);
 
         // Then
         verify(caseFlagService, never()).mergePartySupportFlags(anyList(), any(), any(), any());
     }
 
     @Test
-    void shouldThrowExceptionPatchingRequestedSupportFlagsWithNullCaseData() {
-        // When
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                         () -> underTest.patchRequestedSupportFlags(
-                                                             CASE_REFERENCE, null));
-
-        // Then
-        assertThat(exception.getMessage()).isEqualTo("PCSCase cannot be null");
-    }
-
-    @Test
-    void shouldResolveEligibleDefendantPartyIdsForTheAuthenticatedUser() {
+    void shouldRetainOnlyEligibleDefendantSupportEntries() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
         UUID authenticatedUserId = UUID.randomUUID();
@@ -660,11 +615,39 @@ class PcsCaseServiceTest {
         when(defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
             pcsCaseEntity, authenticatedUserId)).thenReturn(Set.of(eligibleDefendantPartyId));
 
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(
+                ListValue.<PartySupport>builder()
+                    .id(eligibleDefendantPartyId.toString())
+                    .value(PartySupport.builder().build()).build(),
+                ListValue.<PartySupport>builder()
+                    .id(UUID.randomUUID().toString())
+                    .value(PartySupport.builder().build()).build(),
+                ListValue.<PartySupport>builder()
+                    .id(null).value(PartySupport.builder().build()).build(),
+                ListValue.<PartySupport>builder()
+                    .id("not-a-uuid").value(PartySupport.builder().build()).build()))
+            .build();
+
         // When
-        Set<UUID> eligiblePartyIds = underTest.resolveEligibleDefendantPartyIds(CASE_REFERENCE);
+        underTest.retainEligibleDefendantSupport(CASE_REFERENCE, pcsCase);
 
         // Then
-        assertThat(eligiblePartyIds).containsExactly(eligibleDefendantPartyId);
+        assertThat(pcsCase.getPartySupport())
+            .extracting(ListValue::getId)
+            .containsExactly(eligibleDefendantPartyId.toString());
+    }
+
+    @Test
+    void shouldLeaveAbsentPartySupportUntouchedWhenRetainingEligibleDefendantSupport() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.retainEligibleDefendantSupport(CASE_REFERENCE, pcsCase);
+
+        // Then
+        assertThat(pcsCase.getPartySupport()).isNull();
     }
 
     @Test

@@ -17,13 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_REQUEST_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_ROLES;
 
 @ExtendWith(MockitoExtension.class)
 class RequestSupportTest extends BaseEventTest {
@@ -56,64 +54,16 @@ class RequestSupportTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseService).patchRequestedSupportFlags(TEST_CASE_REFERENCE, pcsCase);
+        verify(pcsCaseService).patchSupportFlags(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test
-    void shouldOfferOnlyEligibleDefendantPartiesInStartCallback() {
-        UUID eligibleDefendantPartyId = UUID.randomUUID();
-        UUID claimantPartyId = UUID.randomUUID();
-        when(pcsCaseService.resolveEligibleDefendantPartyIds(TEST_CASE_REFERENCE))
-            .thenReturn(Set.of(eligibleDefendantPartyId));
+    void shouldRetainOnlyEligibleDefendantSupportInStartCallback() {
+        PCSCase pcsCase = PCSCase.builder().build();
 
-        PCSCase pcsCase = PCSCase.builder()
-            .partySupport(List.of(partySupportFor(eligibleDefendantPartyId), partySupportFor(claimantPartyId)))
-            .build();
+        callStartHandler(pcsCase);
 
-        PCSCase result = callStartHandler(pcsCase);
-
-        assertThat(result.getPartySupport())
-            .extracting(ListValue::getId)
-            .containsExactly(eligibleDefendantPartyId.toString());
-    }
-
-    @Test
-    void shouldOfferNoPartiesInStartCallbackWhenNoDefendantIsRepresented() {
-        when(pcsCaseService.resolveEligibleDefendantPartyIds(TEST_CASE_REFERENCE)).thenReturn(Set.of());
-
-        PCSCase pcsCase = PCSCase.builder()
-            .partySupport(List.of(partySupportFor(UUID.randomUUID())))
-            .build();
-
-        assertThat(callStartHandler(pcsCase).getPartySupport()).isEmpty();
-    }
-
-    @Test
-    void shouldDiscardPartySupportEntriesWithoutAUsablePartyIdInStartCallback() {
-        when(pcsCaseService.resolveEligibleDefendantPartyIds(TEST_CASE_REFERENCE))
-            .thenReturn(Set.of(UUID.randomUUID()));
-
-        PCSCase pcsCase = PCSCase.builder()
-            .partySupport(List.of(
-                ListValue.<PartySupport>builder().id(null).value(PartySupport.builder().build()).build(),
-                ListValue.<PartySupport>builder().id("not-a-uuid").value(PartySupport.builder().build()).build()))
-            .build();
-
-        assertThat(callStartHandler(pcsCase).getPartySupport()).isEmpty();
-    }
-
-    @Test
-    void shouldLeaveAbsentPartySupportUntouchedInStartCallback() {
-        when(pcsCaseService.resolveEligibleDefendantPartyIds(TEST_CASE_REFERENCE)).thenReturn(Set.of());
-
-        assertThat(callStartHandler(PCSCase.builder().build()).getPartySupport()).isNull();
-    }
-
-    private ListValue<PartySupport> partySupportFor(UUID partyId) {
-        return ListValue.<PartySupport>builder()
-            .id(partyId.toString())
-            .value(PartySupport.builder().build())
-            .build();
+        verify(pcsCaseService).retainEligibleDefendantSupport(TEST_CASE_REFERENCE, pcsCase);
     }
 
     @Test
@@ -159,8 +109,8 @@ class RequestSupportTest extends BaseEventTest {
     @Test
     void shouldGrantEveryDefendantSidePersona() {
         assertThat(configuredEvent.getGrants().keySet())
-            .containsAll(List.of(DEFENDANT_SUPPORT_REQUEST_ROLES));
-        for (UserRole defendantRole : DEFENDANT_SUPPORT_REQUEST_ROLES) {
+            .containsAll(List.of(DEFENDANT_SUPPORT_ROLES));
+        for (UserRole defendantRole : DEFENDANT_SUPPORT_ROLES) {
             assertThat(configuredEvent.getGrants().get(defendantRole))
                 .containsExactlyInAnyOrderElementsOf(Permission.CRU);
         }
@@ -185,7 +135,7 @@ class RequestSupportTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().asMap())
             .allSatisfy((userRole, permissions) -> {
                 if (permissions.contains(Permission.C) || permissions.contains(Permission.U)) {
-                    assertThat(userRole).isIn(List.of(DEFENDANT_SUPPORT_REQUEST_ROLES));
+                    assertThat(userRole).isIn(List.of(DEFENDANT_SUPPORT_ROLES));
                 }
             });
     }
