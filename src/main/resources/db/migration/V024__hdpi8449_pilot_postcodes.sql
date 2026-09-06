@@ -2,11 +2,10 @@
 -- The initial list (HDPI-6853) put Cardiff and Swansea postcodes under Caernarfon and
 -- north/south-east London under Wandsworth, and carried malformed codes.
 --
--- Data source: Jira attachment "Release 1 Mapping File - amended for inclusive
--- postcode approach (1).xlsx" (2026-09-02), exported verbatim to
--- tools/postcode-to-epims/data/release1-pilot-postcodes.csv and validated with
--- tools/postcode-to-epims (5 exact-duplicate rows deduplicated). All rows are
--- open-ended (effective_to null) per the amended file.
+-- Data source: HDPI-8449 Jira attachment "Release 1 Mapping File - amended for
+-- inclusive postcode approach (1).xlsx" (2026-09-02), exported to CSV and
+-- validated with tools/postcode-to-epims (5 exact-duplicate rows deduplicated).
+-- All rows are open-ended (effective_to null) per the amended file.
 --
 -- Scope: rollout only. This replaces the mappings for the four pilot courts and
 -- leaves every other row untouched; the wider table clean-up and the non-prod
