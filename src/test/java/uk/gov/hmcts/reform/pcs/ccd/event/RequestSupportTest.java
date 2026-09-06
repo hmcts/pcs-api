@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_REQUEST_ROLES;
 
 @ExtendWith(MockitoExtension.class)
 class RequestSupportTest extends BaseEventTest {
@@ -109,8 +109,8 @@ class RequestSupportTest extends BaseEventTest {
     @Test
     void shouldGrantEveryDefendantSidePersona() {
         assertThat(configuredEvent.getGrants().keySet())
-            .containsAll(List.of(DEFENDANT_SUPPORT_ROLES));
-        for (UserRole defendantRole : DEFENDANT_SUPPORT_ROLES) {
+            .containsAll(List.of(DEFENDANT_SUPPORT_REQUEST_ROLES));
+        for (UserRole defendantRole : DEFENDANT_SUPPORT_REQUEST_ROLES) {
             assertThat(configuredEvent.getGrants().get(defendantRole))
                 .containsExactlyInAnyOrderElementsOf(Permission.CRU);
         }
@@ -135,7 +135,7 @@ class RequestSupportTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().asMap())
             .allSatisfy((userRole, permissions) -> {
                 if (permissions.contains(Permission.C) || permissions.contains(Permission.U)) {
-                    assertThat(userRole).isIn(List.of(DEFENDANT_SUPPORT_ROLES));
+                    assertThat(userRole).isIn(List.of(DEFENDANT_SUPPORT_REQUEST_ROLES));
                 }
             });
     }
