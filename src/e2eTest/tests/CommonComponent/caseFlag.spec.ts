@@ -221,10 +221,11 @@ test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags',
       await performAction('navigateToCaseSummary', 'yes');
       if (email.includes("pcs-hearing-centre")) {
         await performAction('canCreateCaseLevelFlag', 'yes');
+        await performAction('canCreatePartyLevelFlag', 'yes');
       } else {
         await performAction('canCreateCaseLevelFlag', 'no');
+        await performAction('canCreatePartyLevelFlag', 'no');
       }
-      await performAction('canCreatePartyLevelFlag', 'yes');
       await performAction('canManageCaseLevelFlag', 'yes');
       await performAction('canManagePartyLevelFlag', 'yes');
       await performAction('canViewCaseAndPartyFlag', 'yes');
