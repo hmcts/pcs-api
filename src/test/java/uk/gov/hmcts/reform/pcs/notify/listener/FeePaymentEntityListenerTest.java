@@ -17,8 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,7 +41,6 @@ class FeePaymentEntityListenerTest {
     private FeePaymentEntity feePaymentEntity;
     private ClaimEntity claim;
     private PartyEntity party;
-    private ClaimPartyEntity claimParty;
 
     @BeforeEach
     void setUp() {
@@ -49,18 +50,20 @@ class FeePaymentEntityListenerTest {
         party = new PartyEntity();
         party.setId(UUID.randomUUID());
 
-        claimParty = ClaimPartyEntity.builder()
+        ClaimPartyEntity claimParty = ClaimPartyEntity.builder()
             .claim(claim)
             .party(party)
             .role(PartyRole.CLAIMANT)
             .build();
         party.setClaimParties(Set.of(claimParty));
+        claim.setClaimParties(List.of(claimParty));
 
         feePaymentEntity = FeePaymentEntity.builder()
             .id(1)
             .claim(claim)
             .party(party)
             .paymentStatus(PaymentStatus.NOT_PAID)
+            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
             .build();
     }
 
@@ -71,7 +74,7 @@ class FeePaymentEntityListenerTest {
     }
 
     @Test
-    void shouldScheduleTaskWhenStatusChangesToPaidForClaimant() {
+    void shouldScheduleTaskWhenStatusChangesToPaidForClaimIssuePayment() {
         underTest.onPostLoad(feePaymentEntity);
         feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
 
@@ -86,6 +89,18 @@ class FeePaymentEntityListenerTest {
         TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
         FeePaymentStatusChangeTaskData data = (FeePaymentStatusChangeTaskData) taskInstance.getData();
         assertThat(data.getFeePaymentId()).isEqualTo(feePaymentEntity.getId());
+    }
+
+    @Test
+    void shouldScheduleTaskWhenPartyClaimPartiesEmptyButHandlerTypeIsClaim() {
+        party.setClaimParties(Set.of());
+
+        underTest.onPostLoad(feePaymentEntity);
+        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
+
+        underTest.onPostUpdate(feePaymentEntity);
+
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     @Test
@@ -109,13 +124,19 @@ class FeePaymentEntityListenerTest {
     }
 
     @Test
-    void shouldNotScheduleTaskWhenNotClaimant() {
-        claimParty = ClaimPartyEntity.builder()
-            .claim(claim)
-            .party(party)
-            .role(PartyRole.DEFENDANT)
-            .build();
-        party.setClaimParties(Set.of(claimParty));
+    void shouldNotScheduleTaskWhenHandlerTypeIsNotClaim() {
+        feePaymentEntity.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.GEN_APP_ISSUE);
+        underTest.onPostLoad(feePaymentEntity);
+        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
+
+        underTest.onPostUpdate(feePaymentEntity);
+
+        verifyNoInteractions(schedulerClient);
+    }
+
+    @Test
+    void shouldNotScheduleTaskWhenHandlerTypeIsCounterClaim() {
+        feePaymentEntity.setPaymentCallbackHandlerType(PaymentCallbackHandlerType.COUNTER_CLAIM_ISSUE);
         underTest.onPostLoad(feePaymentEntity);
         feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
 
@@ -133,31 +154,5 @@ class FeePaymentEntityListenerTest {
         underTest.onPostUpdate(feePaymentEntity);
 
         verifyNoInteractions(schedulerClient);
-    }
-
-    @Test
-    void shouldScheduleTaskWhenClaimIdsAreDifferentInstancesButSameValue() {
-        UUID claimId = claim.getId();
-        UUID sameValueClaimId = UUID.fromString(claimId.toString());
-
-        assertThat(sameValueClaimId).isNotSameAs(claimId);
-        assertThat(sameValueClaimId).isEqualTo(claimId);
-
-        ClaimEntity differentClaimInstanceSameId = new ClaimEntity();
-        differentClaimInstanceSameId.setId(sameValueClaimId);
-
-        claimParty = ClaimPartyEntity.builder()
-            .claim(differentClaimInstanceSameId)
-            .party(party)
-            .role(PartyRole.CLAIMANT)
-            .build();
-        party.setClaimParties(Set.of(claimParty));
-
-        underTest.onPostLoad(feePaymentEntity);
-        feePaymentEntity.setPaymentStatus(PaymentStatus.PAID);
-
-        underTest.onPostUpdate(feePaymentEntity);
-
-        verify(schedulerClient).scheduleIfNotExists(any());
     }
 }

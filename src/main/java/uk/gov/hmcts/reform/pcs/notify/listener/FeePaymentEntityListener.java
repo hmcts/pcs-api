@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 
 import java.time.Instant;
@@ -41,18 +41,17 @@ public class FeePaymentEntityListener {
             return;
         }
 
-        String taskId = UUID.randomUUID().toString();
         Integer feePaymentId = entity.getId();
-        log.info("Scheduling fee payment paid notification for: {}, with task id: {}",
-                 feePaymentId,
-                 taskId);
 
-        UUID claimId = entity.getClaim().getId();
-        boolean isClaimantFeePayment = entity.getParty().getClaimParties().stream()
-            .anyMatch(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
-                && claimParty.getClaim().getId().equals(claimId));
+        boolean isClaimIssueFeePayment =
+            entity.getPaymentCallbackHandlerType() == PaymentCallbackHandlerType.CLAIM;
 
-        if (entity.getPaymentStatus() == PaymentStatus.PAID && isClaimantFeePayment) {
+        if (entity.getPaymentStatus() == PaymentStatus.PAID && isClaimIssueFeePayment) {
+            String taskId = UUID.randomUUID().toString();
+            log.info("Scheduling fee payment paid notification for: {}, with task id: {}",
+                     feePaymentId,
+                     taskId);
+
             schedulerClient.scheduleIfNotExists(
                 FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR
                     .instance(taskId)
@@ -61,6 +60,14 @@ public class FeePaymentEntityListener {
                               .build())
                     .scheduledTo(Instant.now())
             );
+            return;
         }
+
+        log.info(
+            "Skipping fee payment paid notification for fee payment {} (status={}, handlerType={})",
+            feePaymentId,
+            entity.getPaymentStatus(),
+            entity.getPaymentCallbackHandlerType()
+        );
     }
 }
