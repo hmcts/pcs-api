@@ -39,7 +39,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     private static final String ORGANISATION_ID = "TEST-123";
     private static final String EXPECTED_ACCESS_GROUP =
         "PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:" + ORGANISATION_ID;
-    private static final String SYSTEM_USER_ID = "pcs-system-event";
+    private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
     private static final Instant EXECUTION_TIME = Instant.parse("2026-09-04T09:30:00Z");
 
     @Autowired

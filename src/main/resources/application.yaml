@@ -360,8 +360,9 @@ ccd:
       enabled: true
     system-user:
       # Fixed identity stamped on system events (shown as the "via" actor in History). The SDK
-      # treats it as an opaque label, so it needs no IDAM lookup and is the same in every environment.
-      id: pcs-system-event
+      # treats it as an opaque label, but the id must be UUID-shaped: the case projection parses
+      # the current user id (SecurityContextService.getCurrentUserId) during the event transaction.
+      id: 78acf0a0-079b-3112-8cad-549c81b83510
       username: pcs-system-event
       first-name: PCS
       last-name: System
