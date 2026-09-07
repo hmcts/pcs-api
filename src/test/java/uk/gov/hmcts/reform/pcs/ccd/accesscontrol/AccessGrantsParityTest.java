@@ -31,6 +31,12 @@ class AccessGrantsParityTest {
             .isEqualTo(accessGrantProfiles(CASE_NOTE_ROLES));
     }
 
+    @Test
+    void shouldKeepPaymentHistoryTabProfilesAlignedWithFieldAccessRoles() throws Exception {
+        assertThat(caseTypeAccessProfiles("PAYMENT_HISTORY_TAB_ROLES"))
+            .isEqualTo(accessGrantProfiles(AccessGrants.PAYMENT_HISTORY_READ_ROLES));
+    }
+
     private Set<String> caseTypeAccessProfiles(String fieldName) throws Exception {
         Field field = CaseType.class.getDeclaredField(fieldName);
         field.setAccessible(true);

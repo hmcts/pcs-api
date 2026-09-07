@@ -58,15 +58,16 @@ class RoleToAccessProfilesTest {
     }
 
     @Test
-    void shouldMapTeamLeaderRolesToExistingAdminAccessProfiles() {
+    void shouldMapPaymentHistoryTeamLeaderRolesToExistingAdminAccessProfiles() {
+        assertThat(AccessGrants.PAYMENT_HISTORY_READ_ROLES).contains(
+            UserRole.CTSC_TEAM_LEADER,
+            UserRole.HEARING_CENTRE_TEAM_LEADER,
+            UserRole.WLU_TEAM_LEADER
+        );
         assertThat(UserRole.CTSC_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.CTSC_ADMIN.getRole());
         assertThat(UserRole.HEARING_CENTRE_TEAM_LEADER.getAccessProfiles())
             .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
-        assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(
-            AccessProfile.WLU_ADMIN.getRole(),
-            AccessProfile.CIVIL_CASEWORKER.getRole(),
-            AccessProfile.PAYMENTS.getRole()
-        );
+        assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
     }
 
     /**
