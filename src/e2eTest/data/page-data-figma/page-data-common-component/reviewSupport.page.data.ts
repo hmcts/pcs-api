@@ -32,6 +32,8 @@ export const reviewSupport = {
     reviewCommentText: `Test Change Review Support`,
     reviewStatusLabel: `Evidence by live link`,
     activeOption: `Active`,
-    reasonForStatusChangeLabel: `Describe reason for status change`,
+    inActiveOption: `Inactive`,
+    notApproveOption: `Not approved`,
+    reasonForStatusChangeHintText: `Describe reason for status change.`,
     reasonForStatusChangeText: `Test Change Reason for Status Change`,
 };
