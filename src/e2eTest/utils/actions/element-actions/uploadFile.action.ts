@@ -7,16 +7,50 @@
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
-      if (typeof files === 'string') {
-        await this.uploadFile(page, files);
-      } else if (Array.isArray(files)) {
-        for (const [index, file] of files.entries()) {
-          await this.uploadFile(page, file);
-          if (index === files.length - 1) break;
-        }
-      }else if(typeof files === 'object' && 'files' in files){
-        await this.uploadFile(page, files.files as string);
+      // Normalised to a list first. Two defects in the previous shape, both verified:
+      //
+      // - `{files: [...]}` passed the array straight to uploadFile(file: string), and
+      //   path.resolve throws on an array: 'The "paths[1]" argument must be of type string.
+      //   Received an instance of Array'. Only the string form of `files` is used today, so
+      //   this was a trap rather than a live failure — enterGenAppUploadRelatedEvidence's
+      //   value is a single string while other page data of the same name is an array.
+      // - an object without a `files` key matched no branch at all, so the action returned
+      //   silently having uploaded nothing, and the failure surfaced later as a missing
+      //   document.
+      const list = this.toFileList(files);
+      if (list.length === 0) {
+        // Warn rather than throw. Two call sites are not guarded on the file itself —
+        // createCaseWales requiredDocumentsUpload keys off `reqDocs.option === 'Yes'`, and
+        // provideDetailsOfRentArrears passes `rentArrearsData.files` unguarded. Every current
+        // caller does supply a file, so a throw is unreachable today, but it would convert a
+        // silently-skipped optional upload into a hard failure for the first caller that
+        // wanted one. The warning keeps the previous behaviour while making it visible,
+        // which is the actual defect: this used to return with no trace at all.
+        console.warn(`[uploadFile] no file to upload — received ${JSON.stringify(files)}; skipping`);
+        return;
       }
+      for (const file of list) {
+        await this.uploadFile(page, file);
+      }
+    }
+
+    private toFileList(files: actionData | actionRecord): string[] {
+      if (typeof files === 'string') {
+        return [files];
+      }
+      if (Array.isArray(files)) {
+        return files.map(String);
+      }
+      if (typeof files === 'object' && files !== null && 'files' in files) {
+        const inner = (files as actionRecord).files;
+        if (typeof inner === 'string') {
+          return [inner];
+        }
+        if (Array.isArray(inner)) {
+          return inner.map(String);
+        }
+      }
+      return [];
     }
 
     private async uploadFile(page: Page, file: string): Promise<void> {
