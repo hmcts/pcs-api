@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
 @Slf4j
@@ -26,13 +27,16 @@ public class NocAccessChangeTaskComponent {
     private final int maxRetries;
     private final Duration backoffDelay;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+    private final NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService;
 
     public NocAccessChangeTaskComponent(
         LegalRepresentativePartyLinkService legalRepresentativePartyLinkService,
+        NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService,
         @Value("${role-assignment.request.max-retries}") int maxRetries,
         @Value("${role-assignment.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.legalRepresentativePartyLinkService = legalRepresentativePartyLinkService;
+        this.noticeOfChangeAppliedEventService = noticeOfChangeAppliedEventService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
     }
@@ -54,6 +58,10 @@ public class NocAccessChangeTaskComponent {
                             taskData.getPartyId(),
                             taskData.getEmail(),
                             taskData.getOrganisationDetailsResponse());
+
+                    // CaseAccessGroups is derived from the representation tables, but the search index
+                    // is built from the last event's stored snapshot, so record an event for the change.
+                    noticeOfChangeAppliedEventService.submit(caseReference, taskData.getEmail());
 
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
+import uk.gov.hmcts.reform.pcs.noc.service.NoticeOfChangeAppliedEventService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +34,9 @@ class NocAccessChangeTaskComponentTest {
 
     @Mock
     private LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
+
+    @Mock
+    private NoticeOfChangeAppliedEventService noticeOfChangeAppliedEventService;
 
     @Mock
     private TaskInstance<NocAccessChangeTaskData> taskInstance;
@@ -48,6 +53,7 @@ class NocAccessChangeTaskComponentTest {
     void setUp() {
         nocAccessChangeTaskComponent = new NocAccessChangeTaskComponent(
             legalRepresentativePartyLinkService,
+            noticeOfChangeAppliedEventService,
             MAX_RETRIES,
             BACKOFF_DELAY
         );
@@ -78,6 +84,8 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
+        // the rep change feeds derived CaseAccessGroups; only an event stores a fresh indexed snapshot
+        verify(noticeOfChangeAppliedEventService).submit(1L, email);
     }
 
     @Test
@@ -113,5 +121,6 @@ class NocAccessChangeTaskComponentTest {
         verify(legalRepresentativePartyLinkService).linkLegalRepresentativeToParty(1L, partyId,
                                                                                    email,
                                                                                    organisationDetailsResponse);
+        verifyNoInteractions(noticeOfChangeAppliedEventService);
     }
 }
