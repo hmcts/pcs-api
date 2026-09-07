@@ -109,7 +109,19 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       timeout: VERY_LONG_TIMEOUT,
     });
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
-    await performAction('clickButton', caseSummary.go);
+    // Verify the Go click actually navigated, and retry it if not.
+    //
+    // This is the flakiest step in the suite — it appeared in 4 of the last 5 runs of #2570.
+    // The mainHeader diagnostic named the cause: `expected "Add a case note" but page shows
+    // "Summary"`, with no error summary, so Go simply did not move the page rather than being
+    // rejected. clickButton does not verify navigation, so the test carried on and failed on
+    // the next assertion.
+    //
+    // Deliberately not "verify the dropdown value took" instead: tested locally, an assertion
+    // straight after selectOption passes before any async revert can happen, so it cannot
+    // catch a model that clears a tick later. Verifying the outcome works whether the select
+    // or the click was at fault.
+    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, addCaseNote.mainHeader);
     await performValidation('mainHeader', addCaseNote.mainHeader);
     await performAction('addCaseNotes', {
       label: addCaseNote.addNoteTextLabel,
