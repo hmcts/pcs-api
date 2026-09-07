@@ -32,9 +32,6 @@ public enum AccessProfile implements HasRole {
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
-    CIVIL_CASEWORKER("caseworker-civil", CRU),
-    CIVIL_CASEWORKER_STAFF("caseworker-civil-staff", CRU),
-    PAYMENTS("payments", Set.of(R)),
 
     CLAIMANT("claimant", CRU,
              LOCAL_AUTHORITY_CLAIMANT_ACCESS,
