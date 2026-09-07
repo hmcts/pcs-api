@@ -302,16 +302,13 @@ public class MakeOrderService {
     }
 
     private void validateSubmissionDocument(MakeOrderDraftPayload draftPayload) {
-        if (draftPayload.orderType() != OrderType.OUTRIGHT_POSSESSION) {
-            throw new IllegalArgumentException("Only outright possession orders can be submitted for review");
-        }
-        JsonNode document = draftPayload.documents().get(OrderType.OUTRIGHT_POSSESSION);
+        JsonNode document = draftPayload.documents().get(draftPayload.orderType());
         if (document == null
             || !"docweave-document".equals(document.path("schema").asText())
             || document.path("version").asInt() != 1
             || !document.path("current").isObject()
             || !document.path("generated").isObject()) {
-            throw new IllegalArgumentException("The outright possession order document is invalid");
+            throw new IllegalArgumentException("The order document is invalid");
         }
     }
 

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
@@ -150,14 +152,40 @@ class MakeOrderServiceTest {
         verify(orderRepository).saveAndFlush(order);
     }
 
-    @Test
-    void shouldSubmitValidOutrightPossessionDocumentForReview() {
+    @ParameterizedTest
+    @EnumSource(OrderType.class)
+    void shouldSubmitValidDocumentForReview(OrderType orderType) {
         when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
 
         Action result = underTest.submit(CASE_REFERENCE, envelope("SUBMIT_FOR_REVIEW", """
             {
               "version": 1,
-              "orderType": "OUTRIGHT_POSSESSION",
+              "orderType": "%s",
+              "formData": {},
+              "documents": {
+                "%s": {
+                  "schema": "docweave-document",
+                  "version": 1,
+                  "current": {"type": "doc"},
+                  "generated": {"type": "doc"}
+                }
+              }
+            }
+            """.formatted(orderType, orderType)));
+
+        assertThat(result).isEqualTo(Action.SUBMIT_FOR_REVIEW);
+        assertThat(order.getState()).isEqualTo(OrderState.SUBMITTED_FOR_REVIEW);
+        verify(orderRepository).saveAndFlush(order);
+    }
+
+    @Test
+    void shouldRejectSubmissionWithoutDocumentForSelectedOrderType() {
+        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
+
+        assertThatThrownBy(() -> underTest.submit(CASE_REFERENCE, envelope("SUBMIT_FOR_REVIEW", """
+            {
+              "version": 1,
+              "orderType": "SUSPENDED_POSSESSION",
               "formData": {},
               "documents": {
                 "OUTRIGHT_POSSESSION": {
@@ -168,27 +196,9 @@ class MakeOrderServiceTest {
                 }
               }
             }
-            """));
-
-        assertThat(result).isEqualTo(Action.SUBMIT_FOR_REVIEW);
-        assertThat(order.getState()).isEqualTo(OrderState.SUBMITTED_FOR_REVIEW);
-        verify(orderRepository).saveAndFlush(order);
-    }
-
-    @Test
-    void shouldRejectSubmissionWithoutValidOutrightPossessionDocument() {
-        when(orderRepository.findById(order.getId())).thenReturn(Optional.of(order));
-
-        assertThatThrownBy(() -> underTest.submit(CASE_REFERENCE, envelope("SUBMIT_FOR_REVIEW", """
-            {
-              "version": 1,
-              "orderType": "OUTRIGHT_POSSESSION",
-              "formData": {},
-              "documents": {}
-            }
             """)))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("The outright possession order document is invalid");
+            .hasMessage("The order document is invalid");
     }
 
     @Test
