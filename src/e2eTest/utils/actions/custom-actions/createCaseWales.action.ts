@@ -11,14 +11,13 @@ import {
   prohibitedConductWales,
 } from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
-import {readPageHeading} from '@utils/common/locator.utils';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
-      ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(page, fieldName as actionRecord)],
+      ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
       ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
       ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
       ['selectDocumentsYouVeUploadedCheckList', () => this.selectDocumentsYouVeUploadedCheckList(fieldName as actionRecord)]
@@ -35,7 +34,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performAction('clickButtonAndVerifyPageNavigation', exemptLandlord.continueButton, contactPreferences.mainHeader);    
   }
 
-  private async selectOccupationContractOrLicenceDetails(page: Page, occupationContractData: actionRecord) {
+  private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
     // Gate on this page's own heading before touching anything on it.
     //
     // The two validations below look like page checks but are not: 'Case number:' and
@@ -52,31 +51,9 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     // first, and the failing one at spec:639 was not it, so the gate belongs here rather than
     // in each caller.
     //
-    // Reports the heading actually on screen, plus any error summary, before asserting.
-    //
-    // performValidation('mainHeader', x) alone is not enough to diagnose this: it goes through
-    // pageHeading(page, x), which *filters by* the expected text, so on a mismatch the locator
-    // resolves to nothing and the failure reads 'element(s) not found' with no indication of
-    // where the journey actually is. That is what the first run of this gate produced.
-    //
-    // Narrowing so far: of this action's 7 call sites only spec:639 fails, and it is the only
-    // one passing addAdditionalDefendantsOption: yes with numberOfDefendants: 2 — the other six
-    // pass 'no'. The England equivalent (createCase.spec.ts:96) has the identical structure with
-    // 2 extra defendants and passes, so this is specific to the Wales multi-defendant path.
-    // The likely mechanism is that addDefendantDetails' final Continue does not advance —
-    // clickButton does not verify navigation, so a validation error on the defendant page would
-    // leave the journey there while the test carries on. This logging confirms or kills that.
-    const actualHeading = await readPageHeading(page);
-    if (actualHeading !== occupationLicenceDetailsWales.mainHeader) {
-      const errorSummary = await page.locator('.error-summary, #error-summary-title, .govuk-error-summary')
-        .first()
-        .innerText()
-        .catch(() => '<none>');
-      console.warn(
-        `[occupationContract] expected heading "${occupationLicenceDetailsWales.mainHeader}" `
-        + `but page shows "${actualHeading}"; error summary: ${errorSummary.replace(/\s+/g, ' ').trim()}`
-      );
-    }
+    // The bespoke heading/error-summary logging that used to sit here has been removed: it now
+    // lives in MainHeaderValidation, so every mainHeader assertion in the suite reports the same
+    // context rather than just this one call site.
     await performValidation('mainHeader', occupationLicenceDetailsWales.mainHeader);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
