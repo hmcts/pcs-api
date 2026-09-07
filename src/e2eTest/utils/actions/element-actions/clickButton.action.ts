@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { actionRetries, LONG_TIMEOUT, waitForPageRedirectionTimeout } from '../../../playwright.config';
 import { hasPageHeading, waitForSpinner } from '@utils/common/locator.utils';
 
 export class ClickButtonAction implements IAction {
@@ -39,10 +39,26 @@ export class ClickButtonAction implements IAction {
       attempt++;
       await this.clickButton(page, button);
       // waitFor polls; isVisible does not, so the fixed sleep was the only thing giving
-      // the next page time to render. Same per-attempt budget.
+      // the next page time to render.
+      //
+      // The FIRST attempt gets a real budget rather than the 5s
+      // `waitForPageRedirectionTimeout`. This loop clicks before it waits, every time, so a
+      // page that merely renders slowly used to be misread as a failed click — and the retry
+      // then clicked Continue again on a page that was already navigating, landing on the
+      // page *after* the target. `nextPageElement` then never matched, all five attempts were
+      // spent, and it failed having overshot.
+      //
+      // Reproduced: target arriving at 6s against a 5s budget gave 5 clicks, target never
+      // seen, ending two pages further on. With a generous first wait: 1 click, target
+      // reached. That is eligibilityCheck:194, which failed *inside* this helper on
+      // 'Claimant name'.
+      //
+      // Later attempts keep the short budget: by then a genuine missed click is the likelier
+      // explanation, and this is the salvage path rather than the normal one.
+      const budget = attempt === 1 ? LONG_TIMEOUT : waitForPageRedirectionTimeout;
       nextPageElementIsVisible = await pageElement
         .first()
-        .waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout })
+        .waitFor({ state: 'visible', timeout: budget })
         .then(() => true)
         .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
