@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
-import { hasPageHeading } from '@utils/common/locator.utils';
+import { hasPageHeading, waitForSpinner } from '@utils/common/locator.utils';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
@@ -22,11 +22,13 @@ export class ClickButtonAction implements IAction {
     await actionToPerform();
   }
 
-  private async clickButton(page: Page, button: Locator): Promise<void> {   
+  private async clickButton(page: Page, button: Locator): Promise<void> {
       await page.waitForLoadState();
+      // Also wait BEFORE clicking, not only after — see waitForSpinner for why.
+      await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });    
+      await page.locator('.spinner-container').waitFor({ state: 'detached' });
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {

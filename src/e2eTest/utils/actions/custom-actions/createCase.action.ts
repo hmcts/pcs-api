@@ -16,7 +16,8 @@ import {
   home,
   checkYourAnswers,
   resumeClaim,
-  user
+  user,
+  caseSummary
 } from '@data/page-data';
 import {
   claimantType,
@@ -94,7 +95,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(page, fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -130,10 +131,11 @@ export class CreateCaseAction implements IAction {
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
-      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(fieldName as actionRecord)],
+      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(page, fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -159,6 +161,11 @@ export class CreateCaseAction implements IAction {
     await actionToPerform();
   }
 
+  private async selectAnEvent(event: actionRecord) {
+    await performAction('select', caseSummary.nextStepEventList, event.eventType);
+    await performAction('clickButton', caseSummary.go);
+  }
+  
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);
@@ -351,7 +358,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continueButton);
   }
 
-  private async addDefendantDetails(defendantData: actionRecord) {
+  private async addDefendantDetails(page: Page, defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -391,11 +398,22 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // 'Add new' appends a defendant block and every lookup below addresses it by index,
+        // while clickRadioButton resolves its patterns with count(), which does not poll. So
+        // if this block has not arrived, nth(index) matches nothing.
+        //
+        // Defence in depth, not the fix for createCaseWales:604 — I originally claimed it was.
+        // The per-pattern diagnostics from that failure read pattern2=2, pattern4=7, so the
+        // block had rendered and the patterns simply disagreed about which element to take.
+        // That is fixed in the pattern definitions themselves; this wait only covers the
+        // genuinely-not-yet-rendered case.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+        // Clicked once. This was two identical calls in a row: the second re-clicked a radio
+        // already checked, so it was pure cost, and its retry loop could only ever confirm
+        // what the first had done.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -857,7 +875,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeMortgageeDetails.continueButton);
   }
 
-  private async selectUnderlesseeMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+  private async selectUnderlesseeMortgageeDetails(page: Page, underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -890,11 +908,17 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = underlesseeMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeMortgageeDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // Same shape as addDefendantDetails: 'Add new' appends the block and every lookup
+        // below addresses it by index, but clickRadioButton resolves patterns with count(),
+        // which does not poll. Until the block exists nth(index) matches nothing and the
+        // failure is reported as 'The radio button ... is not found'. Measured on the
+        // defendant equivalent: nth(1) count=0 immediately after Add new, 1 after the wait.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+        // Clicked once. This was two identical calls in a row, so the second re-clicked a
+        // radio that was already checked.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,

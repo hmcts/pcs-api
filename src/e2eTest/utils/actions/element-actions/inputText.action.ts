@@ -26,10 +26,22 @@ export class InputTextAction implements IAction {
 
   private async getStringFieldLocator(page: Page, fieldParams: string) {
     const roleLocator = page.getByRole('textbox', { name: fieldParams, exact: true });
+    // .first() because the object branch in execute() has it and this one did not: a repeated
+    // CCD collection gives several textboxes the same accessible name, and fill() is strict.
+    // That failure is fast (18ms) rather than the 40s timeout below, but it is the same
+    // one-field-two-matches situation the rest of this class already guards against.
     return (await roleLocator.count() > 0)
-      ? roleLocator
+      ? roleLocator.first()
+      // `+ div input` was the only branch here without `:visible:enabled`, so it could
+      // resolve to a hidden or disabled input — CCD renders those routinely for
+      // conditionally shown fields. fill() then waits for an element that will never become
+      // editable and burns its entire 40s actionTimeout, reported as
+      // "locator.fill: Timeout 40000ms exceeded" as seen on createCase.spec.ts:1043.
+      // Reproduced: a hidden input reached this way times out in full (4003ms at a 4s
+      // timeout), whereas a strict-mode violation fails in 18ms — so the timeout signature
+      // points at this, not at an ambiguous selector.
       : page.locator(`:has-text("${fieldParams}") ~ input:visible:enabled,
-                      label:has-text("${fieldParams}") ~ textarea,
-                      label:has-text("${fieldParams}") + div input`);
+                      label:has-text("${fieldParams}") ~ textarea:visible:enabled,
+                      label:has-text("${fieldParams}") + div input:visible:enabled`).first();
   }
 }

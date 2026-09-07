@@ -3,20 +3,54 @@
   import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
   import { performAction, performValidation } from '@utils/controller';
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
-  const MAX_UPLOAD_BACKOFF = 180000;
+  export const MAX_UPLOAD_BACKOFF = 180000;
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
-      if (typeof files === 'string') {
-        await this.uploadFile(page, files);
-      } else if (Array.isArray(files)) {
-        for (const [index, file] of files.entries()) {
-          await this.uploadFile(page, file);
-          if (index === files.length - 1) break;
-        }
-      }else if(typeof files === 'object' && 'files' in files){
-        await this.uploadFile(page, files.files as string);
+      // Normalised to a list first. Two defects in the previous shape, both verified:
+      //
+      // - `{files: [...]}` passed the array straight to uploadFile(file: string), and
+      //   path.resolve throws on an array: 'The "paths[1]" argument must be of type string.
+      //   Received an instance of Array'. Only the string form of `files` is used today, so
+      //   this was a trap rather than a live failure — enterGenAppUploadRelatedEvidence's
+      //   value is a single string while other page data of the same name is an array.
+      // - an object without a `files` key matched no branch at all, so the action returned
+      //   silently having uploaded nothing, and the failure surfaced later as a missing
+      //   document.
+      const list = this.toFileList(files);
+      if (list.length === 0) {
+        // Warn rather than throw. Two call sites are not guarded on the file itself —
+        // createCaseWales requiredDocumentsUpload keys off `reqDocs.option === 'Yes'`, and
+        // provideDetailsOfRentArrears passes `rentArrearsData.files` unguarded. Every current
+        // caller does supply a file, so a throw is unreachable today, but it would convert a
+        // silently-skipped optional upload into a hard failure for the first caller that
+        // wanted one. The warning keeps the previous behaviour while making it visible,
+        // which is the actual defect: this used to return with no trace at all.
+        console.warn(`[uploadFile] no file to upload — received ${JSON.stringify(files)}; skipping`);
+        return;
       }
+      for (const file of list) {
+        await this.uploadFile(page, file);
+      }
+    }
+
+    private toFileList(files: actionData | actionRecord): string[] {
+      if (typeof files === 'string') {
+        return [files];
+      }
+      if (Array.isArray(files)) {
+        return files.map(String);
+      }
+      if (typeof files === 'object' && files !== null && 'files' in files) {
+        const inner = (files as actionRecord).files;
+        if (typeof inner === 'string') {
+          return [inner];
+        }
+        if (Array.isArray(inner)) {
+          return inner.map(String);
+        }
+      }
+      return [];
     }
 
     private async uploadFile(page: Page, file: string): Promise<void> {
@@ -24,7 +58,16 @@
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await fileInput.last().setInputFiles(filePath);
-      let timeout = 6000;
+      // 8s, not 6s. XUI returns 429 when a document POST arrives within 5s of the previous
+      // upload completing (rpx-xui-webapp api/documents/index.ts handleRequest), and it
+      // DOUBLES that window on every 429 it issues, up to 180s. This sleep is what keeps
+      // consecutive uploads apart, so at 6s there was only ~1s of margin against the 5s
+      // threshold — and the penalty for losing that margin is exponential, not linear:
+      // one 429 pushes the window to 10s, which makes the next upload more likely to 429
+      // as well, cascading toward the ceiling. Widening the gap avoids the 429 rather than
+      // trying to recover from it, which is the cheaper direction: the retry loop below
+      // re-uploads, and each re-upload re-arms the window it is waiting on.
+      let timeout = 8000;
       await performValidation('waitUntilElementDisappears', 'Uploading...');
       // Deliberately kept. "Uploading..." disappearing is not the end of the upload —
       // CCD is still committing the row, and documentsLR uploads two files in a loop, so

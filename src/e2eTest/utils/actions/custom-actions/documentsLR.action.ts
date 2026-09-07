@@ -186,8 +186,13 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
+        // Exact id, not a `^=` prefix. The prefix also matches the ...defendantDocumentTypeWales
+        // sibling, so on a page rendering both this resolves to 2 elements and selectOption -
+        // being strict - throws immediately. Measured: prefix count=2 and a strict-mode
+        // violation in 7ms; exact count=1. documentsLR.spec.ts has no Wales test, so the
+        // sibling is never the intended target here.
         const typeDropdown = page.locator(
-          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
+          `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
         await typeDropdown.waitFor({ state: 'attached' });
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });
@@ -274,23 +279,31 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally, because `cyaMap.clear()` used to sit after the throw below: a CYA failure left
+    // the module-level map populated, and the next test on that worker compared its own
+    // FieldsStore against the previous test's leftover CYA rows. FieldsStore is cleared per
+    // test in beforeEach; cyaMap is module-private, so specs cannot clear it and nothing did.
+    // Only the failure path leaked, which is why it presents as one test failing and then an
+    // unrelated later one.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
 
     // click each row's Change link, confirm it lands on the page where that
     // question was originally answered, then return to the CYA table.

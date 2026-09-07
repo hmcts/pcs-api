@@ -1,8 +1,10 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
+import { waitForSpinner } from '@utils/common/locator.utils';
 
 export class CheckAction implements IAction {
   async execute(page: Page, action: string, params: string | actionRecord): Promise<void> {
+    await waitForSpinner(page);
     if (typeof params === 'string') {
       await this.clickCheckBox(page, params, action);
     } else if (Array.isArray(params)) {
