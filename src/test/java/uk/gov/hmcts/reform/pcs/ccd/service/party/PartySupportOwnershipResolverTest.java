@@ -12,10 +12,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -218,6 +222,97 @@ class PartySupportOwnershipResolverTest {
         // When / Then
         assertThat(underTest.isOwnedByUser(defendant, USER_ID)).isTrue();
         verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldResolveEveryPartyRepresentedByTheUsersOrganisation() {
+        PartyEntity firstClaimant = claimantRepresentedBy(CLAIMANT_FIRM);
+        PartyEntity secondClaimant = claimantRepresentedBy(CLAIMANT_FIRM);
+        PartyEntity defendant = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CLAIMANT_FIRM);
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(firstClaimant, secondClaimant, defendant)), USER_ID);
+
+        assertThat(representedPartyIds)
+            .containsExactlyInAnyOrder(firstClaimant.getId(), secondClaimant.getId());
+    }
+
+    @Test
+    void shouldResolveNoPartiesForAProfessionalFromAnUnrelatedOrganisation() {
+        PartyEntity claimant = claimantRepresentedBy(CLAIMANT_FIRM);
+        PartyEntity defendant = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("UNRELATED-FIRM");
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(claimant, defendant)), USER_ID);
+
+        assertThat(representedPartyIds).isEmpty();
+    }
+
+    @Test
+    void shouldResolveThePartyAUserIsActingForThemselves() {
+        PartyEntity self = unrepresentedParty();
+        self.setIdamId(USER_ID);
+        PartyEntity otherParty = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(self, otherParty)), USER_ID);
+
+        assertThat(representedPartyIds).containsExactly(self.getId());
+    }
+
+    @Test
+    void shouldResolveNoPartiesWhenRepresentationHasEnded() {
+        PartyEntity formerlyRepresented = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.NO);
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(formerlyRepresented)), USER_ID);
+
+        assertThat(representedPartyIds).isEmpty();
+    }
+
+    @Test
+    void shouldResolveNoPartiesWithoutAnAuthenticatedUser() {
+        PartyEntity claimant = claimantRepresentedBy(CLAIMANT_FIRM);
+
+        assertThat(underTest.resolveRepresentedPartyIds(new LinkedHashSet<>(List.of(claimant)), null)).isEmpty();
+        assertThat(underTest.resolveRepresentedPartyIds(null, USER_ID)).isEmpty();
+        assertThat(underTest.resolveRepresentedPartyIds(Set.of(), USER_ID)).isEmpty();
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldNotLookUpTheOrganisationWhenNoPartyHoldsOrganisationData() {
+        PartyEntity self = unrepresentedParty();
+        self.setIdamId(USER_ID);
+        PartyEntity unrepresented = unrepresentedParty();
+
+        Set<UUID> representedPartyIds = underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(self, unrepresented)), USER_ID);
+
+        assertThat(representedPartyIds).containsExactly(self.getId());
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldNotLookUpTheOrganisationForAnUnrepresentedParty() {
+        assertThat(underTest.isOwnedByUser(unrepresentedParty(), USER_ID)).isFalse();
+
+        verifyNoInteractions(organisationService);
+    }
+
+    @Test
+    void shouldLookUpTheUsersOrganisationOnceForTheWholeCase() {
+        PartyEntity firstParty = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        PartyEntity secondParty = partyRepresentedBy(DEFENDANT_FIRM, YesOrNo.YES);
+        PartyEntity thirdParty = claimantRepresentedBy(CLAIMANT_FIRM);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(DEFENDANT_FIRM);
+
+        underTest.resolveRepresentedPartyIds(
+            new LinkedHashSet<>(List.of(firstParty, secondParty, thirdParty)), USER_ID);
+
+        verify(organisationService, times(1)).getOrganisationIdForCurrentUser();
     }
 
     private PartyEntity claimantRepresentedBy(String organisationId) {
