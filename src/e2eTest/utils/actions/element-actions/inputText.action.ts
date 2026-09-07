@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
+import { MEDIUM_TIMEOUT } from '../../../playwright.config';
 
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
@@ -10,8 +11,27 @@ export class InputTextAction implements IAction {
       const labelText = fieldParams.textLabel ?? fieldParams.text;
       locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
 
+      // Wait for the indexed field to exist before reading count(), which does not poll.
+      //
+      // Callers pass an index when a page repeats a question per party, and the extra field is
+      // revealed by a radio click immediately beforehand. If it has not rendered yet, count()
+      // returns 1, the ternary falls to .first(), and the value is written into the FIRST
+      // party's field — overwriting it and leaving the indexed one empty.
+      //
+      // That is the cause of createCaseWales:604. Its page-gate diagnostic reported:
+      //   page shows "Defendant details"; error summary: There is a problem
+      //   Defendant’s first name is required Defendant’s last name is required
+      // so addDefendantDetails' Continue never advanced. Reproduced: with the second field
+      // arriving at 1200ms, count=1 and the fill lands on id=d0; after waiting, count=2 and it
+      // lands on id=d1. It is the only one of this action's 7 Wales call sites that adds extra
+      // defendants, which is why only that one failed.
+      const index = Number(fieldParams.index);
+      if (index > 0) {
+        await locator.nth(index).waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
+      }
       locator = (await locator.count()) > 1
-        ? locator.nth(Number(fieldParams.index))
+        ? locator.nth(index)
         : locator.first();
     } else {
       locator = typeof fieldParams === 'string'
