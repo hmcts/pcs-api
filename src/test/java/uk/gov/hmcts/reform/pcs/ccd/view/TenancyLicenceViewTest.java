@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,16 +38,20 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TenancyLicenceViewTest {
 
+    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
+
     @Mock
     private PCSCase pcsCase;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
 
     private TenancyLicenceView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TenancyLicenceView();
+        underTest = new TenancyLicenceView(uploadTimestampProvider);
     }
 
     @Test
@@ -132,6 +137,7 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
         when(tenancyLicenceEntity.getHasCopyOfTenancyLicence()).thenReturn(hasCopyOfTenancyLicence);
         when(tenancyLicenceEntity.getReasonsForNoTenancyLicence()).thenReturn(reasonsForNoTenancyLicence);
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
@@ -161,6 +167,7 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> tenancyLicenceDocuments = tenancyLicenceDetails.getTenancyLicenceDocuments();
         assertThat(tenancyLicenceDocuments).hasSize(1);
         assertThat(tenancyLicenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+        assertThat(tenancyLicenceDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
     }
 
     @Test
@@ -177,6 +184,7 @@ class TenancyLicenceViewTest {
         when(tenancyLicenceEntity.getType()).thenReturn(CombinedLicenceType.SECURE_CONTRACT);
         when(tenancyLicenceEntity.getOtherTypeDetails()).thenReturn(otherTypeDetails);
         when(tenancyLicenceEntity.getStartDate()).thenReturn(tenancyStartDate);
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
@@ -204,6 +212,7 @@ class TenancyLicenceViewTest {
         List<ListValue<Document>> licenceDocuments = occupationLicenceDetails.getLicenceDocuments();
         assertThat(licenceDocuments).hasSize(1);
         assertThat(licenceDocuments.getFirst().getId()).isEqualTo(tenancyLicenceDocumentId.toString());
+        assertThat(licenceDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
     }
 
     @Test

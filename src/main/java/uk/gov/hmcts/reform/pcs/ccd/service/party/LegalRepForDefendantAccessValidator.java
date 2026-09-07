@@ -20,9 +20,8 @@ public class LegalRepForDefendantAccessValidator {
     private final DefendantResponseRepository defendantResponseRepository;
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
-        return this.validateAndGetDefendants(caseEntity, organisationId, true);
+        return validateAndGetDefendants(caseEntity, organisationId, true);
     }
-
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId,
                                                       boolean validate) {
@@ -30,14 +29,6 @@ public class LegalRepForDefendantAccessValidator {
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
         return findMatchingLinkedDefendants(defendants, organisationId, caseReference, validate);
     }
-
-    /* master
-    public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId) {
-        long caseReference = caseEntity.getCaseReference();
-        List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
-        return findMatchingLinkedDefendants(defendants, organisationId, caseReference);
-    }
-     */
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
@@ -63,7 +54,7 @@ public class LegalRepForDefendantAccessValidator {
 
         if (validate && linkedDefendants.isEmpty()) {
             log.error(
-                "Access denied: User {} is not linked as a defendant on case {}",
+                "Access denied: Organisation {} is not linked as a defendant solicitor on case {}",
                 organisationId,
                 caseReference
             );
