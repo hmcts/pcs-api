@@ -59,7 +59,8 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT, actionRetries, waitForPageRedirectionTimeout} from 'playwright.config';
+import {checkYourAnswersCaseNote} from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -140,7 +141,7 @@ export class CreateCaseAction implements IAction {
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
-      ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
+      ['addCaseNotes', () => this.addCaseNotes(page, fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
       ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
@@ -972,11 +973,32 @@ export class CreateCaseAction implements IAction {
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
 
-  private async addCaseNotes(caseNote: actionRecord){
+  private async addCaseNotes(page: Page, caseNote: actionRecord){
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
     await performAction('inputText', caseNote.label, caseNote.input);
-    await performAction('clickButton', addCaseNote.continueButton);
+    // Verify Continue reached Check your answers, and retry the click if it did not.
+    //
+    // Same defect as the Go click earlier in this journey: clickButton does not verify
+    // navigation, so if Continue silently fails to advance the test carries on from the wrong
+    // page and fails at whatever it asserts next. That is the residual caseTabs:96 flake — it
+    // fails on `text 'Check your answers'`, which polls for 30s, so the page genuinely never
+    // arrived rather than arriving late.
+    //
+    // Anchored on the h2 rather than reusing clickButtonAndVerifyPageNavigation, which matches
+    // `h1:has-text(...)`: this page has no mainHeader in its page data and 'Check your answers'
+    // is asserted as a subHeading, so an h1 match would never succeed here.
+    const checkYourAnswers = page.locator('h2', { hasText: checkYourAnswersCaseNote.header }).first();
+    let attempt = 0;
+    let arrived = false;
+    do {
+      attempt++;
+      await performAction('clickButton', addCaseNote.continueButton);
+      arrived = await checkYourAnswers
+        .waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+    } while (!arrived && attempt < actionRetries);
   }
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
