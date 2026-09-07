@@ -42,7 +42,7 @@ test.afterEach(async () => {
 
 test.describe('[Review support request] - Solicitor user - @nightly @CC @supportEvents', async () => {
 
-  test('Approve the support request @smoke', async ({page}) => {
+  test('Approve the support request', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
     await dismissCookieBanner(page, 'analytics');
 
@@ -102,7 +102,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performValidation('bannerAlert', `Case #.* has been updated with event: Review support request`);
   });
 
-  test('Inactive the support request @smoke', async ({page}) => {
+  test('Inactive the support request', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
     await dismissCookieBanner(page, 'analytics');
 
@@ -162,7 +162,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performValidation('bannerAlert', `Case #.* has been updated with event: Review support request`);
   });
 
-  test('Not approve the support request @smoke', async ({page}) => {
+  test('Not approve the support request', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
     await dismissCookieBanner(page, 'analytics');
 
