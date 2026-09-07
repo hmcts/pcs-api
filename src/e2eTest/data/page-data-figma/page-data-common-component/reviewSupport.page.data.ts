@@ -30,8 +30,8 @@ export const reviewSupport = {
     updateCommentText: `Test Change Manage Support`,
     reviewCommentLabel: `Update flag "Evidence by live link"comments`,
     reviewCommentText: `Test Change Review Support`,
-    reviewStatusLabel: `Update flag "Evidence by live link" status`,
+    reviewStatusLabel: `Evidence by live link`,
     activeOption: `Active`,
-    reasonForStatusChangeLabel: `Describe reason for status change.`,
+    reasonForStatusChangeLabel: `Describe reason for status change`,
     reasonForStatusChangeText: `Test Change Reason for Status Change`,
 };

@@ -96,7 +96,6 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performValidation('mainHeader', reviewSupport.reviewSupportHeader);
     await performAction('inputText', reviewSupport.reviewCommentLabel, reviewSupport.reviewCommentText);
     await performAction('clickRadioButton', { question: reviewSupport.reviewStatusLabel, option: reviewSupport.activeOption });
-    await performAction('inputText', reviewSupport.reasonForStatusChangeLabel, reviewSupport.reasonForStatusChangeText);
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.reviewSupportHeader);
     await performAction('clickButton', reviewSupport.submitButton);
