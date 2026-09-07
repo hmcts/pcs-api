@@ -54,6 +54,26 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {
+        CREATOR,
+        DEFENDANT,
+        DEFENDANT_SOLICITOR,
+        GA_DEFENDANT_SOLICITOR,
+        CLAIMANT,
+        CLAIMANT_SOLICITOR,
+        GA_CLAIMANT_SOLICITOR,
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
+        HEARING_CENTRE_TEAM_LEADER,
+        HEARING_CENTRE_ADMIN,
+        CTSC_TEAM_LEADER,
+        CTSC_ADMIN,
+        WLU_TEAM_LEADER,
+        WLU_ADMIN
+    };
+
     private AccessGrants() {
     }
 
@@ -88,25 +108,7 @@ final class AccessGrants {
     }
 
     static SetMultimap<HasRole, Permission> paymentHistoryReadAccess() {
-        
-        SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.put(CREATOR, Permission.R);
-        grants.put(CLAIMANT, Permission.R);
-        grants.put(DEFENDANT, Permission.R);
-        grants.put(DEFENDANT_SOLICITOR, Permission.R);
-        grants.put(CLAIMANT_SOLICITOR, Permission.R);
-        grants.put(JUDGE, Permission.R);
-        grants.put(FEE_PAID_JUDGE, Permission.R);
-        grants.put(CIRCUIT_JUDGE, Permission.R);
-        grants.put(LEADERSHIP_JUDGE, Permission.R);
-        grants.put(HEARING_CENTRE_TEAM_LEADER, Permission.R);
-        grants.put(HEARING_CENTRE_ADMIN, Permission.R);
-        grants.put(CTSC_TEAM_LEADER, Permission.R);
-        grants.put(CTSC_ADMIN, Permission.R);
-        grants.put(WLU_TEAM_LEADER, Permission.R);
-        grants.put(WLU_ADMIN, Permission.R);
-        return grants;
-
+        return readAccess(PAYMENT_HISTORY_READ_ROLES);
     }
 
     private static SetMultimap<HasRole, Permission> readAccess(UserRole... roles) {
