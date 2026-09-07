@@ -95,12 +95,21 @@ class ReviewSupportRequestFlowTest {
         defendant.setDefendantFlags(new ArrayList<>(List.of(
             supportFlag("RA0029", "Therapy animal", "Requested", FlagVisibility.EXTERNAL))));
 
-        List<ListValue<PartySupport>> reviewFlags =
-            supportReviewService.buildRequestedSupport(viewMappedCase());
+        PCSCase pcsCase = viewMappedCase();
+        List<ListValue<PartySupport>> reviewFlags = supportReviewService.buildRequestedSupport(pcsCase);
+
+        assertThat(projectedParty(pcsCase, claimant).getPartyFlagsExternal().getDetails())
+            .as("the claimant's requested support stays on the shared Case Flags projection")
+            .hasSize(1);
 
         assertThat(reviewFlags)
             .extracting(entry -> entry.getValue().getSupportFlags().getRoleOnCase())
             .containsExactly("Defendant");
+        assertThat(reviewFlags)
+            .noneMatch(entry -> claimant.getId().toString().equals(entry.getId()));
+        assertThat(reviewFlags.getFirst().getValue().getSupportFlags().getDetails())
+            .extracting(detail -> detail.getValue().getFlagCode())
+            .containsExactly("RA0029");
     }
 
     /**
@@ -269,6 +278,14 @@ class ReviewSupportRequestFlowTest {
 
     private CaseFlagService caseFlagService() {
         return new CaseFlagService(null, null, null, null, null);
+    }
+
+    private Party projectedParty(PCSCase pcsCase, PartyEntity partyEntity) {
+        return pcsCase.getParties().stream()
+            .filter(listValue -> partyEntity.getId().toString().equals(listValue.getId()))
+            .findFirst()
+            .orElseThrow()
+            .getValue();
     }
 
     private PCSCase viewMappedCase() {

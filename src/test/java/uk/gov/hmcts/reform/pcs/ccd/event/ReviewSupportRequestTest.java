@@ -66,6 +66,7 @@ class ReviewSupportRequestTest extends BaseEventTest {
                 .id(PARTY_ID)
                 .value(PartySupport.builder()
                     .supportFlags(Flags.builder()
+                        .roleOnCase("Defendant")
                         .visibility(FlagVisibility.EXTERNAL)
                         .details(createMixedStatusFlagDetails())
                         .build())
