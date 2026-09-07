@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.EXTERNAL_CASE_FLAG_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagRoles.DEFENDANT_SUPPORT_REQUEST_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagHistoryRoles.EXTERNAL_CASE_FLAG_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.CaseFlagStates.CASE_FLAG_STATES;
 
@@ -30,13 +30,13 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                .decentralisedEvent(EventId.requestSupport.name(), this::submit)
+                .decentralisedEvent(EventId.requestSupport.name(), this::submit, this::start)
                 .forStates(CASE_FLAG_STATES)
                 .name("Request support")
                 .description("To request support")
                 .showSummary()
                 .endButtonLabel("Submit")
-                .grant(Permission.CRU, EXTERNAL_CASE_FLAG_ROLES)
+                .grant(Permission.CRU, DEFENDANT_SUPPORT_REQUEST_ROLES)
                 .grantHistoryOnly(EXTERNAL_CASE_FLAG_HISTORY_ROLES))
                 .page("externalCaseFlag")
                 .pageLabel("Request support")
@@ -47,6 +47,12 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(PCSCase::getFlagLauncherExternal,
                       null, null, null, null,
                       "#ARGUMENT(CREATE,EXTERNAL)");
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+        pcsCaseService.retainEligibleDefendantSupport(eventPayload.caseReference(), caseData);
+        return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
