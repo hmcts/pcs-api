@@ -1655,6 +1655,8 @@ export class CreateCaseAction implements IAction {
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
         }
         break;
 
@@ -1691,6 +1693,15 @@ export class CreateCaseAction implements IAction {
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+
+    if (caseFile.allowEmptyFolder) {
+      if (fileCount > 0) {
+        throw new Error(
+          `Expected folder "${folderName}" to be empty, but found ${fileCount} file(s)`
+        );
+      }
+      return;
+    }
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);

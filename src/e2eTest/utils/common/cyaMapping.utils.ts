@@ -9,7 +9,6 @@ export const skipNormalization = new Set([
   'Email address (Optional)',
   'Email address',
   '.pdf',
-  // //'Do these documents relate to an existing application?'
 ]);
 
 export const ignoreAnswerInQuestions = [

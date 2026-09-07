@@ -244,7 +244,6 @@ export class PageContentValidation implements IValidation {
   }
 
   private async loadPageDataFile(fileName: string, page: Page, testTitle = ''): Promise<any> {
-    console.log('filename is :'+fileName);
     let filePath;
     if (page.url().includes("enforceTheOrder")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
