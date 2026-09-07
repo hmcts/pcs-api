@@ -158,7 +158,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.tab("paymentHistory", "Payment History")
             .forRoles(INTERNAL_TAB_ROLES)
-            .field(PCSCase::getLegislativeCountry)
             .field(PCSCase::getCasePaymentHistoryViewer);
 
         builder.tab("CaseHistory", "History")
