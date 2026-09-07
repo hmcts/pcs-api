@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -104,6 +105,17 @@ class OrganisationServiceTest {
 
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
         verify(organisationDetailsService).getOrganisationIdentifier(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null for the system user without calling rd-professional")
+    void getOrganisationIdForCurrentUser_ShouldReturnNullForSystemUser() {
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verifyNoInteractions(organisationDetailsService);
     }
 
     @Test
