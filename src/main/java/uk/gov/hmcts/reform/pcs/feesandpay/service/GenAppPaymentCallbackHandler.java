@@ -52,7 +52,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
     }
 
     private GenAppEntity findGenAppEntity(UUID genAppId) {
-        return genAppRepository.findByIdForUpdate(genAppId)
+        return genAppRepository.findById(genAppId)
             .orElseThrow(() -> new GenAppNotFoundException("Unable to find gen app with ID " + genAppId));
     }
 
