@@ -446,22 +446,28 @@ export class GenAppsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally — same leak as validateCYAForLR in documentsLR.action.ts, in a second copy of
+    // this function. On a CYA failure the throw skipped cyaMap.clear(), so the module-level
+    // map stayed populated and the next test on that worker compared against leftover rows.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
   }
 
   private async reviewCYA(page: Page, startPage: actionData) {
