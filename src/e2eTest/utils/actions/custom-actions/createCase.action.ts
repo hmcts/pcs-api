@@ -135,6 +135,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -162,6 +163,11 @@ export class CreateCaseAction implements IAction {
     await actionToPerform();
   }
 
+  private async selectAnEvent(event: actionRecord) {
+    await performAction('select', caseSummary.nextStepEventList, event.eventType);
+    await performAction('clickButton', caseSummary.go);
+  }
+  
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);

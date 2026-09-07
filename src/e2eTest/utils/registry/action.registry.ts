@@ -25,7 +25,7 @@ import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-acti
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
 import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
-
+import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 
 
 
@@ -39,6 +39,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['selectAnEvent', new CreateCaseAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -196,6 +197,7 @@ export class ActionRegistry {
     ['selectAnEvent', new CreateCaseAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
+    ['selectRadioButtonInYourSupport', new YourSupportAction()],
   ]);
 
   static getAction(actionName: string): IAction {
