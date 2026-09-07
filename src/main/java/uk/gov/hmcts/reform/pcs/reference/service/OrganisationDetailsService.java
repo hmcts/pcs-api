@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
@@ -29,6 +30,52 @@ public class OrganisationDetailsService {
         this.rdProfessionalApi = rdProfessionalApi;
         this.authTokenGenerator = authTokenGenerator;
         this.prdAdminTokenProvider = prdAdminTokenProvider;
+    }
+
+    /** Retrieves organisation details for a given user ID. */
+    public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+        try {
+            return fetchOrganisationDetails(userId);
+        } catch (OrganisationDetailsException ex) {
+            return null;
+        }
+    }
+
+    /** The same lookup, but a failure is raised rather than reported as "no organisation". */
+    public String requireOrganisationIdentifier(String userId) {
+        OrganisationDetailsResponse details = fetchOrganisationDetails(userId);
+        if (nonNull(details)) {
+            return details.getOrganisationIdentifier();
+        }
+        return null;
+    }
+
+    private OrganisationDetailsResponse fetchOrganisationDetails(String userId) {
+        try {
+            String s2sToken = authTokenGenerator.generate();
+            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
+
+            OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
+                userId, s2sToken, prdAdminToken
+            );
+
+            if (details == null) {
+                log.warn("Organisation details response is null");
+            }
+
+            return details;
+
+        } catch (FeignException.NotFound ex) {
+            // Normal for citizens (no organisation), so not logged as an error.
+            log.debug("No organisation held in rd-professional");
+            return null;
+        } catch (FeignException ex) {
+            log.error("Feign error retrieving organisation details. Status: {}", ex.status(), ex);
+            throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
+        } catch (Exception ex) {
+            log.error("Unexpected error retrieving organisation details", ex);
+            throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
+        }
     }
 
     /** Organisation name for a user (claimant name population). */
@@ -89,33 +136,5 @@ public class OrganisationDetailsService {
             return details.getOrganisationIdentifier();
         }
         return null;
-    }
-
-    /** Retrieves organisation details for a given user ID. */
-    public OrganisationDetailsResponse getOrganisationDetails(String userId) {
-        try {
-            String s2sToken = authTokenGenerator.generate();
-            String prdAdminToken = prdAdminTokenProvider.getAuthToken();
-
-            OrganisationDetailsResponse details = rdProfessionalApi.getOrganisationDetails(
-                userId, s2sToken, prdAdminToken
-            );
-
-            if (details == null) {
-                log.warn("Organisation details response is null");
-            }
-            return details;
-
-        } catch (FeignException.NotFound ex) {
-            // Normal for citizens (no organisation), so not logged as an error.
-            log.debug("No organisation held in rd-professional");
-            return null;
-        } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details. Status: {}", ex.status(), ex);
-            return null;
-        } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details", ex);
-            return null;
-        }
     }
 }
