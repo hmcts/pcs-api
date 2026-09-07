@@ -90,6 +90,7 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> caseHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> hiddenTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> serviceRequestTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> paymentHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
@@ -116,6 +117,7 @@ class CaseTypeTest {
         when(builder.tab("CaseHistory", "History")).thenReturn(caseHistoryTabBuilder);
         when(builder.tab("hidden", "HiddenFields")).thenReturn(hiddenTabBuilder);
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
+        when(builder.tab("paymentHistory", "Payment History")).thenReturn(paymentHistoryTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
@@ -135,6 +137,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseHistoryTab = caseHistoryTabBuilder.build();
         final Tab<PCSCase, AccessProfile> hiddenTab = hiddenTabBuilder.build();
         final Tab<PCSCase, AccessProfile> serviceRequestTab = serviceRequestTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> paymentHistoryTab = paymentHistoryTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
@@ -227,6 +230,7 @@ class CaseTypeTest {
         when(builder.tab("CaseHistory", "History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("hidden", "HiddenFields")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("paymentHistory", "Payment History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

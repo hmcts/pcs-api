@@ -88,6 +88,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.CasePaymentHistoryViewer;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
@@ -668,6 +669,12 @@ public class PCSCase {
         access = {DocumentAccess.class}
     )
     private ComponentLauncher caseFileView;
+
+    @CCD(
+        typeOverride = CasePaymentHistoryViewer,
+        access = {InternalTabAccess.class}
+    )
+    private String casePaymentHistoryViewer;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;

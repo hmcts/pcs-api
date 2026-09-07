@@ -156,6 +156,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSummaryTab(builder);
 
+        builder.tab("paymentHistory", "Payment History")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .field(PCSCase::getLegislativeCountry)
+            .field(PCSCase::getCasePaymentHistoryViewer);
+
         builder.tab("CaseHistory", "History")
             .forRoles(INTERNAL_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
