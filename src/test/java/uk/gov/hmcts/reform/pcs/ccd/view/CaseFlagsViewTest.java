@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
@@ -20,24 +21,43 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CaseFlagsViewTest {
+
+    private static final UUID AUTHENTICATED_USER_ID = UUID.randomUUID();
+
+    @Mock
+    private PartySupportOwnershipResolver partySupportOwnershipResolver;
+
+    @Mock
+    private SecurityContextService securityContextService;
 
     private CaseFlagsView underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseFlagsView();
+        underTest = new CaseFlagsView(partySupportOwnershipResolver, securityContextService);
     }
 
     @Test
@@ -348,6 +368,7 @@ class CaseFlagsViewTest {
     void shouldMapPartySupportForClaimantAndDefendantParties() {
         PartyEntity claimantEntity = createPartyEntity(null);
         PartyEntity defendantEntity = createPartyEntity(null);
+        authenticatedUserRepresents(claimantEntity, defendantEntity);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(claimantEntity), mappedParty(defendantEntity)))
@@ -381,6 +402,7 @@ class CaseFlagsViewTest {
 
         PartyEntity claimantEntity = createPartyEntity(null);
         claimantEntity.setDefendantFlags(List.of(externalFlag));
+        authenticatedUserRepresents(claimantEntity);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(claimantEntity)))
@@ -401,37 +423,170 @@ class CaseFlagsViewTest {
     }
 
     @Test
-    void shouldExposeExternalSupportForEveryPartyRegardlessOfTheAuthenticatedUser() {
-        CasePartyFlagEntity claimantExternalFlag = createMockCasePartyFlagsEntity();
-        claimantExternalFlag.setVisibility("External");
-        claimantExternalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+    void shouldExposeOnlyClaimantSupportToAUserRepresentingTheClaimant() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(claimantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
 
-        CasePartyFlagEntity defendantExternalFlag = createMockCasePartyFlagsEntity();
-        defendantExternalFlag.setVisibility("External");
-        defendantExternalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0033", "Hearing loop"));
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
 
-        PartyEntity claimantEntity = createPartyEntity(null);
-        claimantEntity.setDefendantFlags(List.of(claimantExternalFlag));
-        PartyEntity defendantEntity = createPartyEntity(null);
-        defendantEntity.setDefendantFlags(List.of(defendantExternalFlag));
+        assertEquals(Set.of(claimantEntity.getId().toString()), supportPartyIds(pcsCase));
+        assertEquals(Set.of("RA0042"), supportFlagCodes(pcsCase));
+        assertFalse(supportFlagCodes(pcsCase).contains("RA0033"));
+    }
+
+    @Test
+    void shouldExposeOnlyDefendantSupportToAUserRepresentingTheDefendant() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(defendantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertEquals(Set.of(defendantEntity.getId().toString()), supportPartyIds(pcsCase));
+        assertEquals(Set.of("RA0033"), supportFlagCodes(pcsCase));
+        assertFalse(supportFlagCodes(pcsCase).contains("RA0042"));
+    }
+
+    @Test
+    void shouldExposeSupportForEveryRepresentedPartyWhenMoreThanOneIsRepresented() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(claimantEntity, defendantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertEquals(Set.of(claimantEntity.getId().toString(), defendantEntity.getId().toString()),
+                     supportPartyIds(pcsCase));
+        assertEquals(Set.of("RA0042", "RA0033"), supportFlagCodes(pcsCase));
+    }
+
+    @Test
+    void shouldExposeNoSupportToAUserRepresentingNeitherParty() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents();
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertTrue(pcsCase.getPartySupport().isEmpty());
+        assertTrue(supportFlagCodes(pcsCase).isEmpty());
+    }
+
+    @Test
+    void shouldExposeNoSupportWhenTheReadHasNoResolvableUser() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        when(securityContextService.getCurrentUserId()).thenReturn(null);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertTrue(pcsCase.getPartySupport().isEmpty());
+        verifyNoInteractions(partySupportOwnershipResolver);
+    }
+
+    @Test
+    void shouldExposeNoSupportWhenTheSecurityContextHasNoUser() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        when(securityContextService.getCurrentUserId())
+            .thenThrow(new SecurityContextException("No authentication instance found"));
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertTrue(pcsCase.getPartySupport().isEmpty());
+        verifyNoInteractions(partySupportOwnershipResolver);
+    }
+
+    @Test
+    void shouldExcludeInternalFlagsFromRepresentedPartySupport() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"),
+                                                     internalFlag("PF0007", "Vulnerable party"));
+        PartyEntity defendantEntity = partyWithSupport(internalFlag("PF0011", "Potentially violent person"));
+        authenticatedUserRepresents(claimantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertEquals(Set.of("RA0042"), supportFlagCodes(pcsCase));
+        assertFalse(supportFlagCodes(pcsCase).contains("PF0007"));
+        assertFalse(supportFlagCodes(pcsCase).contains("PF0011"));
+    }
+
+    @Test
+    void shouldExposeEveryExternalSupportTypeForARepresentedParty() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"),
+                                                     externalFlag("PF0015", "Language Interpreter"),
+                                                     externalFlag("SM0002", "Special measure"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"),
+                                                      externalFlag("PF0016", "Language Interpreter"),
+                                                      externalFlag("SM0003", "Special measure"));
+        authenticatedUserRepresents(claimantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertEquals(Set.of("RA0042", "PF0015", "SM0002"), supportFlagCodes(pcsCase));
+        assertFalse(supportFlagCodes(pcsCase).contains("RA0033"));
+        assertFalse(supportFlagCodes(pcsCase).contains("PF0016"));
+        assertFalse(supportFlagCodes(pcsCase).contains("SM0003"));
+    }
+
+    @Test
+    void shouldResolveRepresentedSupportByPartyIdRegardlessOfCollectionPosition() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(claimantEntity);
 
         PCSCase pcsCase = PCSCase.builder()
-            .parties(List.of(mappedParty(claimantEntity), mappedParty(defendantEntity)))
+            .parties(List.of(mappedParty(defendantEntity), mappedParty(claimantEntity)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(claimantEntity, defendantEntity)));
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(defendantEntity, claimantEntity)));
         setClaimParties(pcsCaseEntity,
-                        createClaimParty(claimantEntity, PartyRole.CLAIMANT),
-                        createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+                        createClaimParty(defendantEntity, PartyRole.DEFENDANT),
+                        createClaimParty(claimantEntity, PartyRole.CLAIMANT));
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
-        // Both sides' external support is present, so the tab stays complete and the count stays correct
-        assertEquals(2, pcsCase.getPartySupport().size());
-        assertEquals("RA0042", pcsCase.getPartySupport().getFirst()
-            .getValue().getSupportFlags().getDetails().getFirst().getValue().getFlagCode());
-        assertEquals("RA0033", pcsCase.getPartySupport().get(1)
-            .getValue().getSupportFlags().getDetails().getFirst().getValue().getFlagCode());
+        assertEquals(Set.of(claimantEntity.getId().toString()), supportPartyIds(pcsCase));
+        assertEquals(Set.of("RA0042"), supportFlagCodes(pcsCase));
+    }
+
+    @Test
+    void shouldExposeAnEmptySupportCollectionForARepresentedPartyWithNoSupport() {
+        PartyEntity claimantEntity = partyWithSupport();
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(claimantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        assertEquals(1, pcsCase.getPartySupport().size());
+        assertTrue(pcsCase.getPartySupport().getFirst().getValue().getSupportFlags().getDetails().isEmpty());
+        assertTrue(supportFlagCodes(pcsCase).isEmpty());
+    }
+
+    @Test
+    void shouldKeepInternalPartyFlagCollectionsCompleteForEveryParty() {
+        PartyEntity claimantEntity = partyWithSupport(externalFlag("RA0042", "Reasonable adjustment"));
+        PartyEntity defendantEntity = partyWithSupport(externalFlag("RA0033", "Hearing loop"));
+        authenticatedUserRepresents(claimantEntity);
+        PCSCase pcsCase = claimantAndDefendantCase(claimantEntity, defendantEntity);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntityFor(claimantEntity, defendantEntity));
+
+        Party mappedClaimant = findPartyById(pcsCase, claimantEntity.getId().toString());
+        Party mappedDefendant = findPartyById(pcsCase, defendantEntity.getId().toString());
+
+        assertEquals(1, mappedClaimant.getPartyFlagsExternal().getDetails().size());
+        assertEquals(1, mappedDefendant.getPartyFlagsExternal().getDetails().size());
     }
 
     /**
@@ -447,6 +602,7 @@ class CaseFlagsViewTest {
 
         PartyEntity claimantEntity = createPartyEntity(null);
         claimantEntity.setDefendantFlags(List.of(inactiveFlag));
+        authenticatedUserRepresents(claimantEntity);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(claimantEntity)))
@@ -486,6 +642,7 @@ class CaseFlagsViewTest {
             .id(UUID.randomUUID())
             .orgName("Anytown Housing Association")
             .build();
+        authenticatedUserRepresents(orgClaimant);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(orgClaimant)))
@@ -509,6 +666,7 @@ class CaseFlagsViewTest {
             .firstName("Peter")
             .lastName("Parker")
             .build();
+        authenticatedUserRepresents(individual);
 
         PCSCase pcsCase = PCSCase.builder()
             .parties(List.of(mappedParty(individual)))
@@ -583,6 +741,66 @@ class CaseFlagsViewTest {
         assertNull(noId.getValue().getPartyFlagsExternal());
         assertNull(malformedId.getValue().getPartyFlagsExternal());
         assertNotNull(findPartyById(pcsCase, defendantEntity.getId().toString()).getPartyFlagsExternal());
+    }
+
+    private PartyEntity partyWithSupport(CasePartyFlagEntity... flags) {
+        PartyEntity partyEntity = createPartyEntity(null);
+        partyEntity.setDefendantFlags(List.of(flags));
+
+        return partyEntity;
+    }
+
+    private PCSCase claimantAndDefendantCase(PartyEntity claimantEntity, PartyEntity defendantEntity) {
+        return PCSCase.builder()
+            .parties(List.of(mappedParty(claimantEntity), mappedParty(defendantEntity)))
+            .build();
+    }
+
+    private PcsCaseEntity pcsCaseEntityFor(PartyEntity claimantEntity, PartyEntity defendantEntity) {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(claimantEntity, defendantEntity)));
+        setClaimParties(pcsCaseEntity,
+                        createClaimParty(claimantEntity, PartyRole.CLAIMANT),
+                        createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        return pcsCaseEntity;
+    }
+
+    private void authenticatedUserRepresents(PartyEntity... representedParties) {
+        when(securityContextService.getCurrentUserId()).thenReturn(AUTHENTICATED_USER_ID);
+        when(partySupportOwnershipResolver.resolveRepresentedPartyIds(any(), eq(AUTHENTICATED_USER_ID)))
+            .thenReturn(Arrays.stream(representedParties)
+                            .map(PartyEntity::getId)
+                            .collect(Collectors.toSet()));
+    }
+
+    private Set<String> supportPartyIds(PCSCase pcsCase) {
+        return pcsCase.getPartySupport().stream()
+            .map(ListValue::getId)
+            .collect(Collectors.toSet());
+    }
+
+    private Set<String> supportFlagCodes(PCSCase pcsCase) {
+        return pcsCase.getPartySupport().stream()
+            .flatMap(support -> support.getValue().getSupportFlags().getDetails().stream())
+            .map(detail -> detail.getValue().getFlagCode())
+            .collect(Collectors.toSet());
+    }
+
+    private CasePartyFlagEntity externalFlag(String flagCode, String flagName) {
+        CasePartyFlagEntity flag = createMockCasePartyFlagsEntity();
+        flag.setVisibility("External");
+        flag.setFlagRefData(createMockRefDataFlagsEntity(flagCode, flagName));
+
+        return flag;
+    }
+
+    private CasePartyFlagEntity internalFlag(String flagCode, String flagName) {
+        CasePartyFlagEntity flag = createMockCasePartyFlagsEntity();
+        flag.setVisibility("Internal");
+        flag.setFlagRefData(createMockRefDataFlagsEntity(flagCode, flagName));
+
+        return flag;
     }
 
     private PartyEntity createPartyEntity(String orgName) {

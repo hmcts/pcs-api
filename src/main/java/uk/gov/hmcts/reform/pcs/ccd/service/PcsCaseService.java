@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -21,9 +23,12 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantSupportEligibilityResolver;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.Set;
 import java.util.Objects;
 
 @Service
@@ -43,6 +48,7 @@ public class PcsCaseService {
     private final PostCodeCourtService postCodeCourtService;
     private final LocationReferenceService locationReferenceService;
     private final SecurityContextService securityContextService;
+    private final DefendantSupportEligibilityResolver defendantSupportEligibilityResolver;
 
     public PcsCaseEntity createCase(long caseReference, AddressUK propertyAddress,
                                     LegislativeCountry legislativeCountry) {
@@ -104,8 +110,40 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
         if (pcsCase.getPartySupport() != null) {
-            caseFlagService.mergePartySupportFlags(pcsCase.getPartySupport(), pcsCaseEntity.getParties(),
-                                                  securityContextService.getCurrentUserId());
+            UUID authenticatedUserId = securityContextService.getCurrentUserId();
+            caseFlagService.mergePartySupportFlags(
+                pcsCase.getPartySupport(),
+                pcsCaseEntity.getParties(),
+                authenticatedUserId,
+                defendantSupportEligibilityResolver
+                    .resolveEligibleDefendantPartyIds(pcsCaseEntity, authenticatedUserId));
+        }
+    }
+
+    public void retainEligibleDefendantSupport(long caseReference, PCSCase pcsCase) {
+        List<ListValue<PartySupport>> partySupport = pcsCase.getPartySupport();
+        if (partySupport == null) {
+            return;
+        }
+
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+        Set<UUID> eligiblePartyIds = defendantSupportEligibilityResolver
+            .resolveEligibleDefendantPartyIds(pcsCaseEntity, securityContextService.getCurrentUserId());
+
+        pcsCase.setPartySupport(partySupport.stream()
+                                    .filter(listValue -> isEligible(listValue, eligiblePartyIds))
+                                    .toList());
+    }
+
+    private boolean isEligible(ListValue<PartySupport> listValue, Set<UUID> eligiblePartyIds) {
+        if (listValue.getId() == null) {
+            return false;
+        }
+
+        try {
+            return eligiblePartyIds.contains(UUID.fromString(listValue.getId()));
+        } catch (IllegalArgumentException ex) {
+            return false;
         }
     }
 
