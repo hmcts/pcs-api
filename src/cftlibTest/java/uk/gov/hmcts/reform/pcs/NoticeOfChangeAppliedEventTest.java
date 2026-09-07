@@ -202,13 +202,14 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         );
     }
 
-    private JsonNode indexedCase(long caseDataId) throws Exception {
-        String response = RestClient.create("http://localhost:9200")
+    // Read straight to JsonNode - reading a String trips HTTPCLIENT-2409 on the ES response
+    private JsonNode indexedCase(long caseDataId) {
+        JsonNode response = RestClient.create("http://localhost:9200")
             .get()
             .uri("/pcs_cases/_doc/{caseDataId}", caseDataId)
             .retrieve()
-            .body(String.class);
-        return objectMapper.readTree(response).path("_source");
+            .body(JsonNode.class);
+        return response.path("_source");
     }
 
     private boolean hasExpectedAccessGroup(JsonNode caseData) {
