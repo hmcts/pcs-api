@@ -13,16 +13,22 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +51,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACC
 @ExtendWith(MockitoExtension.class)
 class ClaimIssuePaymentTest extends BaseEventTest {
 
+    private static final Integer FEE_PAYMENT_ID = 42;
+
     @Mock
     private SchedulerClient schedulerClient;
 
@@ -65,6 +73,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         // Default: no defendants need a code (tests that schedule override this).
         lenient().when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(anyLong()))
             .thenReturn(List.of());
+        lenient().when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseWithClaimFeePayment());
     }
 
     @Test
@@ -82,6 +91,21 @@ class ClaimIssuePaymentTest extends BaseEventTest {
     }
 
     @Test
+    void shouldScheduleClaimIssuedNotificationWhenDateIssuedNotSet() {
+        callSubmitHandler(PCSCase.builder().build());
+
+        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(captor.capture());
+
+        SchedulableInstance<?> scheduled = captor.getValue();
+        assertThat(scheduled.getTaskInstance().getTaskName())
+            .isEqualTo(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR.getTaskName());
+        FeePaymentStatusChangeTaskData data =
+            (FeePaymentStatusChangeTaskData) scheduled.getTaskInstance().getData();
+        assertThat(data.getFeePaymentId()).isEqualTo(FEE_PAYMENT_ID);
+    }
+
+    @Test
     void shouldScheduleOneAccessCodeLetterTaskPerDefendantOnCaseIssued() {
         UUID defendantOne = UUID.fromString("11111111-1111-1111-1111-111111111111");
         UUID defendantTwo = UUID.fromString("22222222-2222-2222-2222-222222222222");
@@ -91,33 +115,50 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         callSubmitHandler(PCSCase.builder().build());
 
         ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
-        verify(schedulerClient, times(2)).scheduleIfNotExists(captor.capture());
+        verify(schedulerClient, times(3)).scheduleIfNotExists(captor.capture());
 
         List<SchedulableInstance<?>> scheduled = captor.getAllValues();
-        assertThat(scheduled).hasSize(2);
+        List<SchedulableInstance<?>> accessCodeTasks = scheduled.stream()
+            .filter(instance -> ACCESS_CODE_TASK_DESCRIPTOR.getTaskName()
+                .equals(instance.getTaskInstance().getTaskName()))
+            .toList();
+        assertThat(accessCodeTasks).hasSize(2);
 
-        // One task per defendant, instance keyed by caseRef:partyId, payload carrying both ids.
-        assertThat(scheduled).allSatisfy(instance ->
-            assertThat(instance.getTaskInstance().getTaskName())
-                .isEqualTo(ACCESS_CODE_TASK_DESCRIPTOR.getTaskName()));
-
-        assertThat(scheduled).extracting(instance -> instance.getTaskInstance().getId())
+        assertThat(accessCodeTasks).extracting(instance -> instance.getTaskInstance().getId())
             .containsExactlyInAnyOrder(
                 TEST_CASE_REFERENCE + ":" + defendantOne,
                 TEST_CASE_REFERENCE + ":" + defendantTwo);
 
-        assertThat(scheduled)
+        assertThat(accessCodeTasks)
             .extracting(instance -> (AccessCodeTaskData) instance.getTaskInstance().getData())
             .allSatisfy(data ->
                 assertThat(data.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE)))
             .extracting(AccessCodeTaskData::getDefendantPartyId)
             .containsExactlyInAnyOrder(defendantOne.toString(), defendantTwo.toString());
+
+        assertThat(scheduled)
+            .filteredOn(instance -> FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR
+                .getTaskName().equals(instance.getTaskInstance().getTaskName()))
+            .hasSize(1);
     }
 
     @Test
-    void shouldScheduleNoTasksWhenNoDefendantsNeedAccessCode() {
+    void shouldScheduleOnlyClaimIssuedNotificationWhenNoDefendantsNeedAccessCode() {
         when(defendantAccessCodeService.findDefendantPartyIdsNeedingAccessCode(TEST_CASE_REFERENCE))
             .thenReturn(List.of());
+
+        callSubmitHandler(PCSCase.builder().build());
+
+        verify(pcsCaseService).setCaseIssuedDate(TEST_CASE_REFERENCE);
+        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(captor.capture());
+        assertThat(captor.getValue().getTaskInstance().getTaskName())
+            .isEqualTo(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR.getTaskName());
+    }
+
+    @Test
+    void shouldSkipClaimIssuedNotificationWhenNoClaimFeePaymentFound() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseWithoutFeePayments());
 
         callSubmitHandler(PCSCase.builder().build());
 
@@ -134,6 +175,7 @@ class ClaimIssuePaymentTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         verify(pcsCaseService, never()).setCaseIssuedDate(TEST_CASE_REFERENCE);
+        verify(pcsCaseService, never()).loadCase(anyLong());
         verify(schedulerClient, never()).scheduleIfNotExists(any());
     }
 
@@ -157,5 +199,32 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(claimFormScheduler).scheduleClaimFormGeneration(anyLong());
+    }
+
+    private PcsCaseEntity pcsCaseWithClaimFeePayment() {
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setFeePayments(new ArrayList<>(List.of(
+            FeePaymentEntity.builder()
+                .id(FEE_PAYMENT_ID)
+                .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
+                .build()
+        )));
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        pcsCaseEntity.setClaims(new ArrayList<>(List.of(claimEntity)));
+        return pcsCaseEntity;
+    }
+
+    private PcsCaseEntity pcsCaseWithoutFeePayments() {
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setFeePayments(new ArrayList<>());
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        pcsCaseEntity.setClaims(new ArrayList<>(List.of(claimEntity)));
+        return pcsCaseEntity;
     }
 }

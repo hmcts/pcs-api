@@ -2,14 +2,10 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
-import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
-import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,9 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
-import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -49,7 +43,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private static final String CCD_CASE_NUMBER = "1111-2222-3333-4444";
     private static final String RESPONSIBLE_PARTY = "Claimant Org Ltd";
     private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
-    private static final Integer FEE_PAYMENT_ID = 42;
 
     @Mock
     private CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
@@ -57,8 +50,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
     private PartyService partyService;
     @Mock
     private ObjectMapper objectMapper;
-    @Mock
-    private SchedulerClient schedulerClient;
 
     @InjectMocks
     private MakeAClaimPaymentCallbackHandler underTest;
@@ -77,13 +68,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         ClaimEntity claimEntity = new ClaimEntity();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().caseReference(taskData.getCaseReference()).build();
         claimEntity.setPcsCase(pcsCase);
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .id(FEE_PAYMENT_ID)
-            .claim(claimEntity)
-            .taskData(taskDataJson)
-            .paymentStatus(paymentStatus)
-            .paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM)
-            .build();
+        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().claim(claimEntity).taskData(taskDataJson)
+            .paymentStatus(paymentStatus).paymentCallbackHandlerType(PaymentCallbackHandlerType.CLAIM).build();
         PaymentStatusCallback callback = PaymentStatusCallback.builder().ccdCaseNumber(CCD_CASE_NUMBER).build();
 
         // When
@@ -93,20 +79,8 @@ class MakeAClaimPaymentCallbackHandlerTest {
         assertThat(feePaymentEntity.getParty()).isSameAs(partyEntity);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
             verify(ccdPaymentStateUpdateService).submitPaymentSuccess(taskData.getCaseReference());
-
-            ArgumentCaptor<SchedulableInstance<?>> taskInstanceCaptor =
-                ArgumentCaptor.forClass(SchedulableInstance.class);
-            verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
-
-            SchedulableInstance<?> schedulableInstance = taskInstanceCaptor.getValue();
-            assertThat(schedulableInstance.getTaskName())
-                .isEqualTo(FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR.getTaskName());
-            TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
-            FeePaymentStatusChangeTaskData data = (FeePaymentStatusChangeTaskData) taskInstance.getData();
-            assertThat(data.getFeePaymentId()).isEqualTo(FEE_PAYMENT_ID);
         } else {
             verifyNoInteractions(ccdPaymentStateUpdateService);
-            verifyNoInteractions(schedulerClient);
         }
     }
 
@@ -125,7 +99,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
             .isThrownBy(() -> underTest.handle(callback, feePaymentEntity))
             .withMessageContaining("Unable to process");
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(schedulerClient);
     }
 
     @Test
@@ -150,7 +123,6 @@ class MakeAClaimPaymentCallbackHandlerTest {
         // Then
         assertThat(throwable).isEqualTo(expectedException);
         verifyNoInteractions(ccdPaymentStateUpdateService);
-        verifyNoInteractions(schedulerClient);
     }
 
     private FeesAndPayTaskData buildTaskData() {
