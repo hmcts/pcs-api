@@ -18,7 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Covers the join between the view layer and Review Support Request. The service is exercised on the
@@ -51,7 +54,8 @@ class ReviewSupportRequestFlowTest {
 
     @BeforeEach
     void setUp() {
-        caseFlagsView = new CaseFlagsView();
+        caseFlagsView = new CaseFlagsView(mock(PartySupportOwnershipResolver.class),
+                                          mock(SecurityContextService.class));
         supportReviewService = new SupportReviewService();
         claimant = party("Possession Claims Solicitor Org", null, null);
         defendant = party(null, "testing", "CR TEST1");
@@ -84,8 +88,8 @@ class ReviewSupportRequestFlowTest {
     }
 
     @Test
-    @DisplayName("offers requested support raised by the claimant as well as the defendant")
-    void offersRequestedSupportForEveryPartyRole() {
+    @DisplayName("offers requested support raised by the defendant only")
+    void offersRequestedSupportForDefendantPartiesOnly() {
         claimant.setDefendantFlags(new ArrayList<>(List.of(
             supportFlag("SM0004", "Evidence given in private", "Requested", FlagVisibility.EXTERNAL))));
         defendant.setDefendantFlags(new ArrayList<>(List.of(
@@ -96,7 +100,7 @@ class ReviewSupportRequestFlowTest {
 
         assertThat(reviewFlags)
             .extracting(entry -> entry.getValue().getSupportFlags().getRoleOnCase())
-            .containsExactlyInAnyOrder("Claimant", "Defendant");
+            .containsExactly("Defendant");
     }
 
     /**
