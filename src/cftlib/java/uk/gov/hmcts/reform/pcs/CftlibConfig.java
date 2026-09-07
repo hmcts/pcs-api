@@ -7,6 +7,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
@@ -75,6 +76,11 @@ public class CftlibConfig implements CFTLibConfigurer {
         List<String> roleNames = Arrays.stream(UserRole.values())
             .map(UserRole::getRole)
             .collect(toCollection(ArrayList::new));
+
+        Arrays.stream(AccessProfile.values())
+            .map(AccessProfile::getRole)
+            .filter(role -> !roleNames.contains(role))
+            .forEach(roleNames::add);
 
         roleNames.add("caseworker");
         roleNames.add("caseworker-ras-validation");

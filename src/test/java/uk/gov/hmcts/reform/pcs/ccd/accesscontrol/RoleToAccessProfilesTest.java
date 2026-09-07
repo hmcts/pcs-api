@@ -45,7 +45,7 @@ class RoleToAccessProfilesTest {
     @Test
     void shouldRegisterAccessProfileForEveryUserRole() {
         when(configBuilder.caseRoleToAccessProfile(any())).thenReturn(accessProfileBuilder);
-        when(accessProfileBuilder.accessProfiles(any(String.class))).thenReturn(accessProfileBuilder);
+        when(accessProfileBuilder.accessProfiles(any(String[].class))).thenReturn(accessProfileBuilder);
         underTest.configure(configBuilder);
         stream(UserRole.values()).forEach(userRole -> {
             String expectedExternalRole = ExternalUserRole.forCcdRole(userRole).getRole();
@@ -62,7 +62,11 @@ class RoleToAccessProfilesTest {
         assertThat(UserRole.CTSC_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.CTSC_ADMIN.getRole());
         assertThat(UserRole.HEARING_CENTRE_TEAM_LEADER.getAccessProfiles())
             .containsExactly(AccessProfile.HEARING_CENTRE_ADMIN.getRole());
-        assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(AccessProfile.WLU_ADMIN.getRole());
+        assertThat(UserRole.WLU_TEAM_LEADER.getAccessProfiles()).containsExactly(
+            AccessProfile.WLU_ADMIN.getRole(),
+            AccessProfile.CIVIL_CASEWORKER.getRole(),
+            AccessProfile.PAYMENTS.getRole()
+        );
     }
 
     /**

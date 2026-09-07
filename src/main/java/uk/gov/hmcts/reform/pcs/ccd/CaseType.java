@@ -34,28 +34,31 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.DEFENDANT,
         AccessProfile.GA_DEFENDANT_SOLICITOR,
         AccessProfile.CLAIMANT,
-        AccessProfile.PCS_SOLICITOR,
+        AccessProfile.CIVIL_CASEWORKER,
+        AccessProfile.CIVIL_CASEWORKER_STAFF,
+        AccessProfile.PAYMENTS,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
-        AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.CTSC_ADMIN
     };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
-        AccessProfile.JUDGE,
+        AccessProfile.CIVIL_CASEWORKER,
+        AccessProfile.CIVIL_CASEWORKER_STAFF,
+        AccessProfile.PAYMENTS,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN,
-        AccessProfile.WLU_ADMIN
+        AccessProfile.CTSC_ADMIN
     };
 
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
-        AccessProfile.JUDGE,
+        AccessProfile.CIVIL_CASEWORKER,
+        AccessProfile.CIVIL_CASEWORKER_STAFF,
+        AccessProfile.PAYMENTS,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
@@ -172,6 +175,26 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+
+        /* 
+        this doesnt work as tabs are not coming from this project
+        builder.tab("Tasks", "Tasks")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field("tasks");
+
+            builder.tab("Roles and Access", "Roles and Access")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field("RolesAndAccess");
+            
+            builder.tab("Payment History", "Payment History")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field("PaymentHistory");
+            
+            */    
 
         buildCaseNotesTab(builder);
 
