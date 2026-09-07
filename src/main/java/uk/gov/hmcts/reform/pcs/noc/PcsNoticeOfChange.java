@@ -209,9 +209,10 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private String taskId(NocAccessChangeTaskData change) {
-        return "noc-%s-%s".formatted(
+        return "noc-%s-%s-%s".formatted(
             change.getCaseReference(),
-            change.getUserId()
+            change.getUserId(),
+            change.getPartyId()
         );
     }
 

@@ -834,7 +834,7 @@ public class PcsNoticeOfChangeTest {
     }
 
     @Test
-    void submit_CarriesActingUserEmailIntoTaskDataAndKeysTaskByCaseAndUser() {
+    void submit_CarriesActingUserEmailIntoTaskDataAndKeysTaskByCaseUserAndParty() {
         // given
         String firstName = "Dan";
         String lastName = "Tester";
@@ -869,9 +869,59 @@ public class PcsNoticeOfChangeTest {
         verify(schedulerClient).scheduleIfNotExists(captor.capture());
         TaskInstance<?> taskInstance = captor.getValue().getTaskInstance();
 
-        assertThat(taskInstance.getId()).isEqualTo("noc-" + TEST_CASE_REFERENCE + "-" + userId);
+        assertThat(taskInstance.getId()).isEqualTo("noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + party.getId());
         assertThat(((NocAccessChangeTaskData) taskInstance.getData()).getEmail())
             .isEqualTo("solicitor@new-firm.example");
+    }
+
+    @Test
+    void submit_ForASecondDefendantSchedulesADistinctTaskInsteadOfDeduping() {
+        // given - one case, two defendants, the same solicitor takes each on in turn
+        PartyEntity firstDefendant = defendantParty("Amy", "Arrears");
+        PartyEntity secondDefendant = defendantParty("Ben", "Backrent");
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(firstDefendant, secondDefendant))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+
+        // when
+        pcsNoticeOfChange.submit(nocSubmitContext, answersFor("Amy", "Arrears"));
+        pcsNoticeOfChange.submit(nocSubmitContext, answersFor("Ben", "Backrent"));
+
+        // then - the task id is keyed by party, so the second NoC is not deduped away by scheduleIfNotExists
+        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient, times(2)).scheduleIfNotExists(captor.capture());
+        List<String> taskIds = captor.getAllValues().stream()
+            .map(instance -> instance.getTaskInstance().getId())
+            .toList();
+
+        assertThat(taskIds).containsExactly(
+            "noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + firstDefendant.getId(),
+            "noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + secondDefendant.getId()
+        );
+    }
+
+    private PartyEntity defendantParty(String firstName, String lastName) {
+        return PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+    }
+
+    private NocAnswersRequest answersFor(String firstName, String lastName) {
+        return new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", firstName),
+                    new NocAnswer("pcs-defendant-last-name", lastName)));
     }
 
     @Test
