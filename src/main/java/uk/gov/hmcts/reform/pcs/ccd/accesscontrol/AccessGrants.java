@@ -10,6 +10,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
@@ -17,10 +19,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
 final class AccessGrants {
 
@@ -81,6 +85,28 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {
         return internalReadAccess();
+    }
+
+    static SetMultimap<HasRole, Permission> paymentHistoryReadAccess() {
+        
+        SetMultimap<HasRole, Permission> grants = HashMultimap.create();
+        grants.put(CREATOR, Permission.R);
+        grants.put(CLAIMANT, Permission.R);
+        grants.put(DEFENDANT, Permission.R);
+        grants.put(DEFENDANT_SOLICITOR, Permission.R);
+        grants.put(CLAIMANT_SOLICITOR, Permission.R);
+        grants.put(JUDGE, Permission.R);
+        grants.put(FEE_PAID_JUDGE, Permission.R);
+        grants.put(CIRCUIT_JUDGE, Permission.R);
+        grants.put(LEADERSHIP_JUDGE, Permission.R);
+        grants.put(HEARING_CENTRE_TEAM_LEADER, Permission.R);
+        grants.put(HEARING_CENTRE_ADMIN, Permission.R);
+        grants.put(CTSC_TEAM_LEADER, Permission.R);
+        grants.put(CTSC_ADMIN, Permission.R);
+        grants.put(WLU_TEAM_LEADER, Permission.R);
+        grants.put(WLU_ADMIN, Permission.R);
+        return grants;
+
     }
 
     private static SetMultimap<HasRole, Permission> readAccess(UserRole... roles) {

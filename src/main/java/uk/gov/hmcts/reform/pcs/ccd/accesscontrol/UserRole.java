@@ -10,9 +10,6 @@ import java.util.Set;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.GS_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CIVIL_CASEWORKER;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.CIVIL_CASEWORKER_STAFF;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile.PAYMENTS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.IDAM;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.RAS;
 
@@ -31,9 +28,7 @@ public enum UserRole implements HasRole {
     DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
-
-    // remove the civil and payments access role before merging, just here for testing purposes
-    PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM, CIVIL_CASEWORKER, CIVIL_CASEWORKER_STAFF, PAYMENTS),
+    PCS_SOLICITOR("caseworker-pcs-solicitor", CRU, IDAM),
 
     CLAIMANT("claimant", CRU, RAS),
     GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, RAS),
@@ -49,13 +44,12 @@ public enum UserRole implements HasRole {
     HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU, RAS,
                                AccessProfile.HEARING_CENTRE_ADMIN),
     HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU, RAS),
-    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN,
-        AccessProfile.CIVIL_CASEWORKER, AccessProfile.PAYMENTS),
-    WLU_ADMIN("wlu-admin", Permission.CRU, RAS, CIVIL_CASEWORKER, PAYMENTS),
+    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU, RAS, AccessProfile.WLU_ADMIN),
+    WLU_ADMIN("wlu-admin", Permission.CRU, RAS),
     FEE_PAID_JUDGE("fee-paid-judge", Set.of(R), RAS),
     LEADERSHIP_JUDGE("leadership-judge", Set.of(R), RAS),
     CIRCUIT_JUDGE("circuit-judge", Set.of(R), RAS),
-    JUDGE("judge", Set.of(R), RAS, CIVIL_CASEWORKER, CIVIL_CASEWORKER_STAFF, PAYMENTS),
+    JUDGE("judge", Set.of(R), RAS),
     SYSTEM_USER("pcs-system-update", Permission.CRU, IDAM),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", Permission.CRU, IDAM),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", Permission.CRU, IDAM);

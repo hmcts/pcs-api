@@ -34,31 +34,28 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.DEFENDANT,
         AccessProfile.GA_DEFENDANT_SOLICITOR,
         AccessProfile.CLAIMANT,
-        AccessProfile.CIVIL_CASEWORKER,
-        AccessProfile.CIVIL_CASEWORKER_STAFF,
-        AccessProfile.PAYMENTS,
+        AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
+        AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN
     };
     static final AccessProfile[] INTERNAL_TAB_ROLES = {
-        AccessProfile.CIVIL_CASEWORKER,
-        AccessProfile.CIVIL_CASEWORKER_STAFF,
-        AccessProfile.PAYMENTS,
+        AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
-        AccessProfile.CTSC_ADMIN
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN
     };
 
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
-        AccessProfile.CIVIL_CASEWORKER,
-        AccessProfile.CIVIL_CASEWORKER_STAFF,
-        AccessProfile.PAYMENTS,
+        AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
@@ -74,6 +71,23 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     };
 
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
+
+    static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
+        AccessProfile.CITIZEN,
+        AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR,
+        AccessProfile.CLAIMANT,
+        AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN
+    };
+	
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -176,26 +190,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
 
-
-        /* 
-        this doesnt work as tabs are not coming from this project
-        builder.tab("Tasks", "Tasks")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .field("tasks");
-
-            builder.tab("Roles and Access", "Roles and Access")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .field("RolesAndAccess");
-            
-            builder.tab("Payment History", "Payment History")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .field("PaymentHistory");
-            
-            */    
-
         buildCaseNotesTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
@@ -210,6 +204,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
+
+        builder.tab("paymentHistory", "Payment History")
+            .forRoles(PAYMENT_HISTORY_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCasePaymentHistoryViewer);
 
         if (shutterService) {
             builder.shutterService();
