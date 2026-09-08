@@ -49,7 +49,7 @@ public class InternalOrgReferenceDataConsumerTest {
 
     private final RdProfessionalApi rdProfessionalApi;
 
-        @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
+    @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
     public V4Pact getOrganisationById(PactDslWithProvider builder) throws IOException {
         return builder
             .given("Organisation exists for given Id")
