@@ -70,8 +70,7 @@ test.afterEach(async () => {
 test.describe.skip('[Enforcement - Writ of Possession]', async () => {
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.writOfPossessionRadioOption,
@@ -171,8 +170,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
@@ -253,8 +251,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
   });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.writOfPossessionRadioOption,
@@ -336,8 +333,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
   });
 
   test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
@@ -363,8 +359,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
     },
   },
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,

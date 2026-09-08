@@ -58,8 +58,7 @@ test.afterEach(async () => {
 //So these tests won't be executed in preview
 test.describe('[Common Component Case Linking] @nightly @caseLinking', async () => {
   test('Case Linking', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.linkCaseEvent });
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
@@ -77,8 +76,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
     await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
     await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.manageCaseEvent });
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToUnLink.mainHeader);

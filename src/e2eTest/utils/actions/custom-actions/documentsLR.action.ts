@@ -10,7 +10,7 @@ import {performAction, performActions, performValidation} from '../../controller
 import { IAction, actionRecord } from '../../interfaces';
 import {uploadAdditionalDocumentsInformation} from "@data/page-data-figma/page-data-legalRepresentative";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
-import {VERY_LONG_TIMEOUT} from "../../../playwright.config";
+import {VERY_LONG_TIMEOUT, actionRetries, waitForPageRedirectionTimeout} from "../../../playwright.config";
 import {home} from "@data/page-data";
 import {caseInfo} from "@utils/actions/custom-actions/createCaseAPI.action";
 import {createCaseApiData} from "@data/api-data";
@@ -28,7 +28,7 @@ export const documentsAddressInfo = {
 export class DocumentsAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo()],
+      ['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo(page)],
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['retrieveCYATableDataLR', () => this.retrieveCYATableDataLR(page, fieldName as actionRecord)],
       ['validateCYAForLR', () => this.validateCYAForLR(page)],
@@ -47,8 +47,33 @@ export class DocumentsAction implements IAction {
     await actionToPerform();
   }
 
-  private async uploadAdditionalDocumentsInfo(): Promise<void> {
-    await performAction('clickButton', uploadAdditionalDocumentsInformation.continueButton);
+  private async uploadAdditionalDocumentsInfo(page: Page): Promise<void> {
+    // Verify Continue actually left this page, and retry it if not.
+    //
+    // This was a bare clickButton with nothing after it, and clickButton does not verify
+    // navigation — so a Continue that silently did nothing left the test on this page to fail at
+    // whatever it asserted next. documentsLR:119 hits two unverified transitions in a row (the
+    // event launch, now fixed via selectAnEvent, and this one) before its first assertion.
+    //
+    // Anchored on LEAVING this page rather than arriving at a named one, because the six callers
+    // do not agree on the destination: four expect 'Confirm if these documents relate to an
+    // application' and two expect 'Upload your documents'. Checking departure needs no caller
+    // changes and is correct for both.
+    //
+    // Bounded and non-fatal: if it never leaves, the caller's own mainHeader assertion reports the
+    // real problem against the page it expected.
+    const thisPage = page.locator('h1', { hasText: uploadAdditionalDocumentsInformation.mainHeader });
+    for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      await performAction('clickButton', uploadAdditionalDocumentsInformation.continueButton);
+      const left = await thisPage
+        .first()
+        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+      if (left) {
+        return;
+      }
+    }
   }
 
 

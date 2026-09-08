@@ -76,8 +76,7 @@ test.afterEach(async () => {
 test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
   test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,
@@ -170,8 +169,7 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
 
   test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectAnEvent', { eventType: caseSummary.enforceTheOrderEvent });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfRestitutionRadioOptionDynamic,

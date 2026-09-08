@@ -93,8 +93,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   },async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -117,8 +116,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
   });
 
   test('Upload documents when GenApps submitted - Single def @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -146,8 +144,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async ({page}) => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -180,8 +177,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performValidation('elementNotToBeVisible', {
@@ -196,8 +192,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
     await performAction('uploadFiles', {
@@ -217,8 +212,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
   });
 
   test('Upload documents when GenApps not submitted - Single def @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
     await performAction('uploadFiles', {
