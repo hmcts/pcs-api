@@ -141,6 +141,14 @@ class ReviewSupportRequestTest extends BaseEventTest {
             .containsExactly(Permission.R);
     }
 
+    @Test
+    void shouldNotAllowWelshLanguageUnitUsersToTriggerTheEvent() {
+        assertThat(configuredEvent.getGrants().get(UserRole.WLU_ADMIN))
+            .containsExactly(Permission.R);
+        assertThat(configuredEvent.getGrants().get(UserRole.WLU_TEAM_LEADER))
+            .containsExactly(Permission.R);
+    }
+
     private List<ListValue<FlagDetail>> createMixedStatusFlagDetails() {
 
         return List.of(

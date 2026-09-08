@@ -6,9 +6,7 @@ public final class SupportReviewRoles {
         UserRole.CTSC_TEAM_LEADER,
         UserRole.CTSC_ADMIN,
         UserRole.HEARING_CENTRE_TEAM_LEADER,
-        UserRole.HEARING_CENTRE_ADMIN,
-        UserRole.WLU_TEAM_LEADER,
-        UserRole.WLU_ADMIN
+        UserRole.HEARING_CENTRE_ADMIN
     };
 
     private SupportReviewRoles() {
