@@ -1,4 +1,5 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
+import type {BrowserContext} from '@playwright/test';
 import {chromium, expect} from '@playwright/test';
 import {user} from '@data/user-data';
 import * as path from 'path';
@@ -78,6 +79,8 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await page.waitForLoadState('load');
 
+    await presetCookieBannerForAllUsers(context, baseUrl);
+
     const cookies = await context.cookies();
     const authCookies = cookies.filter(c =>
       c.name.includes('auth') ||
@@ -108,6 +111,83 @@ async function authenticateAndSaveState(): Promise<string> {
   } finally {
     await browser.close();
   }
+}
+
+/**
+ * Pre-accepts XUI's cookie banner for every test user, so no test ever has to wait for it.
+ *
+ * XUI keys the banner off `hmcts-exui-cookies-${userId}-mc-accepted`
+ * (rpx-xui-webapp app.component.ts:185, where userId is `userInfo.id ?? userInfo.uid`). Because
+ * the name embeds the user id, the storage state saved above only suppresses the banner for the
+ * one user this setup logs in as — every other user still meets it, which is why
+ * dismissCookieBanner is called in most specs and why one run logged 8 presence-check misses.
+ *
+ * Resolving the ids is cheap: the suite already queries IDAM testing-support by email.
+ *
+ * Deliberately non-fatal. If an id cannot be resolved the banner simply still appears for that
+ * user and dismissCookieBanner handles it as before — this is an optimisation, and it must not
+ * be able to fail the whole run. Each resolution is logged so a silent no-op is visible rather
+ * than looking like success.
+ */
+async function presetCookieBannerForAllUsers(context: BrowserContext, baseUrl: string): Promise<void> {
+  const emails = [...new Set(Object.values(user)
+    .map(u => (u as { email?: string })?.email)
+    .filter((e): e is string => typeof e === 'string' && e.length > 0))];
+
+  const domain = new URL(baseUrl).hostname;
+  const expires = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365;
+  const resolved: string[] = [];
+  const unresolved: string[] = [];
+
+  for (const email of emails) {
+    try {
+      const id = await resolveIdamUserId(email);
+      if (!id) {
+        unresolved.push(email);
+        continue;
+      }
+      await context.addCookies([{
+        name: `hmcts-exui-cookies-${id}-mc-accepted`,
+        value: 'true',
+        domain,
+        path: '/',
+        expires,
+      }]);
+      resolved.push(email);
+    } catch (err) {
+      unresolved.push(`${email} (${err instanceof Error ? err.message : err})`);
+    }
+  }
+
+  console.log(`[cookie-preset] pre-accepted the XUI banner for ${resolved.length}/${emails.length} users on ${domain}`);
+  if (unresolved.length) {
+    console.warn(`[cookie-preset] could not resolve: ${unresolved.join(', ')} — those users will still see the banner`);
+  }
+}
+
+/**
+ * Returns the IDAM user id for an email, or null.
+ *
+ * Handles both response shapes because the endpoint's contract is not obvious from the existing
+ * callers: fetchCurrentUserAPI reads `.data.displayName` as if it were an object, but an
+ * `?email=` query can equally return an array. Accepting both means a shape change surfaces as
+ * an unresolved user in the log rather than a silently wrong cookie name.
+ */
+async function resolveIdamUserId(email: string): Promise<string | null> {
+  const base = process.env.IDAM_TESTING_SUPPORT_URL;
+  if (!base || !process.env.BEARER_TOKEN) {
+    return null;
+  }
+  const response = await fetch(`${base}/test/idam/users?email=${encodeURIComponent(email)}`, {
+    headers: { Authorization: `Bearer ${process.env.BEARER_TOKEN}`, Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    return null;
+  }
+  const body = await response.json() as unknown;
+  const record = Array.isArray(body) ? body[0] : body;
+  const id = (record as { id?: string; uid?: string } | undefined);
+  return id?.id ?? id?.uid ?? null;
 }
 
 export const getS2SToken = async (): Promise<void> => {
