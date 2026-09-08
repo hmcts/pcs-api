@@ -106,8 +106,6 @@ class StartHandlerTest {
 
         PartyEntity claimant1Party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity defendant4Party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        when(partyService.getPartyLabel(mainClaim, claimant1Party.getId())).thenReturn("Claimant 1 Label");
-        when(partyService.getPartyLabel(mainClaim, defendant4Party.getId())).thenReturn("Defendant 1 Label");
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
         counterClaimEntity1.setRank(1);

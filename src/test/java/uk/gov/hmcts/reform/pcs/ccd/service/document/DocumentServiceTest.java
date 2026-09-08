@@ -1407,7 +1407,7 @@ class DocumentServiceTest {
     @Test
     void shouldSaveCounterClaimDocuments() {
         // Given
-        UUID partyId = UUID.randomUUID();
+        final UUID partyId = UUID.randomUUID();
         ClaimEntity claim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
         pcsCase.addClaim(claim);
@@ -1501,7 +1501,7 @@ class DocumentServiceTest {
     @Test
     void shouldFilterOutNullValuesFromCounterClaimDocuments() {
         // Given
-        UUID partyId = UUID.randomUUID();
+        final UUID partyId = UUID.randomUUID();
         ClaimEntity claim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
         pcsCase.addClaim(claim);
