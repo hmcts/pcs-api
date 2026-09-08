@@ -1,8 +1,9 @@
 -- HDPI-8449: corrected pilot postcode to court mapping, from the amended mapping file
--- on the ticket (2026-09-02), validated with tools/postcode-to-epims. The list is
--- inclusive (outward codes, sectors and full postcodes; longest active match wins).
+-- on the ticket (2026-09-02), validated with tools/postcode-to-epims; one row (W12OEB,
+-- a letter-O typo of W120EB) dropped per the data owner. The list is inclusive
+-- (outward codes, sectors and full postcodes; longest active match wins).
 -- Only the four pilot courts' rows are replaced; e2e fixtures and other courts' rows
--- are untouched, so existing environments (aat/demo/perftest/ithc) are unaffected.
+-- are untouched, so existing test data in aat/demo/perftest/ithc is unaffected.
 
 -- Clear the four pilot courts' rows; the list below fully replaces them. The one row
 -- kept is the CF116QX -> 366572 repoint (HDPI-5819 Wales e2e postcode).
