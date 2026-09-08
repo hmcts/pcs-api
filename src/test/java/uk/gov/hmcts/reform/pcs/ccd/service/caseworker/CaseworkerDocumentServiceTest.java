@@ -355,9 +355,10 @@ class CaseworkerDocumentServiceTest {
                 = dynamicStringListWithSelection(COUNTERCLAIM_ID_PREFIX + ":" + SELECTED_COUNTERCLAIM_ID);
 
             CounterClaimEntity counterClaimEntity = mock(CounterClaimEntity.class);
+            when(counterClaimEntity.getRank()).thenReturn(1);
 
             when(counterClaimRepository.getReferenceById(SELECTED_COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-            when(documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, SELECTED_PARTY_ID))
+            when(documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, SELECTED_PARTY_ID, 1))
                 .thenReturn(modifiedFilenameForCounterclaim);
 
             CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
@@ -391,13 +392,14 @@ class CaseworkerDocumentServiceTest {
                 = dynamicStringListWithSelection(COUNTERCLAIM_ID_PREFIX + ":" + SELECTED_COUNTERCLAIM_ID);
 
             CounterClaimEntity counterClaimEntity = mock(CounterClaimEntity.class);
+            when(counterClaimEntity.getRank()).thenReturn(1);
 
             LocalDate documentIssueDate = mock(LocalDate.class);
             when(documentNameService.appendDate(originalFilename, documentIssueDate))
                 .thenReturn(filenameWithDate);
 
             when(counterClaimRepository.getReferenceById(SELECTED_COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-            when(documentNameService.appendCounterClaimPostfix(filenameWithDate, mainClaim, SELECTED_PARTY_ID))
+            when(documentNameService.appendCounterClaimPostfix(filenameWithDate, mainClaim, SELECTED_PARTY_ID, 1))
                 .thenReturn(modifiedFilenameForCounterclaim);
 
             CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
