@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
@@ -120,13 +121,14 @@ class DocumentNameServiceTest {
                                                    String expectedFilename) {
         // Given
         UUID partyId = UUID.randomUUID();
-        int counterClaimRank = 1;
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getRank()).thenReturn(1);
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
 
         // When
         String updatedFilename
-            = underTest.appendCounterClaimPostfix(originalFilename, mainClaim, partyId, counterClaimRank);
+            = underTest.appendCounterClaimPostfix(originalFilename, counterClaim, mainClaim, partyId);
 
         // Then
         assertThat(updatedFilename).isEqualTo(expectedFilename);
@@ -220,11 +222,13 @@ class DocumentNameServiceTest {
     void shouldThrowPartyNotFoundExceptionWhenPartyNotInClaimForCounterClaim() {
         PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
         UUID partyId = UUID.randomUUID();
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getRank()).thenReturn(1);
 
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         when(partyService.getPartyLabel(mainClaim, partyId)).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", mainClaim, partyId, 1))
+        assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", counterClaim, mainClaim, partyId))
             .isEqualTo(expectedException);
     }
 }

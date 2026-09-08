@@ -358,7 +358,7 @@ class CaseworkerDocumentServiceTest {
             when(counterClaimEntity.getRank()).thenReturn(1);
 
             when(counterClaimRepository.getReferenceById(SELECTED_COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-            when(documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, SELECTED_PARTY_ID, 1))
+            when(documentNameService.appendCounterClaimPostfix(originalFilename, counterClaimEntity, mainClaim, SELECTED_PARTY_ID))
                 .thenReturn(modifiedFilenameForCounterclaim);
 
             CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
@@ -399,7 +399,7 @@ class CaseworkerDocumentServiceTest {
                 .thenReturn(filenameWithDate);
 
             when(counterClaimRepository.getReferenceById(SELECTED_COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-            when(documentNameService.appendCounterClaimPostfix(filenameWithDate, mainClaim, SELECTED_PARTY_ID, 1))
+            when(documentNameService.appendCounterClaimPostfix(filenameWithDate, counterClaimEntity, mainClaim, SELECTED_PARTY_ID))
                 .thenReturn(modifiedFilenameForCounterclaim);
 
             CaseworkerDocument caseworkerDocument = CaseworkerDocument.builder()
