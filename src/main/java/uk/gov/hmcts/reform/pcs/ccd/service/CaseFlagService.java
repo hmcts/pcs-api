@@ -51,6 +51,7 @@ public class CaseFlagService {
 
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
     private static final String ACTIVE_STATUS = "Active";
+    private static final String REQUESTED_STATUS = "Requested";
     private static final String RA_FLAG_CODE_PREFIX = "RA";
     private static final String SUPPORT_NOT_REPRESENTED_MESSAGE =
         "User cannot change support for this party on this case";
@@ -85,17 +86,19 @@ public class CaseFlagService {
             && !Objects.equals(incomingValue, existingValue);
     }
 
-    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
-        return Objects.equals(flagDetail.getStatus(), "Active");
-    }
-
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
-
-        return mergeFlagDetails(
+        List<CaseFlagEntity> mergedFlagDetails = mergeFlagDetails(
             incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
             CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD,
             pcsCaseEntity.getCaseFlags()
         );
+
+        createReviewCaseFlagRequestTask(
+            pcsCaseEntity.getCaseReference(),
+            getRequestedFlagNames(incomingCaseFlags.getDetails())
+        );
+
+        return mergedFlagDetails;
     }
 
     /**
@@ -123,6 +126,8 @@ public class CaseFlagService {
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
         }
+
+        createReviewCaseFlagRequestTask(caseReference, getRequestedFlagNames(reasonableAdjustmentDetails));
 
         List<String> activeFlags = reasonableAdjustmentDetails.stream()
             .map(ListValue::getValue)
@@ -163,6 +168,28 @@ public class CaseFlagService {
                 incomingParty.getPartyFlagsExternal(), partyEntity
             );
         }
+    }
+
+    private void createReviewCaseFlagRequestTask(Long caseReference, List<String> requestedFlags) {
+        if (caseReference == null || CollectionUtils.isEmpty(requestedFlags)) {
+            return;
+        }
+
+        String taskDescription = taskDescriptionService
+            .createReviewCaseFlagRequestDescription(caseReference, requestedFlags);
+        camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG_REQUEST, taskDescription);
+    }
+
+    private static List<String> getRequestedFlagNames(List<ListValue<FlagDetail>> details) {
+        if (CollectionUtils.isEmpty(details)) {
+            return List.of();
+        }
+
+        return details.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagRequested)
+            .map(FlagDetail::getName)
+            .toList();
     }
 
     private void mergePartyFlagCollections(Flags incomingInternalFlags, Flags incomingExternalFlags,
@@ -502,6 +529,19 @@ public class CaseFlagService {
             ));
     }
 
+    private static boolean isCaseFlagRequested(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), REQUESTED_STATUS);
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), ACTIVE_STATUS);
+    }
+
+    /**
+     * Whether the shared {@code flag_ref_data} row for a flag code may be rewritten from the incoming
+     * payload. Caseworker events own that reference data; party-supplied flags may only reference it,
+     * or create it where the code has not been seen before.
+     */
     private enum RefDataPolicy {
         UPDATE_FROM_PAYLOAD,
         CREATE_IF_ABSENT
