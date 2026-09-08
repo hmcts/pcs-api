@@ -797,7 +797,6 @@ WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
         ('W129SH', 268374, 'England', DATE '2022-01-01'),
         ('W129ST', 268374, 'England', DATE '2022-01-01'),
         ('W129UJ', 268374, 'England', DATE '2022-01-01'),
-        ('W12OEB', 268374, 'England', DATE '2022-01-01'),
         ('W130SE', 268374, 'England', DATE '2022-01-01'),
         ('W140', 268374, 'England', DATE '2022-01-01'),
         ('W148', 268374, 'England', DATE '2022-01-01'),
@@ -878,6 +877,6 @@ SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.e
 -- To check, before and after applying:
 --   SELECT epims_id, count(*) FROM postcode_court_mapping
 --   WHERE epims_id IN (88516, 197852, 268374, 366572) GROUP BY epims_id ORDER BY epims_id;
--- After: exactly 88516=123, 197852=119, 268374=506, 366572=84 (+1 on 366572 where the
+-- After: exactly 88516=123, 197852=119, 268374=505, 366572=84 (+1 on 366572 where the
 -- CF116QX repoint exists), every row audit-stamped change_reason HDPI-8449, and the four
 -- courts present in eligibility_whitelisted_epim. Rows for other epims_ids are unchanged.
