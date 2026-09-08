@@ -64,7 +64,8 @@ public class DocumentNameService {
         return filename;
     }
 
-    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId, int counterClaimRank) {
+    public String appendCounterClaimPostfix(
+            String originalFilename, ClaimEntity claim, UUID partyId, int counterClaimRank) {
         if (originalFilename == null) {
             return null;
         }
