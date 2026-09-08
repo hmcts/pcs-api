@@ -77,7 +77,8 @@ test.afterEach(async () => {
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Adjourn journey - Court hearing in 14 days[Yes] @regression @smoke', async () => {
-    await performAction('selectAnEvent', { eventType: caseSummary.makeAnApplication });
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+    await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
     await performAction('chooseAnApplication', {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
@@ -150,7 +151,8 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
 
 
 test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]', async () => {
-  await performAction('selectAnEvent', { eventType: caseSummary.makeAnApplication });
+  await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
+    await performAction('clickButton', caseSummary.go);
   await performValidation('mainHeader', chooseAnApplication.mainHeader);
   await performAction('chooseAnApplication', {
     question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
