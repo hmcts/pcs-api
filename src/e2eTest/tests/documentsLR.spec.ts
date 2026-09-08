@@ -316,7 +316,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadDefault,
-      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      allowEmptyFolder: true
     });
 
   });

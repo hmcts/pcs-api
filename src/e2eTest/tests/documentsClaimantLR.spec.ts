@@ -287,11 +287,6 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
   }));
 
   const cookies = await context.cookies();
-
-  console.log('Cookies:', cookies.length);
-  console.log('Local storage length:', storageInfo.localStorageLength);
-  console.log('Session storage length:', storageInfo.sessionStorageLength);
-
   expect(cookies, 'Checking if all the cookies have cleared').toHaveLength(0);
   expect(storageInfo.localStorageLength, 'Checking if local storage have cleared').toBe(0);
   expect(storageInfo.sessionStorageLength, 'Checking if session storage have cleared').toBe(0);

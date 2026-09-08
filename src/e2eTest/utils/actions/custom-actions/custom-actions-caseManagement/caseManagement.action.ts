@@ -81,6 +81,7 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
+      ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -144,15 +145,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    const userInput =
-      typeof reviewDateData.input === 'number'
-        ? generateRandomString(reviewDateData.input)
-        : (reviewDateData.input as string);
-    let date = CaseManagementCommonUtils.getRandomDate(reviewDateData.dateType as string);
-    await performActions('Date of Review',
-      ['inputText', reviewDateData.day, date.split('/')[0]],
-      ['inputText', reviewDateData.month, date.split('/')[1]],
-      ['inputText', reviewDateData.year, date.split('/')[2]]);
+    await performAction('inputDate', reviewDateData.reviewDateLabel as string, reviewDateData.date);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
     await performAction('reTryOnCallBackError', addReviewDates.continueButton, reviewDateData.nextPage as string);
@@ -1067,7 +1060,7 @@ export class CaseManagementAction implements IAction {
         const keyText = (await keyQns.first().innerText()).trim();
         let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
 
-        if (keyText === "Created on") {
+        if (keyText === "Created on" || keyText === "Created date") {
           valText = valText.replace(/:\d{2} /, " ");
         }
 
@@ -1083,5 +1076,39 @@ export class CaseManagementAction implements IAction {
     let ct = await tdLocator.count();
     const locator = ct > 1 && index ? tdLocator.last() : tdLocator.first();
     return ((await locator.textContent()) || '').trim();
+  }
+
+  private async validateCaseNotesDetails(page: Page, caseNotes: actionRecord) {
+
+    const caseNote = new Map<string, string>();
+    caseNote.set(`Created by`, process.env.Display_NAME as string);
+    caseNote.set(`Created date`, caseNotes.createdDate as string);
+    caseNote.set(`Date of review`, caseNotes.reviewDate as string);
+    caseNote.set(`Reason`, caseNotes.reviewReason as string);
+    caseNote.set(`Description of review`, caseNotes.reviewDescription as string);
+
+    await this.caseTabTableData(page, caseNotes.table as string);
+
+    const misMatchMap = compareMaps(caseNote, caseTabMap, {
+      name1: 'CaseNote',
+      name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
   }
 }

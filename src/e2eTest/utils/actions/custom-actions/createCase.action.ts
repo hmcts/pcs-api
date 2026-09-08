@@ -2055,9 +2055,4 @@ export class CreateCaseAction implements IAction {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
   }
-
-  private async selectAnEvent(event: actionRecord) {
-      await performAction('select', caseSummary.nextStepEventList, event.eventType);
-      await performAction('clickButton', caseSummary.go);
-    }
 }
