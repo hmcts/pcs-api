@@ -136,7 +136,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(page, fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -162,9 +162,30 @@ export class CreateCaseAction implements IAction {
     await actionToPerform();
   }
 
-  private async selectAnEvent(event: actionRecord) {
+  private async selectAnEvent(page: Page, event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
-    await performAction('clickButton', caseSummary.go);
+
+    // There are TWO selectAnEvent implementations: this one, reached via action.registry.ts, and
+    // CaseManagementAction's, reached via action-caseManagement.registry.ts. #2648 fixed only the
+    // caseManagement copy, so specs importing from '@utils/controller' — the genApps and
+    // enforcement journeys — kept the unverified behaviour. Routing the inline launches here
+    // therefore gained them nothing until this copy was fixed too.
+    //
+    // Same check as the other copy: launching any event leaves case-details, so "still on Summary"
+    // is a reliable failure signal and needs no caller changes. Bounded and non-fatal — if it never
+    // leaves, the caller's own mainHeader assertion reports the real problem.
+    const summaryHeading = page.locator('h1', { hasText: home.caseSummary });
+    for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      await performAction('clickButton', caseSummary.go);
+      const left = await summaryHeading
+        .first()
+        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+      if (left) {
+        return;
+      }
+    }
   }
   
   private async housingPossessionClaim() {
