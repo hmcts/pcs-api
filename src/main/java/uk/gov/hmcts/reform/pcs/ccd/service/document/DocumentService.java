@@ -385,7 +385,7 @@ public class DocumentService {
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
                 .fileName(documentNameService.appendCounterClaimPostfix(
-                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                    ccDoc.getDocument().getFilename(), claim, party.getId(), counterClaim.getRank()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())

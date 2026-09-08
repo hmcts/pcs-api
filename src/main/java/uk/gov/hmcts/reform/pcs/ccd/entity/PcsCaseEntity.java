@@ -176,6 +176,8 @@ public class PcsCaseEntity {
     }
 
     public void addCounterClaim(CounterClaimEntity counterClaim) {
+        int rank = counterClaims.size() + 1;
+        counterClaim.setRank(rank);
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
     }
