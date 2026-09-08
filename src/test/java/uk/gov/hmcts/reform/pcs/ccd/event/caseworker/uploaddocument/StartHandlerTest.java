@@ -110,8 +110,11 @@ class StartHandlerTest {
         when(partyService.getPartyLabel(mainClaim, defendant4Party.getId())).thenReturn("Defendant 1 Label");
 
         CounterClaimEntity counterClaimEntity1 = createCounterClaimEntity(baseDateTime.minusDays(5), claimant1Party);
+        counterClaimEntity1.setRank(1);
         CounterClaimEntity counterClaimEntity2 = createCounterClaimEntity(baseDateTime.plusDays(5), defendant4Party);
+        counterClaimEntity2.setRank(2);
         CounterClaimEntity counterClaimEntity3 = createCounterClaimEntity(baseDateTime.plusDays(8), defendant4Party);
+        counterClaimEntity3.setRank(3);
         counterClaimEntity3.setStatus(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         CounterClaimEntity counterClaimEntity4 = createCounterClaimEntity(baseDateTime.plusDays(9), defendant4Party);
         counterClaimEntity4.setStatus(null);
@@ -139,8 +142,8 @@ class StartHandlerTest {
         assertThat(listItems).map(DynamicStringListElement::getLabel)
             .containsExactly(
                 "General Application GA2 - submitted 14 May 2026",
-                "Counter claim CC1 - submitted 12 May 2026",
-                "Counter claim CC1 - submitted 9 May 2026",
+                "Counter claim CC3 - submitted 12 May 2026",
+                "Counter claim CC2 - submitted 9 May 2026",
                 "General Application GA1 - submitted 4 May 2026",
                 "Counter claim CC1 - submitted 29 April 2026",
                 "Not related to an application or counterclaim"

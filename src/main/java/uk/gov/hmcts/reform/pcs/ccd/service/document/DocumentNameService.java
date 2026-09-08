@@ -64,21 +64,19 @@ public class DocumentNameService {
         return filename;
     }
 
-    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId) {
+    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId, int counterClaimRank) {
         if (originalFilename == null) {
             return null;
         }
 
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
+
+        // Example label: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        String filename = partyLabel != null ? baseName + " - " + partyLabel : baseName;
+        String filename = "%s CC%d".formatted(baseName, counterClaimRank);
 
-        if (!extension.isBlank()) {
-            filename += "." + extension;
-        }
-
-        return filename;
+        return buildFilename(filename, extension, partyLabel);
     }
 
     public String appendPartyPostfix(String originalFilename,

@@ -120,12 +120,13 @@ class DocumentNameServiceTest {
                                                    String expectedFilename) {
         // Given
         UUID partyId = UUID.randomUUID();
+        int counterClaimRank = 1;
         ClaimEntity mainClaim = mock(ClaimEntity.class);
         when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
 
         // When
         String updatedFilename
-            = underTest.appendCounterClaimPostfix(originalFilename, mainClaim, partyId);
+            = underTest.appendCounterClaimPostfix(originalFilename, mainClaim, partyId, counterClaimRank);
 
         // Then
         assertThat(updatedFilename).isEqualTo(expectedFilename);
@@ -135,10 +136,10 @@ class DocumentNameServiceTest {
         return Stream.of(
             // Original filename, party label, expected updated filename
             argumentSet("null filename", null, PARTY_LABEL, null),
-            argumentSet("no extension", "sample", PARTY_LABEL, "sample - %s".formatted(PARTY_LABEL)),
-            argumentSet("with extension", "sample.pdf", PARTY_LABEL, "sample - %s.pdf".formatted(PARTY_LABEL)),
-            argumentSet("no extension or party label", "sample", null, "sample"),
-            argumentSet("with extension but no party label", "sample.pdf", null, "sample.pdf")
+            argumentSet("no extension", "sample", PARTY_LABEL, "sample CC1 - %s".formatted(PARTY_LABEL)),
+            argumentSet("with extension", "sample.pdf", PARTY_LABEL, "sample CC1 - %s.pdf".formatted(PARTY_LABEL)),
+            argumentSet("no extension or party label", "sample", null, "sample CC1"),
+            argumentSet("with extension but no party label", "sample.pdf", null, "sample CC1.pdf")
         );
     }
 
@@ -223,7 +224,7 @@ class DocumentNameServiceTest {
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         when(partyService.getPartyLabel(mainClaim, partyId)).thenThrow(expectedException);
 
-        assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", mainClaim, partyId))
+        assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", mainClaim, partyId, 1))
             .isEqualTo(expectedException);
     }
 }

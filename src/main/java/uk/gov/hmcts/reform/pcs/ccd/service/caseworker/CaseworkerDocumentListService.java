@@ -195,10 +195,7 @@ public class CaseworkerDocumentListService {
                                                                PcsCaseEntity pcsCaseEntity) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
-                UUID counterclaimPartyId = counterClaimEntity.getParty().getId();
-                String partyLabel = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), counterclaimPartyId);
-
-                String displayLabel = "Counter claim %s".formatted(counterClaimReference(partyLabel));
+                String displayLabel = "Counter claim CC%d".formatted(counterClaimEntity.getRank());
 
                 LocalDateTime submittedDate = counterClaimEntity.getClaimSubmittedDate();
                 displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));
@@ -233,15 +230,6 @@ public class CaseworkerDocumentListService {
             .code(partyEntity.getId())
             .label(label)
             .build();
-    }
-
-    private static String counterClaimReference(String partyLabel) {
-        if (partyLabel == null) {
-            return "CC";
-        }
-
-        String rank = partyLabel.replaceAll("\\D+", "");
-        return rank.isBlank() ? "CC" : "CC" + rank;
     }
 
     @Builder
