@@ -529,6 +529,65 @@ class TaskDescriptionServiceTest {
     }
 
     @Nested
+    @DisplayName("Get description for Review Case Flag request task")
+    class ReviewCaseFlagRequestTests {
+
+        @Test
+        void shouldRenderTaskDescription() throws IOException {
+            // Given
+            List<String> flags = List.of("Flag 1", "Flag 2");
+
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag-request",
+                expectedRenderedContent
+            );
+
+            // When
+            String description = underTest
+                .createReviewCaseFlagRequestDescription(
+                    CASE_REFERENCE,
+                    flags
+                );
+
+            // Then
+            assertThat(description).isEqualTo(expectedRenderedContent);
+
+            verify(pebbleTemplate).evaluate(isA(StringWriter.class), contextMapCaptor.capture());
+            Map<String, Object> contextMap = contextMapCaptor.getValue();
+            assertThat(contextMap)
+                .containsEntry("caseReference", CASE_REFERENCE)
+                .containsEntry("flags", flags);
+        }
+
+        @Test
+        void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
+            // Given
+            String expectedRenderedContent = "some rendered content";
+            PebbleTemplate pebbleTemplate = stubPebbleTemplate(
+                "review-case-flag-request",
+                expectedRenderedContent
+            );
+
+            IOException pebbleException = mock(IOException.class);
+            doThrow(pebbleException).when(pebbleTemplate).evaluate(any(StringWriter.class), anyMap());
+
+            // When
+            Throwable throwable = catchThrowable(
+                () -> underTest.createReviewCaseFlagRequestDescription(
+                    CASE_REFERENCE,
+                    List.of()
+                ));
+
+            // Then
+            assertThat(throwable)
+                .isInstanceOf(TemplateRenderingException.class)
+                .hasMessage("Failed to render template")
+                .hasCause(pebbleException);
+        }
+    }
+
+    @Nested
     @DisplayName("Get description for Review Due Date task")
     class ReviewDueDateTest {
 
