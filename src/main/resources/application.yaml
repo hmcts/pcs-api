@@ -73,8 +73,6 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-    placeholders:
-      env: ${SPRING_FLYWAY_PLACEHOLDERS_ENV:local}
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}

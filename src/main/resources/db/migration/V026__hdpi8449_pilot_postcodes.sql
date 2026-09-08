@@ -1,13 +1,8 @@
 -- HDPI-8449: corrected pilot postcode to court mapping, from the amended mapping file
 -- on the ticket (2026-09-02), validated with tools/postcode-to-epims. The list is
 -- inclusive (outward codes, sectors and full postcodes; longest active match wins).
-
--- Prod only: clear both tables so production holds exactly this data and nothing from
--- the earlier manual loads. ${env} is the flyway placeholder (per-env); elsewhere
--- these deletes match nothing, so e2e fixtures in aat/demo/perftest are untouched.
-DELETE FROM postcode_court_mapping WHERE '${env}' = 'prod';
-DELETE FROM eligibility_whitelisted_epim WHERE '${env}' = 'prod';
-
+-- Only the four pilot courts' rows are replaced; e2e fixtures and other courts' rows
+-- are untouched, so existing environments (aat/demo/perftest/ithc) are unaffected.
 WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
     VALUES
         -- 88516 Bradford Combined Court Centre
