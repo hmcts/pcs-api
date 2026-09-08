@@ -43,8 +43,8 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
         pageBuilder
             .page("otherPartiesAgreed")
             .pageLabel("Have you asked the other parties if they agree to this application?")
-            .label("otherPartiesAgreed-lineSeparator", "---")
-            .label("otherPartiesAgreed-info", INFO_MARKDOWN)
+            .label("cma-otherPartiesAgreed-lineSeparator", "---")
+            .label("cma-otherPartiesAgreed-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getOtherPartiesAgreed)
             .done();

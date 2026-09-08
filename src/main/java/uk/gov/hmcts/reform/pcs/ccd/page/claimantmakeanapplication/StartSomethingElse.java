@@ -99,8 +99,8 @@ public class StartSomethingElse implements CcdPageConfiguration {
             .page("startSomethingElse")
             .pageLabel("Ask the court to make an order")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE))
-            .label("startSomethingElse-lineSeparator", "---")
-            .label("startSomethingElse-info", INFO_MARKDOWN);
+            .label("cma-startSomethingElse-lineSeparator", "---")
+            .label("cma-startSomethingElse-info", INFO_MARKDOWN);
     }
 
 }

@@ -77,8 +77,8 @@ public class StartAdjourn implements CcdPageConfiguration {
             .page("startAdjourn")
             .pageLabel("Ask to adjourn (delay) the court hearing")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
-            .label("startAdjourn-lineSeparator", "---")
-            .label("startAdjourn-info", INFO_MARKDOWN);
+            .label("cma-startAdjourn-lineSeparator", "---")
+            .label("cma-startAdjourn-info", INFO_MARKDOWN);
     }
 
 

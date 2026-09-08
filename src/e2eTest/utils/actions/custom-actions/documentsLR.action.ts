@@ -187,7 +187,7 @@ export class DocumentsAction implements IAction {
         );
 
         const typeDropdown = page.locator(
-          `[id^="legalRepDocuments_${fileIndex}_legalRepDocumentType"]:not([disabled])`
+          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
         await typeDropdown.waitFor({ state: 'attached' });
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });

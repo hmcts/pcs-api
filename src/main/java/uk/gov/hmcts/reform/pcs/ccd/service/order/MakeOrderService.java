@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;

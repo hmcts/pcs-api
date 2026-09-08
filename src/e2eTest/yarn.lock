@@ -1817,9 +1817,9 @@ natural-compare@^1.4.0:
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
 oauth4webapi@^3.5.1:
-  version "3.8.7"
-  resolved "https://registry.yarnpkg.com/oauth4webapi/-/oauth4webapi-3.8.7.tgz#e9ba31b5fd21d0f7b531293971ce0f55aabdfb6d"
-  integrity sha512-4RxcKxXjuItDFZ20RRPf4YTw3kpeXJyCgJFxVzJ068A7PNJ18st2Dg90tlC1LkSDS0GecroagCLHYEIVUhCAkw==
+  version "3.8.8"
+  resolved "https://registry.yarnpkg.com/oauth4webapi/-/oauth4webapi-3.8.8.tgz#05b47975cb621cdfd5dad35cecfaf41170e15c79"
+  integrity sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==
 
 one-time@^1.0.0:
   version "1.0.0"
@@ -2158,9 +2158,9 @@ tslib@^2.8.0:
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
 
 tsx@^4.19.2:
-  version "4.23.12"
-  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.23.12.tgz#3a4919591cd9b9e00011b75e596c8ab8db23c09c"
-  integrity sha512-FDf4L4sYzKtzWYhU/Xm0AQFdTjdIxNo9ElTf2mxXM6k8YMHXzYUe4yODVaXP4V9uMFbVg8c0qyBccK2OOxb45Q==
+  version "4.23.13"
+  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.23.13.tgz#393b8dd813d49e25aed7b1d7cbac6930da49ec08"
+  integrity sha512-BL5MGkRln6aDYhb0xbQlEAGw743BaZYWdbWtdJOBriYJboKgUUYCadFp2/FpBBZquBC/ezNBn7wMMPx7FDZUDw==
   dependencies:
     esbuild "~0.28.0"
   optionalDependencies:
