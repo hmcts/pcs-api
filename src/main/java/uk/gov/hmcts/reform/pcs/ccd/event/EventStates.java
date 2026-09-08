@@ -132,4 +132,8 @@ public class EventStates {
     public static State[] maintainCaseLink() {
         return amendFlags();
     }
+
+    public static State[] noticeOfChangeApplied() {
+        return addCaseNote();
+    }
 }

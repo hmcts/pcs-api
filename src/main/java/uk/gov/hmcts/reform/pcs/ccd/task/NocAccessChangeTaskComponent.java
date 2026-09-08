@@ -18,6 +18,7 @@ import uk.gov.hmcts.ccd.sdk.SystemEventAction;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 
@@ -29,7 +30,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class NocAccessChangeTaskComponent {
 
     private static final String NOC_ACCESS_CHANGE_TASK_NAME = "noc-access-change-task";
-    private static final String NOTICE_OF_CHANGE_APPLIED_EVENT_ID = "noticeOfChangeApplied";
+    private static final String NOTICE_OF_CHANGE_APPLIED_EVENT_ID = EventId.noticeOfChangeApplied.name();
     private static final String NOTICE_OF_CHANGE_APPLIED_EVENT_NAME = "Notice of change applied";
 
     public static final TaskDescriptor<NocAccessChangeTaskData> NOC_ACCESS_CHANGE_TASK_DESCRIPTOR =
