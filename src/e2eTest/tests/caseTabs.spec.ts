@@ -121,7 +121,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     // straight after selectOption passes before any async revert can happen, so it cannot
     // catch a model that clears a tick later. Verifying the outcome works whether the select
     // or the click was at fault.
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, addCaseNote.mainHeader);
+    await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', addCaseNote.mainHeader);
     await performAction('addCaseNotes', {
       label: addCaseNote.addNoteTextLabel,

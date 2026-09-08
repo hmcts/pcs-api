@@ -108,7 +108,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       selectFlagOption: selectFlagType.urgentCaseRadioOption,
       continueButton: selectFlagType.continueButton
     });
-    await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', addCommentsForFlag.continueButton, confirmStatusForFlag.mainHeader);
     await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
     await performAction('confirmStatusForFlag', {
       statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,
@@ -184,7 +184,7 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
       specialMeasureOption: specialMeasureForFlag.evidenceByLiveLinkRadioOption,
       continueButton: specialMeasureForFlag.continueButton
     });
-    await performAction('clickButton', addCommentsForFlag.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', addCommentsForFlag.continueButton, confirmStatusForFlag.mainHeader);
     await performValidation('mainHeader', confirmStatusForFlag.mainHeader);
     await performAction('confirmStatusForFlag', {
       statusQuestion: confirmStatusForFlag.confirmTheStatusOfTheFlagQuestion,

@@ -129,9 +129,9 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('text', {"text": preactionProtocol.englandRegisteredProvidersDynamicParagraph, "elementType": "paragraph"});
     await performAction('selectPreActionProtocol', preactionProtocol.noRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
-    await performAction('clickButton', mediationAndSettlement.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', mediationAndSettlement.continueButton, checkingNotice.mainHeader);
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('clickButton', checkingNotice.previousButton);
+    await performAction('clickButtonAndVerifyPageNavigation', checkingNotice.previousButton, mediationAndSettlement.mainHeader);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
        attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,

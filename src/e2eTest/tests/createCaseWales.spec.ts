@@ -174,7 +174,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -315,7 +315,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -453,7 +453,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -581,7 +581,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -725,7 +725,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -856,7 +856,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -991,7 +991,7 @@ test.describe('[Create Case - Wales]', async () => {
       input: uploadRequiredDocumentsWales.currentEICRTextInput,
       file: ['inspectionOrReport.pdf'],
     })
-    await performAction('clickButton', uploadRequiredDocumentsWales.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', uploadRequiredDocumentsWales.continueButton, wantToUploadDocuments.mainHeader);
     await performValidation('mainHeader', wantToUploadDocuments.mainHeader);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,

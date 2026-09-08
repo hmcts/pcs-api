@@ -61,7 +61,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
     await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
-    await performAction('clickButton', beforeYouStart.saveAndContinueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', beforeYouStart.saveAndContinueButton, selectCasesToLink.mainHeader);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
     await performAction('selectCasesToLink', {
       caseRefInput: caseNumbers,
@@ -80,7 +80,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', beforeYouStart.mainHeader);
-    await performAction('clickButton', beforeYouStart.saveAndContinueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', beforeYouStart.saveAndContinueButton, selectCasesToUnLink.mainHeader);
     await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
     await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
     await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);

@@ -441,7 +441,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       option: livingInTheProperty.notSureRadioOption,
       nextPage: evictionDelayWarning.mainHeader
     });
-    await performAction('clickButton', evictionDelayWarning.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', evictionDelayWarning.continueButton, vulnerableAdultsChildren.mainHeader);
     await performValidation('mainHeader', vulnerableAdultsChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsChildren.IsAnyOneLivingAtThePropertyQuestion,

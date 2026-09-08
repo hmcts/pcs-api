@@ -86,10 +86,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Special measure, Evidence by live link (Claimant Test Create Support)' });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
@@ -146,10 +146,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
@@ -186,7 +186,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('check', reviewSupport.enterLanguageCheckBox);
     await performAction('inputText', reviewSupport.languageInterpreterLabel, reviewSupport.languageInterpreterText);
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeader);
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('inputText', reviewSupport.addCommentOptionalLabel, reviewSupport.addCommentText);
     await performAction('clickButton', reviewSupport.continueButton);
@@ -196,10 +196,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Language Interpreter, Telugu (Claimant Test Create Support)' });
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
-    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', reviewSupport.continueButton, reviewSupport.mainHeaderManage);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');

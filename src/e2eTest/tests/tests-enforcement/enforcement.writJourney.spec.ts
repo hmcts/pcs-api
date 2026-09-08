@@ -201,7 +201,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       option: confirmHCEOfficer.noRadioOption,
       nextPage: theNICEWillChoose.mainHeader
     });
-    await performAction('clickButton', theNICEWillChoose.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', theNICEWillChoose.continueButton, moneyOwed.mainHeader);
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
     await performAction('provideMoneyOwed', {
@@ -283,7 +283,7 @@ test.describe.skip('[Enforcement - Writ of Possession]', async () => {
       option: confirmHCEOfficer.noRadioOption,
       nextPage: theNICEWillChoose.mainHeader
     });
-    await performAction('clickButton', theNICEWillChoose.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', theNICEWillChoose.continueButton, moneyOwed.mainHeader);
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,

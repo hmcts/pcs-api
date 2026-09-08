@@ -69,7 +69,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       correspondenceAddress: contactDetailsLR.yesRadioOption,
       phoneNumber: contactDetailsLR.yesRadioOption
     });
-    await performAction('clickButton', 'Close and Return to case details');
+    await performAction('clickButtonAndVerifyPageNavigation', 'Close and Return to case details', home.caseParties);
     await performValidation('mainHeader', home.caseParties);
     await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
   });

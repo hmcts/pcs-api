@@ -110,7 +110,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
       emailInput: enterPaymentDetails.emailTextInput
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
-    await performAction('clickButton', confirmYourPayment.confirmButton);
+    await performAction('clickButtonAndVerifyPageNavigation', confirmYourPayment.confirmButton, serviceRequest.paymentSuccessMainHeader);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
@@ -135,7 +135,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
       continueButton: serviceRequest.continueButton
     });
     await performValidation('mainHeader', enterPaymentDetails.mainHeader);
-    await performAction('clickButton', enterPaymentDetails.cancelPaymentButton);
+    await performAction('clickButtonAndVerifyPageNavigation', enterPaymentDetails.cancelPaymentButton, cancelPayment.mainHeader);
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
@@ -176,7 +176,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
       emailInput: enterPaymentDetails.emailTextInput
     });
     await performValidation('mainHeader', confirmYourPayment.mainHeader);
-    await performAction('clickButton', confirmYourPayment.cancelPaymentButton);
+    await performAction('clickButtonAndVerifyPageNavigation', confirmYourPayment.cancelPaymentButton, cancelPayment.mainHeader);
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
