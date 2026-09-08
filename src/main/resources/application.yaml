@@ -369,3 +369,7 @@ ccd:
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
+
+docweave:
+  templates:
+    allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}
