@@ -34,13 +34,6 @@ class PaymentHistoryTabAccessTest {
 
     private static Stream<UserRole> rolesWithPaymentHistoryAccess() {
         return Stream.of(
-            UserRole.CREATOR,
-            UserRole.DEFENDANT,
-            UserRole.DEFENDANT_SOLICITOR,
-            UserRole.GA_DEFENDANT_SOLICITOR,
-            UserRole.CLAIMANT,
-            UserRole.CLAIMANT_SOLICITOR,
-            UserRole.GA_CLAIMANT_SOLICITOR,
             UserRole.JUDGE,
             UserRole.FEE_PAID_JUDGE,
             UserRole.CIRCUIT_JUDGE,
@@ -56,7 +49,14 @@ class PaymentHistoryTabAccessTest {
 
     private static Stream<UserRole> rolesWithoutPaymentHistoryAccess() {
         return Stream.of(
+            UserRole.CREATOR,
             UserRole.CITIZEN,
+            UserRole.DEFENDANT,
+            UserRole.DEFENDANT_SOLICITOR,
+            UserRole.GA_DEFENDANT_SOLICITOR,
+            UserRole.CLAIMANT,
+            UserRole.CLAIMANT_SOLICITOR,
+            UserRole.GA_CLAIMANT_SOLICITOR,
             UserRole.PCS_CASE_WORKER,
             UserRole.PCS_SOLICITOR,
             UserRole.RAS_VALIDATOR,

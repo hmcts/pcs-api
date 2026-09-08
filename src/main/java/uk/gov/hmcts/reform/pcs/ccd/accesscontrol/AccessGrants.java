@@ -10,7 +10,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
@@ -55,13 +54,6 @@ final class AccessGrants {
     };
 
     static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {
-        CREATOR,
-        DEFENDANT,
-        DEFENDANT_SOLICITOR,
-        GA_DEFENDANT_SOLICITOR,
-        CLAIMANT,
-        CLAIMANT_SOLICITOR,
-        GA_CLAIMANT_SOLICITOR,
         JUDGE,
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,

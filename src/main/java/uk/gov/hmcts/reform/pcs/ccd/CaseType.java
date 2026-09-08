@@ -73,19 +73,15 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
     static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
-        AccessProfile.CREATOR,
-        AccessProfile.DEFENDANT,
-        AccessProfile.DEFENDANT_SOLICITOR,
-        AccessProfile.GA_DEFENDANT_SOLICITOR,
-        AccessProfile.CLAIMANT,
-        AccessProfile.CLAIMANT_SOLICITOR,
-        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
         AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
         AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_TEAM_LEADER,
         AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_TEAM_LEADER,
         AccessProfile.WLU_ADMIN
     };
 

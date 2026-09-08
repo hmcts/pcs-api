@@ -34,7 +34,7 @@ class AccessGrantsParityTest {
     @Test
     void shouldKeepPaymentHistoryTabProfilesAlignedWithFieldAccessRoles() throws Exception {
         assertThat(caseTypeAccessProfiles("PAYMENT_HISTORY_TAB_ROLES"))
-            .isEqualTo(accessGrantProfiles(AccessGrants.PAYMENT_HISTORY_READ_ROLES));
+            .isEqualTo(accessGrantRoles(AccessGrants.PAYMENT_HISTORY_READ_ROLES));
     }
 
     private Set<String> caseTypeAccessProfiles(String fieldName) throws Exception {
@@ -49,6 +49,12 @@ class AccessGrantsParityTest {
     private Set<String> accessGrantProfiles(UserRole[] roles) {
         return Arrays.stream(roles)
             .flatMap(role -> Arrays.stream(role.getAccessProfiles()))
+            .collect(Collectors.toSet());
+    }
+
+    private Set<String> accessGrantRoles(UserRole[] roles) {
+        return Arrays.stream(roles)
+            .map(UserRole::getRole)
             .collect(Collectors.toSet());
     }
 }
