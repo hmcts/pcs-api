@@ -56,8 +56,10 @@ class ReviewSupportRequestFlowTest {
 
     @BeforeEach
     void setUp() {
-        caseFlagsView = new CaseFlagsView(mock(PartySupportOwnershipResolver.class),
-                                          mock(SecurityContextService.class));
+        caseFlagsView = new CaseFlagsView(
+            mock(PartySupportOwnershipResolver.class),
+            mock(SecurityContextService.class)
+        );
         supportReviewService = new SupportReviewService();
         claimant = party("Possession Claims Solicitor Org", null, null);
         defendant = party(null, "testing", "CR TEST1");
@@ -124,7 +126,8 @@ class ReviewSupportRequestFlowTest {
         defendant.setDefendantFlags(new ArrayList<>(List.of(
             supportFlag("RA0034", "Cool room", "Requested", FlagVisibility.INTERNAL),
             supportFlag("RA0042", "Sign language interpreter", "Requested", FlagVisibility.INTERNAL),
-            supportFlag("RA0022", "Accessible toilet", "Active", FlagVisibility.INTERNAL))));
+            supportFlag("RA0022", "Accessible toilet", "Active", FlagVisibility.INTERNAL)
+        )));
 
         List<ListValue<PartySupport>> reviewFlags =
             supportReviewService.buildRequestedSupport(viewMappedCase());
@@ -145,7 +148,8 @@ class ReviewSupportRequestFlowTest {
     void offersRequestedSupportUnderBothVisibilitiesForTheSameParty() {
         defendant.setDefendantFlags(new ArrayList<>(List.of(
             supportFlag("RA0034", "Cool room", "Requested", FlagVisibility.INTERNAL),
-            supportFlag("RA0024", "A different type of chair", "Requested", FlagVisibility.EXTERNAL))));
+            supportFlag("RA0024", "A different type of chair", "Requested", FlagVisibility.EXTERNAL)
+        )));
 
         List<ListValue<PartySupport>> reviewFlags =
             supportReviewService.buildRequestedSupport(viewMappedCase());
@@ -168,7 +172,8 @@ class ReviewSupportRequestFlowTest {
             supportFlag("RA0021", "Parking space close to the venue", "Inactive", FlagVisibility.EXTERNAL),
             supportFlag("RA0030", "Break in proceedings", "Inactive", FlagVisibility.INTERNAL),
             supportFlag("PF0015", "Language Interpreter", "Not approved", FlagVisibility.EXTERNAL),
-            supportFlag("RA0036", "Larger font", "Not approved", FlagVisibility.INTERNAL))));
+            supportFlag("RA0036", "Larger font", "Not approved", FlagVisibility.INTERNAL)
+        )));
 
         assertThat(supportReviewService.buildRequestedSupport(viewMappedCase())).isEmpty();
     }
@@ -338,9 +343,9 @@ class ReviewSupportRequestFlowTest {
         ClaimPartyEntity claimantLink = claimParty(claimant, PartyRole.CLAIMANT, claimId);
         ClaimPartyEntity defendantLink = claimParty(defendant, PartyRole.DEFENDANT, claimId);
         pcsCaseEntity.setClaims(List.of(ClaimEntity.builder()
-            .id(claimId)
-            .claimParties(List.of(claimantLink, defendantLink))
-            .build()));
+                                            .id(claimId)
+                                            .claimParties(List.of(claimantLink, defendantLink))
+                                            .build()));
 
         PCSCase pcsCase = PCSCase.builder().build();
         pcsCase.setParties(mapAndWrapParties(parties));
