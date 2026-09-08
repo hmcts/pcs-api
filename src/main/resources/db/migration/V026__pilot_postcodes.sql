@@ -862,8 +862,7 @@ VALUES
     (268374, DATE '2022-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb),
     (366572, DATE '2024-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb)
 ON CONFLICT (epims_id) DO UPDATE
-SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.eligible_from),
-    audit = EXCLUDED.audit;
+SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.eligible_from);
 
 -- To check, before and after applying:
 --   SELECT epims_id, count(*) FROM postcode_court_mapping
