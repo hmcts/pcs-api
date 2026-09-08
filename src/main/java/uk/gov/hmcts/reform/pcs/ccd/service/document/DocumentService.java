@@ -285,7 +285,8 @@ public class DocumentService {
             type = DocumentType.OTHER;
             categoryId = CaseFileCategory.APPLICATIONS.getId();
         } else if (selectedCounterClaim != null) {
-            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            renamed = documentNameService.appendCounterClaimPostfix(
+                originalFilename, mainClaim, party.getId(), selectedCounterClaim.getRank());
             type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
             // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
             categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
