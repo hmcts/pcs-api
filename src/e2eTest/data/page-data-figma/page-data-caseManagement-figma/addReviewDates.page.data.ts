@@ -2,29 +2,29 @@ export const addReviewDates = {
   mainHeader: `Review dates`,
   addReviewDateHintText: `Add review date`,
   reviewDateSubHeader: `Review date`,
-  addNewButton:`Add new`,
+  addNewButton: `Add new`,
   dateOfReviewHiddenLabel: `Date of review`,
   dayHiddenTextLabel: `Day`,
   monthHiddenTextLabel: `Month`,
   yearHiddenTextLabel: `Year`,
   reasonHiddenLabel: `Reason`,
-  unlessOrderHiddenRadioOption:`Unless order`,
+  unlessOrderHiddenRadioOption: `Unless order`,
   StayCaseHiddenRadioOption: `Stay a case`,
   liftStayHiddenRadioOption: `Lift a stay`,
   dismissCaseHiddenRadioOption: `Dismiss case`,
   generalOrderHiddenRadioOption: `General order`,
   OtherHiddenRadioOption: `Other`,
-  reviewReasonArray: [`Unless order`,`Stay a case`,`Lift a case`,`Dismiss case`, `General order`, `Other`],
+  reviewReasonArray: [`Unless order`, `Stay a case`, `Lift a stay`, `Dismiss case`, `General order`, `Other`],
   descriptionHiddenTextLabel: `Description of review`,
   youCanEnterUpToHiddenHintText: `You can enter up to 500 characters`,
-  removeHiddenButton:`Remove`,
+  removeHiddenButton: `Remove`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
-  dayInputText :`20`,
-  monthInputText :`12`,
-  yearInputText :`2030`,
-  descriptionTextInput:50,
+  dayInputText: `20`,
+  monthInputText: `12`,
+  yearInputText: `2030`,
+  descriptionTextInput: 50,
   dateTypeHiddenUserInput: `past`,
   errorValidation: `YES`,
   eventCouldNotBeCreatedErrorMessageHeader: `The event could not be created`,
@@ -32,17 +32,17 @@ export const addReviewDates = {
   errorValidationType: { one: `textField`, two: `radioOptions`, three: `checkBox`, four: `dropDown`, five: `dateField`, six: `dateRadioOption` },
   errorValidationField: {
     errorDateField: [
-      { type: `empty`, input: `empty`, errMessage: `Date of review is required`,errInlineMessage: `Date of review is required`},
-      { type: `invalid`, input: `invalid`, errMessage: `Date of review is not valid`, errInlineMessage: `The data entered is not valid for Date of review`},
+      { type: `empty`, input: `empty`, errMessage: `Date of review is required`, errInlineMessage: `Date of review is required` },
+      { type: `invalid`, input: `invalid`, errMessage: `Date of review is not valid`, errInlineMessage: `The data entered is not valid for Date of review` },
     ],
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `Reason is required`,errInlineMessage: `Reason is required` }
+      { type: `none`, input: ``, errMessage: `Reason is required`, errInlineMessage: `Reason is required` }
     ],
     errorTextField: [
       { type: `none`, input: ``, errMessage: `Description of review is required` },
-      ],
+    ],
     errorDateRadioOption: [
-      {type: `Max`, input: `510`, errMessage: `In ‘Description of review’, you have entered more than the maximum number of characters (500)`}
+      { type: `Max`, input: `510`, errMessage: `In ‘Description of review’, you have entered more than the maximum number of characters (500)` }
     ]
   },
 };
