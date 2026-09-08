@@ -1,4 +1,4 @@
--- Release 1 pilot postcodes: full reset. Team decision (Scott/Arun): the safest
+-- Release 1 pilot postcodes: full reset. Possession Claims team decision: the safest
 -- correction is to drop all existing mapping data and load exactly the amended
 -- mapping file from the ticket (2026-09-02, deduplicated; W12OEB dropped as a
 -- confirmed letter-O typo of W120EB).
