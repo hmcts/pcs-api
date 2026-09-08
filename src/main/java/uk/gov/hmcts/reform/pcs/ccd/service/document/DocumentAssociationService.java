@@ -57,7 +57,7 @@ public class DocumentAssociationService {
                 documentEntity.setGeneralApplication(null);
                 documentEntity.setCategoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId());
                 return documentNameService.appendCounterClaimPostfix(
-                    fileName, mainClaim, partyId, counterClaimEntity.getRank());
+                    fileName, counterClaimEntity, mainClaim, partyId);
             }
 
             if (!NONE_PREFIX.equals(relatedSubmissionId.prefix())) {
