@@ -27,7 +27,14 @@ const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 // Preview defaults lower than AAT because each PR release has its own single-replica CCD stack.
 // The actual ceiling is unmeasured; use E2E_WORKERS to tune it without a code change.
 function resolveWorkers(): number {
-  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 2 : 4;
+  // Preview raised 2 -> 4. The original sweep (#2558-#2561) found 4 workers 36% faster than 2
+  // with the best pass rate, but it ran while the suite still had ~7 flakes, so worker count
+  // and flakiness were confounded - its pass rates were 13/18, 16/18, 17/18. #2570 has since
+  // taken the suite to 0 failures / 1 flaky over five runs, so this is the first clean read.
+  // 6 workers was already ruled out: slower than 4 AND 4/18 passing, i.e. past what the
+  // single-replica preview CCD stack sustains. The risk here is that 50 tests on 4 workers
+  // behaves like 18 on 6 did, which is exactly what this measures.
+  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 4 : 4;
   const parsed = Number(process.env.E2E_WORKERS?.trim());
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
