@@ -2,17 +2,20 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.CaseReviewDatesRenderer;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -20,19 +23,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
+@ExtendWith(MockitoExtension.class)
 class CaseNoteViewTest {
 
     private static final Instant SUMMER_INSTANT = Instant.parse("2026-04-22T21:00:00Z");
-
     private static final Instant WINTER_INSTANT = Instant.parse("2026-01-15T12:00:00Z");
+
+    @Mock
+    private CaseReviewDatesRenderer caseReviewDatesRenderer;
+    @Captor
+    private ArgumentCaptor<List<CaseReviewDateEntity>> reviewDatesCaptor;
 
     private CaseNoteView caseNoteView;
 
     @BeforeEach
     void setUp() {
-        caseNoteView = new CaseNoteView();
+        caseNoteView = new CaseNoteView(caseReviewDatesRenderer);
     }
 
     @Test
@@ -119,53 +130,34 @@ class CaseNoteViewTest {
     }
 
     @Test
-    void shouldMapReviewDateEntitiesToCaseReviewDatesWithNewestFirst() {
+    void shouldRenderCaseReviewDatesWithNewestFirst() {
+        // Given
         CaseReviewDateEntity olderReviewDate = CaseReviewDateEntity.builder()
-            .reviewDateNumber(1)
-            .createdBy("Older Worker")
             .createdDate(LocalDateTime.of(2026, 1, 15, 12, 0))
-            .date(LocalDate.of(2026, 8, 20))
-            .reason(ReviewReason.GENERAL_ORDER)
-            .description("older review")
             .build();
+
         CaseReviewDateEntity newerReviewDate = CaseReviewDateEntity.builder()
-            .reviewDateNumber(2)
-            .createdBy("Newer Worker")
             .createdDate(LocalDateTime.of(2026, 4, 22, 22, 0))
-            .date(LocalDate.of(2026, 9, 15))
-            .reason(ReviewReason.OTHER)
-            .description("newer review")
             .build();
+
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseNotes(List.of())
             .reviewDates(List.of(olderReviewDate, newerReviewDate))
             .build();
+
         PCSCase pcsCase = PCSCase.builder().build();
 
+        String expectedReviewDatesMarkdown = "rendered review dates";
+        when(caseReviewDatesRenderer.render(anyList())).thenReturn(expectedReviewDatesMarkdown);
+
+        // When
         caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
 
-        List<ListValue<CaseReviewDate>> reviewDates = pcsCase.getCaseReviewDates();
-        assertThat(reviewDates).hasSize(2);
-        assertThat(reviewDates.getFirst().getId()).isEqualTo("Review date 2");
-        assertThat(reviewDates.getFirst().getValue().getCreatedBy()).isEqualTo("Newer Worker");
-        assertThat(reviewDates.getFirst().getValue().getCreatedDate())
-            .isEqualTo(LocalDateTime.of(2026, 4, 22, 22, 0));
-        assertThat(reviewDates.getFirst().getValue().getDate()).isEqualTo(newerReviewDate.getDate());
-        assertThat(reviewDates.getFirst().getValue().getReason()).isEqualTo(ReviewReason.OTHER);
-        assertThat(reviewDates.getFirst().getValue().getDescription()).isEqualTo("newer review");
+        // Then
+        assertThat(pcsCase.getCaseReviewDatesMarkdown()).isEqualTo(expectedReviewDatesMarkdown);
 
-        assertThat(reviewDates.getLast().getId()).isEqualTo("Review date 1");
-        assertThat(reviewDates.getLast().getValue().getCreatedBy()).isEqualTo("Older Worker");
-
-        assertThat(pcsCase.getCaseReviewDatesMarkdown()).containsSubsequence(
-            "### Review date 2",
-            "| Created by | Newer Worker |",
-            "| Created date | 22 Apr 2026, 10:00:00 PM |",
-            "| Date of review | 15 Sep 2026 |",
-            "| Reason | Other |",
-            "| Description of review | newer review |",
-            "### Review date 1",
-            "| Created by | Older Worker |"
-        );
+        verify(caseReviewDatesRenderer).render(reviewDatesCaptor.capture());
+        List<CaseReviewDateEntity> reviewDates = reviewDatesCaptor.getValue();
+        assertThat(reviewDates).containsExactly(newerReviewDate, olderReviewDate);
     }
+
 }
