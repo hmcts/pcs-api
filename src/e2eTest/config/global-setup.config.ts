@@ -163,6 +163,43 @@ async function presetCookieBannerForAllUsers(context: BrowserContext, baseUrl: s
   if (unresolved.length) {
     console.warn(`[cookie-preset] could not resolve: ${unresolved.join(', ')} — those users will still see the banner`);
   }
+
+  await presetIdamCookiePolicy(context);
+}
+
+/**
+ * Pre-accepts the IDAM login page's cookie banner (`#accept-additional-cookies`).
+ *
+ * Name and host established empirically in #2642 rather than from source, because the app that
+ * serves this banner is not cloned in this workspace — the only reference to the button id
+ * anywhere here is our own test helper. The dump showed:
+ *
+ *   cookies_policy@idam-web-public.aat.platform.hmcts.net
+ *
+ * Note the host is `idam-web-public`, which is *not* derivable from `IDAM_WEB_URL`
+ * (`idam-api...`) — a different subdomain — so it is derived from the environment slug instead.
+ *
+ * The value is the GOV.UK cookie-policy shape. If it turns out the banner keys off specific
+ * fields rather than mere presence, the fallback is unchanged behaviour: the banner still renders
+ * and dismissCookieBanner clicks it, just after a shortened probe.
+ */
+async function presetIdamCookiePolicy(context: BrowserContext): Promise<void> {
+  const env = (process.env.ENVIRONMENT || '').toLowerCase();
+  const slug = NIGHTLY_ENV_SLUGS.has(env) ? env : 'aat';
+  const domain = `idam-web-public.${slug}.platform.hmcts.net`;
+
+  try {
+    await context.addCookies([{
+      name: 'cookies_policy',
+      value: JSON.stringify({ essential: true, analytics: false, apm: false }),
+      domain,
+      path: '/',
+      expires: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365,
+    }]);
+    console.log(`[cookie-preset] pre-accepted the IDAM banner on ${domain}`);
+  } catch (err) {
+    console.warn(`[cookie-preset] could not pre-set cookies_policy on ${domain}: ${err instanceof Error ? err.message : err}`);
+  }
 }
 
 /**
