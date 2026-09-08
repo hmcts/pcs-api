@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -36,7 +36,7 @@ class GenAppPaymentCallbackHandlerTest {
     @Mock
     private GenAppRepository genAppRepository;
     @Mock
-    private GenAppDocumentGenerator genAppDocumentGenerator;
+    private GenAppFormScheduler genAppFormScheduler;
     @Mock
     private PaymentStatusCallback paymentStatusCallback;
     @Mock
@@ -48,7 +48,7 @@ class GenAppPaymentCallbackHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
+        underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppFormScheduler,
                                                      notificationService, genAppWaTaskService);
     }
 
@@ -73,7 +73,7 @@ class GenAppPaymentCallbackHandlerTest {
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
         // Then
-        verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verify(genAppFormScheduler).scheduleGenAppDocumentGeneration(genAppId);
         verify(genAppEntity).setState(GenAppState.GEN_APP_ISSUED);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
@@ -98,7 +98,7 @@ class GenAppPaymentCallbackHandlerTest {
         underTest.handle(paymentStatusCallback, feePaymentEntity);
 
         // Then
-        verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verify(genAppFormScheduler, never()).scheduleGenAppDocumentGeneration(genAppId);
         verifyNoInteractions(notificationService, genAppWaTaskService);
     }
 

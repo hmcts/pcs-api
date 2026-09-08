@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -46,6 +47,7 @@ public class GenAppService {
     private final DocumentNameService documentNameService;
     private final DocumentRepository documentRepository;
     private final ClaimActivityLogService claimActivityLogService;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final Clock utcClock;
 
     public GenAppService(GenAppRepository genAppRepository,
@@ -53,6 +55,7 @@ public class GenAppService {
                          DocumentNameService documentNameService,
                          DocumentRepository documentRepository,
                          ClaimActivityLogService claimActivityLogService,
+                         GenAppDocumentGenerator genAppDocumentGenerator,
                          @Qualifier("utcClock") Clock utcClock) {
 
         this.genAppRepository = genAppRepository;
@@ -60,6 +63,7 @@ public class GenAppService {
         this.documentNameService = documentNameService;
         this.documentRepository = documentRepository;
         this.claimActivityLogService = claimActivityLogService;
+        this.genAppDocumentGenerator = genAppDocumentGenerator;
         this.utcClock = utcClock;
     }
 
@@ -190,6 +194,18 @@ public class GenAppService {
     public GenAppEntity loadGenApp(UUID genAppId) {
         return genAppRepository.findById(genAppId)
             .orElseThrow(() -> new GenAppNotFoundException("No gen app found with ID " + genAppId));
+    }
+
+    @Transactional
+    public void generateSubmissionDocument(UUID genAppId) {
+        GenAppEntity genAppEntity = loadGenApp(genAppId);
+
+        if (genAppEntity.getSubmissionDocument() != null) {
+            return;
+        }
+
+        genAppDocumentGenerator.createSubmissionDocument(
+            genAppEntity.getPcsCase().getCaseReference(), genAppEntity);
     }
 
     private DocumentEntity createSubmissionDocumentEntity(Document document,

@@ -70,6 +70,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
@@ -90,6 +91,8 @@ class GenAppServiceTest {
     private DocumentRepository documentRepository;
     @Mock
     private ClaimActivityLogService claimActivityLogService;
+    @Mock
+    private GenAppDocumentGenerator genAppDocumentGenerator;
     @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
@@ -113,7 +116,8 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentService, documentNameService,
-                                      documentRepository, claimActivityLogService, utcClock
+                                      documentRepository, claimActivityLogService,
+                                      genAppDocumentGenerator, utcClock
         );
     }
 
@@ -1109,6 +1113,59 @@ class GenAppServiceTest {
             verify(documentRepository, never()).saveAll(anyList());
         }
 
+    }
+
+    @Nested
+    @DisplayName("Generate submission document")
+    class GenerateSubmissionDocumentTests {
+
+        private static final long CASE_REFERENCE = 1234567812345678L;
+
+        @Test
+        void shouldGenerateWhenNoSubmissionDocumentAttached() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(null);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        }
+
+        @Test
+        void shouldNotGenerateWhenSubmissionDocumentAlreadyAttached() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(mock(DocumentEntity.class));
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            verifyNoInteractions(genAppDocumentGenerator);
+        }
+
+        @Test
+        void shouldThrowExceptionForUnknownGenAppId() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.generateSubmissionDocument(genAppId));
+
+            // Then
+            assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
+            verifyNoInteractions(genAppDocumentGenerator);
+        }
     }
 
     private GenAppEntity getSavedGenAppEntity() {

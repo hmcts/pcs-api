@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -22,7 +22,7 @@ import java.util.UUID;
 public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
-    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final GenAppFormScheduler genAppFormScheduler;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
 
@@ -38,7 +38,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
             if (genAppEntity.getState() == GenAppState.PENDING_GEN_APP_ISSUED) {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
                 long caseReference = genAppEntity.getPcsCase().getCaseReference();
-                genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+                genAppFormScheduler.scheduleGenAppDocumentGeneration(genAppId);
                 notificationService.sendGenAppReceivedEmail(genAppEntity);
                 genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
                 genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
