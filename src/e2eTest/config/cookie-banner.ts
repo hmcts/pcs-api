@@ -22,6 +22,22 @@ const BANNER_PRESENCE_TIMEOUT = SHORT_TIMEOUT;
  * Matches on the name prefix rather than a specific id because the context may hold cookies for
  * several users and any accepted one means this page will not show the banner.
  */
+/**
+ * Types already handled for a given browser context.
+ *
+ * The pre-set cookies alone were not enough: **10 specs call `context.clearCookies()`**, which
+ * wipes them, so those runs fell straight back to the full probe. More importantly the log shows
+ * these are overwhelmingly *misses* — `could not be dismissed: Timeout 5000ms exceeded` — i.e. the
+ * banner is not there at all. We were paying 5s repeatedly to rediscover an absent element.
+ *
+ * Once a type has been handled for a context, whether the banner was found or not, its state is
+ * established; later calls only need a short confirmation. Keyed per type because 'additional'
+ * (IDAM, pre-login) and 'analytics' (XUI, post-login) are independent.
+ *
+ * WeakMap so contexts can be garbage collected between tests.
+ */
+const handledByContext = new WeakMap<object, Set<CookieBannerType>>();
+
 async function alreadyAccepted(page: Page, type: CookieBannerType): Promise<boolean> {
   try {
     const cookies = await page.context().cookies();
@@ -51,7 +67,13 @@ export async function dismissCookieBanner(page: Page, type: CookieBannerType): P
   // Applies to both banners now that #2642 established the IDAM one's cookie is `cookies_policy`.
   // VERY_SHORT_TIMEOUT (1s) rather than tighter: the comment above notes the banner appears
   // sub-second when genuinely present, so 1s keeps clear margin while removing ~80% of the wait.
-  const presenceTimeout = await alreadyAccepted(page, type)
+  const context = page.context();
+  const handled = handledByContext.get(context) ?? new Set<CookieBannerType>();
+  const seenBefore = handled.has(type);
+  handled.add(type);
+  handledByContext.set(context, handled);
+
+  const presenceTimeout = seenBefore || await alreadyAccepted(page, type)
     ? VERY_SHORT_TIMEOUT
     : BANNER_PRESENCE_TIMEOUT;
   try {

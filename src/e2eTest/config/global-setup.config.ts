@@ -136,27 +136,38 @@ async function presetCookieBannerForAllUsers(context: BrowserContext, baseUrl: s
 
   const domain = new URL(baseUrl).hostname;
   const expires = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365;
+  // Resolved concurrently. The first version did these sequentially and picked up 22 emails —
+  // Object.values(user) also spans permanent.user.data and staff.user.data — which added
+  // noticeable setup time for no benefit. Nothing here depends on ordering.
+  const results = await Promise.all(emails.map(async email => {
+    try {
+      return { email, id: await resolveIdamUserId(email) };
+    } catch (err) {
+      return { email, id: null, error: err instanceof Error ? err.message : String(err) };
+    }
+  }));
+
   const resolved: string[] = [];
   const unresolved: string[] = [];
+  const cookies = [];
 
-  for (const email of emails) {
-    try {
-      const id = await resolveIdamUserId(email);
-      if (!id) {
-        unresolved.push(email);
-        continue;
-      }
-      await context.addCookies([{
-        name: `hmcts-exui-cookies-${id}-mc-accepted`,
-        value: 'true',
-        domain,
-        path: '/',
-        expires,
-      }]);
-      resolved.push(email);
-    } catch (err) {
-      unresolved.push(`${email} (${err instanceof Error ? err.message : err})`);
+  for (const r of results) {
+    if (!r.id) {
+      unresolved.push('error' in r && r.error ? `${r.email} (${r.error})` : r.email);
+      continue;
     }
+    cookies.push({
+      name: `hmcts-exui-cookies-${r.id}-mc-accepted`,
+      value: 'true',
+      domain,
+      path: '/',
+      expires,
+    });
+    resolved.push(r.email);
+  }
+
+  if (cookies.length) {
+    await context.addCookies(cookies);
   }
 
   console.log(`[cookie-preset] pre-accepted the XUI banner for ${resolved.length}/${emails.length} users on ${domain}`);
