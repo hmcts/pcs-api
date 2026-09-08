@@ -11,6 +11,12 @@
 -- CF116QX Wales repoint. A follow-up test migration must reseed the postcodes
 -- the e2e suites use, and aat/demo/perftest need a reseed route since they do
 -- not apply db/testdata migrations.
+
+-- Preserve each environment's pre-reset contents for the reseed comparison work.
+-- These snapshot tables are unmanaged by Flyway; the follow-up clean-up drops them.
+CREATE TABLE IF NOT EXISTS postcode_court_mapping_pre_v026 AS TABLE postcode_court_mapping;
+CREATE TABLE IF NOT EXISTS eligibility_whitelisted_epim_pre_v026 AS TABLE eligibility_whitelisted_epim;
+
 TRUNCATE postcode_court_mapping;
 INSERT INTO postcode_court_mapping (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
 VALUES
