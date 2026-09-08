@@ -3,7 +3,18 @@
 -- inclusive (outward codes, sectors and full postcodes; longest active match wins).
 -- Only the four pilot courts' rows are replaced; e2e fixtures and other courts' rows
 -- are untouched, so existing environments (aat/demo/perftest/ithc) are unaffected.
-WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
+
+-- Clear the four pilot courts' rows; the list below fully replaces them. The one row
+-- kept is the CF116QX -> 366572 repoint (HDPI-5819 Wales e2e postcode).
+DELETE FROM postcode_court_mapping
+WHERE epims_id IN (88516, 197852, 268374, 366572)
+  AND NOT (postcode = 'CF116QX' AND epims_id = 366572);
+
+INSERT INTO postcode_court_mapping
+    (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
+SELECT postcode, epims_id, legislative_country, effective_from, NULL,
+       '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb
+FROM (
     VALUES
         -- 88516 Bradford Combined Court Centre
         ('BD100', 88516, 'England', DATE '2023-01-01'),
@@ -840,28 +851,7 @@ WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
         ('W85', 268374, 'England', DATE '2022-01-01'),
         ('W86', 268374, 'England', DATE '2022-01-01'),
         ('W87', 268374, 'England', DATE '2022-01-01')
-),
--- Drop pilot-court rows no longer in the list; CF116QX (HDPI-5819 Wales e2e repoint) is kept.
-removed AS (
-    DELETE FROM postcode_court_mapping p
-    WHERE p.epims_id IN (88516, 197852, 268374, 366572)
-      AND p.postcode <> 'CF116QX'
-      AND NOT EXISTS (
-          SELECT 1 FROM corrected c
-          WHERE c.postcode = p.postcode AND c.epims_id = p.epims_id
-      )
-)
--- Upsert (not DO NOTHING): rows already exist with wrong values in some environments.
-INSERT INTO postcode_court_mapping
-    (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
-SELECT postcode, epims_id, legislative_country, effective_from, NULL,
-       '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb
-FROM corrected
-ON CONFLICT (postcode, epims_id) DO UPDATE
-SET legislative_country = EXCLUDED.legislative_country,
-    effective_from = EXCLUDED.effective_from,
-    effective_to = EXCLUDED.effective_to,
-    audit = EXCLUDED.audit;
+) AS corrected (postcode, epims_id, legislative_country, effective_from);
 
 -- Whitelist the pilot courts; LEAST never delays a court that is already live.
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit)
