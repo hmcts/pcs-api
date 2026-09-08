@@ -3,7 +3,7 @@ import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT, actionRetries, waitForPageRedirectionTimeout } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -47,7 +47,7 @@ export class CaseManagementAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(page, fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
       ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
@@ -103,9 +103,37 @@ export class CaseManagementAction implements IAction {
     await performValidation('mainHeader', home.caseSummary);
   }
 
-  private async selectAnEvent(event: actionRecord) {
+  private async selectAnEvent(page: Page, event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
-    await performAction('clickButton', caseSummary.go);
+
+    // Verify Go actually launched the event, and retry it if not.
+    //
+    // clickButton does not verify navigation, so when Go silently fails to move the page the test
+    // carries on from case-details and fails at whatever it asserts next. That is why one root
+    // cause has surfaced as several unrelated-looking flakes: caseTabs:96 (fixed inline in #2637),
+    // documentsLR:119, casePartyUpdate:227. The mainHeader diagnostic named it directly —
+    // `expected "Add a case note" but page shows "Summary"`, with no error summary, so Go was not
+    // rejected, it just did nothing.
+    //
+    // Anchored on leaving 'Summary' rather than on arriving at a named page, because this helper
+    // does not know the destination and its 29 callers would all have to pass one. Launching any
+    // event always leaves case-details, so "still on Summary" is a reliable failure signal and
+    // needs no caller changes.
+    //
+    // Bounded and non-fatal: if it never leaves, the caller's own mainHeader assertion reports the
+    // real problem against the page it expected, which is a better error than anything raised here.
+    const summaryHeading = page.locator('h1', { hasText: home.caseSummary });
+    for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      await performAction('clickButton', caseSummary.go);
+      const left = await summaryHeading
+        .first()
+        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+      if (left) {
+        return;
+      }
+    }
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
