@@ -329,14 +329,6 @@ class ReviewSupportRequestFlowTest {
         return viewMappedCase(caseFlagsView);
     }
 
-    private PCSCase defendantRepresentedCase() {
-        PartySupportOwnershipResolver resolver = mock(PartySupportOwnershipResolver.class);
-        when(resolver.resolveRepresentedPartyIds(any(), any())).thenReturn(Set.of(defendant.getId()));
-        SecurityContextService securityContextService = mock(SecurityContextService.class);
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        return viewMappedCase(new CaseFlagsView(resolver, securityContextService));
-    }
-
     private PCSCase viewMappedCase(CaseFlagsView view) {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         Set<PartyEntity> parties = new LinkedHashSet<>(List.of(claimant, defendant));
@@ -354,6 +346,14 @@ class ReviewSupportRequestFlowTest {
         pcsCase.setParties(mapAndWrapParties(parties));
         view.setCaseFields(pcsCase, pcsCaseEntity);
         return pcsCase;
+    }
+
+    private PCSCase defendantRepresentedCase() {
+        PartySupportOwnershipResolver resolver = mock(PartySupportOwnershipResolver.class);
+        when(resolver.resolveRepresentedPartyIds(any(), any())).thenReturn(Set.of(defendant.getId()));
+        SecurityContextService securityContextService = mock(SecurityContextService.class);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        return viewMappedCase(new CaseFlagsView(resolver, securityContextService));
     }
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
