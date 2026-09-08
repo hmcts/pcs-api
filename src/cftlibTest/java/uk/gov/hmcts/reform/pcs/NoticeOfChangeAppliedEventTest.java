@@ -7,6 +7,7 @@ import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generateTestS2SToken;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -117,6 +120,10 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
         assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
 
+        // proves the event is registered for history visibility, not just written to the DB -
+        // this is what makes it show up in XUI's History tab for a caseworker
+        assertThat(caseworkerVisibleEventIds(caseReference)).contains(EVENT_ID);
+
         long caseDataId = jdbcTemplate.queryForObject(
             "select id from ccd.case_data where reference = :caseReference",
             caseParameters,
@@ -200,6 +207,24 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             Map.of("partyId", defendantId, "organisationId", ORGANISATION_ID),
             Integer.class
         );
+    }
+
+    private List<String> caseworkerVisibleEventIds(long caseReference) {
+        String caseworkerToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
+        String caseworkerId = idamClient.getUserInfo(caseworkerToken).getUid();
+        JsonNode response = RestClient.create("http://localhost:4452")
+            .get()
+            .uri("/caseworkers/{uid}/jurisdictions/PCS/case-types/PCS/cases/{caseReference}/events",
+                 caseworkerId, caseReference)
+            .header("Authorization", caseworkerToken)
+            .header("ServiceAuthorization", generateTestS2SToken("ccd_gw"))
+            .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .body(JsonNode.class);
+
+        List<String> eventIds = new ArrayList<>();
+        response.forEach(auditEvent -> eventIds.add(auditEvent.path("id").asText()));
+        return eventIds;
     }
 
     // Read straight to JsonNode - reading a String trips HTTPCLIENT-2409 on the ES response
