@@ -18,6 +18,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,8 +26,8 @@ class UserRoleServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
-    private static final String USER_AUTH_TOKEN = "Bearer user-token";
-    private static final String S2S_TOKEN = "Bearer s2s-token";
+    private static final String USER_AUTH_HEADER = "Bearer user-token";
+    private static final String S2S_AUTH_HEADER = "Bearer s2s-token";
 
     @Mock
     private SecurityContextService securityContextService;
@@ -62,8 +63,8 @@ class UserRoleServiceTest {
         underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
         verify(caseAssignmentApi, times(1)).getUserRoles(
-            USER_AUTH_TOKEN,
-            S2S_TOKEN,
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         );
@@ -72,11 +73,11 @@ class UserRoleServiceTest {
     @Test
     void shouldHandleMissingIdamAndRasRoles() {
         stubCurrentUserDetails(null);
-        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
+        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
         when(caseAssignmentApi.getUserRoles(
-            USER_AUTH_TOKEN,
-            S2S_TOKEN,
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
@@ -84,6 +85,18 @@ class UserRoleServiceTest {
         UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
         assertThat(userRoles.roles()).isEmpty();
+    }
+
+    @Test
+    void shouldSkipRasLookupForTheSystemUser() {
+        stubCurrentUserDetails(List.of("system"));
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("system");
+        verifyNoInteractions(caseAssignmentApi);
     }
 
     private void stubCurrentUserDetails(List<String> roles) {
@@ -94,11 +107,11 @@ class UserRoleServiceTest {
     }
 
     private void stubRasRoles(String... roles) {
-        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_TOKEN);
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
+        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
         when(caseAssignmentApi.getUserRoles(
-            USER_AUTH_TOKEN,
-            S2S_TOKEN,
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder()
