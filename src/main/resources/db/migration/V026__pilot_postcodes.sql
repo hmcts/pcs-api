@@ -874,3 +874,10 @@ VALUES
 ON CONFLICT (epims_id) DO UPDATE
 SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.eligible_from),
     audit = EXCLUDED.audit;
+
+-- To check, before and after applying:
+--   SELECT epims_id, count(*) FROM postcode_court_mapping
+--   WHERE epims_id IN (88516, 197852, 268374, 366572) GROUP BY epims_id ORDER BY epims_id;
+-- After: exactly 88516=123, 197852=119, 268374=506, 366572=84 (+1 on 366572 where the
+-- CF116QX repoint exists), every row audit-stamped change_reason HDPI-8449, and the four
+-- courts present in eligibility_whitelisted_epim. Rows for other epims_ids are unchanged.
