@@ -7,13 +7,25 @@
 -- validated with tools/postcode-to-epims (5 exact-duplicate rows deduplicated).
 -- All rows are open-ended (effective_to null) per the amended file.
 --
--- Scope: rollout only. This replaces the mappings for the four pilot courts and
--- leaves every other row untouched; the wider table clean-up and the non-prod
--- e2e seed migration are deliberately deferred to a follow-up.
+-- Scope: in production both tables are cleared completely first (see below), so prod
+-- holds exactly the corrected release 1 data and nothing else. In every other
+-- environment only the four pilot courts' rows are replaced and all other rows
+-- (e2e fixtures, cross-border test postcodes) are left untouched; the wider
+-- non-prod clean-up and e2e seed migration are deliberately deferred to a follow-up.
 --
 -- The list is inclusive: outward codes, sectors and full postcodes coexist, and
 -- PostCodeCourtService resolves the longest active match. Postcodes are stored
 -- normalised, matching postcode_court_mapping_trigger_func().
+
+-- Production only: these tables were populated by manual loads (HDPI-6853) whose exact
+-- contents are unrecorded, and every row in eligibility_whitelisted_epim is a live
+-- court. Clear both tables so production is fully determined by this migration.
+-- The env placeholder resolves per environment: from the target hostname on the
+-- pipeline dbmigrate path, from SPRING_FLYWAY_PLACEHOLDERS_ENV on application
+-- startup, defaulting to 'local'. Everywhere except prod these deletes match nothing.
+DELETE FROM postcode_court_mapping WHERE '${env}' = 'prod';
+DELETE FROM eligibility_whitelisted_epim WHERE '${env}' = 'prod';
+
 WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
     VALUES
         -- 88516 Bradford Combined Court Centre

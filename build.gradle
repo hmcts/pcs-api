@@ -550,13 +550,24 @@ flyway {
   password = System.getenv('FLYWAY_PASSWORD')
   baselineOnMigrate = true
   baselineVersion = '000'
+  placeholders = ['env': System.getenv('ENVIRONMENT') ?: 'local']
 }
 
+// The env placeholder gates environment-specific statements (e.g. the prod-only table
+// clear in V024). The pipeline's dbMigrate step does not export the environment, so
+// derive it from the target hostname (pcs-<env>.postgres...), which cannot disagree
+// with the database actually being migrated.
 tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
   baselineOnMigrate = true
+  def flywayEnv = System.getenv('ENVIRONMENT') ?: 'local'
   if (project.hasProperty("dburl")) {
     url = "jdbc:postgresql://${dburl}"
+    def hostEnv = (project.property('dburl') =~ /pcs-([a-z]+)\.postgres/)
+    if (hostEnv.find()) {
+      flywayEnv = hostEnv.group(1)
+    }
   }
+  placeholders = ['env': flywayEnv]
 }
 
 project.tasks.named("generateCCDConfig") {
