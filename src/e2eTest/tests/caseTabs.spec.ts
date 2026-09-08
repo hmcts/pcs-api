@@ -5,7 +5,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, home } from '@data/page-data';
+import { caseSummary, home, user } from '@data/page-data';
 import { addCaseNote } from '@data/page-data-figma';
 import { checkYourAnswersCaseNote } from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import { formatCaseStateText, getCurrentBSTTime } from '@utils/common/string.utils';
@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseDetails });
     await performAction('getCaseAPI', 'Claim Submission Time');
-    await performAction('fetchCurrentUserAPI', 'Claimant');
+    await performAction('fetchCurrentUserAPI', 'CaseWorker');
   } else if (testInfo.title.includes('CaseFile')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
@@ -94,7 +94,20 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
   });
 
   test('Case tabs - Notes tab test @MAC @regression', async ({ page, context }) => {
-    await performValidation('mainHeader', home.caseSummary)
+    await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+    const pages = page.context().pages();
+    const firstTab = pages[0];
+    await firstTab.bringToFront();
+    await dismissCookieBanner(page, 'additional');
+    await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD, });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
     await performAction('select', caseSummary.nextStepEventList, caseSummary.addCaseNote);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', addCaseNote.mainHeader);
@@ -110,16 +123,6 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
 
     await performAction('clickButton', checkYourAnswersCaseNote.submitNote);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a case note');
-    await clearBrowserSession(page, context);
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
-    const pages = page.context().pages();
-    const firstTab = pages[0];
-    await firstTab.bringToFront();
-    await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: 'TribunalMember.Brandon.Kshlerin-Hartmann@ejudiciary.net', password: process.env.IDAM_PCS_USER_PASSWORD, });
-    await dismissCookieBanner(page, 'analytics');
-    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-    await performValidation('mainHeader', home.caseSummary);
     await performAction('clickTab', home.caseNotes);
     await performAction('validateCaseNotesDetails', {
       createdOn: currentTime.replace(/:\d{2} /, " "),
