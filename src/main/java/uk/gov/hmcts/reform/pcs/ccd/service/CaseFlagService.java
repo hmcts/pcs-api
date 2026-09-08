@@ -110,7 +110,7 @@ public class CaseFlagService {
             .build();
 
         List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
-            reasonableAdjustmentFlags, null, null, partyEntity, CasePartyFlagEntity::new,
+            reasonableAdjustmentFlags, FlagVisibility.EXTERNAL, null, partyEntity, CasePartyFlagEntity::new,
             RefDataPolicy.CREATE_IF_ABSENT, List.of());
 
         partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
