@@ -31,7 +31,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the join between the view layer and Review Support Request. The service is exercised on the
@@ -276,6 +278,41 @@ class ReviewSupportRequestFlowTest {
         assertThat(onCaseFlagsTab.getDateTimeModified()).isEqualTo(REVIEWED);
     }
 
+    @Test
+    @DisplayName("shows reviewed citizen-created support on the defendant solicitor's Support tab")
+    void showsReviewedCitizenSupportOnTheDefendantSolicitorSupportTab() {
+        CasePartyFlagEntity requested =
+            supportFlag("RA0042", "Sign language interpreter", "Requested", FlagVisibility.EXTERNAL);
+        requested.setFlagComment("I need a BSL interpreter");
+        defendant.setDefendantFlags(new ArrayList<>(List.of(requested)));
+        claimant.setDefendantFlags(new ArrayList<>(List.of(
+            supportFlag("SM0004", "Evidence given in private", "Requested", FlagVisibility.EXTERNAL))));
+
+        List<ListValue<PartySupport>> offered = supportReviewService.buildRequestedSupport(viewMappedCase());
+        FlagDetail reviewedDetail = offered.getFirst().getValue().getSupportFlags().getDetails()
+            .getFirst().getValue();
+        reviewedDetail.setStatus("Active");
+        reviewedDetail.setFlagUpdateComment("Interpreter booked");
+        reviewedDetail.setDateTimeModified(REVIEWED);
+
+        caseFlagService().applyReviewedSupportFlags(offered, Set.of(defendant));
+
+        PCSCase pcsCase = defendantRepresentedCase();
+        FlagDetail onSupportTab = pcsCase.getPartySupport().stream()
+            .filter(value -> defendant.getId().toString().equals(value.getId()))
+            .findFirst().orElseThrow()
+            .getValue().getSupportFlags().getDetails().getFirst().getValue();
+
+        assertThat(requested.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+        assertThat(onSupportTab.getStatus()).isEqualTo("Active");
+        assertThat(onSupportTab.getFlagUpdateComment()).isEqualTo("Interpreter booked");
+        assertThat(onSupportTab.getFlagComment()).isEqualTo("I need a BSL interpreter");
+        assertThat(onSupportTab.getDateTimeCreated()).isEqualTo(CREATED);
+
+        assertThat(pcsCase.getPartySupport())
+            .noneMatch(value -> claimant.getId().toString().equals(value.getId()));
+    }
+
     private CaseFlagService caseFlagService() {
         return new CaseFlagService(null, null, null, null, null);
     }
@@ -289,6 +326,18 @@ class ReviewSupportRequestFlowTest {
     }
 
     private PCSCase viewMappedCase() {
+        return viewMappedCase(caseFlagsView);
+    }
+
+    private PCSCase defendantRepresentedCase() {
+        PartySupportOwnershipResolver resolver = mock(PartySupportOwnershipResolver.class);
+        when(resolver.resolveRepresentedPartyIds(any(), any())).thenReturn(Set.of(defendant.getId()));
+        SecurityContextService securityContextService = mock(SecurityContextService.class);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        return viewMappedCase(new CaseFlagsView(resolver, securityContextService));
+    }
+
+    private PCSCase viewMappedCase(CaseFlagsView view) {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         Set<PartyEntity> parties = new LinkedHashSet<>(List.of(claimant, defendant));
         pcsCaseEntity.setParties(parties);
@@ -303,7 +352,7 @@ class ReviewSupportRequestFlowTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
         pcsCase.setParties(mapAndWrapParties(parties));
-        caseFlagsView.setCaseFields(pcsCase, pcsCaseEntity);
+        view.setCaseFields(pcsCase, pcsCaseEntity);
         return pcsCase;
     }
 

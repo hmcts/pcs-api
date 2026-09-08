@@ -254,6 +254,30 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldStoreCitizenReasonableAdjustmentsAsExternalWhenNoVisibilitySupplied() {
+        // Given
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(new ArrayList<>())
+            .build();
+
+        Flags incomingFlags = Flags.builder()
+            .partyName("Jack Smith")
+            .roleOnCase("Defendant")
+            .details(createFlagDetailsWithoutIds("RA0042", "Sign language interpreter"))
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(partyEntity, incomingFlags, CASE_REFERENCE);
+
+        // Then
+        assertThat(incomingFlags.getVisibility()).isNull();
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(CasePartyFlagEntity::getVisibility)
+            .containsExactly(FlagVisibility.EXTERNAL.getValue());
+    }
+
+    @Test
     void shouldIgnoreSuppliedFlagsThatAreNotReasonableAdjustments() {
         // Given
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
