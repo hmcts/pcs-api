@@ -1,4 +1,4 @@
--- HDPI-8449: corrected pilot postcode to court mapping, from the amended mapping file
+-- Release 1 pilot postcodes: corrected postcode to court mapping, from the amended mapping file
 -- on the ticket (2026-09-02), validated with tools/postcode-to-epims; one row (W12OEB,
 -- a letter-O typo of W120EB) dropped per the data owner. The list is inclusive
 -- (outward codes, sectors and full postcodes; longest active match wins).
@@ -14,7 +14,7 @@ WHERE epims_id IN (88516, 197852, 268374, 366572)
 INSERT INTO postcode_court_mapping
     (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
 SELECT postcode, epims_id, legislative_country, effective_from, NULL,
-       '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb
+       '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb
 FROM (
     VALUES
         -- 88516 Bradford Combined Court Centre
@@ -857,10 +857,10 @@ FROM (
 -- Whitelist the pilot courts; LEAST never delays a court that is already live.
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit)
 VALUES
-    (88516, DATE '2023-01-01', '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb),
-    (197852, DATE '2022-01-01', '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb),
-    (268374, DATE '2022-01-01', '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb),
-    (366572, DATE '2024-01-01', '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb)
+    (88516, DATE '2023-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb),
+    (197852, DATE '2022-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb),
+    (268374, DATE '2022-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb),
+    (366572, DATE '2024-01-01', '{"created_by": "admin", "change_reason": "release 1 pilot postcodes"}'::jsonb)
 ON CONFLICT (epims_id) DO UPDATE
 SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.eligible_from),
     audit = EXCLUDED.audit;
@@ -869,5 +869,5 @@ SET eligible_from = LEAST(eligibility_whitelisted_epim.eligible_from, EXCLUDED.e
 --   SELECT epims_id, count(*) FROM postcode_court_mapping
 --   WHERE epims_id IN (88516, 197852, 268374, 366572) GROUP BY epims_id ORDER BY epims_id;
 -- After: exactly 88516=123, 197852=119, 268374=505, 366572=84 (+1 on 366572 where the
--- CF116QX repoint exists), every row audit-stamped change_reason HDPI-8449, and the four
+-- CF116QX repoint exists), every row audit-stamped change_reason 'release 1 pilot postcodes', and the four
 -- courts present in eligibility_whitelisted_epim. Rows for other epims_ids are unchanged.
