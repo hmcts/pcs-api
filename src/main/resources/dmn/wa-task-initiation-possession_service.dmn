@@ -830,7 +830,7 @@ else
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_02pgpxn">
-          <text>Flag raised has default status is 'Requested'</text>
+          <text>Flag raised has default status of 'Requested'</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0xam2wk">
           <text></text>

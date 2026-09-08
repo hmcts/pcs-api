@@ -214,7 +214,6 @@ public class CaseFlagService {
 
     private void fireOnActiveWelshFlags(PartyEntity partyEntity, List<CasePartyFlagEntity> mergedFlags,
                                         boolean welshCommsAlreadyActive) {
-        // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
         if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedFlags)) {
             translationWAService.triggerTranslationTasksForFlaggingParty(partyEntity);
         }
@@ -223,8 +222,6 @@ public class CaseFlagService {
     private List<CasePartyFlagEntity> mergeOrRetainPartyFlags(Flags incomingFlags, FlagVisibility visibility,
                                                               List<CasePartyFlagEntity> existingFlags,
                                                               PartyEntity partyEntity) {
-        // Merge candidates are scoped to this visibility, so an incoming flag can only ever update a stored
-        // flag of the same visibility even when the ids match.
         List<CasePartyFlagEntity> existingFlagsForVisibility = existingFlags.stream()
             .filter(existingFlag -> visibility == toFlagVisibility(existingFlag.getVisibility()))
             .toList();
@@ -448,9 +445,6 @@ public class CaseFlagService {
             return;
         }
 
-        // Requested support is reviewable whatever visibility it is stored under, matching what the
-        // review screen offered. Only a requested flag identified by its own id is updated, and its
-        // stored visibility is left as it is so Support tab access is unchanged by the review.
         partyEntity.getDefendantFlags().stream()
             .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
                 .equalsIgnoreCase(existingFlag.getDefaultStatus()))
