@@ -85,7 +85,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: chooseAnApplication.adjournTheHearingRadioOption,
     });
     await performValidation('mainHeader', askToAdjournTheCourtHearing.mainHeader);
-    await performAction('clickButtonAndVerifyPageNavigation', askToAdjournTheCourtHearing.continueButton, selectParty.mainHeader);
+    await performAction('clickButton', askToAdjournTheCourtHearing.continueButton);
     await performValidation('mainHeader', selectParty.mainHeader);
     await performAction('selectApplicant', {
       question: selectParty.partyMakingApplicationQuestion,
@@ -159,7 +159,7 @@ test('Select an Application - Ask to Adjourn journey - Help paying the Fee[No]',
     option: chooseAnApplication.adjournTheHearingRadioOption,
   });
   await performValidation('mainHeader', askToAdjournTheCourtHearing.mainHeader);
-  await performAction('clickButtonAndVerifyPageNavigation', askToAdjournTheCourtHearing.continueButton, selectParty.mainHeader);
+  await performAction('clickButton', askToAdjournTheCourtHearing.continueButton);
   await performValidation('mainHeader', selectParty.mainHeader);
   await performAction('selectApplicant', {
     question: selectParty.partyMakingApplicationQuestion,

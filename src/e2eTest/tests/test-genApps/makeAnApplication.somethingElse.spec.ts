@@ -83,7 +83,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       option: chooseAnApplication.somethingElseRadioOption,
     });
     await performValidation('mainHeader', askTheCourtToMakeAnOrder.mainHeader);
-    await performAction('clickButtonAndVerifyPageNavigation', askTheCourtToMakeAnOrder.continueButton, selectParty.mainHeader);
+    await performAction('clickButton', askTheCourtToMakeAnOrder.continueButton);
     await performValidation('mainHeader', selectParty.mainHeader);
     await performAction('selectApplicant', {
       question: selectParty.partyMakingApplicationQuestion,
