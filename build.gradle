@@ -553,10 +553,8 @@ flyway {
   placeholders = ['env': System.getenv('ENVIRONMENT') ?: 'local']
 }
 
-// The env placeholder gates environment-specific statements (e.g. the prod-only table
-// clear in V024). The pipeline's dbMigrate step does not export the environment, so
-// derive it from the target hostname (pcs-<env>.postgres...), which cannot disagree
-// with the database actually being migrated.
+// The env placeholder gates environment-specific SQL (e.g. the prod-only clear in V026),
+// derived from the target hostname so it cannot disagree with the database being migrated.
 tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
   baselineOnMigrate = true
   def flywayEnv = System.getenv('ENVIRONMENT') ?: 'local'

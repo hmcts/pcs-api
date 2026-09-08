@@ -1,28 +1,10 @@
--- HDPI-8449: correct the postcode to court mapping for the four release 1 pilot courts.
--- The initial list (HDPI-6853) put Cardiff and Swansea postcodes under Caernarfon and
--- north/south-east London under Wandsworth, and carried malformed codes.
---
--- Data source: HDPI-8449 Jira attachment "Release 1 Mapping File - amended for
--- inclusive postcode approach (1).xlsx" (2026-09-02), exported to CSV and
--- validated with tools/postcode-to-epims (5 exact-duplicate rows deduplicated).
--- All rows are open-ended (effective_to null) per the amended file.
---
--- Scope: in production both tables are cleared completely first (see below), so prod
--- holds exactly the corrected release 1 data and nothing else. In every other
--- environment only the four pilot courts' rows are replaced and all other rows
--- (e2e fixtures, cross-border test postcodes) are left untouched; the wider
--- non-prod clean-up and e2e seed migration are deliberately deferred to a follow-up.
---
--- The list is inclusive: outward codes, sectors and full postcodes coexist, and
--- PostCodeCourtService resolves the longest active match. Postcodes are stored
--- normalised, matching postcode_court_mapping_trigger_func().
+-- HDPI-8449: corrected pilot postcode to court mapping, from the amended mapping file
+-- on the ticket (2026-09-02), validated with tools/postcode-to-epims. The list is
+-- inclusive (outward codes, sectors and full postcodes; longest active match wins).
 
--- Production only: these tables were populated by manual loads (HDPI-6853) whose exact
--- contents are unrecorded, and every row in eligibility_whitelisted_epim is a live
--- court. Clear both tables so production is fully determined by this migration.
--- The env placeholder resolves per environment: from the target hostname on the
--- pipeline dbmigrate path, from SPRING_FLYWAY_PLACEHOLDERS_ENV on application
--- startup, defaulting to 'local'. Everywhere except prod these deletes match nothing.
+-- Prod only: clear both tables so production holds exactly this data and nothing from
+-- the earlier manual loads. ${env} is the flyway placeholder (per-env); elsewhere
+-- these deletes match nothing, so e2e fixtures in aat/demo/perftest are untouched.
 DELETE FROM postcode_court_mapping WHERE '${env}' = 'prod';
 DELETE FROM eligibility_whitelisted_epim WHERE '${env}' = 'prod';
 
@@ -865,9 +847,7 @@ WITH corrected (postcode, epims_id, legislative_country, effective_from) AS (
         ('W86', 268374, 'England', DATE '2022-01-01'),
         ('W87', 268374, 'England', DATE '2022-01-01')
 ),
--- Drop mappings for the pilot courts that are no longer in the list. CF116QX is
--- excluded: it is the deliberate repoint of the Wales end-to-end postcode
--- (HDPI-5819), not part of the pilot list.
+-- Drop pilot-court rows no longer in the list; CF116QX (HDPI-5819 Wales e2e repoint) is kept.
 removed AS (
     DELETE FROM postcode_court_mapping p
     WHERE p.epims_id IN (88516, 197852, 268374, 366572)
@@ -877,8 +857,7 @@ removed AS (
           WHERE c.postcode = p.postcode AND c.epims_id = p.epims_id
       )
 )
--- Refresh rather than skip on conflict, so a court or date correction also applies
--- where the mapping already exists.
+-- Upsert (not DO NOTHING): rows already exist with wrong values in some environments.
 INSERT INTO postcode_court_mapping
     (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
 SELECT postcode, epims_id, legislative_country, effective_from, NULL,
@@ -890,8 +869,7 @@ SET legislative_country = EXCLUDED.legislative_country,
     effective_to = EXCLUDED.effective_to,
     audit = EXCLUDED.audit;
 
--- Whitelist the pilot courts so their mapped postcodes are eligible. LEAST keeps an
--- earlier existing date, so this never delays a court that is already live.
+-- Whitelist the pilot courts; LEAST never delays a court that is already live.
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit)
 VALUES
     (88516, DATE '2023-01-01', '{"created_by": "admin", "change_reason": "HDPI-8449"}'::jsonb),
