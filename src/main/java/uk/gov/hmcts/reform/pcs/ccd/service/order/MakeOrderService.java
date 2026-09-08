@@ -3,33 +3,28 @@ package uk.gov.hmcts.reform.pcs.ccd.service.order;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.MakeOrderCaseFacts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderDraftPayload.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
-import java.time.Clock;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -37,37 +32,40 @@ import java.util.stream.Stream;
 public class MakeOrderService {
 
     private final OrderRepository orderRepository;
-    private final HearingRepository hearingRepository;
+    private final PcsCaseRepository pcsCaseRepository;
     private final ObjectMapper objectMapper;
     private final AddressMapper addressMapper;
-    private final Clock ukClock;
 
     public MakeOrderService(OrderRepository orderRepository,
-                            HearingRepository hearingRepository,
+                            PcsCaseRepository pcsCaseRepository,
                             ObjectMapper objectMapper,
-                            AddressMapper addressMapper,
-                            @Qualifier("ukClock") Clock ukClock) {
+                            AddressMapper addressMapper) {
         this.orderRepository = orderRepository;
-        this.hearingRepository = hearingRepository;
+        this.pcsCaseRepository = pcsCaseRepository;
         this.objectMapper = objectMapper;
         this.addressMapper = addressMapper;
-        this.ukClock = ukClock;
     }
 
     @Transactional(readOnly = true)
     public String start(long caseReference, PCSCase pcsCase) {
-        HearingEntity hearing = findTodaysHearing(caseReference);
-        OrderEntity order = orderRepository
-            .findFirstByPcsCase_IdAndHearing_IdAndStateOrderByCreatedAtDesc(
-                hearing.getPcsCase().getId(), hearing.getId(), OrderState.DRAFT)
-            .orElseGet(() -> OrderEntity.builder()
-                .pcsCase(hearing.getPcsCase())
-                .hearing(hearing)
-                .state(OrderState.DRAFT)
-                .draftPayload(writeJson(emptyDraftPayload()))
-                .build());
+        PcsCaseEntity caseEntity = findCase(caseReference);
+        MakeOrderEnvelope.Order order = orderRepository
+            .findFirstByPcsCaseCaseReferenceAndStateOrderByUpdatedAtDesc(caseReference, OrderState.DRAFT)
+            .map(this::toOrder)
+            .orElseGet(() -> new MakeOrderEnvelope.Order(
+                null, OrderState.DRAFT, 0, objectMapper.createObjectNode()));
 
-        return writeJson(toEnvelope(caseReference, pcsCase, order));
+        return writeJson(new MakeOrderEnvelope(
+            null,
+            order,
+            new MakeOrderEnvelope.MakeOrderCaseContext(
+                caseReference,
+                addressMapper.toAddressUK(caseEntity.getPropertyAddress()),
+                toParties(pcsCase.getAllClaimants()),
+                toParties(pcsCase.getAllDefendants()),
+                toCaseFacts(pcsCase)
+            )
+        ));
     }
 
     @Transactional
@@ -80,57 +78,27 @@ public class MakeOrderService {
             throw new IllegalArgumentException("The order is missing");
         }
 
-        HearingEntity hearing = findTodaysHearing(caseReference);
         if (submitted.action() == Action.START_DRAFT) {
-            startDraft(hearing);
+            if (orderRepository.findFirstByPcsCaseCaseReferenceAndStateOrderByUpdatedAtDesc(
+                caseReference, OrderState.DRAFT).isPresent()) {
+                throw new IllegalStateException("An order draft already exists for this case");
+            }
+            orderRepository.saveAndFlush(OrderEntity.builder()
+                .pcsCase(findCase(caseReference))
+                .state(OrderState.DRAFT)
+                .draftPayload(writeJson(payloadOrEmpty(submitted.order().draftPayload())))
+                .build());
             return submitted.action();
         }
+
         if (submitted.order().id() == null) {
             throw new IllegalArgumentException("The order draft identifier is missing");
         }
 
-        OrderEntity order = existingOrder(submitted, hearing);
+        OrderEntity order = orderRepository
+            .findByIdAndPcsCaseCaseReference(submitted.order().id(), caseReference)
+            .orElseThrow(() -> new IllegalStateException("The order draft does not exist for this case"));
 
-        MakeOrderDraftPayload draftPayload = validateDraftPayload(
-            submitted.order().draftPayload(), submitted.action());
-
-        order.setDraftPayload(writeJson(draftPayload));
-        OrderState nextState = switch (submitted.action()) {
-            case SAVE_DRAFT -> OrderState.DRAFT;
-            case SUBMIT_FOR_REVIEW -> OrderState.SUBMITTED_FOR_REVIEW;
-            case START_DRAFT -> throw new IllegalStateException("The start action was not handled");
-        };
-        order.setState(nextState);
-        orderRepository.saveAndFlush(order);
-        return submitted.action();
-    }
-
-    private void startDraft(HearingEntity hearing) {
-        if (orderRepository.findFirstByPcsCase_IdAndHearing_IdAndStateOrderByCreatedAtDesc(
-            hearing.getPcsCase().getId(), hearing.getId(), OrderState.DRAFT).isPresent()) {
-            throw new IllegalStateException("An order draft already exists for today's hearing");
-        }
-        orderRepository.saveAndFlush(newOrder(hearing));
-    }
-
-    private OrderEntity newOrder(HearingEntity hearing) {
-        return OrderEntity.builder()
-            .pcsCase(hearing.getPcsCase())
-            .hearing(hearing)
-            .state(OrderState.DRAFT)
-            .draftPayload(writeJson(emptyDraftPayload()))
-            .build();
-    }
-
-    private OrderEntity existingOrder(MakeOrderEnvelope submitted, HearingEntity hearing) {
-        OrderEntity order = orderRepository.findById(submitted.order().id())
-            .orElseThrow(() -> new IllegalStateException("The order draft does not exist"));
-
-        if (!order.getPcsCase().getId().equals(hearing.getPcsCase().getId())
-            || order.getHearing() == null
-            || !order.getHearing().getId().equals(hearing.getId())) {
-            throw new IllegalStateException("The order draft does not belong to today's hearing");
-        }
         if (order.getVersion() != submitted.order().version()) {
             throw new IllegalStateException(
                 "The order draft has been updated by another user. Reload it and try again");
@@ -138,36 +106,27 @@ public class MakeOrderService {
         if (order.getState() != OrderState.DRAFT) {
             throw new IllegalStateException("Only a draft order can be changed");
         }
-        return order;
+
+        order.setDraftPayload(writeJson(payloadOrEmpty(submitted.order().draftPayload())));
+        order.setState(submitted.action() == Action.SAVE_DRAFT
+            ? OrderState.DRAFT
+            : OrderState.SUBMITTED_FOR_REVIEW);
+        orderRepository.saveAndFlush(order);
+        return submitted.action();
     }
 
-    private HearingEntity findTodaysHearing(long caseReference) {
-        LocalDate today = LocalDate.now(ukClock);
-        List<HearingEntity> hearings = hearingRepository.findActiveHearingsBetween(
-            caseReference, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
-
-        if (hearings.isEmpty()) {
-            throw new IllegalStateException("No hearing is listed for this case today");
-        }
-        if (hearings.size() > 1) {
-            throw new IllegalStateException("More than one hearing is listed for this case today");
-        }
-        return hearings.getFirst();
+    private PcsCaseEntity findCase(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    private MakeOrderEnvelope toEnvelope(long caseReference, PCSCase pcsCase, OrderEntity order) {
-        return new MakeOrderEnvelope(
-            null,
-            new MakeOrderEnvelope.Order(
-                order.getId(), order.getState(), order.getVersion(), readDraftPayload(order.getDraftPayload())),
-            new MakeOrderEnvelope.MakeOrderCaseContext(
-                caseReference,
-                addressMapper.toAddressUK(order.getPcsCase().getPropertyAddress()),
-                toParties(pcsCase.getAllClaimants()),
-                toParties(pcsCase.getAllDefendants()),
-                toCaseFacts(pcsCase)
-            )
-        );
+    private MakeOrderEnvelope.Order toOrder(OrderEntity order) {
+        return new MakeOrderEnvelope.Order(
+            order.getId(), order.getState(), order.getVersion(), readJson(order.getDraftPayload()));
+    }
+
+    private JsonNode payloadOrEmpty(JsonNode payload) {
+        return payload == null ? objectMapper.createObjectNode() : payload;
     }
 
     private MakeOrderCaseFacts toCaseFacts(PCSCase pcsCase) {
@@ -192,7 +151,7 @@ public class MakeOrderService {
         );
     }
 
-    private LocalDate noticeDate(NoticeServedDetails notice) {
+    private java.time.LocalDate noticeDate(NoticeServedDetails notice) {
         if (notice == null || notice.getServiceMethod() == null) {
             return null;
         }
@@ -261,54 +220,13 @@ public class MakeOrderService {
         }
     }
 
-    private MakeOrderDraftPayload readDraftPayload(String payload) {
+    private JsonNode readJson(String payload) {
         try {
-            if (payload == null || payload.isBlank()) {
-                return emptyDraftPayload();
-            }
-            return objectMapper.readValue(payload, MakeOrderDraftPayload.class);
+            return payload == null || payload.isBlank()
+                ? objectMapper.createObjectNode()
+                : objectMapper.readTree(payload);
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException("The stored order draft payload is not valid JSON", exception);
-        }
-    }
-
-    private MakeOrderDraftPayload emptyDraftPayload() {
-        return new MakeOrderDraftPayload(
-            1, OrderType.OUTRIGHT_POSSESSION, objectMapper.createObjectNode(), Map.of());
-    }
-
-    private MakeOrderDraftPayload validateDraftPayload(MakeOrderDraftPayload draftPayload, Action action) {
-        if (draftPayload == null) {
-            throw new IllegalArgumentException("The order draft payload is missing");
-        }
-        if (draftPayload.version() != 1) {
-            throw new IllegalArgumentException("The order draft payload version is not supported");
-        }
-        if (draftPayload.orderType() == null) {
-            throw new IllegalArgumentException("The order type is missing");
-        }
-        if (draftPayload.formData() == null || !draftPayload.formData().isObject()) {
-            throw new IllegalArgumentException("The order draft form data must be a JSON object");
-        }
-        if (draftPayload.documents() == null
-            || draftPayload.documents().values().stream()
-                .anyMatch(document -> document == null || !document.isObject())) {
-            throw new IllegalArgumentException("The order documents must be JSON objects");
-        }
-        if (action == Action.SUBMIT_FOR_REVIEW) {
-            validateSubmissionDocument(draftPayload);
-        }
-        return draftPayload;
-    }
-
-    private void validateSubmissionDocument(MakeOrderDraftPayload draftPayload) {
-        JsonNode document = draftPayload.documents().get(draftPayload.orderType());
-        if (document == null
-            || !"docweave-document".equals(document.path("schema").asText())
-            || document.path("version").asInt() != 1
-            || !document.path("current").isObject()
-            || !document.path("generated").isObject()) {
-            throw new IllegalArgumentException("The order document is invalid");
         }
     }
 

@@ -21,7 +21,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -44,10 +43,6 @@ public class OrderEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id", nullable = false)
     private PcsCaseEntity pcsCase;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hearing_id")
-    private HearingEntity hearing;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    Optional<OrderEntity> findFirstByPcsCase_IdAndHearing_IdAndStateOrderByCreatedAtDesc(
-        UUID caseId, Integer hearingId, OrderState state);
+    Optional<OrderEntity> findFirstByPcsCaseCaseReferenceAndStateOrderByUpdatedAtDesc(
+        long caseReference, OrderState state);
+
+    Optional<OrderEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 }

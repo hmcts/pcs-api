@@ -1,13 +1,11 @@
 CREATE TYPE order_state AS ENUM (
     'DRAFT',
-    'SUBMITTED_FOR_REVIEW',
-    'ISSUED'
+    'SUBMITTED_FOR_REVIEW'
 );
 
 CREATE TABLE orders (
     id UUID PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES pcs_case(id),
-    hearing_id INTEGER REFERENCES hearing(id),
     state order_state NOT NULL,
     version BIGINT NOT NULL DEFAULT 0,
     draft_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -16,7 +14,7 @@ CREATE TABLE orders (
 );
 
 CREATE INDEX orders_case_id_idx ON orders(case_id);
-CREATE INDEX orders_hearing_id_idx ON orders(hearing_id);
-CREATE UNIQUE INDEX orders_one_draft_per_hearing_idx ON orders(hearing_id) WHERE state = 'DRAFT';
+CREATE UNIQUE INDEX orders_one_draft_per_case_idx ON orders(case_id) WHERE state = 'DRAFT';
 
+-- TODO: add an optional hearing association when order-to-hearing rules are defined.
 CALL ccd.attach_case_event_auditing_v1('public.orders'::regclass);
