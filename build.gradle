@@ -22,8 +22,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '6.36.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2360'
+  id 'hmcts.ccd.sdk' version '6.37.0'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2365'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -395,7 +395,7 @@ ext {
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
   jackson3Version = "3.1.6"
-  cucumberVersion = "7.34.7"
+  cucumberVersion = "7.34.8"
 }
 
 ext['snakeyaml.version'] = '2.7'
@@ -434,7 +434,7 @@ dependencies {
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.0'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'

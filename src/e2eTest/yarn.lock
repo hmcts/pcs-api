@@ -1817,9 +1817,9 @@ natural-compare@^1.4.0:
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
 oauth4webapi@^3.5.1:
-  version "3.8.7"
-  resolved "https://registry.yarnpkg.com/oauth4webapi/-/oauth4webapi-3.8.7.tgz#e9ba31b5fd21d0f7b531293971ce0f55aabdfb6d"
-  integrity sha512-4RxcKxXjuItDFZ20RRPf4YTw3kpeXJyCgJFxVzJ068A7PNJ18st2Dg90tlC1LkSDS0GecroagCLHYEIVUhCAkw==
+  version "3.8.8"
+  resolved "https://registry.yarnpkg.com/oauth4webapi/-/oauth4webapi-3.8.8.tgz#05b47975cb621cdfd5dad35cecfaf41170e15c79"
+  integrity sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==
 
 one-time@^1.0.0:
   version "1.0.0"
