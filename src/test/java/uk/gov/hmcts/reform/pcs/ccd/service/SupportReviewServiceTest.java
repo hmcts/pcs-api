@@ -161,7 +161,7 @@ class SupportReviewServiceTest {
     }
 
     @Test
-    void shouldReviewRequestedSupportForEveryPartyRoleNotOnlyDefendants() {
+    void shouldReviewRequestedSupportForDefendantPartiesOnly() {
         String claimantId = UUID.randomUUID().toString();
         PCSCase pcsCase = PCSCase.builder()
             .partySupport(List.of(
@@ -172,10 +172,24 @@ class SupportReviewServiceTest {
 
         List<ListValue<PartySupport>> result = underTest.buildRequestedSupport(pcsCase);
 
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getId()).isEqualTo(PARTY_ID);
+        assertThat(result.getFirst().getValue().getSupportFlags().getRoleOnCase()).isEqualTo("Defendant");
+        assertThat(result.getFirst().getValue().getSupportFlags().getDetails())
+            .extracting(detail -> detail.getValue().getName())
+            .containsExactly("Therapy animal");
         assertThat(result)
-            .extracting(entry -> entry.getValue().getSupportFlags().getRoleOnCase())
-            .containsExactly("Claimant", "Defendant");
+            .noneMatch(entry -> claimantId.equals(entry.getId()));
+    }
+
+    @Test
+    void shouldNotReviewRequestedSupportFromAPartyWithNoRoleOnCase() {
+        PCSCase pcsCase = PCSCase.builder()
+            .partySupport(List.of(supportEntry(PARTY_ID, FlagVisibility.EXTERNAL,
+                List.of(flag("Requested", "Hearing loop")), null)))
+            .build();
+
+        assertThat(underTest.buildRequestedSupport(pcsCase)).isEmpty();
     }
 
     @Test

@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -71,7 +72,7 @@ public class SupportReviewService {
     }
 
     private void collect(String partyId, Flags flags, Map<String, RequestedSupport> requestedByPartyId) {
-        if (partyId == null || flags == null) {
+        if (partyId == null || flags == null || !isDefendantSupport(flags)) {
             return;
         }
 
@@ -83,6 +84,10 @@ public class SupportReviewService {
         requestedByPartyId
             .computeIfAbsent(partyId, key -> new RequestedSupport(flags))
             .addAll(requestedDetails);
+    }
+
+    private boolean isDefendantSupport(Flags flags) {
+        return CaseFlagsView.DEFENDANT.equals(flags.getRoleOnCase());
     }
 
     private List<ListValue<FlagDetail>> requestedDetails(Flags flags) {
