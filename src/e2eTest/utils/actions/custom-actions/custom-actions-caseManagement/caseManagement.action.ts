@@ -34,7 +34,13 @@ import {
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
-import { MAX_UPLOAD_BACKOFF } from '@utils/actions/element-actions/uploadFile.action';
+import {
+  MAX_UPLOAD_BACKOFF,
+  POST_UPLOAD_SETTLE,
+  UPLOAD_GAP,
+  markUploadCompleted,
+  waitForUploadWindow,
+} from '@utils/actions/element-actions/uploadFile.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
@@ -317,9 +323,12 @@ export class CaseManagementAction implements IAction {
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    // Top the gap up rather than sleeping it flat — see uploadFile.action.ts for the derivation.
+    // This shares that module's timestamp deliberately: both paths upload through the same XUI
+    // session, so a private timer here would let each spend a gap the other had already paid.
+    await waitForUploadWindow(page);
+    let timeout = UPLOAD_GAP;
     await fileInput.last().setInputFiles(filePath);
-    // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
-    let timeout = 8000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     // Same three defects uploadFile.action.ts already had fixed, left behind in this copy:
     //
@@ -351,8 +360,12 @@ export class CaseManagementAction implements IAction {
       await performValidation('waitUntilElementDisappears', 'Uploading...');
     }
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
-    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
-    await page.waitForTimeout(timeout);
+    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes, so a
+    // short settle is still paid here. It used to sleep `timeout`, which the retry loop above
+    // doubles: a single 429 turned this trailing wait into 16s, and a second into 32s, on top of
+    // the backoff already served. The row commit does not get slower because XUI throttled us.
+    await page.waitForTimeout(POST_UPLOAD_SETTLE);
+    markUploadCompleted();
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
