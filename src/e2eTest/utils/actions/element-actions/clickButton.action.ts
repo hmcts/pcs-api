@@ -47,7 +47,17 @@ export class ClickButtonAction implements IAction {
         .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
-      throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
+      // Say where it ended up. Without this the failure names only the page it wanted, so a click
+      // that never fired is indistinguishable from an event the server refused to create — and
+      // the latter has been seen twice as "The event could not be created  Cannot read properties
+      // of null (reading 'indexOf')" on other tests.
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const errorSummary = await page
+        .locator('.govuk-error-summary, .error-summary, #error-summary-title, .alert-message')
+        .first().innerText().catch(() => '');
+      throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts `
+        + `— page shows "${heading}"`
+        + `${errorSummary ? `; error: ${errorSummary.replace(/\s+/g, ' ').slice(0, 300)}` : ''}`);
     }
   }
 
