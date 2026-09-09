@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.wa;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +18,6 @@ import uk.gov.hmcts.reform.pcs.model.WaTask;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
 import uk.gov.hmcts.reform.pcs.service.TaskManagementService;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
@@ -48,9 +46,6 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     private TaskManagementService taskManagementService;
 
     @Autowired
-    private FeatureToggleService featureToggleService;
-
-    @Autowired
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
     private String solicitorToken;
@@ -68,10 +63,8 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     }
 
     @Test
+    @EnabledIfEnvironmentVariable(named = "WA_TESTS_ENABLED", matches = "true")
     void createNewClaimCreateNewHearingTask() throws InterruptedException {
-        if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
-            return;
-        }
 
         long caseReference = caseCreationService.createMinimalCase(solicitorToken);
 
