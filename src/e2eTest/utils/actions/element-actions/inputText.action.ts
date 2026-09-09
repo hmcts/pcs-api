@@ -1,6 +1,8 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
-import { MEDIUM_TIMEOUT } from '../../../playwright.config';
+// How long to wait for a per-party field that a radio click should have revealed. See the
+// comment in execute() for why this is deliberately much shorter than MEDIUM_TIMEOUT.
+const INDEXED_FIELD_TIMEOUT = 3000;
 
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
@@ -25,10 +27,32 @@ export class InputTextAction implements IAction {
       // arriving at 1200ms, count=1 and the fill lands on id=d0; after waiting, count=2 and it
       // lands on id=d1. It is the only one of this action's 7 Wales call sites that adds extra
       // defendants, which is why only that one failed.
+      // The wait above is only worth paying when the indexed field is actually missing. Callers
+      // pass an index whenever a question *can* repeat, not only when it does: the negative-path
+      // money-field data passes index: 1 for all twelve of its items, on a page that only ever
+      // renders one Days/Hours/Minutes field. There nth(index) can never attach, so the wait runs
+      // to its full budget and the ternary falls to .first() regardless.
+      //
+      // That was paid 36 times in caseWorkerHearingManagement:118 (12 items x 3 fields) and at
+      // MEDIUM_TIMEOUT each accounted for ~6 of that test's 7.0 minutes — a quarter of the whole
+      // suite's wall clock in one test. The same test takes 31.5s on AAT nightly, which runs
+      // without this wait.
+      //
+      // So: skip it when the field is already there, and cap the unproductive case. Measured on
+      // PR-2655: :118 fell 7.1m -> 2.5m and the suite 28.0m -> 25.1m at 0 failures / 0 flaky,
+      // with createCaseWales:604 — the failure this wait exists to prevent — still passing.
+      // 3s covers its ~1.2s reveal. The warning below reports any site where the shorter budget
+      // was not enough, so a regression names itself rather than returning as a silent overwrite
+      // of the first party's field.
       const index = Number(fieldParams.index);
-      if (index > 0) {
-        await locator.nth(index).waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+      if (index > 0 && (await locator.count()) <= index) {
+        const waitStarted = Date.now();
+        await locator.nth(index).waitFor({ state: 'attached', timeout: INDEXED_FIELD_TIMEOUT })
           .catch(() => undefined);
+        if ((await locator.count()) <= index) {
+          console.warn(`[inputText] index=${index} never appeared for "${labelText}" after `
+            + `${Date.now() - waitStarted}ms; filling the first matching field instead`);
+        }
       }
       locator = (await locator.count()) > 1
         ? locator.nth(index)
