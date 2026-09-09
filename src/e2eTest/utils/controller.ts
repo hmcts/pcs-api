@@ -54,7 +54,12 @@ async function validatePageIfNavigated(action: string): Promise<void> {
         return;
       }
 
+      // Timing only. caseTabs' CaseFile View test takes 49.3s against 7.2s on AAT, but the
+      // CaseFile View validators themselves measure ~250ms (PR-2679), so the time is in the tab
+      // click or in this post-navigation page validation. Split them.
+      const contentStart = Date.now();
       await performValidation('autoValidatePageContent');
+      console.log(`[pageContent] autoValidate took ${Date.now() - contentStart}ms on ${currentUrl.split('/').pop()}`);
       try {
         if (a11yEnabled) {
           await settleBeforeAudit(executor.page);
