@@ -4,6 +4,9 @@
   import { performAction, performValidation } from '@utils/controller';
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
+  // Total sleeping allowed across rate-limit retries. 16+32 = 48s absorbs a transient 429; going
+  // on to 64 and 128 has never recovered one and costs minutes.
+  export const MAX_CUMULATIVE_BACKOFF = 60000;
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
@@ -60,11 +63,19 @@
       await performValidation('waitUntilElementDisappears', 'Uploading...');
       // "Uploading..." going does not mean CCD has committed the row.
       await page.waitForTimeout(timeout);
-      // Bounded loop, not a toPass: the doubling sleeps reach 84s cumulative. Capped at XUI's 180s.
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                         span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-      const maxRateLimitRetries = 5;
-      for (let attempt = 0; attempt < maxRateLimitRetries; attempt++) {
+      // Five doubling retries sleep 16+32+64+128+180s, so an upload the throttle will not let
+      // through spends over 7 minutes failing. That has happened on three consecutive runs
+      // (createCase:920/:1043), each burning ~8.3m against a normal ~2.3m and failing anyway —
+      // attempts four and five have never recovered one.
+      //
+      // Cap the cumulative backoff instead of the attempt count: keep retrying while there is
+      // budget, so a transient 429 is still absorbed by the early short sleeps, but stop once the
+      // total reaches a minute rather than continuing to four. A doomed upload then fails in ~1m
+      // and Playwright's own retry gets a fresh attempt sooner.
+      let backoffSpent = 0;
+      while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
         // count() does not poll and the banner renders after the POST returns, so wait briefly.
         const rateLimited = await rateLimit
           .first()
@@ -75,6 +86,7 @@
           return;
         }
         timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+        backoffSpent += timeout;
         await page.waitForTimeout(timeout);
         await fileInput.last().setInputFiles(filePath);
         await performValidation('waitUntilElementDisappears', 'Uploading...');
