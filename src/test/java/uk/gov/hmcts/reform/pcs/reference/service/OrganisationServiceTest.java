@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -57,6 +58,37 @@ class OrganisationServiceTest {
             securityContextService,
             organisationDetailsService
         );
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation details")
+    void getOrganisationDetails_shouldSuccessfullyRetrieveOrganisationDetails() {
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .name(ORGANISATION_NAME)
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .status("ACTIVE")
+                    .build());
+
+        OrganisationDetailsResponse result = organisationService.getOrganisationDetails(USER_ID.toString());
+
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo(ORGANISATION_NAME);
+        assertThat(result.getOrganisationIdentifier()).isEqualTo(ORGANISATION_IDENTIFIER);
+        assertThat(result.getStatus()).isEqualTo("ACTIVE");
+
+        verify(organisationDetailsService).getOrganisationDetails(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null when retrieving organisation details and an exception occurs")
+    void getOrganisationDetails_shouldReturnNullWhenAnExceptionOccurs() {
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
+            .thenThrow(new OrganisationDetailsException("", null));
+
+        OrganisationDetailsResponse result = organisationService.getOrganisationDetails(USER_ID.toString());
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService).getOrganisationDetails(USER_ID.toString());
     }
 
     @Test
@@ -157,6 +189,60 @@ class OrganisationServiceTest {
 
         assertThat(result).isNull();
         verify(organisationDetailsService, never()).requireOrganisationDetails(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation ID for current user when required")
+    void shouldSuccessfullyRetrieveRequiredOrganisationIdForCurrentUser() {
+        stubCurrentUser();
+        stubRequiredPrd(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
+
+        String result = organisationService.requireOrganisationIdForCurrentUser();
+
+        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+        verify(organisationDetailsService).requireOrganisationDetails(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should return null for the system user without calling rd-professional")
+    void requireOrganisationIdForCurrentUser_ShouldReturnNullForSystemUser() {
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        String result = organisationService.requireOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verifyNoInteractions(organisationDetailsService);
+    }
+
+    @Test
+    @DisplayName("Should return null when user ID is null")
+    void requireOrganisationIdForCurrentUser_ShouldReturnNullWhenUserIdIsNull() {
+        String result = organisationService.requireOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).requireOrganisationDetails(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should throw OrganisationDetailsException")
+    void requireOrganisationIdForCurrentUser_ShouldThrowExceptionWhenOrganisationDetailsExceptionThrown() {
+        stubCurrentUser();
+        when(organisationDetailsService.requireOrganisationDetails(USER_ID.toString()))
+            .thenThrow(new OrganisationDetailsException("", null));
+
+        assertThatThrownBy(() -> organisationService.requireOrganisationIdForCurrentUser())
+            .isInstanceOf(OrganisationDetailsException.class);
+    }
+
+    @Test
+    @DisplayName("Should throw SecurityContextException")
+    void requireOrganisationIdForCurrentUser_ShouldReturnNullWhenSecurityContextExceptionThrown() {
+        when(securityContextService.getCurrentUserId()).thenThrow(new SecurityContextException(""));
+
+        assertThatThrownBy(() -> organisationService.requireOrganisationIdForCurrentUser())
+            .isInstanceOf(SecurityContextException.class);
     }
 
     @Test
