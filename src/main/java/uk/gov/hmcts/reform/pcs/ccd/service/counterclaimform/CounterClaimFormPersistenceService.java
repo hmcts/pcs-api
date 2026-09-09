@@ -47,8 +47,10 @@ public class CounterClaimFormPersistenceService {
             return Optional.empty();
         }
         CounterClaimFormPayload payload = payloadBuilder.build(counterClaim);
+        Integer rank = counterClaim.getRank();
+        int counterClaimRank = (rank != null) ? rank : 1; // Fallback for legacy data
         return Optional.of(new CounterClaimFormRenderContext(
-            payload, counterClaim.getRank(), defendantNumber(counterClaim)));
+            payload, counterClaimRank, defendantNumber(counterClaim)));
     }
 
     @Transactional
