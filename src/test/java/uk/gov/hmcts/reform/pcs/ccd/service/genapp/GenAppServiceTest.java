@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
@@ -45,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -93,6 +95,10 @@ class GenAppServiceTest {
     private ClaimActivityLogService claimActivityLogService;
     @Mock
     private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private GenAppWaTaskService genAppWaTaskService;
     @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
@@ -117,7 +123,7 @@ class GenAppServiceTest {
 
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
                                       documentRepository, claimActivityLogService, genAppDocumentGenerator,
-                                      utcClock
+                                      notificationService, genAppWaTaskService, utcClock
         );
     }
 
@@ -1135,6 +1141,28 @@ class GenAppServiceTest {
 
             // Then
             verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
+            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+        }
+
+        @Test
+        void shouldCreateWorkAllocationTaskOnlyAfterDocumentGenerated() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(null);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            InOrder inOrder = inOrder(genAppDocumentGenerator, genAppWaTaskService);
+            inOrder.verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            inOrder.verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
         }
 
         @Test
@@ -1149,7 +1177,7 @@ class GenAppServiceTest {
             underTest.generateSubmissionDocument(genAppId);
 
             // Then
-            verifyNoInteractions(genAppDocumentGenerator);
+            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
         }
 
         @Test
@@ -1163,7 +1191,7 @@ class GenAppServiceTest {
 
             // Then
             assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
-            verifyNoInteractions(genAppDocumentGenerator);
+            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
         }
     }
 
