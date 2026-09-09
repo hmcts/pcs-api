@@ -85,7 +85,8 @@ public class OrganisationService {
                 return null;
             }
 
-            OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId.toString());
+            OrganisationDetailsResponse organisationDetails =
+                this.getCachedRequiredOrganisationDetails(userId.toString());
             return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
