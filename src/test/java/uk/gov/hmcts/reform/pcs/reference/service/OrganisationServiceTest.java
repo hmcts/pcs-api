@@ -63,9 +63,8 @@ class OrganisationServiceTest {
     @DisplayName("Should successfully retrieve organisation name for current user")
     void shouldSuccessfullyRetrieveOrganisationNameForCurrentUser() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationName(USER_ID.toString()))
-            .thenReturn(ORGANISATION_NAME);
+        stubCurrentUser();
+        stubPrd(OrganisationDetailsResponse.builder().name(ORGANISATION_NAME).build());
 
         // When
         String result = organisationService.getOrganisationNameForCurrentUser();
@@ -73,18 +72,17 @@ class OrganisationServiceTest {
         // Then
         assertThat(result).isEqualTo(ORGANISATION_NAME);
         verify(securityContextService).getCurrentUserId();
-        verify(organisationDetailsService).getOrganisationName(USER_ID.toString());
+        verify(organisationDetailsService).getOrganisationDetails(USER_ID.toString());
     }
 
     @Test
     @DisplayName("Should retrieve organisation profile ids skipping the generic profile")
     void shouldRetrieveOrgProfileIdsSkippingGenericProfile() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
-            .thenReturn(OrganisationDetailsResponse.builder()
-                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-                            .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
-                            .build());
+        stubCurrentUser();
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .organisationProfileIds(List.of("ORGANISATION_PROFILE", "LOCALAUTH_PROFILE"))
+                    .build());
 
         String result = organisationService.getOrgProfileIdForCurrentUser();
 
@@ -94,11 +92,10 @@ class OrganisationServiceTest {
     @Test
     @DisplayName("Should return null profile ids when absent from the organisation details")
     void shouldReturnNullWhenProfileIdsAbsent() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
-            .thenReturn(OrganisationDetailsResponse.builder()
-                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
-                            .build());
+        stubCurrentUser();
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .build());
 
         String result = organisationService.getOrgProfileIdForCurrentUser();
 
@@ -108,14 +105,15 @@ class OrganisationServiceTest {
     @Test
     @DisplayName("Should successfully retrieve organisation ID for current user")
     void shouldSuccessfullyRetrieveOrganisationIdForCurrentUser() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(USER_ID.toString()))
-            .thenReturn(ORGANISATION_IDENTIFIER);
+        stubCurrentUser();
+        stubRequiredPrd(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
 
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
-        verify(organisationDetailsService).requireOrganisationIdentifier(USER_ID.toString());
+        verify(organisationDetailsService).requireOrganisationDetails(USER_ID.toString());
     }
 
     @Test
@@ -135,14 +133,14 @@ class OrganisationServiceTest {
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isNull();
-        verify(organisationDetailsService, never()).requireOrganisationIdentifier(USER_ID.toString());
+        verify(organisationDetailsService, never()).requireOrganisationDetails(USER_ID.toString());
     }
 
     @Test
     @DisplayName("Should return null when exception thrown")
     void getOrganisationIdForCurrentUser_ShouldReturnNullWhenOrganisationDetailsExceptionThrown() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(USER_ID.toString()))
+        stubCurrentUser();
+        when(organisationDetailsService.requireOrganisationDetails(USER_ID.toString()))
             .thenThrow(new OrganisationDetailsException("", null));
 
         String result = organisationService.getOrganisationIdForCurrentUser();
@@ -158,7 +156,7 @@ class OrganisationServiceTest {
         String result = organisationService.getOrganisationIdForCurrentUser();
 
         assertThat(result).isNull();
-        verify(organisationDetailsService, never()).requireOrganisationIdentifier(USER_ID.toString());
+        verify(organisationDetailsService, never()).requireOrganisationDetails(USER_ID.toString());
     }
 
     @Test
@@ -179,9 +177,10 @@ class OrganisationServiceTest {
     @DisplayName("Should return null when organisation name is null")
     void shouldReturnNullWhenOrganisationNameIsNull() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationName(USER_ID.toString()))
-            .thenReturn(null);
+        stubCurrentUser();
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .build());
 
         // When
         String result = organisationService.getOrganisationNameForCurrentUser();
@@ -194,23 +193,24 @@ class OrganisationServiceTest {
     @DisplayName("Should return null when organisation name is empty")
     void shouldReturnNullWhenOrganisationNameIsEmpty() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationName(USER_ID.toString()))
-            .thenReturn("");
+        stubCurrentUser();
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .build());
 
         // When
         String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
-        assertThat(result).isEmpty();
+        assertThat(result).isNull();
     }
 
     @Test
     @DisplayName("Should return null when OrganisationDetailsService throws exception")
     void shouldReturnNullWhenOrganisationDetailsServiceThrowsException() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationName(anyString()))
+        stubCurrentUser();
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString()))
             .thenThrow(new RuntimeException("Service unavailable"));
 
         // When
@@ -235,30 +235,26 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when organisation address key fields are empty")
-    void shouldReturnNullWhenOrganisationAddressIsEmpty() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
-            .thenReturn(AddressUK.builder().build());
-
+    @DisplayName("Should return null when organisation is null")
+    void shouldReturnNullWhenOrganisationIsNull() {
         // When
-        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+        AddressUK result = organisationService.getOrganisationAddress(null);
 
         // Then
         assertThat(result).isNull();
     }
 
     @Test
-    @DisplayName("Should return null when organisation address is null")
+    @DisplayName("Should return null when organisation contact information is null")
     void shouldReturnNullWhenOrganisationAddressIsNull() {
         // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
-            .thenReturn(null);
+        OrganisationDetailsResponse organisationDetails = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .contactInformation(null)
+            .build();
 
         // When
-        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+        AddressUK result = organisationService.getOrganisationAddress(organisationDetails);
 
         // Then
         assertThat(result).isNull();
@@ -268,62 +264,101 @@ class OrganisationServiceTest {
     @DisplayName("Should successfully retrieve organisation address for current user")
     void shouldSuccessfullyRetrieveOrganisationAddressForCurrentUser() {
         // Given
-        AddressUK orgAddress =  AddressUK.builder()
+        OrganisationDetailsResponse organisationDetails = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .contactInformation(List.of(
+                OrganisationDetailsResponse.ContactInformation.builder()
+                    .addressLine1("27 Feather street")
+                    .townCity("London")
+                    .postCode("B8 7FH")
+                    .build()
+            )).build();
+
+        AddressUK orgAddress = AddressUK.builder()
             .addressLine1("27 Feather street")
             .postTown("London")
             .postCode("B8 7FH")
             .build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
-            .thenReturn(orgAddress);
-
         // When
-        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+        AddressUK result = organisationService.getOrganisationAddress(organisationDetails);
 
         // Then
         assertThat(result).isEqualTo(orgAddress);
-        verify(securityContextService).getCurrentUserId();
-        verify(organisationDetailsService).getOrganisationAddress(USER_ID.toString());
+    }
+
+    @Test
+    @DisplayName("Should successfully get first organisation address")
+    void shouldSuccessfullyGetOrganisationAddress() {
+        // Given
+        OrganisationDetailsResponse.ContactInformation contactInfo1 = OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("27 Feather Street")
+            .townCity("London")
+            .postCode("B8 7FH")
+            .build();
+
+        OrganisationDetailsResponse.ContactInformation contactInfo2 = OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("1 Additional Street")
+            .townCity("London")
+            .postCode("AD1 5TR")
+            .build();
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of(contactInfo1, contactInfo2))
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        // When
+        AddressUK result = organisationService.getOrganisationAddress(response);
+
+        // Then
+        assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
+        assertThat(result.getPostTown()).isEqualTo(contactInfo1.getTownCity());
+        assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
     }
 
     @Test
     @DisplayName("The organisation is resolved once and reused, not fetched per draft operation")
     void shouldResolveTheOrganisationOnlyOnceForRepeatedLookups() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(anyString()))
-            .thenReturn(ORGANISATION_IDENTIFIER);
+        stubCurrentUser();
+        stubRequiredPrd(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
 
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
 
-        verify(organisationDetailsService, times(1)).requireOrganisationIdentifier(anyString());
+        verify(organisationDetailsService, times(1)).requireOrganisationDetails(anyString());
     }
 
     @Test
     @DisplayName("Having no organisation is a settled answer and is reused")
     void shouldReuseTheAnswerThatAUserHasNoOrganisation() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(anyString())).thenReturn(null);
+        stubCurrentUser();
+        stubRequiredPrd(null);
 
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isNull();
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isNull();
 
-        verify(organisationDetailsService, times(1)).requireOrganisationIdentifier(anyString());
+        verify(organisationDetailsService, times(1)).requireOrganisationDetails(anyString());
     }
 
     @Test
     @DisplayName("A failed lookup must not be remembered: it would extend a blip into a stale answer")
     void shouldNotReuseAFailedLookup() {
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(organisationDetailsService.requireOrganisationIdentifier(anyString()))
+        stubCurrentUser();
+        when(organisationDetailsService.requireOrganisationDetails(anyString()))
             .thenThrow(new OrganisationDetailsException("rd-professional unavailable", new RuntimeException()))
-            .thenReturn(ORGANISATION_IDENTIFIER);
+            .thenReturn(OrganisationDetailsResponse.builder()
+                            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                            .build());
 
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isNull();
         assertThat(organisationService.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
 
-        verify(organisationDetailsService, times(2)).requireOrganisationIdentifier(anyString());
+        verify(organisationDetailsService, times(2)).requireOrganisationDetails(anyString());
     }
 
     @Test
@@ -337,7 +372,7 @@ class OrganisationServiceTest {
                             .build());
 
         OrganisationService service = serviceBackedBy(rdProfessionalApi);
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubCurrentUser();
 
         assertThat(service.getOrganisationIdForCurrentUser()).isNull();
         assertThat(service.getOrganisationIdForCurrentUser()).isEqualTo(ORGANISATION_IDENTIFIER);
@@ -353,12 +388,121 @@ class OrganisationServiceTest {
             .thenThrow(feignError(404));
 
         OrganisationService service = serviceBackedBy(rdProfessionalApi);
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubCurrentUser();
 
         assertThat(service.getOrganisationIdForCurrentUser()).isNull();
         assertThat(service.getOrganisationIdForCurrentUser()).isNull();
 
         verify(rdProfessionalApi, times(1)).getOrganisationDetails(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should skip the rd-professional lookup for a citizen user")
+    void shouldSkipOrganisationLookupForCitizen() {
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().roles(List.of(UserRole.CITIZEN.getRole())).build());
+
+        String result = organisationService.getOrganisationIdForCurrentUser();
+
+        assertThat(result).isNull();
+        verify(organisationDetailsService, never()).requireOrganisationDetails(anyString());
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation name")
+    void shouldSuccessfullyGetOrganisationName() {
+        // Given
+        stubPrd(OrganisationDetailsResponse.builder().name(ORGANISATION_NAME).build());
+
+        // When
+        String result = organisationService.getOrganisationName(USER_ID.toString());
+
+        // Then
+        assertThat(result).isEqualTo(ORGANISATION_NAME);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation identifier")
+    void shouldSuccessfullyGetOrganisationIdentifier() {
+        // Given
+        stubPrd(OrganisationDetailsResponse.builder()
+                    .name(ORGANISATION_NAME)
+                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
+                    .build());
+
+        // When
+        String result = organisationService.getOrganisationIdentifier(USER_ID.toString());
+
+        // Then
+        assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation payment accounts")
+    void shouldSuccessfullyGetOrganisationPaymentAccounts() {
+        // Given
+        List<String> paymentAccounts = List.of("PBA1234567", "PBA7654321");
+        stubPrd(OrganisationDetailsResponse.builder().paymentAccount(paymentAccounts).build());
+
+        // When
+        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID.toString());
+
+        // Then
+        assertThat(result).isEqualTo(paymentAccounts);
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation payment accounts are null")
+    void shouldReturnNullWhenOrganisationPaymentAccountsAreNull() {
+        // Given
+        stubPrd(OrganisationDetailsResponse.builder().build());
+
+        // When
+        List<String> result = organisationService.getOrganisationPaymentAccount(USER_ID.toString());
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("getOrganisationName should return null when underlying call throws FeignException")
+    void getOrganisationNameShouldReturnNullOnFeignFailure() {
+        // Given
+        RdProfessionalApi rdProfessionalApi = mock(RdProfessionalApi.class);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenThrow(feignError(503));
+
+        OrganisationService service = serviceBackedBy(rdProfessionalApi);
+
+        // When
+        String result = service.getOrganisationName(USER_ID.toString());
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("A null response body must not blow up the identifier accessor")
+    void shouldReturnNullIdentifierWhenTheResponseBodyIsNull() {
+        RdProfessionalApi rdProfessionalApi = mock(RdProfessionalApi.class);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        OrganisationService service = serviceBackedBy(rdProfessionalApi);
+
+        assertThat(service.getOrganisationIdentifier(USER_ID.toString())).isNull();
+    }
+
+    private void stubCurrentUser() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+    }
+
+    private void stubPrd(OrganisationDetailsResponse response) {
+        when(organisationDetailsService.getOrganisationDetails(USER_ID.toString())).thenReturn(response);
+    }
+
+    private void stubRequiredPrd(OrganisationDetailsResponse response) {
+        when(organisationDetailsService.requireOrganisationDetails(USER_ID.toString())).thenReturn(response);
     }
 
     private OrganisationService serviceBackedBy(RdProfessionalApi rdProfessionalApi) {
@@ -369,24 +513,18 @@ class OrganisationServiceTest {
 
         return new OrganisationService(
             securityContextService,
-            new OrganisationDetailsService(rdProfessionalApi, authTokenGenerator, prdAdminTokenProvider));
+            new OrganisationDetailsService(rdProfessionalApi, authTokenGenerator, prdAdminTokenProvider)
+        );
     }
 
     private static FeignException feignError(int status) {
-        Request request = Request.create(Request.HttpMethod.GET, "/orgDetails", Map.of(), null,
-                                         StandardCharsets.UTF_8, null);
-        return FeignException.errorStatus("getOrganisationDetails",
-            Response.builder().status(status).reason("test").request(request).headers(Map.of()).build());
-    }
-
-    @DisplayName("Should skip the rd-professional lookup for a citizen user")
-    void shouldSkipOrganisationLookupForCitizen() {
-        when(securityContextService.getCurrentUserDetails())
-            .thenReturn(UserInfo.builder().roles(List.of(UserRole.CITIZEN.getRole())).build());
-
-        String result = organisationService.getOrganisationIdForCurrentUser();
-
-        assertThat(result).isNull();
-        verify(organisationDetailsService, never()).requireOrganisationIdentifier(anyString());
+        Request request = Request.create(
+            Request.HttpMethod.GET, "/orgDetails", Map.of(), null,
+            StandardCharsets.UTF_8, null
+        );
+        return FeignException.errorStatus(
+            "getOrganisationDetails",
+            Response.builder().status(status).reason("test").request(request).headers(Map.of()).build()
+        );
     }
 }
