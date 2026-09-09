@@ -307,8 +307,7 @@ export class CaseManagementAction implements IAction {
     const uploadGap = 8000;
     let timeout = uploadGap;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    // Same three defects uploadFile.action.ts already had fixed, left behind in this copy: a
-    // non-polling count() so the loop never ran, an unbounded doubling, and a 60s wrapper.
+    // Bounded loop with a polling probe, matching uploadFile.action.ts.
     const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
     const maxRateLimitRetries = 5;
@@ -399,10 +398,7 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', {
       textLabel: editHearingData.hourLabel,
       index: 1
-      // From 1, not 0. getRandomNumberAsString is inclusive of min, and a zero-hours
-      // duration is not rendered on the check-your-answers page, so the CYA comparison
-      // failed with "Hours | 0 / NOT FOUND" roughly one run in eleven. Days and Minutes
-      // above and below already start at 1 for the same reason.
+      // From 1: min is inclusive, and a zero-hours duration is not rendered on CYA.
     }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
       textLabel: editHearingData.minutesLabel,
@@ -544,9 +540,7 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    // No index: this page renders one Days, one Hours and one Minutes field. `index: 1` asked
-    // inputText to wait for a second one that never arrives — 3 waits of 3s per call of this
-    // happy-path helper, on top of the 46 the error-validation path spent.
+    // No index: this page renders one Days, one Hours and one Minutes field.
     await performAction('inputText', { textLabel: addAHearing.daysLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', { textLabel: addAHearing.hoursLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
     await performAction('inputText', { textLabel: addAHearing.minsLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
@@ -902,8 +896,7 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
-            // item.index still selects the branch, but is no longer passed to inputText: all twelve
-            // money items carry index 1 on a page with one of each field, so nth(1) never attaches.
+            // item.index selects the branch but is not forwarded: nth(1) never attaches here.
             if (item.index && validationArr.labelMulti) {
               await performAction('inputText', { textLabel: validationArr.label }, item.input);
               await performAction('inputText', { textLabel: validationArr.label1 }, item.input2);

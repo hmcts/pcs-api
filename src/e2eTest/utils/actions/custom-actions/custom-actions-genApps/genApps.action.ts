@@ -446,9 +446,8 @@ export class GenAppsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    // finally — same leak as validateCYAForLR in documentsLR.action.ts, in a second copy of
-    // this function. On a CYA failure the throw skipped cyaMap.clear(), so the module-level
-    // map stayed populated and the next test on that worker compared against leftover rows.
+    // finally: a throw would otherwise skip clear() and leak the module-level map to the next
+    // test on this worker.
     try {
       await test.step('CYA Validation Started and the results are present in the console logs', async () => {
         if (misMatchMap.size > 0) {

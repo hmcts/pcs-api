@@ -35,7 +35,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
-    // Gate on this page own heading before touching anything on it.
+    // Gate on this page's own heading before touching anything on it.
     await performValidation('mainHeader', occupationLicenceDetailsWales.mainHeader);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});

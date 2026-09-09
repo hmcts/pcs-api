@@ -13,13 +13,9 @@ export class InputTextAction implements IAction {
       locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
 
       // Wait for the indexed field before reading a non-polling count(): if it has not rendered,
-      // count() returns 1 and the value overwrites the FIRST party field (createCaseWales:604).
-      //
-      // Only pay the wait when the field is actually missing, and cap it: callers pass an index
-      // whenever a question *can* repeat, so on single-field pages nth(index) never attaches and
-      // the wait ran to its full budget for nothing — 36 times in caseWorkerHearingManagement:118.
-      // Explicit, because Number(undefined) is NaN and every comparison below would read false by
-      // accident.
+      // count() returns 1 and the value overwrites the FIRST party's field. Only paid when the
+      // field is missing, and capped, because callers pass an index whenever a question *can*
+      // repeat — on single-field pages nth(index) never attaches.
       const index = Number(fieldParams.index);
       const hasIndex = Number.isInteger(index) && index > 0;
       if (hasIndex && (await locator.count()) <= index) {

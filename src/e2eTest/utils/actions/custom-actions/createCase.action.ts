@@ -216,9 +216,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
-    // innerText does not poll, so without the wait this read the alert before it
-    // rendered and threw "Case ID not found". .first() because the banner region can
-    // hold more than one alert.
+    // innerText does not poll. .first() because the banner region can hold several alerts.
     const alert = page.locator('div.alert-message').first();
     await alert.waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
     const text = await alert.innerText();
@@ -405,9 +403,7 @@ export class CreateCaseAction implements IAction {
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
           .catch(() => undefined);
-        // Clicked once. This was two identical calls in a row: the second re-clicked a radio
-        // already checked, so it was pure cost, and its retry loop could only ever confirm
-        // what the first had done.
+        // Clicked once: this was two identical calls in a row.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -533,9 +529,7 @@ export class CreateCaseAction implements IAction {
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
       await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
-      // No index: the label already carries the ground name, so exactly one field matches it.
-      // Passing `n` made inputText wait for an nth(n) that cannot exist — measured as 7 waits of
-      // 3s here, all of which then fell back to .first() anyway. Same field, no wait.
+      // No index: the label carries the ground name, so exactly one field matches it.
       await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})` }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
@@ -911,8 +905,7 @@ export class CreateCaseAction implements IAction {
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
           .catch(() => undefined);
-        // Clicked once. This was two identical calls in a row, so the second re-clicked a
-        // radio that was already checked.
+        // Clicked once: this was two identical calls in a row.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,

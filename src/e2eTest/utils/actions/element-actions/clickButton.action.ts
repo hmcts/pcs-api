@@ -38,8 +38,7 @@ export class ClickButtonAction implements IAction {
     do {
       attempt++;
       await this.clickButton(page, button);
-      // waitFor polls; isVisible does not, so the fixed sleep was the only thing giving
-      // the next page time to render.
+      // waitFor polls; isVisible does not.
       const budget = attempt === 1 ? LONG_TIMEOUT : waitForPageRedirectionTimeout;
       nextPageElementIsVisible = await pageElement
         .first()

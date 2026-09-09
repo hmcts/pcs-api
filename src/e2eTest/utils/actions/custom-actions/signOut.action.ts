@@ -13,10 +13,7 @@ export class signOutAction implements IAction {
         await performAction('clickButton', home.signOutButton);
       }
 
-      // Bounded per attempt. Without an explicit timeout this inherits the global expect
-      // default of 30s (playwright.config.ts), which is longer than the whole toPass
-      // budget below — so a slow sign-out was cut off part-way through its first attempt
-      // and never got the retry the wrapper exists to provide.
+      // Bounded per attempt: the 30s global default exceeds the toPass budget below.
       await expect(page.locator('input#email')).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: LONG_TIMEOUT,

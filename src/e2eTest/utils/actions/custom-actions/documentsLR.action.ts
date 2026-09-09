@@ -186,8 +186,7 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
-        // Exact id, not a `^=` prefix. The prefix also matches the ...defendantDocumentTypeWales
-        // sibling, so on a page rendering both this resolves to 2 elements and selectOption -
+        // Exact id: a `^=` prefix also matches the ...Wales sibling, giving 2 matches.
         const typeDropdown = page.locator(
           `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
@@ -276,8 +275,8 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    // finally, because `cyaMap.clear()` used to sit after the throw below: a CYA failure left
-    // the module-level map populated, and the next test on that worker compared its own
+    // finally: a throw would otherwise skip clear() and leak the module-level map to the next
+    // test on this worker.
     try {
       await test.step('CYA Validation Started and the results are present in the console logs', async () => {
         if (misMatchMap.size > 0) {
