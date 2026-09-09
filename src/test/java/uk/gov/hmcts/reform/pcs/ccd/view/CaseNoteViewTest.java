@@ -4,11 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -112,5 +116,43 @@ class CaseNoteViewTest {
 
         ZonedDateTime zonedDateTime = WINTER_INSTANT.atZone(UK_ZONE_ID);
         assertThat(zonedDateTime.getOffset()).isEqualTo(ZoneOffset.UTC);
+    }
+
+    @Test
+    void shouldMapReviewDateEntitiesToCaseReviewDatesWithNewestFirst() {
+        CaseReviewDateEntity olderReviewDate = CaseReviewDateEntity.builder()
+            .createdBy("Older Worker")
+            .createdDate(LocalDateTime.of(2026, 1, 15, 12, 0))
+            .date(LocalDate.of(2026, 8, 20))
+            .reason(ReviewReason.GENERAL_ORDER)
+            .description("older review")
+            .build();
+        CaseReviewDateEntity newerReviewDate = CaseReviewDateEntity.builder()
+            .createdBy("Newer Worker")
+            .createdDate(LocalDateTime.of(2026, 4, 22, 22, 0))
+            .date(LocalDate.of(2026, 9, 15))
+            .reason(ReviewReason.OTHER)
+            .description("newer review")
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseNotes(List.of())
+            .reviewDates(List.of(olderReviewDate, newerReviewDate))
+            .build();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        caseNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+
+        List<ListValue<CaseReviewDate>> reviewDates = pcsCase.getCaseReviewDates();
+        assertThat(reviewDates).hasSize(2);
+        assertThat(reviewDates.getFirst().getId()).isEqualTo("Review date 1");
+        assertThat(reviewDates.getFirst().getValue().getCreatedBy()).isEqualTo("Newer Worker");
+        assertThat(reviewDates.getFirst().getValue().getCreatedDate())
+            .isEqualTo(LocalDateTime.of(2026, 4, 22, 22, 0));
+        assertThat(reviewDates.getFirst().getValue().getDate()).isEqualTo(newerReviewDate.getDate());
+        assertThat(reviewDates.getFirst().getValue().getReason()).isEqualTo(ReviewReason.OTHER);
+        assertThat(reviewDates.getFirst().getValue().getDescription()).isEqualTo("newer review");
+
+        assertThat(reviewDates.getLast().getId()).isEqualTo("Review date 2");
+        assertThat(reviewDates.getLast().getValue().getCreatedBy()).isEqualTo("Older Worker");
     }
 }
