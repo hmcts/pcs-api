@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-import { LONG_TIMEOUT, SHORT_TIMEOUT } from '../../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_SHORT_TIMEOUT } from '../../playwright.config';
 import { exactTextWithOptionalWhitespaceRegex } from './string.utils';
 
 const HEADING_SELECTOR = 'h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title';
@@ -79,4 +79,40 @@ export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT)
     .locator('.spinner-container')
     .waitFor({ state: 'detached', timeout })
     .catch(() => undefined);
+}
+
+// The accessibility audit runs once per navigation, on whatever the DOM looks like at that
+// instant. CCD populates a collection row's label *after* inserting the row, so a scan fired
+// straight after "Add new" can see
+//
+//   <label for="enter_genapp_RelatedEvidence_value"><span class="form-label" aria-label=""></span></label>
+//
+// and report the critical `label` rule ("Form elements must have labels") for a field that is
+// labelled a moment later. AxeUtils asserts with expect.soft(violations).toEqual([]), so it does
+// not throw — it silently marks the test failed and is attributed to whichever step was open,
+// which is why this surfaced for weeks as an unexplained "uploadFile deep-equality" failure.
+//
+// Give an empty form label a brief chance to fill in before auditing. Deliberately short, and
+// where no empty label exists the locator matches nothing and this returns at once, so the cost
+// lands only on the pages that have one. If a label never fills in, axe still reports it: this
+// defers the scan, it does not suppress anything.
+//
+// The premise — that the empty label is TRANSIENT — is not established. It is supported by the
+// flake being intermittent rather than every-run, but a permanent product defect that is only
+// sometimes scanned would look the same. Hence the logging: it records whether an empty label was
+// there at all and whether waiting cleared it, so the next occurrence settles which it is instead
+// of leaving this change unfalsifiable.
+export async function settleBeforeAudit(page: Page): Promise<void> {
+  await waitForSpinner(page, SHORT_TIMEOUT);
+  const emptyLabel = page.locator('label span.form-label:empty').first();
+  if (!(await emptyLabel.count())) {
+    return;
+  }
+  const waitStarted = Date.now();
+  const cleared = await emptyLabel
+    .waitFor({ state: 'detached', timeout: VERY_SHORT_TIMEOUT })
+    .then(() => true)
+    .catch(() => false);
+  console.log(`[axeSettle] empty form label ${cleared ? 'filled in' : 'STILL EMPTY'} after `
+    + `${Date.now() - waitStarted}ms — ${cleared ? 'scan deferred past a render race' : 'likely a real accessibility defect'}`);
 }
