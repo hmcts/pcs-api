@@ -1,4 +1,5 @@
 import { Page, test } from '@playwright/test';
+import { settleBeforeAudit } from '@utils/common/locator.utils';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { AxeUtils } from "@hmcts/playwright-common";
@@ -54,6 +55,8 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       await performValidation('autoValidatePageContent');
       try {
+        await settleBeforeAudit(executor.page);
+
         await test.step("Running Accessibility Scan", async () => {
           await new AxeUtils(executor.page).audit({
                       exclude: axe_Exclusions,

@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-import { LONG_TIMEOUT, SHORT_TIMEOUT } from '../../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_SHORT_TIMEOUT } from '../../playwright.config';
 import { exactTextWithOptionalWhitespaceRegex } from './string.utils';
 
 const HEADING_SELECTOR = 'h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title';
@@ -78,5 +78,30 @@ export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT)
   await page
     .locator('.spinner-container')
     .waitFor({ state: 'detached', timeout })
+    .catch(() => undefined);
+}
+
+// The accessibility audit runs immediately after every action, on whatever the DOM looks like at
+// that instant. CCD populates a collection row's label *after* inserting the row, so a scan fired
+// straight after "Add new" can see
+//
+//   <label for="enter_genapp_RelatedEvidence_value"><span class="form-label" aria-label=""></span></label>
+//
+// and report the critical `label` rule ("Form elements must have labels") for a field that is
+// labelled a moment later. AxeUtils asserts with expect.soft(violations).toEqual([]), so it does
+// not throw — it silently marks the test failed and gets attributed to whichever step was active,
+// which is why this surfaced for weeks as an unexplained "uploadFile deep-equality" failure.
+//
+// Give an empty form label a brief chance to fill in before auditing. Deliberately short: the
+// audit runs after every action, so this must not become a per-action tax. Where no empty label
+// exists the locator matches nothing and this returns immediately, so the cost is confined to the
+// pages that actually have one — and if a label never fills in, axe still reports it. This defers
+// the scan, it does not suppress anything.
+export async function settleBeforeAudit(page: Page): Promise<void> {
+  await waitForSpinner(page, SHORT_TIMEOUT);
+  await page
+    .locator('label span.form-label:empty')
+    .first()
+    .waitFor({ state: 'detached', timeout: VERY_SHORT_TIMEOUT })
     .catch(() => undefined);
 }
