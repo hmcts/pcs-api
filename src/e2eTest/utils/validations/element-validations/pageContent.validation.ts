@@ -120,8 +120,7 @@ export class PageContentValidation implements IValidation {
 
     if (!pageData) return;
 
-    // The page's elements all arrive together when it renders, so wait once for the
-    // heading rather than giving each of up to 45 probes its own timeout.
+    // Elements arrive together, so wait once for the heading rather than per probe.
     await this.waitForPageToRender(page, pageData);
 
     const pageResults: ValidationResult[] = await Promise.all(
@@ -231,8 +230,7 @@ export class PageContentValidation implements IValidation {
 
   private async getHeaderText(page: Page): Promise<string | null> {
     try {
-      // This resolves which page-data file to validate against, so losing the race here
-      // silently validates nothing. Wait once for either heading to render, then read.
+      // This resolves which page-data file to validate against; losing the race validates nothing.
       await page
         .locator('h1, h2')
         .first()
@@ -284,9 +282,8 @@ export class PageContentValidation implements IValidation {
   }
 
   /**
-   * Waits for the page's own heading before probing its elements. `isVisible` does not
-   * poll — its timeout only cancels — so without this the probes raced the render and
-   * reported elements as missing. One wait covers every element on the page.
+   * Waits for the page's own heading before probing its elements: `isVisible` does not poll, so
+   * the probes would race the render. One wait covers every element on the page.
    */
   private async waitForPageToRender(page: Page, pageData: Record<string, unknown>): Promise<void> {
     const heading = pageData.mainHeader;
@@ -323,9 +320,8 @@ export class PageContentValidation implements IValidation {
     PageContentValidation.testCounter++;
 
     if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
-      // CYAStore is a process-wide singleton and its failure flag is sticky, so it has to
-      // be cleared even when there is no page-content state to report. Otherwise a CYA
-      // failure here is thrown by the next test on this worker.
+      // CYAStore is a process-wide singleton with a sticky failure flag, so clear it even when
+      // there is no page-content state to report.
       const cyaFailed = cyaValidation.hasValidationFailed();
       CYAStore.getInstance().clearAll();
       if (cyaFailed) {

@@ -6,10 +6,8 @@ export function escapeForRegex(s: string): string {
 }
 
 /**
- * Returns a RegExp matching `text` the way Playwright's toHaveText does: surrounding
- * whitespace ignored on both sides, inner runs collapsed. Trimming `text` matters
- * because some page data carries a trailing space (e.g. `Make an application `), which
- * would otherwise become a mandatory literal and never match the rendered heading.
+ * Matches `text` the way toHaveText does: outer whitespace ignored, inner runs collapsed. `text`
+ * is trimmed because page data can carry a trailing space that would become a mandatory literal.
  */
 export function exactTextWithOptionalWhitespaceRegex(text: string): RegExp {
   const collapsed = text.trim().split(/\s+/).map(escapeForRegex).join('\\s+');

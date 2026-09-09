@@ -4,10 +4,8 @@ import { pageHeading, readPageHeading } from '@utils/common/locator.utils';
 
 export class MainHeaderValidation implements IValidation {
   /**
-   * Reports the heading actually on screen when the expected one never arrives. `pageHeading`
-   * filters visible headings *by* `fieldName`, so on a mismatch the locator matches nothing and
-   * the failure reads `element(s) not found` — every wrong-page failure looked like a missing
-   * element.
+   * Reports the heading actually on screen. `pageHeading` filters headings *by* `fieldName`, so a
+   * mismatch matches nothing and reads as `element(s) not found`.
    */
   async validate(page: Page, validation: string, fieldName: string): Promise<void> {
     try {

@@ -9,9 +9,7 @@ export class ClickRadioButtonAction implements IAction {
     const question = params.question as string;
     const option = params.option as string;
 
-    // Ahead of the count() reads below and well ahead of clickWithRetry's 2s per-click
-    // timeout: the overlay was measured to persist ~2.9s, so a covered page burns every
-    // attempt and then reports 'radio button ... is not found'.
+    // The overlay persists ~2.9s, longer than clickWithRetry's 2s per-click timeout.
     await waitForSpinner(page);
 
     const patterns = [
@@ -37,10 +35,8 @@ export class ClickRadioButtonAction implements IAction {
       await waitForInteractive(this.radioPattern3(page, question, option, idx));
     }
 
-    // Records what each pattern actually resolved to, so the failure below can say whether
-    // nothing matched or something matched ambiguously. Previously both produced the same
-    // "is not found" text, which reads as a bad selector even when the real cause was a
-    // pattern matching several elements or the page not having arrived.
+    // Records what each pattern resolved to, so the failure can distinguish nothing-matched from
+    // matched-ambiguously.
     const resolved: string[] = [];
     let foundButUncheckable = false;
     for (const [index, getLocator] of patterns.entries()) {
@@ -64,9 +60,7 @@ export class ClickRadioButtonAction implements IAction {
   }
 
   /**
-   * Returns false rather than throwing when the radio cannot be checked, so the caller can try
-   * its remaining patterns. Previously click() was uncaught (so a covered radio never reached the
-   * force:true retry) and a trailing expect() threw, making the fall-through dead code.
+   * Returns false rather than throwing, so the caller can try its remaining patterns.
    */
   private async clickWithRetry(locator: any): Promise<boolean> {
     let attempt = 0;
@@ -74,8 +68,7 @@ export class ClickRadioButtonAction implements IAction {
 
     do {
       attempt++;
-      // Caught so a failed click costs one attempt, not the whole loop: the retry exists to
-      // get a second go with force:true.
+      // Caught so a failed click costs one attempt, not the loop; the retry adds force:true.
       const clicked = await locator
         .click({ timeout: 2000, force: attempt > 1 })
         .then(() => true)
@@ -83,8 +76,7 @@ export class ClickRadioButtonAction implements IAction {
       if (!clicked) {
         continue;
       }
-      // toBeChecked polls; isChecked does not, so a radio that registers late used to
-      // need the fixed 500ms sleep this replaces.
+      // toBeChecked polls; isChecked does not.
       radioIsChecked = await expect(locator)
         .toBeChecked({ timeout: 500 })
         .then(() => true)
@@ -101,15 +93,13 @@ export class ClickRadioButtonAction implements IAction {
       .getByRole('radio', { name: option as string, exact: true });
   }
 
-  // Indexed. Per-pattern diagnostics read pattern2=2 — it found both defendants radios, but
-  // being unindexed the count guard discarded the result.
+  // Indexed: unindexed, this matches every party's radio and the count guard discards it.
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
     return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`)
       .nth(idx);
   }
 
-  // Innermost matching fieldset only: `fieldset:has-text(q)` also matches every ANCESTOR
-  // fieldset, so nth(idx) hit a wrapper (diagnostics read pattern4=7 on a two-defendant page).
+  // Innermost matching fieldset only: `fieldset:has-text(q)` also matches every ANCESTOR.
   private radioPattern4(page: Page, question: string, option: string, idx: number) {
     return page.locator(`fieldset:has-text("${question}"):not(:has(fieldset:has-text("${question}")))`)
       .nth(idx)

@@ -31,10 +31,7 @@ export class VisibilityValidation implements IValidation {
   }
 
   /**
-   * `all()` resolved immediately with whatever matched at that instant, so if the element
-   * had not appeared yet it returned [] and the wait became a no-op — callers compensated
-   * with fixed sleeps. `not.toBeVisible()` polls and, like the previous `state: 'hidden'`,
-   * is satisfied by the element being hidden or absent.
+   * `not.toBeVisible()` polls, and like `state: .hidden.` is satisfied by hidden or absent.
    */
   private async waitUntilElementDisappears(element: Locator): Promise<void> {
     await expect(element.first()).not.toBeVisible({ timeout: MEDIUM_TIMEOUT });

@@ -3,10 +3,8 @@ import {IValidation, validationRecord} from '../../interfaces/validation.interfa
 import {MEDIUM_TIMEOUT} from '../../../playwright.config';
 
 /**
- * Bounded rather than inheriting the 30s global `expect` default: ten negative-path loops wrap a
- * click plus this validation in a 60s `toPass`, and a click alone can spend the 40s actionTimeout,
- * so 30s here made the wrapper unachievable. Not shortened further — two thirds of the 32 call
- * sites invoke this outside a `toPass`, where the timeout is the whole budget.
+ * Bounded rather than inheriting the 30s global `expect` default, which does not fit inside the
+ * 60s `toPass` loops that wrap a click plus this validation.
  */
 const ERROR_RENDER_TIMEOUT = MEDIUM_TIMEOUT;
 

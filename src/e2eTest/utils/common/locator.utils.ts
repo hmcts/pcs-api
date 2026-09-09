@@ -5,8 +5,7 @@ import { exactTextWithOptionalWhitespaceRegex } from './string.utils';
 
 const HEADING_SELECTOR = 'h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title';
 
-// Scoped by text because work-basket pages render extra h1.column-label elements
-// ("Priority", …) that can precede the real heading and win a bare .first().
+// Scoped by text: work-basket pages render extra h1.column-label elements that would win .first().
 export function pageHeading(page: Page, expectedText?: string): Locator {
   const visibleHeadings = page.locator(HEADING_SELECTOR).filter({ visible: true });
   return expectedText
@@ -54,25 +53,10 @@ export async function waitForInteractive(locator: Locator, timeout: number = SHO
 }
 
 /**
- * Waits for XUI's loading spinner to detach before interacting with the page.
- *
- * `.spinner-container` (ccd-case-ui-toolkit loading-spinner.component.scss) is
- * `position: fixed`, full viewport, `z-index: 99` — a real overlay that swallows pointer
- * events. Adding this before the click in `clickButton` measured 0 flaky / 49 passed
- * against a 7-flaky control.
- *
- * Applies to click-based actions only. Measured against a replica of that overlay:
- *
- *   button click 2931ms   radio 2934ms   link 2939ms   tab 2933ms   check 2937ms
- *   fill 21ms             selectOption 15ms
- *
- * Everything that performs a real click waits for the overlay to clear; `fill` and
- * `selectOption` are not gated on pointer events and are unaffected. So `inputText` and
- * `select` deliberately do NOT call this — a wait there would be dead weight on every
- * call.
- *
- * Swallows its own timeout: if the spinner genuinely never clears, the caller's action
- * reports the useful error against the element the test actually wanted.
+ * Waits for XUI's loading spinner to detach. `.spinner-container` is `position: fixed`,
+ * full-viewport, `z-index: 99`, so it swallows pointer events. Click-based actions only:
+ * `fill` and `selectOption` are not gated on pointer events, so `inputText` and `select`
+ * deliberately do not call this. Swallows its own timeout so the caller reports the useful error.
  */
 export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT): Promise<void> {
   await page
@@ -81,8 +65,8 @@ export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT)
     .catch(() => undefined);
 }
 
-// The audit runs once per navigation, and CCD populates a collection row label after inserting
-// the row, so a scan fired straight after "Add new" can see an empty label and report it.
+// CCD populates a collection row's label after inserting the row, so a scan fired straight after
+// "Add new" can see an empty label.
 export async function settleBeforeAudit(page: Page): Promise<void> {
   await waitForSpinner(page, SHORT_TIMEOUT);
   const emptyLabel = page.locator('label span.form-label:empty').first();
