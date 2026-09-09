@@ -1,4 +1,5 @@
 import { Page, test } from '@playwright/test';
+import { SLOW_VALIDATION_MS } from '@config/slow-validation.config';
 import { a11yEnabled } from '@config/a11y.config';
 import { settleBeforeAudit } from '@utils/common/locator.utils';
 import { actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
@@ -133,9 +134,18 @@ export async function performValidation(validation: string, inputFieldName?: val
       : ['', inputFieldName];
 
   const validationInstance = ValidationRegistry.getValidation(validation);
+  // Timing only. Bounding one unbounded textContent() removed 23% of the run's wall clock, and
+  // there are ~60 more text and value reads with no explicit timeout, each able to inherit the
+  // 40s actionTimeout when its element is absent. Rather than bound them all on a guess, log any
+  // validation slower than a page should take and let the next run name the culprits.
+  const validationStarted = Date.now();
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
+  const validationMs = Date.now() - validationStarted;
+  if (validationMs > SLOW_VALIDATION_MS) {
+    console.log(`[slowValidation] ${validation} took ${validationMs}ms`);
+  }
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {

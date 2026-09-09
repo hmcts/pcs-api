@@ -1,4 +1,5 @@
 import { Page, test } from '@playwright/test';
+import { SLOW_VALIDATION_MS } from '@config/slow-validation.config';
 import { a11yEnabled } from '@config/a11y.config';
 import { settleBeforeAudit } from '@utils/common/locator.utils';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
@@ -131,9 +132,15 @@ export async function performValidation(validation: string, inputFieldName?: val
     [fieldName, data] = ['', inputFieldName];
   }
   const validationInstance = ValidationRegistry.getValidation(validation);
+  // Timing only — see controller.ts.
+  const validationStarted = Date.now();
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
+  const validationMs = Date.now() - validationStarted;
+  if (validationMs > SLOW_VALIDATION_MS) {
+    console.log(`[slowValidation] ${validation} took ${validationMs}ms`);
+  }
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
