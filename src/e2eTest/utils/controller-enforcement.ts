@@ -53,9 +53,13 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       await performValidation('autoValidatePageContent');
       try {
+        const auditStarted = Date.now();
+        // Timing only — see controller.ts for why.
+        const auditStarted = Date.now();
         await test.step("Running Accessibility Scan", async () => {
           await new AxeUtils(executor.page).audit();
         });
+        console.log(`[axeCost] scan took ${Date.now() - auditStarted}ms`);
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
         if (errorMessage.includes('execution context was destroyed') ||
