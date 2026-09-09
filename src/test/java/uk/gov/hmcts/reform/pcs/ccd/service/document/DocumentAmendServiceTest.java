@@ -615,7 +615,8 @@ class DocumentAmendServiceTest {
             .build();
 
         when(counterClaimRepository.getReferenceById(COUNTERCLAIM_ID)).thenReturn(counterClaimEntity);
-        when(documentNameService.appendCounterClaimPostfix("counterclaim evidence.pdf", counterClaimEntity, mainClaim, PARTY_ID))
+        when(documentNameService.appendCounterClaimPostfix(
+            "counterclaim evidence.pdf", counterClaimEntity, mainClaim, PARTY_ID))
             .thenReturn("counterclaim evidence - Defendant 1.pdf");
 
         underTest.amendDocument(PCSCase.builder().documentAmendDetails(amendDetails).build(), CASE_REFERENCE);
