@@ -27,11 +27,14 @@ public class ClaimPackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
+    private final PackSkipRules packSkipRules;
 
     public ClaimPackSelector(ClaimActivityLogRepository claimActivityLogRepository,
-                             SentPackDocuments sentPackDocuments) {
+                             SentPackDocuments sentPackDocuments,
+                             PackSkipRules packSkipRules) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
+        this.packSkipRules = packSkipRules;
     }
 
     public List<ClaimPackCandidate> findClaimPackCandidates(PcsCaseEntity pcsCase) {
@@ -39,6 +42,9 @@ public class ClaimPackSelector {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
+        if (packSkipRules.shouldSkipClaimPack(pcsCase, claim)) {
+            return List.of();
+        }
         DocumentEntity claimForm = claim.getClaimFormDocument();
         if (claimForm == null) {
             return List.of();

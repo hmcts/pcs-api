@@ -272,8 +272,13 @@ class PCSCaseViewTest {
         assertThat(mappedParties.getFirst().getValue()).isSameAs(party);
     }
 
+    /**
+     * The collection item id has to be the party's own id: the flag view matches a projected party back
+     * to its entity by it, and the support review write-back resolves the reviewed party from it.
+     */
     @Test
     void shouldSetCollectionItemIdFromPartyId() {
+        // Given
         PartyEntity partyEntity = mock(PartyEntity.class);
         when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
 
@@ -282,8 +287,10 @@ class PCSCaseViewTest {
         when(party.getId()).thenReturn(partyId);
         when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
 
+        // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
+        // Then
         assertThat(pcsCase.getParties().getFirst().getId()).isEqualTo(partyId);
     }
 
