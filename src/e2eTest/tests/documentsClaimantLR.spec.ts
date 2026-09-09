@@ -29,8 +29,14 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   FieldsStore.clear();
 
   const title = testInfo.title;
+  const isMultiDef = title.toLowerCase().includes('multi def');
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+
+  await performAction('submitCaseAPI', {
+    data: isMultiDef
+      ? submitCaseApiData.submitCasePayload
+      : submitCaseApiData.submitCasePayloadDefault,
+  });
   //await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
@@ -47,11 +53,9 @@ test.beforeEach(async ({ page, context }, testInfo) => {
             : undefined;
 
   if (genAppPayload) {
-    //for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
       data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
-    // }
   }
   await performAction('navigateToSummaryPage');
   uploadAdditionalDocumentsInformationCL = uploadAdditionalDocumentsInformation(test.info().title);
@@ -123,13 +127,13 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayloadDefault,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
   });
 
-  test('Claimant LR Upload documents when GenApps submitted - SOMETHING_ELSE', async () => {
+  test('Claimant LR Upload documents when GenApps submitted - SOMETHING_ELSE Multi Def', async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToApplicationRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -184,7 +188,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
+      folder: 'Evidence',
       submitPayload: submitCaseApiData.submitCasePayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
@@ -224,52 +228,50 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
   });
 
   test('Claimant LR Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
-      let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
-      let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
-      let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
-      await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
-      await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
-      await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
-      await performAction('selectDocumentRelatingTo', {
-        question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
-        option: docRelatedToOption,
-        nextPage: uploadYourDocuments.mainHeader,
-      });
-      await performAction('uploadAdditionalDocsLR', {
-        documents: [
-          { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
-        ]
-      });
-      await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
-      await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
-      await performAction('readDocumentsSubmit');
-      await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
-      await performAction('clickTab', home.caseFileView);
-      await performAction('validateCaseFileViewFolders', home.caseFileFolders);
-      await performAction('validateCaseFileViewIndividualFolder', {
-        folder: 'Property documents',
-        submitPayload: submitCaseApiData.submitCasePayload,
-        defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
-      });
-      await clearBrowserSession(page, context);
-      await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
-      const pages = page.context().pages();
-      const firstTab = pages[0];
-      await firstTab.bringToFront();
-      await dismissCookieBanner(page, 'additional');
-      await performAction('login', { email: user.defendantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
-      await dismissCookieBanner(page, 'analytics');
-      await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-      await performValidation('mainHeader', home.caseSummary);
-      await performAction('clickTab', home.caseFileView);
-      await performAction('validateCaseFileViewFolders', home.caseFileFolders);
-      await performAction('validateCaseFileViewIndividualFolder', {
-        folder: 'Property documents',
-        submitPayload: submitCaseApiData.submitCasePayload,
-        allowEmptyFolder: true
-      });
-  
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, uploadYourDocuments.mainHeader as string);
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+      ]
     });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayload,
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
+    });
+    await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+    const pages = page.context().pages();
+    const firstTab = pages[0];
+    await firstTab.bringToFront();
+    await dismissCookieBanner(page, 'additional');
+    await performAction('login', { email: user.defendantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await performValidation('mainHeader', home.caseSummary);
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitCaseApiData.submitCasePayload,
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      defendantIndex : 1
+    });
+
+  });
 
 
 });

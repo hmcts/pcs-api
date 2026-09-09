@@ -1643,7 +1643,7 @@ export class CreateCaseAction implements IAction {
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
          } else if (caseFile.claimantLRUpload) {
           userInputFiles.push(caseFile.claimantLRUpload as string);
-          userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
         } else if (caseFile.defendantLRUpload) {
           userInputFiles.push(caseFile.defendantLRUpload as string);
           //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
@@ -1672,7 +1672,7 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
@@ -1681,8 +1681,8 @@ export class CreateCaseAction implements IAction {
 
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
-        if(caseFile.caseWorkerUpload){
+        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);

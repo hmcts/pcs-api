@@ -544,6 +544,7 @@ export class CreateCaseAPIAction implements IAction {
           paymentApiData.paymentUpdatePayload(requestReference)
         );
         if (updateResponse.status === 200 || updateResponse.status === 204) {
+          console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`)
           return;
         }
         throw new Error(`Payment update failed with status ${updateResponse.status}`);

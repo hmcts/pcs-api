@@ -35,19 +35,15 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
 
-  // Default is single def unless the test title explicitly says "Multi Def".
-  const isMultiDef = title.includes('multi def');
-
+  const isMultiDef = title.toLowerCase().includes('multi def');
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadDefault });
 
-  // await performAction('submitCaseAPI', {
-  //   data: isMultiDef
-  //     ? submitCaseApiData.submitCasePayload
-  //     : submitCaseApiData.submitCasePayloadDefault,
-  // });
+  await performAction('submitCaseAPI', {
+    data: isMultiDef
+      ? submitCaseApiData.submitCasePayload
+      : submitCaseApiData.submitCasePayloadDefault,
+  });
 
-  console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
@@ -129,7 +125,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitCaseApiData.submitCasePayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
   });
@@ -316,6 +312,11 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadDefault,
+    });
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      allowEmptyFolder: true
     });
 
   });

@@ -7,7 +7,7 @@ export const confirmIfTheseDocumentsRelateToAnApplication = {
   relatedToSetAsideRadioOptionHidden: `Yes, the documents I’m uploading relate to an application to set aside the order - submitted on`,
   relatedToApplicationRadioOptionHidden: `Yes, the documents I’m uploading relate to an application submitted on `,
   noRadioOption: `No, the documents I’m uploading relate to the main claim or counterclaim`,
-  uploadDocHiddenOption:[`legalAidCertificate.pdf`,`possessionNotice.pdf`,`certificateOfService.pdf`,`witnessStatement.pdf`],
+  uploadDocHiddenOption:[`legalAidCertificate.pdf`,`possessionNotice.pdf`,`certificateOfService.pdf`,`witnessStatement.pdf`, `General Application GA1 - Defendant 1.pdf`],
   continueButton: `Continue`,
   previousButton: `Previous`,
   cymraegLink: `Cymraeg`,
