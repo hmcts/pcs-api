@@ -319,7 +319,8 @@ export class CaseManagementAction implements IAction {
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     await fileInput.last().setInputFiles(filePath);
     // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
-    let timeout = 8000;
+    const uploadGap = 8000;
+    let timeout = uploadGap;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     // Same three defects uploadFile.action.ts already had fixed, left behind in this copy:
     //
@@ -352,7 +353,12 @@ export class CaseManagementAction implements IAction {
     }
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
     // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
-    await page.waitForTimeout(timeout);
+    //
+    // `uploadGap`, not `timeout`: the retry loop above DOUBLES `timeout` on every 429, so this
+    // trailing wait inherited the backoff. One 429 made it 16s and two made it 32s, on top of
+    // the backoff already served inside the loop. The row commit does not get slower because XUI
+    // throttled us, so the wait it needs is the fixed gap either way.
+    await page.waitForTimeout(uploadGap);
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
