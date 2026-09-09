@@ -1634,11 +1634,13 @@ export class CreateCaseAction implements IAction {
     const folder: string[] = caseFileView as string[];
     // The tree renders progressively after CDAM metadata resolves, and allTextContents() does
     // not poll, so a single read could report folders as missing while they were still arriving.
+    const started = Date.now();
     await expect(async () => {
       const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
       const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
       expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
     }).toPass({ timeout: LONG_TIMEOUT });
+    console.log(`[caseFileView] ${folder.length} folders present after ${Date.now() - started}ms`);
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
@@ -1708,16 +1710,25 @@ export class CreateCaseAction implements IAction {
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
+    // Timing only. The three CaseFile View tests are the largest remaining preview/AAT gaps —
+    // caseTabs 7.2s -> 49.3s, caseFileView CM 18.9s -> 1.1m, against a ~1.3x median elsewhere.
+    // Both validators poll with real budgets, so log which stage the time goes into rather than
+    // guessing between CDAM latency and the tree render.
+    const treeStart = Date.now();
     await expect(folder.first()).toBeVisible({ timeout: LONG_TIMEOUT });
+    const treeMs = Date.now() - treeStart;
     const text = await folder.first().innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
+    const expandStart = Date.now();
     await folder.first().click();
     // The tree expands asynchronously, so poll until the rendered file count settles.
     await expect(fileLocator).toHaveCount(fileCount, { timeout: LONG_TIMEOUT });
+    console.log(`[caseFileView] "${folderName}": tree ${treeMs}ms, expand+${fileCount} files `
+      + `${Date.now() - expandStart}ms`);
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
