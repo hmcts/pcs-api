@@ -51,11 +51,7 @@ public class OrganisationService {
 
     /** Organisation name for a user (claimant name population). */
     public String getOrganisationName(String userId) {
-        OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-            userId,
-            id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
-        ).orElse(null);
-
+        OrganisationDetailsResponse organisationDetails = this.getCachedOrganisationDetails(userId);
         return organisationDetails != null ? organisationDetails.getName() : null;
     }
 
@@ -77,11 +73,7 @@ public class OrganisationService {
 
     /** Organisation identifier for a user. */
     public String getOrganisationIdentifier(String userId) {
-        OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-            userId,
-            id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
-        ).orElse(null);
-
+        OrganisationDetailsResponse organisationDetails = this.getCachedOrganisationDetails(userId);
         return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
     }
 
@@ -93,11 +85,7 @@ public class OrganisationService {
                 return null;
             }
 
-            OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-                userId.toString(),
-                id -> Optional.ofNullable(organisationDetailsService.requireOrganisationDetails(id))
-            ).orElse(null);
-
+            OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId.toString());
             return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
@@ -118,11 +106,7 @@ public class OrganisationService {
             return null;
         }
 
-        OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-            userId.toString(),
-            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationDetails(id))
-        ).orElse(null);
-
+        OrganisationDetailsResponse organisationDetails = this.getCachedRequiredOrganisationDetails(userId.toString());
         return organisationDetails != null ? organisationDetails.getOrganisationIdentifier() : null;
     }
 
@@ -148,10 +132,7 @@ public class OrganisationService {
 
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
-            return organisationsCache.get(
-                userId,
-                id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
-            ).orElse(null);
+            return this.getCachedOrganisationDetails(userId);
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation details from rd-professional API", ex);
             return null;
@@ -233,4 +214,17 @@ public class OrganisationService {
             && details.getRoles().contains(UserRole.CITIZEN.getRole());
     }
 
+    private OrganisationDetailsResponse getCachedOrganisationDetails(String userId) {
+        return organisationsCache.get(
+            userId,
+            id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
+        ).orElse(null);
+    }
+
+    private OrganisationDetailsResponse getCachedRequiredOrganisationDetails(String userId) {
+        return organisationsCache.get(
+            userId,
+            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationDetails(id))
+        ).orElse(null);
+    }
 }
