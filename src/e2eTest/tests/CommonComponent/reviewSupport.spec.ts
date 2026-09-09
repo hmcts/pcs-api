@@ -40,7 +40,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Review support request] - Solicitor user - @nightly @CC @supportEvents', async () => {
+test.describe('[Review support request] - HearingCenterAdmin user - @nightly @CC @supportEvents', async () => {
 
   test('Approve the support request', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
