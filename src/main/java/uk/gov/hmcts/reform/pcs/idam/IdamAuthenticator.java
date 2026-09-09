@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.idam;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
@@ -17,6 +19,10 @@ public class IdamAuthenticator {
     private final IdamUserInfoApi idamUserInfoApi;
 
     public User validateAuthToken(String authorisation) {
+        Authentication existing = SecurityContextHolder.getContext().getAuthentication();
+        if (existing != null && existing.getPrincipal() instanceof User user) {
+            return user;
+        }
         if (authorisation == null || authorisation.isBlank()) {
             log.warn("Authorization token is null or blank");
             throw new InvalidAuthTokenException("Authorization token is null or blank");

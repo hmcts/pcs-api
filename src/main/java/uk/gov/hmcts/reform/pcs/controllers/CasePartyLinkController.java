@@ -66,6 +66,7 @@ public class CasePartyLinkController {
     ) {
         var user = idamAuthenticator.validateAuthToken(authorization).getUserDetails();
 
+
         partyAccessCodeLinkService.linkPartyByAccessCode(caseReference, request.getAccessCode(), user);
 
         return ResponseEntity.ok().build();

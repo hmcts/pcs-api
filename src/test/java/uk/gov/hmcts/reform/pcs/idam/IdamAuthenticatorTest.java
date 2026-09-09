@@ -10,6 +10,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
@@ -152,4 +155,24 @@ class IdamAuthenticatorTest {
         assertThat(user).isNotNull();
         assertThat(user.getAuthToken()).isNull();
     }
+
+    @Test
+    @DisplayName("Should retrieve user successfully already Authenticated")
+    void shouldReturnExistingValidatedAlreadyAuthenticatedUser() {
+        // Given
+        String token = BEARER_PREFIX + "valid-token";
+        User user = mock(User.class);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(user);
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // When
+        User response = underTest.validateAuthToken(token);
+
+        // Then
+        assertThat(response).isEqualTo(user);
+    }
+
 }
