@@ -396,7 +396,7 @@ export class CreateCaseAPIAction implements IAction {
   private async submitCaseAPIDynamicUsers(caseData: actionRecord): Promise<void> {
     await this.getAccessToken(caseData.email as string, caseData.password as string);
     const submitCaseApi = Axios.create(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiInstance());
-    let submitCasePayloadData;
+    let submitCasePayloadData: unknown;
     try {
       process.env.SUBMIT_EVENT_TOKEN = (await this.apiRetry(() => submitCaseApi.get(submitCaseEventTokenDynamicApiData.submitCaseEventTokenApiEndPoint()))).data.token;
       submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
