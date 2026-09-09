@@ -85,7 +85,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
@@ -145,7 +145,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
@@ -205,7 +205,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
