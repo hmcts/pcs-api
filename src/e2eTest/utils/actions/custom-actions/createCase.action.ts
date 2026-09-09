@@ -1654,14 +1654,27 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
-    // The tree renders only after CDAM document metadata resolves, which outruns MEDIUM_TIMEOUT.
-    await expect(folderLocator.first()).toBeVisible({ timeout: LONG_TIMEOUT });
-    const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
-    const folder:string[] = caseFileView as string[];
-
-    const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
-    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
+    const folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
+    const folder: string[] = caseFileView as string[];
+    // The tree renders only after CDAM document metadata resolves, which outruns MEDIUM_TIMEOUT
+    // — and it renders PROGRESSIVELY, one treeitem at a time. `allTextContents()` does not poll,
+    // so waiting only for the FIRST treeitem and then reading could capture a partial tree and
+    // report folders as missing while they were still on their way. Same non-polling-probe shape
+    // as the other fixes here, and the sibling validateCaseFileViewIndividualFolder already
+    // avoids it by waiting on a polling `toHaveCount` before reading its text.
+    //
+    // Retry the read instead. A genuinely missing folder still fails with the same message, just
+    // after the tree has had LONG_TIMEOUT to finish arriving rather than however long the first
+    // item took. On the happy path this returns as soon as every expected folder is present.
+    //
+    // Measured as PR-2657: neutral, as expected for a latent trap that never fired — the three
+    // CaseFile View tests came in at 50.1s / 49.3s / 1.0m against 48.9s / 50.6s / 1.1m without
+    // it. Kept on the shape of the defect, not on a number.
+    await expect(async () => {
+      const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
+      const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
+      expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
+    }).toPass({ timeout: LONG_TIMEOUT });
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
