@@ -37,20 +37,22 @@ export class InputErrorValidation implements IValidation {
     // Error messages render a tick after submit; count() would read 0 without this wait.
     await waitForInteractive(anyOf(...locators));
 
+    // `locators` is an ordered list of strategies — normal fields first, then date fields, whose
+    // label sits in a <legend> and so cannot match the first xpath. The loop used to `throw` as
+    // soon as a strategy found nothing, which meant the second strategy was never tried and the
+    // final throw below was unreachable. A fallback that cannot be reached is the same defect
+    // shape as radioPattern2 (found, then discarded by a count guard) and the rate-limit loop
+    // that never ran.
+    //
+    // Move on to the next strategy instead, and only give up once all of them have been tried.
+    // The "hidden" case is likewise no longer fatal on the first strategy: an error span that
+    // exists but is invisible is a reason to keep looking, not to stop.
+    const attempts: string[] = [];
     for (const locator of locators) {
-
       const count = await locator.count();
-
       if (count === 0) {
-        throw new Error(`The error message "${data}" is not triggered (no elements found).`);
-      }
-
-      if (count === 1) {
-        const item = locator.first();
-        if (await item.isVisible()) {
-          return item;
-        }
-        throw new Error(`The error message "${data}" exists but is hidden.`);
+        attempts.push('0 matches');
+        continue;
       }
 
       for (let i = 0; i < count; i++) {
@@ -59,8 +61,11 @@ export class InputErrorValidation implements IValidation {
           return item;
         }
       }
-
+      attempts.push(`${count} match(es), none visible`);
     }
-    throw new Error(`The error message "${data}" is not triggered`);
+    // Report what each strategy saw, so "not triggered" is distinguishable from "found but
+    // hidden" and from "matched the wrong element" without needing another run to find out.
+    throw new Error(`The error message "${data}" is not triggered for "${fieldName}" `
+      + `(strategies tried: ${attempts.join('; ')})`);
   }
 }
