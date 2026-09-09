@@ -348,7 +348,7 @@ ccd-case-disposer:
     disableActiveClusterCheck: true
   job:
     kind: CronJob
-    suspend: false
+    suspend: true
     schedule: "*/5 * * * *"
     startingDeadlineSeconds: 180
     concurrencyPolicy: Forbid
