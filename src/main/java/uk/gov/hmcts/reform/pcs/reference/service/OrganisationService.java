@@ -52,7 +52,7 @@ public class OrganisationService {
     /** Organisation name for a user (claimant name population). */
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-            userId.toString(),
+            userId,
             id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
         ).orElse(null);
 
@@ -78,7 +78,7 @@ public class OrganisationService {
     /** Organisation identifier for a user. */
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse organisationDetails = organisationsCache.get(
-            userId.toString(),
+            userId,
             id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
         ).orElse(null);
 
@@ -149,7 +149,7 @@ public class OrganisationService {
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
             return organisationsCache.get(
-                userId.toString(),
+                userId,
                 id -> Optional.ofNullable(organisationDetailsService.getOrganisationDetails(id))
             ).orElse(null);
         } catch (OrganisationDetailsException | SecurityContextException ex) {
