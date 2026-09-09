@@ -1087,7 +1087,6 @@ class DocumentServiceTest {
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
-        when(selectedCounterClaim.getRank()).thenReturn(1);
         when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1132,7 +1131,6 @@ class DocumentServiceTest {
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
 
         CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
-        when(selectedCounterClaim.getRank()).thenReturn(1);
         when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
@@ -1416,7 +1414,6 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
-        when(counterClaim.getRank()).thenReturn(1);
         when(party.getId()).thenReturn(partyId);
         when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
@@ -1510,7 +1507,6 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
-        when(counterClaim.getRank()).thenReturn(1);
         when(party.getId()).thenReturn(partyId);
         when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
