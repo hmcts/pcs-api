@@ -58,7 +58,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
         ? makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload
         : title.includes('SOMETHING_ELSE')
           ? makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload
-          : title.includes('ADJOURN_WITHOUT_NOTICE')
+          : title.includes('GENADJ_WITHOUT_NOTICE')
             ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
             : undefined;
 
@@ -273,7 +273,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def ADJOURN_WITHOUT_NOTICE', async ({ page, context }) => {
+  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -316,7 +316,6 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
       submitPayload: submitCaseApiData.submitCasePayloadDefault,
-      allowEmptyFolder: true
     });
 
   });
