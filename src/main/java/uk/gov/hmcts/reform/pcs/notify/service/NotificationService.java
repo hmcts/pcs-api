@@ -23,13 +23,14 @@ import uk.gov.hmcts.reform.pcs.config.NotificationTemplateConfiguration;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationClaimType;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationRecipient;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationType;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.OrganisationNotificationRecipient;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
@@ -100,6 +101,61 @@ public class NotificationService {
             NotificationClaimType.COUNTER_CLAIM,
             notificationPersonalisationFactory.forDefendant(defendantResponse)
         );
+    }
+
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoCounterClaim(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForOrganisation(
+            organisationRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_NO_COUNTERCLAIM_LEGAL_REP,
+            NotificationClaimType.NO_COUNTER_CLAIM,
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForOrganisation(
+            organisationRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity,
+                                                               pcsCaseEntity));
+    }
+
+    public EmailNotificationResponse sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(
+        OrganisationEntity organisationEntity,
+        PcsCaseEntity pcsCaseEntity,
+        DefendantResponseEntity defendantResponse) {
+
+        return sendEmailForOrganisation(
+            organisationRecipient(
+                organisationEntity,
+                pcsCaseEntity,
+                defendantResponse.getParty(),
+                defendantResponse
+            ),
+            EmailTemplate.RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED,
+            NotificationClaimType.COUNTER_CLAIM,
+            notificationPersonalisationFactory.forOrganisation(organisationEntity,
+                                                               pcsCaseEntity));
     }
 
     public EmailNotificationResponse sendDefendantResponseCounterclaimToOrganisationPaymentSuccess(
@@ -202,7 +258,7 @@ public class NotificationService {
             ? null : outgoingRepresentative.getClaimPartyContactDetails().getFirst().getEmailAddress();
 
         return sendEmail(
-            legalRepresentativeRecipient(outgoingRepresentative, representedDefendant, outgoingEmail),
+            legalRepresentativeRecipient(representedDefendant, outgoingEmail),
             EmailTemplate.NOTICE_OF_CHANGE_NO_LONGER_REPRESENTING,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeNoLongerRepresenting(outgoingRepresentative, pcsCase)
@@ -215,7 +271,7 @@ public class NotificationService {
         String legalRepEmail
     ) {
         return sendEmail(
-            legalRepresentativeRecipient(legalRepresentativeOrganisation, representedDefendant, legalRepEmail),
+            legalRepresentativeRecipient(representedDefendant, legalRepEmail),
             EmailTemplate.NOTICE_OF_CHANGE_COMPLETE_LEGAL_REP,
             NotificationClaimType.NOTICE_OF_CHANGE,
             notificationPersonalisationFactory.noticeOfChangeCompleteLegalRep(
@@ -582,7 +638,6 @@ public class NotificationService {
     }
 
     private NotificationRecipient legalRepresentativeRecipient(
-        OrganisationEntity legalRepresentativeOrganisation,
         PartyEntity representedDefendant,
         String legalRepEmail
     ) {

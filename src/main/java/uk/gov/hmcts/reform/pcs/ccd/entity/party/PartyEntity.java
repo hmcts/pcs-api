@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 
 import java.time.LocalDate;
@@ -119,6 +120,8 @@ public class PartyEntity {
 
     private String phoneNumber;
 
+    private String textMessageNumber;
+
     private String emailAddress;
 
     private String pcqId;
@@ -137,5 +140,10 @@ public class PartyEntity {
     @Builder.Default
     @Fetch(FetchMode.SUBSELECT)
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
+
+    @OneToMany(fetch = LAZY, mappedBy = "party")
+    @Builder.Default
+    @JsonManagedReference
+    private List<HearingNoticePartyEntity> hearingNoticeParties = new ArrayList<>();
 
 }
