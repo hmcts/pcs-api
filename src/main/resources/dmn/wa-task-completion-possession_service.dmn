@@ -99,7 +99,7 @@
       </rule>
       <rule id="DecisionRule_0p08ndn">
         <inputEntry id="UnaryTests_1ml8wgu">
-          <text>"Approve or reject case flag"</text>
+          <text>"reviewSupportRequest"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0eey7mu">
           <text>"ReviewCaseFlagRequest"</text>

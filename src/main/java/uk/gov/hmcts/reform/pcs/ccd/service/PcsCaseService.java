@@ -147,6 +147,14 @@ public class PcsCaseService {
         }
     }
 
+    public void patchReviewedSupportFlags(long caseReference, List<ListValue<PartySupport>> reviewedSupport) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        if (reviewedSupport != null) {
+            caseFlagService.applyReviewedSupportFlags(reviewedSupport, pcsCaseEntity.getParties());
+        }
+    }
+
     public PcsCaseEntity loadCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
