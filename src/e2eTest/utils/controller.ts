@@ -116,10 +116,19 @@ export async function performAction(action: string, fieldName?: actionData | act
 
 
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+  // Timing only, for the API setup actions. The two slowest caseTabs tests spend almost all of
+  // their time in beforeEach, not in what they assert: CaseFile View is 49.3s and Notes 1.8m,
+  // while the tab click, the page validation and the CaseFile View validators together measure
+  // under a second (PR-2679, PR-2680). Both hooks differ from the fast tests only in which
+  // payload they submit or which user they fetch, so time those calls.
+  const actionStarted = Date.now();
   await test.step(stepText, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
     await logToBrowser(executor.page, stepText);
   });
+  if (action.endsWith('API')) {
+    console.log(`[apiSetup] ${action} took ${Date.now() - actionStarted}ms`);
+  }
   await validatePageIfNavigated(action);
 }
 
