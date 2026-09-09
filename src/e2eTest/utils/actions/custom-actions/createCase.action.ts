@@ -399,15 +399,8 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        // 'Add new' appends a defendant block and every lookup below addresses it by index,
-        // while clickRadioButton resolves its patterns with count(), which does not poll. So
-        // if this block has not arrived, nth(index) matches nothing.
-        //
-        // Defence in depth, not the fix for createCaseWales:604 — I originally claimed it was.
-        // The per-pattern diagnostics from that failure read pattern2=2, pattern4=7, so the
-        // block had rendered and the patterns simply disagreed about which element to take.
-        // That is fixed in the pattern definitions themselves; this wait only covers the
-        // genuinely-not-yet-rendered case.
+        // "Add new" appends a defendant block addressed by index, and clickRadioButton resolves
+        // patterns with a non-polling count(), so wait for the block before touching it.
         await page.locator(`legend:has-text("${nameQuestion}")`)
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
@@ -912,11 +905,8 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = underlesseeMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeMortgageeDetails.noRadioOption;
-        // Same shape as addDefendantDetails: 'Add new' appends the block and every lookup
-        // below addresses it by index, but clickRadioButton resolves patterns with count(),
-        // which does not poll. Until the block exists nth(index) matches nothing and the
-        // failure is reported as 'The radio button ... is not found'. Measured on the
-        // defendant equivalent: nth(1) count=0 immediately after Add new, 1 after the wait.
+        // Same shape as addDefendantDetails: "Add new" appends a block addressed by index, and
+        // clickRadioButton resolves patterns with a non-polling count().
         await page.locator(`legend:has-text("${nameQuestion}")`)
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
@@ -981,16 +971,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
     await performAction('inputText', caseNote.label, caseNote.input);
     // Verify Continue reached Check your answers, and retry the click if it did not.
-    //
-    // Same defect as the Go click earlier in this journey: clickButton does not verify
-    // navigation, so if Continue silently fails to advance the test carries on from the wrong
-    // page and fails at whatever it asserts next. That is the residual caseTabs:96 flake — it
-    // fails on `text 'Check your answers'`, which polls for 30s, so the page genuinely never
-    // arrived rather than arriving late.
-    //
-    // Anchored on the h2 rather than reusing clickButtonAndVerifyPageNavigation, which matches
-    // `h1:has-text(...)`: this page has no mainHeader in its page data and 'Check your answers'
-    // is asserted as a subHeading, so an h1 match would never succeed here.
     const checkYourAnswers = page.locator('h2', { hasText: checkYourAnswersCaseNote.header }).first();
     let attempt = 0;
     let arrived = false;
@@ -1659,20 +1639,8 @@ export class CreateCaseAction implements IAction {
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
     const folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
     const folder: string[] = caseFileView as string[];
-    // The tree renders only after CDAM document metadata resolves, which outruns MEDIUM_TIMEOUT
-    // — and it renders PROGRESSIVELY, one treeitem at a time. `allTextContents()` does not poll,
-    // so waiting only for the FIRST treeitem and then reading could capture a partial tree and
-    // report folders as missing while they were still on their way. Same non-polling-probe shape
-    // as the other fixes here, and the sibling validateCaseFileViewIndividualFolder already
-    // avoids it by waiting on a polling `toHaveCount` before reading its text.
-    //
-    // Retry the read instead. A genuinely missing folder still fails with the same message, just
-    // after the tree has had LONG_TIMEOUT to finish arriving rather than however long the first
-    // item took. On the happy path this returns as soon as every expected folder is present.
-    //
-    // Measured as PR-2657: neutral, as expected for a latent trap that never fired — the three
-    // CaseFile View tests came in at 50.1s / 49.3s / 1.0m against 48.9s / 50.6s / 1.1m without
-    // it. Kept on the shape of the defect, not on a number.
+    // The tree renders progressively after CDAM metadata resolves, and allTextContents() does
+    // not poll, so a single read could report folders as missing while they were still arriving.
     await expect(async () => {
       const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
       const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));

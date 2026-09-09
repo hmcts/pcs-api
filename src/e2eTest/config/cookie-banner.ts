@@ -3,12 +3,7 @@ import { MEDIUM_TIMEOUT, SHORT_TIMEOUT } from '../playwright.config';
 
 export type CookieBannerType = 'additional' | 'analytics' | 'hide-success';
 
-// The banner is optional — often already dismissed for the session — so the initial
-// wait is the cost of finding out it is absent. At MEDIUM_TIMEOUT that was 10s a miss,
-// and one @regression run logged 8 misses: 80s of pure waiting. SHORT_TIMEOUT still
-// leaves 5s for a real render, which is well clear of the sub-second appearance seen
-// when the banner is present. Only the presence check is shortened; once found, the
-// scroll and click keep the longer budget.
+// The banner is optional, so the wait is the cost of finding out it is absent — 8 misses a run.
 const BANNER_PRESENCE_TIMEOUT = SHORT_TIMEOUT;
 
 export async function dismissCookieBanner(page: Page, type: CookieBannerType): Promise<void> {

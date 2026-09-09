@@ -37,19 +37,8 @@ export class InputErrorValidation implements IValidation {
     // Error messages render a tick after submit; count() would read 0 without this wait.
     await waitForInteractive(anyOf(...locators));
 
-    // `locators` is an ordered list of strategies — normal fields first, then date fields, whose
-    // label sits in a <legend> and so cannot match the first xpath. The loop used to `throw` as
-    // soon as a strategy found nothing, which meant the second strategy was never tried and the
-    // final throw below was unreachable. A fallback that cannot be reached is the same defect
-    // shape as radioPattern2 (found, then discarded by a count guard) and the rate-limit loop
-    // that never ran.
-    //
-    // Move on to the next strategy instead, and only give up once all have been tried. "Exists
-    // but hidden" likewise stops being fatal on the first strategy: an invisible error span is a
-    // reason to keep looking, not to stop.
-    //
-    // Measured as PR-2669: 50 passed, 0 failed, 0 flaky, 23.7m — neutral, as expected for a
-    // fallback that was not being reached, and kept on correctness.
+    // Ordered strategies: normal fields, then date fields whose label sits in a <legend>. The loop
+    // used to throw on the first miss, making the second strategy unreachable.
     const attempts: string[] = [];
     for (const locator of locators) {
       const count = await locator.count();

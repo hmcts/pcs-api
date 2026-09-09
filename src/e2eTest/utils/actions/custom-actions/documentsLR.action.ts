@@ -188,9 +188,6 @@ export class DocumentsAction implements IAction {
 
         // Exact id, not a `^=` prefix. The prefix also matches the ...defendantDocumentTypeWales
         // sibling, so on a page rendering both this resolves to 2 elements and selectOption -
-        // being strict - throws immediately. Measured: prefix count=2 and a strict-mode
-        // violation in 7ms; exact count=1. documentsLR.spec.ts has no Wales test, so the
-        // sibling is never the intended target here.
         const typeDropdown = page.locator(
           `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
@@ -281,10 +278,6 @@ export class DocumentsAction implements IAction {
 
     // finally, because `cyaMap.clear()` used to sit after the throw below: a CYA failure left
     // the module-level map populated, and the next test on that worker compared its own
-    // FieldsStore against the previous test's leftover CYA rows. FieldsStore is cleared per
-    // test in beforeEach; cyaMap is module-private, so specs cannot clear it and nothing did.
-    // Only the failure path leaked, which is why it presents as one test failing and then an
-    // unrelated later one.
     try {
       await test.step('CYA Validation Started and the results are present in the console logs', async () => {
         if (misMatchMap.size > 0) {

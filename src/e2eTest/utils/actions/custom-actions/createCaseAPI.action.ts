@@ -531,9 +531,6 @@ export class CreateCaseAPIAction implements IAction {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
     // pcs-api writes the service-request record asynchronously after case submission, so
     // this is a poll for something that does not exist yet, not a retry of a failed call.
-    // 10 attempts x a flat 1s only covered ~10s, and "No payment information found" was
-    // the fast-failure signature on caseWorkerGenApps:54 and manageDocumentsWales:57/:164
-    // — each dying at ~12s and then passing on retry, which took 40-75s.
     const maxRetries = actionRetries + actionRetries;
     const delayMs = SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {

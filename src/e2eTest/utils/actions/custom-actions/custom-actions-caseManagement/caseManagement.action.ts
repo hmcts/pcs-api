@@ -107,21 +107,6 @@ export class CaseManagementAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
 
     // Verify Go actually launched the event, and retry it if not.
-    //
-    // clickButton does not verify navigation, so when Go silently fails to move the page the test
-    // carries on from case-details and fails at whatever it asserts next. That is why one root
-    // cause has surfaced as several unrelated-looking flakes: caseTabs:96 (fixed inline in #2637),
-    // documentsLR:119, casePartyUpdate:227. The mainHeader diagnostic named it directly —
-    // `expected "Add a case note" but page shows "Summary"`, with no error summary, so Go was not
-    // rejected, it just did nothing.
-    //
-    // Anchored on leaving 'Summary' rather than on arriving at a named page, because this helper
-    // does not know the destination and its 29 callers would all have to pass one. Launching any
-    // event always leaves case-details, so "still on Summary" is a reliable failure signal and
-    // needs no caller changes.
-    //
-    // Bounded and non-fatal: if it never leaves, the caller's own mainHeader assertion reports the
-    // real problem against the page it expected, which is a better error than anything raised here.
     const summaryHeading = page.locator('h1', { hasText: home.caseSummary });
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
       await performAction('clickButton', caseSummary.go);
@@ -322,18 +307,8 @@ export class CaseManagementAction implements IAction {
     const uploadGap = 8000;
     let timeout = uploadGap;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    // Same three defects uploadFile.action.ts already had fixed, left behind in this copy:
-    //
-    // 1. count() does not poll and the banner renders a moment after the POST returns, so it
-    //    read 0 and the loop never ran at all. Measured against a banner appearing at 400ms:
-    //    count() returns 0 after 14ms, waitFor catches it at 482ms. This retry has therefore
-    //    never fired, which is consistent with caseWorkerGenApps:54 flaking on uploadFile in
-    //    almost every measurement run.
-    // 2. `timeout *= 2` was unbounded, so a persistent banner could sleep past the 600s test
-    //    timeout. XUI's own throttle ceiling is 180s, so match that.
-    // 3. the surrounding toPass allowed 60s while the doubling sleeps inside it reach 16s,
-    //    32s then 64s — killed mid-sleep on the third pass. The bounded for-loop replaces it,
-    //    so there is no wrapper budget to outgrow.
+    // Same three defects uploadFile.action.ts already had fixed, left behind in this copy: a
+    // non-polling count() so the loop never ran, an unbounded doubling, and a 60s wrapper.
     const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
     const maxRateLimitRetries = 5;
@@ -353,11 +328,6 @@ export class CaseManagementAction implements IAction {
     }
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
     // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
-    //
-    // `uploadGap`, not `timeout`: the retry loop above DOUBLES `timeout` on every 429, so this
-    // trailing wait inherited the backoff. One 429 made it 16s and two made it 32s, on top of
-    // the backoff already served inside the loop. The row commit does not get slower because XUI
-    // throttled us, so the wait it needs is the fixed gap either way.
     await page.waitForTimeout(uploadGap);
   }
 
@@ -932,12 +902,8 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
-            // `item.index` still selects the branch — it is how the data says "this item fills
-            // three fields" — but it is no longer passed to inputText. All twelve money items
-            // carry index: 1 while the page renders one Days, one Hours and one Minutes field, so
-            // nth(1) can never attach: measured as 46 waits of 3s here, every one of which then
-            // fell back to .first(). Dropping the index reaches the same field without the wait,
-            // and leaves which fields get filled untouched.
+            // item.index still selects the branch, but is no longer passed to inputText: all twelve
+            // money items carry index 1 on a page with one of each field, so nth(1) never attaches.
             if (item.index && validationArr.labelMulti) {
               await performAction('inputText', { textLabel: validationArr.label }, item.input);
               await performAction('inputText', { textLabel: validationArr.label1 }, item.input2);

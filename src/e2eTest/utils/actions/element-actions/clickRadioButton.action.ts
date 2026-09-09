@@ -21,16 +21,8 @@ export class ClickRadioButtonAction implements IAction {
       () => this.radioPattern3(page, question, option, idx),
     ];
 
-    // count() below never retries, so wait for a settled DOM first. Only the
-    // question-scoped patterns are waited on: pattern 3 ignores `question`, so it would
-    // be satisfied by the previous page's Yes/No labels.
-    //
-    // MEDIUM_TIMEOUT rather than SHORT_TIMEOUT because most callers do not validate the page
-    // heading first — of the 7 calls into selectOccupationContractOrLicenceDetails in
-    // createCaseWales.spec, only one does. This is defence in depth, not the fix: the
-    // diagnostics below showed the failing page had already rendered (pattern2=2,
-    // pattern4=7), so timing was not what broke createCaseWales:604. The pattern
-    // definitions were.
+    // count() below never retries, so wait for a settled DOM first. Only the question-scoped
+    // patterns are waited on, since pattern 3 ignores `question`.
     if (question) {
       await waitForInteractive(
         anyOf(
@@ -72,18 +64,9 @@ export class ClickRadioButtonAction implements IAction {
   }
 
   /**
-   * Callers check count() === 1 before calling, so the guard that used to live here is gone.
-   *
-   * Returns false rather than throwing when the radio cannot be checked, so the caller can
-   * try its remaining patterns. Two measured problems with the previous shape:
-   *
-   * - `click()` was not caught, so a radio covered by an overlay threw at 2003ms on attempt 1
-   *   and never reached attempt 2 — where `force: attempt > 1` is exactly what would have
-   *   worked. Measured against a replica overlay.
-   * - the trailing `expect(...).toBe(true)` threw on failure, so the function could only
-   *   return true or throw. `return radioIsChecked` was unreachable and the caller's
-   *   fall-through to later patterns was dead code. Measured: an uncheckable radio threw
-   *   'Radio was not checked after 5 attempts' at 2565ms instead of returning.
+   * Returns false rather than throwing when the radio cannot be checked, so the caller can try
+   * its remaining patterns. Previously click() was uncaught (so a covered radio never reached the
+   * force:true retry) and a trailing expect() threw, making the fall-through dead code.
    */
   private async clickWithRetry(locator: any): Promise<boolean> {
     let attempt = 0;
@@ -118,21 +101,15 @@ export class ClickRadioButtonAction implements IAction {
       .getByRole('radio', { name: option as string, exact: true });
   }
 
-  // Indexed. The per-pattern diagnostics from the failing run read
-  // `pattern1=0, pattern2=2, pattern3=0, pattern4=7`: this pattern finds BOTH defendants'
-  // radios, so unindexed it is 2 and the `count() !== 1` guard throws it away — even though
-  // the wanted element is sitting at nth(idx). Verified: p2=2 and p2.nth(1) is the correct
-  // second-defendant radio.
+  // Indexed. Per-pattern diagnostics read pattern2=2 — it found both defendants radios, but
+  // being unindexed the count guard discarded the result.
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
     return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`)
       .nth(idx);
   }
 
-  // Innermost matching fieldset only. `fieldset:has-text(q)` also matches every ANCESTOR
-  // fieldset, which is why the diagnostics showed pattern4=7 for a two-defendant page: the
-  // wrappers inflate the list and .nth(idx) lands on a wrapper instead of the second block.
-  // Excluding fieldsets that themselves contain a matching fieldset collapsed 4 → 2 in
-  // reproduction and made .nth(1) resolve to the intended radio.
+  // Innermost matching fieldset only: `fieldset:has-text(q)` also matches every ANCESTOR
+  // fieldset, so nth(idx) hit a wrapper (diagnostics read pattern4=7 on a two-defendant page).
   private radioPattern4(page: Page, question: string, option: string, idx: number) {
     return page.locator(`fieldset:has-text("${question}"):not(:has(fieldset:has-text("${question}")))`)
       .nth(idx)

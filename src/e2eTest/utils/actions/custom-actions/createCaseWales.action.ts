@@ -35,25 +35,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
-    // Gate on this page's own heading before touching anything on it.
-    //
-    // The two validations below look like page checks but are not: 'Case number:' and
-    // 'Property address:' are a shared header rendered on every page of the journey — the
-    // same pair is asserted in 78 places across the createCase actions — so they pass just as
-    // happily on the *previous* page. Nothing here established that the occupation-contract
-    // page had actually arrived.
-    //
-    // That is the failure on createCaseWales:604 after the radio-pattern fix let the test get
-    // this far: clickRadioButton reported all four patterns at 0, and pattern3 is
-    // question-independent (`label >> text=<option>`), so a count of 0 there means no label
-    // with that option text existed anywhere on the page — not a selector problem, a
-    // wrong-or-unrendered page. Only 1 of this action's 7 call sites validated the heading
-    // first, and the failing one at spec:639 was not it, so the gate belongs here rather than
-    // in each caller.
-    //
-    // The bespoke heading/error-summary logging that used to sit here has been removed: it now
-    // lives in MainHeaderValidation, so every mainHeader assertion in the suite reports the same
-    // context rather than just this one call site.
+    // Gate on this page own heading before touching anything on it.
     await performValidation('mainHeader', occupationLicenceDetailsWales.mainHeader);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
