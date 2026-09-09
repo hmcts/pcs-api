@@ -194,7 +194,10 @@ public class CaseworkerDocumentListService {
                                                                PcsCaseEntity pcsCaseEntity) {
         return getOpenCounterClaims(counterClaims).stream()
             .map(counterClaimEntity -> {
-                String displayLabel = "Counter claim CC%d".formatted(counterClaimEntity.getRank());
+                Integer rank = counterClaimEntity.getRank();
+                String displayLabel = (rank != null)
+                    ? "Counter claim CC%d".formatted(rank)
+                    : "Counter claim"; // Fallback for legacy data
 
                 LocalDateTime submittedDate = counterClaimEntity.getClaimSubmittedDate();
                 displayLabel += " - submitted %s".formatted(RELATED_ENTITY_DATE_FORMATTER.format(submittedDate));

@@ -78,7 +78,10 @@ public class DocumentNameService {
 
         // Example label: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        String filename = "%s CC%d".formatted(baseName, counterClaimEntity.getRank());
+        Integer rank = counterClaimEntity.getRank();
+        String filename = (rank != null) 
+            ? "%s CC%d".formatted(baseName, rank)
+            : baseName; // Fallback for legacy data without rank
 
         return buildFilename(filename, extension, partyLabel);
     }
