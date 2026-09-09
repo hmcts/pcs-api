@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -122,9 +123,9 @@ class DocumentNameServiceTest {
         // Given
         UUID partyId = UUID.randomUUID();
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getRank()).thenReturn(1);
+        lenient().when(counterClaim.getRank()).thenReturn(1);
         ClaimEntity mainClaim = mock(ClaimEntity.class);
-        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
+        lenient().when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(partyLabel);
 
         // When
         String updatedFilename
@@ -223,7 +224,7 @@ class DocumentNameServiceTest {
         PartyNotFoundException expectedException = mock(PartyNotFoundException.class);
         UUID partyId = UUID.randomUUID();
         CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
-        when(counterClaim.getRank()).thenReturn(1);
+        lenient().when(counterClaim.getRank()).thenReturn(1);
 
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         when(partyService.getPartyLabel(mainClaim, partyId)).thenThrow(expectedException);
