@@ -110,7 +110,7 @@ class GenAppDocumentGenerationComponentTest {
     }
 
     @Test
-    @DisplayName("Final attempt logs one terminal ERROR with the exception message and MDC dimensions")
+    @DisplayName("Final attempt logs one terminal ERROR with the exception and MDC dimensions")
     void finalAttemptLogsTerminalErrorWithDimensions() {
         when(taskInstance.getData()).thenReturn(taskData());
         execution.consecutiveFailures = maxRetries;
@@ -131,13 +131,13 @@ class GenAppDocumentGenerationComponentTest {
 
         ILoggingEvent event = terminalErrors.getFirst();
         assertThat(event.getFormattedMessage())
-            .contains(GEN_APP_ID.toString())
-            .contains("docassembly 500");
+            .contains(GEN_APP_ID.toString());
+        assertThat(event.getThrowableProxy().getMessage()).isEqualTo("docassembly 500");
         assertThat(event.getMDCPropertyMap())
             .containsEntry("genAppId", GEN_APP_ID.toString())
             .containsEntry("taskName", "gen-app-document-generation-task")
             .containsEntry("terminalFailure", "true")
-            .containsEntry("failureReason", "docassembly 500");
+            .containsEntry("failureReason", "RuntimeException");
     }
 
     private static GenAppDocumentTaskData taskData() {

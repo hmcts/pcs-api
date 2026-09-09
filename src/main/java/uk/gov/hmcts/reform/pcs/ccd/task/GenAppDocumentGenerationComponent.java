@@ -63,9 +63,9 @@ public class GenAppDocumentGenerationComponent {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;
                     if (isFinalAttempt(attempt)) {
                         MDC.put(MDC_TERMINAL_FAILURE, "true");
-                        MDC.put(MDC_FAILURE_REASON, String.valueOf(e.getMessage()));
-                        log.error("Gen app document generation permanently failed for gen app {} after {} "
-                                      + "attempts: {}", genAppId, attempt, e.getMessage(), e);
+                        MDC.put(MDC_FAILURE_REASON, e.getClass().getSimpleName());
+                        log.error("Gen app document generation permanently failed for gen app {} after {} attempts",
+                            genAppId, attempt, e);
                     }
                     throw e;
                 } finally {
