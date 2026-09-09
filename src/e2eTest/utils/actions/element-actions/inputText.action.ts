@@ -44,8 +44,13 @@ export class InputTextAction implements IAction {
       // 3s covers its ~1.2s reveal. The warning below reports any site where the shorter budget
       // was not enough, so a regression names itself rather than returning as a silent overwrite
       // of the first party's field.
+      // Number(undefined) is NaN, so a call site that omits `index` still lands in this branch
+      // (undefined !== null) and every comparison below quietly reads false. That works, but it
+      // works by accident — make "no usable index" explicit so dropping a spurious index from a
+      // call site is a deliberate, readable act rather than a reliance on NaN semantics.
       const index = Number(fieldParams.index);
-      if (index > 0 && (await locator.count()) <= index) {
+      const hasIndex = Number.isInteger(index) && index > 0;
+      if (hasIndex && (await locator.count()) <= index) {
         const waitStarted = Date.now();
         await locator.nth(index).waitFor({ state: 'attached', timeout: INDEXED_FIELD_TIMEOUT })
           .catch(() => undefined);
@@ -54,7 +59,7 @@ export class InputTextAction implements IAction {
             + `${Date.now() - waitStarted}ms; filling the first matching field instead`);
         }
       }
-      locator = (await locator.count()) > 1
+      locator = hasIndex && (await locator.count()) > 1
         ? locator.nth(index)
         : locator.first();
     } else {
