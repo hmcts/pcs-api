@@ -54,7 +54,26 @@
     }
 
     private async uploadFile(page: Page, file: string): Promise<void> {
-      await performAction('clickButton', 'Add new');
+      // Diagnostic only. caseWorkerGenApps:54 fails here intermittently — on master as well as on
+      // this branch — with "expect(received).toEqual(expected) // deep equality", reported
+      // against THIS line, i.e. inside the "Add new" click rather than in the upload. That is a
+      // surprise: the failure has been described as an uploadFile problem, but nothing in
+      // clickButton.action.ts calls expect at all, so the assertion is nested deeper and
+      // Playwright attributed it to the step boundary.
+      //
+      // The console summary truncates the expected/received values, which is why "expected [] vs
+      // ~106 entries" was never traceable to an assertion. Log the whole message plus the page
+      // state, so the next occurrence names its own cause instead of needing to be guessed at.
+      try {
+        await performAction('clickButton', 'Add new');
+      } catch (error) {
+        const addNewCount = await page.getByRole('button', { name: 'Add new' }).count().catch(() => -1);
+        const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+        const message = error instanceof Error ? `${error.message}\n${error.stack ?? ''}` : String(error);
+        console.warn(`[uploadFile] "Add new" failed for "${file}" on page "${heading}" with `
+          + `${addNewCount} "Add new" button(s) present:\n${message.slice(0, 1500)}`);
+        throw error;
+      }
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await fileInput.last().setInputFiles(filePath);
