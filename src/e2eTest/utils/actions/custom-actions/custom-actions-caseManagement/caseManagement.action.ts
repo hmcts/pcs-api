@@ -568,9 +568,12 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    await performAction('inputText', { textLabel: addAHearing.daysLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
-    await performAction('inputText', { textLabel: addAHearing.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
-    await performAction('inputText', { textLabel: addAHearing.minsLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
+    // No index: this page renders one Days, one Hours and one Minutes field. `index: 1` asked
+    // inputText to wait for a second one that never arrives — 3 waits of 3s per call of this
+    // happy-path helper, on top of the 46 the error-validation path spent.
+    await performAction('inputText', { textLabel: addAHearing.daysLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', { textLabel: addAHearing.hoursLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
+    await performAction('inputText', { textLabel: addAHearing.minsLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
     await performAction('inputText', addAHearing.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(addAHearing.hearingNotesInput as number));
     await performAction('clickRadioButton', {
       question: addAHearing.noticeQuestion,
@@ -923,12 +926,18 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
+            // `item.index` still selects the branch — it is how the data says "this item fills
+            // three fields" — but it is no longer passed to inputText. All twelve money items
+            // carry index: 1 while the page renders one Days, one Hours and one Minutes field, so
+            // nth(1) can never attach: measured as 46 waits of 3s here, every one of which then
+            // fell back to .first(). Dropping the index reaches the same field without the wait,
+            // and leaves which fields get filled untouched.
             if (item.index && validationArr.labelMulti) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
-              await performAction('inputText', { textLabel: validationArr.label1, index: item.index }, item.input2);
-              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
+              await performAction('inputText', { textLabel: validationArr.label }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label1 }, item.input2);
+              await performAction('inputText', { textLabel: validationArr.labelMulti }, item.input1);
             } else if (item.index) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label }, item.input);
             } else {
               await performAction('inputText', validationArr.label, item.input);
             }

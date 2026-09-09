@@ -540,7 +540,10 @@ export class CreateCaseAction implements IAction {
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
       await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
-      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`, index: n }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
+      // No index: the label already carries the ground name, so exactly one field matches it.
+      // Passing `n` made inputText wait for an nth(n) that cannot exist — measured as 7 waits of
+      // 3s here, all of which then fell back to .first() anyway. Same field, no wait.
+      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})` }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
