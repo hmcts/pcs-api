@@ -56,7 +56,6 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       try {
         const auditStarted = Date.now();
         // Timing only — see controller.ts for why.
-        const auditStarted = Date.now();
         await test.step("Running Accessibility Scan", async () => {
           await new AxeUtils(executor.page).audit({
                       exclude: axe_Exclusions,
