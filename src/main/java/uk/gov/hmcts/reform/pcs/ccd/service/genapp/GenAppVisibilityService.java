@@ -33,7 +33,9 @@ public class GenAppVisibilityService {
         Arrays.stream(JUDICIAL_HISTORY_ROLES)
     ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
     private static final String PCS_CASEWORKER_ROLE = UserRole.PCS_CASE_WORKER.getRole();
-    private static final String PCS_SOLICITOR_ROLE = UserRole.PCS_SOLICITOR.getRole();
+    // IDAM login role pcs-frontend still issues to legal representatives; it no longer exists in the CCD
+    // definition (HDPI-7333), so it is matched here by name rather than through UserRole.
+    private static final String PCS_SOLICITOR_ROLE = "caseworker-pcs-solicitor";
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
                                          UUID userId,

@@ -284,7 +284,7 @@ class RequestSupportEligibilityIT extends AbstractPostgresContainerIT {
             UserInfo.builder()
                 .uid(USER_ID.toString())
                 .roles(List.of("caseworker-pcs-solicitor", "claimant-solicitor", "defendant-solicitor",
-                               "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]"))
+                               "[DEFENDANTSOLICITOR]"))
                 .build());
     }
 

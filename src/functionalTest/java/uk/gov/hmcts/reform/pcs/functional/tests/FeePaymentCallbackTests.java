@@ -5,7 +5,6 @@ import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 
 import java.util.List;
@@ -46,17 +44,6 @@ public class FeePaymentCallbackTests extends BaseApi {
 
         Map<String,Object> claimantPaymentRef = getClaimantPaymentReference(caseReference);
         paymentRequestReference = claimantPaymentRef.get("serviceRequestReference").toString();
-    }
-
-    @AfterAll
-    void cleanUp() {
-        if (caseReference != null) {
-            CaseRoleCleanUp.cleanUpCaseRole(
-                caseReference.toString(),
-                TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                "[CLAIMANTSOLICITOR]"
-            );
-        }
     }
 
     Map<String,Object> getClaimantPaymentReference(Long caseReference) {

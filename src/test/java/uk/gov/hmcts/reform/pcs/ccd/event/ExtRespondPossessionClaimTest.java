@@ -48,7 +48,8 @@ class ExtRespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldContainCorrectGrants() {
-        assertGrants(UserRole.DEFENDANT_SOLICITOR, Permission.CRU);
+        assertGrants(UserRole.GA_DEFENDANT_SOLICITOR, Permission.CRU);
+        assertThat(configuredEvent.getGrants().keySet()).doesNotContain(UserRole.DEFENDANT_SOLICITOR);
     }
 
 }
