@@ -1,4 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
+import {waitForSpinner} from '@utils/common/locator.utils';
 import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
@@ -1860,7 +1861,7 @@ export class CreateCaseAction implements IAction {
       }
       await nextButton.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      await waitForSpinner(page);
       pageNumber++;
     }
   }
