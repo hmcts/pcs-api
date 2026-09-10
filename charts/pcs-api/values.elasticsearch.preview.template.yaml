@@ -2,6 +2,10 @@ ccd:
   elasticsearch:
     persistence:
       enabled: true
+    persistentVolumeClaimRetentionPolicy:
+      enabled: true
+      whenDeleted: Delete
+      whenScaled: Delete
     volumeClaimTemplate:
       resources:
         requests:
