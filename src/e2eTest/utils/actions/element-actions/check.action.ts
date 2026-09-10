@@ -12,7 +12,7 @@ export class CheckAction implements IAction {
         await this.clickCheckBox(page, option, action);
       }
     } else if (typeof params.label === 'string') {
-      await this.clickCheckBox(page, params.label);
+      await this.clickCheckBox(page, params.label, action);
     } else {
       const fieldset = page.locator('fieldset', {
         has: page.getByText(params.question as string, { exact: true })
