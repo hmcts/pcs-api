@@ -1,4 +1,5 @@
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
@@ -33,7 +34,7 @@ test.beforeEach(async ({ page, context }) => {
     timeout: VERY_LONG_TIMEOUT,
   });
   await page.waitForLoadState();
-  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await waitForSpinner(page);
   await performValidation('mainHeader', home.caseSummary);
 });
 

@@ -4,6 +4,7 @@ import {
   performValidation
 } from '@utils/controller';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
@@ -112,7 +113,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
@@ -138,7 +139,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
@@ -179,7 +180,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });

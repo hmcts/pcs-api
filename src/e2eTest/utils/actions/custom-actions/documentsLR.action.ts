@@ -1,5 +1,6 @@
 import test, {expect, Locator, Page} from '@playwright/test';
 import { getFormattedDate } from "@utils/common/string.utils";
+import { waitForSpinner } from '@utils/common/locator.utils';
 
 import {
   checkYourAnswersUploadAdditionalDocs,
@@ -168,7 +169,7 @@ export class DocumentsAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await performValidation('mainHeader', home.caseSummary);
   }
 
