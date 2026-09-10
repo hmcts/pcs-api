@@ -1,6 +1,7 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
+import {waitForSpinner} from '@utils/common/locator.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
@@ -168,19 +169,26 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', caseSummary.go);
   }
 
+  // Reload rather than click a sixth time. Attempt 1 is the normal path; by attempt 3 the page has
+  // had two clicks and ~10s and is clearly not going to respond.
+  private static readonly RELOAD_ON_ATTEMPT = 3;
+
   /**
-   * Selects a next-step event and clicks Go, re-selecting if the dropdown lost its value.
+   * Selects a next-step event and clicks Go, reloading once if the clicks achieve nothing.
    *
-   * CCD re-renders the Summary tab's next-step dropdown shortly after a selection, and the
-   * re-render can reset it. Go then has nothing to launch, so the page stays on Summary and CCD
-   * reports no error — which is what `caseTabs:96` fails as:
-   * `Navigation to "Add a case note" page/element failed after 5 attempts — page shows "Summary"`.
+   * `caseTabs:96` intermittently fails as
+   * `Event "Add a case note" never launched after 5 attempts — page shows "Summary"`.
    *
-   * Reproduced locally: with a dropdown that re-renders 400ms after `change`, three Go clicks all
-   * stayed on Summary; re-reading the value and re-selecting recovered on the first attempt.
+   * What a real failure showed (PR-2692 build 2): the dropdown holds the right value on **all five**
+   * attempts, Go is clicked five times over 44s, the page never leaves Summary and nothing reports
+   * an error. So the selection is not being lost — the clicks land on a page instance that does not
+   * act on them. A sixth click is no more likely to work than the fifth; Playwright's own retry
+   * recovers because it starts from a fresh page.
    *
-   * Note that asserting the value straight after `selectOption` does NOT catch this — `toHaveValue`
-   * passes immediately, before the re-render lands. The check has to happen at click time.
+   * Two things were ruled out before this: the option resolving wrongly (the value is correct and
+   * retained) and the Go locator matching the wrong element (it resolves to exactly one button).
+   * Clicking an element whose handler is not yet attached does reproduce the symptom locally —
+   * the click succeeds silently and nothing happens — which is consistent with what is seen here.
    */
   private async selectEventAndGo(page: Page, event: actionRecord) {
     const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
@@ -189,13 +197,22 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
 
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      // Report what the dropdown holds when Go does not move the page. Build 71 established that
-      // it holds the right value on every attempt — the re-selection this loop used to do never
-      // fired once, so a lost selection is NOT why the event fails to launch.
+      // Report what the dropdown holds when Go does not move the page. PR-2692's build 2 caught a
+      // real failure: the value is correct and RETAINED across all five attempts, so a lost
+      // selection is not the cause. Clicking again is therefore pointless — the click lands on a
+      // page instance that does not act on it. Reload once instead and re-select on the fresh page,
+      // which is what Playwright's own retry does to recover.
       const value = await dropdown.inputValue().catch(() => '<unreadable>');
       if (attempt > 1) {
         console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
           + `holds "${value}" and Go has not moved the page`);
+      }
+      if (attempt === CreateCaseAction.RELOAD_ON_ATTEMPT) {
+        console.warn(`[selectEventAndGo] reloading the page before attempt ${attempt} for `
+          + `"${event.eventType}" — repeated clicks are not launching the event`);
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await waitForSpinner(page);
+        await performAction('select', caseSummary.nextStepEventList, event.eventType);
       }
       await performAction('clickButton', caseSummary.go);
 
