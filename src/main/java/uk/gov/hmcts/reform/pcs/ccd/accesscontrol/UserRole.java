@@ -25,12 +25,9 @@ public enum UserRole implements HasRole {
     CITIZEN("citizen", CRU, IDAM),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
     /**
-     * Notice of Change marker only. CCD requires a bracketed case role as the challenge-question
-     * answer and the approved case role, so this stays registered, but it carries no event, field,
-     * tab or document grants: defendant solicitors reach cases through the {@code defendant-solicitor}
-     * organisation role (HDPI-7333).
+     * Notice of Change key only, no grants - see {@link NocCaseRoles#DEFENDANT}.
      */
-    DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU, RAS),
+    DEFENDANT_SOLICITOR(NocCaseRoles.DEFENDANT, CRU, RAS),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
 

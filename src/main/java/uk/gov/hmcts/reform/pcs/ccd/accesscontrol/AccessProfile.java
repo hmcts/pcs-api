@@ -29,9 +29,9 @@ public enum AccessProfile implements HasRole {
     CITIZEN("citizen", CRU),
     DEFENDANT("[DEFENDANT]", CRU),
     /**
-     * Notice of Change marker only, no grants - see {@link UserRole#DEFENDANT_SOLICITOR}.
+     * Notice of Change key only, no grants - see {@link NocCaseRoles#DEFENDANT}.
      */
-    DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
+    DEFENDANT_SOLICITOR(NocCaseRoles.DEFENDANT, CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
 
     CLAIMANT("claimant", CRU,

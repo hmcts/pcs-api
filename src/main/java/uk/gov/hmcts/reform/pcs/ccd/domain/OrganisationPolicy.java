@@ -10,10 +10,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.PreviousOrganisationCollectionItem;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+/**
+ * PCS copy of the SDK's OrganisationPolicy whose {@code Organisation} is the PCS {@link Organisation},
+ * so the organisation node is always present in case data. Otherwise identical to the SDK type and
+ * mapped to the same CCD complex type.
+ */
 @NoArgsConstructor
 @Builder
 @Data
