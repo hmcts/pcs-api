@@ -137,6 +137,7 @@ export class CreateCaseAction implements IAction {
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['selectEventAndGo', () => this.selectEventAndGo(page, fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -165,6 +166,50 @@ export class CreateCaseAction implements IAction {
   private async selectAnEvent(event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
+  }
+
+  /**
+   * Selects a next-step event and clicks Go, re-selecting if the dropdown lost its value.
+   *
+   * CCD re-renders the Summary tab's next-step dropdown shortly after a selection, and the
+   * re-render can reset it. Go then has nothing to launch, so the page stays on Summary and CCD
+   * reports no error — which is what `caseTabs:96` fails as:
+   * `Navigation to "Add a case note" page/element failed after 5 attempts — page shows "Summary"`.
+   *
+   * Reproduced locally: with a dropdown that re-renders 400ms after `change`, three Go clicks all
+   * stayed on Summary; re-reading the value and re-selecting recovered on the first attempt.
+   *
+   * Note that asserting the value straight after `selectOption` does NOT catch this — `toHaveValue`
+   * passes immediately, before the re-render lands. The check has to happen at click time.
+   */
+  private async selectEventAndGo(page: Page, event: actionRecord) {
+    const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
+    const nextPage = event.nextPage as string | undefined;
+
+    for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      const value = await dropdown.inputValue().catch(() => '');
+      if (!value) {
+        if (attempt > 1) {
+          console.warn(`[selectEventAndGo] dropdown was empty on attempt ${attempt}, re-selecting `
+            + `"${event.eventType}"`);
+        }
+        await performAction('select', caseSummary.nextStepEventList, event.eventType);
+      }
+      await performAction('clickButton', caseSummary.go);
+
+      const left = await page
+        .locator('h1', { hasText: home.caseSummary })
+        .first()
+        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+      if (left) {
+        return;
+      }
+    }
+    const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+    throw new Error(`Event "${event.eventType}" never launched after ${actionRetries} attempts `
+      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`);
   }
   
   private async housingPossessionClaim() {
