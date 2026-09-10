@@ -4,6 +4,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { VERY_LONG_TIMEOUT } from '../../playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { caseInfo } from '@utils/actions/custom-actions';
@@ -33,7 +34,7 @@ test.beforeEach(async ({ page, context }) => {
     timeout: VERY_LONG_TIMEOUT,
   });
   await page.waitForLoadState();
-  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await waitForSpinner(page);
   await performValidation('mainHeader', home.caseSummary);
 });
 

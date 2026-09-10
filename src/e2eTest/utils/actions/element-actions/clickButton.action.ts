@@ -28,7 +28,10 @@ export class ClickButtonAction implements IAction {
       await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      // Same wait as before the click, and for the same reason — but bounded. A bare waitFor here
+      // inherits the 40s actionTimeout and THROWS, so a spinner that lingers cost 40s and failed
+      // the test, while the identical pre-click wait was capped and swallowed.
+      await waitForSpinner(page);
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
@@ -68,7 +71,7 @@ export class ClickButtonAction implements IAction {
   }
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     if (await hasPageHeading(page, currentPageHeader)) {
       await this.clickButton(page, button);
     }

@@ -1,5 +1,6 @@
 
 import { expect, Page } from '@playwright/test';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
@@ -106,7 +107,7 @@ export class CaseManagementAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await performValidation('mainHeader', home.caseSummary);
   }
 
