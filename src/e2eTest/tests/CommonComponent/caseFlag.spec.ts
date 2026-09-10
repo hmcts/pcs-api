@@ -59,8 +59,10 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.createFlagsEvent,
+      nextPage: whereShouldThisFlagBeAdded.mainHeader
+    });
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
     await performAction('clickButton', whereShouldThisFlagBeAdded.cancelButton);
     await performAction('select', manageCaseFlags.nextStepEventList, manageCaseFlags.manageCaseFlagsEvent);
@@ -72,8 +74,10 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.createFlagsEvent,
+      nextPage: whereShouldThisFlagBeAdded.mainHeader
+    });
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
     await performAction('whereShouldThisFlagBeAdded', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,
@@ -142,8 +146,10 @@ test.describe('[Common Component Case Flags] @nightly @CC @caseFlags', async () 
     await performAction('login', { email: user.hearingCenterAdmin.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.createFlagsEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.createFlagsEvent,
+      nextPage: whereShouldThisFlagBeAdded.mainHeader
+    });
     await performValidation('mainHeader', whereShouldThisFlagBeAdded.mainHeader);
     await performAction('whereShouldThisFlagBeAdded', {
       flagLevelQuestion: whereShouldThisFlagBeAdded.whereShouldThisFlagBeAddedQuestion,

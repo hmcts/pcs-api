@@ -82,8 +82,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.manageSupport,
+      nextPage: reviewSupport.mainHeaderManage
+    });
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Special measure, Evidence by live link (Claimant Test Create Support)' });
     await performAction('clickButton', reviewSupport.continueButton);
@@ -142,8 +144,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.manageSupport,
+      nextPage: reviewSupport.mainHeaderManage
+    });
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
     await performAction('clickButton', reviewSupport.continueButton);
@@ -192,8 +196,10 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('clickButton', reviewSupport.continueButton);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.manageSupport,
+      nextPage: reviewSupport.mainHeaderManage
+    });
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Language Interpreter, Telugu (Claimant Test Create Support)' });
     await performAction('clickButton', reviewSupport.continueButton);
