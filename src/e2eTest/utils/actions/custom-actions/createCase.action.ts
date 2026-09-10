@@ -171,16 +171,18 @@ export class CreateCaseAction implements IAction {
   /**
    * Selects a next-step event and clicks Go, re-selecting if the dropdown lost its value.
    *
-   * CCD re-renders the Summary tab's next-step dropdown shortly after a selection, and the
-   * re-render can reset it. Go then has nothing to launch, so the page stays on Summary and CCD
-   * reports no error — which is what `caseTabs:96` fails as:
+   * `caseTabs:96` navigates to `#Summary` by URL hash and selects an event immediately. CCD then
+   * replaces the dropdown node on a later digest, and a selection made before that replacement is
+   * lost with it. Go has nothing to launch, the page stays on Summary, and nothing reports an
+   * error — which is exactly how the test fails:
    * `Navigation to "Add a case note" page/element failed after 5 attempts — page shows "Summary"`.
    *
-   * Reproduced locally: with a dropdown that re-renders 400ms after `change`, three Go clicks all
-   * stayed on Summary; re-reading the value and re-selecting recovered on the first attempt.
+   * Reproduced locally against a select that is replaced 900ms after the option list populates:
    *
-   * Note that asserting the value straight after `selectOption` does NOT catch this — `toHaveValue`
-   * passes immediately, before the re-render lands. The check has to happen at click time.
+   *   right after select: "1"      after the replacement: ""      Go clicked with ""  ->  Summary
+   *
+   * Asserting the value straight after `selectOption` does NOT catch it — the assertion passes
+   * before the replacement lands. The value has to be re-read at click time.
    */
   private async selectEventAndGo(page: Page, event: actionRecord) {
     const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
@@ -189,11 +191,14 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
 
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      // Report what the dropdown holds when Go does not move the page. Build 71 established that
-      // it holds the right value on every attempt — the re-selection this loop used to do never
-      // fired once, so a lost selection is NOT why the event fails to launch.
+      // Re-read at click time and re-select if the value has gone. An earlier run of this loop saw
+      // the warning never fire, but caseTabs:96 passed in that run, so it proved nothing.
       const value = await dropdown.inputValue().catch(() => '<unreadable>');
-      if (attempt > 1) {
+      if (!value) {
+        console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown is `
+          + `empty at click time, re-selecting`);
+        await performAction('select', caseSummary.nextStepEventList, event.eventType);
+      } else if (attempt > 1) {
         console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
           + `holds "${value}" and Go has not moved the page`);
       }
