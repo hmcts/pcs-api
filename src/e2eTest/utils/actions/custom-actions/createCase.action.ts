@@ -85,8 +85,6 @@ export const addressInfoCaseTab = {
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 export const caseTabMap = new Map<string, string>();
-// Attempt at which selectEventAndGo reloads rather than clicking Go again.
-const RELOAD_ON_ATTEMPT = 3;
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -140,7 +138,6 @@ export class CreateCaseAction implements IAction {
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
-      ['selectEventAndGo', () => this.selectEventAndGo(page, fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -171,75 +168,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', caseSummary.go);
   }
 
-  /**
-   * Selects a next-step event and clicks Go, re-selecting if the dropdown lost its value.
-   *
-   * CCD re-renders the Summary tab's next-step dropdown shortly after a selection, and the
-   * re-render can reset it. Go then has nothing to launch, so the page stays on Summary and CCD
-   * reports no error — which is what `caseTabs:96` fails as:
-   * `Navigation to "Add a case note" page/element failed after 5 attempts — page shows "Summary"`.
-   *
-   * Reproduced locally: with a dropdown that re-renders 400ms after `change`, three Go clicks all
-   * stayed on Summary; re-reading the value and re-selecting recovered on the first attempt.
-   *
-   * Note that asserting the value straight after `selectOption` does NOT catch this — `toHaveValue`
-   * passes immediately, before the re-render lands. The check has to happen at click time.
-   */
-  private async selectEventAndGo(page: Page, event: actionRecord) {
-    const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
-    const nextPage = event.nextPage as string | undefined;
-
-    // Record the event-trigger requests each Go click produces. A real failure showed the dropdown
-    // holding the right value on all five attempts with no error anywhere, so the open question is
-    // whether the click reaches CCD at all.
-    const triggerCalls: string[] = [];
-    const onResponse = (response: { url: () => string; status: () => number }) => {
-      const url = response.url();
-      if (url.includes('trigger') || url.includes('event-trigger')) {
-        triggerCalls.push(`${response.status()} ${url.replace(/^https?:\/\/[^/]+/, '')}`);
-      }
-    };
-    page.on('response', onResponse);
-
-    try {
-    await performAction('select', caseSummary.nextStepEventList, event.eventType);
-
-    for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      const value = await dropdown.inputValue().catch(() => '<unreadable>');
-      if (attempt > 1) {
-        console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
-          + `holds "${value}", trigger calls so far: `
-          + `${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
-      }
-      // Two clicks and ~10s in, this page instance is not going to respond — the value is right and
-      // retained, so clicking again is pointless. Reload, which is how Playwright's retry recovers.
-      if (attempt === RELOAD_ON_ATTEMPT) {
-        console.warn(`[selectEventAndGo] reloading before attempt ${attempt} for `
-          + `"${event.eventType}"`);
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        await waitForSpinner(page);
-        await performAction('select', caseSummary.nextStepEventList, event.eventType);
-      }
-      await performAction('clickButton', caseSummary.go);
-
-      const left = await page
-        .locator('h1', { hasText: home.caseSummary })
-        .first()
-        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
-        .then(() => true)
-        .catch(() => false);
-      if (left) {
-        return;
-      }
-    }
-    const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
-    throw new Error(`Event "${event.eventType}" never launched after ${actionRetries} attempts `
-      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}; `
-      + `trigger calls: ${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
-    } finally {
-      page.off('response', onResponse);
-    }
-  }
   
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
