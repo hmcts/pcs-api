@@ -186,14 +186,16 @@ export class CreateCaseAction implements IAction {
     const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
     const nextPage = event.nextPage as string | undefined;
 
+    await performAction('select', caseSummary.nextStepEventList, event.eventType);
+
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      const value = await dropdown.inputValue().catch(() => '');
-      if (!value) {
-        if (attempt > 1) {
-          console.warn(`[selectEventAndGo] dropdown was empty on attempt ${attempt}, re-selecting `
-            + `"${event.eventType}"`);
-        }
-        await performAction('select', caseSummary.nextStepEventList, event.eventType);
+      // Report what the dropdown holds when Go does not move the page. Build 71 established that
+      // it holds the right value on every attempt — the re-selection this loop used to do never
+      // fired once, so a lost selection is NOT why the event fails to launch.
+      const value = await dropdown.inputValue().catch(() => '<unreadable>');
+      if (attempt > 1) {
+        console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
+          + `holds "${value}" and Go has not moved the page`);
       }
       await performAction('clickButton', caseSummary.go);
 
