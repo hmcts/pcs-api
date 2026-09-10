@@ -47,8 +47,10 @@ test.afterEach(async () => {
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   test('Trigger respond event @healthCheck', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.amendRepresentativeDetails,
+      nextPage: contactDetailsLR.mainHeader
+    });
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
       notifications: contactDetailsLR.yesRadioOption,
@@ -64,8 +66,10 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   });
 
   test('Update LR Details @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.amendRepresentativeDetails,
+      nextPage: contactDetailsLR.mainHeader
+    });
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
       notifications: contactDetailsLR.yesRadioOption,
