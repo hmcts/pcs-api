@@ -39,6 +39,7 @@ export class ActionRegistry {
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
     ['selectAnEvent', new CreateCaseAction()],
+    ['selectEventAndGo', new CreateCaseAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
