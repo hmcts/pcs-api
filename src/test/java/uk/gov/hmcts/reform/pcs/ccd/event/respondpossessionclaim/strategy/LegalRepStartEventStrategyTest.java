@@ -69,7 +69,7 @@ class LegalRepStartEventStrategyTest {
     @Test
     void shouldSupportLegalRepRoles() {
         // given
-        List<String> roles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
+        List<String> roles = List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
 
         // when
         boolean result = underTest.supports(roles);
