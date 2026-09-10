@@ -86,7 +86,9 @@ export class CYAStore {
       case 'select':
         if (typeof fieldName === 'string' && typeof value === 'string') {
           qaObject = { question: this.getMappedQuestion(fieldName), answer: value };
-        }else{
+        } else if (typeof fieldName === 'string' && typeof value === 'number') {
+          qaObject = { question: this.getMappedQuestion(fieldName), answer: String(value) };
+        } else {
           qaObject = { question: this.getMappedQuestion(fieldName.dropdown), answer: value };
         }
         break;
@@ -121,6 +123,7 @@ export class CYAStore {
     }
 
     if (qaObject) {
+      console.log(qaObject.question)
       const normalizedQuestion = this.normalizeText(qaObject.question);
       if (normalizedQuestion.includes('email address') || normalizedQuestion.includes('password')) {
         return;

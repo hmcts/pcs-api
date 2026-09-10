@@ -262,6 +262,7 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async getCaseAPIDynamic(getDetails: actionRecord): Promise<void> {
+    await this.getAccessToken(getDetails.email as string, getDetails.password as string);
     const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());
@@ -272,12 +273,20 @@ export class CreateCaseAPIAction implements IAction {
         await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
-        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);       
 
-        for (const defendantId of defendantIds) {
-          process.env.Defendant_ID = defendantId;
-
-          await performAction('linkSolicitorAPI',getDetails.email as string);
+        defendantUserDetails.length = 0;
+        for (const defendant of allDefendants) {
+          process.env.Defendant_ID = defendant.id;
+          const defendantName =
+            defendant.value?.nameKnown === 'YES'
+              ? `${defendant.value.firstName} ${defendant.value.lastName}`
+              : '';
+          defendantUserDetails.push({
+            id: defendant.id,
+            name: defendantName,
+          });
+          await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
       }

@@ -21,5 +21,6 @@ export const cyaIgnoreQuestions = [
   'Do you want to resume your claim using your saved answers?',
   'Do you know the underlessee or mortgagee’s address for service?',
   'Add document',
-  'Review date'
+  'Review date',
+  'Select an address'
 ];
