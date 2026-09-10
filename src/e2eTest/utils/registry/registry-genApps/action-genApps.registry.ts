@@ -3,6 +3,7 @@ import { GenAppsAction } from "@utils/actions/custom-actions/custom-actions-genA
 import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
+import { SelectEventAndGoAction } from '@utils/actions/custom-actions/selectEventAndGo.action';
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
 import { ClickSummaryAction } from "@utils/actions/element-actions/clickSummary.action";
 import { IAction } from "@utils/interfaces";
@@ -21,6 +22,7 @@ export class ActionGenAppsRegistry {
     ['clickTab', new ClickTabAction()],
     ['inputText', new InputTextAction()],
     ['select', new SelectAction()],
+    ['selectEventAndGo', new SelectEventAndGoAction()],
     ['uploadFile', new UploadFileAction()],
     ['login', new LoginAction()],
     ['createUser', new LoginAction()],
