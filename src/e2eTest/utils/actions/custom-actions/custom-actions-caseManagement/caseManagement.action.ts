@@ -330,7 +330,8 @@ export class CaseManagementAction implements IAction {
       if (!rateLimited) {
         break;
       }
-      timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+      // Clamp to the remaining budget too — see uploadFile.action.ts.
+      timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
       backoffSpent += timeout;
       await page.waitForTimeout(timeout);
       await fileInput.last().setInputFiles(filePath);

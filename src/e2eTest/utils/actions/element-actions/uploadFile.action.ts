@@ -122,7 +122,10 @@
         if (!rateLimited) {
           return;
         }
-        timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+        // Clamp to the budget as well as the ceiling. Checking `backoffSpent < MAX` only before the
+        // sleep let the last retry overshoot badly: 16 + 32 then 64 against a 60s budget spent
+        // 112s, nearly double the cap, which is most of why a doomed upload still took ~3.1m.
+        timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
         backoffSpent += timeout;
         await page.waitForTimeout(timeout);
         await fileInput.last().setInputFiles(filePath);
