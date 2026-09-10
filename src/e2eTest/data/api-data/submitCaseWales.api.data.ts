@@ -415,8 +415,8 @@ export const submitCaseApiDataWales = {
           },
           description: 'Notice for service',
           document: {
-            document_url: `${process.env.DM_STORE}/documents/481ce2ed-8557-4036-be9c-3d8e63638f79`,
-            document_binary_url: `${process.env.DM_STORE}/documents/481ce2ed-8557-4036-be9c-3d8e63638f79/binary`,
+            document_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c`,
+            document_binary_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c/binary`,
             document_filename: 'noticeForService.pdf',
           }
         },
