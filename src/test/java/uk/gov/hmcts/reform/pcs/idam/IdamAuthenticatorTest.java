@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 import feign.FeignException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,11 @@ class IdamAuthenticatorTest {
 
     @InjectMocks
     private IdamAuthenticator underTest;
+
+    @AfterEach
+    void afterEach() {
+        SecurityContextHolder.clearContext();
+    }
 
     @ParameterizedTest
     @NullAndEmptySource
@@ -160,13 +166,13 @@ class IdamAuthenticatorTest {
     @DisplayName("Should retrieve user successfully already Authenticated")
     void shouldReturnExistingValidatedAlreadyAuthenticatedUser() {
         // Given
-        String token = BEARER_PREFIX + "valid-token";
         User user = mock(User.class);
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(user);
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
+        String token = BEARER_PREFIX + "valid-token";
 
         // When
         User response = underTest.validateAuthToken(token);
