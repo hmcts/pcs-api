@@ -42,6 +42,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   workers: resolveWorkers(),
+  /* Inside e2e-output so Jenkins retains traces and videos with the E2E report */
+  outputDir: 'e2e-output/test-results',
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
