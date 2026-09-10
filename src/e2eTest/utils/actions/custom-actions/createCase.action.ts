@@ -169,49 +169,57 @@ export class CreateCaseAction implements IAction {
   }
 
   /**
-   * Selects a next-step event and clicks Go, re-selecting if the dropdown lost its value.
+   * Selects a next-step event and clicks Go, retrying until the page leaves Summary.
    *
-   * CCD re-renders the Summary tab's next-step dropdown shortly after a selection, and the
-   * re-render can reset it. Go then has nothing to launch, so the page stays on Summary and CCD
-   * reports no error — which is what `caseTabs:96` fails as:
+   * `caseTabs:96` intermittently fails here as
    * `Navigation to "Add a case note" page/element failed after 5 attempts — page shows "Summary"`.
-   *
-   * Reproduced locally: with a dropdown that re-renders 400ms after `change`, three Go clicks all
-   * stayed on Summary; re-reading the value and re-selecting recovered on the first attempt.
-   *
-   * Note that asserting the value straight after `selectOption` does NOT catch this — `toHaveValue`
-   * passes immediately, before the re-render lands. The check has to happen at click time.
+   * The dropdown holds the right value on every attempt (build 71) and the option itself is
+   * correct, so neither a lost selection nor a mis-selected option explains it. What is still
+   * unknown is whether the Go click reaches CCD at all, so this logs the event-trigger requests
+   * the click produces.
    */
   private async selectEventAndGo(page: Page, event: actionRecord) {
     const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
     const nextPage = event.nextPage as string | undefined;
 
-    await performAction('select', caseSummary.nextStepEventList, event.eventType);
-
-    for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      // Report what the dropdown holds when Go does not move the page. Build 71 established that
-      // it holds the right value on every attempt — the re-selection this loop used to do never
-      // fired once, so a lost selection is NOT why the event fails to launch.
-      const value = await dropdown.inputValue().catch(() => '<unreadable>');
-      if (attempt > 1) {
-        console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
-          + `holds "${value}" and Go has not moved the page`);
+    const triggerCalls: string[] = [];
+    const onResponse = (response: { url: () => string; status: () => number }) => {
+      const url = response.url();
+      if (url.includes('trigger') || url.includes('event-trigger')) {
+        triggerCalls.push(`${response.status()} ${url.replace(/^https?:\/\/[^/]+/, '')}`);
       }
-      await performAction('clickButton', caseSummary.go);
+    };
+    page.on('response', onResponse);
 
-      const left = await page
-        .locator('h1', { hasText: home.caseSummary })
-        .first()
-        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
-        .then(() => true)
-        .catch(() => false);
-      if (left) {
-        return;
+    try {
+      await performAction('select', caseSummary.nextStepEventList, event.eventType);
+
+      for (let attempt = 1; attempt <= actionRetries; attempt++) {
+        const value = await dropdown.inputValue().catch(() => '<unreadable>');
+        if (attempt > 1) {
+          console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
+            + `holds "${value}", trigger calls so far: `
+            + `${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
+        }
+        await performAction('clickButton', caseSummary.go);
+
+        const left = await page
+          .locator('h1', { hasText: home.caseSummary })
+          .first()
+          .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+          .then(() => true)
+          .catch(() => false);
+        if (left) {
+          return;
+        }
       }
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      throw new Error(`Event "${event.eventType}" never launched after ${actionRetries} attempts `
+        + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}; `
+        + `trigger calls: ${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
+    } finally {
+      page.off('response', onResponse);
     }
-    const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
-    throw new Error(`Event "${event.eventType}" never launched after ${actionRetries} attempts `
-      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`);
   }
   
   private async housingPossessionClaim() {
