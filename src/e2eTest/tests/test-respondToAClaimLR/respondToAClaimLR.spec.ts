@@ -56,8 +56,10 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       phoneNumber: contactDetailsLR.noRadioOption
     });
     await performAction('clickButton', 'Close and Return to case details');
-    await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: 'Respond to claim',
+      nextPage: startNow.mainHeader
+    });
     await performValidation('mainHeader', startNow.mainHeader);
   });
 
