@@ -438,7 +438,7 @@ class LegalRepSubmissionEventStrategyTest {
     @Test
     void supports_WithDefendantSolicitorUser_ReturnsTrue() {
         // when / then
-        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isTrue();
+        assertThat(underTest.supports(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()))).isTrue();
     }
 
     @Test

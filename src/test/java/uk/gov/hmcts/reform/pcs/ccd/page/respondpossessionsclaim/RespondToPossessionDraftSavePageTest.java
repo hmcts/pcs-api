@@ -489,7 +489,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldSaveDraftByPartyForLegalRepresentative() {
         UUID representedPartyId = UUID.randomUUID();
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
@@ -513,7 +513,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     @Test
     void shouldThrowErrorWhenNoSelectedPartyId() {
         String organisationId = "org";
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
