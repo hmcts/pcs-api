@@ -42,6 +42,11 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   workers: resolveWorkers(),
+  // Traces are captured on first retry but Playwright writes them to its default test-results/,
+  // which the pipeline does not archive — it archives e2e-output/ (Jenkinsfile_CNP). So every
+  // trace of a first-attempt failure has been captured and discarded. caseTabs:96 fails then
+  // retries on most runs, so its trace exists on the agent each time.
+  outputDir: 'e2e-output/test-results',
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
