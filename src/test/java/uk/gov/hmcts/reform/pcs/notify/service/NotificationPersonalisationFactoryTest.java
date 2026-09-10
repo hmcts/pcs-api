@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
@@ -30,8 +31,9 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
 
-
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,8 +59,13 @@ class NotificationPersonalisationFactoryTest {
     @BeforeEach
     void setUp() {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+        ClaimEntity claim = new ClaimEntity();
+        claim.addParty(createParty("Jane", "Smith"), PartyRole.CLAIMANT);
+        claim.addParty(createParty("John", "Doe"), PartyRole.DEFENDANT);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
 
-        factory = new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
+        factory = new NotificationPersonalisationFactory(
+            partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter());
         ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
     }
 
@@ -152,7 +159,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             ClaimEntity claim = createClaim(claimantParty);
 
-            BasePersonalisation result = factory.forClaimant(claim);
+            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -172,7 +179,7 @@ class NotificationPersonalisationFactoryTest {
             claimantParty.setOrgName("Claimant Corp");
             ClaimEntity claim = createClaim(claimantParty);
 
-            BasePersonalisation result = factory.forClaimant(claim);
+            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -187,7 +194,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
             ClaimEntity claim = createClaim(claimantParty, defendantParty);
 
-            BasePersonalisation result = factory.forClaimant(claim);
+            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
@@ -514,8 +521,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("organisationName", "HMCTS")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("paymentUrl",
-                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+                .containsEntry("paymentUrl", "frontEndUrl/cases/case-details/PCS/PCS/1234567890#Service%20Request");
         }
 
         @Test
@@ -534,8 +540,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("lastName", "Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("paymentUrl",
-                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+                .containsEntry("paymentUrl", "frontEndUrl/claims");
         }
     }
 
@@ -549,14 +554,11 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            String paymentUrl = "frontEndUrl/case/1234567890/"
-                + "respond-to-claim/counter-claim-application-fee-amount";
-
             CounterclaimPaymentRequiredPersonalisation result = factory.counterclaimPaymentRequired(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("paymentUrl", paymentUrl)
+                .containsEntry("paymentUrl", "frontEndUrl/claims")
                 .containsEntry("firstName", "John")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")

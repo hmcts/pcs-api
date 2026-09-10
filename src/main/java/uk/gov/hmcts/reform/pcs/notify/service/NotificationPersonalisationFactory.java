@@ -8,12 +8,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
@@ -26,7 +30,9 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,6 +45,7 @@ public class NotificationPersonalisationFactory {
     private final PartyService partyService;
     private final AddressFormatter addressFormatter;
     private final AddressMapper addressMapper;
+    private final CaseNameFormatter caseNameFormatter;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -49,8 +56,23 @@ public class NotificationPersonalisationFactory {
         return buildPersonalisation(defendant, defendantResponse.getPcsCase());
     }
 
-    public BasePersonalisation forClaimant(ClaimEntity claim) {
-        return buildPersonalisation(partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()), claim.getPcsCase());
+    public MakeAClaimBasePersonalisation forClaimant(ClaimEntity claim) {
+        String nextStepUrl = Optional.of(claim.getPcsCase())
+            .map(PcsCaseEntity::getCaseReference)
+            .map(Object::toString)
+            .map(caseRef -> String.format(
+                ("%s/cases/case-details/PCS/PCS/%s#Case%%20Parties"),
+                frontendUrl,
+                caseRef
+            ))
+            .orElse(null);
+
+        return MakeAClaimBasePersonalisation.builder()
+            .base(buildPersonalisation(
+                    partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()),
+                    claim.getPcsCase()))
+            .nextStepUrl(nextStepUrl)
+            .build();
     }
 
     public ClaimantBasePersonalisation forClaimant(long caseReference, PCSCase pcsCase) {
@@ -67,11 +89,17 @@ public class NotificationPersonalisationFactory {
             primaryDefendantDetails.getLastName()
         );
 
+        String nextStepUrl = String.format("%s/cases/case-details/PCS/PCS/%s#Next%%20steps",
+                                            frontendUrl,
+                                            caseReference);
+
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
             .caseNumber(formatCaseReference(Long.toString(caseReference)))
+            .caseName(caseNameFormatter.formatCaseName(pcsCase))
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
+            .nextStepUrl(nextStepUrl)
             .build();
     }
 
@@ -99,7 +127,7 @@ public class NotificationPersonalisationFactory {
             .map(PcsCaseEntity::getCaseReference)
             .map(Object::toString)
             .map(caseRef -> String.format(
-                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
+                ("%s/cases/case-details/PCS/PCS/%s#Service%%20Request"),
                 frontendUrl,
                 caseRef
             ))
@@ -114,16 +142,7 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-        String paymentUrl = Optional.ofNullable(defendantResponse)
-            .map(DefendantResponseEntity::getPcsCase)
-            .map(PcsCaseEntity::getCaseReference)
-            .map(Object::toString)
-            .map(caseRef -> String.format(
-                ("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount"),
-                frontendUrl,
-                caseRef
-            ))
-            .orElse(null);
+        String paymentUrl = String.format("%s/claims", frontendUrl);
 
         return CounterclaimPaymentRequiredPersonalisation.builder()
             .base(forDefendant(defendantResponse))
@@ -155,6 +174,7 @@ public class NotificationPersonalisationFactory {
         return OrganisationBasePersonalisation.builder()
             .organisationName(organisationEntity.getOrganisationName())
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .caseName(getFormattedCaseName(pcsCaseEntity))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -192,6 +212,7 @@ public class NotificationPersonalisationFactory {
             .firstName(recipientFirstName)
             .lastName(recipientLastName)
             .caseNumber(formatCaseReference(pcsCaseEntity.getCaseReference().toString()))
+            .caseName(getFormattedCaseName(pcsCaseEntity))
             .claimantName(claimantName)
             .primaryDefendantName(primaryDefendantName)
             .build();
@@ -284,5 +305,16 @@ public class NotificationPersonalisationFactory {
         }
 
         return caseReference.replaceAll("(.{4})(?!$)", "$1-");
+    }
+
+    public String getFormattedCaseName(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity claim = pcsCaseEntity.getClaims().getFirst();
+
+        List<Party> claimants = PartyDisplayMapper.partiesByRole(claim, PartyRole.CLAIMANT).stream()
+            .map(PartyDisplayMapper::toDomainParty).toList();
+        List<Party> defendants = PartyDisplayMapper.partiesByRole(claim, PartyRole.DEFENDANT).stream()
+            .map(PartyDisplayMapper::toDomainParty).toList();
+
+        return caseNameFormatter.formatCaseName(claimants, defendants);
     }
 }
