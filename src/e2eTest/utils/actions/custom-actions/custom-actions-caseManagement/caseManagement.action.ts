@@ -4,7 +4,7 @@ import { waitForSpinner } from '@utils/common/locator.utils';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT, actionRetries, waitForPageRedirectionTimeout } from 'playwright.config';
+import { VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT, actionRetries, waitForPageRedirectionTimeout } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -41,6 +41,7 @@ import {
   POST_UPLOAD_SETTLE,
   UPLOAD_GAP,
   markUploadCompleted,
+  rateLimitBanner,
   waitForUploadWindow
 } from '@utils/actions/element-actions/uploadFile.action';
 import path from 'path';
@@ -313,19 +314,16 @@ export class CaseManagementAction implements IAction {
     // Shares uploadFile's timestamp — same XUI session, so the gap owed depends on either path.
     await waitForUploadWindow(page);
     let timeout = UPLOAD_GAP;
+    // Nothing dismisses these banners, so only a NEW one means this upload was throttled.
+    const bannersBefore = await rateLimitBanner(page).count();
     await fileInput.last().setInputFiles(filePath);
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
-                                         span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+    const rateLimit = rateLimitBanner(page);
     // Budgeted rather than counted, as in uploadFile.action.ts.
     let backoffSpent = 0;
     while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
-      const rateLimited = await rateLimit
-        .first()
-        .waitFor({ state: 'visible', timeout: 1000 })
-        .then(() => true)
-        .catch(() => false);
-      if (!rateLimited) {
+      await page.waitForTimeout(VERY_SHORT_TIMEOUT);
+      if ((await rateLimit.count()) <= bannersBefore) {
         break;
       }
       timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
@@ -334,7 +332,8 @@ export class CaseManagementAction implements IAction {
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');
     }
-    await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
+    await expect(rateLimit, 'upload was still rate limited after retrying with backoff')
+      .toHaveCount(bannersBefore);
     // CCD keeps committing the row after "Uploading..." goes.
     await page.waitForTimeout(POST_UPLOAD_SETTLE);
     markUploadCompleted();
