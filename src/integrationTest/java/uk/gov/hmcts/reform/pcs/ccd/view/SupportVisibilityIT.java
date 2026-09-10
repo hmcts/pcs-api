@@ -200,7 +200,7 @@ class SupportVisibilityIT extends AbstractPostgresContainerIT {
             UserInfo.builder()
                 .uid(CLAIMANT_SOLICITOR_USER_ID.toString())
                 .roles(List.of("caseworker-pcs-solicitor", "claimant-solicitor", "defendant-solicitor",
-                               "[CLAIMANTSOLICITOR]", "[DEFENDANTSOLICITOR]"))
+                               "[DEFENDANTSOLICITOR]"))
                 .build());
     }
 

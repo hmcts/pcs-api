@@ -111,9 +111,7 @@ class ManageSupportTest extends BaseEventTest {
     void shouldNotGrantClaimantSideProfilesAnyExecution() {
         assertThat(configuredEvent.getGrants().keySet())
             .doesNotContain(UserRole.CLAIMANT,
-                            UserRole.GA_CLAIMANT_SOLICITOR,
-                            UserRole.CLAIMANT_SOLICITOR,
-                            UserRole.PCS_SOLICITOR);
+                            UserRole.GA_CLAIMANT_SOLICITOR);
     }
 
     @Test
