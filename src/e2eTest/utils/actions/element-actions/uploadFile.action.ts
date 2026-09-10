@@ -4,29 +4,21 @@
   import { performAction, performValidation } from '@utils/controller';
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
-  // Total sleeping allowed across rate-limit retries. 16+32 = 48s absorbs a transient 429; going
-  // on to 64 and 128 has never recovered one and costs minutes.
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  // The gap two consecutive uploads need between them.
+  // XUI 429s a POST within 5s of the previous upload completing, so consecutive uploads need a gap
+  // with margin; the rest of it is deferred to whoever uploads next.
   export const UPLOAD_GAP = 8000;
-  // Paid after every upload so CCD can commit the row before anything else reads it. The rest of
-  // the gap is deferred to whoever uploads next.
   export const POST_UPLOAD_SETTLE = 2000;
 
-  // When the last upload finished, so the next can top the gap up rather than restart it.
-  // Module-level on purpose: the throttle is per XUI session, which spans the whole spec, and
-  // Playwright builds a fresh action instance per call. uploadADocument in caseManagement.action.ts
-  // shares it — that is a second upload path against the same session, so separate timestamps
-  // would each compute a gap the other had already partly spent.
+  // Module-level: the throttle is per XUI session, which spans the whole spec, and Playwright builds
+  // a fresh action instance per call. Shared with uploadADocument, the other path into the same
+  // session, so separate timestamps would each compute a gap the other had already partly spent.
   let lastUploadCompletedAt = 0;
 
   export function markUploadCompleted(): void {
     lastUploadCompletedAt = Date.now();
   }
 
-  // Sleep only the part of the gap not already elapsed. Measured over a whole run: of 20 uploads,
-  // 10 were spaced far enough apart to pay nothing and 10 were back-to-back inside a file-list loop
-  // and topped up ~6.8s each — 68.2s against 160s for a flat gap.
   export async function waitForUploadWindow(page: Page): Promise<void> {
     if (lastUploadCompletedAt === 0) {
       return;
@@ -89,28 +81,19 @@
       }
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
-      // XUI 429s a POST within 5s of the previous upload COMPLETING and DOUBLES that window per
-      // 429 up to 180s, so the gap needs real margin — but it is only owed to a POST that follows
-      // another upload. Waiting here rather than after means the work each test does between two
-      // uploads counts towards it, and a trailing upload pays nothing.
+      // Before the POST, not after: work done between two uploads then counts towards the gap and a
+      // trailing upload pays nothing.
       await waitForUploadWindow(page);
       let timeout = UPLOAD_GAP;
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');
-      // "Uploading..." going does not mean CCD has committed the row, so still settle briefly.
+      // "Uploading..." going does not mean CCD has committed the row.
       await page.waitForTimeout(POST_UPLOAD_SETTLE);
       markUploadCompleted();
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                         span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-      // Five doubling retries sleep 16+32+64+128+180s, so an upload the throttle will not let
-      // through spends over 7 minutes failing. That has happened on three consecutive runs
-      // (createCase:920/:1043), each burning ~8.3m against a normal ~2.3m and failing anyway —
-      // attempts four and five have never recovered one.
-      //
-      // Cap the cumulative backoff instead of the attempt count: keep retrying while there is
-      // budget, so a transient 429 is still absorbed by the early short sleeps, but stop once the
-      // total reaches a minute rather than continuing to four. A doomed upload then fails in ~1m
-      // and Playwright's own retry gets a fresh attempt sooner.
+      // Budget the total backoff rather than the attempt count: early short sleeps still absorb a
+      // transient 429, but a doomed upload fails in ~1m instead of 7 and Playwright retries sooner.
       let backoffSpent = 0;
       while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
         // count() does not poll and the banner renders after the POST returns, so wait briefly.
@@ -122,15 +105,13 @@
         if (!rateLimited) {
           return;
         }
-        // Clamp to the budget as well as the ceiling. Checking `backoffSpent < MAX` only before the
-        // sleep let the last retry overshoot badly: 16 + 32 then 64 against a 60s budget spent
-        // 112s, nearly double the cap, which is most of why a doomed upload still took ~3.1m.
+        // Clamped to the remaining budget too, or the last retry overshoots it: 16+32 then 64
+        // against a 60s budget spent 112s.
         timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
         backoffSpent += timeout;
         await page.waitForTimeout(timeout);
         await fileInput.last().setInputFiles(filePath);
         await performValidation('waitUntilElementDisappears', 'Uploading...');
-        // A retry is the most recent completion, so the next upload's gap runs from here.
         markUploadCompleted();
       }
       await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
