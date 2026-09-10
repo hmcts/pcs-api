@@ -262,7 +262,6 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async getCaseAPIDynamic(getDetails: actionRecord): Promise<void> {
-    await this.getAccessToken(getDetails.email as string, getDetails.password as string);
     const getCaseApi = Axios.create(createCaseEventTokenDynamicApiData.createCaseEventTokenApiInstance());
     try {
       const createResponse = await getCaseApi.get(getCaseApiData.getCaseApiEndPoint());

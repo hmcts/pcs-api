@@ -397,11 +397,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
@@ -896,11 +896,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === underlesseeMortgageeDetails.yesRadioOption) {
           await performAction('inputText', {text: underlesseeMortgageeDetails.whatIsTheirNameHiddenTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
         }

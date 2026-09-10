@@ -123,10 +123,13 @@ export class CYAStore {
     }
 
     if (qaObject) {
-      console.log(qaObject.question)
       const normalizedQuestion = this.normalizeText(qaObject.question);
-      if (normalizedQuestion.includes('email address') || normalizedQuestion.includes('password')) {
-        return;
+      const shouldSkipNormalization = skipNormalization.has(qaObject.question);
+
+      if (!shouldSkipNormalization) {
+        if (normalizedQuestion.includes('email address') || normalizedQuestion.includes('password')) {
+          return;
+        }
       }
       this.qaObjects.push(qaObject);
     }
@@ -281,8 +284,10 @@ export class CYAPageValidation {
   private store = CYAStore.getInstance();
   private maxQuestionWidth = 60;
   private maxAnswerWidth = 60;
+  private questionOccurrences = new Map<string, number>();
 
   async validateCYAPage(page: Page): Promise<void> {
+    this.questionOccurrences.clear()
     const savedQA = this.store.getQAObjects();
     if (savedQA.length === 0) return;
 
@@ -504,7 +509,7 @@ export class CYAPageValidation {
     return { passed, failed, ignored, unvalidatedQAs, ignoredQAs };
   }
 
-  private findAnswerInExtractedQA(question: string, extractedQA: QAObject[], answer?: string): {
+  private findAnswerInExtractedQA1(question: string, extractedQA: QAObject[], answer?: string): {
     pageAnswer: string;
     extractedQuestion: string;
   } {
@@ -523,6 +528,56 @@ export class CYAPageValidation {
     }
 
     return { pageAnswer: '', extractedQuestion: '' };
+  }
+ 
+  private findAnswerInExtractedQA(question: string, extractedQA: QAObject[], answer?: string): {
+    pageAnswer: string;
+    extractedQuestion: string;
+  } {
+
+    const cleanQuestion = this.normalizeText(question);
+
+    const matches = extractedQA.filter(qa => {
+      const pageQuestion = this.normalizeText(qa.question);
+
+      const shouldIgnore =
+        ignoreAnswerInQuestions.includes(pageQuestion.toLowerCase()) ||
+        ignoreAnswerInQuestions.includes(cleanQuestion.toLowerCase());
+
+      if (shouldIgnore) {
+        return false;
+      }
+
+      return (
+        pageQuestion === cleanQuestion ||
+        pageQuestion.includes(cleanQuestion) ||
+        cleanQuestion.includes(pageQuestion)
+      );
+    });
+
+    if (matches.length > 0) {
+      const occurrence = this.questionOccurrences.get(cleanQuestion) ?? 0;
+      if (occurrence < matches.length) {
+        this.questionOccurrences.set(cleanQuestion, occurrence + 1);
+
+        return {
+          pageAnswer: matches[occurrence].answer as string,
+          extractedQuestion: matches[occurrence].question,
+        };
+      }
+    }
+
+    if (ignoreAnswerInQuestions.includes(cleanQuestion.toLowerCase())) {
+      return {
+        pageAnswer: answer as string,
+        extractedQuestion: cleanQuestion,
+      };
+    }
+
+    return {
+      pageAnswer: '',
+      extractedQuestion: '',
+    };
   }
 
   private compareAnswers(pageAnswer: string, savedAnswer: string | string[]): boolean {
