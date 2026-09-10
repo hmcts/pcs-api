@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +16,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -42,5 +44,8 @@ public class DraftCaseDataEntity {
     private UUID partyId;
 
     private String organisationId;
+
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
 
 }
