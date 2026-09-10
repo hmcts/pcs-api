@@ -718,11 +718,23 @@ export class CreateCaseAPIAction implements IAction {
     } catch (error: any) {
       const status = error?.response?.status;
 
+      // A CCD 5xx that wraps a downstream 4xx is permanent — a document that does not exist will
+      // not appear on the fourth attempt. Retrying one costs the whole ladder (~30s) to arrive at
+      // the same failure, and makes a broken reference look like an environment outage.
+      // Deliberately narrow: it must look like a status, not merely contain a 4xx-shaped number,
+      // or a genuinely transient 502 stops being retried and becomes a flake.
+      const wrappedClientError = /(?:"status"\s*:\s*4\d\d|\b4\d\d\s+(?:Not Found|Bad Request|Forbidden|Unauthorized|Conflict))/
+        .test(JSON.stringify(error?.response?.data ?? ''));
+
       const shouldRetry =
-        !status ||
-        [429, 500, 502, 503, 504].includes(status);
+        (!status || [429, 500, 502, 503, 504].includes(status)) &&
+        !wrappedClientError;
 
       if (!shouldRetry || retries <= 1) {
+        if (wrappedClientError) {
+          console.warn(`Not retrying status ${status}: the response wraps a client error, which will `
+            + `not resolve on retry — ${JSON.stringify(error?.response?.data).slice(0, 300)}`);
+        }
         throw error;
       }
       console.warn(`Request failed with status ${status}. Retrying in ${delay}ms...`);
