@@ -2,6 +2,7 @@
   import path from 'path';
   import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
   import { performAction, performValidation } from '@utils/controller';
+  import { VERY_SHORT_TIMEOUT } from 'playwright.config';
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
@@ -17,6 +18,12 @@
 
   export function markUploadCompleted(): void {
     lastUploadCompletedAt = Date.now();
+  }
+
+  const RATE_LIMIT_TEXT = 'Your request was rate limited. Please wait a few seconds before retrying your document upload';
+
+  export function rateLimitBanner(page: Page) {
+    return page.locator(`label:text-is("${RATE_LIMIT_TEXT}"), span:text-is("${RATE_LIMIT_TEXT}")`);
   }
 
   export async function waitForUploadWindow(page: Page): Promise<void> {
@@ -85,33 +92,34 @@
       // trailing upload pays nothing.
       await waitForUploadWindow(page);
       let timeout = UPLOAD_GAP;
+      // Count the banners already on the page. Nothing dismisses them, so on a multi-document page
+      // a 429 on one row leaves a banner every later row would otherwise read as its own.
+      const bannersBefore = await rateLimitBanner(page).count();
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');
       // "Uploading..." going does not mean CCD has committed the row.
       await page.waitForTimeout(POST_UPLOAD_SETTLE);
       markUploadCompleted();
-      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
-                                        span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+      const rateLimit = rateLimitBanner(page);
       // Budget the total backoff rather than the attempt count: early short sleeps still absorb a
       // transient 429, but a doomed upload fails in ~1m instead of 7 and Playwright retries sooner.
       let backoffSpent = 0;
       while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
-        // count() does not poll and the banner renders after the POST returns, so wait briefly.
-        const rateLimited = await rateLimit
-          .first()
-          .waitFor({ state: 'visible', timeout: 1000 })
-          .then(() => true)
-          .catch(() => false);
-        if (!rateLimited) {
+        // A NEW banner means this upload was throttled; the count does not poll, so allow the render.
+        await page.waitForTimeout(VERY_SHORT_TIMEOUT);
+        if ((await rateLimit.count()) <= bannersBefore) {
           return;
         }
-        timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+        // Clamped to the remaining budget too, or the last retry overshoots it: 16+32 then 64
+        // against a 60s budget spent 112s.
+        timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
         backoffSpent += timeout;
         await page.waitForTimeout(timeout);
         await fileInput.last().setInputFiles(filePath);
         await performValidation('waitUntilElementDisappears', 'Uploading...');
         markUploadCompleted();
       }
-      await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
+      await expect(rateLimit, 'upload was still rate limited after retrying with backoff')
+        .toHaveCount(bannersBefore);
     }
   }
