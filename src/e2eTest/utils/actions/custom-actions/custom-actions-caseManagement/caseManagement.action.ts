@@ -34,7 +34,14 @@ import {
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
-import { MAX_UPLOAD_BACKOFF } from '@utils/actions/element-actions/uploadFile.action';
+import {
+  MAX_CUMULATIVE_BACKOFF,
+  MAX_UPLOAD_BACKOFF,
+  POST_UPLOAD_SETTLE,
+  UPLOAD_GAP,
+  markUploadCompleted,
+  waitForUploadWindow
+} from '@utils/actions/element-actions/uploadFile.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
@@ -302,16 +309,18 @@ export class CaseManagementAction implements IAction {
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    // Shares uploadFile's timestamp: this is a second upload path against the same XUI session, so
+    // the gap it owes depends on when that path last uploaded, and vice versa.
+    await waitForUploadWindow(page);
+    let timeout = UPLOAD_GAP;
     await fileInput.last().setInputFiles(filePath);
-    // 8s to stay clear of XUI's 5s upload throttle — see uploadFile.action.ts for why.
-    const uploadGap = 8000;
-    let timeout = uploadGap;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    // Bounded loop with a polling probe, matching uploadFile.action.ts.
     const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-    const maxRateLimitRetries = 5;
-    for (let attempt = 0; attempt < maxRateLimitRetries; attempt++) {
+    // Cumulative cap rather than an attempt count, matching uploadFile.action.ts: attempts four and
+    // five have never recovered an upload and cost minutes.
+    let backoffSpent = 0;
+    while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
       const rateLimited = await rateLimit
         .first()
         .waitFor({ state: 'visible', timeout: 1000 })
@@ -321,13 +330,16 @@ export class CaseManagementAction implements IAction {
         break;
       }
       timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF);
+      backoffSpent += timeout;
       await page.waitForTimeout(timeout);
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');
     }
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
-    // See uploadFile.action.ts — CCD keeps committing the row after "Uploading..." goes.
-    await page.waitForTimeout(uploadGap);
+    // CCD keeps committing the row after "Uploading..." goes; the rest of the gap is deferred to
+    // whoever uploads next.
+    await page.waitForTimeout(POST_UPLOAD_SETTLE);
+    markUploadCompleted();
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
