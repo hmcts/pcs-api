@@ -85,6 +85,8 @@ export const addressInfoCaseTab = {
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 export const caseTabMap = new Map<string, string>();
+// Attempt at which selectEventAndGo reloads rather than clicking Go again.
+const RELOAD_ON_ATTEMPT = 3;
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -197,6 +199,16 @@ export class CreateCaseAction implements IAction {
       if (attempt > 1) {
         console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
           + `holds "${value}" and Go has not moved the page`);
+      }
+      // Two clicks and ~10s in, this page instance is not going to respond — the value is right and
+      // retained, so clicking a third time is pointless. Reload, which is how Playwright's own
+      // retry recovers.
+      if (attempt === RELOAD_ON_ATTEMPT) {
+        console.warn(`[selectEventAndGo] reloading before attempt ${attempt} for `
+          + `"${event.eventType}"`);
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await waitForSpinner(page);
+        await performAction('select', caseSummary.nextStepEventList, event.eventType);
       }
       await performAction('clickButton', caseSummary.go);
 
