@@ -76,6 +76,10 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
   if (action === 'selectClaimantType' || action === 'selectClaimantName' || action === 'addCaseNotes' || action === 'verifyDocumentRelatesToApplication' || action === 'selectDocumentRelatingTo' || action === 'uploadAdditionalDocsLR') {
     captureDataForCYAPage = true;
   }
+  
+  if (action === 'selectClaimantName') {
+    cyaStore.clearAll();
+  }
 
   if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
