@@ -28,9 +28,7 @@ export class ClickButtonAction implements IAction {
       await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
-      // Same wait as before the click, and for the same reason — but bounded. A bare waitFor here
-      // inherits the 40s actionTimeout and THROWS, so a spinner that lingers cost 40s and failed
-      // the test, while the identical pre-click wait was capped and swallowed.
+      // Bounded: a bare waitFor inherits the 40s actionTimeout and throws.
       await waitForSpinner(page);
   }
 
@@ -50,10 +48,8 @@ export class ClickButtonAction implements IAction {
         .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
-      // Say where it ended up. Without this the failure names only the page it wanted, so a click
-      // that never fired is indistinguishable from an event the server refused to create — and
-      // the latter has been seen twice as "The event could not be created  Cannot read properties
-      // of null (reading 'indexOf')" on other tests.
+      // Report where it ended up: otherwise a click that never fired looks identical to an event
+      // the server refused to create.
       const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
       const errorSummary = await page
         .locator('.govuk-error-summary, .error-summary, #error-summary-title, .alert-message')

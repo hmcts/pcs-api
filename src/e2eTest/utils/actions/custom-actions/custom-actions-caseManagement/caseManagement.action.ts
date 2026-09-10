@@ -310,16 +310,14 @@ export class CaseManagementAction implements IAction {
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
-    // Shares uploadFile's timestamp: this is a second upload path against the same XUI session, so
-    // the gap it owes depends on when that path last uploaded, and vice versa.
+    // Shares uploadFile's timestamp — same XUI session, so the gap owed depends on either path.
     await waitForUploadWindow(page);
     let timeout = UPLOAD_GAP;
     await fileInput.last().setInputFiles(filePath);
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-    // Cumulative cap rather than an attempt count, matching uploadFile.action.ts: attempts four and
-    // five have never recovered an upload and cost minutes.
+    // Budgeted rather than counted, as in uploadFile.action.ts.
     let backoffSpent = 0;
     while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
       const rateLimited = await rateLimit
@@ -337,8 +335,7 @@ export class CaseManagementAction implements IAction {
       await performValidation('waitUntilElementDisappears', 'Uploading...');
     }
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff').toHaveCount(0);
-    // CCD keeps committing the row after "Uploading..." goes; the rest of the gap is deferred to
-    // whoever uploads next.
+    // CCD keeps committing the row after "Uploading..." goes.
     await page.waitForTimeout(POST_UPLOAD_SETTLE);
     markUploadCompleted();
   }
