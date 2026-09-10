@@ -75,8 +75,10 @@ test.afterEach(async () => {
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Set aside', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.makeAnApplication,
+      nextPage: chooseAnApplication.mainHeader
+    });
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
     await performAction('chooseAnApplication', {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
