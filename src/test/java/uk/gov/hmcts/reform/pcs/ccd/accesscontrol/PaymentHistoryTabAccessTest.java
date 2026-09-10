@@ -52,13 +52,10 @@ class PaymentHistoryTabAccessTest {
             UserRole.CREATOR,
             UserRole.CITIZEN,
             UserRole.DEFENDANT,
-            UserRole.DEFENDANT_SOLICITOR,
             UserRole.GA_DEFENDANT_SOLICITOR,
             UserRole.CLAIMANT,
-            UserRole.CLAIMANT_SOLICITOR,
             UserRole.GA_CLAIMANT_SOLICITOR,
             UserRole.PCS_CASE_WORKER,
-            UserRole.PCS_SOLICITOR,
             UserRole.RAS_VALIDATOR,
             UserRole.SYSTEM_USER
         );
