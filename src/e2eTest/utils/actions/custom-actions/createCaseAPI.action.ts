@@ -724,10 +724,17 @@ export class CreateCaseAPIAction implements IAction {
         !status ||
         [429, 500, 502, 503, 504].includes(status);
 
+      // Name the endpoint and say when we give up: a preview 503 is an environment outage, not a
+      // test defect, and the two are indistinguishable from "Retrying in 2000ms" alone.
+      const target = [error?.config?.method?.toUpperCase(), error?.config?.url]
+        .filter(Boolean).join(' ') || '<unknown endpoint>';
       if (!shouldRetry || retries <= 1) {
+        console.warn(`[apiRetry] giving up on ${target} after status ${status ?? '<none>'}`
+          + `${shouldRetry ? ' — retries exhausted' : ' — status not retryable'}`);
         throw error;
       }
-      console.warn(`Request failed with status ${status}. Retrying in ${delay}ms...`);
+      console.warn(`[apiRetry] ${target} failed with status ${status}, retrying in ${delay}ms `
+        + `(${retries - 1} left)`);
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       return this.apiRetry(fn, retries - 1, delay * 2);
