@@ -6,9 +6,10 @@
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  // XUI 429s a POST within 5s of the previous upload completing, so consecutive uploads need a gap
-  // with margin; the rest of it is deferred to whoever uploads next.
-  export const UPLOAD_GAP = 8000;
+  // The 8s gap existed only to clear XUI's 5s upload throttle. Preview now sets that throttle to 0
+  // (DOCUMENT_UPLOAD_THROTTLE_INITIAL_MS), so the only remaining reason to wait between uploads is
+  // CCD committing the collection row, which POST_UPLOAD_SETTLE covers.
+  export const UPLOAD_GAP = 2000;
   export const POST_UPLOAD_SETTLE = 2000;
 
   // Module-level: the throttle is per XUI session, which spans the whole spec, and Playwright builds
