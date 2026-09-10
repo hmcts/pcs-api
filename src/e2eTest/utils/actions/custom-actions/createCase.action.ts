@@ -187,16 +187,27 @@ export class CreateCaseAction implements IAction {
     const dropdown = page.locator(`select#next-step, select[id$="event-trigger-select"]`).first();
     const nextPage = event.nextPage as string | undefined;
 
+    // Record the event-trigger requests each Go click produces. A real failure showed the dropdown
+    // holding the right value on all five attempts with no error anywhere, so the open question is
+    // whether the click reaches CCD at all.
+    const triggerCalls: string[] = [];
+    const onResponse = (response: { url: () => string; status: () => number }) => {
+      const url = response.url();
+      if (url.includes('trigger') || url.includes('event-trigger')) {
+        triggerCalls.push(`${response.status()} ${url.replace(/^https?:\/\/[^/]+/, '')}`);
+      }
+    };
+    page.on('response', onResponse);
+
+    try {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
 
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
-      // Report what the dropdown holds when Go does not move the page. Build 71 established that
-      // it holds the right value on every attempt — the re-selection this loop used to do never
-      // fired once, so a lost selection is NOT why the event fails to launch.
       const value = await dropdown.inputValue().catch(() => '<unreadable>');
       if (attempt > 1) {
         console.warn(`[selectEventAndGo] attempt ${attempt} for "${event.eventType}": dropdown `
-          + `holds "${value}" and Go has not moved the page`);
+          + `holds "${value}", trigger calls so far: `
+          + `${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
       }
       await performAction('clickButton', caseSummary.go);
 
@@ -212,7 +223,11 @@ export class CreateCaseAction implements IAction {
     }
     const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
     throw new Error(`Event "${event.eventType}" never launched after ${actionRetries} attempts `
-      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`);
+      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}; `
+      + `trigger calls: ${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`);
+    } finally {
+      page.off('response', onResponse);
+    }
   }
   
   private async housingPossessionClaim() {
