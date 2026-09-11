@@ -39,7 +39,7 @@ import {
   MAX_CUMULATIVE_BACKOFF,
   MAX_UPLOAD_BACKOFF,
   POST_UPLOAD_SETTLE,
-  UPLOAD_GAP,
+  BACKOFF_START,
   markUploadCompleted,
   rateLimitBanner,
   waitForUploadWindow
@@ -312,7 +312,7 @@ export class CaseManagementAction implements IAction {
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     // Shares uploadFile's timestamp: same XUI session.
     await waitForUploadWindow(page);
-    let timeout = UPLOAD_GAP;
+    let timeout = BACKOFF_START;
     // Nothing dismisses these banners, so only a NEW one means this upload was throttled.
     const bannersBefore = await rateLimitBanner(page).count();
     await fileInput.last().setInputFiles(filePath);

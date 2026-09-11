@@ -5,8 +5,10 @@
   import { VERY_SHORT_TIMEOUT } from 'playwright.config';
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  export const UPLOAD_GAP = 2000;
+  export const UPLOAD_GAP = Number(process.env.E2E_UPLOAD_GAP_MS ?? 2000);
   export const POST_UPLOAD_SETTLE = 2000;
+  // Seeds the retry backoff independently of UPLOAD_GAP, which can be zero.
+  export const BACKOFF_START = 2000;
 
 // Module-level: shared with uploadADocument, which uses the same XUI session.
   let lastUploadCompletedAt = 0;
@@ -78,7 +80,7 @@
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await waitForUploadWindow(page);
-      let timeout = UPLOAD_GAP;
+      let timeout = BACKOFF_START;
 // Nothing dismisses these banners, so only a NEW one belongs to this upload.
       const bannersBefore = await rateLimitBanner(page).count();
       await fileInput.last().setInputFiles(filePath);
