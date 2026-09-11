@@ -29,8 +29,7 @@ public class OrganisationDetailsService {
         this.prdAdminTokenProvider = prdAdminTokenProvider;
     }
 
-    /** Retrieves organisation details for a given user ID. TODO move to OrganisationService */
-    @Deprecated
+    // Retrieves organisation details for a given user ID, move to OrganisationService.
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
         try {
             return fetchOrganisationDetails(userId);
@@ -39,9 +38,7 @@ public class OrganisationDetailsService {
         }
     }
 
-    /** The same lookup, but a failure is raised rather than reported as "no organisation".
-     * TODO move to OrganisationService */
-    @Deprecated
+    // The same lookup, but a failure is raised rather than reported as "no organisation", move to OrganisationService.
     public OrganisationDetailsResponse requireOrganisationDetails(String userId) {
         OrganisationDetailsResponse details = fetchOrganisationDetails(userId);
         if (nonNull(details)) {
@@ -50,8 +47,6 @@ public class OrganisationDetailsService {
         return null;
     }
 
-    /** TODO move to OrganisationService. */
-    @Deprecated
     private OrganisationDetailsResponse fetchOrganisationDetails(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
