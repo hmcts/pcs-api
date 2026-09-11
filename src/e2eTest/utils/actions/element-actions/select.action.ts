@@ -57,6 +57,14 @@ export class SelectAction implements IAction {
         return strategy.first();
       }
     }
-    return strategies[1].first();
+    // Every strategy matched nothing, so selectOption would wait out the 40s action timeout and
+    // report a bare timeout naming no dropdown. Say which label failed and what is on the page.
+    const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+    const selectCount = await page.locator('select').count().catch(() => -1);
+    const labels = await page.locator('select').evaluateAll(
+      nodes => nodes.map(node => node.getAttribute('id') ?? node.getAttribute('name') ?? '<unnamed>')
+    ).catch(() => [] as string[]);
+    throw new Error(`No dropdown matched "${label}" on page "${heading}" — `
+      + `${selectCount} select(s) present: ${JSON.stringify(labels)}`);
   }
 }
