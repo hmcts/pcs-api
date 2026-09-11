@@ -196,9 +196,10 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
-    public String createReviewDueDateDescription(long caseReference) {
+    public String createReviewDueDateDescription(long caseReference, int reviewDateNumber) {
         Map<String, Object> context = Map.of(
-            "caseReference", caseReference
+            "caseReference", caseReference,
+            "reviewDateNumber", reviewDateNumber
         );
 
         String templateName = "review-due-date";
