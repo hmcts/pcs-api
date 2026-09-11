@@ -306,6 +306,17 @@ export class CYAPageValidation {
     console.log('═'.repeat(50));
 
     if (failed > 0) {
+      const visiblePanels = await page.locator('ccd-read-complex-field-table:visible').count().catch(() => -1);
+      const allPanels = await page.locator('ccd-read-complex-field-table').count().catch(() => -1);
+      const panelRows = await page.locator('tr.complex-panel-simple-field:visible').count().catch(() => -1);
+      const mainRows = await page.locator('table.form-table tr:visible:not([hidden])').count().catch(() => -1);
+      const missing = savedQA
+        .filter(saved => !this.store.shouldIgnore(saved.question))
+        .filter(saved => !this.findAnswerInExtractedQA(saved.question, extractedQA).extractedQuestion)
+        .map(saved => saved.question);
+      console.warn(`[cya-diag] visible panels ${visiblePanels} of ${allPanels}, visible panel rows `
+        + `${panelRows}, main rows ${mainRows}, extracted ${extractedQA.length}; `
+        + `missing: ${JSON.stringify(missing)}`);
       throw new Error(`CYA validation failed: ${failed} question(s) did not match`);
     }
   }
