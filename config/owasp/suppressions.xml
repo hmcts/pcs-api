@@ -44,6 +44,7 @@
     <cve>CVE-2026-41178</cve>
   </suppress>
   <!--End of false positives section -->
+  
   <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
