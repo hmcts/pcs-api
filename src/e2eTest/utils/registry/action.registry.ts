@@ -70,6 +70,7 @@ export class ActionRegistry {
     ['makeAnApplicationAPIForLR', new CreateCaseAPIAction()],
     ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['pollRespondEventTriggerAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
