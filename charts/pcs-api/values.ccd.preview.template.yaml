@@ -353,7 +353,7 @@ ccd-case-disposer:
   job:
     kind: CronJob
     suspend: false
-    schedule: "*/5 * * * *"
+    schedule: "*/15 * * * *"
     startingDeadlineSeconds: 180
     concurrencyPolicy: Forbid
     releaseNameOverride: ${SERVICE_NAME}-case-disposer
