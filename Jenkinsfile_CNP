@@ -261,6 +261,8 @@ def setPreviewEnvVars(githubApi) {
   env.ENVIRONMENT= "preview"
   env.ENABLE_TESTING_SUPPORT = "true"
   env.E2E_SUITE= "pr"
+  env.E2E_UPLOAD_GAP_MS = "0"
+  env.E2E_POST_UPLOAD_SETTLE_MS = "0"
 
   def frontendLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pcs-frontend-pr:")
   if (frontendLabels && frontendLabels.size() > 0) {

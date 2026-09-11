@@ -38,8 +38,8 @@ import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import {
   MAX_CUMULATIVE_BACKOFF,
   MAX_UPLOAD_BACKOFF,
+  BACKOFF_START,
   POST_UPLOAD_SETTLE,
-  UPLOAD_GAP,
   markUploadCompleted,
   rateLimitBanner,
   waitForUploadWindow
@@ -312,7 +312,7 @@ export class CaseManagementAction implements IAction {
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
     // Shares uploadFile's timestamp: same XUI session.
     await waitForUploadWindow(page);
-    let timeout = UPLOAD_GAP;
+    let timeout = BACKOFF_START;
     // Nothing dismisses these banners, so only a NEW one means this upload was throttled.
     const bannersBefore = await rateLimitBanner(page).count();
     await fileInput.last().setInputFiles(filePath);
@@ -333,7 +333,9 @@ export class CaseManagementAction implements IAction {
     await expect(rateLimit, 'upload was still rate limited after retrying with backoff')
       .toHaveCount(bannersBefore);
     // CCD keeps committing the row after "Uploading..." goes.
-    await page.waitForTimeout(POST_UPLOAD_SETTLE);
+    if (POST_UPLOAD_SETTLE > 0) {
+      await page.waitForTimeout(POST_UPLOAD_SETTLE);
+    }
     markUploadCompleted();
   }
 

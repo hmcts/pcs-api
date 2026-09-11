@@ -5,8 +5,10 @@
   import { VERY_SHORT_TIMEOUT } from 'playwright.config';
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  export const UPLOAD_GAP = 2000;
-  export const POST_UPLOAD_SETTLE = 2000;
+  export const UPLOAD_GAP = Number(process.env.E2E_UPLOAD_GAP_MS ?? 2000);
+  export const POST_UPLOAD_SETTLE = Number(process.env.E2E_POST_UPLOAD_SETTLE_MS ?? 2000);
+  // Seeds the retry ladder independently of UPLOAD_GAP: a zero gap would never grow.
+  export const BACKOFF_START = 2000;
 
 // Module-level: shared with uploadADocument, which uses the same XUI session.
   let lastUploadCompletedAt = 0;
@@ -78,13 +80,15 @@
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await waitForUploadWindow(page);
-      let timeout = UPLOAD_GAP;
+      let timeout = BACKOFF_START;
 // Nothing dismisses these banners, so only a NEW one belongs to this upload.
       const bannersBefore = await rateLimitBanner(page).count();
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');
       // "Uploading..." going does not mean CCD has committed the row.
-      await page.waitForTimeout(POST_UPLOAD_SETTLE);
+      if (POST_UPLOAD_SETTLE > 0) {
+        await page.waitForTimeout(POST_UPLOAD_SETTLE);
+      }
       markUploadCompleted();
       const rateLimit = rateLimitBanner(page);
       // Budget the total backoff, not the attempt count: a doomed upload then fails in ~1m, not 7.
