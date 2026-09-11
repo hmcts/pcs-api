@@ -406,15 +406,16 @@ public class DocumentService {
     public void saveCounterClaimDocumentsCaseworker(
         EnterCounterClaimDetails counterClaimRequest,
         CounterClaimEntity counterClaim,
-        PcsCaseEntity pcsCase,
-        PartyEntity party
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        PCSCase pcsCase
     ) {
-        ClaimEntity claim = pcsCase.getClaims().getFirst();
-        createCounterClaimForm(counterClaimRequest.getCounterclaimForm(), counterClaim, pcsCase, party, claim);
+        ClaimEntity claim = pcsCaseEntity.getClaims().getFirst();
+        createCounterClaimForm(pcsCase.getCounterclaimForm(), counterClaim, pcsCaseEntity, party, claim);
         createCounterClaimRelatedDocuments(
             counterClaimRequest.getRelatedDocuments(),
             counterClaim,
-            pcsCase,
+            pcsCaseEntity,
             party,
             claim
         );

@@ -15,8 +15,6 @@ public class UploadCounterClaimForm implements CcdPageConfiguration {
             .page("uploadCounterClaimForm")
             .pageLabel("Upload counterclaim form")
             .label("uploadCounterClaimForm-lineSeparator", "---")
-            .complex(PCSCase::getEnterCounterClaim)
-            .mandatory(EnterCounterClaimDetails::getCounterclaimForm)
-            .done();
+            .mandatory(PCSCase::getCounterclaimForm);
     }
 }

@@ -1802,6 +1802,7 @@ class DocumentServiceTest {
                 ListValue.<Document>builder().value(relatedDoc2).build()
             )).build();
 
+        PCSCase pcsCase = PCSCase.builder().counterclaimForm(form).build();
         PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(claimEntity)).build();
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
@@ -1811,7 +1812,8 @@ class DocumentServiceTest {
             enterCounterClaimDetails,
             counterClaimEntity,
             pcsCaseEntity,
-            partyEntity
+            partyEntity,
+            pcsCase
         );
 
         // Then
@@ -1859,13 +1861,15 @@ class DocumentServiceTest {
         PartyEntity partyEntity = PartyEntity.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(claimEntity)).build();
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
+        PCSCase pcsCase = PCSCase.builder().build();
 
         // When
         underTest.saveCounterClaimDocumentsCaseworker(
             enterCounterClaimDetails,
             counterClaimEntity,
             pcsCaseEntity,
-            partyEntity
+            partyEntity,
+            pcsCase
         );
 
         // Then

@@ -151,7 +151,8 @@ class SubmitEventHandlerTest {
             enterCounterClaimDetails,
             counterClaimEntity,
             pcsCaseEntity,
-            submittingParty
+            submittingParty,
+            caseData
         );
     }
 

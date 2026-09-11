@@ -81,7 +81,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
                 counterClaimRequest,
                 counterClaimEntity,
                 pcsCaseEntity,
-                submittingParty
+                submittingParty,
+                caseData
             );
         });
 
