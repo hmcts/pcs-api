@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -53,6 +54,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
@@ -790,6 +792,165 @@ public class PcsNoticeOfChangeTest {
         assertThat(taskData.getUserId()).isEqualTo(userId);
         assertThat(taskData.getPartyId()).isEqualTo(partyId.toString());
         assertThat(taskData.getOrganisationDetailsResponse()).isEqualTo(organisationDetailsResponse);
+        assertThat(taskData.getEventIdempotencyKey()).isNotNull();
+    }
+
+    @Test
+    void submit_CarriesTheActingSolicitorNamesIntoTaskData() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(nocSubmitContext.givenName()).thenReturn("James");
+        when(nocSubmitContext.familyName()).thenReturn("Solicitor");
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", firstName),
+                    new NocAnswer("pcs-defendant-last-name", lastName)));
+
+        // when
+        pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+
+        // then
+        NocAccessChangeTaskData taskData = getCapturedRoleAssignmentTaskData();
+        assertThat(taskData.getFirstName()).isEqualTo("James");
+        assertThat(taskData.getLastName()).isEqualTo("Solicitor");
+    }
+
+    @Test
+    void submit_CarriesActingUserEmailIntoTaskDataAndKeysTaskByCaseUserAndParty() {
+        // given
+        String firstName = "Dan";
+        String lastName = "Tester";
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(nocSubmitContext.email()).thenReturn("solicitor@new-firm.example");
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", firstName),
+                    new NocAnswer("pcs-defendant-last-name", lastName)));
+
+        // when
+        pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest);
+
+        // then - the email feeds the event summary and notifications; the instance id dedupes retries
+        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(captor.capture());
+        TaskInstance<?> taskInstance = captor.getValue().getTaskInstance();
+
+        assertThat(taskInstance.getId()).isEqualTo("noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + party.getId());
+        assertThat(((NocAccessChangeTaskData) taskInstance.getData()).getEmail())
+            .isEqualTo("solicitor@new-firm.example");
+    }
+
+    @Test
+    void submit_ForASecondDefendantSchedulesADistinctTaskInsteadOfDeduping() {
+        // given - one case, two defendants, the same solicitor takes each on in turn
+        PartyEntity firstDefendant = defendantParty("Amy", "Arrears");
+        PartyEntity secondDefendant = defendantParty("Ben", "Backrent");
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(firstDefendant, secondDefendant))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        String userId = UUID.randomUUID().toString();
+        when(nocSubmitContext.userId()).thenReturn(userId);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(organisationDetailsService.getOrganisationDetails(userId)).thenReturn(organisationDetailsResponse);
+
+        // when
+        pcsNoticeOfChange.submit(nocSubmitContext, answersFor("Amy", "Arrears"));
+        pcsNoticeOfChange.submit(nocSubmitContext, answersFor("Ben", "Backrent"));
+
+        // then - the task id is keyed by party, so the second NoC is not deduped away by scheduleIfNotExists
+        ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient, times(2)).scheduleIfNotExists(captor.capture());
+        List<String> taskIds = captor.getAllValues().stream()
+            .map(instance -> instance.getTaskInstance().getId())
+            .toList();
+
+        assertThat(taskIds).containsExactly(
+            "noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + firstDefendant.getId(),
+            "noc-" + TEST_CASE_REFERENCE + "-" + userId + "-" + secondDefendant.getId()
+        );
+    }
+
+    private PartyEntity defendantParty(String firstName, String lastName) {
+        return PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName(firstName)
+            .lastName(lastName)
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+    }
+
+    private NocAnswersRequest answersFor(String firstName, String lastName) {
+        return new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", firstName),
+                    new NocAnswer("pcs-defendant-last-name", lastName)));
+    }
+
+    @Test
+    void submit_WithNoMatchingDefendant_ThrowsAndSchedulesNothing() {
+        // given - the stored defendant does not match the submitted answers
+        PartyEntity party = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Dan")
+            .lastName("Tester")
+            .nameKnown(YES)
+            .claimParties(Set.of(ClaimPartyEntity.builder()
+                                     .role(PartyRole.DEFENDANT)
+                                     .build()))
+            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .parties(Set.of(party))
+            .caseReference(TEST_CASE_REFERENCE)
+            .build();
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        NocAnswersRequest nocAnswersRequest = new NocAnswersRequest(
+            TEST_CASE_REFERENCE,
+            List.of(new NocAnswer("pcs-defendant-first-name", "Someone"),
+                    new NocAnswer("pcs-defendant-last-name", "Else")));
+
+        // when / then
+        assertThatThrownBy(() -> pcsNoticeOfChange.submit(nocSubmitContext, nocAnswersRequest))
+            .isInstanceOf(NoSuchElementException.class);
+
+        verifyNoInteractions(schedulerClient);
     }
 
     @SuppressWarnings("unchecked")
