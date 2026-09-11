@@ -3,7 +3,6 @@ import { MEDIUM_TIMEOUT, SHORT_TIMEOUT } from '../playwright.config';
 
 export type CookieBannerType = 'additional' | 'analytics' | 'hide-success';
 
-// The banner is optional, so the wait is the cost of finding out it is absent.
 const BANNER_PRESENCE_TIMEOUT = SHORT_TIMEOUT;
 
 // Callers ask for 'additional' then 'analytics' at every site, but XUI renders only one of the two,

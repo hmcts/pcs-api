@@ -530,7 +530,6 @@ export class CreateCaseAction implements IAction {
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
       await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
-      // No index: the label carries the ground name, so exactly one field matches it.
       await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})` }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
@@ -963,7 +962,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
     await performAction('inputText', caseNote.label, caseNote.input);
-    // Verify Continue reached Check your answers, and retry the click if it did not.
     const checkYourAnswers = page.locator('h2', { hasText: checkYourAnswersCaseNote.header }).first();
     let attempt = 0;
     let arrived = false;

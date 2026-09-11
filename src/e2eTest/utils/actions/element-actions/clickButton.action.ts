@@ -24,7 +24,6 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
       await page.waitForLoadState();
-      // Also wait BEFORE clicking, not only after — see waitForSpinner for why.
       await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
@@ -48,8 +47,6 @@ export class ClickButtonAction implements IAction {
         .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
-      // Report where it ended up: otherwise a click that never fired looks identical to an event
-      // the server refused to create.
       const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
       const errorSummary = await page
         .locator('.govuk-error-summary, .error-summary, #error-summary-title, .alert-message')

@@ -120,7 +120,6 @@ export class PageContentValidation implements IValidation {
 
     if (!pageData) return;
 
-    // Elements arrive together, so wait once for the heading rather than per probe.
     await this.waitForPageToRender(page, pageData);
 
     const pageResults: ValidationResult[] = await Promise.all(

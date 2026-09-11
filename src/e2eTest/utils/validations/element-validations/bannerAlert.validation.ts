@@ -12,8 +12,6 @@ export class BannerAlertValidation implements IValidation {
             data.endsWith('$');
         const expected: string | RegExp = isPattern ? new RegExp(data) : data;
 
-        // The old shape waited for *an* alert then read textContent() once, which does not poll,
-        // so the budget went on existence rather than on the right text appearing.
         try {
             await expect(locator).toHaveText(expected, { timeout: LONG_TIMEOUT });
         } catch (error) {

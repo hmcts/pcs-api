@@ -6,15 +6,10 @@
   // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  // The 8s gap existed only to clear XUI's 5s upload throttle. Preview now sets that throttle to 0
-  // (DOCUMENT_UPLOAD_THROTTLE_INITIAL_MS), so the only remaining reason to wait between uploads is
-  // CCD committing the collection row, which POST_UPLOAD_SETTLE covers.
   export const UPLOAD_GAP = 2000;
   export const POST_UPLOAD_SETTLE = 2000;
 
-  // Module-level: the throttle is per XUI session, which spans the whole spec, and Playwright builds
-  // a fresh action instance per call. Shared with uploadADocument, the other path into the same
-  // session, so separate timestamps would each compute a gap the other had already partly spent.
+// Module-level: shared with uploadADocument, which uses the same XUI session.
   let lastUploadCompletedAt = 0;
 
   export function markUploadCompleted(): void {
@@ -43,7 +38,6 @@
       // key matched no branch and uploaded nothing.
       const list = this.toFileList(files);
       if (list.length === 0) {
-        // Warn rather than throw: two call sites pass the file unguarded.
         console.warn(`[uploadFile] no file to upload — received ${JSON.stringify(files)}; skipping`);
         return;
       }
@@ -85,12 +79,9 @@
       }
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
-      // Before the POST, not after: work done between two uploads then counts towards the gap and a
-      // trailing upload pays nothing.
       await waitForUploadWindow(page);
       let timeout = UPLOAD_GAP;
-      // Count the banners already on the page. Nothing dismisses them, so on a multi-document page
-      // a 429 on one row leaves a banner every later row would otherwise read as its own.
+// Nothing dismisses these banners, so only a NEW one belongs to this upload.
       const bannersBefore = await rateLimitBanner(page).count();
       await fileInput.last().setInputFiles(filePath);
       await performValidation('waitUntilElementDisappears', 'Uploading...');

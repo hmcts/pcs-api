@@ -34,8 +34,6 @@ export class LoginAction implements IAction {
     try {
       await expect(signOut).toBeVisible({ timeout: LONG_TIMEOUT });
     } catch (error) {
-      // "element(s) not found" alone does not say whether the credentials were rejected, the
-      // redirect chain stalled, or we landed somewhere without a Sign out link.
       const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
       const errorText = await page.locator('.govuk-error-summary, .error-summary, #errorSummary')
         .first().innerText().catch(() => '');

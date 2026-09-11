@@ -724,8 +724,6 @@ export class CreateCaseAPIAction implements IAction {
         !status ||
         [429, 500, 502, 503, 504].includes(status);
 
-      // Name the endpoint and say when we give up: a preview 503 is an environment outage, not a
-      // test defect, and the two are indistinguishable from "Retrying in 2000ms" alone.
       const target = [error?.config?.method?.toUpperCase(), error?.config?.url]
         .filter(Boolean).join(' ') || '<unknown endpoint>';
       if (!shouldRetry || retries <= 1) {

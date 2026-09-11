@@ -38,7 +38,6 @@ export class SelectAction implements IAction {
       .waitFor({ state: 'attached', timeout: SHORT_TIMEOUT })
       .catch(() => undefined);
 
-    // An explicit index means the caller knows there are several dropdowns and which it wants.
     if (index !== undefined && !Number.isNaN(index)) {
       for (const strategy of strategies) {
         if ((await strategy.count()) > index) {
@@ -53,7 +52,6 @@ export class SelectAction implements IAction {
         return strategy;
       }
     }
-    // Nothing resolved uniquely: fall back to the most specific strategy that matches at all.
     for (const strategy of strategies) {
       if ((await strategy.count()) > 0) {
         return strategy.first();

@@ -55,8 +55,6 @@ export class InputErrorValidation implements IValidation {
       }
       attempts.push(`${count} match(es), none visible`);
     }
-    // Report what each strategy saw, so "not triggered" is distinguishable from "found but
-    // hidden" without needing another run to find out.
     throw new Error(`The error message "${data}" is not triggered for "${fieldName}" `
       + `(strategies tried: ${attempts.join('; ')})`);
   }

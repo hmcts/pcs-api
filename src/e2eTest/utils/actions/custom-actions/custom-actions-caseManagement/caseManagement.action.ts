@@ -115,7 +115,6 @@ export class CaseManagementAction implements IAction {
   private async selectAnEvent(page: Page, event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
 
-    // Verify Go actually launched the event, and retry it if not.
     const summaryHeading = page.locator('h1', { hasText: home.caseSummary });
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
       await performAction('clickButton', caseSummary.go);
@@ -319,7 +318,6 @@ export class CaseManagementAction implements IAction {
     await fileInput.last().setInputFiles(filePath);
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     const rateLimit = rateLimitBanner(page);
-    // Budgeted rather than counted, as in uploadFile.action.ts.
     let backoffSpent = 0;
     while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
       await page.waitForTimeout(VERY_SHORT_TIMEOUT);
@@ -549,7 +547,6 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    // No index: this page renders one Days, one Hours and one Minutes field.
     await performAction('inputText', { textLabel: addAHearing.daysLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', { textLabel: addAHearing.hoursLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
     await performAction('inputText', { textLabel: addAHearing.minsLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));

@@ -56,9 +56,6 @@ export class TextValidation implements IValidation {
     const locator = data.elementType === 'p'
       ? page.getByText(text, { exact: true }).filter({ visible: true }).first()
       : page.locator(`${data.elementType}:text-is("${data.text}")`).filter({ visible: true }).first();
-    // The locator filters *by* the expected text, so a mismatch matches nothing and the wait fails
-    // naming only the selector. Report what the page actually holds — see mainHeader for the same
-    // treatment, which is what made the dead-document failure diagnosable in minutes.
     try {
       await locator.waitFor({ state: 'visible' });
     } catch (error) {

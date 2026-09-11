@@ -35,8 +35,6 @@ export class ClickRadioButtonAction implements IAction {
       await waitForInteractive(this.radioPattern3(page, question, option, idx));
     }
 
-    // Records what each pattern resolved to, so the failure can distinguish nothing-matched from
-    // matched-ambiguously.
     const resolved: string[] = [];
     let foundButUncheckable = false;
     for (const [index, getLocator] of patterns.entries()) {
@@ -49,7 +47,6 @@ export class ClickRadioButtonAction implements IAction {
       if (await this.clickWithRetry(locator)) {
         return;
       }
-      // Resolved to exactly one radio and still could not check it after every attempt.
       foundButUncheckable = true;
     }
     const cause = foundButUncheckable

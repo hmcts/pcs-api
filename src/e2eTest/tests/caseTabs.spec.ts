@@ -108,7 +108,6 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
-    // Re-selects if the dropdown lost its value; see selectEventAndGo.
     await performAction('selectEventAndGo', { eventType: caseSummary.addCaseNote, nextPage: addCaseNote.mainHeader });
     await performValidation('mainHeader', addCaseNote.mainHeader);
     await performAction('addCaseNotes', {
