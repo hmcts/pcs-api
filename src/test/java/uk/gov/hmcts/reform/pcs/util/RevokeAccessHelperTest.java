@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.util;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,8 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,7 +28,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,7 +46,7 @@ class RevokeAccessHelperTest {
     private DraftCaseDataRepository draftCaseDataRepository;
 
     @Mock
-    private CaseRoleAssignmentService caseRoleAssignmentService;
+    private SchedulerClient schedulerClient;
 
     @Mock
     private PartyAccessCodeRepository partyAccessCodeRepository;
@@ -54,7 +55,7 @@ class RevokeAccessHelperTest {
     private ArgumentCaptor<List<ClaimPartyOrganisationEntity>> saveAllCaptor;
 
     @Test
-    void revokeOrganisationAccessToRespondToClaim_WithOtherDefendants_DoNotRevokeRasRolesInvalidateAndEntities() {
+    void withdrawOutgoingOrganisationsAccess_WithOtherDefendants_DoesNotScheduleRoleRevocation() {
         // given
         long caseReference = 123L;
         UUID partyId = UUID.randomUUID();
@@ -81,7 +82,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion always called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
@@ -91,9 +92,8 @@ class RevokeAccessHelperTest {
             eq(defendant.getId())
         );
 
-        // revokeRasRole should NOT be called because organisation represents other defendants
-        verify(caseRoleAssignmentService, never()).revokeCaseRole(
-            eq(caseReference), anyString(), eq(UserRole.DEFENDANT_SOLICITOR));
+        // no role revocation should be scheduled because organisation represents other defendants
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
 
         // entities should be invalidated and saved
         verify(claimPartyOrganisationRepository).saveAll(saveAllCaptor.capture());
@@ -106,7 +106,7 @@ class RevokeAccessHelperTest {
     }
 
     @Test
-    void revokeOrganisationAccessToRespondToClaim_WithNoOtherDefendants_RevokeRasRolesInvalidateEntities() {
+    void withdrawOutgoingOrganisationsAccess_WithNoOtherDefendants_InvalidatesEntities() {
         // given
         long caseReference = 456L;
         UUID partyId = UUID.randomUUID();
@@ -135,7 +135,7 @@ class RevokeAccessHelperTest {
             .thenReturn(List.of(plro));
 
         // when
-        revokeAccessHelper.revokeOrganisationAccessToRespondToClaim(caseEntity, lro, defendant);
+        revokeAccessHelper.withdrawOutgoingOrganisationsAccessToRespondToClaim(caseEntity, lro, defendant);
 
         // then - draft deletion called
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
@@ -174,11 +174,18 @@ class RevokeAccessHelperTest {
             .build();
 
         // when
-        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendant);
+        revokeAccessHelper.closeDefendantsSelfRepresentation(caseEntity, defendant);
 
         // then
-        verify(caseRoleAssignmentService).revokeCaseRole(
-            eq(caseReference), eq(idamId.toString()), eq(UserRole.DEFENDANT));
+        ArgumentCaptor<SchedulableInstance<?>> scheduledCaptor = ArgumentCaptor.forClass(SchedulableInstance.class);
+        verify(schedulerClient).scheduleIfNotExists(scheduledCaptor.capture());
+        assertEquals("revoke-defendant-" + caseReference + "-" + idamId,
+                     scheduledCaptor.getValue().getTaskInstance().getId());
+        RoleAssignmentTaskData scheduledData =
+            (RoleAssignmentTaskData) scheduledCaptor.getValue().getTaskInstance().getData();
+        assertEquals(idamId.toString(), scheduledData.getUserId());
+        assertEquals(UserRole.DEFENDANT, scheduledData.getRole());
+        assertEquals(String.valueOf(caseReference), scheduledData.getCaseReference());
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), eq(idamId));
         verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
@@ -202,11 +209,10 @@ class RevokeAccessHelperTest {
             .build();
 
         // when
-        revokeAccessHelper.revokeDefendantsAccessToRespondToClaim(caseEntity, defendant);
+        revokeAccessHelper.closeDefendantsSelfRepresentation(caseEntity, defendant);
 
         // then
-        verify(caseRoleAssignmentService, never()).revokeCaseRole(
-            eq(caseReference), anyString(), eq(UserRole.DEFENDANT));
+        verify(schedulerClient, never()).scheduleIfNotExists(any());
         verify(draftCaseDataRepository, never()).deleteByCaseReferenceAndEventIdAndIdamUserId(
             eq(caseReference), eq(EventId.respondPossessionClaim), any());
         verify(partyAccessCodeRepository).deleteByPcsCase_IdAndPartyId(eq(caseEntity.getId()), eq(defendant.getId()));
