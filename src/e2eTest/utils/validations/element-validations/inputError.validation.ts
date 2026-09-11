@@ -34,7 +34,7 @@ export class InputErrorValidation implements IValidation {
     ];
 
 
-    // Error messages render a tick after submit; count() would read 0 without this wait.
+    // count() does not poll, and errors render a tick after submit.
     await waitForInteractive(anyOf(...locators));
 
     // Ordered strategies: normal fields, then date fields whose label sits in a <legend>. Every

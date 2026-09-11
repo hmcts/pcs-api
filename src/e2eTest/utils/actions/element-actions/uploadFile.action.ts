@@ -3,7 +3,6 @@
   import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
   import { performAction, performValidation } from '@utils/controller';
   import { VERY_SHORT_TIMEOUT } from 'playwright.config';
-  // Matches the 180s ceiling XUI's own upload throttle doubles up to.
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
   export const UPLOAD_GAP = 2000;
@@ -98,8 +97,7 @@
         if ((await rateLimit.count()) <= bannersBefore) {
           return;
         }
-        // Clamped to the remaining budget too, or the last retry overshoots it: 16+32 then 64
-        // against a 60s budget spent 112s.
+        // Clamped to the remaining budget, or the last retry overshoots it.
         timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
         backoffSpent += timeout;
         await page.waitForTimeout(timeout);

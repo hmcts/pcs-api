@@ -247,9 +247,7 @@ xui-webapp:
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
       FEATURE_REDIS_ENABLED: true
       REDIS_KEY_PREFIX: 'xui-${SERVICE_NAME}'
-      # No throttle in preview: it exists to protect shared environments from real users, and the
-      # E2E suite's 8s inter-upload gap is paid solely to avoid tripping it. rpx-xui-webapp#5409
-      # made these configurable; the defaults are 5000 and 180000.
+      # Disabled in preview: it protects shared environments from real users, and a per-PR stack has none.
       DOCUMENT_UPLOAD_THROTTLE_INITIAL_MS: 0
       DOCUMENT_UPLOAD_THROTTLE_MAX_MS: 0
       FEATURE_APP_INSIGHTS_ENABLED: false

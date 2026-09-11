@@ -47,8 +47,7 @@ export class InputTextAction implements IAction {
     // fill() is strict.
     return (await roleLocator.count() > 0)
       ? roleLocator.first()
-      // `:visible:enabled` on every branch: one could resolve to a hidden input, and fill() then
-      // burns its whole 40s actionTimeout (createCase.spec.ts:1043).
+      // `:visible:enabled` on every branch: a hidden input makes fill() burn its full actionTimeout.
       : page.locator(`:has-text("${fieldParams}") ~ input:visible:enabled,
                       label:has-text("${fieldParams}") ~ textarea:visible:enabled,
                       label:has-text("${fieldParams}") + div input:visible:enabled`).first();

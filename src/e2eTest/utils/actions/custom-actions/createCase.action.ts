@@ -218,7 +218,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
-    // innerText does not poll. .first() because the banner region can hold several alerts.
+    // .first(): the banner region can hold several alerts.
     const alert = page.locator('div.alert-message').first();
     await alert.waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
     const text = await alert.innerText();

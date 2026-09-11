@@ -19,8 +19,7 @@ export class ClickRadioButtonAction implements IAction {
       () => this.radioPattern3(page, question, option, idx),
     ];
 
-    // count() below never retries, so wait for a settled DOM first. Only the question-scoped
-    // patterns are waited on, since pattern 3 ignores `question`.
+    // count() does not poll. Only the question-scoped patterns are waited on; pattern 3 ignores it.
     if (question) {
       await waitForInteractive(
         anyOf(
@@ -73,7 +72,6 @@ export class ClickRadioButtonAction implements IAction {
       if (!clicked) {
         continue;
       }
-      // toBeChecked polls; isChecked does not.
       radioIsChecked = await expect(locator)
         .toBeChecked({ timeout: 500 })
         .then(() => true)

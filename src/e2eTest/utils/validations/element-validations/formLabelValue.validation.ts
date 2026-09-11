@@ -32,7 +32,7 @@ export class FormLabelValueValidation implements IValidation {
       page.locator(`//p[normalize-space(.)="${fieldName}"]/following-sibling::ul[1]/li[1]`)
     ];
 
-    // count()/isVisible() do not poll, so settle the DOM before branching on them.
+    // Settle the DOM: the probes below do not poll.
     await waitForInteractive(anyOf(...locators));
 
     for (const locator of locators) {

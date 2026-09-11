@@ -276,8 +276,7 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    // finally: a throw would otherwise skip clear() and leak the module-level map to the next
-    // test on this worker.
+    // finally: a throw would leak the module-level map into the next test on this worker.
     try {
       await test.step('CYA Validation Started and the results are present in the console logs', async () => {
         if (misMatchMap.size > 0) {

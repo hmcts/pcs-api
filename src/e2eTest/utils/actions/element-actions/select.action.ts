@@ -31,7 +31,7 @@ export class SelectAction implements IAction {
       page.locator(`//*[contains(normalize-space(.),"${label}")]/following::select[1]`),
     ];
 
-    // count() does not poll, so let the dropdown render before reading any strategy.
+    // count() does not poll.
     await strategies[0]
       .or(strategies[1])
       .first()

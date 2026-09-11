@@ -38,7 +38,6 @@ export class ClickButtonAction implements IAction {
     do {
       attempt++;
       await this.clickButton(page, button);
-      // waitFor polls; isVisible does not.
       const budget = attempt === 1 ? LONG_TIMEOUT : waitForPageRedirectionTimeout;
       nextPageElementIsVisible = await pageElement
         .first()
