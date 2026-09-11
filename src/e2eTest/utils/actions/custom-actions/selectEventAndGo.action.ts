@@ -28,9 +28,14 @@ export class SelectEventAndGoAction implements IAction {
 
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
       if (attempt > 1) {
-        const value = await dropdown.inputValue().catch(() => '<unreadable>');
-        console.warn(`[selectEventAndGo] attempt ${attempt} for "${eventType}": dropdown holds `
-          + `"${value}" and Go has not moved the page`);
+        // Report the selected option's *label*, not inputValue(). CCD binds objects to the option
+        // values, so inputValue() returns Angular's index serialisation ("1: Object") for a
+        // perfectly correct selection — which reads like a defect and is not one.
+        const selected = await dropdown
+          .evaluate((el: HTMLSelectElement) => el.selectedOptions[0]?.textContent?.trim() ?? '<none>')
+          .catch(() => '<unreadable>');
+        console.warn(`[selectEventAndGo] attempt ${attempt} for "${eventType}": dropdown has `
+          + `"${selected}" selected and Go has not moved the page`);
       }
       await this.clickButton.execute(page, 'clickButton', caseSummary.go, '');
 
