@@ -26,7 +26,7 @@ const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
 function resolveWorkers(): number {
   const parsed = Number(process.env.E2E_WORKERS?.trim());
-  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 4;
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 6;
 }
 
 export default defineConfig({
