@@ -25,8 +25,34 @@ export class SelectEventAndGoAction implements IAction {
 
     await this.select.execute(page, 'select', caseSummary.nextStepEventList, eventType);
 
+    // DIAGNOSTIC ONLY — not for merge. caseTabs:96 fails with the right event selected and no error
+    // summary, so a request never sent and a request sent and refused are indistinguishable.
+    // Both events are needed: 'response' alone cannot tell "nothing was sent" from "something was
+    // sent and never answered" — verified locally, where a fetch produced 1 request and 0 responses.
+    const sent: string[] = [];
+    const answered: string[] = [];
+    const match = (url: string) => /trigger|event|cases/.test(url);
+    const onRequest = (r: { url: () => string }) => {
+      if (match(r.url())) sent.push(r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90));
+    };
+    const onResponse = (r: { url: () => string; status: () => number }) => {
+      if (match(r.url())) answered.push(`${r.status()} ${r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90)}`);
+    };
+    page.on('request', onRequest);
+    page.on('response', onResponse);
+    try {
+
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      const sentBefore = sent.length;
+      const answeredBefore = answered.length;
       await this.clickButton.execute(page, 'clickButton', caseSummary.go, '');
+      const selected = await page
+        .locator('select#next-step, select[id$="event-trigger-select"]').first()
+        .evaluate((el: HTMLSelectElement) => el.selectedOptions[0]?.textContent?.trim() ?? '<none>')
+        .catch(() => '<unreadable>');
+      console.log(`[caseTabs96] attempt ${attempt} "${eventType}": selected="${selected}" `
+        + `sent=${sent.length - sentBefore} answered=${answered.length - answeredBefore} `
+        + `[${answered.slice(answeredBefore).join(' | ') || sent.slice(sentBefore).join(' | ') || 'NOTHING SENT'}]`);
 
       const left = await page
         .locator('h1', { hasText: home.caseSummary })
@@ -44,6 +70,12 @@ export class SelectEventAndGoAction implements IAction {
       .first().innerText().catch(() => '');
     throw new Error(`Event "${eventType}" never launched after ${actionRetries} attempts `
       + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`
+      + `; sent=${sent.length} answered=${answered.length}`
+      + `; requests: ${answered.join(' | ') || sent.join(' | ') || 'NOTHING SENT'}`
       + `${errorSummary ? `; error: ${errorSummary.replace(/\s+/g, ' ').slice(0, 300)}` : ''}`);
+    } finally {
+      page.off('request', onRequest);
+      page.off('response', onResponse);
+    }
   }
 }
