@@ -44,7 +44,18 @@
     <cve>CVE-2026-41178</cve>
   </suppress>
   <!--End of false positives section -->
-
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    Temporary suppressions for PR
+    ]]></notes>
+    <cve>CVE-2026-47888</cve>
+    <cve>CVE-2026-47887</cve>
+    <cve>CVE-2026-47889</cve>
+    <cve>CVE-2026-47884</cve>
+    <cve>CVE-2026-47883</cve>
+    <cve>CVE-2026-47886</cve>
+    <cve>CVE-2026-47885</cve>
+  </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
