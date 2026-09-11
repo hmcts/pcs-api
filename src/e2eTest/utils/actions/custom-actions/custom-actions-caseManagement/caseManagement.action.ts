@@ -1,9 +1,10 @@
 
 import { expect, Page } from '@playwright/test';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT, actionRetries, waitForPageRedirectionTimeout } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -34,6 +35,15 @@ import {
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
+import {
+  MAX_CUMULATIVE_BACKOFF,
+  MAX_UPLOAD_BACKOFF,
+  POST_UPLOAD_SETTLE,
+  UPLOAD_GAP,
+  markUploadCompleted,
+  rateLimitBanner,
+  waitForUploadWindow
+} from '@utils/actions/element-actions/uploadFile.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
@@ -46,7 +56,7 @@ export class CaseManagementAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(page, fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
       ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
@@ -98,13 +108,25 @@ export class CaseManagementAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await performValidation('mainHeader', home.caseSummary);
   }
 
-  private async selectAnEvent(event: actionRecord) {
+  private async selectAnEvent(page: Page, event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
-    await performAction('clickButton', caseSummary.go);
+
+    const summaryHeading = page.locator('h1', { hasText: home.caseSummary });
+    for (let attempt = 1; attempt <= actionRetries; attempt++) {
+      await performAction('clickButton', caseSummary.go);
+      const left = await summaryHeading
+        .first()
+        .waitFor({ state: 'detached', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+      if (left) {
+        return;
+      }
+    }
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
@@ -288,25 +310,31 @@ export class CaseManagementAction implements IAction {
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
+    // Shares uploadFile's timestamp: same XUI session.
+    await waitForUploadWindow(page);
+    let timeout = UPLOAD_GAP;
+    // Nothing dismisses these banners, so only a NEW one means this upload was throttled.
+    const bannersBefore = await rateLimitBanner(page).count();
     await fileInput.last().setInputFiles(filePath);
-    let timeout = 6000;
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    await expect(async () => {
-      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
-                                           span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
-      let limit = await rateLimit.count();
-
-      while (limit > 0) {
-        timeout *= 2;
-        await page.waitForTimeout(timeout);
-        await fileInput.last().setInputFiles(filePath);
-        await performValidation('waitUntilElementDisappears', 'Uploading...');
-        limit = await rateLimit.count();
+    const rateLimit = rateLimitBanner(page);
+    let backoffSpent = 0;
+    while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
+      await page.waitForTimeout(VERY_SHORT_TIMEOUT);
+      if ((await rateLimit.count()) <= bannersBefore) {
+        break;
       }
-    }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
-    });
-    await page.waitForTimeout(timeout);
+      timeout = Math.min(timeout * 2, MAX_UPLOAD_BACKOFF, MAX_CUMULATIVE_BACKOFF - backoffSpent);
+      backoffSpent += timeout;
+      await page.waitForTimeout(timeout);
+      await fileInput.last().setInputFiles(filePath);
+      await performValidation('waitUntilElementDisappears', 'Uploading...');
+    }
+    await expect(rateLimit, 'upload was still rate limited after retrying with backoff')
+      .toHaveCount(bannersBefore);
+    // CCD keeps committing the row after "Uploading..." goes.
+    await page.waitForTimeout(POST_UPLOAD_SETTLE);
+    markUploadCompleted();
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
@@ -377,7 +405,8 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', {
       textLabel: editHearingData.hourLabel,
       index: 1
-    }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
+      // From 1: min is inclusive, and a zero-hours duration is not rendered on CYA.
+    }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
       textLabel: editHearingData.minutesLabel,
       index: 1
@@ -518,9 +547,9 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    await performAction('inputText', { textLabel: addAHearing.daysLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
-    await performAction('inputText', { textLabel: addAHearing.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
-    await performAction('inputText', { textLabel: addAHearing.minsLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
+    await performAction('inputText', { textLabel: addAHearing.daysLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', { textLabel: addAHearing.hoursLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
+    await performAction('inputText', { textLabel: addAHearing.minsLabel }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
     await performAction('inputText', addAHearing.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(addAHearing.hearingNotesInput as number));
     await performAction('clickRadioButton', {
       question: addAHearing.noticeQuestion,
@@ -873,12 +902,13 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
+            // item.index selects the branch but is not forwarded: nth(1) never attaches here.
             if (item.index && validationArr.labelMulti) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
-              await performAction('inputText', { textLabel: validationArr.label1, index: item.index }, item.input2);
-              await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
+              await performAction('inputText', { textLabel: validationArr.label }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label1 }, item.input2);
+              await performAction('inputText', { textLabel: validationArr.labelMulti }, item.input1);
             } else if (item.index) {
-              await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
+              await performAction('inputText', { textLabel: validationArr.label }, item.input);
             } else {
               await performAction('inputText', validationArr.label, item.input);
             }
@@ -915,7 +945,6 @@ export class CaseManagementAction implements IAction {
     }
     if (validationArr.buttonRemove) {
       await performAction('removeFile');
-      await page.waitForTimeout(6000);
     }
   }
 

@@ -7,6 +7,7 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { expect, test } from '@utils/test-fixtures';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import {
   cancelPayment,
@@ -21,6 +22,7 @@ import { history } from '@data/page-data/history.page.data';
 import {BrowserContext, Page} from "@playwright/test";
 import {refundAndRemission} from "@data/user-data/staff.user.data";
 import {dismissCookieBanner} from '@config/cookie-banner';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.use({ storageState: undefined });
 
@@ -58,6 +60,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async () => {
@@ -112,7 +115,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
@@ -138,7 +141,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
@@ -179,7 +182,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await clearBrowserSession(page, context);
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
