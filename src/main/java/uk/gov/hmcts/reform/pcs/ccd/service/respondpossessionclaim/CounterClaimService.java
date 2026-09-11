@@ -88,6 +88,10 @@ public class CounterClaimService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
+            .courtPermissionGranted(counterClaim.getCourtPermissionGranted())
+            .permissionOrderDate(counterClaim.getCourtPermissionGranted() == VerticalYesNo.YES
+                ? counterClaim.getPermissionOrderDate() : null)
+            .claimReceivedDate(counterClaim.getClaimReceivedDate())
             .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)

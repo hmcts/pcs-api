@@ -4,20 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-
-import java.util.List;
-import java.util.Set;
 
 @Component("managePartyStartEventHandler")
 @RequiredArgsConstructor
@@ -34,33 +27,10 @@ public class StartEventHandler implements Start<PCSCase, State> {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         caseData.getAddPartyDetails().setPartyRadioList(
-            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
+            partyService.buildPartyDynamicList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
         caseData.getUpdatePartyDetails().setPartyToUpdate(
-            buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
+            partyService.buildPartyDynamicList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
 
         return caseData;
-    }
-
-    private DynamicList buildPartyList(ClaimEntity mainClaim, PartyRole... allowedRoles) {
-        Set<PartyRole> roles = Set.of(allowedRoles);
-        List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
-            .filter(claimPartyEntity -> roles.contains(claimPartyEntity.getRole()))
-            .map(claimPartyEntity -> DynamicListElement.builder()
-                .code(claimPartyEntity.getParty().getId())
-                .label("%s - %s".formatted(
-                    buildPartyDisplayName(claimPartyEntity.getParty()),
-                    partyService.getPartyLabel(mainClaim, claimPartyEntity.getParty().getId())
-                ))
-                .build())
-            .toList();
-
-        return DynamicList.builder().listItems(listItems).build();
-    }
-
-    private String buildPartyDisplayName(PartyEntity partyEntity) {
-        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
-            return "Person unknown";
-        }
-        return partyService.getPartyName(partyEntity);
     }
 }
