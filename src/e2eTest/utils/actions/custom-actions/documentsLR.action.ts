@@ -1,5 +1,5 @@
 import test, {expect, Locator, Page} from '@playwright/test';
-import { waitForInteractive, waitForSpinner } from '@utils/common/locator.utils';
+import { settleRowCount, waitForSpinner } from '@utils/common/locator.utils';
 import { getFormattedDate } from "@utils/common/string.utils";
 
 import {
@@ -211,7 +211,7 @@ export class DocumentsAction implements IAction {
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
-    await waitForInteractive(tables);
+    await settleRowCount(tables);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);

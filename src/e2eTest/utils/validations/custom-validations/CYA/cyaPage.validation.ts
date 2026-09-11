@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
-import { waitForInteractive } from '@utils/common/locator.utils';
+import { settleRowCount } from '@utils/common/locator.utils';
 
 interface QAObject {
   question: string;
@@ -315,8 +315,9 @@ export class CYAPageValidation {
     const qaObjects: QAObject[] = [];
 
     const mainRows = page.locator('table.form-table tr:visible:not([hidden])');
-    // Non-polling count: an unrendered table yields zero rows, which fails every captured question.
-    await waitForInteractive(mainRows);
+    // CCD renders CYA rows progressively, so a count taken mid-render is short and every
+    // question it missed is reported as a mismatch. Wait for the row count to stop growing.
+    await settleRowCount(mainRows);
     const rowCount = await mainRows.count();
 
     for (let i = 0; i < rowCount; i++) {

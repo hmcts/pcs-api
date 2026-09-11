@@ -53,6 +53,39 @@ export async function waitForInteractive(locator: Locator, timeout: number = SHO
 }
 
 /**
+ * Waits for a locator's match count to stop growing, for callers that need the whole set
+ * rather than the first match. `waitForInteractive` returns as soon as one element is
+ * visible, which is not enough when a table renders its rows progressively.
+ * Returns the settled count; gives up at `timeout` and returns what it has.
+ */
+export async function settleRowCount(
+  locator: Locator,
+  timeout: number = SHORT_TIMEOUT,
+  stableFor: number = 500
+): Promise<number> {
+  await waitForInteractive(locator, timeout);
+  const deadline = Date.now() + timeout;
+  let previous = -1;
+  let stableSince = 0;
+  let current = await locator.count().catch(() => 0);
+  while (Date.now() < deadline) {
+    if (current === previous) {
+      if (stableSince === 0) {
+        stableSince = Date.now();
+      } else if (Date.now() - stableSince >= stableFor) {
+        return current;
+      }
+    } else {
+      previous = current;
+      stableSince = 0;
+    }
+    await locator.page().waitForTimeout(100);
+    current = await locator.count().catch(() => current);
+  }
+  return current;
+}
+
+/**
  * Waits for XUI's loading spinner to detach. `.spinner-container` is `position: fixed`,
  * full-viewport, `z-index: 99`, so it swallows pointer events. Click-based actions only:
  * `fill` and `selectOption` are not gated on pointer events, so `inputText` and `select`
