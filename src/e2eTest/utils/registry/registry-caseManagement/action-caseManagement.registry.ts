@@ -3,6 +3,7 @@ import { CaseManagementAction } from "@utils/actions/custom-actions/custom-actio
 import { ErrorValidationAction } from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementErrorValidation.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
 import { CheckAction, ClickButtonAction, ClickRadioButtonAction, ClickTabAction, InputDateAction, InputTextAction, SelectAction, UploadFileAction } from "@utils/actions/element-actions";
+import { SelectEventAndGoAction } from '@utils/actions/custom-actions/selectEventAndGo.action';
 import { ClickLinkAction } from "@utils/actions/element-actions/clickLink.action";
 import { ClickSummaryAction } from "@utils/actions/element-actions/clickSummary.action";
 import { RetryOnCallBackError } from "@utils/actions/element-actions/reTryOnCallBackError.action";
@@ -23,6 +24,7 @@ export class ActionCMRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['select', new SelectAction()],
+    ['selectEventAndGo', new SelectEventAndGoAction()],
     ['uploadFile', new UploadFileAction()],
     ['login', new LoginAction()],
     ['createUser', new LoginAction()],
