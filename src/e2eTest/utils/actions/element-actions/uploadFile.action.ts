@@ -5,7 +5,10 @@
   import { VERY_SHORT_TIMEOUT } from 'playwright.config';
   export const MAX_UPLOAD_BACKOFF = 180000;
   export const MAX_CUMULATIVE_BACKOFF = 60000;
-  export const UPLOAD_GAP = 2000;
+  // XUI no longer rate limits a document POST that follows the previous one closely, so this only
+  // seeds the retry backoff. POST_UPLOAD_SETTLE stays: it covers CCD committing the row, and
+  // removing it broke three specs on #2741.
+  export const UPLOAD_GAP = Number(process.env.E2E_UPLOAD_GAP_MS ?? 2000);
   export const POST_UPLOAD_SETTLE = 2000;
 
 // Module-level: shared with uploadADocument, which uses the same XUI session.
@@ -78,7 +81,8 @@
       const fileInput = page.locator('input[type="file"].form-control.bottom-30');
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await waitForUploadWindow(page);
-      let timeout = UPLOAD_GAP;
+      // Seeded independently of UPLOAD_GAP: a zero gap would leave timeout * 2 at zero.
+      let timeout = 2000;
 // Nothing dismisses these banners, so only a NEW one belongs to this upload.
       const bannersBefore = await rateLimitBanner(page).count();
       await fileInput.last().setInputFiles(filePath);
