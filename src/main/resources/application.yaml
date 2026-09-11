@@ -69,6 +69,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show-sql: ${SPRING_JPA_SHOW_SQL:false}
+        # Load lazy associations for up to this many entities per query (IN clause)
+        # instead of one query per entity — collapses N+1 selects on collections such
+        # as each party's or claim's children during case hydration.
+        default_batch_fetch_size: ${HIBERNATE_DEFAULT_BATCH_FETCH_SIZE:32}
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
@@ -110,6 +114,11 @@ flyway:
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
+  userinfo-cache:
+    # How long a validated token is trusted without re-asking IDAM. This bounds the
+    # window in which a revoked (but unexpired) token would still be accepted.
+    ttl-seconds: ${IDAM_USERINFO_CACHE_TTL_SECONDS:120}
+    max-size: ${IDAM_USERINFO_CACHE_MAX_SIZE:1000}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
