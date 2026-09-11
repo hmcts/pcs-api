@@ -1,6 +1,7 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import test, {expect, Page} from '@playwright/test';
 import {getCaseTypeId} from '@utils/common/caseType.utils';
+import {waitForSpinner} from '@utils/common/locator.utils';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
@@ -59,7 +60,8 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
 } from '@data/page-data-figma';
-import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
+import {LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT, actionRetries, waitForPageRedirectionTimeout} from 'playwright.config';
+import {checkYourAnswersCaseNote} from '@data/page-data/checkYourAnswersCaseNote.page.data';
 import {compareMaps} from '@utils/common/compareMaps.util';
 import {caseInfo, defendantUserDetails} from './createCaseAPI.action';
 import {createCaseApiData} from '@data/api-data';
@@ -95,7 +97,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(page, fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -131,7 +133,7 @@ export class CreateCaseAction implements IAction {
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
-      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(fieldName as actionRecord)],
+      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(page, fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
@@ -140,7 +142,7 @@ export class CreateCaseAction implements IAction {
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
       ['validateClaimantDetails', () => this.validateClaimantDetails(page, fieldName as actionRecord)],
-      ['addCaseNotes', () => this.addCaseNotes(fieldName as actionRecord)],
+      ['addCaseNotes', () => this.addCaseNotes(page, fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateCaseSummaryDetails', () => this.validateCaseSummaryDetails(page, fieldName as actionRecord)],
       ['validateCaseFileViewFolders', () => this.validateCaseFileViewFolders(page, fieldName as actionData)],
@@ -165,6 +167,7 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
+
   
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
@@ -215,7 +218,10 @@ export class CreateCaseAction implements IAction {
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
-    const text = await page.locator('div.alert-message').innerText();
+    // innerText does not poll. .first() because the banner region can hold several alerts.
+    const alert = page.locator('div.alert-message').first();
+    await alert.waitFor({ state: 'visible', timeout: LONG_TIMEOUT });
+    const text = await alert.innerText();
     caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
     if (!caseNumber) {
       throw new Error(`Case ID not found in alert message: "${text}"`);
@@ -353,7 +359,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continueButton);
   }
 
-  private async addDefendantDetails(defendantData: actionRecord) {
+  private async addDefendantDetails(page: Page, defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -393,11 +399,12 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // "Add new" appends a defendant block addressed by index, and clickRadioButton resolves
+        // patterns with a non-polling count(), so wait for the block before touching it.
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -523,7 +530,8 @@ export class CreateCaseAction implements IAction {
       const needsGrounds = /^(other|no)$/i.test(reason);
       const reasonDisplay = needsGrounds ? `${reason} grounds` : reason;
       await performValidation('text', { text: reasonsForPossession.giveDetailsAboutYourReasonsForPossessionHintText, "elementType": 'paragraph', "index": n });
-      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})`, index: n }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
+      // No index: the label carries the ground name, so exactly one field matches it.
+      await performAction('inputText', { text: `${reasonsForPossession.giveDetailsAboutYourReasonsForPossessionTextLabel} (${reasonDisplay})` }, reasonsForPossession.detailsAboutYourReason + "-" + reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -859,7 +867,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeMortgageeDetails.continueButton);
   }
 
-  private async selectUnderlesseeMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+  private async selectUnderlesseeMortgageeDetails(page: Page, underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -892,11 +900,12 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = underlesseeMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeMortgageeDetails.noRadioOption;
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // Same shape as addDefendantDetails: "Add new" appends a block addressed by index, and
+        // clickRadioButton resolves patterns with a non-polling count().
+        await page.locator(`legend:has-text("${nameQuestion}")`)
+          .nth(index)
+          .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
+          .catch(() => undefined);
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -950,11 +959,22 @@ export class CreateCaseAction implements IAction {
     //await performAction('searchCaseFromFindCase', caseNumber);
   }
 
-  private async addCaseNotes(caseNote: actionRecord){
+  private async addCaseNotes(page: Page, caseNote: actionRecord){
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {elementType: 'paragraph', text: `Property address: ${addressInfoCaseTab.buildingStreet}, ${addressInfoCaseTab.townCity}, ${addressInfoCaseTab.engOrWalPostcode}`});
     await performAction('inputText', caseNote.label, caseNote.input);
-    await performAction('clickButton', addCaseNote.continueButton);
+    // Verify Continue reached Check your answers, and retry the click if it did not.
+    const checkYourAnswers = page.locator('h2', { hasText: checkYourAnswersCaseNote.header }).first();
+    let attempt = 0;
+    let arrived = false;
+    do {
+      attempt++;
+      await performAction('clickButton', addCaseNote.continueButton);
+      arrived = await checkYourAnswers
+        .waitFor({ state: 'visible', timeout: waitForPageRedirectionTimeout })
+        .then(() => true)
+        .catch(() => false);
+    } while (!arrived && attempt < actionRetries);
   }
 
   private async validateDefendantDetails(page: Page, defendantsDetails: actionRecord) {
@@ -1610,17 +1630,15 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    const folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
+    const folder: string[] = caseFileView as string[];
+    // The tree renders progressively after CDAM metadata resolves, and allTextContents() does
+    // not poll, so a single read could report folders as missing while they were still arriving.
     await expect(async () => {
-      expect(await folderLocator.count()).toBeGreaterThan(0)
-    }).toPass({
-      timeout: MEDIUM_TIMEOUT,
-    });
-    const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
-    const folder:string[] = caseFileView as string[];
-
-    const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
-    expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
+      const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
+      const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));
+      expect(missingFolders, `Missing folders: ${missingFolders.join(", ")}`).toHaveLength(0);
+    }).toPass({ timeout: LONG_TIMEOUT });
   }
 
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
@@ -1690,13 +1708,16 @@ export class CreateCaseAction implements IAction {
       .locator('button[role="treeitem"]')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
-    const text = await folder.innerText();
+    await expect(folder.first()).toBeVisible({ timeout: LONG_TIMEOUT });
+    const text = await folder.first().innerText();
     const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
-    await folder.click();
+    await folder.first().click();
+    // The tree expands asynchronously, so poll until the rendered file count settles.
+    await expect(fileLocator).toHaveCount(fileCount, { timeout: LONG_TIMEOUT });
     const actualFileCount = await fileLocator.count();
 
     expect(actualFileCount, 'File count matching').toEqual(fileCount)
@@ -1704,9 +1725,9 @@ export class CreateCaseAction implements IAction {
     expect(userInputFiles.sort(), `validating  upload files for "${folderName}"`).toEqual(fileArray.sort());
     console.log(`\n✅ The files under section "${folderName}" are \n "${fileArray}"`);
 
-    if ((await folder.getAttribute('aria-expanded')) === 'true') {
-      await folder.click();
-      await expect(folder).toHaveAttribute('aria-expanded', 'false');
+    if ((await folder.first().getAttribute('aria-expanded')) === 'true') {
+      await folder.first().click();
+      await expect(folder.first()).toHaveAttribute('aria-expanded', 'false');
     }
   }
 
@@ -1792,7 +1813,7 @@ export class CreateCaseAction implements IAction {
       }
       await nextButton.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });
+      await waitForSpinner(page);
       pageNumber++;
     }
   }

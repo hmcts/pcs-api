@@ -1,6 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { actionRetries, LONG_TIMEOUT, waitForPageRedirectionTimeout } from '../../../playwright.config';
+import { hasPageHeading, waitForSpinner } from '@utils/common/locator.utils';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string, actionParams: string): Promise<void> {
@@ -21,11 +22,14 @@ export class ClickButtonAction implements IAction {
     await actionToPerform();
   }
 
-  private async clickButton(page: Page, button: Locator): Promise<void> {   
+  private async clickButton(page: Page, button: Locator): Promise<void> {
       await page.waitForLoadState();
+      // Also wait BEFORE clicking, not only after — see waitForSpinner for why.
+      await waitForSpinner(page);
       await button.click();
       await page.waitForLoadState();
-      await page.locator('.spinner-container').waitFor({ state: 'detached' });    
+      // Bounded: a bare waitFor inherits the 40s actionTimeout and throws.
+      await waitForSpinner(page);
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
@@ -35,12 +39,24 @@ export class ClickButtonAction implements IAction {
     do {
       attempt++;
       await this.clickButton(page, button);
-      //Adding sleep to slow down execution when the application behaves abnormally
-      await page.waitForTimeout(waitForPageRedirectionTimeout);
-      nextPageElementIsVisible = await pageElement.isVisible();
+      // waitFor polls; isVisible does not.
+      const budget = attempt === 1 ? LONG_TIMEOUT : waitForPageRedirectionTimeout;
+      nextPageElementIsVisible = await pageElement
+        .first()
+        .waitFor({ state: 'visible', timeout: budget })
+        .then(() => true)
+        .catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
-      throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
+      // Report where it ended up: otherwise a click that never fired looks identical to an event
+      // the server refused to create.
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const errorSummary = await page
+        .locator('.govuk-error-summary, .error-summary, #error-summary-title, .alert-message')
+        .first().innerText().catch(() => '');
+      throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts `
+        + `— page shows "${heading}"`
+        + `${errorSummary ? `; error: ${errorSummary.replace(/\s+/g, ' ').slice(0, 300)}` : ''}`);
     }
   }
 
@@ -51,8 +67,8 @@ export class ClickButtonAction implements IAction {
   }
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
-    if (await page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l').textContent() === currentPageHeader) {
+    await waitForSpinner(page);
+    if (await hasPageHeading(page, currentPageHeader)) {
       await this.clickButton(page, button);
     }
   }

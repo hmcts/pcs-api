@@ -15,6 +15,7 @@ import { selectCasesToUnLink } from '@data/page-data/selectCasesToUnLink.page.da
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {staff} from '@data/user-data/staff.user.data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 let caseNumbers: string[] = [];
 
@@ -50,14 +51,17 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 //Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095
 //So these tests won't be executed in preview
 test.describe('[Common Component Case Linking] @nightly @caseLinking', async () => {
   test('Case Linking', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.linkCaseEvent,
+      nextPage: beforeYouStart.mainHeader
+    });
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
@@ -75,8 +79,10 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking', async () 
     await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
     await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.manageCaseEvent,
+      nextPage: beforeYouStart.mainHeader
+    });
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToUnLink.mainHeader);

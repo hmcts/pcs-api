@@ -1,5 +1,6 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { IValidation, validationData } from '@utils/interfaces';
+import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
 
 export class FormLabelValueValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data?: validationData): Promise<void> {
@@ -30,6 +31,9 @@ export class FormLabelValueValidation implements IValidation {
 
       page.locator(`//p[normalize-space(.)="${fieldName}"]/following-sibling::ul[1]/li[1]`)
     ];
+
+    // count()/isVisible() do not poll, so settle the DOM before branching on them.
+    await waitForInteractive(anyOf(...locators));
 
     for (const locator of locators) {
       if (await locator.count() === 1  && await locator.isVisible()) {

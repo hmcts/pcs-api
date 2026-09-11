@@ -1,6 +1,7 @@
 import { Page, expect } from '@playwright/test';
 import { IValidation, validationRecord } from '@utils/interfaces';
 import { exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
+import { readPageHeading } from '@utils/common/locator.utils';
 
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
@@ -43,7 +44,8 @@ export class TextValidation implements IValidation {
         data.elementType = 'span.govuk-hint'
         break;
       case 'warningText':
-        const locator = page.locator('.govuk-warning-text__text');
+        const locator = page.locator('.govuk-warning-text__text').filter({ visible: true }).first();
+        await locator.waitFor({ state: 'visible' });
         const actualText = (await locator.textContent())
           ?.replace(/^Warning\s*/, '')
           .trim();
@@ -54,7 +56,23 @@ export class TextValidation implements IValidation {
     const locator = data.elementType === 'p'
       ? page.getByText(text, { exact: true }).filter({ visible: true }).first()
       : page.locator(`${data.elementType}:text-is("${data.text}")`).filter({ visible: true }).first();
-    await locator.waitFor({ state: 'visible' });
+    // The locator filters *by* the expected text, so a mismatch matches nothing and the wait fails
+    // naming only the selector. Report what the page actually holds — see mainHeader for the same
+    // treatment, which is what made the dead-document failure diagnosable in minutes.
+    try {
+      await locator.waitFor({ state: 'visible' });
+    } catch (error) {
+      const heading = await readPageHeading(page).catch(() => '');
+      const sample = (await page.locator(String(data.elementType)).filter({ visible: true })
+        .allInnerTexts().catch(() => []))
+        .map(s => s.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .slice(0, 5);
+      console.warn(`[text] expected ${data.elementType} "${text}" but it never appeared`
+        + `${heading ? ` on page "${heading}"` : ''}`
+        + `${sample.length ? `; visible ${data.elementType} text: ${sample.map(s => `"${s.slice(0, 80)}"`).join(', ')}` : `; no visible ${data.elementType} elements`}`);
+      throw error;
+    }
     const actual = await locator.innerText();
     const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
     expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
