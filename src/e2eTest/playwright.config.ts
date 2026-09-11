@@ -24,10 +24,13 @@ const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.t
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
-// Preview defaults lower than AAT because each PR release has its own single-replica CCD stack.
-// The actual ceiling is unmeasured; use E2E_WORKERS to tune it without a code change.
+// Preview matches AAT at 4. It previously sat at 2, and raising it alone was measured as worse
+// (3 workers: 6 flaky / 18.6m against 0 flaky / 11.8-13.2m at 2) because ccd-data-store's JDBC pool
+// saturated at its ceiling of 5 with seven requests queued, each waiting the full 40s. That ceiling
+// is raised alongside this in values.ccd.preview.template.yaml; the two only work together.
+// Use E2E_WORKERS to tune without a code change.
 function resolveWorkers(): number {
-  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 2 : 4;
+  const environmentDefault = 4;
   const parsed = Number(process.env.E2E_WORKERS?.trim());
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
