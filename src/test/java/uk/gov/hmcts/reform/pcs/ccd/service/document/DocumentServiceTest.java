@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
@@ -70,6 +71,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -1598,6 +1600,110 @@ class DocumentServiceTest {
         DocumentType result = underTest.resolveDocumentType(doc);
 
         assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
+    }
+
+    @Test
+    void shouldSaveCounterClaimDocumentsCaseworker() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        UUID partyId = UUID.randomUUID();
+        when(documentNameService.appendCounterClaimPostfix("doc 1", claimEntity, partyId))
+            .thenReturn("doc 1 cc");
+        when(documentNameService.appendCounterClaimPostfix("doc 2", claimEntity, partyId))
+            .thenReturn("doc 2 cc");
+        when(documentNameService.appendCounterClaimPostfix("doc 3", claimEntity, partyId))
+            .thenReturn("doc 3 cc");
+
+        Document form = Document.builder()
+            .url("doc 1 url")
+            .filename("doc 1")
+            .binaryUrl("doc 1 binary")
+            .build();
+        Document relatedDoc1 = Document.builder()
+            .url("doc 2 url")
+            .filename("doc 2")
+            .binaryUrl("doc 2 binary")
+            .build();
+        Document relatedDoc2 = Document.builder()
+            .url("doc 3 url")
+            .filename("doc 3")
+            .binaryUrl("doc 3 binary")
+            .build();
+        EnterCounterClaimDetails enterCounterClaimDetails = EnterCounterClaimDetails.builder()
+            .counterclaimForm(form)
+            .relatedDocuments(List.of(
+                ListValue.<Document>builder().value(relatedDoc1).build(),
+                ListValue.<Document>builder().value(relatedDoc2).build()
+            )).build();
+
+        PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(claimEntity)).build();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
+
+        // When
+        underTest.saveCounterClaimDocumentsCaseworker(
+            enterCounterClaimDetails,
+            counterClaimEntity,
+            pcsCaseEntity,
+            partyEntity
+        );
+
+        // Then
+        ArgumentCaptor<DocumentEntity> documentEntityArgumentCaptor = ArgumentCaptor.forClass(DocumentEntity.class);
+        verify(documentRepository).save(documentEntityArgumentCaptor.capture());
+        DocumentEntity documentEntity1 = documentEntityArgumentCaptor.getValue();
+        assertThat(documentEntity1.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(documentEntity1.getParty()).isEqualTo(partyEntity);
+        assertThat(documentEntity1.getCounterClaim()).isEqualTo(counterClaimEntity);
+        assertThat(documentEntity1.getFileName()).isEqualTo("doc 1 cc");
+        assertThat(documentEntity1.getUrl()).isEqualTo(form.getUrl());
+        assertThat(documentEntity1.getBinaryUrl()).isEqualTo(form.getBinaryUrl());
+        assertThat(documentEntity1.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        assertThat(documentEntity1.getType()).isEqualTo(DocumentType.COUNTERCLAIM);
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> documentEntityList = documentEntityListCaptor.getValue();
+        assertThat(documentEntityList).hasSize(2);
+        DocumentEntity documentEntity2 = documentEntityList.getFirst();
+        assertThat(documentEntity2.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(documentEntity2.getParty()).isEqualTo(partyEntity);
+        assertThat(documentEntity2.getCounterClaim()).isEqualTo(counterClaimEntity);
+        assertThat(documentEntity2.getFileName()).isEqualTo("doc 2 cc");
+        assertThat(documentEntity2.getUrl()).isEqualTo(relatedDoc1.getUrl());
+        assertThat(documentEntity2.getBinaryUrl()).isEqualTo(relatedDoc1.getBinaryUrl());
+        assertThat(documentEntity2.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        assertThat(documentEntity2.getType()).isEqualTo(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM);
+
+        DocumentEntity documentEntity3 = documentEntityList.getLast();
+        assertThat(documentEntity3.getPcsCase()).isEqualTo(pcsCaseEntity);
+        assertThat(documentEntity3.getParty()).isEqualTo(partyEntity);
+        assertThat(documentEntity3.getCounterClaim()).isEqualTo(counterClaimEntity);
+        assertThat(documentEntity3.getFileName()).isEqualTo("doc 3 cc");
+        assertThat(documentEntity3.getUrl()).isEqualTo(relatedDoc2.getUrl());
+        assertThat(documentEntity3.getBinaryUrl()).isEqualTo(relatedDoc2.getBinaryUrl());
+        assertThat(documentEntity3.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        assertThat(documentEntity3.getType()).isEqualTo(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM);
+    }
+
+    @Test
+    void shouldNotSaveCounterClaimDocumentsIfNotPresentCaseworker() {
+        // Given
+        EnterCounterClaimDetails enterCounterClaimDetails = EnterCounterClaimDetails.builder().build();
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        PartyEntity partyEntity = PartyEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(claimEntity)).build();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
+
+        // When
+        underTest.saveCounterClaimDocumentsCaseworker(
+            enterCounterClaimDetails,
+            counterClaimEntity,
+            pcsCaseEntity,
+            partyEntity
+        );
+
+        // Then
+        verifyNoInteractions(documentRepository);
     }
 
     private static Stream<Arguments> documentTypeToCategoryScenarios() {

@@ -19,7 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -29,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -51,6 +56,10 @@ class SubmitEventHandlerTest {
     private CounterClaimService counterClaimService;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private DocumentService documentService;
+    @Mock
+    private PcsCaseService pcsCaseService;
 
     private SubmitEventHandler underTest;
 
@@ -59,7 +68,8 @@ class SubmitEventHandlerTest {
         when(addressFormatter.formatShortAddress(any(), eq(COMMA_DELIMITER)))
             .thenReturn("1 High Street, London, W1 1AA");
 
-        underTest = new SubmitEventHandler(partyService, counterClaimService, addressFormatter);
+        underTest = new SubmitEventHandler(partyService, counterClaimService, addressFormatter, documentService,
+                                           pcsCaseService);
     }
 
     private SubmitResponse<State> submit(PCSCase caseData) {
@@ -74,6 +84,16 @@ class SubmitEventHandlerTest {
 
         when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
             .thenReturn(submittingParty);
+
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
+        when(counterClaimService.saveCaseworkerEnteredCounterClaim(
+            eq(TEST_CASE_REFERENCE),
+            any(CounterClaim.class),
+            eq(submittingParty)
+        )).thenReturn(Optional.of(counterClaimEntity));
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         LocalDate permissionOrderDate = LocalDate.of(2026, 1, 15);
         LocalDate claimReceivedDate = LocalDate.of(2026, 1, 20);
@@ -126,6 +146,13 @@ class SubmitEventHandlerTest {
         assertThat(savedCounterClaim.getCounterClaimAgainst())
             .extracting(ListValue::getId)
             .containsExactly(againstPartyId.toString());
+
+        verify(documentService).saveCounterClaimDocumentsCaseworker(
+            enterCounterClaimDetails,
+            counterClaimEntity,
+            pcsCaseEntity,
+            submittingParty
+        );
     }
 
     @Test

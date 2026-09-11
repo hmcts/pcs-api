@@ -7,16 +7,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 
 @Component
-public class UploadCounterClaimForm implements CcdPageConfiguration {
+public class UploadRelatedDocuments implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("uploadCounterClaimForm")
-            .pageLabel("Upload counterclaim form")
-            .label("uploadCounterClaimForm-lineSeparator", "---")
+            .page("uploadRelatedDocuments")
+            .pageLabel("Upload related documents")
+            .label("uploadRelatedDocuments-lineSeparator", "---")
             .complex(PCSCase::getEnterCounterClaim)
-            .mandatory(EnterCounterClaimDetails::getCounterclaimForm)
+            .mandatory(EnterCounterClaimDetails::getRelatedDocuments)
             .done();
     }
+
 }
