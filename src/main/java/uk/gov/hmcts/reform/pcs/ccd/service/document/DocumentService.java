@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
@@ -400,6 +401,88 @@ public class DocumentService {
             saved.size(), counterClaim.getId());
 
         return saved;
+    }
+
+    public void saveCounterClaimDocumentsCaseworker(
+        EnterCounterClaimDetails counterClaimRequest,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        PCSCase pcsCase
+    ) {
+        ClaimEntity claim = pcsCaseEntity.getClaims().getFirst();
+        createCounterClaimForm(pcsCase.getCounterclaimForm(), counterClaim, pcsCaseEntity, party, claim);
+        createCounterClaimRelatedDocuments(
+            counterClaimRequest.getRelatedDocuments(),
+            counterClaim,
+            pcsCaseEntity,
+            party,
+            claim
+        );
+    }
+
+    private void createCounterClaimForm(
+        Document counterClaimForm,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCase,
+        PartyEntity party,
+        ClaimEntity claim
+    ) {
+        if (counterClaimForm == null) {
+            log.info("No counter claim form to save");
+            return;
+        }
+
+        DocumentEntity documentEntity = DocumentEntity.builder()
+            .pcsCase(pcsCase)
+            .party(party)
+            .counterClaim(counterClaim)
+            .url(counterClaimForm.getUrl())
+            .fileName(documentNameService.appendCounterClaimPostfix(
+                counterClaimForm.getFilename(), claim, party.getId()
+            ))
+            .binaryUrl(counterClaimForm.getBinaryUrl())
+            .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
+            .type(DocumentType.COUNTERCLAIM)
+            .build();
+
+
+        documentRepository.save(documentEntity);
+
+        log.info("Saved counter claim form for counter claim {}", counterClaim.getId());
+    }
+
+    private void createCounterClaimRelatedDocuments(
+        List<ListValue<Document>> counterClaimDocuments,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCase,
+        PartyEntity party,
+        ClaimEntity claim
+    ) {
+        if (CollectionUtils.isEmpty(counterClaimDocuments)) {
+            log.info("No counter claim related documents to save");
+            return;
+        }
+
+        List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(ccDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .counterClaim(counterClaim)
+                .url(ccDoc.getUrl())
+                .fileName(documentNameService.appendCounterClaimPostfix(ccDoc.getFilename(), claim, party.getId()))
+                .binaryUrl(ccDoc.getBinaryUrl())
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} counter claim related documents for counter claim {}",
+                 saved.size(), counterClaim.getId());
     }
 
     public Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
