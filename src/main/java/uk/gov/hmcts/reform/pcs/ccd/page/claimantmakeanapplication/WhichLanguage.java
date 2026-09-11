@@ -16,7 +16,7 @@ public class WhichLanguage implements CcdPageConfiguration {
         pageBuilder
             .page("whichLanguage")
             .pageLabel("Which language did you use to complete this service?")
-            .label("whichLanguage-lineSeparator", "---")
+            .label("cma-whichLanguage-lineSeparator", "---")
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getLanguageUsed)
             .done();
