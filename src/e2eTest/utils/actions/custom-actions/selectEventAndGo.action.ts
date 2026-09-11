@@ -26,6 +26,19 @@ export class SelectEventAndGoAction implements IAction {
 
     await this.select.execute(page, 'select', caseSummary.nextStepEventList, eventType);
 
+    // Record what each Go click sends. When this fails, the selection is correct and CCD reports no
+    // error, so the open question is whether the click reaches CCD at all — a request that is never
+    // made and one that is made and refused look identical from the page.
+    const triggerCalls: string[] = [];
+    const onResponse = (response: { url: () => string; status: () => number }) => {
+      const url = response.url();
+      if (url.includes('trigger') || url.includes('event-trigger')) {
+        triggerCalls.push(`${response.status()} ${url.replace(/^https?:\/\/[^/]+/, '')}`);
+      }
+    };
+    page.on('response', onResponse);
+
+    try {
     for (let attempt = 1; attempt <= actionRetries; attempt++) {
       if (attempt > 1) {
         // Report the selected option's *label*, not inputValue(). CCD binds objects to the option
@@ -50,7 +63,15 @@ export class SelectEventAndGoAction implements IAction {
       }
     }
     const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+    const errorSummary = await page
+      .locator('.govuk-error-summary, .error-summary, #error-summary-title, .alert-message')
+      .first().innerText().catch(() => '');
     throw new Error(`Event "${eventType}" never launched after ${actionRetries} attempts `
-      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`);
+      + `— page shows "${heading}"${nextPage ? `, wanted "${nextPage}"` : ''}`
+      + `; event-trigger calls: ${triggerCalls.length ? triggerCalls.join('; ') : '<none>'}`
+      + `${errorSummary ? `; error: ${errorSummary.replace(/\s+/g, ' ').slice(0, 300)}` : ''}`);
+    } finally {
+      page.off('response', onResponse);
+    }
   }
 }
