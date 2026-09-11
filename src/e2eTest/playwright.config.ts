@@ -24,12 +24,9 @@ const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.t
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
-// Preview defaults lower than AAT because each PR release has its own single-replica CCD stack.
-// The actual ceiling is unmeasured; use E2E_WORKERS to tune it without a code change.
 function resolveWorkers(): number {
-  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 2 : 4;
   const parsed = Number(process.env.E2E_WORKERS?.trim());
-  return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : 4;
 }
 
 export default defineConfig({
