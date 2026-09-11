@@ -56,9 +56,6 @@ public class EnterCounterClaimDetails {
     private String hwfReferenceNumber;
 
     @CCD(label = "Upload document")
-    private Document counterclaimForm;
-
-    @CCD(label = "Upload document")
     private List<ListValue<Document>> relatedDocuments;
 
 }

@@ -16,7 +16,7 @@ public class UploadRelatedDocuments implements CcdPageConfiguration {
             .pageLabel("Upload related documents")
             .label("uploadRelatedDocuments-lineSeparator", "---")
             .complex(PCSCase::getEnterCounterClaim)
-            .mandatory(EnterCounterClaimDetails::getRelatedDocuments)
+            .optional(EnterCounterClaimDetails::getRelatedDocuments)
             .done();
     }
 

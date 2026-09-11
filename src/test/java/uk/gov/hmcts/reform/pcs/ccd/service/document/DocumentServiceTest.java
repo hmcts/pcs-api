@@ -1796,7 +1796,6 @@ class DocumentServiceTest {
             .binaryUrl("doc 3 binary")
             .build();
         EnterCounterClaimDetails enterCounterClaimDetails = EnterCounterClaimDetails.builder()
-            .counterclaimForm(form)
             .relatedDocuments(List.of(
                 ListValue.<Document>builder().value(relatedDoc1).build(),
                 ListValue.<Document>builder().value(relatedDoc2).build()
