@@ -35,6 +35,10 @@ export class SelectEventAndGoAction implements IAction {
         .then(() => true)
         .catch(() => false);
       if (left) {
+        // DIAGNOSTIC ONLY — not for merge.
+        if (attempt > 1) {
+          console.log(`[attemptLog] "${eventType}" launched on attempt ${attempt} of ${actionRetries}`);
+        }
         return;
       }
     }
