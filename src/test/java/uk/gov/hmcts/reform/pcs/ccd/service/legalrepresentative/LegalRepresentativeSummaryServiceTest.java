@@ -15,11 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactD
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
@@ -36,6 +38,9 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private FeatureToggleService featureToggleService;
+
+    @Mock
+    private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -65,7 +70,8 @@ class LegalRepresentativeSummaryServiceTest {
     @BeforeEach
     void setUp() {
         legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
-                                                                                 featureToggleService);
+                                                                                 featureToggleService,
+                                                                                 claimPartyContactDetailsRepository);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
@@ -83,15 +89,13 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity organisation =
             OrganisationEntity.builder()
             .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.NO)
-                            .build()
-                    ))
             .build();
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.NO)
+                                        .build()));
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                             .claimPartyOrganisationList(List.of(
                                                 ClaimPartyOrganisationEntity.builder()
@@ -123,15 +127,13 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity organisation =
             OrganisationEntity.builder()
                 .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.YES)
-                            .build()
-                    ))
                 .build();
+        when(claimPartyContactDetailsRepository
+            .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.YES)
+                                        .build()));
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                               .claimPartyOrganisationList(List.of(
                                                   ClaimPartyOrganisationEntity.builder()
@@ -163,14 +165,6 @@ class LegalRepresentativeSummaryServiceTest {
         OrganisationEntity legalRepresentativeOrg =
             OrganisationEntity.builder()
                 .organisationId(ORGANISATION_ID)
-                .claimPartyContactDetails(
-                    List.of(
-                        ClaimPartyContactDetailsEntity
-                            .builder()
-                            .pcsCase(pcsCaseEntity)
-                            .contactDetailsCorrectConfirmation(YesOrNo.YES)
-                            .build()
-                    ))
                 .build();
         List<PartyEntity> parties = List.of(PartyEntity.builder()
                                                 .claimPartyOrganisationList(List.of(
