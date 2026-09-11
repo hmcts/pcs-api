@@ -108,6 +108,8 @@ def handleEnvironmentSetting() {
   env.E2E_TEST_SCOPE = (tag == '@release') ? '@nightly|@release' : tag
   env.E2E_SPEC = params.PLAYWRIGHT_SPEC?.trim() ?: ''
   env.ENVIRONMENT = (params.E2E_TARGET_ENV?.trim() ?: 'aat').toLowerCase()
+  // Accessibility audits run here only, not on PR builds. Agreed with QA.
+  env.E2E_A11Y = 'true'
 }
 
 def getE2eMatrix() {
