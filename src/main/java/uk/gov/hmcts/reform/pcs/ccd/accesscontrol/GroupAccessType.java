@@ -49,7 +49,6 @@ public enum GroupAccessType implements CCDAccessGroup {
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
-        NocCaseRoles.DEFENDANT,
         "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(
@@ -89,11 +88,6 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
                     String groupRoleName, String description, int displayOrder) {
-        this(orgProfileId, partyRole, accessTypeId, groupRoleName, groupRoleName, description, displayOrder);
-    }
-
-    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String groupRoleName, String caseAssignedRoleField, String description, int displayOrder) {
         this.partyRole = partyRole;
         this.organisationProfileId = orgProfileId.getId();
         this.accessTypeId = accessTypeId;
@@ -105,7 +99,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.groupAccessEnabled = true;
         this.displayOrder = displayOrder;
         this.groupRoleName = groupRoleName;
-        this.caseAssignedRoleField = caseAssignedRoleField;
+        this.caseAssignedRoleField = groupRoleName;
     }
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,

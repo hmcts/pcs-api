@@ -118,8 +118,7 @@ class ManageSupportTest extends BaseEventTest {
     void shouldNotGrantCitizenJourneyProfilesExuiManageSupport() {
         assertThat(configuredEvent.getGrants().keySet())
             .doesNotContain(UserRole.CITIZEN,
-                            UserRole.DEFENDANT,
-                            UserRole.DEFENDANT_SOLICITOR);
+                            UserRole.DEFENDANT);
     }
 
     @Test

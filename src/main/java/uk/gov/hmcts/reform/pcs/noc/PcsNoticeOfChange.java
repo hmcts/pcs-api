@@ -4,7 +4,7 @@ import static java.util.Optional.of;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 import static java.util.Objects.isNull;
@@ -102,12 +102,12 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         ChallengeQuestion.ChallengeBuilder<PCSCase, UserRole> challenge = noticeOfChange.challenge(CHALLENGE_ID);
         challenge
             .question(FIRST_NAME_QUESTION_ID, "Enter client first name")
-            .answer(DEFENDANT_SOLICITOR)
+            .answer(GA_DEFENDANT_SOLICITOR)
             .complex(PCSCase::getDefendant1)
             .field(DefendantDetails::getFirstName)
             .done()
             .question(LAST_NAME_QUESTION_ID, "Enter client last name")
-            .answer(DEFENDANT_SOLICITOR)
+            .answer(GA_DEFENDANT_SOLICITOR)
             .complex(PCSCase::getDefendant1)
             .field(DefendantDetails::getLastName);
     }
@@ -166,7 +166,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
         scheduleAccessChanges(accessChangePlan);
 
-        return NocSubmissionResponse.approved(DEFENDANT_SOLICITOR.getRole());
+        return NocSubmissionResponse.approved(GA_DEFENDANT_SOLICITOR.getRole());
     }
 
     private NocAccessChangePlan planAccessChanges(

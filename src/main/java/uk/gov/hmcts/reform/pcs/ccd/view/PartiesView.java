@@ -57,10 +57,9 @@ public class PartiesView {
     }
 
     /**
-     * The organisation policy that Notice of Change and the data store's group-access stamping key on.
-     * The role is the NoC case role the challenge question answers with, and the organisation is the
-     * defendant's active legal representative, or an organisation with null fields when unrepresented
-     * so the node is still present for the data store to read.
+     * Organisation policy keyed on the defendant-solicitor group role so the data store can match
+     * CaseAssignedRoleField and stamp CaseAccessGroups. Organisation is the defendant's active
+     * legal representative, or null fields when unrepresented so the node is still present.
      */
     private OrganisationPolicy<UserRole> buildOrganisationPolicy(PartyEntity partyEntity) {
         Organisation organisation = activeLegalRepOrganisation(partyEntity)
@@ -72,7 +71,7 @@ public class PartiesView {
 
         return OrganisationPolicy.<UserRole>builder()
             .organisation(organisation)
-            .orgPolicyCaseAssignedRole(UserRole.DEFENDANT_SOLICITOR)
+            .orgPolicyCaseAssignedRole(UserRole.GA_DEFENDANT_SOLICITOR)
             .build();
     }
 

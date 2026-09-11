@@ -46,7 +46,7 @@ public class CcdCaseAssignmentConsumerTest {
     private static final String CASE_ID = "1764062392941112";
     private static final String USER_ID = "9a2d861a-6264-4765-9f61-1d403079f71b";
     private static final String CASE_ROLE = "[DEFENDANT]";
-    private static final String DELETE_ROLE = "[DEFENDANTSOLICITOR]";
+    private static final String DELETE_ROLE = "[DEFENDANT]";
 
     @Autowired
     private CaseAssignmentApi caseAssignmentService;

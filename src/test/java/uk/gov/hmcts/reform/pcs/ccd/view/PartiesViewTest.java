@@ -488,7 +488,7 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllDefendants()).hasSize(2);
         assertThat(pcsCase.getAllDefendants())
             .extracting(lv -> lv.getValue().getOrganisationPolicy().getOrgPolicyCaseAssignedRole())
-            .containsExactly(UserRole.DEFENDANT_SOLICITOR, UserRole.DEFENDANT_SOLICITOR);
+            .containsExactly(UserRole.GA_DEFENDANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
 
         assertThat(pcsCase.getAllClaimants())
             .extracting(lv -> lv.getValue().getOrganisationPolicy())

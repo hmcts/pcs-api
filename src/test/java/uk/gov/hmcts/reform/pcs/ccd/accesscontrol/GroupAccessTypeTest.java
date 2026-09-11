@@ -34,19 +34,19 @@ class GroupAccessTypeTest {
     }
 
     /**
-     * The data store finds the OrganisationPolicy that supplies the organisation ID by matching
-     * OrgPolicyCaseAssignedRole against this column, and PartiesView stamps every defendant's policy
-     * with the NoC case role, so the two must name the same role.
+     * OrgPolicy and CaseAssignedRoleField both use the defendant-solicitor group role so the data
+     * store can match them when stamping CaseAccessGroups.
      */
     @Test
-    void shouldKeyTheDefendantAccessTypeOnTheNoticeOfChangeCaseRole() {
+    void shouldKeyTheDefendantAccessTypeOnTheGroupRole() {
         assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getCaseAssignedRoleField())
-            .isEqualTo(UserRole.DEFENDANT_SOLICITOR.getRole());
+            .isEqualTo(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
+        assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getGroupRoleName())
+            .isEqualTo(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
     }
 
     /**
-     * PRM mints role assignments whose caseAccessGroupId comes from this template, so re-keying the
-     * access type on the case role must not change the group ID.
+     * PRM mints role assignments whose caseAccessGroupId comes from this template.
      */
     @Test
     void shouldKeepTheGroupIdTemplateOnTheGroupRoleName() {

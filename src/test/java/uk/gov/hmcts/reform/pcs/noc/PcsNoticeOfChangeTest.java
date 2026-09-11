@@ -56,7 +56,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_CODE;
 import static uk.gov.hmcts.reform.pcs.noc.PcsNoticeOfChange.CONFLICT_OF_INTEREST_MESSAGE;
@@ -134,7 +134,7 @@ public class PcsNoticeOfChangeTest {
         verify(challengeQuestionBuilder).question("pcs-defendant-first-name", "Enter client first name");
         verify(challengeQuestionBuilder).question("pcs-defendant-last-name", "Enter client last name");
 
-        verify(challengeQuestionFieldBuilder, times(2)).answer(UserRole.DEFENDANT_SOLICITOR);
+        verify(challengeQuestionFieldBuilder, times(2)).answer(UserRole.GA_DEFENDANT_SOLICITOR);
     }
 
     @Test
@@ -785,7 +785,7 @@ public class PcsNoticeOfChangeTest {
         // then
         assertEquals("Notice of request has been successfully submitted.", actual.statusMessage());
         assertEquals("APPROVED", actual.approvalStatus());
-        assertEquals(DEFENDANT_SOLICITOR.getRole(), actual.caseRole());
+        assertEquals(GA_DEFENDANT_SOLICITOR.getRole(), actual.caseRole());
 
         NocAccessChangeTaskData taskData = getCapturedRoleAssignmentTaskData();
         assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
