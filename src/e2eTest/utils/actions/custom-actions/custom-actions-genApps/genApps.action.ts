@@ -13,6 +13,7 @@ import {
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import { waitForInteractive } from '@utils/common/locator.utils';
 import { performAction, performValidation } from '@utils/controller-genApps';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
@@ -399,6 +400,7 @@ export class GenAppsAction implements IAction {
 
   private async retrieveCYATableData(page: Page,table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    await waitForInteractive(tables);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
