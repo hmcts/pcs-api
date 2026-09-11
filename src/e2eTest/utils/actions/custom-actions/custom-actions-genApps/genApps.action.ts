@@ -22,7 +22,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
-import { SHORT_TIMEOUT } from '../../../../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT } from '../../../../playwright.config';
 import {caseSummary, home} from "@data/page-data";
 
 
@@ -399,9 +399,18 @@ export class GenAppsAction implements IAction {
 
   private async retrieveCYATableData(page: Page,table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    if (table.name === 'check your answers table') {
+      // count() reads the DOM instantly, so a table still rendering reads as absent and throws.
+      await tables.first().waitFor({ state: 'visible', timeout: LONG_TIMEOUT }).catch(() => undefined);
+    }
     const tableCount = await tables.count();
 
-    if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
+    if (tableCount === 0 && table.name === 'check your answers table') {
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const anyTable = await page.locator('table').count().catch(() => -1);
+      throw new Error(`the table ${table.name} not found on page "${heading}" `
+        + `(${anyTable} table(s) present). Exiting...`);
+    }
 
     for (let i = 0; i < tableCount; i++) {
       const table = tables.nth(i);

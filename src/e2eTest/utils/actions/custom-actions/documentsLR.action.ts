@@ -11,7 +11,7 @@ import {performAction, performActions, performValidation} from '../../controller
 import { IAction, actionRecord } from '../../interfaces';
 import {uploadAdditionalDocumentsInformation} from "@data/page-data-figma/page-data-legalRepresentative";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
-import {VERY_LONG_TIMEOUT} from "../../../playwright.config";
+import {LONG_TIMEOUT, VERY_LONG_TIMEOUT} from "../../../playwright.config";
 import {home} from "@data/page-data";
 import {caseInfo} from "@utils/actions/custom-actions/createCaseAPI.action";
 import {createCaseApiData} from "@data/api-data";
@@ -211,9 +211,18 @@ export class DocumentsAction implements IAction {
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    if (table.name === 'check your answers table') {
+      // count() reads the DOM instantly, so a table still rendering reads as absent and throws.
+      await tables.first().waitFor({ state: 'visible', timeout: LONG_TIMEOUT }).catch(() => undefined);
+    }
     const tableCount = await tables.count();
 
-    if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
+    if (tableCount === 0 && table.name === 'check your answers table') {
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const anyTable = await page.locator('table').count().catch(() => -1);
+      throw new Error(`the table ${table.name} not found on page "${heading}" `
+        + `(${anyTable} table(s) present). Exiting...`);
+    }
 
     for (let i = 0; i < tableCount; i++) {
       const table = tables.nth(i);
