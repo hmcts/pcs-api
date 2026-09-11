@@ -24,10 +24,11 @@ const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.t
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
-// Preview defaults lower than AAT because each PR release has its own single-replica CCD stack.
-// The actual ceiling is unmeasured; use E2E_WORKERS to tune it without a code change.
+// Preview stays below AAT because each PR release runs its own single-replica CCD stack, and the
+// data-store pool (DATA_STORE_DB_MAX_POOL_SIZE: 5) is the binding constraint rather than the agent.
+// 3 is the midpoint between the historical 2 and AAT's 4; use E2E_WORKERS to tune without a change.
 function resolveWorkers(): number {
-  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 2 : 4;
+  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 3 : 4;
   const parsed = Number(process.env.E2E_WORKERS?.trim());
   return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
 }
