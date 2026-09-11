@@ -254,7 +254,8 @@ public class NotificationService {
         PartyEntity representedDefendant
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
-        ClaimPartyContactDetailsEntity contactDetails = this.getClaimPartyContactDetailsForCase(outgoingRepresentative, pcsCase);
+        ClaimPartyContactDetailsEntity contactDetails =
+            this.getClaimPartyContactDetailsForCase(outgoingRepresentative, pcsCase);
         String outgoingEmail = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
         return sendEmail(
@@ -678,7 +679,8 @@ public class NotificationService {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        ClaimPartyContactDetailsEntity contactDetails = this.getClaimPartyContactDetailsForCase(organisation, pcsCaseEntity);
+        ClaimPartyContactDetailsEntity contactDetails =
+            this.getClaimPartyContactDetailsForCase(organisation, pcsCaseEntity);
         String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
         return new OrganisationNotificationRecipient(
@@ -689,7 +691,8 @@ public class NotificationService {
         );
     }
 
-    private ClaimPartyContactDetailsEntity getClaimPartyContactDetailsForCase(OrganisationEntity organisation, PcsCaseEntity pcsCase) {
+    private ClaimPartyContactDetailsEntity getClaimPartyContactDetailsForCase(
+        OrganisationEntity organisation, PcsCaseEntity pcsCase) {
         return organisation.getClaimPartyContactDetails().stream()
             .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
                 && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCase.getId()))
