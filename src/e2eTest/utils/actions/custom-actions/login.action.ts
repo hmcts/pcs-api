@@ -30,8 +30,17 @@ export class LoginAction implements IAction {
     await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
     await performAction('clickButton', signInOrCreateAnAccount.continueButton);
-    const signOut = page.getByText('Sign out', { exact: true });
-    await expect(signOut).toBeVisible({ timeout: LONG_TIMEOUT });
+    const signOut = page.getByText('Sign out', { exact: true }).first();
+    try {
+      await expect(signOut).toBeVisible({ timeout: LONG_TIMEOUT });
+    } catch (error) {
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const errorText = await page.locator('.govuk-error-summary, .error-summary, #errorSummary')
+        .first().innerText().catch(() => '');
+      console.warn(`[login] "Sign out" never appeared for ${userEmail} — url ${page.url()}, `
+        + `heading "${heading}"${errorText ? `, error: ${errorText.replace(/\s+/g, ' ').slice(0, 300)}` : ''}`);
+      throw error;
+    }
   }
 
   private async createUserAndLogin(userType: string, roles: string[], page:Page): Promise<void> {

@@ -35,6 +35,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
+    await performValidation('mainHeader', occupationLicenceDetailsWales.mainHeader);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {

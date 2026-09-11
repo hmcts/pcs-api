@@ -4,6 +4,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { user } from '@data/user-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { VERY_LONG_TIMEOUT } from '../../playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { caseInfo } from '@utils/actions/custom-actions';
@@ -33,7 +34,7 @@ test.beforeEach(async ({ page, context }) => {
     timeout: VERY_LONG_TIMEOUT,
   });
   await page.waitForLoadState();
-  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await waitForSpinner(page);
   await performValidation('mainHeader', home.caseSummary);
 });
 
@@ -46,8 +47,10 @@ test.afterEach(async () => {
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
   test('Trigger respond event @healthCheck', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.amendRepresentativeDetails,
+      nextPage: contactDetailsLR.mainHeader
+    });
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
       notifications: contactDetailsLR.yesRadioOption,
@@ -55,14 +58,18 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       phoneNumber: contactDetailsLR.noRadioOption
     });
     await performAction('clickButton', 'Close and Return to case details');
-    await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: 'Respond to claim',
+      nextPage: startNow.mainHeader
+    });
     await performValidation('mainHeader', startNow.mainHeader);
   });
 
   test('Update LR Details @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.amendRepresentativeDetails,
+      nextPage: contactDetailsLR.mainHeader
+    });
     await performAction('selectRespondToClaimContactPreferences', {
       representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
       notifications: contactDetailsLR.yesRadioOption,

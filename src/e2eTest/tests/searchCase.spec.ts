@@ -7,6 +7,7 @@ import {
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import {caseNumber} from "@utils/actions/custom-actions";
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -19,6 +20,7 @@ test.afterEach(async () => {
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 //Skipping these tests as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
