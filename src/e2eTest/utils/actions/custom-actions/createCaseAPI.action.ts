@@ -529,8 +529,7 @@ export class CreateCaseAPIAction implements IAction {
 
   private async updatePaymentAPI(): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
-    // pcs-api writes the service-request record asynchronously after case submission, so
-    // this is a poll for something that does not exist yet, not a retry of a failed call.
+    // pcs-api writes this record asynchronously: a poll for something absent, not a retry.
     const maxRetries = actionRetries + actionRetries;
     const delayMs = SHORT_TIMEOUT;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {

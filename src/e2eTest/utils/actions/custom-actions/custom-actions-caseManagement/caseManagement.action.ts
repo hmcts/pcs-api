@@ -310,7 +310,7 @@ export class CaseManagementAction implements IAction {
   private async uploadADocument(page: Page, upload: actionRecord): Promise<void> {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../../data/inputFiles', upload.file as string);
-    // Shares uploadFile's timestamp — same XUI session, so the gap owed depends on either path.
+    // Shares uploadFile's timestamp: same XUI session.
     await waitForUploadWindow(page);
     let timeout = UPLOAD_GAP;
     // Nothing dismisses these banners, so only a NEW one means this upload was throttled.

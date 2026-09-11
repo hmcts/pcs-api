@@ -33,8 +33,7 @@
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
-      // Normalised to a list: an array reaching path.resolve throws, and an object with no `files`
-      // key matched no branch and uploaded nothing.
+      // Normalised: an array reaching path.resolve throws, and a `files`-less object uploads nothing.
       const list = this.toFileList(files);
       if (list.length === 0) {
         console.warn(`[uploadFile] no file to upload — received ${JSON.stringify(files)}; skipping`);
@@ -88,8 +87,7 @@
       await page.waitForTimeout(POST_UPLOAD_SETTLE);
       markUploadCompleted();
       const rateLimit = rateLimitBanner(page);
-      // Budget the total backoff rather than the attempt count: early short sleeps still absorb a
-      // transient 429, but a doomed upload fails in ~1m instead of 7 and Playwright retries sooner.
+      // Budget the total backoff, not the attempt count: a doomed upload then fails in ~1m, not 7.
       let backoffSpent = 0;
       while (backoffSpent < MAX_CUMULATIVE_BACKOFF) {
         // A NEW banner means this upload was throttled; the count does not poll, so allow the render.

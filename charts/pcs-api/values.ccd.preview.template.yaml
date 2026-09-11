@@ -247,7 +247,6 @@ xui-webapp:
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
       FEATURE_REDIS_ENABLED: true
       REDIS_KEY_PREFIX: 'xui-${SERVICE_NAME}'
-      # Disabled in preview: it protects shared environments from real users, and a per-PR stack has none.
       DOCUMENT_UPLOAD_THROTTLE_INITIAL_MS: 0
       DOCUMENT_UPLOAD_THROTTLE_MAX_MS: 0
       FEATURE_APP_INSIGHTS_ENABLED: false

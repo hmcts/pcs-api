@@ -399,8 +399,7 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
-        // "Add new" appends a defendant block addressed by index, and clickRadioButton resolves
-        // patterns with a non-polling count(), so wait for the block before touching it.
+        // "Add new" appends a block addressed by index, and clickRadioButton uses a non-polling count().
         await page.locator(`legend:has-text("${nameQuestion}")`)
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
@@ -899,8 +898,7 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
         const nameQuestion = underlesseeMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeMortgageeDetails.noRadioOption;
-        // Same shape as addDefendantDetails: "Add new" appends a block addressed by index, and
-        // clickRadioButton resolves patterns with a non-polling count().
+        // As addDefendantDetails: indexed block, and clickRadioButton uses a non-polling count().
         await page.locator(`legend:has-text("${nameQuestion}")`)
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
@@ -1630,8 +1628,7 @@ export class CreateCaseAction implements IAction {
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
     const folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true });
     const folder: string[] = caseFileView as string[];
-    // The tree renders progressively after CDAM metadata resolves, and allTextContents() does
-    // not poll, so a single read could report folders as missing while they were still arriving.
+    // The tree renders progressively and allTextContents() does not poll.
     await expect(async () => {
       const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
       const missingFolders = folder.filter(name => !folderRetrieved.some(text => text.includes(name)));

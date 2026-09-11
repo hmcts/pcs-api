@@ -12,10 +12,8 @@ export class InputTextAction implements IAction {
       const labelText = fieldParams.textLabel ?? fieldParams.text;
       locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
 
-      // Wait for the indexed field before reading a non-polling count(): if it has not rendered,
-      // count() returns 1 and the value overwrites the FIRST party's field. Only paid when the
-      // field is missing, and capped, because callers pass an index whenever a question *can*
-      // repeat — on single-field pages nth(index) never attaches.
+      // count() does not poll: an unrendered indexed field reads as 1 and the value overwrites the
+      // FIRST party. Capped, because callers pass an index whenever a question *can* repeat.
       const index = Number(fieldParams.index);
       const hasIndex = Number.isInteger(index) && index > 0;
       if (hasIndex && (await locator.count()) <= index) {
@@ -43,8 +41,7 @@ export class InputTextAction implements IAction {
 
   private async getStringFieldLocator(page: Page, fieldParams: string) {
     const roleLocator = page.getByRole('textbox', { name: fieldParams, exact: true });
-    // .first(): a repeated CCD collection gives several textboxes the same accessible name and
-    // fill() is strict.
+    // .first(): a repeated CCD collection shares one accessible name, and fill() is strict.
     return (await roleLocator.count() > 0)
       ? roleLocator.first()
       // `:visible:enabled` on every branch: a hidden input makes fill() burn its full actionTimeout.

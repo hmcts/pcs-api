@@ -44,8 +44,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
-  // PageContentValidation accumulates in static state; without this the results leak
-  // into whichever test next runs on this worker and calls finaliseTest.
+  // Static state: without this, results leak into the next test on this worker.
   PageContentValidation.finaliseTest();
 });
 
