@@ -29,18 +29,15 @@ public class CounterClaimService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final CounterClaimRepository counterClaimRepository;
-    private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final Clock utcClock;
 
     public CounterClaimService(PartyRepository partyRepository,
                                ClaimRepository claimRepository,
                                CounterClaimRepository counterClaimRepository,
-                               CounterClaimFeeCalculator counterClaimFeeCalculator,
                                @Qualifier("utcClock") Clock utcClock) {
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.counterClaimRepository = counterClaimRepository;
-        this.counterClaimFeeCalculator = counterClaimFeeCalculator;
         this.utcClock = utcClock;
     }
 
@@ -117,7 +114,7 @@ public class CounterClaimService {
             .permissionOrderDate(counterClaim.getCourtPermissionGranted() == VerticalYesNo.YES
                 ? counterClaim.getPermissionOrderDate() : null)
             .claimReceivedDate(counterClaim.getClaimReceivedDate())
-            .status(getInitialStatus(counterClaim, caseworkerEntered))
+            .status(getInitialStatus(caseworkerEntered))
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -137,11 +134,7 @@ public class CounterClaimService {
         return counterClaimEntity;
     }
 
-    private CounterClaimState getInitialStatus(CounterClaim counterClaim, boolean caseworkerEntered) {
-        boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
-        if (hwfReferencePresent) {
-            return CounterClaimState.PENDING_REVIEW;
-        }
+    private CounterClaimState getInitialStatus(boolean caseworkerEntered) {
         return caseworkerEntered
             ? CounterClaimState.COUNTER_CLAIM_ISSUED
             : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;

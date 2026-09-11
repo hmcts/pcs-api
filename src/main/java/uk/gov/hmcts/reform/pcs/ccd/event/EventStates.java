@@ -16,7 +16,8 @@ public class EventStates {
             State.JUDICIAL_REFERRAL,
             State.HEARING_READINESS,
             State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
-            State.DECISION_OUTCOME
+            State.DECISION_OUTCOME,
+            State.CLOSED
         };
     }
 
@@ -65,6 +66,20 @@ public class EventStates {
 
     public static State[] makeAnApplication() {
         return createFlags();
+    }
+
+    public static State[] legalRepUploadDocuments() {
+        return new State[] {
+            State.CASE_ISSUED,
+            State.CASE_PROGRESSION,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME,
+            State.ALL_FINAL_ORDERS_ISSUED
+        };
     }
 
     public static State[] respondPossessionClaim() {
@@ -130,5 +145,28 @@ public class EventStates {
 
     public static State[] maintainCaseLink() {
         return amendFlags();
+    }
+
+    public static State[] requestSupport() {
+        return new State[] {
+            State.PENDING_CASE_ISSUED,
+            State.CASE_ISSUED,
+            State.JUDICIAL_REFERRAL,
+            State.HEARING_READINESS,
+            State.PREPARE_FOR_HEARING_CONDUCT_HEARING,
+            State.DECISION_OUTCOME,
+            State.CASE_PROGRESSION,
+            State.ALL_FINAL_ORDERS_ISSUED,
+            State.CASE_STAYED,
+            State.BREATHING_SPACE
+        };
+    }
+
+    public static State[] manageSupport() {
+        return requestSupport();
+    }
+
+    public static State[] reviewSupportRequest() {
+        return requestSupport();
     }
 }

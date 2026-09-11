@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -24,9 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.BasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 
 
@@ -57,6 +59,7 @@ class NotificationPersonalisationFactoryTest {
         when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         factory = new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
+        ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
     }
 
     @Nested
@@ -119,6 +122,19 @@ class NotificationPersonalisationFactoryTest {
         void shouldUsePersonsUnknownWhenDefendantNameNotKnown() {
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            BasePersonalisation result = factory.forDefendant(response);
+
+            assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+        }
+
+        @Test
+        @DisplayName("Should use PERSONS UNKNOWN when defendant name is missing")
+        void shouldUsePersonsUnknownWhenDefendantNameMissing() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
+            defendantParty.setNameKnown(null);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
             BasePersonalisation result = factory.forDefendant(response);
@@ -303,22 +319,23 @@ class NotificationPersonalisationFactoryTest {
         @Test
         @DisplayName("Should build correct base personalisation for legal representative")
         void shouldBuildCorrectLegalRepresentativeBasePersonalisation() {
-            OrganisationEntity legalRepParty = stubLegalRepParty();
+            OrganisationEntity organisationEntity = createOrganisation("hmcts");
 
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
-            PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
             when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(claimantParty);
             when(partyService.getPrimaryDefendantPartyEntity(pcsCaseEntity)).thenReturn(defendantParty);
 
-            OrganisationBasePersonalisation result = factory.forLegalRepresentative(legalRepParty,
-                                                                                    pcsCaseEntity);
+            OrganisationBasePersonalisation result = factory.forOrganisation(organisationEntity,
+                                                                             pcsCaseEntity);
             Map<String, Object> map = result.toMap();
             assertThat(map)
+                .containsEntry("organisationName", "hmcts")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("organisationName", "HMCTS");
+                .doesNotContainKey("firstName")
+                .doesNotContainKey("lastName");
         }
     }
 
@@ -351,8 +368,8 @@ class NotificationPersonalisationFactoryTest {
     class CounterclaimSuccessForLegalRepTests {
         @Test
         @DisplayName("Should include base legal rep fields, organisationName, and paymentReferenceNumber")
-        void shouldIncludePaymentReferenceNumberforLegalRep() {
-            OrganisationEntity legalRepresentativeOrganisationEntity = stubLegalRepParty();
+        void shouldIncludePaymentReferenceNumberForLegalRep() {
+            OrganisationEntity legalRepresentativeOrganisationEntity = createOrganisation("HMCTS");
             PartyEntity claimantParty = stubClaimantParty();
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
@@ -481,6 +498,70 @@ class NotificationPersonalisationFactoryTest {
             representedDefendant.setPcsCase(pcsCaseEntity);
             return representedDefendant;
         }
+
+        @Test
+        @DisplayName("Should include organisation counterclaim details")
+        void shouldIncludeCounterclaimDetailsForOrganisation() {
+            stubClaimantParty();
+            stubDefendantParty();
+
+            OrganisationEntity organisationEntity = OrganisationEntity.builder().organisationName("HMCTS").build();
+            CounterclaimPaymentRequiredPersonalisation result = factory
+                .counterclaimPaymentRequired(organisationEntity, pcsCaseEntity);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("organisationName", "HMCTS")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("paymentUrl",
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+        }
+
+        @Test
+        @DisplayName("Should include citizen counterclaim details")
+        void shouldIncludeCounterclaimDetailsForCitizen() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+            CounterclaimPaymentRequiredPersonalisation result = factory
+                .counterclaimPaymentRequired(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("firstName", "John")
+                .containsEntry("lastName", "Doe")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("paymentUrl",
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+        }
+    }
+
+    @Nested
+    @DisplayName("counterclaimPaymentRequired")
+    class CounterclaimPaymentRequiredTests {
+        @Test
+        @DisplayName("Should include base fields and paymentReferenceNumber")
+        void shouldIncludePaymentUrl() {
+            PartyEntity claimantParty = stubClaimantParty();
+            PartyEntity defendantParty = stubDefendantParty();
+            DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
+
+            String paymentUrl = "frontEndUrl/case/1234567890/"
+                + "respond-to-claim/counter-claim-application-fee-amount";
+
+            CounterclaimPaymentRequiredPersonalisation result = factory.counterclaimPaymentRequired(response);
+
+            Map<String, Object> map = result.toMap();
+            assertThat(map)
+                .containsEntry("paymentUrl", paymentUrl)
+                .containsEntry("firstName", "John")
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("caseNumber", "1234-5678-90");
+        }
     }
 
     @Nested
@@ -518,14 +599,6 @@ class NotificationPersonalisationFactoryTest {
         return defendantParty;
     }
 
-    private OrganisationEntity stubLegalRepParty() {
-        OrganisationEntity legalRepOrganisationEntity = createLegalRep("HMCTS");
-        String id = UUID.randomUUID().toString();
-        legalRepOrganisationEntity.setOrganisationId(id);
-
-        return legalRepOrganisationEntity;
-    }
-
     private PartyEntity createParty(String firstName, String lastName) {
         PartyEntity party = new PartyEntity();
         party.setId(UUID.randomUUID());
@@ -535,11 +608,11 @@ class NotificationPersonalisationFactoryTest {
         return party;
     }
 
-    private OrganisationEntity createLegalRep(String organisationName) {
-        OrganisationEntity legalRepresentativeOrganisationEntity = new
-            OrganisationEntity();
-        legalRepresentativeOrganisationEntity.setOrganisationName(organisationName);
-        return legalRepresentativeOrganisationEntity;
+    private OrganisationEntity createOrganisation(String organisationName) {
+        OrganisationEntity organisationEntity = new OrganisationEntity();
+        organisationEntity.setId(1);
+        organisationEntity.setOrganisationName(organisationName);
+        return organisationEntity;
     }
 
     private ClaimEntity createClaim(PartyEntity claimantParty) {

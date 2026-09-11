@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.CounterClaimNotificationService;
 import uk.gov.hmcts.reform.pcs.notify.service.PaymentNotificationService;
 
@@ -35,7 +35,7 @@ class CounterClaimIssuedNotificationTaskComponentTest {
     private CounterClaimNotificationService counterClaimNotificationService;
 
     @Mock
-    private TaskInstance<CounterClaimStatusChangeTaskData> taskInstance;
+    private TaskInstance<CounterClaimTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -58,7 +58,7 @@ class CounterClaimIssuedNotificationTaskComponentTest {
         assertThat(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName())
             .isEqualTo("counter-claim-issued-task");
         assertThat(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getDataClass())
-            .isEqualTo(CounterClaimStatusChangeTaskData.class);
+            .isEqualTo(CounterClaimTaskData.class);
     }
 
     @Test
@@ -67,14 +67,14 @@ class CounterClaimIssuedNotificationTaskComponentTest {
         UUID counterClaimId = UUID.randomUUID();
         String paymentReference = "PAY-1234";
 
-        CounterClaimStatusChangeTaskData taskData = CounterClaimStatusChangeTaskData.builder()
+        CounterClaimTaskData taskData = CounterClaimTaskData.builder()
             .counterClaimId(counterClaimId)
             .paymentReference(paymentReference)
             .build();
         when(taskInstance.getData()).thenReturn(taskData);
 
-        CustomTask<CounterClaimStatusChangeTaskData> task = underTest.counterClaimIssuedNotificationTask();
-        CompletionHandler<CounterClaimStatusChangeTaskData> completionHandler =
+        CustomTask<CounterClaimTaskData> task = underTest.counterClaimIssuedNotificationTask();
+        CompletionHandler<CounterClaimTaskData> completionHandler =
             task.execute(taskInstance, executionContext);
 
         assertThat(completionHandler).isInstanceOf(CompletionHandler.OnCompleteRemove.class);

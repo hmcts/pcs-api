@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 
 import java.time.Duration;
@@ -20,8 +20,8 @@ import java.util.UUID;
 public class PendingCounterClaimIssuedNotificationTaskComponent {
     private static final String PENDING_COUNTER_CLAIM_ISSUED_TASK_NAME = "pending-counter-claim-issued-task";
 
-    public static final TaskDescriptor<CounterClaimStatusChangeTaskData> PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR =
-        TaskDescriptor.of(PENDING_COUNTER_CLAIM_ISSUED_TASK_NAME, CounterClaimStatusChangeTaskData.class);
+    public static final TaskDescriptor<CounterClaimTaskData> PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR =
+        TaskDescriptor.of(PENDING_COUNTER_CLAIM_ISSUED_TASK_NAME, CounterClaimTaskData.class);
 
     private final DefendantResponseNotificationService defendantResponseNotificationService;
 
@@ -39,14 +39,14 @@ public class PendingCounterClaimIssuedNotificationTaskComponent {
     }
 
     @Bean
-    public CustomTask<CounterClaimStatusChangeTaskData> pendingCounterClaimIssuedNotificationTask() {
+    public CustomTask<CounterClaimTaskData> pendingCounterClaimIssuedNotificationTask() {
         return Tasks.custom(PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetries,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                CounterClaimStatusChangeTaskData taskData = taskInstance.getData();
+                CounterClaimTaskData taskData = taskInstance.getData();
                 UUID counterClaimId = taskData.getCounterClaimId();
                 log.info("Processing pending counter claim issued notification for: {}", counterClaimId);
 
