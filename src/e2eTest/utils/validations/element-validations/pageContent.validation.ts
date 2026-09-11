@@ -237,13 +237,10 @@ export class PageContentValidation implements IValidation {
         .waitFor({ state: 'visible', timeout: PAGE_RENDER_TIMEOUT })
         .catch(() => undefined);
 
-      // textContent() with no timeout inherits the 40s actionTimeout and waits for an element
-      // that may not exist, so a page with no h1 spent 40s here and one with neither h1 nor h2
-      // spent 80s. Measured: 15 calls of ~40s and one of 85s in a single run — 10.8 minutes of
-      // worker time, 23% of the run's wall clock.
-      //
-      // The wait above has already given the page PAGE_RENDER_TIMEOUT to render a heading, so a
-      // count of 0 now means absent rather than late, and reading is bounded to the same budget.
+      // textContent() with no timeout inherits the 40s actionTimeout and waits for an element that
+      // may not exist, so a page with no h1 pays it in full. The wait above has already given the
+      // page PAGE_RENDER_TIMEOUT to render a heading, so a count of 0 now means absent rather than
+      // late, and reading is bounded to the same budget.
       for (const selector of ['h1', 'h2']) {
         const locator = page.locator(selector).first();
         if ((await locator.count()) === 0) {

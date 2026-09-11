@@ -37,8 +37,8 @@ export class InputErrorValidation implements IValidation {
     // Error messages render a tick after submit; count() would read 0 without this wait.
     await waitForInteractive(anyOf(...locators));
 
-    // Ordered strategies: normal fields, then date fields whose label sits in a <legend>. The loop
-    // used to throw on the first miss, making the second strategy unreachable.
+    // Ordered strategies: normal fields, then date fields whose label sits in a <legend>. Every
+    // strategy is tried before failing, so the date-field fallback is reachable.
     const attempts: string[] = [];
     for (const locator of locators) {
       const count = await locator.count();

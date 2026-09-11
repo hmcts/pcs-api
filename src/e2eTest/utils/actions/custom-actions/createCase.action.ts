@@ -405,7 +405,6 @@ export class CreateCaseAction implements IAction {
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
           .catch(() => undefined);
-        // Clicked once: this was two identical calls in a row.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -907,7 +906,6 @@ export class CreateCaseAction implements IAction {
           .nth(index)
           .waitFor({ state: 'attached', timeout: MEDIUM_TIMEOUT })
           .catch(() => undefined);
-        // Clicked once: this was two identical calls in a row.
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,

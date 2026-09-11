@@ -6,12 +6,10 @@ export type CookieBannerType = 'additional' | 'analytics' | 'hide-success';
 // The banner is optional, so the wait is the cost of finding out it is absent.
 const BANNER_PRESENCE_TIMEOUT = SHORT_TIMEOUT;
 
-// Callers ask for 'additional' then 'analytics' at every site, but XUI renders only one of the
-// two. Measured: the 'additional' probe times out 8 times a run and 'analytics' never does, so
-// 40s a run went on waiting for a banner this XUI build does not have.
-//
-// Wait once for whichever banner is actually present and return early if it is not the one asked
-// for. Promise.any rather than race, so one probe failing does not cancel the other.
+// Callers ask for 'additional' then 'analytics' at every site, but XUI renders only one of the two,
+// so probing for each in turn spends the timeout waiting for a banner that does not exist. Wait once
+// for whichever is present and return early if it is not the one asked for. Promise.any rather than
+// race, so one probe failing does not cancel the other.
 async function bannerPresent(page: Page): Promise<CookieBannerType | null> {
   const additional = page.locator('#accept-additional-cookies');
   const analytics = page
