@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.time.LocalDate;
@@ -64,21 +65,25 @@ public class DocumentNameService {
         return filename;
     }
 
-    public String appendCounterClaimPostfix(String originalFilename, ClaimEntity claim, UUID partyId) {
+    public String appendCounterClaimPostfix(String originalFilename,
+                                            CounterClaimEntity counterClaimEntity,
+                                            ClaimEntity claim,
+                                            UUID partyId) {
         if (originalFilename == null) {
             return null;
         }
 
         String baseName = FilenameUtils.getBaseName(originalFilename);
         String extension = FilenameUtils.getExtension(originalFilename);
+
+        // Example label: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        String filename = partyLabel != null ? baseName + " - " + partyLabel : baseName;
+        Integer rank = counterClaimEntity.getRank();
+        String filename = (rank != null) 
+            ? "%s CC%d".formatted(baseName, rank)
+            : baseName; // Fallback for legacy data without rank
 
-        if (!extension.isBlank()) {
-            filename += "." + extension;
-        }
-
-        return filename;
+        return buildFilename(filename, extension, partyLabel);
     }
 
     public String appendPartyPostfix(String originalFilename,

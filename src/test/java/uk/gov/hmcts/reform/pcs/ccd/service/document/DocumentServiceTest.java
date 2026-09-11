@@ -1085,7 +1085,9 @@ class DocumentServiceTest {
         when(party.getId()).thenReturn(partyId);
         when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
-        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
         UploadedDocument uploaded = UploadedDocument.builder()
@@ -1100,8 +1102,6 @@ class DocumentServiceTest {
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
@@ -1129,7 +1129,9 @@ class DocumentServiceTest {
         when(party.getId()).thenReturn(partyId);
         when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
-        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
         UploadedDocument uploaded = UploadedDocument.builder()
@@ -1142,8 +1144,6 @@ class DocumentServiceTest {
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
         String expectedTaskDescription = "some counterclaim task description";
         when(taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
@@ -1406,7 +1406,7 @@ class DocumentServiceTest {
     @Test
     void shouldSaveCounterClaimDocuments() {
         // Given
-        UUID partyId = UUID.randomUUID();
+        final UUID partyId = UUID.randomUUID();
         ClaimEntity claim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
         pcsCase.addClaim(claim);
@@ -1415,9 +1415,9 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
-        when(documentNameService.appendCounterClaimPostfix("file2.docx", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file2.docx", counterClaim, claim, partyId))
             .thenReturn("file2 - Defendant 1.docx");
 
         UploadedDocument ccDoc1 = UploadedDocument.builder()
@@ -1499,7 +1499,7 @@ class DocumentServiceTest {
     @Test
     void shouldFilterOutNullValuesFromCounterClaimDocuments() {
         // Given
-        UUID partyId = UUID.randomUUID();
+        final UUID partyId = UUID.randomUUID();
         ClaimEntity claim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCase = PcsCaseEntity.builder().build();
         pcsCase.addClaim(claim);
@@ -1508,7 +1508,7 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
 
         UploadedDocument validDoc = UploadedDocument.builder()
