@@ -69,15 +69,9 @@ export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT)
 // "Add new" can see an empty label.
 export async function settleBeforeAudit(page: Page): Promise<void> {
   await waitForSpinner(page, SHORT_TIMEOUT);
-  const emptyLabel = page.locator('label span.form-label:empty').first();
-  if (!(await emptyLabel.count())) {
-    return;
-  }
-  const waitStarted = Date.now();
-  const cleared = await emptyLabel
+  await page
+    .locator('label span.form-label:empty')
+    .first()
     .waitFor({ state: 'detached', timeout: VERY_SHORT_TIMEOUT })
-    .then(() => true)
-    .catch(() => false);
-  console.log(`[axeSettle] empty form label ${cleared ? 'filled in' : 'STILL EMPTY'} after `
-    + `${Date.now() - waitStarted}ms — ${cleared ? 'scan deferred past a render race' : 'likely a real accessibility defect'}`);
+    .catch(() => undefined);
 }

@@ -31,14 +31,10 @@
     if (lastUploadCompletedAt === 0) {
       return;
     }
-    const elapsed = Date.now() - lastUploadCompletedAt;
-    const remaining = UPLOAD_GAP - elapsed;
-    if (remaining <= 0) {
-      console.log(`[uploadFile] gap already elapsed (${elapsed}ms since last upload), not sleeping`);
-      return;
+    const remaining = UPLOAD_GAP - (Date.now() - lastUploadCompletedAt);
+    if (remaining > 0) {
+      await page.waitForTimeout(remaining);
     }
-    console.log(`[uploadFile] topping up gap by ${remaining}ms (${elapsed}ms already elapsed)`);
-    await page.waitForTimeout(remaining);
   }
 
   export class UploadFileAction implements IAction {
