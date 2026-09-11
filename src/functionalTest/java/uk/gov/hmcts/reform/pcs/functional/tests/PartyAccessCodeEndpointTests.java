@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 
 import java.util.Map;
@@ -35,12 +33,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @BeforeEach
     void setUp() {
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
-    }
-
-    @AfterEach
-    void cleanUp() {
-        CaseRoleCleanUp.cleanUpCaseRole(caseReference.toString(), TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                                        "[CLAIMANTSOLICITOR]");
     }
 
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")

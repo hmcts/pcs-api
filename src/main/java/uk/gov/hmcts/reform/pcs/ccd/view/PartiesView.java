@@ -5,10 +5,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Organisation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -53,26 +54,26 @@ public class PartiesView {
                                                                isCitizen, currentUserId));
         pcsCase.setAllLitigationFriends(mapPartiesByRole(claimParties, PartyRole.LITIGATION_FRIEND,
                                                           isCitizen, currentUserId));
-
-        Optional.ofNullable(pcsCase.getAllDefendants())
-            .ifPresent(defendants -> defendants
-                .forEach(def -> initialiseOrgPolicy(def.getValue())));
     }
 
-    private void initialiseOrgPolicy(Party party) {
-        party.setOrganisationPolicy(
-            Optional.ofNullable(party.getOrganisationPolicy())
-                .orElseGet(OrganisationPolicy::new)
-        );
+    /**
+     * The organisation policy that Notice of Change and the data store's group-access stamping key on.
+     * The role is the NoC case role the challenge question answers with, and the organisation is the
+     * defendant's active legal representative, or an organisation with null fields when unrepresented
+     * so the node is still present for the data store to read.
+     */
+    private OrganisationPolicy<UserRole> buildOrganisationPolicy(PartyEntity partyEntity) {
+        Organisation organisation = activeLegalRepOrganisation(partyEntity)
+            .map(orgEntity -> Organisation.builder()
+                .organisationId(orgEntity.getOrganisationId())
+                .organisationName(orgEntity.getOrganisationName())
+                .build())
+            .orElseGet(Organisation::new);
 
-        setDefaultOrgPolicyFields(party.getOrganisationPolicy());
-    }
-
-    private void setDefaultOrgPolicyFields(OrganisationPolicy<UserRole> organisationPolicy) {
-        organisationPolicy.setOrgPolicyCaseAssignedRole(
-            Optional.ofNullable(organisationPolicy.getOrgPolicyCaseAssignedRole())
-                .orElse(UserRole.DEFENDANT_SOLICITOR)
-        );
+        return OrganisationPolicy.<UserRole>builder()
+            .organisation(organisation)
+            .orgPolicyCaseAssignedRole(UserRole.DEFENDANT_SOLICITOR)
+            .build();
     }
 
     private List<ListValue<Party>> mapPartiesByRole(List<ClaimPartyEntity> claimParties, PartyRole role,
@@ -98,6 +99,10 @@ public class PartiesView {
         //Only populated for litigation friends
         PartyEntity actingForParty = claimPartyEntity.getActingForParty();
         party.setActingForPartyId(actingForParty != null ? actingForParty.getId().toString() : null);
+
+        if (claimPartyEntity.getRole() == PartyRole.DEFENDANT) {
+            party.setOrganisationPolicy(buildOrganisationPolicy(partyEntity));
+        }
 
         return ListValue.<Party>builder()
             .id(claimPartyEntity.getId().getPartyId().toString())
@@ -136,19 +141,21 @@ public class PartiesView {
     }
 
     private LegalRepresentative buildLegalRepresentative(PartyEntity partyEntity) {
-        if (partyEntity == null || partyEntity.getClaimPartyOrganisationList() == null) {
-            return null;
-        }
+        return activeLegalRepOrganisation(partyEntity)
+            .map(lro -> toLegalRepresentative(lro, partyEntity.getPcsCase().getCaseReference()))
+            .orElse(null);
+    }
 
-        Long caseReference = partyEntity.getPcsCase().getCaseReference();
+    private Optional<OrganisationEntity> activeLegalRepOrganisation(PartyEntity partyEntity) {
+        if (partyEntity == null || partyEntity.getClaimPartyOrganisationList() == null) {
+            return Optional.empty();
+        }
 
         return partyEntity.getClaimPartyOrganisationList().stream()
             .filter(legalRep -> legalRep != null && legalRep.getActive() == YesOrNo.YES)
             .map(ClaimPartyOrganisationEntity::getOrganisation)
             .filter(Objects::nonNull)
-            .map(lro -> toLegalRepresentative(lro, caseReference))
-            .findFirst()
-            .orElse(null);
+            .findFirst();
     }
 
     private LegalRepresentative toLegalRepresentative(OrganisationEntity orgEntity, Long caseRef) {

@@ -7,7 +7,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 
 
@@ -17,7 +16,6 @@ public class DefendantAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(DEFENDANT, Permission.CRU);
-        grants.putAll(DEFENDANT_SOLICITOR, Permission.CRU);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CRU);
         return grants;
     }

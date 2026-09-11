@@ -34,7 +34,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.DEFENDANT,
         AccessProfile.GA_DEFENDANT_SOLICITOR,
         AccessProfile.CLAIMANT,
-        AccessProfile.PCS_SOLICITOR,
         AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,

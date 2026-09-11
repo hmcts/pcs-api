@@ -83,7 +83,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)

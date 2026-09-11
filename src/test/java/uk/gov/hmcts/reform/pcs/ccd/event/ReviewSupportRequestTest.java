@@ -131,8 +131,6 @@ class ReviewSupportRequestTest extends BaseEventTest {
         assertThat(configuredEvent.getGrants().get(UserRole.CITIZEN)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.DEFENDANT)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.DEFENDANT_SOLICITOR)).isEmpty();
-        assertThat(configuredEvent.getGrants().get(UserRole.CLAIMANT_SOLICITOR)).isEmpty();
-        assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR)).isEmpty();
     }
 
     @Test

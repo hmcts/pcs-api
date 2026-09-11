@@ -33,7 +33,10 @@ public class GenAppVisibilityService {
         Arrays.stream(JUDICIAL_HISTORY_ROLES)
     ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
     private static final String PCS_CASEWORKER_ROLE = UserRole.PCS_CASE_WORKER.getRole();
-    private static final String PCS_SOLICITOR_ROLE = UserRole.PCS_SOLICITOR.getRole();
+    private static final Set<String> SOLICITOR_ORG_ROLES = Set.of(
+        UserRole.GA_CLAIMANT_SOLICITOR.getRole(),
+        UserRole.GA_DEFENDANT_SOLICITOR.getRole()
+    );
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
                                          UUID userId,
@@ -133,6 +136,6 @@ public class GenAppVisibilityService {
 
     private boolean isPcsCaseworkerWithoutSolicitorRole(Collection<String> currentUserRoles) {
         return currentUserRoles.contains(PCS_CASEWORKER_ROLE)
-            && !currentUserRoles.contains(PCS_SOLICITOR_ROLE);
+            && currentUserRoles.stream().noneMatch(SOLICITOR_ORG_ROLES::contains);
     }
 }
