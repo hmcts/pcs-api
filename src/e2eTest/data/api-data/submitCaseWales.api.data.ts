@@ -169,11 +169,30 @@ export const submitCaseApiDataWales = {
     claimantType: {
       value: {
         code: 'COMMUNITY_LANDLORD',
-        label: 'Community landlord'
+        label: 'Community landlord',
       },
-      valueCode: 'COMMUNITY_LANDLORD'
+      list_items: [
+        {
+          code: 'PRIVATE_LANDLORD',
+          label: 'Private landlord',
+        },
+        {
+          code: 'COMMUNITY_LANDLORD',
+          label: 'Community landlord',
+        },
+        {
+          code: 'MORTGAGE_LENDER',
+          label: 'Mortgage lender',
+        },
+        {
+          code: 'OTHER',
+          label: 'Other',
+        },
+      ],
+      valueCode: 'COMMUNITY_LANDLORD',
     },
     claimAgainstTrespassers: 'NO',
+    isExemptLandlord: 'YES',
     claimantContactEmail: 'pcs-solicitor-automation@test.com',
     isCorrectClaimantContactEmail: 'YES',
     orgAddressFound: 'Yes',
@@ -211,9 +230,18 @@ export const submitCaseApiDataWales = {
           firstName: 'Peter',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
       {
         value: {
@@ -221,9 +249,18 @@ export const submitCaseApiDataWales = {
           firstName: 'Jen',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
     ],
     occupationLicenceTypeWales: 'SECURE_CONTRACT',
@@ -350,7 +387,73 @@ export const submitCaseApiDataWales = {
               code: '4b80f5c9-ed97-472e-a4c9-6dbb7bfd2863',
               label: 'Inspection or report'
             },
-            valueCode: '4b80f5c9-ed97-472e-a4c9-6dbb7bfd2863',
+            list_items: [
+              {
+                code: 'f6df6a5b-9e3f-487a-8cbb-6ee1b71268c5',
+                label: 'Witness statement'
+              },
+              {
+                code: 'dc1b4f2a-c7ed-4076-95b4-f05059c8e411',
+                label: 'Rent statement'
+              },
+              {
+                code: '54a1880a-e7f9-42f2-93c6-a05b3861bd79',
+                label: 'Occupation contract or licence'
+              },
+              {
+                code: '9aee00f2-0cec-4c72-b5cc-f98c0c6fa980',
+                label: 'Energy performance certificate'
+              },
+              {
+                code: '7db668d2-fd2a-47dd-8367-80b70e6355f7',
+                label: 'Gas safety certificate'
+              },
+              {
+                code: 'b61c1966-7513-48cc-88c6-cbe315331f91',
+                label: 'Electrical Installation Condition Report (EICR)'
+              },
+              {
+                code: 'eefa5a83-b7e6-4929-b2c8-4e1b82d41acd',
+                label: 'Certificate of service'
+              },
+              {
+                code: 'f12d3b4d-148e-4edb-b5ef-36863ec871d4',
+                label: 'Correspondence from defendant'
+              },
+              {
+                code: 'a1092fa8-b57d-4873-94dd-f356eb4aaee0',
+                label: 'Correspondence from claimant'
+              },
+              {
+                code: 'd03b67bb-186c-4fb5-b9eb-88c846f4d857',
+                label: 'Possession notice'
+              },
+              {
+                code: '52fc07d0-4dd2-4202-ac22-775cb8caaef0',
+                label: 'Notice for service out of the jurisdiction'
+              },
+              {
+                code: '4cde0f3a-5d93-420f-9670-06f89b43a45c',
+                label: 'Photographic evidence'
+              },
+              {
+                code: '9438901a-0c43-4e19-829d-5c0e0118b093',
+                label: 'Inspection or report'
+              },
+              {
+                code: '803c6efe-6f3d-400c-bffd-ba5b9af0c3ad',
+                label: 'Certificate of suitability as litigation friend'
+              },
+              {
+                code: '24386421-2fbb-4098-a3bf-0d034af13a88',
+                label: 'Legal aid certificate'
+              },
+              {
+                code: '6c947e0e-5f25-4296-802a-26c9aaee4d36',
+                label: 'Other document'
+              }
+            ],
+            valueCode: '9438901a-0c43-4e19-829d-5c0e0118b093',
             valueLabel: 'Inspection or report'
           },
           description: 'inspection',
@@ -369,9 +472,75 @@ export const submitCaseApiDataWales = {
               code: 'a8a4ddf2-5d14-4b42-a892-de2547e6202e',
               label: 'Other document'
             },
+            list_items: [
+              {
+                code: 'f6df6a5b-9e3f-487a-8cbb-6ee1b71268c5',
+                label: 'Witness statement'
+              },
+              {
+                code: 'dc1b4f2a-c7ed-4076-95b4-f05059c8e411',
+                label: 'Rent statement'
+              },
+              {
+                code: '54a1880a-e7f9-42f2-93c6-a05b3861bd79',
+                label: 'Occupation contract or licence'
+              },
+              {
+                code: '9aee00f2-0cec-4c72-b5cc-f98c0c6fa980',
+                label: 'Energy performance certificate'
+              },
+              {
+                code: '7db668d2-fd2a-47dd-8367-80b70e6355f7',
+                label: 'Gas safety certificate'
+              },
+              {
+                code: 'b61c1966-7513-48cc-88c6-cbe315331f91',
+                label: 'Electrical Installation Condition Report (EICR)'
+              },
+              {
+                code: 'eefa5a83-b7e6-4929-b2c8-4e1b82d41acd',
+                label: 'Certificate of service'
+              },
+              {
+                code: 'f12d3b4d-148e-4edb-b5ef-36863ec871d4',
+                label: 'Correspondence from defendant'
+              },
+              {
+                code: 'a1092fa8-b57d-4873-94dd-f356eb4aaee0',
+                label: 'Correspondence from claimant'
+              },
+              {
+                code: 'd03b67bb-186c-4fb5-b9eb-88c846f4d857',
+                label: 'Possession notice'
+              },
+              {
+                code: '52fc07d0-4dd2-4202-ac22-775cb8caaef0',
+                label: 'Notice for service out of the jurisdiction'
+              },
+              {
+                code: '4cde0f3a-5d93-420f-9670-06f89b43a45c',
+                label: 'Photographic evidence'
+              },
+              {
+                code: '9438901a-0c43-4e19-829d-5c0e0118b093',
+                label: 'Inspection or report'
+              },
+              {
+                code: '803c6efe-6f3d-400c-bffd-ba5b9af0c3ad',
+                label: 'Certificate of suitability as litigation friend'
+              },
+              {
+                code: '24386421-2fbb-4098-a3bf-0d034af13a88',
+                label: 'Legal aid certificate'
+              },
+              {
+                code: '6c947e0e-5f25-4296-802a-26c9aaee4d36',
+                label: 'Other document'
+              }
+            ],
 
             valueLabel: 'Other document',
-            valueCode: 'a8a4ddf2-5d14-4b42-a892-de2547e6202e'
+            valueCode: '6c947e0e-5f25-4296-802a-26c9aaee4d36'
           },
           description: 'test',
           document: {
@@ -389,9 +558,75 @@ export const submitCaseApiDataWales = {
               code: '8b60b091-8e09-4748-af9d-dc67dd1657cb',
               label: 'Legal aid certificate'
             },
+            list_items: [
+              {
+                code: 'f6df6a5b-9e3f-487a-8cbb-6ee1b71268c5',
+                label: 'Witness statement'
+              },
+              {
+                code: 'dc1b4f2a-c7ed-4076-95b4-f05059c8e411',
+                label: 'Rent statement'
+              },
+              {
+                code: '54a1880a-e7f9-42f2-93c6-a05b3861bd79',
+                label: 'Occupation contract or licence'
+              },
+              {
+                code: '9aee00f2-0cec-4c72-b5cc-f98c0c6fa980',
+                label: 'Energy performance certificate'
+              },
+              {
+                code: '7db668d2-fd2a-47dd-8367-80b70e6355f7',
+                label: 'Gas safety certificate'
+              },
+              {
+                code: 'b61c1966-7513-48cc-88c6-cbe315331f91',
+                label: 'Electrical Installation Condition Report (EICR)'
+              },
+              {
+                code: 'eefa5a83-b7e6-4929-b2c8-4e1b82d41acd',
+                label: 'Certificate of service'
+              },
+              {
+                code: 'f12d3b4d-148e-4edb-b5ef-36863ec871d4',
+                label: 'Correspondence from defendant'
+              },
+              {
+                code: 'a1092fa8-b57d-4873-94dd-f356eb4aaee0',
+                label: 'Correspondence from claimant'
+              },
+              {
+                code: 'd03b67bb-186c-4fb5-b9eb-88c846f4d857',
+                label: 'Possession notice'
+              },
+              {
+                code: '52fc07d0-4dd2-4202-ac22-775cb8caaef0',
+                label: 'Notice for service out of the jurisdiction'
+              },
+              {
+                code: '4cde0f3a-5d93-420f-9670-06f89b43a45c',
+                label: 'Photographic evidence'
+              },
+              {
+                code: '9438901a-0c43-4e19-829d-5c0e0118b093',
+                label: 'Inspection or report'
+              },
+              {
+                code: '803c6efe-6f3d-400c-bffd-ba5b9af0c3ad',
+                label: 'Certificate of suitability as litigation friend'
+              },
+              {
+                code: '24386421-2fbb-4098-a3bf-0d034af13a88',
+                label: 'Legal aid certificate'
+              },
+              {
+                code: '6c947e0e-5f25-4296-802a-26c9aaee4d36',
+                label: 'Other document'
+              }
+            ],
 
             valueLabel: 'Legal aid certificate',
-            valueCode: '8b60b091-8e09-4748-af9d-dc67dd1657cb'
+            valueCode: '8b60b091-8e09-4748-af9d-0d034af13a88'
           },
           description: 'legal aid',
           document: {
@@ -409,20 +644,91 @@ export const submitCaseApiDataWales = {
               code: '1fa7f01c-5376-45f4-9fa6-baaee1d6f65d',
               label: 'Notice for service out of the jurisdiction'
             },
+            list_items: [
+              {
+                code: 'f6df6a5b-9e3f-487a-8cbb-6ee1b71268c5',
+                label: 'Witness statement'
+              },
+              {
+                code: 'dc1b4f2a-c7ed-4076-95b4-f05059c8e411',
+                label: 'Rent statement'
+              },
+              {
+                code: '54a1880a-e7f9-42f2-93c6-a05b3861bd79',
+                label: 'Occupation contract or licence'
+              },
+              {
+                code: '9aee00f2-0cec-4c72-b5cc-f98c0c6fa980',
+                label: 'Energy performance certificate'
+              },
+              {
+                code: '7db668d2-fd2a-47dd-8367-80b70e6355f7',
+                label: 'Gas safety certificate'
+              },
+              {
+                code: 'b61c1966-7513-48cc-88c6-cbe315331f91',
+                label: 'Electrical Installation Condition Report (EICR)'
+              },
+              {
+                code: 'eefa5a83-b7e6-4929-b2c8-4e1b82d41acd',
+                label: 'Certificate of service'
+              },
+              {
+                code: 'f12d3b4d-148e-4edb-b5ef-36863ec871d4',
+                label: 'Correspondence from defendant'
+              },
+              {
+                code: 'a1092fa8-b57d-4873-94dd-f356eb4aaee0',
+                label: 'Correspondence from claimant'
+              },
+              {
+                code: 'd03b67bb-186c-4fb5-b9eb-88c846f4d857',
+                label: 'Possession notice'
+              },
+              {
+                code: '52fc07d0-4dd2-4202-ac22-775cb8caaef0',
+                label: 'Notice for service out of the jurisdiction'
+              },
+              {
+                code: '4cde0f3a-5d93-420f-9670-06f89b43a45c',
+                label: 'Photographic evidence'
+              },
+              {
+                code: '9438901a-0c43-4e19-829d-5c0e0118b093',
+                label: 'Inspection or report'
+              },
+              {
+                code: '803c6efe-6f3d-400c-bffd-ba5b9af0c3ad',
+                label: 'Certificate of suitability as litigation friend'
+              },
+              {
+                code: '24386421-2fbb-4098-a3bf-0d034af13a88',
+                label: 'Legal aid certificate'
+              },
+              {
+                code: '6c947e0e-5f25-4296-802a-26c9aaee4d36',
+                label: 'Other document'
+              }
+            ],
 
             valueLabel: 'Notice for service out of the jurisdiction',
-            valueCode: '1fa7f01c-5376-45f4-9fa6-baaee1d6f65d'
+            valueCode: '52fc07d0-4dd2-4202-ac22-775cb8caaef0'
           },
           description: 'Notice for service',
           document: {
-            document_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c`,
-            document_binary_url: `${process.env.DM_STORE}/documents/7a829740-61c3-4180-a6f3-0c24ab73cd6c/binary`,
+            document_url: `${process.env.DM_STORE}/documents/2a34a27f-92d3-4483-9ef3-f6e8b66aed54`,
+            document_binary_url: `${process.env.DM_STORE}/documents/2a34a27f-92d3-4483-9ef3-f6e8b66aed54/binary`,
             document_filename: 'noticeForService.pdf',
           }
         },
         id: '7e7bcdea-7dd4-465b-b2ab-7e046ca2c57d'
       }
 
+    ],
+    documentsYouveUploaded: [
+      'CURRENT_GAS_SAFETY_REPORT',
+      'ENERGY_PERFORMANCE_CERTIFICATE',
+      'CURRENT_EICR_REPORT'
     ],
     applicationWithClaim: 'YES',
     languageUsed: 'ENGLISH',
