@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class DocumentImportService {
 
     private final PcsCaseService pcsCaseService;
@@ -26,7 +29,7 @@ public class DocumentImportService {
     private final DocumentIdExtractor documentIdExtractor;
 
     public DocumentImportService(
-        PcsCaseService pcsCaseService,
+        @Lazy PcsCaseService pcsCaseService,
         CaseDocumentClientApi caseDocumentClientApi,
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         AuthTokenGenerator authTokenGenerator,
@@ -87,6 +90,6 @@ public class DocumentImportService {
             documentId,
             true
         );
+        log.debug("Deleting document at url: {}", documentUrl);
     }
-
 }

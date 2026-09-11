@@ -53,7 +53,8 @@ public class DefendantAccessCodeService {
     public List<UUID> findDefendantPartyIdsNeedingAccessCode(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         Set<UUID> partyIdsWithCode = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId()).stream()
-            .map(PartyAccessCodeEntity::getPartyId)
+            .map(PartyAccessCodeEntity::getParty)
+            .map(PartyEntity::getId)
             .collect(Collectors.toSet());
 
         return mainClaimDefendants(getMainClaim(pcsCaseEntity)).stream()
@@ -96,7 +97,9 @@ public class DefendantAccessCodeService {
 
             partyAccessCodeRepo.save(
                 PartyAccessCodeEntity.builder()
-                    .partyId(defendant.getId())
+                    .party(PartyEntity.builder()
+                            .id(defendant.getId())
+                            .build())
                     .pcsCase(pcsCaseEntity)
                     .code(hashingService.encodeForStorage(plaintextAccessCode))
                     .role(PartyRole.DEFENDANT)
