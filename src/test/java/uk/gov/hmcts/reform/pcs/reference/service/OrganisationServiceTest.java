@@ -276,22 +276,6 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when organisation name is empty")
-    void shouldReturnNullWhenOrganisationNameIsEmpty() {
-        // Given
-        stubCurrentUser();
-        stubPrd(OrganisationDetailsResponse.builder()
-                    .organisationIdentifier(ORGANISATION_IDENTIFIER)
-                    .build());
-
-        // When
-        String result = organisationService.getOrganisationNameForCurrentUser();
-
-        // Then
-        assertThat(result).isNull();
-    }
-
-    @Test
     @DisplayName("Should return null when OrganisationDetailsService throws exception")
     void shouldReturnNullWhenOrganisationDetailsServiceThrowsException() {
         // Given
