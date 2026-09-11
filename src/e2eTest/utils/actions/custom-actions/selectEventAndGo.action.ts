@@ -31,7 +31,10 @@ export class SelectEventAndGoAction implements IAction {
     // sent and never answered" — verified locally, where a fetch produced 1 request and 0 responses.
     const sent: string[] = [];
     const answered: string[] = [];
-    const match = (url: string) => /trigger|event|cases/.test(url);
+    // CCD paths only. A looser /event|cases/ matched LaunchDarkly's telemetry
+    // (202 /events/bulk/<client-id>), which drowned the signal in feature-flag noise.
+    const match = (url: string) =>
+      /\/data\/internal\/cases\/|\/event-trigger|\/cases\/\d+\/(events|event-triggers)/.test(url);
     const onRequest = (r: { url: () => string }) => {
       if (match(r.url())) sent.push(r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90));
     };
