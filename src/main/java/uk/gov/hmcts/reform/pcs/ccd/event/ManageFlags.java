@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.CASE_FLAGS;
 
 @Component
 @Slf4j
@@ -29,6 +30,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
                             .forStates(EventStates.amendFlags())
+                            .nonConcurrentGroups(CASE_FLAGS.name())
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()

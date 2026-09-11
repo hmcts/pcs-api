@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.CASE_LINKS;
 
 @Component
 @Slf4j
@@ -30,6 +31,7 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.createCaseLink.name(), this::submit)
                             .forStates(EventStates.createCaseLink())
+                            .nonConcurrentGroups(CASE_LINKS.name())
                             .name("Link cases")
                             .description("To link related cases")
                             .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER)

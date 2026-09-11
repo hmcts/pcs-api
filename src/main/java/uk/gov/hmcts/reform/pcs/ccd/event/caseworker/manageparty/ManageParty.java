@@ -22,6 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageParties;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
+import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.PARTIES;
 
 @Component
 public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
@@ -49,6 +50,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(manageParties.name(), submitEventHandler, startEventHandler)
             .forStates(ManagePartyStates.ALLOWED_STATES)
+            .nonConcurrentGroups(PARTIES.name())
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)

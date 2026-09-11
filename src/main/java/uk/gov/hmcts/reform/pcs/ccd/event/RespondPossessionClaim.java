@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPos
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.CASE_FLAGS;
+import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.PARTIES;
 
 @Component
 @Slf4j
@@ -41,6 +43,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
             .forStates(EventStates.respondPossessionClaim())
+            .nonConcurrentGroups(CASE_FLAGS.name(), PARTIES.name())
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
