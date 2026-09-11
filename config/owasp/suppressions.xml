@@ -64,20 +64,11 @@
     <cve>CVE-2026-54514</cve>
     <cve>CVE-2026-54515</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
-    HDPI-8150: temporary. CVE-2026-54515 is still reported against
-    jackson-databind 2.21.4. Remove when a fixed 2.21.x is released.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
-    <cve>CVE-2026-54515</cve>
-  </suppress>
-  <suppress until="2026-09-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. CVEs against opentelemetry-api/context 1.49.0 and
-    opentelemetry-semconv 1.41.1, which arrive transitively. No coordinated
-    patched release resolves through our dependency graph yet. Remove once a
-    fixed opentelemetry version resolves transitively.
+    HDPI-8150: CVEs against opentelemetry-api/context 1.49.0 and opentelemetry-semconv 1.41.1.
+    These now only resolve on the cftlibIDE* configurations, which are not shipped.
+    Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
     <cve>CVE-2026-54285</cve>
@@ -85,11 +76,12 @@
     <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-41178</cve>
   </suppress>
-  <suppress until="2026-09-15">
+  <suppress until="2026-10-15">
     <notes><![CDATA[
     HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.25. No fixed
     Tomcat release published yet; suppression is temporary and MUST be
     removed when tomcatEmbedVersion is bumped to the fixed version.
+    Still no fixed 11.0.x release. Re-review by the until date.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
     <cve>CVE-2026-66299</cve>
@@ -208,6 +200,28 @@
     <cve>CVE-2026-47891</cve>
     <cve>CVE-2026-59281</cve>
     <cve>CVE-2026-59282</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    HDPI-8818: Spring Framework 6.2.19. Fix is Enterprise-only on 6.2.x (6.2.20) / OSS in 7.0.9,
+    which needs Spring Boot 4. None of these are reachable in PCS:
+      CVE-2026-47884 - XsltView. PCS renders no views; every controller is @RestController.
+      CVE-2026-47887 - UrlFileNameViewController. Not used.
+      CVE-2026-47883 - UrlHandlerFilter. Not registered.
+      CVE-2026-47886 - SpEL on user input. PCS evaluates no user-supplied SpEL.
+      CVE-2026-47885 - WebFlux multipart. spring-webflux is test-only.
+      CVE-2026-47888 - RSocket. Not on the classpath.
+      CVE-2026-47889 - WebFlux on Jetty 12. PCS is WebMVC on Tomcat.
+    Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
+    <cve>CVE-2026-47883</cve>
+    <cve>CVE-2026-47884</cve>
+    <cve>CVE-2026-47885</cve>
+    <cve>CVE-2026-47886</cve>
+    <cve>CVE-2026-47887</cve>
+    <cve>CVE-2026-47888</cve>
+    <cve>CVE-2026-47889</cve>
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
