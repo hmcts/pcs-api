@@ -95,7 +95,8 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab",
                             "caseDetailsTab",
                             "summaryTab",
-                            "defendantPaperResponse")
+                            "defendantPaperResponse",
+                            "enterCounterClaim.counterclaimForm")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
