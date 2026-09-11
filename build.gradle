@@ -418,8 +418,7 @@ dependencies {
     implementation("io.cucumber:cucumber-plugin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin:$cucumberVersion")
     implementation("io.cucumber:cucumber-gherkin-messages:$cucumberVersion")
-    // Spring Cloud brings bcprov 1.80.2; Snyk flags timing attack / broken crypto (high)
-    // and LDAP injection (medium) against it, all fixed in 1.84+
+    // Spring Cloud brings bcprov 1.80.2; Snyk wants 1.84+
     implementation("org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion")
   }
 }
@@ -508,8 +507,7 @@ dependencies {
   // httpclient5 pin of its own (pact pulls in 5.5.2 transitively).
   contractTestImplementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: httpClient5Version
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  // Likewise for bouncycastle: pact pulls bcpkix 1.81, which drags bcprov/bcutil below
-  // the 1.84 Snyk floor. Bumped as a set so the three stay on the same release line.
+  // contractTest needs its own pin: pact's bcpkix 1.81 holds bcprov/bcutil below 1.84.
   contractTestImplementation group: 'org.bouncycastle', name: 'bcprov-jdk18on', version: bouncyCastleVersion
   contractTestImplementation group: 'org.bouncycastle', name: 'bcpkix-jdk18on', version: bouncyCastlePkixVersion
   contractTestImplementation('org.junit.jupiter:junit-jupiter-api:6.1.3')
