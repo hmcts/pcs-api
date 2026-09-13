@@ -1,13 +1,16 @@
 import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
-import { anyOf, waitForInteractive } from '@utils/common/locator.utils';
-import { actionRetries } from '../../../playwright.config';
+import { anyOf, waitForInteractive, waitForSpinner } from '@utils/common/locator.utils';
+import { actionRetries, MEDIUM_TIMEOUT } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
     const idx = params.index !== undefined ? Number(params.index) : 0;
     const question = params.question as string;
     const option = params.option as string;
+
+    // The overlay persists ~2.9s, longer than clickWithRetry's 2s per-click timeout.
+    await waitForSpinner(page);
 
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),
@@ -16,9 +19,7 @@ export class ClickRadioButtonAction implements IAction {
       () => this.radioPattern3(page, question, option, idx),
     ];
 
-    // count() below never retries, so wait for a settled DOM first. Only the
-    // question-scoped patterns are waited on: pattern 3 ignores `question`, so it would
-    // be satisfied by the previous page's Yes/No labels.
+    // count() does not poll. Only the question-scoped patterns are waited on; pattern 3 ignores it.
     if (question) {
       await waitForInteractive(
         anyOf(
@@ -26,38 +27,57 @@ export class ClickRadioButtonAction implements IAction {
           this.radioPattern2(page, question, option, idx),
           this.radioPattern4(page, question, option, idx),
         ),
+        MEDIUM_TIMEOUT,
       );
     } else {
       // Callers that pass only an option: pattern 3 is the sole available signal.
       await waitForInteractive(this.radioPattern3(page, question, option, idx));
     }
 
-    for (const getLocator of patterns) {
+    const resolved: string[] = [];
+    let foundButUncheckable = false;
+    for (const [index, getLocator] of patterns.entries()) {
       const locator = getLocator();
+      const count = await locator.count();
+      resolved.push(`pattern${index + 1}=${count}`);
+      if (count !== 1) {
+        continue;
+      }
       if (await this.clickWithRetry(locator)) {
         return;
       }
+      foundButUncheckable = true;
     }
-    throw new Error(`The radio button with question: "${question}" and option: "${option}" is not found`);
+    const cause = foundButUncheckable
+      ? `was found but could not be checked after ${actionRetries} attempts`
+      : 'is not found';
+    throw new Error(`The radio button with question: "${question}" and option: "${option}" ${cause} `
+      + `(index ${idx}; matches per pattern: ${resolved.join(', ')})`);
   }
 
+  /**
+   * Returns false rather than throwing, so the caller can try its remaining patterns.
+   */
   private async clickWithRetry(locator: any): Promise<boolean> {
-    if ((await locator.count()) !== 1) {
-      return false;
-    }
-
     let attempt = 0;
     let radioIsChecked = false;
 
     do {
       attempt++;
-      await locator.click({ timeout: 2000, force: attempt > 1 });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      radioIsChecked = await locator.isChecked();
+      // Caught so a failed click costs one attempt, not the loop; the retry adds force:true.
+      const clicked = await locator
+        .click({ timeout: 2000, force: attempt > 1 })
+        .then(() => true)
+        .catch(() => false);
+      if (!clicked) {
+        continue;
+      }
+      radioIsChecked = await expect(locator)
+        .toBeChecked({ timeout: 500 })
+        .then(() => true)
+        .catch(() => false);
     } while (!radioIsChecked && attempt < actionRetries);
-    expect(radioIsChecked, radioIsChecked
-      ? `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`
-      : `Radio was not checked after ${actionRetries} attempts`).toBe(true);
+
     return radioIsChecked;
   }
 
@@ -68,12 +88,16 @@ export class ClickRadioButtonAction implements IAction {
       .getByRole('radio', { name: option as string, exact: true });
   }
 
+  // Indexed: unindexed, this matches every party's radio and the count guard discards it.
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`)
+      .nth(idx);
   }
 
+  // Innermost matching fieldset only: `fieldset:has-text(q)` also matches every ANCESTOR.
   private radioPattern4(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`fieldset:has-text("${question}")`).nth(idx)
+    return page.locator(`fieldset:has-text("${question}"):not(:has(fieldset:has-text("${question}")))`)
+      .nth(idx)
       .locator('label', { hasText: option })
       .locator('input[type="radio"]');
   }
