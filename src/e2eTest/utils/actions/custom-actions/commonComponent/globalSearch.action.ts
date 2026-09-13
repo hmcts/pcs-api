@@ -1,8 +1,10 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
 import { actionRecord, IAction } from '@utils/interfaces';
-import { globalSearch, noResultFound, searchResults, workAccess } from '@data/page-data-figma';
-import { caseList, home } from '@data/page-data';
+import { globalSearch, noResultFound, searchResults } from '@data/page-data-figma';
+import { home } from '@data/page-data';
+import { completeJudgeBooking } from '@utils/common/judgeBooking.utils';
+import { waitForInteractive } from '@utils/common/locator.utils';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, value?: string | actionRecord): Promise<void> {
@@ -47,13 +49,8 @@ export class GlobalSearchCaseAction implements IAction {
   }
 
   private async handleJudgeBookingPageForGlobalSearch(page: Page): Promise<void> {
-    await performValidation('mainHeader', workAccess.mainHeader);
-    await expect(page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true })).toBeVisible();
-    await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
-    await performAction('clickButton', workAccess.continueButton);
-    await performAction('clickButton', home.globalSearchTab);
-    //await performValidation('text', { elementType: 'subHeader', text: workAccess.nextmainHeader});
-}
+    await completeJudgeBooking(page);
+  }
 
   private async submitGlobalSearch(page: Page): Promise<void> {
     await page.locator('button[type="submit"]').click();
@@ -114,6 +111,7 @@ export class GlobalSearchCaseAction implements IAction {
     const rows = page.locator('tbody tr');
 
     for (let pageIndex = 0; pageIndex < maxPagesToScan; pageIndex++) {
+      await waitForInteractive(rows);
       const rowCount = await rows.count();
       for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
         const row = rows.nth(rowIndex);
