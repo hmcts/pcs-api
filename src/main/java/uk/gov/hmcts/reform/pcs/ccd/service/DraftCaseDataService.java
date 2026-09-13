@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,17 +38,20 @@ public class DraftCaseDataService {
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
+    private final Clock ukClock;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
                                 OrganisationService organisationService,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
-                                SecurityContextService securityContextService) {
+                                SecurityContextService securityContextService,
+                                @Qualifier("ukClock") Clock ukClock) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
+        this.ukClock = ukClock;
     }
 
     private UUID getCurrentUserId() {
@@ -397,6 +402,7 @@ public class DraftCaseDataService {
         newDraft.setCaseData(caseData);
         newDraft.setEventId(eventId);
         newDraft.setIdamUserId(userId);
+        newDraft.setCreatedDate(LocalDateTime.now(ukClock));
         return newDraft;
     }
 
@@ -417,6 +423,7 @@ public class DraftCaseDataService {
         newDraft.setEventId(eventId);
         newDraft.setPartyId(partyId);
         newDraft.setOrganisationId(organisationId);
+        newDraft.setCreatedDate(LocalDateTime.now(ukClock));
         return newDraft;
     }
 

@@ -57,7 +57,7 @@ spring:
       charSet: UTF-8
     hikari:
       minimumIdle: ${PCS_DB_POOL_MIN_IDLE:2}
-      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:15}
       idleTimeout: 10000
       poolName: PCSHikariCP
       maxLifetime: 7200000
@@ -276,6 +276,12 @@ bulk-print:
   schedule: ${BULK_PRINT_SCHEDULE:DAILY|02:00}
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
+
+respond-to-claim-draft-deletion:
+  schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:FIXED_DELAY|180s}
+  discard-after-days: ${RESPOND_TO_CLAIM_DRAFT_DELETION_DISCARD_AFTER_DAYS:-1}
+  batch-size: ${RESPOND_TO_CLAIM_DRAFT_DELETION_BATCH_SIZE:10}
+  sql-limit: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SQL_LIMIT:200}
 
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
