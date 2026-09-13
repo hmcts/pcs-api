@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.CASE_FLAGS;
 
 @Component
 @Slf4j
@@ -41,7 +40,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.createFlags.name(), this::submit)
                 .forStates(CREATE_FLAG_STATES)
-                .nonConcurrentGroups(CASE_FLAGS.name())
+                .nonConcurrent()
                 .name("Create case flags")
                 .description("To create flags")
                 .showSummary()

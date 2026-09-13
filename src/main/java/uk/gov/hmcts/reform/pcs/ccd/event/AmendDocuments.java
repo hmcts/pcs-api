@@ -26,7 +26,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ManageDocumentStates.MAN
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.amendDocuments;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
-import static uk.gov.hmcts.reform.pcs.ccd.event.ConcurrencyGroup.DOCUMENTS;
 
 @Component
 @AllArgsConstructor
@@ -44,7 +43,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(amendDocuments.name(), this::submit, this::start)
                 .forStates(MANAGE_DOCUMENT_STATES)
-                .nonConcurrentGroups(DOCUMENTS.name())
+                .nonConcurrent()
                 .name("Manage documents: Amend")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                 .grant(Permission.CRU, CASEWORKER_ROLES)
