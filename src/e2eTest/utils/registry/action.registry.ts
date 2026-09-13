@@ -24,6 +24,7 @@ import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolici
 import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
 import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 
 
@@ -187,10 +188,14 @@ export class ActionRegistry {
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['uploadAdditionalDocsLR', new DocumentsAction()],
+    ['selectDocumentRelatingTo', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['selectAnEvent', new CreateCaseAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
   ]);

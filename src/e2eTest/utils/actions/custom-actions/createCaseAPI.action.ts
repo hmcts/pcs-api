@@ -272,12 +272,20 @@ export class CreateCaseAPIAction implements IAction {
         await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
-        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);       
 
-        for (const defendantId of defendantIds) {
-          process.env.Defendant_ID = defendantId;
-
-          await performAction('linkSolicitorAPI',getDetails.email as string);
+        defendantUserDetails.length = 0;
+        for (const defendant of allDefendants) {
+          process.env.Defendant_ID = defendant.id;
+          const defendantName =
+            defendant.value?.nameKnown === 'YES'
+              ? `${defendant.value.firstName} ${defendant.value.lastName}`
+              : '';
+          defendantUserDetails.push({
+            id: defendant.id,
+            name: defendantName,
+          });
+          await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
       }
@@ -544,6 +552,7 @@ export class CreateCaseAPIAction implements IAction {
           paymentApiData.paymentUpdatePayload(requestReference)
         );
         if (updateResponse.status === 200 || updateResponse.status === 204) {
+          console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`)
           return;
         }
         throw new Error(`Payment update failed with status ${updateResponse.status}`);
@@ -686,6 +695,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
+      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL`)
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
