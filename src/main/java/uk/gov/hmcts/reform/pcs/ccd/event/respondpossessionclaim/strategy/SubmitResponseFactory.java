@@ -30,12 +30,7 @@ public class SubmitResponseFactory {
         return Optional.empty();
     }
 
-    /**
-     * The final submit must carry the draft version the citizen reviewed (posted from the review page); if the
-     * stored draft has moved on since, nothing is persisted and the citizen is asked to review again.
-     * A missing posted version is tolerated (pre-migration drafts, review pages rendered before deploy) and
-     * only logged. (HDPI-8866 W05)
-     */
+    // A missing reviewed version is tolerated so review pages rendered before this shipped can still submit.
     public Optional<SubmitResponse<State>> validateReviewedDraftVersion(Long reviewedVersion,
                                                                        Long currentVersion,
                                                                        long caseReference) {

@@ -51,8 +51,6 @@ public class DraftCaseDataEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    // Optimistic lock: incremented on every save. Exposed to the UI as PossessionClaimResponse.draftVersion so a
-    // submit can prove which draft the citizen reviewed (HDPI-8866 W05).
     @Version
     @Column(name = "version", nullable = false)
     private Long version;

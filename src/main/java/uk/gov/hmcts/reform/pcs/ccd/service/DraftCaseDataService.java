@@ -187,12 +187,10 @@ public class DraftCaseDataService {
     }
 
     /**
-     * Saves the draft, optionally checking it is still at {@code expectedVersion} first (HDPI-8866 W05).
+     * Saves the draft, first checking it is still at {@code expectedVersion} when one is given.
      *
-     * @param expectedVersion the draft version the caller last read, or {@code null} to skip the check
-     * @return the version of the draft after this save
-     * @throws DraftVersionConflictException if the stored draft is not at {@code expectedVersion}, or another
-     *                                       writer got in between the check and the flush
+     * @return the draft version after this save
+     * @throws DraftVersionConflictException if the stored draft is at a different version
      */
     @Transactional
     public <T> Long saveUnsubmittedEventData(long caseReference,
@@ -219,9 +217,6 @@ public class DraftCaseDataService {
         saveUnsubmittedEventData(caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
     }
 
-    /**
-     * Legal-representative variant of {@link #saveUnsubmittedEventData(long, Object, EventId, Long)}.
-     */
     @Transactional
     public <T> Long saveUnsubmittedEventData(long caseReference,
                                              T eventData,
@@ -302,8 +297,7 @@ public class DraftCaseDataService {
         if (expectedVersion == null) {
             saved = draftCaseDataRepository.save(draftCaseDataEntity);
         } else {
-            // Flush now so the incremented version can be returned to the caller, and so a concurrent writer that
-            // slipped in between the check above and this write surfaces here as a conflict rather than at commit.
+            // Flush so the new version can be returned and a concurrent write fails here, not at commit.
             try {
                 saved = draftCaseDataRepository.saveAndFlush(draftCaseDataEntity);
             } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
@@ -330,8 +324,6 @@ public class DraftCaseDataService {
         return saved.getVersion();
     }
 
-    // Deserialise the stored draft and stamp the row version onto the response so the UI can echo it back
-    // (HDPI-8866 W05). Drafts without a response object have nothing to bind, so they are left as they are.
     private PCSCase parseCaseDataWithVersion(DraftCaseDataEntity entity) {
         PCSCase pcsCase = parseCaseDataJson(entity.getCaseData());
         PossessionClaimResponse response = pcsCase.getPossessionClaimResponse();

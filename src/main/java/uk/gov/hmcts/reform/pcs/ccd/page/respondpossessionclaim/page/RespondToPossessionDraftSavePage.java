@@ -57,8 +57,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
 
-        // Only the statement-of-truth save posts a version: it binds the declaration to the draft the citizen
-        // reviewed. Ordinary step saves post none and are not checked. (HDPI-8866 W05)
+        // Only the statement-of-truth save posts a version; ordinary step saves are not checked.
         Long expectedVersion = response.getDraftVersion();
 
         try {
@@ -85,7 +84,6 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                 );
             }
             if (expectedVersion != null) {
-                // Echo the post-save version so the final submit can prove it is submitting this exact draft.
                 defendantAnswersOnly.setDraftVersion(savedVersion);
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
