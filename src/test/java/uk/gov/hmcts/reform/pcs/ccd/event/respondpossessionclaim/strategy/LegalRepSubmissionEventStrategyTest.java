@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -11,22 +13,29 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitPersistenceResult;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +49,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,11 +57,19 @@ class LegalRepSubmissionEventStrategyTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
     private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID REPRESENTED_PARTY_ID = UUID.randomUUID();
+    private static final String HWF_REFERENCE_NUMBER = "myHwfReferenceNumber";
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private SelectedPartyRetriever selectedPartyRetriever;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private OrganisationRepository organisationRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
     @Mock
     private SubmitResponseFactory submitResponseFactory;
     @Mock
@@ -59,11 +77,11 @@ class LegalRepSubmissionEventStrategyTest {
     @Mock
     private SecurityContextService securityContextService;
     @Mock
-    private PartyService partyService;
-    @Mock
     private RespondPossessionClaimSubmitService respondPossessionClaimSubmitService;
     @Mock
     private CounterClaimSubmitConfirmationService counterClaimSubmitConfirmationService;
+    @Mock
+    private NotificationService notificationService;
 
     private LegalRepSubmissionEventStrategy underTest;
     @Mock
@@ -77,20 +95,127 @@ class LegalRepSubmissionEventStrategyTest {
             selectedPartyRetriever,
             submitResponseFactory,
             partyService,
+            organisationRepository,
+            pcsCaseService,
             respondPossessionClaimSubmitService,
             counterClaimSubmitConfirmationService,
             securityContextService,
-            organisationService
+            organisationService,
+            notificationService
         );
     }
 
     @Test
     void shouldSubmitLegalRepresentativeDraftForSelectedParty() {
         // given
-        UUID representedPartyId = UUID.randomUUID();
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
+            .build();
+
+        setupHappyPath(counterClaimEntity);
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService)
+            .buildSubmitResponse(anyLong(), any(), any());
+    }
+
+    @Test
+    void sendsNoPaymentRequiredNotification() {
+        // given
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .status(PENDING_COUNTER_CLAIM_ISSUED)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
+            .hwfReferenceNumber(HWF_REFERENCE_NUMBER)
+            .build();
+
+        setupHappyPath(counterClaimEntity);
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService)
+            .buildSubmitResponse(anyLong(), any(), any());
+        verify(notificationService)
+            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(any(), any(), any());
+    }
+
+    @Test
+    void sendsPaymentRequiredNotification() {
+        // given
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
+            .status(PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        setupHappyPath(counterClaimEntity);
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService)
+            .buildSubmitResponse(anyLong(), any(), any());
+        verify(notificationService)
+            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(any(), any(), any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CounterClaimState.class, names = {"PENDING_REVIEW", "COUNTER_CLAIM_ISSUED"})
+    void counterclaimInWrongState_notificationNotSent(CounterClaimState counterClaimState) {
+        // given
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .claimType(CounterClaimType.SOMETHING_ELSE)
+            .party(PartyEntity.builder()
+                       .id(REPRESENTED_PARTY_ID)
+                       .build())
+            .status(counterClaimState)
+            .build();
+
+        setupHappyPath(counterClaimEntity);
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then
+        assertThat(result.getErrors()).isNullOrEmpty();
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            anyLong(), any(), any(), any());
+        verify(counterClaimSubmitConfirmationService)
+            .buildSubmitResponse(anyLong(), any(), any());
+        verify(notificationService, never())
+            .sendDefendantResponseConfirmationToLegalRepresentativePaymentRequired(any(), any(), any());
+        verify(notificationService, never())
+            .sendDefendantResponseConfirmationToLegalRepresentativeNoPaymentRequired(any(), any(), any());
+    }
+
+    private void setupHappyPath(CounterClaimEntity counterClaimEntity) {
+        // given
+        PcsCaseEntity pcsCaseEntity = pcsCaseEntity(REPRESENTED_PARTY_ID);
+        pcsCaseEntity.setCounterClaims(List.of(counterClaimEntity));
+
         String organisationId = "org";
 
-        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty = PartyEntity.builder().id(REPRESENTED_PARTY_ID).build();
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
@@ -107,9 +232,6 @@ class LegalRepSubmissionEventStrategyTest {
         SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
             .build();
 
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .claimType(CounterClaimType.SOMETHING_ELSE)
-            .build();
         RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(
                 possessionClaimResponse,
@@ -121,30 +243,31 @@ class LegalRepSubmissionEventStrategyTest {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, representedPartyId,
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
+            .thenReturn(Optional.of(REPRESENTED_PARTY_ID));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, REPRESENTED_PARTY_ID,
                                                          organisationId))
             .thenReturn(Optional.of(caseData));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
 
-        when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(representedParty);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(caseData);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(organisationRepository
+                 .findByPartyLinkedToOrganisationAndCaseAndActive(REPRESENTED_PARTY_ID, CASE_REFERENCE))
+            .thenReturn(organisationEntity());
+
+
+        when(partyService.getPartyEntityById(REPRESENTED_PARTY_ID, CASE_REFERENCE)).thenReturn(representedParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE,
             possessionClaimResponse,
             representedParty,
             JourneyType.LEGAL_REPRESENTATIVE)
         ).thenReturn(persistenceResult);
+
         when(counterClaimSubmitConfirmationService.buildSubmitResponse(CASE_REFERENCE, persistenceResult,
                                                                        representedParty)).thenReturn(submitResponse);
-        // when
-        SubmitResponse<State> result = underTest.process(eventPayload);
-
-        // then
-        assertThat(result.getErrors()).isNullOrEmpty();
-        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
-            CASE_REFERENCE, possessionClaimResponse, representedParty, JourneyType.LEGAL_REPRESENTATIVE);
-        verify(counterClaimSubmitConfirmationService)
-            .buildSubmitResponse(CASE_REFERENCE, persistenceResult, representedParty);
     }
 
     @Test
@@ -235,6 +358,9 @@ class LegalRepSubmissionEventStrategyTest {
             respondPossessionClaimSubmitPersistenceResult,
             defendantResponse
         )).thenReturn(submitResponse);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity(representedPartyId));
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(any(), anyLong()))
+            .thenReturn(organisationEntity());
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -319,5 +445,20 @@ class LegalRepSubmissionEventStrategyTest {
     void supports_WithNonDefendantSolicitorUser_ReturnsFalse() {
         // when / then
         assertThat(underTest.supports(List.of(UserRole.CITIZEN.getRole()))).isFalse();
+    }
+
+    private Optional<OrganisationEntity> organisationEntity() {
+        return Optional.of(OrganisationEntity.builder().build());
+    }
+
+    private PcsCaseEntity pcsCaseEntity(UUID representedPartyId) {
+        return PcsCaseEntity.builder()
+            .defendantResponses(List.of(
+                DefendantResponseEntity.builder()
+                    .party(PartyEntity.builder()
+                               .id(representedPartyId)
+                               .build())
+                    .build()))
+            .build();
     }
 }

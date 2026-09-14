@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.Possession
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -66,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -73,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -163,9 +167,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
+    private NoticeOfPossessionView noticeOfPossessionView;
+    @Mock
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private OrganisationRepository organisationRepository;
+    @Mock
+    private NotificationService notificationService;
 
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
@@ -197,7 +207,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                                                      draftCaseDataService,
                                                                                      responseMapper,
                                                                                      possessionClaimMerger),
-                                                   organisationService)
+                                                   organisationService,
+                                                   tenancyLicenceView,
+                                                   noticeOfPossessionView,
+                                                   rentArrearsView)
             )
         );
 
@@ -240,10 +253,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     selectedPartyRetriever,
                     submitResponseFactory,
                     partyService,
+                    organisationRepository,
+                    pcsCaseService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    organisationService
+                    organisationService,
+                    notificationService
                 )
             ),
             securityContextService
@@ -1010,6 +1026,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
             .counterClaimDocuments(counterClaimDocuments)
             .build();
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId,
+                                                                                    TEST_CASE_REFERENCE))
+            .thenReturn(
+                Optional.of(new OrganisationEntity())
+            );
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)

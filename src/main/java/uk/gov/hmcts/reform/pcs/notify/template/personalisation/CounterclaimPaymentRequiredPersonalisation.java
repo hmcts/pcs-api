@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Builder
 public class CounterclaimPaymentRequiredPersonalisation implements TemplatePersonalisation {
-    private final BasePersonalisation base;
+    private final TemplatePersonalisation base;
     private final String paymentUrl;
 
     @Override

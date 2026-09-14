@@ -35,11 +35,14 @@ public class GenAppPackSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
+    private final PackSkipRules packSkipRules;
 
     public GenAppPackSelector(ClaimActivityLogRepository claimActivityLogRepository,
-                              SentPackDocuments sentPackDocuments) {
+                              SentPackDocuments sentPackDocuments,
+                              PackSkipRules packSkipRules) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
+        this.packSkipRules = packSkipRules;
     }
 
     public List<GenAppPackCandidate> findGenAppPackCandidates(PcsCaseEntity pcsCase) {
@@ -67,6 +70,9 @@ public class GenAppPackSelector {
 
         List<GenAppPackCandidate> candidates = new ArrayList<>();
         for (GenAppEntity genApp : defendantCuiWithNoticeGenApps(pcsCase, defendantIds)) {
+            if (packSkipRules.shouldSkipGenAppPack(pcsCase, genApp)) {
+                continue;
+            }
             DocumentEntity document = genApp.getSubmissionDocument();
             for (PartyEntity party : allParties) {
                 if (!wantsPost(party) || sent.contains(key(party, document))) {

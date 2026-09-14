@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ConfirmationBodyRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ManageHearing;
@@ -32,7 +32,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,7 +47,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class ManageHearingTest extends BaseEventTest {
@@ -70,19 +68,14 @@ public class ManageHearingTest extends BaseEventTest {
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
-    @Mock(strictness = LENIENT)
-    private Clock ukClock;
 
     @InjectMocks
     private ManageHearing underTest;
 
     @BeforeEach
     void setUp() {
-        when(ukClock.instant()).thenReturn(FIXED_TEST_TIME.atZone(UK_ZONE_ID).toInstant());
-        when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
-
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
-                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer, ukClock);
+                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer);
         setEventUnderTest(underTest);
     }
 

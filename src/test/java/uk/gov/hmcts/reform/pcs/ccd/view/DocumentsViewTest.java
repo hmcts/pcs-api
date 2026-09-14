@@ -59,7 +59,7 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService);
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider());
     }
 
     @Test

@@ -44,10 +44,12 @@ public class UserRoleService {
         String currentUserId = currentUserDetails.getUid();
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
-        roles.addAll(rasRoleCache.get(
-            new CacheKey(caseReference, currentUserId),
-            this::getRasRoles
-        ));
+        if (!securityContextService.isSystemUser()) {
+            roles.addAll(rasRoleCache.get(
+                new CacheKey(caseReference, currentUserId),
+                this::getRasRoles
+            ));
+        }
 
         return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }

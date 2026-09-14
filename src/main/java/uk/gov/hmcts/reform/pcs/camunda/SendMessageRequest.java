@@ -16,4 +16,7 @@ public class SendMessageRequest {
     private Map<String, DmnValue<?>> processVariables;
 
     private final Map<String, DmnValue<?>> correlationKeys;
+
+    private final boolean all;
+
 }

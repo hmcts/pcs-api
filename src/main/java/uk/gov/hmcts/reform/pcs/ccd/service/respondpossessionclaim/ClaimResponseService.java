@@ -106,6 +106,13 @@ public class ClaimResponseService {
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
+        if (isContactByPhoneSelected(defendantResponses.getContactByPhone())
+            && isContactByTextSelected(defendantResponses.getContactByText())
+            && StringUtils.isNotBlank(defendantContactDetails.getParty().getTextMessageNumber())) {
+            party.setTextMessageNumber(defendantContactDetails.getParty().getTextMessageNumber());
+            log.debug("Updated text message number for party ID: {}", party.getId());
+        }
+
         if (StringUtils.isNotBlank(defendantContactDetails.getParty().getEmailAddress())) {
             party.setEmailAddress(defendantContactDetails.getParty().getEmailAddress());
             log.debug("Updated email address for party ID: {}", party.getId());
@@ -159,11 +166,26 @@ public class ClaimResponseService {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
         }
 
+        // Clear any stored mobile number when the defendant is no longer opted in to text
+        // messages (text answered No, or telephone later changed to No which also disables
+        // text), so a stale number is not left behind on the party.
+        boolean optedInToText = isContactByPhoneSelected(defendantResponse.getContactByPhone())
+            && isContactByTextSelected(defendantResponse.getContactByText());
+        if (!optedInToText) {
+            party.setTextMessageNumber(null);
+        }
+
         log.debug("Saved contact preferences for party ID: {}", party.getId());
     }
 
     private boolean isContactByPhoneSelected(VerticalYesNo contactByPhone) {
         return Optional.ofNullable(contactByPhone)
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
+    }
+
+    private boolean isContactByTextSelected(VerticalYesNo contactByText) {
+        return Optional.ofNullable(contactByText)
             .map(VerticalYesNo::toBoolean)
             .orElse(false);
     }
