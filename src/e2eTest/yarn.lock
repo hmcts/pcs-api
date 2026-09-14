@@ -33,14 +33,7 @@
     debug "^4.4.1"
     module-details-from-path "^1.0.4"
 
-"@axe-core/playwright@^4.10.2":
-  version "4.12.1"
-  resolved "https://registry.yarnpkg.com/@axe-core/playwright/-/playwright-4.12.1.tgz#4a14cd41eecc1ff01edcdc3db12a2e88acd34180"
-  integrity sha512-rMd7xriptqKpP+w5265i4Hdkv2X5kbu6uiBi/B2I7uf3hieRBM3qDCfaKPtxfiYb2mKXfF+yLODJwIx+Jv1GDw==
-  dependencies:
-    axe-core "~4.12.1"
-
-"@axe-core/playwright@^4.11.0":
+"@axe-core/playwright@^4.10.2", "@axe-core/playwright@^4.11.0":
   version "4.13.0"
   resolved "https://registry.yarnpkg.com/@axe-core/playwright/-/playwright-4.13.0.tgz#4826467c9622df26f0d75b4c1747c8d92ee599de"
   integrity sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg==
@@ -438,11 +431,11 @@
     third-party-web latest
 
 "@playwright/test@^1.58.0":
-  version "1.62.1"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.62.1.tgz#68e1aaf6e480e1923936dee6c66fae1921d3a65a"
-  integrity sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ==
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.63.0.tgz#808020c46e8b6b91f9d628cd0ebcbb32bdfd8b6c"
+  integrity sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==
   dependencies:
-    playwright "1.62.1"
+    playwright "1.63.0"
 
 "@puppeteer/browsers@3.2.1":
   version "3.2.1"
@@ -555,9 +548,9 @@
     undici-types "~8.3.0"
 
 "@types/node@^24.0.0":
-  version "24.13.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.13.3.tgz#49f18bd3c647866dcda51a0756c145e14590ce16"
-  integrity sha512-Dh8vAsV36ig5wa9OX4pXvMc9D3Veibfw2wix0CUwYODLD8nkj9UsLjASr49nPg+2eKzxhBV+v7L8pXvT4e639Q==
+  version "24.13.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.13.4.tgz#e54f74ceae6838bff57a814b7d31f5042a0f9074"
+  integrity sha512-YJ7EqCstVTzIr0fMr7qul/977en+pQHrfmuKIo6Zr9i75Be21dr3MovcfvGtyvi2HAUrRerWps5sMO9I7WaxDw==
   dependencies:
     undici-types "~7.18.0"
 
@@ -852,11 +845,6 @@ axe-core@^4.11.1, axe-core@^4.12.1, axe-core@~4.13.0:
   version "4.13.0"
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.13.0.tgz#f868ecb1bd61d982321760e51d841ab497ab86d0"
   integrity sha512-UzGt8zg7Ny8djbYMhxl2zuEevVa7r2gJjYY5Lwr1xM7+XU2nd6CkIWFTVcCIbAP63vSz71NaVyyuSk9lHKcy0A==
-
-axe-core@~4.12.1:
-  version "4.12.1"
-  resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.12.1.tgz#69fe2bf6dfc0b24973af91b1d8e945f79e1b7c44"
-  integrity sha512-s7iGf5GaVMxEG0ENN9x+xTr7GFZCb1ZP/1uATUpCEK2X78nDB3RwbtFCo9pGAf9ru+VwoQ464DkaLEeRM08wJA==
 
 axe-html-reporter@^2.2.11:
   version "2.2.11"
@@ -1379,11 +1367,6 @@ form-data@^4.0.6:
     hasown "^2.0.4"
     mime-types "^2.1.35"
 
-fsevents@2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
-  integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
-
 fsevents@~2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.3.tgz#cac6407785d03675a2a5e1a5305c697b347d90d6"
@@ -1890,10 +1873,10 @@ picomatch@^4.0.4:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.5.tgz#51ea57a17d86f605f81039595fbc40ed06a55fab"
   integrity sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==
 
-playwright-core@1.62.1:
-  version "1.62.1"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.62.1.tgz#120f67a19181bfd183c60fa903c0d99330b56785"
-  integrity sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==
+playwright-core@1.63.0:
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.63.0.tgz#e57665bc32846c213ac39a1e4d5bc6228e76b376"
+  integrity sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==
 
 playwright-lighthouse@^4.0.0:
   version "4.0.0"
@@ -1903,14 +1886,12 @@ playwright-lighthouse@^4.0.0:
     chalk "^4.1.2"
     ua-parser-js "^1.0.2"
 
-playwright@1.62.1:
-  version "1.62.1"
-  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.62.1.tgz#8447b6755e8aec85a3cb7207c823e3ed2fc66700"
-  integrity sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==
+playwright@1.63.0:
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.63.0.tgz#99b56f9f69b1b70c44f00bf84b2fe52348ae2511"
+  integrity sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==
   dependencies:
-    playwright-core "1.62.1"
-  optionalDependencies:
-    fsevents "2.3.2"
+    playwright-core "1.63.0"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
