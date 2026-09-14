@@ -278,6 +278,41 @@ class CaseFlagServiceReviewedSupportTest {
             .build();
     }
 
+    @Test
+    void shouldPersistTheOtherDescriptionsAddedWhenReviewingSupport() {
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Active")
+                .flagComment("Reviewed support comment")
+                .flagCommentCy("Sylw cymorth wedi ei adolygu")
+                .otherDescription("Hearing room on the ground floor")
+                .otherDescriptionCy("Ystafell wrandawiad ar y llawr gwaelod")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getOtherDescription()).isEqualTo("Hearing room on the ground floor");
+        assertThat(requestedFlag.getOtherDescriptionWelsh()).isEqualTo("Ystafell wrandawiad ar y llawr gwaelod");
+        assertThat(requestedFlag.getFlagComment()).isEqualTo("Reviewed support comment");
+        assertThat(requestedFlag.getFlagCommentWelsh()).isEqualTo("Sylw cymorth wedi ei adolygu");
+        assertThat(requestedFlag.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+    }
+
+    @Test
+    void shouldPersistTheSubTypeAddedWhenReviewingSupport() {
+        underTest.applyReviewedSupportFlags(
+            reviewedSupport(requestedFlag.getId(), FlagDetail.builder()
+                .status("Active")
+                .subTypeKey("waitingArea")
+                .subTypeValue("Private waiting area")
+                .subTypeValueCy("Ardal aros breifat")
+                .build()),
+            Set.of(partyEntity));
+
+        assertThat(requestedFlag.getSubTypeKey()).isEqualTo("waitingArea");
+        assertThat(requestedFlag.getSubTypeValue()).isEqualTo("Private waiting area");
+        assertThat(requestedFlag.getSubTypeValueWelsh()).isEqualTo("Ardal aros breifat");
+    }
+
     private List<ListValue<PartySupport>> reviewedSupport(UUID flagId, String status, String reason,
                                                           LocalDateTime modified) {
         return reviewedSupport(flagId, FlagDetail.builder()
