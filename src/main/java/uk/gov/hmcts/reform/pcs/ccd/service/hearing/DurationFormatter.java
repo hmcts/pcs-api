@@ -5,15 +5,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class DurationFormatter {
 
-    public String format(Integer hours, Integer minutes) {
+    public String format(Integer days, Integer hours, Integer minutes) {
 
         String result = "";
 
-        if (hours != null) {
-            if (hours == 1) {
-                result = "1 hour";
+        if (days != null && days > 0) {
+            if (days == 1) {
+                result = "1 day";
             } else {
-                result = "%d hours".formatted(hours);
+                result = "%d days".formatted(days);
+            }
+        }
+
+        if (hours != null) {
+            if (!result.isEmpty()) {
+                result += " ";
+            }
+
+            if (hours == 1) {
+                result += "1 hour";
+            } else {
+                result += "%d hours".formatted(hours);
             }
         }
 
