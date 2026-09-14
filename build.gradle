@@ -97,12 +97,8 @@ configurations {
   }
 }
 
-def runtimeIndexingEnabled = System.getenv('CCD_ENABLED') != 'false'
-
 ccd {
   configDir = file('build/definitions')
-  decentralised = true
-  runtimeIndexing = runtimeIndexingEnabled
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -420,6 +416,9 @@ dependencies {
 }
 
 dependencies {
+  implementation 'com.github.hmcts:decentralised-runtime'
+  implementation 'com.github.hmcts:ccd-runtime-indexing'
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
