@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.service;
+package uk.gov.hmcts.reform.pcs.client;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -9,14 +9,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static uk.gov.hmcts.reform.pcs.auth.ServiceAuthorizationGenerator.generateTestS2SToken;
 
 @Component
-public class TaskMonitorService {
+public class TaskMonitorClient {
 
     private final String serviceAuthorisation;
     private final RestClient restClient;
 
     private static final String BASE_URL = "http://localhost:8077/monitor/tasks/jobs";
 
-    public TaskMonitorService() {
+    public TaskMonitorClient() {
         this.restClient = RestClient.create(BASE_URL);
         this.serviceAuthorisation = generateTestS2SToken("pcs_api");
     }

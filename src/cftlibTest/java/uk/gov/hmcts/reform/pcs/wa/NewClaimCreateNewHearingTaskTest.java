@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
-import uk.gov.hmcts.reform.pcs.service.TaskManagementService;
+import uk.gov.hmcts.reform.pcs.client.TaskManagementClient;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     private FeePaymentService feePaymentService;
 
     @Autowired
-    private TaskManagementService taskManagementService;
+    private TaskManagementClient taskManagementClient;
 
     @Autowired
     private OAuth2AuthorizedClientManager authorizedClientManager;
@@ -75,16 +75,12 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
 
         caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
 
-        ResponseEntity<TaskManagementResponse> responseEntity = taskManagementService.search(
+        List<WaTask> tasks = taskManagementClient.getTasksOfType(
             caseReference,
-            List.of(TaskType.NEW_CLAIM_CREATE_NEW_HEARING.getId()),
+            TaskType.NEW_CLAIM_CREATE_NEW_HEARING,
             hearingCentreTeamLeaderToken
         );
 
-        TaskManagementResponse responseBody = responseEntity.getBody();
-        assertThat(responseBody).isNotNull();
-
-        List<WaTask> tasks =  responseBody.getTasks();
         assertThat(tasks).hasSize(1);
         assertThat(tasks.getFirst().getType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING.getId());
     }
