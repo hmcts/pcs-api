@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 
 import java.util.Optional;
 
@@ -81,4 +82,25 @@ class SubmitResponseFactoryTest {
         assertEquals(error, result.getErrors().getFirst());
     }
 
+
+    // ----- HDPI-8866 W05 -----
+
+    @Test
+    void validateReviewedDraftVersion_Matching_ReturnsEmpty() {
+        assertThat(submitResponseFactory.validateReviewedDraftVersion(5L, 5L, CASE_REFERENCE)).isEmpty();
+    }
+
+    @Test
+    void validateReviewedDraftVersion_Mismatch_ReturnsDraftChangedError() {
+        Optional<SubmitResponse<State>> result =
+            submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+    }
+
+    @Test
+    void validateReviewedDraftVersion_NoReviewedVersionPosted_IsTolerated() {
+        assertThat(submitResponseFactory.validateReviewedDraftVersion(null, 5L, CASE_REFERENCE)).isEmpty();
+    }
 }

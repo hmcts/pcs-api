@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
@@ -776,4 +779,112 @@ class DraftCaseDataServiceTest {
         assertThat(legacyDraft.getOrganisationId()).isEqualTo(OWNER_ORGANISATION_ID);
     }
 
+
+    // ----- HDPI-8866 W05: draft version binding -----
+
+    @Test
+    void shouldStampDraftVersionOnResponseWhenReading() throws JsonProcessingException {
+        // Given
+        String json = "case data json";
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        PCSCase parsed = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().build())
+            .build();
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(entity.getCaseData()).thenReturn(json);
+        when(entity.getVersion()).thenReturn(7L);
+        when(objectMapper.readValue(json, PCSCase.class)).thenReturn(parsed);
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        // When
+        Optional<PCSCase> result = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId);
+
+        // Then
+        assertThat(result).isPresent();
+        assertThat(result.get().getPossessionClaimResponse().getDraftVersion()).isEqualTo(7L);
+    }
+
+    @Test
+    void shouldSaveAndReturnNewVersionWhenExpectedVersionMatches() throws JsonProcessingException {
+        // Given
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("new json");
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        when(entity.getVersion()).thenReturn(3L, 4L); // 3 at the check, 4 after the flush bumps it
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(draftCaseDataRepository.saveAndFlush(entity)).thenReturn(entity);
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        // When
+        Long newVersion = underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, 3L);
+
+        // Then
+        assertThat(newVersion).isEqualTo(4L);
+        verify(entity).setCaseData("new json");
+        verify(draftCaseDataRepository).saveAndFlush(entity);
+    }
+
+    @Test
+    void shouldRejectSaveWhenExpectedVersionDiffers() throws JsonProcessingException {
+        // Given - another tab saved since this caller read the draft
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("new json");
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        when(entity.getVersion()).thenReturn(5L);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, 3L))
+            .isInstanceOf(DraftVersionConflictException.class)
+            .hasMessageContaining("expected version 3 but found 5");
+        verify(entity, never()).setCaseData(any());
+        verify(draftCaseDataRepository, never()).save(any());
+        verify(draftCaseDataRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldMapOptimisticLockFailureToConflict() throws JsonProcessingException {
+        // Given - a concurrent writer beat us between the version check and the flush
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("new json");
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        when(entity.getVersion()).thenReturn(3L);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(draftCaseDataRepository.saveAndFlush(entity))
+            .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, 1));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, 3L))
+            .isInstanceOf(DraftVersionConflictException.class);
+    }
+
+    @Test
+    void shouldNotCheckVersionWhenNoneExpected() throws JsonProcessingException {
+        // Given - ordinary step saves post no version and keep the plain save path
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("new json");
+        DraftCaseDataEntity entity = mock(DraftCaseDataEntity.class);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID)).thenReturn(Optional.of(entity));
+        when(draftCaseDataRepository.save(entity)).thenReturn(entity);
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        // When
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, null);
+
+        // Then
+        verify(draftCaseDataRepository).save(entity);
+        verify(draftCaseDataRepository, never()).saveAndFlush(any());
+    }
 }

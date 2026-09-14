@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -13,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
@@ -180,14 +183,30 @@ public class DraftCaseDataService {
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId) {
+        saveUnsubmittedEventData(caseReference, eventData, eventId, null);
+    }
 
+    /**
+     * Saves the draft, optionally checking it is still at {@code expectedVersion} first (HDPI-8866 W05).
+     *
+     * @param expectedVersion the draft version the caller last read, or {@code null} to skip the check
+     * @return the version of the draft after this save
+     * @throws DraftVersionConflictException if the stored draft is not at {@code expectedVersion}, or another
+     *                                       writer got in between the check and the flush
+     */
+    @Transactional
+    public <T> Long saveUnsubmittedEventData(long caseReference,
+                                             T eventData,
+                                             EventId eventId,
+                                             Long expectedVersion) {
         UUID userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
-        saveUnsubmittedEventDataInternal(
+        return saveUnsubmittedEventDataInternal(
             eventData,
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
-            () -> findDraft(caseReference, eventId, userId, organisationId)
+            () -> findDraft(caseReference, eventId, userId, organisationId),
+            expectedVersion
         );
     }
 
@@ -197,9 +216,20 @@ public class DraftCaseDataService {
                                              EventId eventId,
                                              UUID partyId,
                                              String legalRepresentativeOrganisationId) {
+        saveUnsubmittedEventData(caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
+    }
 
-
-        saveUnsubmittedEventDataInternal(
+    /**
+     * Legal-representative variant of {@link #saveUnsubmittedEventData(long, Object, EventId, Long)}.
+     */
+    @Transactional
+    public <T> Long saveUnsubmittedEventData(long caseReference,
+                                             T eventData,
+                                             EventId eventId,
+                                             UUID partyId,
+                                             String legalRepresentativeOrganisationId,
+                                             Long expectedVersion) {
+        return saveUnsubmittedEventDataInternal(
             eventData,
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId)
                 .organisationId(legalRepresentativeOrganisationId).partyId(partyId).build(),
@@ -209,13 +239,15 @@ public class DraftCaseDataService {
                     eventId,
                     legalRepresentativeOrganisationId,
                     partyId
-                )
+                ),
+            expectedVersion
         );
     }
 
-    private <T> void saveUnsubmittedEventDataInternal(T eventData,
+    private <T> Long saveUnsubmittedEventDataInternal(T eventData,
                                                       DraftCaseData draftCaseData,
-                                                      Supplier<Optional<DraftCaseDataEntity>> draftSupplier) {
+                                                      Supplier<Optional<DraftCaseDataEntity>> draftSupplier,
+                                                      Long expectedVersion) {
 
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(draftCaseData.getEventId(), "eventId must not be null");
@@ -257,9 +289,27 @@ public class DraftCaseDataService {
             log.debug("Replacing existing draft for userId={}", draftCaseData.getUserId());
         }
 
+        if (expectedVersion != null && !expectedVersion.equals(draftCaseDataEntity.getVersion())) {
+            log.warn("Draft for case {} changed after review: expected version {} but found {}",
+                     draftCaseData.getCaseReference(), expectedVersion, draftCaseDataEntity.getVersion());
+            throw new DraftVersionConflictException(
+                draftCaseData.getCaseReference(), expectedVersion, draftCaseDataEntity.getVersion());
+        }
+
         draftCaseDataEntity.setCaseData(eventDataJson);
 
-        DraftCaseDataEntity saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        DraftCaseDataEntity saved;
+        if (expectedVersion == null) {
+            saved = draftCaseDataRepository.save(draftCaseDataEntity);
+        } else {
+            // Flush now so the incremented version can be returned to the caller, and so a concurrent writer that
+            // slipped in between the check above and this write surfaces here as a conflict rather than at commit.
+            try {
+                saved = draftCaseDataRepository.saveAndFlush(draftCaseDataEntity);
+            } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
+                throw new DraftVersionConflictException(draftCaseData.getCaseReference(), e);
+            }
+        }
 
         if (draftCaseData.getPartyId() != null) {
             log.debug(
@@ -277,6 +327,18 @@ public class DraftCaseDataService {
                 saved.getEventId(),
                 saved.getIdamUserId());
         }
+        return saved.getVersion();
+    }
+
+    // Deserialise the stored draft and stamp the row version onto the response so the UI can echo it back
+    // (HDPI-8866 W05). Drafts without a response object have nothing to bind, so they are left as they are.
+    private PCSCase parseCaseDataWithVersion(DraftCaseDataEntity entity) {
+        PCSCase pcsCase = parseCaseDataJson(entity.getCaseData());
+        PossessionClaimResponse response = pcsCase.getPossessionClaimResponse();
+        if (response != null) {
+            response.setDraftVersion(entity.getVersion());
+        }
+        return pcsCase;
     }
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
@@ -443,8 +505,7 @@ public class DraftCaseDataService {
         }
 
         Optional<PCSCase> optionalCaseData = draftSupplier.get()
-            .map(DraftCaseDataEntity::getCaseData)
-            .map(this::parseCaseDataJson)
+            .map(this::parseCaseDataWithVersion)
             .map(this::setUnsubmittedDataFlag);
 
         if (draftCaseData.getPartyId() != null) {

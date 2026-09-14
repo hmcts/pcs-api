@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -460,5 +461,40 @@ class LegalRepSubmissionEventStrategyTest {
                                .build())
                     .build()))
             .build();
+    }
+
+    // ----- HDPI-8866 W05: the declaration must be bound to the reviewed draft -----
+
+    @Test
+    void shouldRejectSubmitWhenDraftChangedSinceReview() {
+        // given - stored draft moved to version 5 after the review page rendered version 4
+        String organisationId = "org";
+        PCSCase posted = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(4L).build())
+            .build();
+        PCSCase storedDraft = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                                         .defendantResponses(DefendantResponses.builder().build())
+                                         .draftVersion(5L)
+                                         .build())
+            .build();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(posted);
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(posted)).thenReturn(Optional.of(REPRESENTED_PARTY_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, REPRESENTED_PARTY_ID,
+                                                         organisationId)).thenReturn(Optional.of(storedDraft));
+        when(submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE))
+            .thenReturn(Optional.of(SubmitResponse.<State>builder()
+                                        .errors(List.of(DraftVersionConflictException.ERROR_MESSAGE))
+                                        .build()));
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then - nothing persisted
+        assertThat(result.getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
     }
 }

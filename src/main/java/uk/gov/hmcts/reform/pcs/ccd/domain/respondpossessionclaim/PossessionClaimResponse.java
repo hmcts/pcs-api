@@ -65,6 +65,14 @@ public class PossessionClaimResponse {
     @CCD(access = {DefendantAccess.class})
     private String responseDocumentId;
 
+    /**
+     * Version of the stored draft these answers were loaded from (draft.draft_case_data.version). Set by
+     * pcs-api when the draft is read; echoed back by the UI with the statement of truth and the final submit so
+     * the declaration is bound to the exact answers the citizen reviewed. (HDPI-8866 W05)
+     */
+    @CCD(access = {DefendantAccess.class}, label = "Draft version")
+    private Long draftVersion;
+
     @CCD(access = {CitizenAccess.class}, label = "Date issued")
     private LocalDate claimIssuedDate;
 

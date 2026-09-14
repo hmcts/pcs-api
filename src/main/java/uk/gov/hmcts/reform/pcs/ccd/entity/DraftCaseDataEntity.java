@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,5 +50,11 @@ public class DraftCaseDataEntity {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    // Optimistic lock: incremented on every save. Exposed to the UI as PossessionClaimResponse.draftVersion so a
+    // submit can prove which draft the citizen reviewed (HDPI-8866 W05).
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
 }

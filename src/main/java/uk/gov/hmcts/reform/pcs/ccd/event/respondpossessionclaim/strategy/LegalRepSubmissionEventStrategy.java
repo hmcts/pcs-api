@@ -90,6 +90,12 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             return validationResult.get();
         }
 
+        Optional<SubmitResponse<State>> versionCheck = submitResponseFactory.validateReviewedDraftVersion(
+            reviewedDraftVersion(eventPayload), responseDraftData.getDraftVersion(), caseReference);
+        if (versionCheck.isPresent()) {
+            return versionCheck.get();
+        }
+
         PartyEntity defendantParty = partyService.getPartyEntityById(representedPartyId, caseReference);
 
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
@@ -188,5 +194,13 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
                 );
             }
         }
+    }
+
+    // The draft version the review page rendered, posted back with the final submit (HDPI-8866 W05).
+    private static Long reviewedDraftVersion(EventPayload<PCSCase, State> eventPayload) {
+        return Optional.ofNullable(eventPayload.caseData())
+            .map(PCSCase::getPossessionClaimResponse)
+            .map(PossessionClaimResponse::getDraftVersion)
+            .orElse(null);
     }
 }

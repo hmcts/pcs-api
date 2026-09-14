@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -56,9 +57,15 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
 
+        // Only the statement-of-truth save posts a version: it binds the declaration to the draft the citizen
+        // reviewed. Ordinary step saves post none and are not checked. (HDPI-8866 W05)
+        Long expectedVersion = response.getDraftVersion();
+
         try {
+            Long savedVersion;
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
-                draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+                savedVersion = draftCaseDataService.saveUnsubmittedEventData(
+                    caseRef, partialUpdate, respondPossessionClaim, expectedVersion);
             } else {
                 String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
@@ -68,17 +75,25 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                 }
                 UUID representedPartyId = selectedPartyId.get();
 
-                draftCaseDataService.saveUnsubmittedEventData(
+                savedVersion = draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,
                     representedPartyId,
-                    organisationId
+                    organisationId,
+                    expectedVersion
                 );
+            }
+            if (expectedVersion != null) {
+                // Echo the post-save version so the final submit can prove it is submitting this exact draft.
+                defendantAnswersOnly.setDraftVersion(savedVersion);
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(partialUpdate)
                 .build();
+        } catch (DraftVersionConflictException e) {
+            log.warn("Rejecting draft save for case {}: {}", caseRef, e.getMessage());
+            return error(List.of(DraftVersionConflictException.ERROR_MESSAGE));
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseRef, e);
             return error(List.of("We couldn't save your response. Please try again or contact support."));

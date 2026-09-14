@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -200,5 +201,59 @@ class CitizenSubmissionEventStrategyTest {
     @Test
     void supports_WithNonCitizenUser_ReturnsFalse() {
         assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
+    }
+
+    // ----- HDPI-8866 W05: the declaration must be bound to the reviewed draft -----
+
+    @Test
+    void shouldRejectSubmitWhenDraftChangedSinceReview() {
+        PCSCase storedDraft = createDraftSaveCaseData(null);
+        storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
+        stubDraft(storedDraft);
+        PCSCase posted = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(4L).build())
+            .build();
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(posted);
+        SubmitResponse<State> rejected = SubmitResponse.<State>builder()
+            .errors(List.of(DraftVersionConflictException.ERROR_MESSAGE))
+            .build();
+        when(submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE))
+            .thenReturn(Optional.of(rejected));
+
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        assertThat(result.getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
+    }
+
+    @Test
+    void shouldSubmitWhenReviewedDraftVersionMatchesStoredDraft() {
+        PCSCase storedDraft = createDraftSaveCaseData(null);
+        storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
+        stubDraft(storedDraft);
+        PCSCase posted = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(5L).build())
+            .build();
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(
+                storedDraft.getPossessionClaimResponse(), null, null, false);
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(posted);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, CASE_REFERENCE)).thenReturn(defendantParty);
+        when(respondPossessionClaimSubmitService.persistFinalSubmit(
+            CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE))
+            .thenReturn(persistenceResult);
+        when(counterClaimSubmitConfirmationService
+                 .buildSubmitResponse(CASE_REFERENCE, persistenceResult, defendantParty))
+            .thenReturn(SubmitResponse.defaultResponse());
+
+        underTest.process(eventPayload);
+
+        verify(submitResponseFactory).validateReviewedDraftVersion(5L, 5L, CASE_REFERENCE);
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE);
     }
 }
