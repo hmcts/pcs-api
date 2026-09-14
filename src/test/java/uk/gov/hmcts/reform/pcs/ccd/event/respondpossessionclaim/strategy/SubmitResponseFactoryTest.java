@@ -103,6 +103,32 @@ class SubmitResponseFactoryTest {
     }
 
     @Test
+    void validate_WithInvalidEnteredAddressOnPropertyAddressFallback_ReturnsError() {
+        // given - the claimant gave no address, so the defendant answered No to the property address instead
+        AddressUK address = AddressUK.builder()
+            .addressLine1("1 Second Avenue")
+            .postTown("London")
+            .postCode("W5")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder()
+                                    .propertyAddressConfirmation(VerticalYesNo.NO)
+                                    .build())
+            .defendantContactDetails(DefendantContactDetails.builder()
+                                         .party(Party.builder().address(address).build())
+                                         .build())
+            .build();
+
+        // when
+        Optional<SubmitResponse<State>> result = submitResponseFactory
+            .validate(possessionClaimResponse, CASE_REFERENCE);
+
+        // then
+        assertThat(result).isPresent();
+        assertThat(result.get().getErrors()).containsExactly("Enter a valid postcode for correspondence address");
+    }
+
+    @Test
     void validate_DoesNotValidateAddressWhenClaimantAddressConfirmed() {
         // given - the address on the draft is the claimant's, not one the defendant typed in
         PossessionClaimResponse possessionClaimResponse = responseWithEnteredAddress("W5", VerticalYesNo.YES);
@@ -170,7 +196,11 @@ class SubmitResponseFactoryTest {
     }
 
     @Test
-    void validateReviewedDraftVersion_NoReviewedVersionPosted_IsTolerated() {
-        assertThat(submitResponseFactory.validateReviewedDraftVersion(null, 5L, CASE_REFERENCE)).isEmpty();
+    void validateReviewedDraftVersion_NoReviewedVersionPosted_ReturnsDraftChangedError() {
+        Optional<SubmitResponse<State>> result =
+            submitResponseFactory.validateReviewedDraftVersion(null, 5L, CASE_REFERENCE);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
     }
 }

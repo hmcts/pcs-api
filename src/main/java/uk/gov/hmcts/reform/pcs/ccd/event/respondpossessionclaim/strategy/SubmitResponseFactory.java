@@ -47,16 +47,10 @@ public class SubmitResponseFactory {
         return Optional.empty();
     }
 
-    // A missing reviewed version is tolerated so review pages rendered before this shipped can still submit.
     public Optional<SubmitResponse<State>> validateReviewedDraftVersion(Long reviewedVersion,
                                                                        Long currentVersion,
                                                                        long caseReference) {
-        if (reviewedVersion == null) {
-            log.warn("Submit for case {} carried no reviewed draft version; skipping the binding check",
-                     caseReference);
-            return Optional.empty();
-        }
-        if (!reviewedVersion.equals(currentVersion)) {
+        if (reviewedVersion == null || !reviewedVersion.equals(currentVersion)) {
             log.warn("Submit rejected for case {}: reviewed draft version {} but stored draft is at {}",
                      caseReference, reviewedVersion, currentVersion);
             return Optional.of(error(DraftVersionConflictException.ERROR_MESSAGE));
