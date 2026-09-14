@@ -2,46 +2,31 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class DurationFormatter {
 
     public String format(Integer days, Integer hours, Integer minutes) {
-
-        String result = "";
+        List<String> durationParts = new ArrayList<>();
 
         if (days != null && days > 0) {
-            if (days == 1) {
-                result = "1 day";
-            } else {
-                result = "%d days".formatted(days);
-            }
+            durationParts.add(buildDurationLabel(days, "day"));
         }
-
         if (hours != null) {
-            if (!result.isEmpty()) {
-                result += " ";
-            }
-
-            if (hours == 1) {
-                result += "1 hour";
-            } else {
-                result += "%d hours".formatted(hours);
-            }
+            durationParts.add(buildDurationLabel(hours, "hour"));
         }
-
         if (minutes != null) {
-            if (!result.isEmpty()) {
-                result += " ";
-            }
-
-            if (minutes == 1) {
-                result += "1 minute";
-            } else {
-                result += "%d minutes".formatted(minutes);
-            }
+            durationParts.add(buildDurationLabel(minutes, "minute"));
         }
 
-        return result;
+        return String.join(" ", durationParts);
+    }
+
+    private String buildDurationLabel(int value, String label) {
+        String suffix = value == 1 ? "" : "s";
+        return value + " " + label + suffix;
     }
 
 }
