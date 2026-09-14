@@ -103,12 +103,14 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             <span class="govuk-panel__body govuk-!-font-size-24">Case number: %s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">%s</span><br>
             <span class="govuk-panel__body govuk-!-font-size-24">%s</span>
+            </div>
+
             <h3 class="govuk-heading-s">What happens next</h3>
             <p class="govuk-body">The counterclaim will not be issued until the party’s Help With Fees application has
             been reviewed and they’ve paid any outstanding fee.</p>
             <p class="govuk-body govuk-!-margin-bottom-6">Once the party’s application has been approved or their fee
             has been paid, you must issue the counterclaim.</p>
-            </div>""".formatted(
+            """.formatted(
                 caseReference,
                 addressFormatter.formatShortAddress(caseData.getPropertyAddress(), COMMA_DELIMITER),
                 caseData.getCaseNameHmctsInternal());
