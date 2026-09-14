@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
@@ -166,11 +168,9 @@ class CaseTypeTest {
         assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(supportTab.getForRoles()).containsExactlyInAnyOrder(CaseType.EXTERNAL_FLAG_TAB_ROLES);
         assertThat(supportTab.getForRoles())
-            .contains(AccessProfile.CLAIMANT, AccessProfile.GA_CLAIMANT_SOLICITOR,
-                      AccessProfile.GA_DEFENDANT_SOLICITOR)
-            .doesNotContain(AccessProfile.CLAIMANT_SOLICITOR, AccessProfile.DEFENDANT_SOLICITOR);
+            .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
+        assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
         assertThat(supportTab.getFields()).hasSize(2);
@@ -180,6 +180,37 @@ class CaseTypeTest {
             .containsExactly(null, "flagLauncherExternal!=\"\"");
         assertThat(supportTab.getShowCondition())
             .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+    }
+
+    @Test
+    void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
+        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
+        assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void shouldGrantTheSupportTabToEveryDefendantSideProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).containsExactlyInAnyOrder(
+            AccessProfile.CITIZEN,
+            AccessProfile.DEFENDANT,
+            AccessProfile.GA_DEFENDANT_SOLICITOR);
+    }
+
+    @Test
+    void shouldNotGrantTheSupportTabToAnyClaimantSideOrInternalProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES)
+            .doesNotContain(AccessProfile.CLAIMANT,
+                            AccessProfile.GA_CLAIMANT_SOLICITOR,
+                            AccessProfile.CLAIMANT_SOLICITOR,
+                            AccessProfile.PCS_SOLICITOR)
+            .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
+    }
+
+    @Test
+    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
+        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
+            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
     }
 
     @Test

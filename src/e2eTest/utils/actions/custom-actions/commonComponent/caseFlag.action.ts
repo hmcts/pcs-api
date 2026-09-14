@@ -158,7 +158,12 @@ export class CaseFlagAction implements IAction {
     }
   }
 
-  private async assertCaseFlagsNotInNextStep(flag: String, page: Page): Promise<void> {
+  private async assertCaseFlagsNotInNextStep(flag: string, page: Page): Promise<void> {
+    const nextStep = page.getByText(caseSummary.nextStepEventList, { exact: true }).first();
+    if (!(await nextStep.isVisible().catch(() => false))) {
+      return;
+    }
+
     const select = page.locator(
       `:has-text("${caseSummary.nextStepEventList}") + select, :has-text("${caseSummary.nextStepEventList}") ~ select`
     ).first();

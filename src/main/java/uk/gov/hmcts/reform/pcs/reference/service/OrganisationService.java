@@ -85,7 +85,7 @@ public class OrganisationService {
 
             return organisationIdCache.get(
                 userId.toString(),
-                id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+                id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
             ).orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
@@ -110,7 +110,7 @@ public class OrganisationService {
 
         return organisationIdCache.get(
             userId.toString(),
-            id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
         ).orElse(null);
     }
 
@@ -224,7 +224,7 @@ public class OrganisationService {
     }
 
     private UUID resolveProfessionalUserId() {
-        if (currentUserIsCitizen()) {
+        if (currentUserIsCitizen() || securityContextService.isSystemUser()) {
             return null;
         }
         UUID userId = securityContextService.getCurrentUserId();

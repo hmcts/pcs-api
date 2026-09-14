@@ -63,7 +63,6 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Received: {}", eventPayload);
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
