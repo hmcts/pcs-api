@@ -38,7 +38,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVis
 @Slf4j
 public class CaseFlagsView {
 
-    private static final String DEFENDANT = "Defendant";
+    public static final String DEFENDANT = "Defendant";
     private static final String CLAIMANT = "Claimant";
     public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";

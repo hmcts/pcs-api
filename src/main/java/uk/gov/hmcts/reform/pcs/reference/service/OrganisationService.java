@@ -224,7 +224,7 @@ public class OrganisationService {
     }
 
     private UUID resolveProfessionalUserId() {
-        if (currentUserIsCitizen()) {
+        if (currentUserIsCitizen() || securityContextService.isSystemUser()) {
             return null;
         }
         UUID userId = securityContextService.getCurrentUserId();

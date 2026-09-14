@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +13,25 @@ import java.util.UUID;
 
 @Service
 public class SecurityContextService {
+
+    private final String systemUserId;
+
+    public SecurityContextService(
+        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId) {
+        this.systemUserId = systemUserId;
+    }
+
+    /**
+     * True when the current principal is the configured system-event identity. That identity
+     * exists in no external service, so user-scoped lookups must short-circuit rather than
+     * query IDAM, rd-professional or case assignment for it.
+     */
+    public boolean isSystemUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+            && authentication.getPrincipal() instanceof User user
+            && systemUserId.equals(user.getUserDetails().getUid());
+    }
 
     /**
      * Gets the current user ID from the {@link SecurityContext}.
