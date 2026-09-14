@@ -67,6 +67,7 @@ class NotificationPersonalisationFactoryTest {
         factory = new NotificationPersonalisationFactory(
             partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter());
         ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
+        ReflectionTestUtils.setField(factory, "manageCaseUrl", "manageCaseUrl");
     }
 
     @Nested
@@ -521,7 +522,7 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("organisationName", "HMCTS")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
-                .containsEntry("paymentUrl", "frontEndUrl/cases/case-details/PCS/PCS/1234567890#Service%20Request");
+                .containsEntry("paymentUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Service%20Request");
         }
 
         @Test

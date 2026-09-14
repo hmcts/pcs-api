@@ -548,7 +548,7 @@ class NotificationServiceTest {
                               .claimantName("JANE SMITH")
                               .primaryDefendantName("JOHN DOE")
                               .build())
-                    .nextStepUrl("frontEndUrl/cases/case-details/PCS/PCS/1234567890#Case%20Parties")
+                    .nextStepUrl("manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Case%20Parties")
                     .build());
             lenient().when(notificationPersonalisationFactory
                                .forClaimant(anyLong(), any(PCSCase.class)))
@@ -558,6 +558,7 @@ class NotificationServiceTest {
                     .caseName("Jane Smith vs John Doe")
                     .claimantName("JANE SMITH")
                     .primaryDefendantName("JOHN DOE")
+                    .nextStepUrl("manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps")
                     .build());
         }
 

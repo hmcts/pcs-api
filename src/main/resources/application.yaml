@@ -369,3 +369,6 @@ ccd:
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
+
+manage_case:
+  url: ${PCS_MANAGE_CASE_URL:http://localhost:3000}

@@ -50,6 +50,9 @@ public class NotificationPersonalisationFactory {
     @Value("${frontend.url}")
     private String frontendUrl;
 
+    @Value("${manage_case.url}")
+    private String manageCaseUrl;
+
     public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
@@ -62,7 +65,7 @@ public class NotificationPersonalisationFactory {
             .map(Object::toString)
             .map(caseRef -> String.format(
                 ("%s/cases/case-details/PCS/PCS/%s#Case%%20Parties"),
-                frontendUrl,
+                manageCaseUrl,
                 caseRef
             ))
             .orElse(null);
@@ -90,7 +93,7 @@ public class NotificationPersonalisationFactory {
         );
 
         String nextStepUrl = String.format("%s/cases/case-details/PCS/PCS/%s#Next%%20steps",
-                                            frontendUrl,
+                                            manageCaseUrl,
                                             caseReference);
 
         return ClaimantBasePersonalisation.builder()
@@ -128,7 +131,7 @@ public class NotificationPersonalisationFactory {
             .map(Object::toString)
             .map(caseRef -> String.format(
                 ("%s/cases/case-details/PCS/PCS/%s#Service%%20Request"),
-                frontendUrl,
+                manageCaseUrl,
                 caseRef
             ))
             .orElse(null);
