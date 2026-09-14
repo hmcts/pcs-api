@@ -107,23 +107,6 @@ class CounterClaimServiceTest {
     }
 
     @Test
-    void shouldSetStateWhenCounterClaimEnteredByCaseworker() {
-        // Given
-        stubClaimRepository();
-
-        CounterClaim counterClaim = mock(CounterClaim.class);
-
-        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
-
-        // When
-        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
-
-        // Then
-        verify(counterClaimRepository).save(counterClaimCaptor.capture());
-        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
-    }
-
-    @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
         assertThat(underTest.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).isEmpty();
     }

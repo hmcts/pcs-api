@@ -73,7 +73,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();
 
         Optional<CounterClaimEntity> savedCounterClaim =
-            counterClaimService.saveCaseworkerEnteredCounterClaim(caseReference, counterClaim, submittingParty);
+            counterClaimService.saveCounterClaim(caseReference, counterClaim, submittingParty);
 
         savedCounterClaim.ifPresent(counterClaimEntity -> {
             PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);

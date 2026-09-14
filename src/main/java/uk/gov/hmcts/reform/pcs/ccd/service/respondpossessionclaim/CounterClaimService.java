@@ -46,15 +46,6 @@ public class CounterClaimService {
         CounterClaim counterClaim,
         PartyEntity partyRef
     ) {
-        return saveCounterClaim(caseReference, counterClaim, partyRef, false);
-    }
-
-    private Optional<CounterClaimEntity> saveCounterClaim(
-        long caseReference,
-        CounterClaim counterClaim,
-        PartyEntity partyRef,
-        boolean caseworkerEntered
-    ) {
         if (partyRef == null) {
             throw new IllegalStateException("party is null for case: " + caseReference);
         }
@@ -68,7 +59,7 @@ public class CounterClaimService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
-            counterClaim, partyRef, LocalDateTime.now(utcClock), caseworkerEntered);
+            counterClaim, partyRef, LocalDateTime.now(utcClock));
         counterClaimEntity.setPcsCase(claimRef.getPcsCase());
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
@@ -84,13 +75,12 @@ public class CounterClaimService {
         CounterClaim counterClaim,
         PartyEntity partyRef
     ) {
-        return saveCounterClaim(caseReference, counterClaim, partyRef, true);
+        return saveCounterClaim(caseReference, counterClaim, partyRef);
     }
 
     private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
                                                        PartyEntity partyRef,
-                                                       LocalDateTime submittedAt,
-                                                       boolean caseworkerEntered) {
+                                                       LocalDateTime submittedAt) {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
 
@@ -114,7 +104,7 @@ public class CounterClaimService {
             .permissionOrderDate(counterClaim.getCourtPermissionGranted() == VerticalYesNo.YES
                 ? counterClaim.getPermissionOrderDate() : null)
             .claimReceivedDate(counterClaim.getClaimReceivedDate())
-            .status(getInitialStatus(caseworkerEntered))
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -132,12 +122,6 @@ public class CounterClaimService {
         }
 
         return counterClaimEntity;
-    }
-
-    private CounterClaimState getInitialStatus(boolean caseworkerEntered) {
-        return caseworkerEntered
-            ? CounterClaimState.COUNTER_CLAIM_ISSUED
-            : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
 
 }
