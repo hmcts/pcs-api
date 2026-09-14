@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.HelpWithFee
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.PartyCounterClaimAgainst;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.TypeOfCounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.UploadCounterClaimForm;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.UploadRelatedDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
@@ -52,13 +53,15 @@ class EnterCounterClaimTest extends BaseEventTest {
     private PartyCounterClaimAgainst partyCounterClaimAgainst;
     @Mock
     private UploadCounterClaimForm uploadCounterClaimForm;
+    @Mock
+    private UploadRelatedDocuments uploadRelatedDocuments;
 
     @BeforeEach
     void setUp() {
         EnterCounterClaim enterCounterClaim = new EnterCounterClaim(
             pcsCaseService, partyService, submitEventHandler,
             courtPermission, typeOfCounterClaim, counterClaimAmount, helpWithFees,
-            partyCounterClaimAgainst, uploadCounterClaimForm);
+            partyCounterClaimAgainst, uploadCounterClaimForm, uploadRelatedDocuments);
         setEventUnderTest(enterCounterClaim);
     }
 
