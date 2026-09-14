@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            BasePersonalisation result = factory.forDefendant(response);
+            DefendantBasePersonalisation result = factory.forDefendant(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -88,7 +89,8 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("lastName", "Doe")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE");
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("nextStepUrl", "frontEndUrl/claims");
         }
 
         @Test
@@ -102,7 +104,7 @@ class NotificationPersonalisationFactoryTest {
             claimantParty.setLastName(null);
             claimantParty.setOrgName("Claimant Corp");
 
-            BasePersonalisation result = factory.forDefendant(response);
+            DefendantBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("claimantName", "CLAIMANT CORP");
         }
@@ -117,7 +119,7 @@ class NotificationPersonalisationFactoryTest {
             defendantParty.setOrgName("Defendant Corp");
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            BasePersonalisation result = factory.forDefendant(response);
+            DefendantBasePersonalisation result = factory.forDefendant(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -132,7 +134,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            BasePersonalisation result = factory.forDefendant(response);
+            DefendantBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
@@ -145,7 +147,7 @@ class NotificationPersonalisationFactoryTest {
             defendantParty.setNameKnown(null);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            BasePersonalisation result = factory.forDefendant(response);
+            DefendantBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
@@ -168,7 +170,8 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("lastName", "Smith")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE");
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Case%20Parties");
         }
 
         @Test
@@ -216,7 +219,8 @@ class NotificationPersonalisationFactoryTest {
                 .containsEntry("toLineClaimantName", "Jane Smith")
                 .containsEntry("caseNumber", "1234-5678-90")
                 .containsEntry("claimantName", "JANE SMITH")
-                .containsEntry("primaryDefendantName", "JOHN DOE");
+                .containsEntry("primaryDefendantName", "JOHN DOE")
+                .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps");
         }
 
         @Test

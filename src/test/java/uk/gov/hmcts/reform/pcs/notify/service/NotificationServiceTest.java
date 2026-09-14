@@ -59,6 +59,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoL
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -506,13 +507,16 @@ class NotificationServiceTest {
             defendantResponse.setClaim(claim);
 
             lenient().when(notificationPersonalisationFactory.forDefendant(any()))
-                .thenReturn(BasePersonalisation.builder()
-                    .firstName("John")
-                    .lastName("Doe")
-                    .caseNumber("1234567890")
-                    .caseName("Jane Smith vs John Doe")
-                    .claimantName("JANE SMITH")
-                    .primaryDefendantName("JOHN DOE")
+                .thenReturn(DefendantBasePersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                              .firstName("John")
+                              .lastName("Doe")
+                              .caseNumber("1234567890")
+                              .caseName("Jane Smith vs John Doe")
+                              .claimantName("JANE SMITH")
+                              .primaryDefendantName("JOHN DOE")
+                              .build())
+                    .nextStepUrl("frontEndUrl/claims")
                     .build());
             lenient().when(notificationPersonalisationFactory.counterclaimPaymentRequired(any()))
                 .thenReturn(CounterclaimPaymentRequiredPersonalisation.builder()

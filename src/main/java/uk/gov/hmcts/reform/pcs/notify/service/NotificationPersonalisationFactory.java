@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
 
 import java.util.List;
 import java.util.Locale;
@@ -53,10 +54,15 @@ public class NotificationPersonalisationFactory {
     @Value("${manage_case.url}")
     private String manageCaseUrl;
 
-    public BasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
+    public DefendantBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
-        return buildPersonalisation(defendant, defendantResponse.getPcsCase());
+        String nextStepUrl = String.format("%s/claims", frontendUrl);
+
+        return DefendantBasePersonalisation.builder()
+            .base(buildPersonalisation(defendant, defendantResponse.getPcsCase()))
+            .nextStepUrl(nextStepUrl)
+            .build();
     }
 
     public MakeAClaimBasePersonalisation forClaimant(ClaimEntity claim) {
