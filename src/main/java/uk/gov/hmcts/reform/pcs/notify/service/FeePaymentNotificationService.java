@@ -65,7 +65,7 @@ public class FeePaymentNotificationService {
                 && document.getClaim().getId().equals(claimEntity.getId()))
             .collect(Collectors.toCollection(ArrayList::new));
 
-        // The claim form is only scheduled for generation so we reference it by its deterministic filename.
+        // The claim form is scheduled for generation so we reference it by its deterministic filename.
         documents.add(DocumentEntity.builder()
             .fileName(expectedClaimFormFilename())
             .build());

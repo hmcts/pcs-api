@@ -19,7 +19,11 @@ public class CounterClaimFormDocumentGenerator {
             payload,
             TEMPLATE_ID,
             OutputType.PDF,
-            OUTPUT_FILENAME_PREFIX + defendantNumber
+            expectedCounterClaimFormFilename(defendantNumber)
         );
+    }
+
+    public static String expectedCounterClaimFormFilename(int defendantNumber) {
+        return OUTPUT_FILENAME_PREFIX + defendantNumber;
     }
 }
