@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -105,7 +106,7 @@ public class NotificationPersonalisationFactory {
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
             .caseNumber(formatCaseReference(Long.toString(caseReference)))
-            .caseName(caseNameFormatter.formatCaseName(pcsCase))
+            .caseName(formatDraftCaseName(pcsCase, toLineClaimantName))
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
             .nextStepUrl(nextStepUrl)
@@ -314,6 +315,26 @@ public class NotificationPersonalisationFactory {
         }
 
         return caseReference.replaceAll("(.{4})(?!$)", "$1-");
+    }
+
+    public String formatDraftCaseName(PCSCase pcsCase, String claimantName) {
+        List<Party> claimant = List.of(Party.builder().orgName(claimantName).build());
+        List<Party> defendants = new ArrayList<>();
+        defendants.add(toDraftParty(pcsCase.getDefendant1()));
+        if (pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES && pcsCase.getAdditionalDefendants() != null) {
+            pcsCase.getAdditionalDefendants().forEach(defendant ->
+                defendants.add(toDraftParty(defendant.getValue())));
+        }
+        return caseNameFormatter.formatCaseName(claimant, defendants);
+    }
+
+    private static Party toDraftParty(DefendantDetails defendant) {
+        return Party.builder()
+            .firstName(defendant.getFirstName())
+            .lastName(defendant.getLastName())
+            .nameKnown(defendant.getFirstName() == null || defendant.getLastName() == null
+                           ? VerticalYesNo.NO : defendant.getNameKnown())
+            .build();
     }
 
     public String getFormattedCaseName(PcsCaseEntity pcsCaseEntity) {

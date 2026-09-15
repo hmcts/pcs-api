@@ -218,6 +218,7 @@ class NotificationPersonalisationFactoryTest {
             assertThat(map)
                 .containsEntry("toLineClaimantName", "Jane Smith")
                 .containsEntry("caseNumber", "1234-5678-90")
+                .containsEntry("caseName", "Jane Smith vs John Doe")
                 .containsEntry("claimantName", "JANE SMITH")
                 .containsEntry("primaryDefendantName", "JOHN DOE")
                 .containsEntry("nextStepUrl", "manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps");
@@ -233,7 +234,8 @@ class NotificationPersonalisationFactoryTest {
             Map<String, Object> map = result.toMap();
             assertThat(map)
                 .containsEntry("toLineClaimantName", "Override Name")
-                .containsEntry("claimantName", "OVERRIDE NAME");
+                .containsEntry("claimantName", "OVERRIDE NAME")
+                .containsEntry("caseName", "Override Name vs John Doe");
         }
 
         @Test
@@ -246,7 +248,8 @@ class NotificationPersonalisationFactoryTest {
             Map<String, Object> map = result.toMap();
             assertThat(map)
                 .containsEntry("toLineClaimantName", "Jane Smith")
-                .containsEntry("claimantName", "JANE SMITH");
+                .containsEntry("claimantName", "JANE SMITH")
+                .containsEntry("caseName", "Jane Smith vs John Doe");
         }
 
         @Test
@@ -259,7 +262,8 @@ class NotificationPersonalisationFactoryTest {
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN")
+                .containsEntry("caseName", "Jane Smith vs Persons unknown");
         }
 
         @Test
@@ -272,7 +276,8 @@ class NotificationPersonalisationFactoryTest {
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN")
+                .containsEntry("caseName", "Jane Smith vs Persons unknown");
         }
 
         @Test
@@ -285,7 +290,8 @@ class NotificationPersonalisationFactoryTest {
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN")
+                .containsEntry("caseName", "Jane Smith vs Persons unknown");
         }
 
         @Test
@@ -298,7 +304,8 @@ class NotificationPersonalisationFactoryTest {
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
-                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
+                .containsEntry("primaryDefendantName", "PERSONS UNKNOWN")
+                .containsEntry("caseName", "Jane Smith vs Persons unknown");
         }
     }
 
