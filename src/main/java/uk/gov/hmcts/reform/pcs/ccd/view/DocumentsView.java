@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DocumentsView {
@@ -40,6 +42,8 @@ public class DocumentsView {
 
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
+
+        log.info("User roles: {}", userRoles);
 
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
@@ -66,12 +70,13 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppDocumentVisibleToUser(
+            boolean isVisible = genAppVisibilityService.isGenAppDocumentVisibleToUser(
                 genAppEntity,
                 userRoles.userId(),
                 organisationId,
                 userRoles.roles()
             );
+            log.info("Gen app doc isVisable: {}", isVisible);
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
