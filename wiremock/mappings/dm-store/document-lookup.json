@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "PATCH",
+    "urlPath": "/documents"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "SUCCESS",
+      "_embedded": {
+        "documents": [
+          {
+            "_links": {
+              "self": {
+                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000"
+              },
+              "binary": {
+                "href": "https://docstore/documents/00000000-AA00-0000-A000-A0AA000A0000/binary"
+              }
+            },
+            "originalDocumentSerialization": "rent-statement.pdf"
+          }
+        ]
+      }
+    }
+  }
+}
