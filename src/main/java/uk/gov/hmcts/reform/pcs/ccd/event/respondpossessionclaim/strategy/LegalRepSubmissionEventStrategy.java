@@ -90,10 +90,10 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             return validationResult.get();
         }
 
-        Optional<SubmitResponse<State>> versionCheck = submitResponseFactory.validateReviewedDraftVersion(
+        Optional<SubmitResponse<State>> validationErrorResponse = submitResponseFactory.validateReviewedDraftVersion(
             reviewedDraftVersion(eventPayload), responseDraftData.getDraftVersion(), caseReference);
-        if (versionCheck.isPresent()) {
-            return versionCheck.get();
+        if (validationErrorResponse.isPresent()) {
+            return validationErrorResponse.get();
         }
 
         PartyEntity defendantParty = partyService.getPartyEntityById(representedPartyId, caseReference);
