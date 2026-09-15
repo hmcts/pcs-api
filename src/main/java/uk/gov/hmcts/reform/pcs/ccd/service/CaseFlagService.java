@@ -69,12 +69,6 @@ public class CaseFlagService {
         return isReasonableAdjustment(flagDetail.getFlagCode(), flagDetail.getPath());
     }
 
-    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
-        return flag.getFlagRefData() != null
-            && isReasonableAdjustment(flag.getFlagRefData().getFlagCode(),
-                                      CaseFlagsView.parsePaths(flag.getPaths()));
-    }
-
     private static boolean isReasonableAdjustment(String flagCode, List<ListValue<String>> path) {
         if (flagCode == null) {
             return false;
@@ -87,9 +81,17 @@ public class CaseFlagService {
         return OTHER_FLAG_CODE.equals(flagCode)
             && path != null
             && path.stream()
-                .map(ListValue::getValue)
-                .anyMatch(REASONABLE_ADJUSTMENT_PATH::equals);
+            .map(ListValue::getValue)
+            .anyMatch(REASONABLE_ADJUSTMENT_PATH::equals);
     }
+
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && isReasonableAdjustment(flag.getFlagRefData().getFlagCode(),
+                                      CaseFlagsView.parsePaths(flag.getPaths()));
+    }
+
+
 
     private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
         return partyEntity.getDefendantFlags().stream()
@@ -283,7 +285,7 @@ public class CaseFlagService {
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity = flagRefDataByCode.computeIfAbsent(
+            final FlagRefDataEntity flagRefDataEntity = flagRefDataByCode.computeIfAbsent(
                 incomingFlagDetail.getFlagCode(),
                 flagCode -> mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy));
 
