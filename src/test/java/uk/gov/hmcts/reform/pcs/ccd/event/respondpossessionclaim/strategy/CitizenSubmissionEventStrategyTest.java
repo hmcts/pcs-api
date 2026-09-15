@@ -210,16 +210,12 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase storedDraft = createDraftSaveCaseData(null);
         storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
         stubDraft(storedDraft);
-        PCSCase posted = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(4L).build())
-            .build();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(posted);
         SubmitResponse<State> rejected = SubmitResponse.<State>builder()
             .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
             .build();
-        when(submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE))
+        when(submitResponseFactory.validateReviewedDraftVersion(eventPayload, storedDraft.getPossessionClaimResponse()))
             .thenReturn(Optional.of(rejected));
 
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -233,15 +229,11 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase storedDraft = createDraftSaveCaseData(null);
         storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
         stubDraft(storedDraft);
-        PCSCase posted = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(5L).build())
-            .build();
         RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(
                 storedDraft.getPossessionClaimResponse(), null, null, false);
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(posted);
         when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, CASE_REFERENCE)).thenReturn(defendantParty);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(
             CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE))
@@ -252,7 +244,8 @@ class CitizenSubmissionEventStrategyTest {
 
         underTest.process(eventPayload);
 
-        verify(submitResponseFactory).validateReviewedDraftVersion(5L, 5L, CASE_REFERENCE);
+        verify(submitResponseFactory)
+            .validateReviewedDraftVersion(eventPayload, storedDraft.getPossessionClaimResponse());
         verify(respondPossessionClaimSubmitService).persistFinalSubmit(
             CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE);
     }

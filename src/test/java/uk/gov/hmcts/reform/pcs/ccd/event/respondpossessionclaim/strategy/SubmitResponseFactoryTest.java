@@ -5,9 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -183,13 +185,14 @@ class SubmitResponseFactoryTest {
 
     @Test
     void validateReviewedDraftVersion_Matching_ReturnsEmpty() {
-        assertThat(submitResponseFactory.validateReviewedDraftVersion(5L, 5L, CASE_REFERENCE)).isEmpty();
+        assertThat(submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(5L), storedDraftAt(5L)))
+            .isEmpty();
     }
 
     @Test
     void validateReviewedDraftVersion_Mismatch_ReturnsDraftChangedError() {
         Optional<SubmitResponse<State>> result =
-            submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE);
+            submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(4L), storedDraftAt(5L));
 
         assertThat(result).isPresent();
         assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
@@ -198,9 +201,20 @@ class SubmitResponseFactoryTest {
     @Test
     void validateReviewedDraftVersion_NoReviewedVersionPosted_ReturnsDraftChangedError() {
         Optional<SubmitResponse<State>> result =
-            submitResponseFactory.validateReviewedDraftVersion(null, 5L, CASE_REFERENCE);
+            submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(null), storedDraftAt(5L));
 
         assertThat(result).isPresent();
         assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
+    }
+
+    private static EventPayload<PCSCase, State> payloadReviewing(Long draftVersion) {
+        PCSCase posted = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(draftVersion).build())
+            .build();
+        return new EventPayload<>(CASE_REFERENCE, posted, null);
+    }
+
+    private static PossessionClaimResponse storedDraftAt(Long draftVersion) {
+        return PossessionClaimResponse.builder().draftVersion(draftVersion).build();
     }
 }

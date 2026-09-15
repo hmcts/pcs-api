@@ -90,8 +90,8 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             return validationResult.get();
         }
 
-        Optional<SubmitResponse<State>> validationErrorResponse = submitResponseFactory.validateReviewedDraftVersion(
-            reviewedDraftVersion(eventPayload), responseDraftData.getDraftVersion(), caseReference);
+        Optional<SubmitResponse<State>> validationErrorResponse =
+            submitResponseFactory.validateReviewedDraftVersion(eventPayload, responseDraftData);
         if (validationErrorResponse.isPresent()) {
             return validationErrorResponse.get();
         }
@@ -196,10 +196,4 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
         }
     }
 
-    private static Long reviewedDraftVersion(EventPayload<PCSCase, State> eventPayload) {
-        return Optional.ofNullable(eventPayload.caseData())
-            .map(PCSCase::getPossessionClaimResponse)
-            .map(PossessionClaimResponse::getDraftVersion)
-            .orElse(null);
-    }
 }

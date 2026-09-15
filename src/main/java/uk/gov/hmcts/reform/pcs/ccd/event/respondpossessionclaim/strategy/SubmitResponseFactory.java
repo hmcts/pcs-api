@@ -3,8 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
@@ -47,12 +49,16 @@ public class SubmitResponseFactory {
         return Optional.empty();
     }
 
-    public Optional<SubmitResponse<State>> validateReviewedDraftVersion(Long reviewedVersion,
-                                                                       Long currentVersion,
-                                                                       long caseReference) {
+    public Optional<SubmitResponse<State>> validateReviewedDraftVersion(EventPayload<PCSCase, State> eventPayload,
+                                                                       PossessionClaimResponse storedDraft) {
+        Long reviewedVersion = Optional.ofNullable(eventPayload.caseData())
+            .map(PCSCase::getPossessionClaimResponse)
+            .map(PossessionClaimResponse::getDraftVersion)
+            .orElse(null);
+        Long currentVersion = storedDraft.getDraftVersion();
         if (reviewedVersion == null || !reviewedVersion.equals(currentVersion)) {
             log.warn("Submit rejected for case {}: reviewed draft version {} but stored draft is at {}",
-                     caseReference, reviewedVersion, currentVersion);
+                     eventPayload.caseReference(), reviewedVersion, currentVersion);
             return Optional.of(error(RespondToClaimCallbackError.DRAFT_CHANGED));
         }
         return Optional.empty();

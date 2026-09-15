@@ -64,8 +64,8 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
             return validationResult.get();
         }
 
-        Optional<SubmitResponse<State>> validationErrorResponse = submitResponseFactory.validateReviewedDraftVersion(
-            reviewedDraftVersion(eventPayload), responseDraftData.getDraftVersion(), caseReference);
+        Optional<SubmitResponse<State>> validationErrorResponse =
+            submitResponseFactory.validateReviewedDraftVersion(eventPayload, responseDraftData);
         if (validationErrorResponse.isPresent()) {
             return validationErrorResponse.get();
         }
@@ -79,10 +79,4 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
     }
 
-    private static Long reviewedDraftVersion(EventPayload<PCSCase, State> eventPayload) {
-        return Optional.ofNullable(eventPayload.caseData())
-            .map(PCSCase::getPossessionClaimResponse)
-            .map(PossessionClaimResponse::getDraftVersion)
-            .orElse(null);
-    }
 }
