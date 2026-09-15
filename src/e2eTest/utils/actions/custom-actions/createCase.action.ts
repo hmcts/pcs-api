@@ -1656,13 +1656,15 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
         } else if (caseFile.defendantLRUpload) {
           userInputFiles.push(caseFile.defendantLRUpload as string);
+        } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
         }
         break;
 

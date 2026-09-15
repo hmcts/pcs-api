@@ -1,6 +1,6 @@
-import {createCaseApiData,submitCaseApiData} from '@data/api-data';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import test, {BrowserContext, expect, Page} from '@playwright/test';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import test, { BrowserContext, expect, Page } from '@playwright/test';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
@@ -9,10 +9,10 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import {
   confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm, uploadAdditionalDocumentsInformation, uploadYourDocuments
 } from "@data/page-data-figma/page-data-legalRepresentative";
-import {makeAnApplicationApiData} from "@data/api-data";
-import {initializeCMExecutor} from "@utils/controller-caseManagement";
-import {getCaseTypeId} from "@utils/common/caseType.utils";
-import {VERY_LONG_TIMEOUT} from "../playwright.config";
+import { makeAnApplicationApiData } from "@data/api-data";
+import { initializeCMExecutor } from "@utils/controller-caseManagement";
+import { getCaseTypeId } from "@utils/common/caseType.utils";
+import { VERY_LONG_TIMEOUT } from "../playwright.config";
 import {
   checkYourAnswersUploadAdditionalDocs,
 } from "@data/page-data-figma/page-data-legalRepresentative/checkYourAnswersUploadAdditionalDocs.page.data";
@@ -25,6 +25,9 @@ import { home } from '@data/page-data';
 
 test.use({ storageState: undefined })
 let uploadAdditionalDocumentsInformationCL: ReturnType<typeof uploadAdditionalDocumentsInformation>;
+let genAppPayload: (id: string, name: string) => any;
+let submitPayload: Record<string, unknown>;
+
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
@@ -37,26 +40,25 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const isMultiDef = title.toLowerCase().includes('multi def');
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
 
-  await performAction('submitCaseAPI', {
-    data: isMultiDef
-      ? submitCaseApiData.submitCasePayload
-      : submitCaseApiData.submitCasePayloadDefault,
-  });
+  await performAction('submitCaseAPI', { data: submitPayload });
 
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
-  const genAppPayload =
-    title.includes('ADJOURN')
-      ? makeAnApplicationApiData.makeAnApplicationAdjournPayload
-      : title.includes('SET_ASIDE')
-        ? makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload
-        : title.includes('SOMETHING_ELSE')
-          ? makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload
-          : title.includes('GENADJ_WITHOUT_NOTICE')
-            ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
-            : undefined;
+  if (title.includes('ADJOURN')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournPayload;
+  } else if (title.includes('SET_ASIDE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload;
+  } else if (title.includes('SOMETHING_ELSE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
+  } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
+  } else {
+    throw new Error(`No genAppPayload configured for ${title}`);
+  }
 
   if (genAppPayload) {
     //for (const defendant of defendantUserDetails) {
@@ -90,7 +92,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
-  },async () => {
+  }, async () => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[0];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
@@ -125,7 +127,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
   });
@@ -155,18 +157,18 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
   });
 
-  test.skip('Upload documents when GenApps submitted With Out Notice - Multi def',{
+  test.skip('Upload documents when GenApps submitted With Out Notice - Multi def', {
     annotation: {
       type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
-  }, async ({page}) => {
+  }, async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -211,7 +213,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test.skip('Upload documents when GenApps not submitted - Multi def',{
+  test.skip('Upload documents when GenApps not submitted - Multi def', {
     annotation: {
       type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
@@ -259,19 +261,19 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName1)
     });
   });
 
   test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
-    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
@@ -283,7 +285,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
     await performAction('uploadAdditionalDocsLR', {
       documents: [
-        { type: uploadYourDocuments.rentStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+        { type: uploadYourDocuments.photographicEvidenceDropDownInput, fileName: fileName, description: uploadYourDocuments.photographicEvidenceDropDownInput },
       ]
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
@@ -293,8 +295,8 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      folder: 'Evidence',
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
     await clearBrowserSession(page, context);
@@ -310,12 +312,13 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      folder: 'Evidence',
+      submitPayload: submitPayload,
+      allowEmptyFolder: true
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitPayload,
       allowEmptyFolder: true
     });
 

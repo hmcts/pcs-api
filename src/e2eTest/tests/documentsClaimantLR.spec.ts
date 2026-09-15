@@ -23,6 +23,8 @@ import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-
 
 
 let uploadAdditionalDocumentsInformationCL: ReturnType<typeof uploadAdditionalDocumentsInformation>;
+let genAppPayload: (id: string, name: string) => any;
+let submitPayload : Record<string, unknown>;
 test.beforeEach(async ({ page, context }, testInfo) => {
   initializeExecutor(page);
   initializeCMExecutor(page);
@@ -30,27 +32,32 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const title = testInfo.title;
   const isMultiDef = title.toLowerCase().includes('multi def');
+  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
 
-  await performAction('submitCaseAPI', {
-    data: isMultiDef
-      ? submitCaseApiData.submitCasePayload
-      : submitCaseApiData.submitCasePayloadDefault,
-  });
+  await performAction('submitCaseAPI', { data: submitPayload });
+
+  console.log(submitPayload);
+  
+
+
+  
   //await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
-  const genAppPayload =
-    title.includes('ADJOURN')
-      ? makeAnApplicationApiData.makeAnApplicationAdjournPayload
-      : title.includes('SET_ASIDE')
-        ? makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload
-        : title.includes('SOMETHING_ELSE')
-          ? makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload
-          : title.includes('GENADJ_WITHOUT_NOTICE')
-            ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
-            : undefined;
+  if (title.includes('ADJOURN')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournPayload;
+  } else if (title.includes('SET_ASIDE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload;
+  } else if (title.includes('SOMETHING_ELSE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
+  } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
+    genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
+  } else {
+    throw new Error(`No genAppPayload configured for ${title}`);
+  }
+  console.log(genAppPayload);
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
@@ -96,7 +103,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
@@ -127,7 +134,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadDefault,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
@@ -158,7 +165,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
@@ -189,7 +196,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
@@ -217,24 +224,24 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName1)
     });
   });
 
   test('Claimant LR Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
-    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, uploadYourDocuments.mainHeader as string);
     await performAction('uploadAdditionalDocsLR', {
       documents: [
-        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+        { type: uploadYourDocuments.photographicEvidenceDropDownInput, fileName: fileName, description: uploadYourDocuments.photographicEvidenceDropDownInput },
       ]
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
@@ -244,8 +251,8 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      folder: 'Evidence',
+      submitPayload: submitPayload,
       claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
     await clearBrowserSession(page, context);
@@ -261,14 +268,14 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
-      folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      folder: 'Evidence',
+      submitPayload: submitPayload,
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
-      defendantIndex : 1
+      submitPayload: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
+      defendantIndex: 1
     });
 
   });

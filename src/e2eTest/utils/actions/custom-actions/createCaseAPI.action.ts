@@ -70,7 +70,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = createResponse.data.id;
       caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = createResponse.data.state;
-      console.log(`\n✅ CASE CREATION SUCCESSFUL:Case #  ${caseInfo.fid}`);
+      console.log(`\n✅ CASE CREATION SUCCESSFUL:Case #${caseInfo.fid}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -107,7 +107,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = submitResponse.data.id;
       caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = submitResponse.data.state;
-      console.log(`\n✅ CASE SUBMISSION SUCCESSFUL:`);
+      console.log(`\n✅ CASE SUBMISSION SUCCESSFUL WITH STATUS: ${submitResponse.status}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
@@ -471,7 +471,7 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.id = genAppResponse.data.id;
       caseInfo.fid = genAppResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
       caseInfo.state = genAppResponse.data.state;
-      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL`)
+      console.log(`\n✅ MAKE AN APPLICATION API CALL SUCCESSFUL WITH STATUS :`+genAppResponse.status)
     } catch (error: any) {
       const status = error?.response?.status;
       const responseBody = error?.response?.data;
