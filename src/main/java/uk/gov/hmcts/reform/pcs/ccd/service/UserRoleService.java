@@ -43,6 +43,7 @@ public class UserRoleService {
 
     public UserRoles getCurrentUserCaseRoles(long caseReference) {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        log.info("currentUserDetails: {}", currentUserDetails);
         String currentUserId = currentUserDetails.getUid();
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
