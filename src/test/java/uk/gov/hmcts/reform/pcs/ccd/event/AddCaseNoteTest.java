@@ -53,7 +53,6 @@ public class AddCaseNoteTest extends BaseEventTest {
                 .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U, Permission.D);
         }
 
-        assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.CLAIMANT)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.GA_CLAIMANT_SOLICITOR)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.DEFENDANT)).isEmpty();

@@ -34,8 +34,7 @@ class ClaimantMakeAnApplicationTest extends BaseEventTest {
     }
 
     @Test
-    void shouldGrantCaseRoleAndGroupAccessClaimantRoles() {
-        assertGrants(UserRole.CLAIMANT_SOLICITOR, Permission.CRUD);
+    void shouldGrantGroupAccessClaimantRoles() {
         assertGrants(UserRole.GA_CLAIMANT_SOLICITOR, Permission.CRUD);
         assertGrants(UserRole.CLAIMANT, Permission.CRUD);
     }

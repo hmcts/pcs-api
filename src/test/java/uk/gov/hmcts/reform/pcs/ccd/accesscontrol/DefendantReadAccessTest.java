@@ -16,7 +16,7 @@ class DefendantReadAccessTest {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
         assertThat(grants.get(UserRole.DEFENDANT)).containsExactly(Permission.R);
-        assertThat(grants.get(UserRole.DEFENDANT_SOLICITOR)).containsExactly(Permission.R);
+        assertThat(grants.get(UserRole.DEFENDANT_SOLICITOR)).isEmpty();
         assertThat(grants.get(UserRole.GA_DEFENDANT_SOLICITOR)).containsExactly(Permission.R);
     }
 }

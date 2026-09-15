@@ -49,6 +49,7 @@ public enum GroupAccessType implements CCDAccessGroup {
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
+        NocCaseRoles.DEFENDANT,
         "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(
@@ -62,9 +63,14 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Assign to Users to enable access to all cases associated with this organisation";
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
+
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
-    /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
+    /**
+
+     * Null for duty-advisor access, which is requested per case rather than stamped on one.
+
+     */
     private final PartyRole partyRole;
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -75,11 +81,19 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean accessDefault;
     private final boolean display;
     private final boolean groupAccessEnabled;
-
+    /**
+     * Segment of the group ID template; matches the attaching {@code AccessProfile}'s role name.
+     */
+    private final String groupRoleName;
     private final String caseAssignedRoleField;
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, int displayOrder) {
+                    String groupRoleName, String description, int displayOrder) {
+        this(orgProfileId, partyRole, accessTypeId, groupRoleName, groupRoleName, description, displayOrder);
+    }
+
+    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
+                    String groupRoleName, String caseAssignedRoleField, String description, int displayOrder) {
         this.partyRole = partyRole;
         this.organisationProfileId = orgProfileId.getId();
         this.accessTypeId = accessTypeId;
@@ -90,11 +104,12 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.hintText = ASSIGN_HINT;
         this.groupAccessEnabled = true;
         this.displayOrder = displayOrder;
+        this.groupRoleName = groupRoleName;
         this.caseAssignedRoleField = caseAssignedRoleField;
     }
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, String hintText, int displayOrder,
+                    String groupRoleName, String description, String hintText, int displayOrder,
                     boolean accessMandatory, boolean accessDefault, boolean display, boolean groupAccessEnabled) {
         this.partyRole = partyRole;
         this.organisationProfileId = orgProfileId.getId();
@@ -106,7 +121,8 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.hintText = hintText;
         this.displayOrder = displayOrder;
         this.groupAccessEnabled = groupAccessEnabled;
-        this.caseAssignedRoleField = caseAssignedRoleField;
+        this.groupRoleName = groupRoleName;
+        this.caseAssignedRoleField = groupRoleName;
     }
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }
@@ -139,7 +155,7 @@ public enum GroupAccessType implements CCDAccessGroup {
      */
     @Override
     public String getCaseAccessGroupIdTemplate() {
-        return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
+        return "PCS:PCS:" + accessTypeId + ":" + groupRoleName + ":$ORGID$";
     }
 
 

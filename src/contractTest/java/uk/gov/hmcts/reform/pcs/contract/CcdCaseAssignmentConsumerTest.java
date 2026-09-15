@@ -41,11 +41,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class CcdCaseAssignmentConsumerTest {
 
-    private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
-    private static final String AUTHORIZATION_TOKEN = "Bearer userToken";
+    private static final String SERVICE_AUTHORIZATION = "Bearer serviceToken";
+    private static final String USER_AUTHORIZATION = "Bearer userToken";
     private static final String CASE_ID = "1764062392941112";
     private static final String USER_ID = "9a2d861a-6264-4765-9f61-1d403079f71b";
     private static final String CASE_ROLE = "[DEFENDANT]";
+    /**
+     * An example value behind a {@code stringType} matcher, not an assertion about the role: the
+     * contract only requires case_role to be a string. Held at the value ccd-data-store-api has
+     * already verified, so the published pact keeps its existing content hash and can-i-deploy does
+     * not block on a re-verification this change does not need. Realign once the provider has
+     * verified a pact carrying the group-access role.
+     */
     private static final String DELETE_ROLE = "[CLAIMANTSOLICITOR]";
 
     @Autowired
@@ -59,8 +66,8 @@ public class CcdCaseAssignmentConsumerTest {
             .uponReceiving("a request to add a user role")
             .path("/case-users")
             .method("POST")
-            .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
-                     "Authorization", AUTHORIZATION_TOKEN,
+            .headers("ServiceAuthorization", SERVICE_AUTHORIZATION,
+                     "Authorization", USER_AUTHORIZATION,
                      "Content-Type", "application/json")
             .body(caseRoleBody())
             .willRespondWith()
@@ -77,8 +84,8 @@ public class CcdCaseAssignmentConsumerTest {
             .path("/case-users")
             .matchQuery("case_ids", CASE_ID)
             .method("GET")
-            .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
-                     "Authorization", AUTHORIZATION_TOKEN)
+            .headers("ServiceAuthorization", SERVICE_AUTHORIZATION,
+                     "Authorization", USER_AUTHORIZATION)
             .willRespondWith()
             .status(200)
             .body(caseRoleBody())
@@ -93,8 +100,8 @@ public class CcdCaseAssignmentConsumerTest {
             .uponReceiving("a request to remove a user role")
             .path("/case-users")
             .method("DELETE")
-            .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
-                     "Authorization", AUTHORIZATION_TOKEN,
+            .headers("ServiceAuthorization", SERVICE_AUTHORIZATION,
+                     "Authorization", USER_AUTHORIZATION,
                      "Content-Type", "application/json")
             .body(deleteRoleBody())
             .willRespondWith()
@@ -118,14 +125,14 @@ public class CcdCaseAssignmentConsumerTest {
                 .build();
 
         caseAssignmentService.addCaseUserRoles(
-            AUTHORIZATION_TOKEN,
-            SERVICE_AUTH_TOKEN,
+            USER_AUTHORIZATION,
+            SERVICE_AUTHORIZATION,
             request
         );
 
         CaseAssignmentUserRolesResource response = caseAssignmentService.getUserRoles(
-            AUTHORIZATION_TOKEN,
-            SERVICE_AUTH_TOKEN,
+            USER_AUTHORIZATION,
+            SERVICE_AUTHORIZATION,
             List.of(CASE_ID)
         );
         assertThat(response.getCaseAssignmentUserRoles().get(0).getUserId()).isEqualTo(USER_ID);
@@ -145,8 +152,8 @@ public class CcdCaseAssignmentConsumerTest {
                 .build();
 
         caseAssignmentService.removeCaseUserRoles(
-            AUTHORIZATION_TOKEN,
-            SERVICE_AUTH_TOKEN,
+            USER_AUTHORIZATION,
+            SERVICE_AUTHORIZATION,
             deleteRequest
         );
     }

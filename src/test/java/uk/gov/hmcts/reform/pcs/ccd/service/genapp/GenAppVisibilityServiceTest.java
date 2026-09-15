@@ -155,7 +155,7 @@ class GenAppVisibilityServiceTest {
             party,
             CURRENT_USER_ID,
             null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.PCS_SOLICITOR.getRole())
+            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.GA_CLAIMANT_SOLICITOR.getRole())
         );
 
         // Then

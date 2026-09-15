@@ -33,6 +33,27 @@ class GroupAccessTypeTest {
                 .contains(accessType.getCaseAccessGroupIdTemplate()));
     }
 
+    /**
+     * The data store finds the OrganisationPolicy that supplies the organisation ID by matching
+     * OrgPolicyCaseAssignedRole against this column, and PartiesView stamps every defendant's policy
+     * with the NoC case role, so the two must name the same role.
+     */
+    @Test
+    void shouldKeyTheDefendantAccessTypeOnTheNoticeOfChangeCaseRole() {
+        assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getCaseAssignedRoleField())
+            .isEqualTo(UserRole.DEFENDANT_SOLICITOR.getRole());
+    }
+
+    /**
+     * PRM mints role assignments whose caseAccessGroupId comes from this template, so re-keying the
+     * access type on the case role must not change the group ID.
+     */
+    @Test
+    void shouldKeepTheGroupIdTemplateOnTheGroupRoleName() {
+        assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getCaseAccessGroupIdTemplate())
+            .isEqualTo("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:$ORGID$");
+    }
+
     @Test
     void shouldReturnEmptyWhenOrganisationProfileIdIsNull() {
         assertThat(GroupAccessType.caseAccessGroupIdFor(null, null, "ORG123")).isEmpty();
