@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +50,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
           AND d.createdAt < :cutoff
         """)
     List<DraftCaseDataEntity> findExpiredDraftResponses(@Param("eventId") EventId eventId,
-                                                        @Param("cutoff") LocalDateTime cutoff,
+                                                        @Param("cutoff") Instant cutoff,
                                                         Pageable pageable);
 }

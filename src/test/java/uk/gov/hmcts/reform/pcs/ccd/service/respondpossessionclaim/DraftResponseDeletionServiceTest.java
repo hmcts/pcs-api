@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.DraftResponseDataDeletionException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +45,7 @@ class DraftResponseDeletionServiceTest {
         List<DraftCaseDataEntity> expected = List.of(draftCaseDataEntity);
         when(draftCaseDataRepository.findExpiredDraftResponses(
             eq(EventId.respondPossessionClaim),
-            any(LocalDateTime.class),
+            any(Instant.class),
             eq(PageRequest.of(0, 50))
         )).thenReturn(expected);
 
@@ -56,7 +56,7 @@ class DraftResponseDeletionServiceTest {
         assertThat(result).isSameAs(expected);
         verify(draftCaseDataRepository).findExpiredDraftResponses(
             eq(EventId.respondPossessionClaim),
-            any(LocalDateTime.class),
+            any(Instant.class),
             eq(PageRequest.of(0, 50))
         );
     }

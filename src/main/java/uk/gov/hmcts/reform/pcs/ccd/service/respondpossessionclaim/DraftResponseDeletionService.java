@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.DraftResponseDataDeletionException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -21,7 +21,7 @@ public class DraftResponseDeletionService {
     private final DraftCaseDataRepository draftCaseDataRepository;
 
     public List<DraftCaseDataEntity> findExpiredDraftResponses(long discardDays, int sqlLimit) {
-        LocalDateTime cutoff = LocalDateTime.now().minusDays(discardDays);
+        Instant cutoff = Instant.now().minus(discardDays, java.time.temporal.ChronoUnit.DAYS);
         return draftCaseDataRepository.findExpiredDraftResponses(
             EventId.respondPossessionClaim,
             cutoff,
