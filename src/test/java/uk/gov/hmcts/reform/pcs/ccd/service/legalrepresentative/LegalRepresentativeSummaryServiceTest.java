@@ -17,9 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,9 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -71,7 +76,8 @@ class LegalRepresentativeSummaryServiceTest {
     void setUp() {
         legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
                                                                                  featureToggleService,
-                                                                                 claimPartyContactDetailsRepository);
+                                                                                 claimPartyContactDetailsRepository,
+                                                                                 legalRepForDefendantAccessValidator);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
@@ -143,6 +149,8 @@ class LegalRepresentativeSummaryServiceTest {
                                               .build());
 
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID, false)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -152,6 +160,46 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithLinkedAndActiveAndUpdatedDetails_withAllResponses_ReturnsEmptyMarkDown() {
+        // given
+        long caseRef = 1L;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseRef)
+            .build();
+
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+        when(claimPartyContactDetailsRepository
+                 .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.YES)
+                                        .build()));
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID, false)).thenReturn(Collections.emptyList());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
     @Test

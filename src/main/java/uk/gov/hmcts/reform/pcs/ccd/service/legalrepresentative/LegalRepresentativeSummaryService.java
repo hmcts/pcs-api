@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisa
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -50,6 +51,7 @@ public class LegalRepresentativeSummaryService {
     private final DefendantPartyExtractor defendantPartyExtractor;
     private final FeatureToggleService featureToggleService;
     private final ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -60,6 +62,10 @@ public class LegalRepresentativeSummaryService {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
             return;
         }
+
+        boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
+            .validateAndGetDefendants(pcsCaseEntity, organisationId, false).isEmpty();
+        pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
 
         Optional<ClaimPartyOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
@@ -86,7 +92,10 @@ public class LegalRepresentativeSummaryService {
 
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
-            pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
+            pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
+            if (pcsCase.getHasUnsubmittedDefendantResponses().toBoolean()) {
+                pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
+            }
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(UPDATE_DETAILS_MARKDOWN
                                                               .formatted(legalRepresentativeContactDetails));
