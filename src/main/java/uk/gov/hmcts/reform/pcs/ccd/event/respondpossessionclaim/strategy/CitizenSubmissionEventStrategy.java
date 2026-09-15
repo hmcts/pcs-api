@@ -65,7 +65,7 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
         }
 
         Optional<SubmitResponse<State>> validationErrorResponse =
-            submitResponseFactory.validateReviewedDraftVersion(eventPayload, responseDraftData);
+            submitResponseFactory.validateDraftVersionNotChanged(eventPayload, responseDraftData);
         if (validationErrorResponse.isPresent()) {
             return validationErrorResponse.get();
         }

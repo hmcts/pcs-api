@@ -485,7 +485,8 @@ class LegalRepSubmissionEventStrategyTest {
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, REPRESENTED_PARTY_ID,
                                                          organisationId)).thenReturn(Optional.of(storedDraft));
-        when(submitResponseFactory.validateReviewedDraftVersion(eventPayload, storedDraft.getPossessionClaimResponse()))
+        when(submitResponseFactory
+                 .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse()))
             .thenReturn(Optional.of(SubmitResponse.<State>builder()
                                         .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
                                         .build()));

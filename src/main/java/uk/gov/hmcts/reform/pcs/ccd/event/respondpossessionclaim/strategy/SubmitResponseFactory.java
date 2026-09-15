@@ -49,7 +49,7 @@ public class SubmitResponseFactory {
         return Optional.empty();
     }
 
-    public Optional<SubmitResponse<State>> validateReviewedDraftVersion(EventPayload<PCSCase, State> eventPayload,
+    public Optional<SubmitResponse<State>> validateDraftVersionNotChanged(EventPayload<PCSCase, State> eventPayload,
                                                                        PossessionClaimResponse storedDraft) {
         Long reviewedVersion = Optional.ofNullable(eventPayload.caseData())
             .map(PCSCase::getPossessionClaimResponse)

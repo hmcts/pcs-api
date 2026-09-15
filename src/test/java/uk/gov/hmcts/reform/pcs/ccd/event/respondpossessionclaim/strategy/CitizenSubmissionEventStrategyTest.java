@@ -215,7 +215,8 @@ class CitizenSubmissionEventStrategyTest {
         SubmitResponse<State> rejected = SubmitResponse.<State>builder()
             .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
             .build();
-        when(submitResponseFactory.validateReviewedDraftVersion(eventPayload, storedDraft.getPossessionClaimResponse()))
+        when(submitResponseFactory
+                 .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse()))
             .thenReturn(Optional.of(rejected));
 
         SubmitResponse<State> result = underTest.process(eventPayload);
@@ -245,7 +246,7 @@ class CitizenSubmissionEventStrategyTest {
         underTest.process(eventPayload);
 
         verify(submitResponseFactory)
-            .validateReviewedDraftVersion(eventPayload, storedDraft.getPossessionClaimResponse());
+            .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse());
         verify(respondPossessionClaimSubmitService).persistFinalSubmit(
             CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE);
     }

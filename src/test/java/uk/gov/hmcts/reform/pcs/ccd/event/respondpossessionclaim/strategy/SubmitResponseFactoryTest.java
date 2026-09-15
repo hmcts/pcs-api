@@ -184,24 +184,24 @@ class SubmitResponseFactoryTest {
     // ----- HDPI-8866 W05 -----
 
     @Test
-    void validateReviewedDraftVersion_Matching_ReturnsEmpty() {
-        assertThat(submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(5L), storedDraftAt(5L)))
+    void validateDraftVersionNotChanged_Matching_ReturnsEmpty() {
+        assertThat(submitResponseFactory.validateDraftVersionNotChanged(payloadReviewing(5L), storedDraftAt(5L)))
             .isEmpty();
     }
 
     @Test
-    void validateReviewedDraftVersion_Mismatch_ReturnsDraftChangedError() {
+    void validateDraftVersionNotChanged_Mismatch_ReturnsDraftChangedError() {
         Optional<SubmitResponse<State>> result =
-            submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(4L), storedDraftAt(5L));
+            submitResponseFactory.validateDraftVersionNotChanged(payloadReviewing(4L), storedDraftAt(5L));
 
         assertThat(result).isPresent();
         assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
     }
 
     @Test
-    void validateReviewedDraftVersion_NoReviewedVersionPosted_ReturnsDraftChangedError() {
+    void validateDraftVersionNotChanged_NoReviewedVersionPosted_ReturnsDraftChangedError() {
         Optional<SubmitResponse<State>> result =
-            submitResponseFactory.validateReviewedDraftVersion(payloadReviewing(null), storedDraftAt(5L));
+            submitResponseFactory.validateDraftVersionNotChanged(payloadReviewing(null), storedDraftAt(5L));
 
         assertThat(result).isPresent();
         assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
