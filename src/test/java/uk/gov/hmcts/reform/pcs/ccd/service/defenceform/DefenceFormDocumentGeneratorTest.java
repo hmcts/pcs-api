@@ -28,7 +28,7 @@ class DefenceFormDocumentGeneratorTest {
         DefenceFormPayload payload = DefenceFormPayload.builder().build();
         when(docAssemblyService.generateDocument(
             eq(payload),
-            eq(DefenceFormDocumentGenerator.TEMPLATE_ID),
+            eq(DefenceFormDocumentGenerator.LIP_TEMPLATE_ID),
             eq(OutputType.PDF),
             eq("Defence - Defendant 2")
         )).thenReturn("https://dm-store/abc");
@@ -37,12 +37,12 @@ class DefenceFormDocumentGeneratorTest {
 
         assertThat(url).isEqualTo("https://dm-store/abc");
         verify(docAssemblyService).generateDocument(
-            payload, DefenceFormDocumentGenerator.TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 2");
+            payload, DefenceFormDocumentGenerator.LIP_TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 2");
     }
 
     @Test
     void usesLegalRepTemplateWhenPayloadFlagged() {
-        DefenceFormPayload payload = DefenceFormPayload.builder().legalRepresentative(true).build();
+        DefenceFormPayload payload = DefenceFormPayload.builder().completedByLegalRepresentative(true).build();
         when(docAssemblyService.generateDocument(
             eq(payload),
             eq(DefenceFormDocumentGenerator.LR_TEMPLATE_ID),
@@ -59,7 +59,7 @@ class DefenceFormDocumentGeneratorTest {
 
     @Test
     void templateIdsMatchRdoDocmosisNamingConvention() {
-        assertThat(DefenceFormDocumentGenerator.TEMPLATE_ID)
+        assertThat(DefenceFormDocumentGenerator.LIP_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
         assertThat(DefenceFormDocumentGenerator.LR_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+-LR\\.docx$");

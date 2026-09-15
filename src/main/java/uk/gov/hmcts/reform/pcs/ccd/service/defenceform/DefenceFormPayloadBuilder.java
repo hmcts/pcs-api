@@ -342,7 +342,7 @@ public class DefenceFormPayloadBuilder {
         payload.sotFullName(statementOfTruth.getFullName());
         payload.sotFirmName(statementOfTruth.getFirmName());
         payload.sotPositionHeld(statementOfTruth.getPositionHeld());
-        payload.legalRepresentative(statementOfTruth.isCompletedByLegalRepresentative());
+        payload.completedByLegalRepresentative(statementOfTruth.isCompletedByLegalRepresentative());
     }
 
     private static DefenceFormAmountRow amountRow(String label, BigDecimal amount, String frequency) {

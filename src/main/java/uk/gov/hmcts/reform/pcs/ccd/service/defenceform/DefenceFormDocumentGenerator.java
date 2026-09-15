@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 @Service
 public class DefenceFormDocumentGenerator {
 
-    static final String TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form.docx";
+    static final String LIP_TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form.docx";
     static final String LR_TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form-LR.docx";
     static final String OUTPUT_FILENAME_PREFIX = "Defence - Defendant ";
 
@@ -32,14 +32,14 @@ public class DefenceFormDocumentGenerator {
     public String generate(DefenceFormPayload payload, int defendantNumber) {
         return docAssemblyService.generateDocument(
             payload,
-            templateId(payload),
+            getTemplateId(payload),
             OutputType.PDF,
             OUTPUT_FILENAME_PREFIX + defendantNumber
         );
     }
 
-    static String templateId(DefenceFormPayload payload) {
-        return payload.isLegalRepresentative() ? LR_TEMPLATE_ID : TEMPLATE_ID;
+    private static String getTemplateId(DefenceFormPayload payload) {
+        return payload.isCompletedByLegalRepresentative() ? LR_TEMPLATE_ID : LIP_TEMPLATE_ID;
     }
 
 }

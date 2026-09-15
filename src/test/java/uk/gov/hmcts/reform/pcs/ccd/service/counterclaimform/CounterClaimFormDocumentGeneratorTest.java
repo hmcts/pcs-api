@@ -27,7 +27,7 @@ class CounterClaimFormDocumentGeneratorTest {
     void delegatesToDocAssemblyWithPerDefendantFilename() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         when(docAssemblyService.generateDocument(eq(payload),
-            eq(CounterClaimFormDocumentGenerator.TEMPLATE_ID),
+            eq(CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID),
             eq(OutputType.PDF),
             eq("Counterclaim - Defendant 2")
         )).thenReturn("https://dm-store/abc");
@@ -36,12 +36,13 @@ class CounterClaimFormDocumentGeneratorTest {
 
         assertThat(url).isEqualTo("https://dm-store/abc");
         verify(docAssemblyService).generateDocument(
-            payload, CounterClaimFormDocumentGenerator.TEMPLATE_ID, OutputType.PDF, "Counterclaim - Defendant 2");
+            payload, CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID, OutputType.PDF, "Counterclaim - Defendant 2");
     }
 
     @Test
     void usesLegalRepTemplateWhenPayloadFlagged() {
-        CounterClaimFormPayload payload = CounterClaimFormPayload.builder().legalRepresentative(true).build();
+        CounterClaimFormPayload payload = CounterClaimFormPayload.builder()
+            .completedByLegalRepresentative(true).build();
         when(docAssemblyService.generateDocument(eq(payload),
             eq(CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID),
             eq(OutputType.PDF),
@@ -57,7 +58,7 @@ class CounterClaimFormDocumentGeneratorTest {
 
     @Test
     void templateIdsMatchRdoDocmosisNamingConvention() {
-        assertThat(CounterClaimFormDocumentGenerator.TEMPLATE_ID)
+        assertThat(CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
         assertThat(CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+-LR\\.docx$");

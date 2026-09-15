@@ -55,7 +55,7 @@ public class CounterClaimFormPayloadBuilder {
             .orElse(null);
         String sotFirmName = statementOfTruth.map(StatementOfTruthEntity::getFirmName).orElse(null);
         String sotPositionHeld = statementOfTruth.map(StatementOfTruthEntity::getPositionHeld).orElse(null);
-        boolean legalRepresentative = statementOfTruth
+        boolean isCompletedByLegalRepresentative = statementOfTruth
             .map(StatementOfTruthEntity::isCompletedByLegalRepresentative)
             .orElse(false);
         boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
@@ -90,7 +90,7 @@ public class CounterClaimFormPayloadBuilder {
             .statementOfTruthName(statementOfTruthName)
             .sotFirmName(sotFirmName)
             .sotPositionHeld(sotPositionHeld)
-            .legalRepresentative(legalRepresentative)
+            .completedByLegalRepresentative(isCompletedByLegalRepresentative)
             .showCounterClaimDetailsSection(showCounterClaimDetails)
             .showClaimingFor(StringUtils.hasText(claimingFor))
             .showClaimingSpecificSum(StringUtils.hasText(claimingSpecificSum))

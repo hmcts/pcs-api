@@ -135,7 +135,7 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getStatementOfTruthName()).isNull();
         assertThat(payload.getSotFirmName()).isNull();
         assertThat(payload.getSotPositionHeld()).isNull();
-        assertThat(payload.isLegalRepresentative()).isFalse();
+        assertThat(payload.isCompletedByLegalRepresentative()).isFalse();
     }
 
     @Test
@@ -165,12 +165,12 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getStatementOfTruthName()).isEqualTo("Sam Solicitor");
         assertThat(payload.getSotFirmName()).isEqualTo("Test Firm LLP");
         assertThat(payload.getSotPositionHeld()).isEqualTo("Partner");
-        assertThat(payload.isLegalRepresentative()).isTrue();
+        assertThat(payload.isCompletedByLegalRepresentative()).isTrue();
         assertThat(payload.getShowStatementOfTruthName()).isTrue();
     }
 
     @Test
-    void legalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
+    void completedByLegalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
             .firstName("Bob").lastName("Defendant").build();
 
@@ -193,7 +193,7 @@ class CounterClaimFormPayloadBuilderTest {
 
         String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(counterClaim));
 
-        assertThat(json).doesNotContain("legalRepresentative");
+        assertThat(json).doesNotContain("completedByLegalRepresentative");
         assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
     }
 
@@ -219,7 +219,7 @@ class CounterClaimFormPayloadBuilderTest {
         assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
         assertThat(payload.getSotFirmName()).isNull();
         assertThat(payload.getSotPositionHeld()).isNull();
-        assertThat(payload.isLegalRepresentative()).isFalse();
+        assertThat(payload.isCompletedByLegalRepresentative()).isFalse();
     }
 
     @Test

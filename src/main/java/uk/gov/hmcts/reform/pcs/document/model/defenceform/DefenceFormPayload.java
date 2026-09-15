@@ -138,6 +138,6 @@ public class DefenceFormPayload implements FormPayload {
     private String sotFirmName;
     private String sotPositionHeld;
     @JsonIgnore
-    private boolean legalRepresentative;
+    private boolean completedByLegalRepresentative;
 
 }

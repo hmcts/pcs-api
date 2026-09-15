@@ -635,7 +635,7 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormPayload payload = builder.build(response);
 
             assertThat(payload.getSotFullName()).isEqualTo("Bob Tenant");
-            assertThat(payload.isLegalRepresentative()).isFalse();
+            assertThat(payload.isCompletedByLegalRepresentative()).isFalse();
         }
 
         @Test
@@ -653,11 +653,11 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.getSotFullName()).isEqualTo("Sam Solicitor");
             assertThat(payload.getSotFirmName()).isEqualTo("Test Firm LLP");
             assertThat(payload.getSotPositionHeld()).isEqualTo("Partner");
-            assertThat(payload.isLegalRepresentative()).isTrue();
+            assertThat(payload.isCompletedByLegalRepresentative()).isTrue();
         }
 
         @Test
-        void legalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
+        void completedByLegalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
             DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
             response.setStatementOfTruth(StatementOfTruthEntity.builder()
                 .fullName("Sam Solicitor")
@@ -668,7 +668,7 @@ class DefenceFormPayloadBuilderTest {
 
             String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(response));
 
-            assertThat(json).doesNotContain("legalRepresentative");
+            assertThat(json).doesNotContain("completedByLegalRepresentative");
             assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
         }
 
@@ -682,7 +682,7 @@ class DefenceFormPayloadBuilderTest {
 
             DefenceFormPayload payload = builder.build(response);
 
-            assertThat(payload.isLegalRepresentative()).isFalse();
+            assertThat(payload.isCompletedByLegalRepresentative()).isFalse();
             assertThat(payload.getSotFirmName()).isNull();
             assertThat(payload.getSotPositionHeld()).isNull();
         }
@@ -697,7 +697,7 @@ class DefenceFormPayloadBuilderTest {
             assertThat(payload.getSotFullName()).isNull();
             assertThat(payload.getSotFirmName()).isNull();
             assertThat(payload.getSotPositionHeld()).isNull();
-            assertThat(payload.isLegalRepresentative()).isFalse();
+            assertThat(payload.isCompletedByLegalRepresentative()).isFalse();
         }
     }
 

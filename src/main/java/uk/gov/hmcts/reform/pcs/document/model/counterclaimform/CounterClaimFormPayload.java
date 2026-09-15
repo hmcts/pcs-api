@@ -44,5 +44,5 @@ public class CounterClaimFormPayload implements FormPayload {
     private Boolean showStatementOfTruthName;
 
     @JsonIgnore
-    private boolean legalRepresentative;
+    private boolean completedByLegalRepresentative;
 }
