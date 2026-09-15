@@ -48,7 +48,9 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -336,6 +338,140 @@ class CaseFlagServiceTest {
             "request description"
         );
         verifyNoMoreInteractions(camundaService);
+    }
+
+    @Test
+    void shouldSaveAndReplaceOtherFlagUnderTheReasonableAdjustmentPath() {
+        // Given a previously supplied "Other" adjustment and a caseworker flag
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        CasePartyFlagEntity previousOtherFlag = createPartyFlagEntity("OT0001", "previous other comment");
+        previousOtherFlag.setPaths(":Party_:Reasonable adjustment_:I need documents in an alternative format");
+        existingFlags.add(previousOtherFlag);
+        existingFlags.add(createPartyFlagEntity("PF0015", "Language Interpreter"));
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        ListValue<FlagDetail> incomingOtherFlag = createOtherReasonableAdjustmentDetail(
+            "I need something to feel comfortable during my hearing", "other comment 1");
+
+        when(taskDescriptionService.createReviewCaseFlagRequestDescription(CASE_REFERENCE, List.of("Other")))
+            .thenReturn("request description");
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity, Flags.builder().details(List.of(incomingOtherFlag)).build(), CASE_REFERENCE);
+
+        // Then the previous "Other" adjustment is replaced and the caseworker flag retained
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(flag -> flag.getFlagRefData().getFlagCode())
+            .containsExactlyInAnyOrder("PF0015", "OT0001");
+
+        CasePartyFlagEntity savedOtherFlag = partyEntity.getDefendantFlags().stream()
+            .filter(flag -> "OT0001".equals(flag.getFlagRefData().getFlagCode()))
+            .findFirst()
+            .orElseThrow();
+        assertThat(savedOtherFlag.getFlagComment()).isEqualTo("other comment 1");
+        assertThat(savedOtherFlag.getOtherDescription())
+            .isEqualTo("I need something to feel comfortable during my hearing");
+
+        // A requested flag raises a request review task, but not the active flag review task
+        verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG_REQUEST, "request description");
+        verifyNoMoreInteractions(camundaService);
+    }
+
+    @Test
+    void shouldNotTreatOtherFlagOutsideTheReasonableAdjustmentPathAsAnAdjustment() {
+        // Given a caseworker added "Other" flag directly under the party
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        CasePartyFlagEntity caseworkerOtherFlag = createPartyFlagEntity("OT0001", "Caseworker note");
+        caseworkerOtherFlag.setPaths(":Party");
+        existingFlags.add(caseworkerOtherFlag);
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        // and a payload with an "Other" adjustment plus an "Other" flag that is not under the adjustment path
+        ListValue<FlagDetail> incomingAdjustment = createOtherReasonableAdjustmentDetail(
+            "I need something to feel comfortable during my hearing", "other comment 1");
+        ListValue<FlagDetail> incomingNonAdjustment = ListValue.<FlagDetail>builder()
+            .value(FlagDetail.builder()
+                       .flagCode("OT0001")
+                       .name("Other")
+                       .status("Requested")
+                       .flagComment("not an adjustment")
+                       .path(List.of(ListValue.<String>builder().value("Party").build()))
+                       .build())
+            .build();
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity,
+            Flags.builder().details(List.of(incomingAdjustment, incomingNonAdjustment)).build(),
+            CASE_REFERENCE);
+
+        // Then the caseworker's flag survives, the adjustment is added and the non-adjustment is ignored
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(CasePartyFlagEntity::getFlagComment)
+            .containsExactlyInAnyOrder("Caseworker note", "other comment 1");
+    }
+
+    @Test
+    void shouldShareOneReferenceDataRowWhenAFlagCodeIsRepeatedInASubmission() {
+        // Given "Other" chosen in two adjustment categories, and no reference data for it yet
+        PartyEntity partyEntity = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        List<ListValue<FlagDetail>> details = List.of(
+            createOtherReasonableAdjustmentDetail("I need documents in an alternative format", "comment 1"),
+            createOtherReasonableAdjustmentDetail("I need something to feel comfortable during my hearing",
+                                                  "comment 2"));
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
+
+        // Then both flags are stored against a single new reference data row
+        assertThat(partyEntity.getDefendantFlags()).hasSize(2);
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(CasePartyFlagEntity::getOtherDescription)
+            .containsExactlyInAnyOrder("I need documents in an alternative format",
+                                       "I need something to feel comfortable during my hearing");
+
+        FlagRefDataEntity sharedRefData = partyEntity.getDefendantFlags().getFirst().getFlagRefData();
+        assertThat(sharedRefData.getFlagCode()).isEqualTo("OT0001");
+        assertThat(partyEntity.getDefendantFlags())
+            .allSatisfy(flag -> assertThat(flag.getFlagRefData()).isSameAs(sharedRefData));
+
+        verify(flagRefDataRepository, times(1)).findByFlagCode("OT0001");
+        verify(flagRefDataRepository).saveAll(argThat(
+            (Iterable<FlagRefDataEntity> saved) -> {
+                List<FlagRefDataEntity> savedList = new ArrayList<>();
+                saved.forEach(savedList::add);
+                return savedList.size() == 1 && savedList.getFirst() == sharedRefData;
+            }));
+    }
+
+    private ListValue<FlagDetail> createOtherReasonableAdjustmentDetail(String category, String flagComment) {
+        return ListValue.<FlagDetail>builder()
+            .value(FlagDetail.builder()
+                       .flagCode("OT0001")
+                       .name("Other")
+                       .nameCy("Arall")
+                       .status("Requested")
+                       .flagComment(flagComment)
+                       .otherDescription(category)
+                       .hearingRelevant(YesOrNo.YES)
+                       .availableExternally(YesOrNo.YES)
+                       .path(List.of(
+                           ListValue.<String>builder().value("Party").build(),
+                           ListValue.<String>builder().value("Reasonable adjustment").build(),
+                           ListValue.<String>builder().value(category).build()))
+                       .build())
+            .build();
     }
 
     @Test

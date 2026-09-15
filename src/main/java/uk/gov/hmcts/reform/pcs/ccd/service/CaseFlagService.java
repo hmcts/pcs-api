@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,6 +52,10 @@ public class CaseFlagService {
     private static final String ACTIVE_STATUS = "Active";
     private static final String REQUESTED_STATUS = "Requested";
     private static final String RA_FLAG_CODE_PREFIX = "RA";
+    // "Other" is a general purpose code used at several levels of the flag taxonomy; it only counts as a
+    // reasonable adjustment when it sits under the reasonable adjustment branch of the path
+    private static final String OTHER_FLAG_CODE = "OT0001";
+    private static final String REASONABLE_ADJUSTMENT_PATH = "Reasonable adjustment";
     private static final String SUPPORT_NOT_REPRESENTED_MESSAGE =
         "User cannot change support for this party on this case";
 
@@ -62,13 +65,30 @@ public class CaseFlagService {
     private PartySupportOwnershipResolver partySupportOwnershipResolver;
     private TranslationWAService translationWAService;
 
-    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
-        return flag.getFlagRefData() != null
-            && isReasonableAdjustmentCode(flag.getFlagRefData().getFlagCode());
+    private static boolean isReasonableAdjustment(FlagDetail flagDetail) {
+        return isReasonableAdjustment(flagDetail.getFlagCode(), flagDetail.getPath());
     }
 
-    private static boolean isReasonableAdjustmentCode(String flagCode) {
-        return flagCode != null && flagCode.startsWith(RA_FLAG_CODE_PREFIX);
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && isReasonableAdjustment(flag.getFlagRefData().getFlagCode(),
+                                      CaseFlagsView.parsePaths(flag.getPaths()));
+    }
+
+    private static boolean isReasonableAdjustment(String flagCode, List<ListValue<String>> path) {
+        if (flagCode == null) {
+            return false;
+        }
+
+        if (flagCode.startsWith(RA_FLAG_CODE_PREFIX)) {
+            return true;
+        }
+
+        return OTHER_FLAG_CODE.equals(flagCode)
+            && path != null
+            && path.stream()
+                .map(ListValue::getValue)
+                .anyMatch(REASONABLE_ADJUSTMENT_PATH::equals);
     }
 
     private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
@@ -103,8 +123,9 @@ public class CaseFlagService {
 
     /**
      * Applies the reasonable adjustment flags a defendant supplied via the cui-ra microsite to their
-     * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
-     * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
+     * party. Only RA flags, and the "Other" flag under the reasonable adjustment path, are accepted and
+     * replaced. Caseworker flags arrive through {@link #mergePartyFlags(List, Set)} instead, which is not
+     * restricted in this way.
      */
     public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
@@ -112,7 +133,7 @@ public class CaseFlagService {
         }
 
         List<ListValue<FlagDetail>> reasonableAdjustmentDetails = incomingFlags.getDetails().stream()
-            .filter(detail -> isReasonableAdjustmentCode(detail.getValue().getFlagCode()))
+            .filter(detail -> isReasonableAdjustment(detail.getValue()))
             .toList();
 
         int ignored = incomingFlags.getDetails().size() - reasonableAdjustmentDetails.size();
@@ -247,7 +268,10 @@ public class CaseFlagService {
                                                               List<T> existingFlags) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
-        Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
+        // Keyed by flag code so a code repeated in the payload (e.g. "Other" chosen in several reasonable
+        // adjustment categories) shares one row rather than creating duplicates that breach the unique
+        // constraint on flag_code
+        Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
         Map<UUID, T> unmatchedExistingFlags = indexFlagsById(existingFlags);
 
         // Caseworker events state the visibility explicitly; flags supplied from outside CCD carry it
@@ -259,9 +283,9 @@ public class CaseFlagService {
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity =
-                mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy);
-            flagRefDataEntities.add(flagRefDataEntity);
+            FlagRefDataEntity flagRefDataEntity = flagRefDataByCode.computeIfAbsent(
+                incomingFlagDetail.getFlagCode(),
+                flagCode -> mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy));
 
             T flagEntity = findExistingFlag(incomingFlagDetailListValue, unmatchedExistingFlags)
                 .orElseGet(flagEntitySupplier);
@@ -276,7 +300,7 @@ public class CaseFlagService {
 
             mergedFlagDetails.add(flagEntity);
         }
-        flagRefDataRepository.saveAll(flagRefDataEntities);
+        flagRefDataRepository.saveAll(flagRefDataByCode.values());
 
         return mergedFlagDetails;
     }
