@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentRequest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PbaPaymentResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class PaymentService {
     private final PcsCaseService pcsCaseService;
     private final PaymentCallbackStrategyFactory paymentCallbackStrategyFactory;
     private final ObjectMapper objectMapper;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
     private final IdamAuthenticator idamAuthenticator;
 
     @Value("${payments.api.callback-url}")
@@ -65,7 +65,7 @@ public class PaymentService {
         @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
         FeePaymentRepository feePaymentRepository, PcsCaseService pcsCaseService,
         PaymentCallbackStrategyFactory paymentCallbackStrategyFactory, ObjectMapper objectMapper,
-                          OrganisationDetailsService organisationDetailsService,
+                          OrganisationService organisationService,
                           IdamAuthenticator idamAuthenticator) {
         this.paymentsClient = paymentsClient;
         this.paymentRequestMapper = paymentRequestMapper;
@@ -74,7 +74,7 @@ public class PaymentService {
         this.pcsCaseService = pcsCaseService;
         this.paymentCallbackStrategyFactory = paymentCallbackStrategyFactory;
         this.objectMapper = objectMapper;
-        this.organisationDetailsService = organisationDetailsService;
+        this.organisationService = organisationService;
         this.idamAuthenticator = idamAuthenticator;
     }
 
@@ -159,7 +159,7 @@ public class PaymentService {
     public PbaAccountsResponse getPbaAccounts(String authToken) {
         User user = idamAuthenticator.validateAuthToken(authToken);
 
-        List<String> pbaAccounts = organisationDetailsService
+        List<String> pbaAccounts = organisationService
             .getOrganisationPaymentAccount(user.getUserDetails().getUid());
 
         return PbaAccountsResponse.builder()
@@ -174,7 +174,7 @@ public class PaymentService {
         FeePaymentEntity feePaymentEntity = getFeePayment(serviceRequestReference);
         verifyNotPaidFee(feePaymentEntity.getPaymentStatus(), serviceRequestReference);
 
-        String organisationName = organisationDetailsService.getOrganisationName(user.getUserDetails().getUid());
+        String organisationName = organisationService.getOrganisationName(user.getUserDetails().getUid());
 
         PBAServiceRequestDTO paymentRequest = PBAServiceRequestDTO.builder()
             .accountNumber(pbaPaymentRequest.getPbaAccount())

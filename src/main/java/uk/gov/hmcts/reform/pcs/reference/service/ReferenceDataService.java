@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 @Slf4j
 public class ReferenceDataService {
 
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
 
-    public ReferenceDataService(OrganisationDetailsService organisationDetailsService) {
-        this.organisationDetailsService = organisationDetailsService;
+    public ReferenceDataService(OrganisationService organisationService) {
+        this.organisationService = organisationService;
     }
 
     /**
@@ -28,7 +28,7 @@ public class ReferenceDataService {
         try {
             log.debug("Retrieving organisation details");
 
-            OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
+            OrganisationDetailsResponse details = organisationService.getOrganisationDetails(userId);
 
             log.debug("Successfully retrieved organisation details");
             return details;
@@ -48,7 +48,7 @@ public class ReferenceDataService {
         try {
             log.debug("Retrieving organisation name");
 
-            String organisationName = organisationDetailsService.getOrganisationName(userId);
+            String organisationName = organisationService.getOrganisationName(userId);
 
             log.debug("Successfully retrieved organisation name");
             return organisationName;
@@ -68,7 +68,7 @@ public class ReferenceDataService {
         try {
             log.debug("Retrieving organisation identifier");
 
-            String organisationIdentifier = organisationDetailsService.getOrganisationIdentifier(userId);
+            String organisationIdentifier = organisationService.getOrganisationIdentifier(userId);
 
             log.debug("Successfully retrieved organisation identifier");
             return organisationIdentifier;
@@ -88,7 +88,7 @@ public class ReferenceDataService {
         try {
             log.debug("Populating claimant information");
 
-            OrganisationDetailsResponse details = organisationDetailsService.getOrganisationDetails(userId);
+            OrganisationDetailsResponse details = organisationService.getOrganisationDetails(userId);
 
             if (isNull(details)) {
                 log.warn("No organisation details found");

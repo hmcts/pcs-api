@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class ReferenceDataServiceTest {
 
     @Mock
-    private OrganisationDetailsService organisationDetailsService;
+    private OrganisationService organisationService;
 
     private ReferenceDataService referenceDataService;
 
@@ -28,7 +28,7 @@ class ReferenceDataServiceTest {
 
     @BeforeEach
     void setUp() {
-        referenceDataService = new ReferenceDataService(organisationDetailsService);
+        referenceDataService = new ReferenceDataService(organisationService);
     }
 
     @Test
@@ -42,42 +42,42 @@ class ReferenceDataServiceTest {
             .sraRegulated(true)
             .build();
 
-        when(organisationDetailsService.getOrganisationDetails(USER_ID)).thenReturn(expectedDetails);
+        when(organisationService.getOrganisationDetails(USER_ID)).thenReturn(expectedDetails);
 
         // When
         OrganisationDetailsResponse result = referenceDataService.getOrganisationDetails(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(expectedDetails);
-        verify(organisationDetailsService).getOrganisationDetails(USER_ID);
+        verify(organisationService).getOrganisationDetails(USER_ID);
     }
 
     @Test
     @DisplayName("Should successfully get organisation name")
     void shouldSuccessfullyGetOrganisationName() {
         // Given
-        when(organisationDetailsService.getOrganisationName(USER_ID)).thenReturn(ORGANISATION_NAME);
+        when(organisationService.getOrganisationName(USER_ID)).thenReturn(ORGANISATION_NAME);
 
         // When
         String result = referenceDataService.getOrganisationName(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_NAME);
-        verify(organisationDetailsService).getOrganisationName(USER_ID);
+        verify(organisationService).getOrganisationName(USER_ID);
     }
 
     @Test
     @DisplayName("Should successfully get organisation identifier")
     void shouldSuccessfullyGetOrganisationIdentifier() {
         // Given
-        when(organisationDetailsService.getOrganisationIdentifier(USER_ID)).thenReturn(ORGANISATION_IDENTIFIER);
+        when(organisationService.getOrganisationIdentifier(USER_ID)).thenReturn(ORGANISATION_IDENTIFIER);
 
         // When
         String result = referenceDataService.getOrganisationIdentifier(USER_ID);
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_IDENTIFIER);
-        verify(organisationDetailsService).getOrganisationIdentifier(USER_ID);
+        verify(organisationService).getOrganisationIdentifier(USER_ID);
     }
 
     @Test
@@ -91,7 +91,7 @@ class ReferenceDataServiceTest {
             .sraRegulated(true)
             .build();
 
-        when(organisationDetailsService.getOrganisationDetails(USER_ID)).thenReturn(details);
+        when(organisationService.getOrganisationDetails(USER_ID)).thenReturn(details);
 
         // When
         ReferenceDataService.ClaimantInformation result = referenceDataService.populateClaimantInformation(USER_ID);
@@ -101,28 +101,28 @@ class ReferenceDataServiceTest {
         assertThat(result.getOrganisationIdentifier()).isEqualTo(ORGANISATION_IDENTIFIER);
         assertThat(result.getStatus()).isEqualTo("ACTIVE");
         assertThat(result.getSraRegulated()).isTrue();
-        verify(organisationDetailsService).getOrganisationDetails(USER_ID);
+        verify(organisationService).getOrganisationDetails(USER_ID);
     }
 
     @Test
     @DisplayName("Should return null when organisation details is null for populateClaimantInformation")
     void shouldReturnNullWhenOrganisationDetailsIsNullForPopulateClaimantInformation() {
         // Given
-        when(organisationDetailsService.getOrganisationDetails(USER_ID)).thenReturn(null);
+        when(organisationService.getOrganisationDetails(USER_ID)).thenReturn(null);
 
         // When
         ReferenceDataService.ClaimantInformation result = referenceDataService.populateClaimantInformation(USER_ID);
 
         // Then
         assertThat(result).isNull();
-        verify(organisationDetailsService).getOrganisationDetails(USER_ID);
+        verify(organisationService).getOrganisationDetails(USER_ID);
     }
 
     @Test
     @DisplayName("Should throw exception when organisation details service fails")
     void shouldThrowExceptionWhenOrganisationDetailsServiceFails() {
         // Given
-        when(organisationDetailsService.getOrganisationDetails(anyString()))
+        when(organisationService.getOrganisationDetails(anyString()))
             .thenThrow(new RuntimeException("Organisation service error"));
 
         // When & Then
@@ -135,7 +135,7 @@ class ReferenceDataServiceTest {
     @DisplayName("Should throw exception when organisation name service fails")
     void shouldThrowExceptionWhenOrganisationNameServiceFails() {
         // Given
-        when(organisationDetailsService.getOrganisationName(anyString()))
+        when(organisationService.getOrganisationName(anyString()))
             .thenThrow(new RuntimeException("Organisation service error"));
 
         // When & Then
@@ -148,7 +148,7 @@ class ReferenceDataServiceTest {
     @DisplayName("Should throw exception when organisation identifier service fails")
     void shouldThrowExceptionWhenOrganisationIdentifierServiceFails() {
         // Given
-        when(organisationDetailsService.getOrganisationIdentifier(anyString()))
+        when(organisationService.getOrganisationIdentifier(anyString()))
             .thenThrow(new RuntimeException("Organisation service error"));
 
         // When & Then
@@ -161,7 +161,7 @@ class ReferenceDataServiceTest {
     @DisplayName("Should throw exception when populate claimant information fails")
     void shouldThrowExceptionWhenPopulateClaimantInformationFails() {
         // Given
-        when(organisationDetailsService.getOrganisationDetails(anyString()))
+        when(organisationService.getOrganisationDetails(anyString()))
             .thenThrow(new RuntimeException("Organisation service error"));
 
         // When & Then
