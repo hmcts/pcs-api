@@ -56,6 +56,7 @@ public class CounterClaimEntity {
     @Version
     private Integer version;
 
+    @Column(name = "counterclaim_rank")
     private Integer rank;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
