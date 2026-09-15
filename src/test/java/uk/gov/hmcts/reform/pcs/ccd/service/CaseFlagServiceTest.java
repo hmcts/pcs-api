@@ -524,7 +524,7 @@ class CaseFlagServiceTest {
     }
 
     /**
-     * The same path in the delimited form the service stores on the entity's {@code paths} column
+     * The same path in the delimited form the service stores on the entity's {@code paths} column.
      */
     private static String storedPaths(String... values) {
         return Arrays.stream(values)
