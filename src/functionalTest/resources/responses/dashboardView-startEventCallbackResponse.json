@@ -64,6 +64,12 @@
                   "templateId": "ViewResponse",
                   "status": "NOT_AVAILABLE"
                 }
+              },
+              {
+                "value": {
+                  "templateId": "YourSupport",
+                  "status": "NOT_AVAILABLE"
+                }
               }
             ]
           }
