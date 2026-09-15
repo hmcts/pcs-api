@@ -45,15 +45,15 @@ class CounterClaimFormServiceTest {
     @Test
     void buildsThenRendersThenAttaches() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 2);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 2);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(payload, 2)).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(payload, 1, 2)).thenReturn(DM_STORE_URL);
 
         underTest.generateAndAttach(COUNTER_CLAIM_ID);
 
         InOrder order = inOrder(persistenceService, documentGenerator);
         order.verify(persistenceService).buildContextIfNotAttached(COUNTER_CLAIM_ID);
-        order.verify(documentGenerator).generate(payload, 2);
+        order.verify(documentGenerator).generate(payload, 1, 2);
         order.verify(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
         verifyNoInteractions(documentImportService);
     }
@@ -71,9 +71,9 @@ class CounterClaimFormServiceTest {
     @Test
     void deletesRenderedDocumentWhenAttachFails() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
 
@@ -87,9 +87,9 @@ class CounterClaimFormServiceTest {
     @Test
     void orphanCleanupFailureDoesNotMaskOriginalException() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1);
+        CounterClaimFormRenderContext context = new CounterClaimFormRenderContext(payload, 1, 1);
         when(persistenceService.buildContextIfNotAttached(COUNTER_CLAIM_ID)).thenReturn(Optional.of(context));
-        when(documentGenerator.generate(any(), anyInt())).thenReturn(DM_STORE_URL);
+        when(documentGenerator.generate(any(), anyInt(), anyInt())).thenReturn(DM_STORE_URL);
         doThrow(new RuntimeException("attach failed"))
             .when(persistenceService).attach(COUNTER_CLAIM_ID, DM_STORE_URL);
         doThrow(new RuntimeException("dm-store unreachable"))
