@@ -16,7 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
 
 @Slf4j
 @Service
@@ -59,7 +63,12 @@ public class FeePaymentNotificationService {
             .filter(document -> !document.isRemoved()
                 && document.getClaim() != null
                 && document.getClaim().getId().equals(claimEntity.getId()))
-            .toList();
+            .collect(Collectors.toCollection(ArrayList::new));
+
+        // The claim form is scheduled for generation so we reference it by its deterministic filename.
+        documents.add(DocumentEntity.builder()
+            .fileName(expectedClaimFormFilename())
+            .build());
 
         translationWAService.createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
     }

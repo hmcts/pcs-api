@@ -33,8 +33,12 @@ public class DefenceFormDocumentGenerator {
             payload,
             TEMPLATE_ID,
             OutputType.PDF,
-            OUTPUT_FILENAME_PREFIX + defendantNumber
+            expectedDefenceFormFilename(defendantNumber)
         );
+    }
+
+    public static String expectedDefenceFormFilename(int defendantNumber) {
+        return OUTPUT_FILENAME_PREFIX + defendantNumber;
     }
 
 }
