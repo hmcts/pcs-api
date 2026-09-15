@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
+import { SHORT_TIMEOUT } from '../../../../playwright.config';
 
 interface QAObject {
   question: string;
@@ -280,7 +281,7 @@ export class CYAPageValidation {
     const savedQA = this.store.getQAObjects();
     if (savedQA.length === 0) return;
 
-    const extractedQA = await this.extractCYATable(page);
+    const extractedQA = await this.extractUntilAllPresent(page, savedQA);
 
     console.log('\n🔍 CYA Validation Results');
     const { passed, failed, ignored, unvalidatedQAs, ignoredQAs } = this.validateAndPrintResults(savedQA, extractedQA);
@@ -308,6 +309,28 @@ export class CYAPageValidation {
     if (failed > 0) {
       throw new Error(`CYA validation failed: ${failed} question(s) did not match`);
     }
+  }
+
+  /**
+   * CCD renders CYA rows progressively, and a scan of a half-rendered table reports every row it
+   * missed as a mismatch. Re-extract until every question we captured is present, rather than
+   * waiting on the row count: the count can hold steady across a callback and still be short.
+   */
+  private async extractUntilAllPresent(page: Page, savedQA: QAObject[]): Promise<QAObject[]> {
+    const wanted = savedQA.filter(saved => !this.store.shouldIgnore(saved.question));
+    const deadline = Date.now() + SHORT_TIMEOUT;
+    let extracted = await this.extractCYATable(page);
+    while (Date.now() < deadline) {
+      const missing = wanted.filter(
+        saved => !this.findAnswerInExtractedQA(saved.question, extracted).extractedQuestion
+      );
+      if (missing.length === 0) {
+        return extracted;
+      }
+      await page.waitForTimeout(250);
+      extracted = await this.extractCYATable(page);
+    }
+    return extracted;
   }
 
   private async extractCYATable(page: Page): Promise<QAObject[]> {

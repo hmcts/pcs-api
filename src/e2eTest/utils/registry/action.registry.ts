@@ -6,6 +6,7 @@ import {SelectAction} from '@utils/actions/element-actions/select.action';
 import {LoginAction} from '@utils/actions/custom-actions/login.action';
 import {NavigateToUrlAction} from '@utils/actions/custom-actions/navigateToUrl.action';
 import {CreateCaseAction} from '@utils/actions/custom-actions/createCase.action';
+import {SelectEventAndGoAction} from '@utils/actions/custom-actions/selectEventAndGo.action';
 import {ClickButtonAction} from '@utils/actions/element-actions/clickButton.action';
 import {ClickRadioButtonAction} from '@utils/actions/element-actions/clickRadioButton.action';
 import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action';
@@ -39,6 +40,7 @@ export class ActionRegistry {
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
     ['selectAnEvent', new CreateCaseAction()],
+    ['selectEventAndGo', new SelectEventAndGoAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],

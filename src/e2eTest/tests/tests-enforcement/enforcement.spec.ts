@@ -95,8 +95,10 @@ test.afterEach(async () => {
 test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectEventAndGo', {
+        eventType: caseSummary.enforceTheOrderEvent,
+        nextPage: enforcementApplication.mainHeader
+      });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,
@@ -283,8 +285,10 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.enforceTheOrderEvent,
+      nextPage: enforcementApplication.mainHeader
+    });
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.warrantOfPossessionRadioOption,
@@ -399,8 +403,10 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
   });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.enforceTheOrderEvent,
+      nextPage: enforcementApplication.mainHeader
+    });
     await performValidation('mainHeader', enforcementApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
       journey: enforcementApplication.warrantOfPossessionRadioOption,
@@ -526,8 +532,10 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     },
   },
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectEventAndGo', {
+        eventType: caseSummary.enforceTheOrderEvent,
+        nextPage: enforcementApplication.mainHeader
+      });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
@@ -546,8 +554,10 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectEventAndGo', {
+        eventType: caseSummary.enforceTheOrderEvent,
+        nextPage: enforcementApplication.mainHeader
+      });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,
@@ -681,8 +691,10 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectEventAndGo', {
+        eventType: caseSummary.enforceTheOrderEvent,
+        nextPage: enforcementApplication.mainHeader
+      });
       await performValidation('mainHeader', enforcementApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         journey: enforcementApplication.warrantOfPossessionRadioOption,

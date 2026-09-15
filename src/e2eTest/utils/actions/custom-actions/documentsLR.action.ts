@@ -1,4 +1,5 @@
 import test, {expect, Locator, Page} from '@playwright/test';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { getFormattedDate } from "@utils/common/string.utils";
 
 import {
@@ -168,7 +169,7 @@ export class DocumentsAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await performValidation('mainHeader', home.caseSummary);
   }
 
@@ -186,8 +187,9 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
+        // Exact id: a `^=` prefix also matches the ...Wales sibling, giving 2 matches.
         const typeDropdown = page.locator(
-          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
+          `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
         await typeDropdown.waitFor({ state: 'attached' });
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });
@@ -274,23 +276,26 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally: a throw would leak the module-level map into the next test on this worker.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
 
     // click each row's Change link, confirm it lands on the page where that
     // question was originally answered, then return to the CYA table.
