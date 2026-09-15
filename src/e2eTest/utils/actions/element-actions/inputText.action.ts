@@ -1,5 +1,7 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
+// Short on purpose: most callers pass an index the page can never satisfy. See execute().
+const INDEXED_FIELD_TIMEOUT = 3000;
 
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
@@ -10,8 +12,21 @@ export class InputTextAction implements IAction {
       const labelText = fieldParams.textLabel ?? fieldParams.text;
       locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
 
-      locator = (await locator.count()) > 1
-        ? locator.nth(Number(fieldParams.index))
+      // count() does not poll: an unrendered indexed field reads as 1 and the value overwrites the
+      // FIRST party. Capped, because callers pass an index whenever a question *can* repeat.
+      const index = Number(fieldParams.index);
+      const hasIndex = Number.isInteger(index) && index > 0;
+      if (hasIndex && (await locator.count()) <= index) {
+        const waitStarted = Date.now();
+        await locator.nth(index).waitFor({ state: 'attached', timeout: INDEXED_FIELD_TIMEOUT })
+          .catch(() => undefined);
+        if ((await locator.count()) <= index) {
+          console.warn(`[inputText] index=${index} never appeared for "${labelText}" after `
+            + `${Date.now() - waitStarted}ms; filling the first matching field instead`);
+        }
+      }
+      locator = hasIndex && (await locator.count()) > 1
+        ? locator.nth(index)
         : locator.first();
     } else {
       locator = typeof fieldParams === 'string'
@@ -26,10 +41,12 @@ export class InputTextAction implements IAction {
 
   private async getStringFieldLocator(page: Page, fieldParams: string) {
     const roleLocator = page.getByRole('textbox', { name: fieldParams, exact: true });
+    // .first(): a repeated CCD collection shares one accessible name, and fill() is strict.
     return (await roleLocator.count() > 0)
-      ? roleLocator
+      ? roleLocator.first()
+      // `:visible:enabled` on every branch: a hidden input makes fill() burn its full actionTimeout.
       : page.locator(`:has-text("${fieldParams}") ~ input:visible:enabled,
-                      label:has-text("${fieldParams}") ~ textarea,
-                      label:has-text("${fieldParams}") + div input`);
+                      label:has-text("${fieldParams}") ~ textarea:visible:enabled,
+                      label:has-text("${fieldParams}") + div input:visible:enabled`).first();
   }
 }
