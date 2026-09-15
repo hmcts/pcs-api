@@ -3,9 +3,13 @@
 -- "I need something to feel comfortable during my hearing". Widen to match flag_comment.
 
 ALTER TABLE case_flag
-    ALTER COLUMN other_description TYPE varchar(255),
-    ALTER COLUMN other_description_cy TYPE varchar(255);
+ALTER COLUMN sub_type_value TYPE varchar(80),
+  ALTER COLUMN sub_type_value_cy TYPE varchar(80),
+  ALTER COLUMN other_description TYPE varchar(255),
+  ALTER COLUMN other_description_cy TYPE varchar(255);
 
 ALTER TABLE case_party_flag
-    ALTER COLUMN other_description TYPE varchar(255),
-    ALTER COLUMN other_description_cy TYPE varchar(255);
+ALTER COLUMN sub_type_value TYPE varchar(80),
+  ALTER COLUMN sub_type_value_cy TYPE varchar(80),
+  ALTER COLUMN other_description TYPE varchar(255),
+  ALTER COLUMN other_description_cy TYPE varchar(255);
