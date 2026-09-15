@@ -829,6 +829,9 @@ public class PCSCase {
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
+    @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
+    private YesOrNo hasUnsubmittedDefendantResponses;
+
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
