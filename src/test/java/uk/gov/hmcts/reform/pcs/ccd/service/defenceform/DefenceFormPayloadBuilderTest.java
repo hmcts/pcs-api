@@ -466,6 +466,33 @@ class DefenceFormPayloadBuilderTest {
         }
 
         @Test
+        void employmentIncomeLabelIsThirdPersonForLegalRepresentative() {
+            RegularIncomeEntity income = RegularIncomeEntity.builder().build();
+            income.addItem(RegularIncomeItemEntity.builder()
+                .incomeType(IncomeType.INCOME_FROM_JOBS).amount(new BigDecimal("1500.00"))
+                .frequency(RecurrenceFrequency.MONTHLY).build());
+
+            HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
+                .shareIncomeExpenseDetails(VerticalYesNo.YES)
+                .build();
+            household.setRegularIncomeEntity(income);
+
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setHouseholdCircumstances(household);
+            response.setStatementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Sam Solicitor")
+                .firmName("Test Firm LLP")
+                .positionHeld("Partner")
+                .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+                .build());
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getIncome().getFirst().getLabel())
+                .isEqualTo("Income from all jobs they do");
+        }
+
+        @Test
         void hidesIncomeAndExpensesRowsWhenNoItemsSelected() {
             HouseholdCircumstancesEntity household = HouseholdCircumstancesEntity.builder()
                 .shareIncomeExpenseDetails(VerticalYesNo.YES)
