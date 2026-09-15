@@ -1,5 +1,5 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
-import {chromium} from '@playwright/test';
+import {chromium, expect} from '@playwright/test';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -62,12 +62,15 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await dismissCookieBanner(page, 'additional');
 
-    await page.waitForSelector('#username', { timeout: LONG_TIMEOUT });
-    await page.locator('#username').fill(user.claimantSolicitor.email);
+    await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
+    await page.locator('#email').fill(user.claimantSolicitor.email);
+    await page.getByRole('button', { name: 'Continue' }).click(); 
+    const pwdHeader = page.getByLabel('Enter your password', { exact: true });
+    await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await page.locator('#password').fill(user.claimantSolicitor.password);
-    await page.locator('#login-submit-btn').click();
+    await page.getByRole('button', { name: 'Continue' }).click(); 
 
-    await page.waitForURL((url) => !url.href.includes('/login'), { timeout: LONG_TIMEOUT });
+    await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
 
     await page.waitForLoadState('load');
 

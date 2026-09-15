@@ -7,7 +7,7 @@ export class ClickTabAction implements IAction {
     const locator = page.getByRole('tab', { name: tabName })
       .or(page.getByRole('link', { name: tabName }));
 
-    await locator.waitFor({ state: 'visible' });
-    await locator.click();
+    await locator.first().waitFor({ state: 'visible' });
+    await locator.first().click();
   }
 }

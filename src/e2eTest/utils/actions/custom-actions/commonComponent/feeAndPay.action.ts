@@ -110,7 +110,6 @@ export class FeeAndPayAction implements IAction {
   private async verifyStatusInHistoryAndSummaryTab(statusDetails: actionRecord, page: Page) {
     //Verify status only in AAT env as its NOT working in preview
     const currentUrl = process.env.MANAGE_CASE_BASE_URL;
-    console.log(process.env.MANAGE_CASE_BASE_URL);
     if (currentUrl && currentUrl.includes('api-pr')) {
       console.log('Verification steps skipped as this is NOT working in PREVIEW env. POFCC-229');
     } else {

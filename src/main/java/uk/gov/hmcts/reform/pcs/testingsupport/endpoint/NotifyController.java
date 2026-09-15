@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -42,7 +41,7 @@ public class NotifyController {
     public ResponseEntity<List<EmailNotificationResponse>> sendDefendantResponseEmails(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @RequestParam UUID defendantResponseId) {
+        @RequestParam Integer defendantResponseId) {
 
         log.info("Received request to send all defendant response emails for {}", defendantResponseId);
         // temporary endpoint to test sending emails

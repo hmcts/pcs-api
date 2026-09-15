@@ -6,4 +6,5 @@ export * from "@utils/actions/element-actions/inputText.action";
 export * from "@utils/actions/element-actions/select.action";
 export * from "@utils/actions/element-actions/uploadFile.action";
 export * from "@utils/actions/element-actions/expandSummary.action";
+export * from "@utils/actions/element-actions/inputDate.action";
 

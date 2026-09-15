@@ -16,10 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -33,6 +35,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -394,6 +397,46 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
         assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
         assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
+    }
+
+    @Test
+    void shouldPersistUploadedDocumentChecklistForWales() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getDocumentsYouveUploaded()).thenReturn(Set.of(
+            UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+            UploadedDocumentChecklistType.OCCUPATION_LICENCE
+        ));
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist())
+            .extracting(ClaimUploadedDocumentChecklistEntity::getDocumentType)
+            .containsExactlyInAnyOrder(
+                UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+                UploadedDocumentChecklistType.OCCUPATION_LICENCE
+            );
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist())
+            .allSatisfy(item -> assertThat(item.getClaim()).isEqualTo(createdClaimEntity));
+    }
+
+    @Test
+    void shouldNotPersistUploadedDocumentChecklistWhenEmpty() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getDocumentsYouveUploaded()).thenReturn(Set.of());
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist()).isEmpty();
+    }
+
+    @Test
+    void shouldNotPersistUploadedDocumentChecklistForEngland() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist()).isEmpty();
+        verify(pcsCase, never()).getDocumentsYouveUploaded();
     }
 
     @Test

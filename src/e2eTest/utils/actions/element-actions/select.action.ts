@@ -13,7 +13,7 @@ export class SelectAction implements IAction {
     if (typeof option === 'number') {
       await locator.selectOption({ index: option });
     } else {
-      await locator.selectOption(option);
+      await locator.first().selectOption(option);
     }
   }
 }

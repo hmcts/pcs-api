@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.util.UUID;
 
 @Entity
 @Table(name = "enf_selected_defendants")
@@ -28,8 +27,8 @@ import java.util.UUID;
 public class SelectedDefendantEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enf_case_id")

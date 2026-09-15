@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 
 @Component
 @Slf4j
@@ -28,16 +30,14 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.maintainCaseLink.name(), this::submit)
-                            .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
+                            .forStates(EventStates.maintainCaseLink())
                             .name("Manage case links")
                             .description("To manage link related cases")
-                            .grant(Permission.CRUD,
-                                   UserRole.CTSC_ADMIN,
-                                   UserRole.HEARING_CENTRE_ADMIN,
-                                   UserRole.JUDGE)
+                            .grant(Permission.CRUD, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER)
                             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("maintainCaseLink")
-            .pageLabel("Case Link")
+            .pageLabel("Manage case links")
+            .label("maintainCaseLink-lineSeparator", "---")
             .optional(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher = \"DONOTSHOW\"", null, true)
             .optional(PCSCase::getLinkedCasesComponentLauncher,
                       null, null, null, null, "#ARGUMENT(UPDATE,LinkedCases)");

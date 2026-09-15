@@ -56,8 +56,8 @@ public class DefenceFormPayload implements FormPayload {
     private String correctedStartDate;
     private boolean showDefendantProvidedStartDate;
     private String defendantProvidedStartDate;
-    private boolean showLandlordRegistered;
-    private String landlordRegistered;
+    private boolean showExemptLandlord;
+    private String exemptLandlord;
     private boolean showLandlordLicensed;
     private String landlordLicensed;
     private boolean showWrittenTerms;

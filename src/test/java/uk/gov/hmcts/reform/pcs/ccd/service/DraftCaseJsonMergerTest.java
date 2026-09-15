@@ -81,16 +81,22 @@ class DraftCaseJsonMergerTest {
                             "genApps",
                             "claimGroundSummaries",
                             "parties",
+                            "partySupport",
+                            "supportReviewFlags",
                             "allClaimants",
                             "allDefendants",
                             "allLinkedDefendants",
                             "allUnderlesseeOrMortgagees",
+                            "allLitigationFriends",
                             "possessionClaimResponse",
                             "enforcementOrder.rawWarrantDetails.vulnerableAdultsChildren",
                             "xuiGenAppRequest",
+                            "documentAmendDetails",
+                            "enterGenAppRequest",
                             "casePartiesTab",
                             "caseDetailsTab",
-                            "summaryTab")
+                            "summaryTab",
+                            "defendantPaperResponse")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()

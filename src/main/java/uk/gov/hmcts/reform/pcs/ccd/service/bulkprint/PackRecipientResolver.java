@@ -25,6 +25,7 @@ public class PackRecipientResolver {
     private final PcsCaseRepository pcsCaseRepository;
     private final ClaimPackSelector claimPackSelector;
     private final DefencePackSelector defencePackSelector;
+    private final GenAppPackSelector genAppPackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
@@ -32,12 +33,14 @@ public class PackRecipientResolver {
     public PackRecipientResolver(PcsCaseRepository pcsCaseRepository,
                                  ClaimPackSelector claimPackSelector,
                                  DefencePackSelector defencePackSelector,
+                                 GenAppPackSelector genAppPackSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                  AddressMapper addressMapper) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.claimPackSelector = claimPackSelector;
         this.defencePackSelector = defencePackSelector;
+        this.genAppPackSelector = genAppPackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
@@ -61,6 +64,15 @@ public class PackRecipientResolver {
             .orElseGet(List::of);
     }
 
+    @Transactional(readOnly = true)
+    public List<ResolvedRecipient> resolveGenAppRecipients(UUID caseId) {
+        return pcsCaseRepository.findById(caseId)
+            .map(pcsCase -> genAppPackSelector.findGenAppPackCandidates(pcsCase).stream()
+                .map(candidate -> resolveGenAppRecipient(pcsCase, candidate))
+                .toList())
+            .orElseGet(List::of);
+    }
+
     private ResolvedRecipient resolveClaimRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
@@ -73,6 +85,14 @@ public class PackRecipientResolver {
         PartyEntity recipient = candidate.recipient();
         PartyRole role = candidate.role();
         return new ResolvedRecipient(pcsCase, recipient, LetterType.DEFENCE_PACK, candidate.documents(),
+            recipientAddressResolver.resolveDisplayName(recipient),
+            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
+    }
+
+    private ResolvedRecipient resolveGenAppRecipient(PcsCaseEntity pcsCase, GenAppPackCandidate candidate) {
+        PartyEntity recipient = candidate.recipient();
+        PartyRole role = candidate.role();
+        return new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }

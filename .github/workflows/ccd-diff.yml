@@ -27,10 +27,13 @@ jobs:
         run: ./gradlew generateCCDConfig
         working-directory: build/${{ matrix.target }}
 
+      - name: Archive CCD definitions (${{ matrix.target }})
+        run: tar -czf ${{ matrix.target }}.tar.gz -C build/${{ matrix.target }}/build/definitions PCS
+
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.target }}
-          path: build/${{ matrix.target }}/build/definitions/PCS
+          path: ${{ matrix.target }}.tar.gz
 
   report:
     permissions:
@@ -44,11 +47,16 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: branch
-          path: build/branch
+          path: build/branch-tar
       - uses: actions/download-artifact@v8
         with:
           name: master
-          path: build/master
+          path: build/master-tar
+      - name: Extract CCD definitions
+        run: |
+          mkdir -p build/branch build/master
+          tar -xzf build/branch-tar/branch.tar.gz -C build/branch
+          tar -xzf build/master-tar/master.tar.gz -C build/master
       - name: Generate report
         id: ccd-diff
         run: |

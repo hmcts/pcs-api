@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -38,16 +38,22 @@ public class CftlibConfig implements CFTLibConfigurer {
     @Override
     public void configure(CFTLib lib) throws Exception {
 
-        var users = Map.of(
-            "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
-            "pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"),
-            "pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker", "caseworker-pcs-solicitor"),
-            "citizen@pcs.com", List.of("citizen"),
-            "data.store.idam.system.user@gmail.com", List.of(),
-            "ccd.import@pcs.com", List.of("ccd-import"),
-            "pcs-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import", "pcs-system-update"),
-            "prd-admin-user@localhost", List.of()
-        );
+        var users = new HashMap<String, List<String>>();
+        users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
+        users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
+        users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
+                                                              "caseworker-pcs-solicitor",  "caseworker-pcs"));
+        users.put("citizen@pcs.com", List.of("citizen"));
+        users.put("data.store.idam.system.user@gmail.com", List.of());
+        users.put("ccd.import@pcs.com", List.of("ccd-import"));
+        users.put("pcs-system-user@localhost",
+                  List.of("caseworker", "caseworker-pcs", "ccd-import", "pcs-system-update"));
+        users.put("wa-system-user@localhost",
+                  List.of("caseworker", "caseworker-civil", "caseworker-wa-task-configuration"));
+        users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
+        users.put("prd-admin-user@localhost", List.of());
+        users.put("master.caa@gmail.com", List.of("caseworker-caa"));
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
@@ -73,6 +79,9 @@ public class CftlibConfig implements CFTLibConfigurer {
         roleNames.add("caseworker");
         roleNames.add("caseworker-ras-validation");
         roleNames.add("GS_profile");
+        roleNames.add("caseworker-wa-task-configuration");
+        roleNames.add("pui-case-manager");
+        roleNames.add("caseworker-caa");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }

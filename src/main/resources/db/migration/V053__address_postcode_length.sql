@@ -1,2 +1,0 @@
-ALTER TABLE address
-  ALTER COLUMN postcode TYPE VARCHAR(14);

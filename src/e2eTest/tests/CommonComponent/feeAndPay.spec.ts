@@ -111,6 +111,8 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performAction('clickButton', confirmYourPayment.confirmButton);
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
     await clearBrowserSession(page, context);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
@@ -135,7 +137,10 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
     await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,
@@ -173,7 +178,10 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     await performValidation('mainHeader', cancelPayment.mainHeader);
     await performAction('clickButton', cancelPayment.continueButton);
     await performAction('clickButton', serviceRequest.returnToServiceRequestLink);
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
     await clearBrowserSession(page, context);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', { email: refundAndRemission.requesterEmail, password: process.env.IDAM_PCS_USER_PASSWORD });
     await performAction('verifyStatusInHistoryAndSummaryTab', {
       serviceReqLink: cancelPayment.returnServiceReqLink,

@@ -74,7 +74,7 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement @PR',
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all YES selection - no update on prepopulated data ,upload more than one evidence @allYES @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -168,7 +168,7 @@ test.describe.skip('[Enforcement - Warrant of Restitution]', async () => {
 
     });
 
-  test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement @PR',
+  test('Warrant - Apply for a Warrant of Restitution - Warrant with all NO selection - no update on prepopulated data  @allNO @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

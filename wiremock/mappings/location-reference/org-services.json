@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/location/orgServices"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": [
+      {
+        "service_id": 10,
+        "org_unit": "HMCTS",
+        "business_area": "Civil, Family and Tribunals",
+        "jurisdiction": "Civil",
+        "service_description": "Possession Claims Service",
+        "service_code": "ABA3",
+        "service_short_description": "Possessions",
+        "ccd_service_name": "PCS",
+        "last_update": "2026-01-01T00:00:00",
+        "ccd_case_types": ["PCS"]
+      }
+    ]
+  }
+}

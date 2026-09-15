@@ -1,0 +1,62 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/refdata/internal/staff/usersByServiceName"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": [
+      {
+        "ccd_service_name": "PCS",
+        "staff_profile": {
+          "id": "adcab220-a2cf-3a1b-9705-29f5cd5e387b",
+          "first_name": "test",
+          "last_name": "hearing centre team leader",
+          "region_id": 1,
+          "user_type": "CTSC",
+          "suspended": "false",
+          "case_allocator": "Y",
+          "task_supervisor": "Y",
+          "staff_admin": "N",
+          "created_time": "2026-05-20T09:33:30.066072",
+          "last_updated_time": "2026-07-17T15:29:34.504777",
+          "email_id": "pcs-hearing-centre-team-leader-01@localhost",
+          "region": "London",
+          "base_location": [
+            {
+              "created_time": "2026-07-17T15:29:34.492969",
+              "last_updated_time": "2026-07-17T15:29:34.492987",
+              "location_id": 20262,
+              "location": "Central London",
+              "is_primary": true
+            }
+          ],
+          "user_type_id": 1,
+          "role": [
+            {
+              "role_id": "3",
+              "created_time": "2026-07-17T15:29:34.494174",
+              "last_updated_time": "2026-07-17T15:29:34.494188",
+              "role": "Hearing Centre Team Leader",
+              "is_primary": true
+            }
+          ],
+          "skills": [],
+          "work_area": [
+            {
+              "service_code": "AAA3",
+              "area_of_work": "Mortgage and Landlord Possession Claims",
+              "created_time": "2026-07-17T15:29:34.497944",
+              "last_updated_time": "2026-07-17T15:29:34.497957"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+

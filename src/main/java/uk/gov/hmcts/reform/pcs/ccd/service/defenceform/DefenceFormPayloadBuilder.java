@@ -191,8 +191,8 @@ public class DefenceFormPayloadBuilder {
         payload.showDefendantProvidedStartDate(defendantProvidedStartDate);
         payload.defendantProvidedStartDate(defendantProvidedStartDate ? formatIsoDate(startDateValue) : null);
 
-        payload.showLandlordRegistered(isWales);
-        payload.landlordRegistered(toLabel(response.getLandlordRegistered()));
+        payload.showExemptLandlord(isWales);
+        payload.exemptLandlord(toLabel(response.getExemptLandlord()));
         payload.showLandlordLicensed(isWales);
         payload.landlordLicensed(toLabel(response.getLandlordLicensed()));
         payload.showWrittenTerms(isWales);

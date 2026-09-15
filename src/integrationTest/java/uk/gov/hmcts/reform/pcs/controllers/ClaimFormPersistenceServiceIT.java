@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -69,7 +70,7 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
         final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
-            .thenReturn(DocumentEntity.builder().documentId(UUID.randomUUID()).build());
+            .thenReturn(importedDocument());
         doThrow(new RuntimeException("activity log write failed"))
             .when(claimActivityLogService).logGenerationSuccess(caseReference);
 
@@ -88,12 +89,22 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
         final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
             caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
-            .thenReturn(DocumentEntity.builder().documentId(UUID.randomUUID()).build());
+            .thenReturn(importedDocument());
 
         claimFormPersistenceService.attach(caseReference, DM_STORE_URL);
 
         UUID claimId = caseEntity.getClaims().getFirst().getId();
-        assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument()).isNotNull();
+        assertThat(claimRepository.findById(claimId).orElseThrow().getClaimFormDocument())
+            .isNotNull()
+            .extracting(DocumentEntity::getCategoryId)
+            .isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
         verify(claimActivityLogService).logGenerationSuccess(caseReference);
+    }
+
+    private static DocumentEntity importedDocument() {
+        return DocumentEntity.builder()
+            .documentId(UUID.randomUUID())
+            .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
+            .build();
     }
 }

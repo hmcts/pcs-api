@@ -39,6 +39,8 @@ class PackRecipientResolverTest {
     @Mock
     private DefencePackSelector defencePackSelector;
     @Mock
+    private GenAppPackSelector genAppPackSelector;
+    @Mock
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
@@ -142,5 +144,35 @@ class PackRecipientResolverTest {
 
         assertThat(resolved).singleElement().satisfies(recipient ->
             assertThat(recipient.address()).isEqualTo(addressUk));
+    }
+
+    @Test
+    @DisplayName("Resolves a gen-app pack with GEN_APP_PACK and the party's correspondence address")
+    void shouldResolveGenAppRecipientWithGenAppLetterType() {
+        AddressUK addressUk = AddressUK.builder().addressLine1("42 Renters Way").build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(genAppPackSelector.findGenAppPackCandidates(pcsCase))
+            .thenReturn(List.of(new GenAppPackCandidate(PartyRole.DEFENDANT, defendant, List.of(defenceForm))));
+        when(recipientAddressResolver.resolveDisplayName(defendant)).thenReturn("Bob Tenant");
+        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, pcsCase.getPropertyAddress()))
+            .thenReturn(addressUk);
+
+        List<ResolvedRecipient> resolved = underTest.resolveGenAppRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.recipient()).isEqualTo(defendant);
+            assertThat(recipient.letterType()).isEqualTo(LetterType.GEN_APP_PACK);
+            assertThat(recipient.recipientName()).isEqualTo("Bob Tenant");
+            assertThat(recipient.address()).isEqualTo(addressUk);
+            assertThat(recipient.documents()).containsExactly(defenceForm);
+        });
+    }
+
+    @Test
+    @DisplayName("Returns no gen-app recipients when the case is not found")
+    void shouldReturnNoGenAppRecipientsWhenCaseNotFound() {
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
+
+        assertThat(underTest.resolveGenAppRecipients(CASE_ID)).isEmpty();
     }
 }

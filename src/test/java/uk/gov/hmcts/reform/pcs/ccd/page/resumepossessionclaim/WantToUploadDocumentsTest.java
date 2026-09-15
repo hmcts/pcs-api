@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -24,12 +25,15 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,6 +112,39 @@ class WantToUploadDocumentsTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getAdditionalDocuments()).isNull();
+    }
+
+    @Test
+    void shouldClearChecklistSelectionsWhenUserSelectsNo() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .wantToUploadDocuments(VerticalYesNo.NO)
+                .documentsYouveUploaded(Set.of(UploadedDocumentChecklistType.OCCUPATION_LICENCE))
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getDocumentsYouveUploaded()).isNull();
+    }
+
+    @Test
+    void shouldNotRestoreAdditionalDocumentsFromDraftWhenUserSelectsNo() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(LegislativeCountry.WALES)
+                .wantToUploadDocuments(VerticalYesNo.NO)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getData().getAdditionalDocuments()).isNull();
+        verify(draftCaseDataService, never())
+                .getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.resumePossessionClaim);
     }
 
     @Test

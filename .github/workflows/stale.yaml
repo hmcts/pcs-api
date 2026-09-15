@@ -1,0 +1,36 @@
+name: Mark stale issues and pull requests
+on:
+  schedule:
+    - cron: '0 3 * * *'
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-stale: '14'
+          days-before-close: '7'
+          stale-issue-message: >
+            This issue has been automatically marked as stale because it has not had
+            recent activity in the last 14 days. It will be closed in 7 days if no
+            further activity occurs. Comment or push to keep it open. Thank you for
+            your contributions.
+          stale-pr-message: >
+            This pull request has been automatically marked as stale because it has not
+            had recent activity in the last 14 days. It will be closed in 7 days if no
+            further activity occurs. Comment or push to keep it open. Thank you for
+            your contributions.
+          close-issue-message: >
+            This issue has been closed due to inactivity. Feel free to reopen it if it's
+            still relevant.
+          close-pr-message: >
+            This pull request has been closed due to inactivity. Feel free to reopen it
+            if you'd like to pick it back up.
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+          exempt-pr-labels: 'pinned'
+          exempt-issue-labels: 'pinned'

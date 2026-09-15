@@ -10,7 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
@@ -21,8 +24,11 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     private final PcsCaseService pcsCaseService;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    private final SecurityContextService securityContextService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
+    private final OrganisationService organisationService;
+    private final TenancyLicenceView tenancyLicenceView;
+    private final NoticeOfPossessionView noticeOfPossessionView;
+    private final RentArrearsView rentArrearsView;
 
     @Override
     public boolean supports(List<String> roles) {
@@ -31,24 +37,42 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
 
     @Override
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+        String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        PCSCase responseCase;
 
-        List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(caseReference);
-
-        if (defendantPartiesLinkedAndActive.size() == 1) {
-            PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
-            legalRepPartySelectionService.validateResponseNotAlreadySubmitted(caseReference, defendant.getId());
-            return legalRepPartySelectionService.getDraftCaseData(caseReference, pcsCase, defendant,
-                                                                  defendantPartiesLinkedAndActive);
+        if (legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
+            List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(
+                caseEntity, organisationId, false);
+            responseCase = legalRepPartySelectionService.buildSubmittedResponseCase(
+                pcsCase, defendantPartiesLinkedAndActive);
+        } else {
+            List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(
+                caseEntity, organisationId, true);
+            if (defendantPartiesLinkedAndActive.size() == 1) {
+                PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
+                responseCase = legalRepPartySelectionService.getDraftCaseData(
+                    caseReference, pcsCase, defendant, defendantPartiesLinkedAndActive, organisationId);
+            } else {
+                responseCase = legalRepPartySelectionService.getDraft(
+                    pcsCase, defendantPartiesLinkedAndActive, caseReference, organisationId);
+            }
         }
 
-        return legalRepPartySelectionService.getDraft(pcsCase, defendantPartiesLinkedAndActive, caseReference);
+        return hydrateClaimantProvidedCaseFields(caseEntity, responseCase);
     }
 
-    private List<PartyEntity> loadAndValidateDefendants(long caseReference) {
-        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+    private PCSCase hydrateClaimantProvidedCaseFields(PcsCaseEntity caseEntity, PCSCase pcsCase) {
+        tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
+        noticeOfPossessionView.setCaseFields(pcsCase, caseEntity);
+        rentArrearsView.setCaseFields(pcsCase, caseEntity);
+        pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
+        return pcsCase;
+    }
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity,
-                                                                            securityContextService.getCurrentUserId());
+    private List<PartyEntity> loadAndValidateDefendants(
+        PcsCaseEntity caseEntity, String organisationId, boolean validate) {
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId, validate);
     }
 
 }

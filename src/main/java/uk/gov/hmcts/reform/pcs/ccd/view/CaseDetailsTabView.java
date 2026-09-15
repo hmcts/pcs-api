@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetai
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.SuspensionOfRightToBuyTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UnderlesseeOrMortgageInformationTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.UploadedDocumentsChecklistTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.AdditionalDefendantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.ClaimantInformationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.DefendantInformationTabDetails;
@@ -59,6 +60,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.builder.NoticeDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ReasonsForPossessionTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RequiredDocumentsTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.RentArrearsTabDetailsBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.view.builder.UploadedDocumentsChecklistTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
@@ -86,6 +88,7 @@ public class CaseDetailsTabView {
     private final DefendantInformationTabDetailsBuilder defendantInformationTabDetailsBuilder;
     private final AdditionalDefendantInformationTabDetailsBuilder additionalDefendantInformationTabDetailsBuilder;
     private final RequiredDocumentsTabDetailsBuilder requiredDocumentsTabDetailsBuilder;
+    private final UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
 
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, boolean isSubmitted) {
@@ -115,6 +118,8 @@ public class CaseDetailsTabView {
             buildProhibitedConductStandardContractTabDetails(pcsCase);
         RequiredDocumentsTabDetails requiredDocumentsTabDetails =
             requiredDocumentsTabDetailsBuilder.buildRequiredDocumentsTabDetails(pcsCase, isSubmitted);
+        UploadedDocumentsChecklistTabDetails uploadedDocumentsChecklistTabDetails =
+            uploadedDocumentsChecklistTabDetailsBuilder.buildUploadedDocumentsChecklistTabDetails(pcsCase);
 
         CaseDetailsTab caseDetailsTab = CaseDetailsTab.builder()
             .claimDetails(claimTabDetails)
@@ -136,6 +141,7 @@ public class CaseDetailsTabView {
             .antisocialAndConductDetails(antisocialAndConductTabDetails)
             .prohibitedConductStandardContractDetails(prohibitedConductStandardContractTabDetails)
             .requiredDocumentsDetails(requiredDocumentsTabDetails)
+            .uploadedDocumentsChecklistDetails(uploadedDocumentsChecklistTabDetails)
             .build();
 
         if (claimantInformationTabDetails != null) {

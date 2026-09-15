@@ -96,7 +96,7 @@ class WarrantStrategyTest {
         // Given
         WarrantEntity warrantEntity = new WarrantEntity();
         WarrantEntity savedWarrantEntity = new WarrantEntity();
-        savedWarrantEntity.setId(UUID.randomUUID());
+        savedWarrantEntity.setId(1);
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
@@ -118,7 +118,7 @@ class WarrantStrategyTest {
         // Given
         WarrantEntity warrantEntity = new WarrantEntity();
         WarrantEntity savedWarrantEntity = new WarrantEntity();
-        UUID warrantId = UUID.randomUUID();
+        Integer warrantId = 1;
         savedWarrantEntity.setId(warrantId);
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))

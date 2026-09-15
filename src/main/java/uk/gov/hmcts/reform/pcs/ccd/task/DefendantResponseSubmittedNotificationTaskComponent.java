@@ -9,20 +9,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseStatusChangeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.DefendantResponseNotificationService;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Slf4j
 @Component
 public class DefendantResponseSubmittedNotificationTaskComponent {
     private static final String DEFENDANT_RESPONSE_SUBMITTED_TASK_NAME = "defendant-response-submitted-task";
 
-    public static final TaskDescriptor<DefendantResponseStatusChangeTaskData>
+    public static final TaskDescriptor<DefendantResponseTaskData>
         DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR = TaskDescriptor.of(DEFENDANT_RESPONSE_SUBMITTED_TASK_NAME,
-                                                                         DefendantResponseStatusChangeTaskData.class);
+                                                                         DefendantResponseTaskData.class);
 
     private final DefendantResponseNotificationService defendantResponseNotificationService;
 
@@ -40,15 +39,15 @@ public class DefendantResponseSubmittedNotificationTaskComponent {
     }
 
     @Bean
-    public CustomTask<DefendantResponseStatusChangeTaskData> defendantResponseSubmittedNotificationTask() {
+    public CustomTask<DefendantResponseTaskData> defendantResponseSubmittedNotificationTask() {
         return Tasks.custom(DEFENDANT_RESPONSE_SUBMITTED_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetries,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                DefendantResponseStatusChangeTaskData taskData = taskInstance.getData();
-                UUID defendantResponseId = taskData.getDefendantResponseId();
+                DefendantResponseTaskData taskData = taskInstance.getData();
+                Integer defendantResponseId = taskData.getDefendantResponseId();
                 log.info("Processing defendant response submitted notification for: {}", defendantResponseId);
 
                 defendantResponseNotificationService.sendEmailNotificationForNoCounterClaim(defendantResponseId);

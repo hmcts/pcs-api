@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
-import java.util.UUID;
 
 @Entity
 @Builder
@@ -34,8 +33,8 @@ import java.util.UUID;
 public class PossessionAlternativesEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @OneToOne
     @JsonBackReference

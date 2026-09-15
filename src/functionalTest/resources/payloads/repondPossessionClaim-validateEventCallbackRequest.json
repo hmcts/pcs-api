@@ -1,0 +1,79 @@
+{
+  "event": {
+    "id": "respondPossessionClaim",
+    "summary": "string",
+    "description": "string"
+  },
+    "data": {
+    "orgNameFound": "Yes",
+    "claimantName": "Possession Claims Solicitor Org",
+    "isClaimantNameCorrect": "YES"
+  },
+  "ignore_warning": false,
+  "case_reference": "${caseReference}",
+  "event_data": {
+      "propertyAddress": {
+        "AddressLine1": "1 Second Avenue",
+        "AddressLine2": "",
+        "AddressLine3": "",
+        "PostTown": "London",
+        "County": "Greater London",
+        "PostCode": "W3 7RX",
+        "Country": "United Kingdom"
+      },
+      "legislativeCountry": "England",
+        "possessionClaimResponse": {
+          "claimantOrganisations": [
+            {
+              "id": "6ec6b2f2-926f-4756-8250-9726b2d03f8f",
+              "value": "Possession Claims Solicitor Org"
+            }
+          ],
+          "claimantServiceAddress": {
+            "AddressLine1": "Ministry Of Justice",
+            "AddressLine2": "Seventh Floor 102 Petty France",
+            "PostTown": "London",
+            "PostCode": "SW1H 9AJ",
+            "Country": "United Kingdom"
+          },
+          "defendantContactDetails": {
+            "party": {
+              "firstName": "Jane",
+              "lastName": "Doe",
+              "address": {
+
+              }
+            }
+          },
+          "defendantResponses": {
+            "tenancyTypeConfirmation": "YES",
+            "rentArrearsAmountConfirmation": "YES",
+            "contactByPhone": "NO",
+            "contactByEmail": "YES",
+            "contactByPost": "NO",
+            "freeLegalAdvice": "NO",
+            "defendantNameConfirmation": "YES",
+            "correspondenceAddressConfirmation": "YES",
+            "householdCircumstances": {
+              "dependantChildren": "No",
+              "shareAdditionalCircumstances": "No",
+              "exceptionalHardship": "No",
+              "otherDependants": "No",
+              "otherTenants": "No",
+              "alternativeAccommodation": "NO",
+              "shareIncomeExpenseDetails": "No"
+            },
+            "paymentAgreement": {
+              "anyPaymentsMade": "NO",
+              "repaymentPlanAgreed": "NO",
+              "repayArrearsInstalments": "NO"
+            },
+            "languageUsed": "ENGLISH",
+            "otherConsiderations": "NO",
+            "makeCounterClaim": "NO"
+          }
+        }
+
+      }
+
+}
