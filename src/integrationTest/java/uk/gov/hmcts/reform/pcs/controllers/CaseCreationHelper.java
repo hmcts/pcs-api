@@ -76,7 +76,9 @@ public class CaseCreationHelper {
 
     String createPartyAccessCode(PcsCaseEntity caseEntity, UUID partyId) {
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(partyId)
+            .party(PartyEntity.builder()
+                    .id(partyId)
+                    .build())
             .pcsCase(caseEntity)
             .code(hashingService.encodeForStorage(ACCESS_CODE))
             .role(PartyRole.DEFENDANT)

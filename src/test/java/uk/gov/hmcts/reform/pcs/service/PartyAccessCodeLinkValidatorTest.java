@@ -46,7 +46,9 @@ class PartyAccessCodeLinkValidatorTest {
     @Test
     void shouldReturnPac_WhenAccessCodeMatches() {
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(PARTY_ID)
+            .party(PartyEntity.builder()
+                    .id(PARTY_ID)
+                    .build())
             .code("$2a$10$hashedCode")
             .build();
 
@@ -56,7 +58,7 @@ class PartyAccessCodeLinkValidatorTest {
         PartyAccessCodeEntity result = validator.validateAccessCode(CASE_ID, ACCESS_CODE);
 
         assertThat(result).isNotNull();
-        assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
+        assertThat(result.getParty().getId()).isEqualTo(PARTY_ID);
         assertThat(result.getCode()).isEqualTo("$2a$10$hashedCode");
     }
 

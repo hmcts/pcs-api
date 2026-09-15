@@ -80,3 +80,5 @@ am-org-role-mapping-service:
   enabled: false
 wa:
   enabled: false
+ccd-case-disposer:
+  enabled: false
