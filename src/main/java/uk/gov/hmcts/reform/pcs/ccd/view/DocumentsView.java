@@ -77,6 +77,7 @@ public class DocumentsView {
                 userRoles.roles()
             );
             log.info("Gen app doc isVisable: {}", isVisible);
+            return isVisible;
         }
 
         if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
