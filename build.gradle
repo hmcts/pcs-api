@@ -642,6 +642,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'IDAM_URL', 'http://localhost:5062'
   environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
   environment 'WA_SYSTEM_PASSWORD', 'password'
+  environment 'WA_S2S_AUTHORIZED_SERVICES', 'wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,wa_task_monitor,pcs_api'
 }
 
 cftlibTest {
