@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class GenAppVisibilityService {
@@ -60,22 +62,27 @@ public class GenAppVisibilityService {
                                                 Collection<String> currentUserRoles) {
 
         if (isInternalUser(currentUserRoles)) {
+            log.info("Gen app internal role");
             return true;
         }
 
         if (party == null || userId == null) {
+            log.info("Gen app party null");
             return false;
         }
 
         if (userId.equals(party.getIdamId())) {
+            log.info("Gen app match party id");
             return true;
         }
 
         if (organisationId == null) {
+            log.info("Gen app org null");
             return false;
         }
 
         if (organisationId.equals(party.getOrganisationId())) {
+            log.info("Gen app match org id");
             return true;
         }
 

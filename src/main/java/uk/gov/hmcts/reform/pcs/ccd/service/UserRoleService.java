@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
@@ -18,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserRoleService {
 
@@ -41,6 +43,7 @@ public class UserRoleService {
 
     public UserRoles getCurrentUserCaseRoles(long caseReference) {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        log.info("currentUserDetails: {}", currentUserDetails);
         String currentUserId = currentUserDetails.getUid();
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
@@ -61,6 +64,8 @@ public class UserRoleService {
             List.of(String.valueOf(cacheKey.caseReference())),
             List.of(cacheKey.userId())
         );
+
+        log.info("getRasRoles userRoles: {}", userRoles);
 
         if (userRoles == null || userRoles.getCaseAssignmentUserRoles() == null) {
             return Set.of();
