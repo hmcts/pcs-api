@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Builder
-public class DefendantBasePersonalisation implements TemplatePersonalisation {
-    private final BasePersonalisation base;
+public class MakeAClaimBasePersonalisation implements TemplatePersonalisation {
+    private final TemplatePersonalisation base;
     private final String nextStepUrl;
 
     @Override
