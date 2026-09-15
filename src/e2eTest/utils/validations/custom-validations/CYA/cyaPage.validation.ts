@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionMapQuestions, skipNormalization } from '@utils/common/cyaMapping.utils';
+import { settleRowCount } from '@utils/common/locator.utils';
 
 interface QAObject {
   question: string;
@@ -314,6 +315,9 @@ export class CYAPageValidation {
     const qaObjects: QAObject[] = [];
 
     const mainRows = page.locator('table.form-table tr:visible:not([hidden])');
+    // CCD renders CYA rows progressively, so a count taken mid-render is short and every
+    // question it missed is reported as a mismatch. Wait for the row count to stop growing.
+    await settleRowCount(mainRows);
     const rowCount = await mainRows.count();
 
     for (let i = 0; i < rowCount; i++) {

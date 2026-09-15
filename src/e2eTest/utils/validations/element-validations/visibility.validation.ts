@@ -1,5 +1,6 @@
 import {Page, expect, Locator} from '@playwright/test';
 import {IValidation, validationData} from '@utils/interfaces';
+import {MEDIUM_TIMEOUT} from '../../../playwright.config';
 
 export class VisibilityValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
@@ -29,8 +30,10 @@ export class VisibilityValidation implements IValidation {
     }
   }
 
+  /**
+   * `not.toBeVisible()` polls, and like `state: .hidden.` is satisfied by hidden or absent.
+   */
   private async waitUntilElementDisappears(element: Locator): Promise<void> {
-    const elements = await element.all();
-    await Promise.all(elements.map(element => element.waitFor({ state: 'hidden', timeout: 10000 })));
+    await expect(element.first()).not.toBeVisible({ timeout: MEDIUM_TIMEOUT });
   }
 }

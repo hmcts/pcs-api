@@ -1,6 +1,33 @@
-import { Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
-import { SHORT_TIMEOUT } from '../../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_SHORT_TIMEOUT } from '../../playwright.config';
+import { exactTextWithOptionalWhitespaceRegex } from './string.utils';
+
+const HEADING_SELECTOR = 'h1,h1.govuk-heading-xl, h1.govuk-heading-l, h1.govuk-panel__title';
+
+// Scoped by text: work-basket pages render extra h1.column-label elements that would win .first().
+export function pageHeading(page: Page, expectedText?: string): Locator {
+  const visibleHeadings = page.locator(HEADING_SELECTOR).filter({ visible: true });
+  return expectedText
+    ? visibleHeadings.filter({ hasText: exactTextWithOptionalWhitespaceRegex(expectedText) }).first()
+    : visibleHeadings.first();
+}
+
+/** Reads the current main heading without throwing on strict-mode or missing elements. */
+export async function readPageHeading(page: Page): Promise<string> {
+  const text = await pageHeading(page)
+    .textContent({ timeout: SHORT_TIMEOUT })
+    .catch(() => '');
+  return (text ?? '').trim();
+}
+
+/** Polls for a main heading with exactly `text`; false if it never appears. */
+export async function hasPageHeading(page: Page, text: string, timeout: number = SHORT_TIMEOUT): Promise<boolean> {
+  return pageHeading(page, text)
+    .waitFor({ state: 'visible', timeout })
+    .then(() => true)
+    .catch(() => false);
+}
 
 /** Matches whichever of the given locators is present. */
 export function anyOf(...locators: Locator[]): Locator {
@@ -22,5 +49,62 @@ export async function waitForInteractive(locator: Locator, timeout: number = SHO
   await locator
     .first()
     .waitFor({ state: 'visible', timeout })
+    .catch(() => undefined);
+}
+
+/**
+ * Waits for a locator's match count to stop growing, for callers that need the whole set
+ * rather than the first match. `waitForInteractive` returns as soon as one element is
+ * visible, which is not enough when a table renders its rows progressively.
+ * Returns the settled count; gives up at `timeout` and returns what it has.
+ */
+export async function settleRowCount(
+  locator: Locator,
+  timeout: number = SHORT_TIMEOUT,
+  stableFor: number = 500
+): Promise<number> {
+  await waitForInteractive(locator, timeout);
+  const deadline = Date.now() + timeout;
+  let previous = -1;
+  let stableSince = 0;
+  let current = await locator.count().catch(() => 0);
+  while (Date.now() < deadline) {
+    if (current === previous) {
+      if (stableSince === 0) {
+        stableSince = Date.now();
+      } else if (Date.now() - stableSince >= stableFor) {
+        return current;
+      }
+    } else {
+      previous = current;
+      stableSince = 0;
+    }
+    await locator.page().waitForTimeout(100);
+    current = await locator.count().catch(() => current);
+  }
+  return current;
+}
+
+/**
+ * Waits for XUI's loading spinner to detach. `.spinner-container` is `position: fixed`,
+ * full-viewport, `z-index: 99`, so it swallows pointer events. Click-based actions only:
+ * `fill` and `selectOption` are not gated on pointer events, so `inputText` and `select`
+ * deliberately do not call this. Swallows its own timeout so the caller reports the useful error.
+ */
+export async function waitForSpinner(page: Page, timeout: number = LONG_TIMEOUT): Promise<void> {
+  await page
+    .locator('.spinner-container')
+    .waitFor({ state: 'detached', timeout })
+    .catch(() => undefined);
+}
+
+// CCD populates a collection row's label after inserting the row, so a scan fired straight after
+// "Add new" can see an empty label.
+export async function settleBeforeAudit(page: Page): Promise<void> {
+  await waitForSpinner(page, SHORT_TIMEOUT);
+  await page
+    .locator('label span.form-label:empty')
+    .first()
+    .waitFor({ state: 'detached', timeout: VERY_SHORT_TIMEOUT })
     .catch(() => undefined);
 }

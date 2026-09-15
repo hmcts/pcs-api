@@ -13,6 +13,7 @@ import {
 } from '@data/page-data-figma/page-data-genApps-figma';
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import { settleRowCount } from '@utils/common/locator.utils';
 import { performAction, performValidation } from '@utils/controller-genApps';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { FieldsStore } from './recordAnsweredFields.action';
@@ -22,6 +23,7 @@ import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selec
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
+import { SHORT_TIMEOUT } from '../../../../playwright.config';
 import {caseSummary, home} from "@data/page-data";
 
 
@@ -302,14 +304,10 @@ export class GenAppsAction implements IAction {
         .nth(1);
 
       const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
-      let isPayNowVisible = false;
-      for (let i = 0; i < 10; i++) {
-        isPayNowVisible = await payNowLocator.isVisible();
-        if (isPayNowVisible) {
-          break;
-        }
-        await page.waitForTimeout(500);
-      }
+      const isPayNowVisible = await payNowLocator
+        .waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
+        .then(() => true)
+        .catch(() => false);
       if (isPayNowVisible) {
         await payNowLocator.scrollIntoViewIfNeeded();
         await payNowLocator.click();
@@ -402,6 +400,7 @@ export class GenAppsAction implements IAction {
 
   private async retrieveCYATableData(page: Page,table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    await settleRowCount(tables);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
@@ -449,22 +448,26 @@ export class GenAppsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally: a throw would leak the module-level map into the next test on this worker.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
   }
 
   private async reviewCYA(page: Page, startPage: actionData) {

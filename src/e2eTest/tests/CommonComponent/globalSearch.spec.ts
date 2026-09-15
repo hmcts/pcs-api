@@ -8,6 +8,7 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import {staff} from "@data/user-data/staff.user.data";
 import {judicial} from "@data/user-data/judicial.user.data";
 import {randomPostcode} from "@utils/common/string.utils";
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.use({ storageState: undefined });
 
@@ -72,6 +73,7 @@ test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
+  PageContentValidation.finaliseTest();
 });
 
 const runFieldSearch = async (label: string, value: string) => {

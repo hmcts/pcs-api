@@ -3,6 +3,7 @@ import { ClickTabAction } from '@utils/actions/element-actions/clickTab.action';
 import { InputTextAction } from '@utils/actions/element-actions/inputText.action';
 import { CheckAction } from '@utils/actions/element-actions/check.action';
 import { SelectAction } from '@utils/actions/element-actions/select.action';
+import { SelectEventAndGoAction } from '@utils/actions/custom-actions/selectEventAndGo.action';
 import { NavigateToUrlAction } from '@utils/actions/custom-actions/navigateToUrl.action';
 import { ClickButtonAction } from '@utils/actions/element-actions/clickButton.action';
 import { ClickRadioButtonAction } from '@utils/actions/element-actions/clickRadioButton.action';
@@ -25,6 +26,7 @@ export class ActionEnforcementRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
+    ['selectEventAndGo', new SelectEventAndGoAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
