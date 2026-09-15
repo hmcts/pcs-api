@@ -1,4 +1,5 @@
 import test, {expect, Locator, Page} from '@playwright/test';
+import { waitForSpinner } from '@utils/common/locator.utils';
 import { getFormattedDate } from "@utils/common/string.utils";
 
 import {
@@ -10,7 +11,7 @@ import {performAction, performActions, performValidation} from '../../controller
 import { IAction, actionRecord } from '../../interfaces';
 import {uploadAdditionalDocumentsInformation} from "@data/page-data-figma/page-data-legalRepresentative";
 import {getCaseTypeId} from "@utils/common/caseType.utils";
-import {VERY_LONG_TIMEOUT} from "../../../playwright.config";
+import {LONG_TIMEOUT, VERY_LONG_TIMEOUT} from "../../../playwright.config";
 import {home} from "@data/page-data";
 import {caseInfo} from "@utils/actions/custom-actions/createCaseAPI.action";
 import {createCaseApiData} from "@data/api-data";
@@ -168,7 +169,7 @@ export class DocumentsAction implements IAction {
       timeout: VERY_LONG_TIMEOUT,
     });
     await page.waitForLoadState();
-    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await waitForSpinner(page);
     await performValidation('mainHeader', home.caseSummary);
   }
 
@@ -186,8 +187,9 @@ export class DocumentsAction implements IAction {
           ['uploadFile', document.fileName],
         );
 
+        // Exact id: a `^=` prefix also matches the ...Wales sibling, giving 2 matches.
         const typeDropdown = page.locator(
-          `[id^="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
+          `[id="lrDocUpload_LegalRepDocuments_${fileIndex}_defendantDocumentType"]:not([disabled])`
         );
         await typeDropdown.waitFor({ state: 'attached' });
         await expect(typeDropdown).toBeEnabled({ timeout: 60000 });
@@ -209,9 +211,18 @@ export class DocumentsAction implements IAction {
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
     const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    if (table.name === 'check your answers table') {
+      // count() reads the DOM instantly, so a table still rendering reads as absent and throws.
+      await tables.first().waitFor({ state: 'visible', timeout: LONG_TIMEOUT }).catch(() => undefined);
+    }
     const tableCount = await tables.count();
 
-    if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
+    if (tableCount === 0 && table.name === 'check your answers table') {
+      const heading = await page.locator('h1').first().innerText().catch(() => '<no heading>');
+      const anyTable = await page.locator('table').count().catch(() => -1);
+      throw new Error(`the table ${table.name} not found on page "${heading}" `
+        + `(${anyTable} table(s) present). Exiting...`);
+    }
 
     for (let i = 0; i < tableCount; i++) {
       const table = tables.nth(i);
@@ -274,23 +285,26 @@ export class DocumentsAction implements IAction {
       name2: 'FieldStore',
     });
 
-    await test.step('CYA Validation Started and the results are present in the console logs', async () => {
-      if (misMatchMap.size > 0) {
-        console.log(`\n❌ Differences found: ${misMatchMap.size}`);
-        for (const [key, val] of misMatchMap) {
-          const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
-          const actualValue = val.b === undefined ? '<missing>' : String(val.b);
-          console.log('============================================================');
-          console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+    // finally: a throw would leak the module-level map into the next test on this worker.
+    try {
+      await test.step('CYA Validation Started and the results are present in the console logs', async () => {
+        if (misMatchMap.size > 0) {
+          console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+          for (const [key, val] of misMatchMap) {
+            const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+            const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+            console.log('============================================================');
+            console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+          }
+          console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
+          throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+        } else {
+          console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
         }
-        console.log(`\n**********  END OF CYA FAILURE LIST. ***************`);
-        throw new Error(`CYA validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
-      } else {
-        console.log('\n✅ CHECK YOUR ANSWERS VALIDATION PASSED!\n');
-      }
-    });
-
-    cyaMap.clear();
+      });
+    } finally {
+      cyaMap.clear();
+    }
 
     // click each row's Change link, confirm it lands on the page where that
     // question was originally answered, then return to the CYA table.

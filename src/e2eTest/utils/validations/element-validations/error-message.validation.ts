@@ -1,5 +1,12 @@
 import {Page, expect} from '@playwright/test';
 import {IValidation, validationRecord} from '../../interfaces/validation.interface';
+import {MEDIUM_TIMEOUT} from '../../../playwright.config';
+
+/**
+ * Bounded rather than inheriting the 30s global `expect` default, which does not fit inside the
+ * 60s `toPass` loops that wrap a click plus this validation.
+ */
+const ERROR_RENDER_TIMEOUT = MEDIUM_TIMEOUT;
 
 export class ErrorMessageValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, error: string | validationRecord): Promise<void> {
@@ -14,6 +21,6 @@ export class ErrorMessageValidation implements IValidation {
         h3#edit-case-event_error-summary-heading ~ ul li:text-is("${error.message}")
       `);
     }
-    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toBeVisible({ timeout: ERROR_RENDER_TIMEOUT });
   }
 }

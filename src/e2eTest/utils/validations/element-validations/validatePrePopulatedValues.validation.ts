@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { EnforcementCommonUtils } from "@utils/actions/element-actions/enforcementUtils.action";
 import { IValidation, validationRecord } from "@utils/interfaces";
+import { waitForInteractive } from "@utils/common/locator.utils";
 
 export class ValidatePrePopulatedValues implements IValidation {
   async validate(page: Page, validation: string, fieldName: validationRecord, data: validationRecord): Promise<void> {
@@ -19,6 +20,7 @@ export class ValidatePrePopulatedValues implements IValidation {
 
     const radioButtons = page.locator(`//span[text()="${fieldName.question}"]/ancestor::fieldset[1]//child::input[@type='radio']`);
     let retrieved;
+    await waitForInteractive(radioButtons);
     const count = await radioButtons.count();
 
     if (count === 0) throw new Error(`Radio button related to the question ${fieldName.question} not found`);
@@ -34,6 +36,7 @@ export class ValidatePrePopulatedValues implements IValidation {
 
   private async validateInputTextValues(page: Page, fieldName: validationRecord, data: validationRecord): Promise<void> {
     let locator = page.locator(`//span[text()="${fieldName.textLabel}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+    await waitForInteractive(locator);
     const count = await locator.count();
     if (count === 0) throw new Error(`Text field related to the label ${fieldName.textLabel} not found`);
     if (typeof fieldName !== 'string' && fieldName.index !== null) {
@@ -51,6 +54,7 @@ export class ValidatePrePopulatedValues implements IValidation {
     let retrieved;
     let retrievedArray: string[] = [];
     let expectedString;
+    await waitForInteractive(checkBoxes);
     const count = await checkBoxes.count();
 
     if (count === 0) throw new Error(`Radio button related to the question ${fieldName.question} not found`);
