@@ -951,6 +951,45 @@ class CaseFlagServiceTest {
     }
 
     @Test
+    void shouldShareOneReferenceDataRowAcrossInternalAndExternalPartyFlagsForANewCode() {
+        // Given a flag code not yet in reference data, supplied in both the internal and external lists
+        UUID partyId = UUID.randomUUID();
+        Set<PartyEntity> partyEntities = createPartyEntities(partyId);
+
+        Party incomingParty = Party.builder()
+            .defendantFlags(Flags.builder()
+                                .visibility(FlagVisibility.INTERNAL)
+                                .details(createFlagDetail(
+                                    null, "PF0099", "Newly published flag", "Internal comment", "Active"))
+                                .build())
+            .partyFlagsExternal(Flags.builder()
+                                    .visibility(FlagVisibility.EXTERNAL)
+                                    .details(createFlagDetail(
+                                        null, "PF0099", "Newly published flag", "External comment", "Requested"))
+                                    .build())
+            .build();
+
+        // When
+        underTest.mergePartyFlags(List.of(createPartyListValue(partyId.toString(), incomingParty)), partyEntities);
+
+        // Then both flags reference one reference data row, resolved without relying on a flush between passes
+        List<CasePartyFlagEntity> savedFlags = partyEntities.iterator().next().getDefendantFlags();
+        assertThat(savedFlags).hasSize(2);
+
+        FlagRefDataEntity sharedRefData = savedFlags.getFirst().getFlagRefData();
+        assertThat(sharedRefData.getFlagCode()).isEqualTo("PF0099");
+        assertThat(savedFlags).allSatisfy(flag -> assertThat(flag.getFlagRefData()).isSameAs(sharedRefData));
+
+        verify(flagRefDataRepository, times(1)).findByFlagCode("PF0099");
+        verify(flagRefDataRepository, times(1)).saveAll(argThat(
+            (Iterable<FlagRefDataEntity> saved) -> {
+                List<FlagRefDataEntity> savedList = new ArrayList<>();
+                saved.forEach(savedList::add);
+                return savedList.size() == 1 && savedList.getFirst() == sharedRefData;
+            }));
+    }
+
+    @Test
     void shouldRetainExternalPartyFlagsWhenOnlyInternalFlagsSubmitted() {
         UUID partyId = UUID.randomUUID();
         CasePartyFlagEntity existingExternalFlag = createCasePartyFlagEntity(
