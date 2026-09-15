@@ -57,7 +57,7 @@ public class CounterClaimEntity {
     private Integer version;
 
     @Column(name = "counterclaim_rank")
-    private Integer rank;
+    private Integer counterClaimRank;
 
     @OneToOne(cascade = ALL, orphanRemoval = true)
     @JoinColumn(name = "sot_id")
