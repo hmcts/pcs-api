@@ -21,10 +21,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
-import static java.util.Arrays.stream;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
-
 @Getter
 public enum AccessProfile implements HasRole {
 

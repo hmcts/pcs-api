@@ -18,6 +18,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOL
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
@@ -31,6 +32,9 @@ final class AccessGrants {
         CLAIMANT,
         GA_CLAIMANT_SOLICITOR,
         JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
         WLU_ADMIN
@@ -38,6 +42,9 @@ final class AccessGrants {
 
     static final UserRole[] INTERNAL_READ_ROLES = {
         JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
         WLU_ADMIN
