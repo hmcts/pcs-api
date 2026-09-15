@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,6 +40,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,7 +77,8 @@ class DraftCaseDataServiceTest {
             organisationService,
             objectMapper,
             draftCaseJsonMerger,
-            securityContextService
+            securityContextService,
+            new TransactionTemplate(mock(PlatformTransactionManager.class))
         );
     }
 
@@ -886,5 +890,60 @@ class DraftCaseDataServiceTest {
         // Then
         verify(draftCaseDataRepository).save(entity);
         verify(draftCaseDataRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void shouldRetryUnversionedSaveWhenConcurrentWriteBumpsTheVersion() throws JsonProcessingException {
+        EventId eventId = EventId.respondPossessionClaim;
+        PCSCase newCaseData = PCSCase.builder().build();
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("{}");
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
+
+        verify(draftCaseDataRepository, times(2)).save(draftCaseDataEntity);
+    }
+
+    @Test
+    void shouldRetryPatchWhenConcurrentWriteBumpsTheVersion() {
+        EventId eventId = EventId.respondPossessionClaim;
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, "case data json");
+
+        verify(draftCaseDataRepository, times(2)).save(any(DraftCaseDataEntity.class));
+    }
+
+    @Test
+    void shouldGiveUpUnversionedSaveAfterRepeatedConcurrentWrites() throws JsonProcessingException {
+        EventId eventId = EventId.respondPossessionClaim;
+        PCSCase newCaseData = PCSCase.builder().build();
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("{}");
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.of(mock(DraftCaseDataEntity.class)));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        assertThatThrownBy(() -> underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId))
+            .isInstanceOf(ObjectOptimisticLockingFailureException.class);
+        verify(draftCaseDataRepository, times(3)).save(any(DraftCaseDataEntity.class));
     }
 }

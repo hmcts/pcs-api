@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -39,17 +41,22 @@ public class DraftCaseDataService {
     private final ObjectMapper objectMapper;
     private final DraftCaseJsonMerger draftCaseJsonMerger;
     private final SecurityContextService securityContextService;
+    private final TransactionTemplate transactionTemplate;
+
+    private static final int LAST_WRITE_WINS_ATTEMPTS = 3;
 
     public DraftCaseDataService(DraftCaseDataRepository draftCaseDataRepository,
                                 OrganisationService organisationService,
                                 @Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper,
                                 DraftCaseJsonMerger draftCaseJsonMerger,
-                                SecurityContextService securityContextService) {
+                                SecurityContextService securityContextService,
+                                TransactionTemplate transactionTemplate) {
         this.draftCaseDataRepository = draftCaseDataRepository;
         this.organisationService = organisationService;
         this.objectMapper = objectMapper;
         this.draftCaseJsonMerger = draftCaseJsonMerger;
         this.securityContextService = securityContextService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     private UUID getCurrentUserId() {
@@ -179,11 +186,10 @@ public class DraftCaseDataService {
             .isPresent();
     }
 
-    @Transactional
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId) {
-        saveCitizenDraft(caseReference, eventData, eventId, null);
+        retryingLastWriteWins(() -> saveCitizenDraft(caseReference, eventData, eventId, null));
     }
 
     /**
@@ -200,14 +206,13 @@ public class DraftCaseDataService {
         return saveCitizenDraft(caseReference, eventData, eventId, expectedVersion);
     }
 
-    @Transactional
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId,
                                              UUID partyId,
                                              String legalRepresentativeOrganisationId) {
-        saveLegalRepresentativeDraft(
-            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
+        retryingLastWriteWins(() -> saveLegalRepresentativeDraft(
+            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null));
     }
 
     @Transactional
@@ -365,7 +370,7 @@ public class DraftCaseDataService {
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson, UUID partyId,
                                          String legalRepresentativeOrganisationId) {
         UUID userId = getCurrentUserId();
-        patchInternal(
+        retryingLastWriteWins(() -> patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).partyId(partyId)
                 .organisationId(legalRepresentativeOrganisationId).build(),
             patchEventDataJson,
@@ -376,20 +381,20 @@ public class DraftCaseDataService {
             () -> createNewDraft(
                 caseReference, eventId, legalRepresentativeOrganisationId, patchEventDataJson, partyId, userId
             )
-        );
+        ));
     }
 
     public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         UUID userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
-        patchInternal(
+        retryingLastWriteWins(() -> patchInternal(
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId).userId(userId).build(),
             patchEventDataJson,
             () -> findDraft(caseReference, eventId, userId, organisationId),
             () -> createNewDraft(
                 caseReference, eventId, userId, patchEventDataJson, organisationId
             )
-        );
+        ));
     }
 
     private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {
@@ -666,7 +671,7 @@ public class DraftCaseDataService {
         }
     }
 
-    private void patchInternal(DraftCaseData draftCaseData,
+    private DraftCaseDataEntity patchInternal(DraftCaseData draftCaseData,
                                String patchEventDataJson,
                                Supplier<Optional<DraftCaseDataEntity>> findDraft,
                                Supplier<DraftCaseDataEntity> createDraft) {
@@ -693,7 +698,22 @@ public class DraftCaseDataService {
                 );
                 return createDraft.get();
             });
-        draftCaseDataRepository.save(draftCaseDataEntity);
+        return draftCaseDataRepository.save(draftCaseDataEntity);
     }
 
+    // Writes that post no version keep last-write-wins: a concurrent write only bumps the JPA version, so the
+    // attempt is re-run against the fresh row instead of surfacing the optimistic-lock failure.
+    private <T> T retryingLastWriteWins(Supplier<T> write) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> write.get());
+            } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+                if (attempt >= LAST_WRITE_WINS_ATTEMPTS) {
+                    throw e;
+                }
+                log.warn("Draft write lost a concurrent update, retrying ({} of {})", attempt,
+                         LAST_WRITE_WINS_ATTEMPTS);
+            }
+        }
+    }
 }
