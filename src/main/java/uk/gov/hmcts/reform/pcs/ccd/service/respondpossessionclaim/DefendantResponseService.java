@@ -135,9 +135,8 @@ public class DefendantResponseService {
                           caseReference, userId)
         );
 
-        // Citizen and legal-rep paths; caseworker paper responses upload the form instead of generating it.
         // Schedule after commit so generation can't run against a rolled-back response.
-        if (journeyType != JourneyType.CASEWORKER) {
+        if (generatesDefenceForm(journeyType)) {
             Integer defendantResponseId = savedResponse.getId();
             UUID defendantPartyId = savedResponse.getParty().getId();
             scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
@@ -145,6 +144,10 @@ public class DefendantResponseService {
         }
 
         return savedResponse;
+    }
+
+    private static boolean generatesDefenceForm(JourneyType journeyType) {
+        return journeyType != JourneyType.CASEWORKER;
     }
 
     private void scheduleAfterCommit(Runnable schedule) {

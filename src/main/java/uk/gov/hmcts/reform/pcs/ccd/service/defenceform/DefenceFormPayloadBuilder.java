@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeAssertionStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -343,8 +342,7 @@ public class DefenceFormPayloadBuilder {
         payload.sotFullName(statementOfTruth.getFullName());
         payload.sotFirmName(statementOfTruth.getFirmName());
         payload.sotPositionHeld(statementOfTruth.getPositionHeld());
-        payload.legalRepresentative(
-            statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        payload.legalRepresentative(statementOfTruth.isCompletedByLegalRepresentative());
     }
 
     private static DefenceFormAmountRow amountRow(String label, BigDecimal amount, String frequency) {

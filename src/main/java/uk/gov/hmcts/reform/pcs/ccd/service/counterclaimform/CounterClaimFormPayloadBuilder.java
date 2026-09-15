@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -54,8 +53,10 @@ public class CounterClaimFormPayloadBuilder {
             .map(StatementOfTruthEntity::getFullName)
             .filter(StringUtils::hasText)
             .orElse(null);
+        String sotFirmName = statementOfTruth.map(StatementOfTruthEntity::getFirmName).orElse(null);
+        String sotPositionHeld = statementOfTruth.map(StatementOfTruthEntity::getPositionHeld).orElse(null);
         boolean legalRepresentative = statementOfTruth
-            .map(sot -> sot.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+            .map(StatementOfTruthEntity::isCompletedByLegalRepresentative)
             .orElse(false);
         boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
         boolean showCounterClaimDetails =
@@ -87,8 +88,8 @@ public class CounterClaimFormPayloadBuilder {
             .otherOrderRequestDetails(otherOrderDetails)
             .otherOrderRequestFacts(otherOrderFacts)
             .statementOfTruthName(statementOfTruthName)
-            .sotFirmName(statementOfTruth.map(StatementOfTruthEntity::getFirmName).orElse(null))
-            .sotPositionHeld(statementOfTruth.map(StatementOfTruthEntity::getPositionHeld).orElse(null))
+            .sotFirmName(sotFirmName)
+            .sotPositionHeld(sotPositionHeld)
             .legalRepresentative(legalRepresentative)
             .showCounterClaimDetailsSection(showCounterClaimDetails)
             .showClaimingFor(StringUtils.hasText(claimingFor))

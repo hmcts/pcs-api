@@ -7,9 +7,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 /**
  * Thin Docmosis wrapper for the defence form. The filename carries the responding defendant's
- * position on the case, e.g. {@code Defence - Defendant 1}. The legal-representative template is
- * used when the statement of truth was completed by a legal representative; both templates share
- * the same merge fields, the LR one adds firm name and position held and reads in the third person.
+ * position on the case, e.g. {@code Defence - Defendant 1}.
  */
 @Service
 public class DefenceFormDocumentGenerator {

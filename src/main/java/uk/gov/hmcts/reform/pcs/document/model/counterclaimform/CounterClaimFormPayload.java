@@ -26,8 +26,6 @@ public class CounterClaimFormPayload implements FormPayload {
     private String otherOrderRequestDetails;
     private String otherOrderRequestFacts;
     private String statementOfTruthName;
-    // Legal-representative statement of truth only; rendered by the LR template inside the
-    // showStatementOfTruthName block.
     private String sotFirmName;
     private String sotPositionHeld;
 
@@ -45,10 +43,6 @@ public class CounterClaimFormPayload implements FormPayload {
     private Boolean showOtherOrderSection;
     private Boolean showStatementOfTruthName;
 
-    /**
-     * True when the statement of truth was completed by a legal representative. Drives template
-     * selection in {@code CounterClaimFormDocumentGenerator}; not a merge field, so kept off the wire.
-     */
     @JsonIgnore
     private boolean legalRepresentative;
 }

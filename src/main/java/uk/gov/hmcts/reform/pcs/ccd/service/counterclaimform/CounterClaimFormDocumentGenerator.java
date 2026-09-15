@@ -24,7 +24,6 @@ public class CounterClaimFormDocumentGenerator {
         );
     }
 
-    /** LR template when a legal representative completed the statement of truth, citizen template otherwise. */
     static String templateId(CounterClaimFormPayload payload) {
         return payload.isLegalRepresentative() ? LR_TEMPLATE_ID : TEMPLATE_ID;
     }
