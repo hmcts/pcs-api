@@ -65,10 +65,6 @@ public class CaseFlagService {
     private PartySupportOwnershipResolver partySupportOwnershipResolver;
     private TranslationWAService translationWAService;
 
-    private static boolean isReasonableAdjustment(FlagDetail flagDetail) {
-        return isReasonableAdjustment(flagDetail.getFlagCode(), flagDetail.getPath());
-    }
-
     private static boolean isReasonableAdjustment(String flagCode, List<ListValue<String>> path) {
         if (flagCode == null) {
             return false;
@@ -90,8 +86,6 @@ public class CaseFlagService {
             && isReasonableAdjustment(flag.getFlagRefData().getFlagCode(),
                                       CaseFlagsView.parsePaths(flag.getPaths()));
     }
-
-
 
     private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
         return partyEntity.getDefendantFlags().stream()
@@ -138,7 +132,8 @@ public class CaseFlagService {
         }
 
         List<ListValue<FlagDetail>> reasonableAdjustmentDetails = incomingFlags.getDetails().stream()
-            .filter(detail -> isReasonableAdjustment(detail.getValue()))
+            .filter(detail
+                -> isReasonableAdjustment(detail.getValue().getFlagCode(), detail.getValue().getPath()))
             .toList();
 
         int ignored = incomingFlags.getDetails().size() - reasonableAdjustmentDetails.size();
