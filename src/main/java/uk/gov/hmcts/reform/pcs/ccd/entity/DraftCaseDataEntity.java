@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,10 +12,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -42,5 +45,9 @@ public class DraftCaseDataEntity {
     private UUID partyId;
 
     private String organisationId;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
 }
