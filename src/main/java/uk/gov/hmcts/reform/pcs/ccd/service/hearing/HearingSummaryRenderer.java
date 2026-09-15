@@ -42,7 +42,8 @@ public class HearingSummaryRenderer {
 
         String hearingTypeLabel = getHearingTypeLabel(hearingEntity);
         String formattedDate = DATE_TIME_FORMATTER.format(hearingEntity.getHearingDate());
-        String formattedDuration = durationFormatter.format(hearingEntity.getDurationHours(),
+        String formattedDuration = durationFormatter.format(hearingEntity.getDurationDays(),
+                                                            hearingEntity.getDurationHours(),
                                                             hearingEntity.getDurationMinutes());
 
         return TEMPLATE.formatted(
