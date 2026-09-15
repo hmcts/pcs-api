@@ -25,16 +25,30 @@ public class LegalRepForDefendantAccessValidator {
 
     public List<PartyEntity> validateAndGetDefendants(PcsCaseEntity caseEntity, String organisationId,
                                                       boolean validate) {
+        return getLinkedDefendants(caseEntity, organisationId, validate, true);
+    }
+
+    /**
+     * For journeys that act on a represented defendant after they have responded, such as document upload.
+     */
+    public List<PartyEntity> validateAndGetDefendantsIncludingResponded(PcsCaseEntity caseEntity,
+                                                                        String organisationId) {
+        return getLinkedDefendants(caseEntity, organisationId, true, false);
+    }
+
+    private List<PartyEntity> getLinkedDefendants(PcsCaseEntity caseEntity, String organisationId,
+                                                  boolean validate, boolean excludeResponded) {
         long caseReference = caseEntity.getCaseReference();
         List<PartyEntity> defendants = defendantPartyExtractor.extractDefendants(caseEntity, caseReference);
-        return findMatchingLinkedDefendants(defendants, organisationId, caseReference, validate);
+        return findMatchingLinkedDefendants(defendants, organisationId, caseReference, validate, excludeResponded);
     }
 
     private List<PartyEntity> findMatchingLinkedDefendants(
         List<PartyEntity> defendants,
         String organisationId,
         long caseReference,
-        boolean validate
+        boolean validate,
+        boolean excludeResponded
     ) {
         List<PartyEntity> linkedDefendants =  defendants
             .stream()
@@ -48,7 +62,8 @@ public class LegalRepForDefendantAccessValidator {
                                   organisationId
                               )
                 ))
-            .filter(party -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            .filter(party -> !excludeResponded
+                || !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
                 caseReference, party.getId()))
             .toList();
 

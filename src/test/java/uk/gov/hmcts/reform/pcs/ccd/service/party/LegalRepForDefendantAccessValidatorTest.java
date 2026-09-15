@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -212,6 +213,74 @@ class LegalRepForDefendantAccessValidatorTest {
                                underTest.validateAndGetDefendants(caseEntity, organisationId))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
+    }
+
+    @Test
+    void shouldThrowWhenRepresentedDefendantHasAlreadyResponded() {
+        // Given
+        String organisationId = "ORG-123";
+        UUID defendantId = UUID.randomUUID();
+
+        PartyEntity defendant = linkedDefendant(defendantId, organisationId);
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(defendant));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, defendantId))
+            .thenReturn(true);
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, organisationId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant solicitor on this case");
+    }
+
+    @Test
+    void shouldReturnRepresentedDefendantWhoHasAlreadyRespondedWhenIncludingResponded() {
+        // Given
+        String organisationId = "ORG-123";
+        UUID defendantId = UUID.randomUUID();
+
+        PartyEntity defendant = linkedDefendant(defendantId, organisationId);
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(defendant));
+
+        // When
+        List<PartyEntity> result =
+            underTest.validateAndGetDefendantsIncludingResponded(caseEntity, organisationId);
+
+        // Then
+        assertThat(result).containsExactly(defendant);
+        verifyNoInteractions(defendantResponseRepository);
+    }
+
+    @Test
+    void shouldThrowWhenIncludingRespondedAndOrganisationIsNotLinked() {
+        // Given
+        PartyEntity defendant = linkedDefendant(UUID.randomUUID(), "ORG-123");
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(defendant));
+
+        // When / Then
+        assertThatThrownBy(() -> underTest.validateAndGetDefendantsIncludingResponded(caseEntity, "ORG-999"))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant solicitor on this case");
+    }
+
+    private PartyEntity linkedDefendant(UUID defendantId, String organisationId) {
+        PartyEntity defendant = PartyEntity.builder().id(defendantId).build();
+        defendant.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder()
+                .party(defendant)
+                .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
+                .active(YesOrNo.YES)
+                .build()
+        ));
+        return defendant;
     }
 
     private PcsCaseEntity createCaseWithDefendant(PartyEntity defendant) {
