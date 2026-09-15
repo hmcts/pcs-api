@@ -1,8 +1,8 @@
--- Step 1: Add nullable column
+-- Add nullable column
 ALTER TABLE public.counter_claim
 ADD COLUMN rank integer;
 
--- Step 2: Backfill existing data
+-- Backfill existing data
 WITH ranked_claims AS (
     SELECT 
         id,
@@ -19,7 +19,7 @@ SET rank = rc.new_rank
 FROM ranked_claims rc
 WHERE cc.id = rc.id;
 
--- Step 3: Verify backfill succeeded
+-- Verify backfill succeeded
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM counter_claim WHERE rank IS NULL) THEN
