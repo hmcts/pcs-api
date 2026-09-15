@@ -183,7 +183,7 @@ public class DraftCaseDataService {
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId) {
-        saveUnsubmittedEventData(caseReference, eventData, eventId, null);
+        saveCitizenDraft(caseReference, eventData, eventId, null);
     }
 
     /**
@@ -197,6 +197,31 @@ public class DraftCaseDataService {
                                              T eventData,
                                              EventId eventId,
                                              Long expectedVersion) {
+        return saveCitizenDraft(caseReference, eventData, eventId, expectedVersion);
+    }
+
+    @Transactional
+    public <T> void saveUnsubmittedEventData(long caseReference,
+                                             T eventData,
+                                             EventId eventId,
+                                             UUID partyId,
+                                             String legalRepresentativeOrganisationId) {
+        saveLegalRepresentativeDraft(
+            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
+    }
+
+    @Transactional
+    public <T> Long saveUnsubmittedEventData(long caseReference,
+                                             T eventData,
+                                             EventId eventId,
+                                             UUID partyId,
+                                             String legalRepresentativeOrganisationId,
+                                             Long expectedVersion) {
+        return saveLegalRepresentativeDraft(
+            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, expectedVersion);
+    }
+
+    private <T> Long saveCitizenDraft(long caseReference, T eventData, EventId eventId, Long expectedVersion) {
         UUID userId = getCurrentUserId();
         Optional<String> organisationId = currentUserOrganisationId();
 
@@ -208,22 +233,12 @@ public class DraftCaseDataService {
         );
     }
 
-    @Transactional
-    public <T> void saveUnsubmittedEventData(long caseReference,
-                                             T eventData,
-                                             EventId eventId,
-                                             UUID partyId,
-                                             String legalRepresentativeOrganisationId) {
-        saveUnsubmittedEventData(caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
-    }
-
-    @Transactional
-    public <T> Long saveUnsubmittedEventData(long caseReference,
-                                             T eventData,
-                                             EventId eventId,
-                                             UUID partyId,
-                                             String legalRepresentativeOrganisationId,
-                                             Long expectedVersion) {
+    private <T> Long saveLegalRepresentativeDraft(long caseReference,
+                                                  T eventData,
+                                                  EventId eventId,
+                                                  UUID partyId,
+                                                  String legalRepresentativeOrganisationId,
+                                                  Long expectedVersion) {
         return saveUnsubmittedEventDataInternal(
             eventData,
             DraftCaseData.builder().caseReference(caseReference).eventId(eventId)
@@ -335,7 +350,6 @@ public class DraftCaseDataService {
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
 
-
         patchUnsubmittedEventDataInternal(DraftCaseData.builder().caseReference(caseReference)
                                               .eventId(eventId).build(), eventData);
     }
@@ -401,7 +415,6 @@ public class DraftCaseDataService {
                     .deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(caseReference, eventId, userId))
         );
     }
-
 
     @Transactional
     public void deleteUnsubmittedCaseData(long caseReference,
@@ -629,7 +642,6 @@ public class DraftCaseDataService {
         Objects.requireNonNull(eventData, "eventData must not be null");
         Objects.requireNonNull(draftCaseData.getEventId(), "eventId must not be null");
 
-
         if (draftCaseData.getPartyId() != null) {
             log.info("Patching draft: caseReference={}, eventId={}, organisationId={}, partyId={}",
                      draftCaseData.getCaseReference(),
@@ -683,6 +695,5 @@ public class DraftCaseDataService {
             });
         draftCaseDataRepository.save(draftCaseDataEntity);
     }
-
 
 }
