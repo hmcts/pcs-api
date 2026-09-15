@@ -14,8 +14,6 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    // PartyIdIsNull is load-bearing: LR drafts share case/event/org but carry a party;
-    // without it a firm's defendant draft matches here (and two defendants -> non-unique).
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 
@@ -34,9 +32,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
-
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
@@ -52,7 +47,7 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     @Query("""
         SELECT d FROM DraftCaseDataEntity d
         WHERE d.eventId = :eventId
-          AND d.createdDate < :cutoff
+          AND d.createdAt < :cutoff
         """)
     List<DraftCaseDataEntity> findExpiredDraftResponses(@Param("eventId") EventId eventId,
                                                         @Param("cutoff") LocalDateTime cutoff,

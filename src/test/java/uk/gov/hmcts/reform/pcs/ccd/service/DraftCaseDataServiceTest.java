@@ -23,11 +23,6 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +43,6 @@ class DraftCaseDataServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String OWNER_ORGANISATION_ID = "QKLHPMU";
-    private static final String OTHER_ORGANISATION_ID = "IHOVCKH";
     private static final EventId PARTY_OWNED_EVENT = EventId.resumePossessionClaim;
 
     @Mock
@@ -69,21 +63,14 @@ class DraftCaseDataServiceTest {
 
     private DraftCaseDataService underTest;
 
-    private Clock ukClock;
-    private Instant fixedInstant;
-
     @BeforeEach
     void setUp() {
-        fixedInstant = Instant.parse("2026-01-01T10:00:00Z");
-        ukClock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
-
         underTest = new DraftCaseDataService(
             draftCaseDataRepository,
             organisationService,
             objectMapper,
             draftCaseJsonMerger,
-            securityContextService,
-            ukClock
+            securityContextService
         );
     }
 
@@ -176,7 +163,6 @@ class DraftCaseDataServiceTest {
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
         assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
-        assertThat(savedEntity.getCreatedDate()).isEqualTo(LocalDateTime.ofInstant(fixedInstant, ZoneId.of("UTC")));
     }
 
     @Test
@@ -201,7 +187,6 @@ class DraftCaseDataServiceTest {
 
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
-        assertThat(savedEntity.getCreatedDate()).isEqualTo(LocalDateTime.ofInstant(fixedInstant, ZoneId.of("UTC")));
     }
 
     @Test
@@ -459,7 +444,6 @@ class DraftCaseDataServiceTest {
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
         assertThat(savedEntity.getOrganisationId()).isEqualTo(organisationId);
         assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
-        assertThat(savedEntity.getCreatedDate()).isEqualTo(LocalDateTime.ofInstant(fixedInstant, ZoneId.of("UTC")));
     }
 
     @Test
@@ -657,7 +641,6 @@ class DraftCaseDataServiceTest {
 
         assertThat(savedEntity.getOrganisationId()).isEqualTo(OWNER_ORGANISATION_ID);
         assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
-        assertThat(savedEntity.getCreatedDate()).isEqualTo(LocalDateTime.ofInstant(fixedInstant, ZoneId.of("UTC")));
     }
 
     @Test
