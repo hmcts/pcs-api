@@ -114,7 +114,8 @@ public class DocumentsView {
             DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
             DocumentType.EICR_REPORT,
             DocumentType.GAS_SAFETY_CERTIFICATE,
-            DocumentType.OCCUPATION_LICENCE
+            DocumentType.OCCUPATION_LICENCE,
+            DocumentType.POSSESSION_NOTICE
         );
 
         DocumentType type = documentEntity.getType();

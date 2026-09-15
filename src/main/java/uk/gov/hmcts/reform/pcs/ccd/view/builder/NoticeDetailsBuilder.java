@@ -47,7 +47,7 @@ public class NoticeDetailsBuilder {
                 .build();
 
         if (noticeServed == YesOrNo.YES) {
-            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
+            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
         }
 
         return noticeTabDetails;
@@ -74,14 +74,15 @@ public class NoticeDetailsBuilder {
                 .noticeDate(NO_ANSWER)
                 .build();
 
-        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
+        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), isSubmitted);
 
         return noticeTabDetails;
     }
 
     private void populateNoticeDetails(
         NoticeTabDetails noticeTabDetails,
-        NoticeServedDetails noticeServedDetails
+        NoticeServedDetails noticeServedDetails,
+        boolean isSubmitted
     ) {
         if (noticeServedDetails == null || noticeServedDetails.getServiceMethod() == null) {
             return;
@@ -91,6 +92,10 @@ public class NoticeDetailsBuilder {
         noticeTabDetails.setNoticeDocuments(documents);
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
         noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
+
+        if (isSubmitted) {
+            noticeServedDetails.setDocuments(null);
+        }
 
         NoticeServiceMethod method = noticeServedDetails.getServiceMethod();
         noticeTabDetails.setNoticeMethod(method.getLabel());
