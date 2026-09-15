@@ -307,6 +307,11 @@ counter-claim-form:
     max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+gen-app-form:
+  request:
+    max-retries: ${GEN_APP_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${GEN_APP_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
