@@ -41,8 +41,27 @@ class DefenceFormDocumentGeneratorTest {
     }
 
     @Test
-    void templateIdMatchesRdoDocmosisNamingConvention() {
+    void usesLegalRepTemplateWhenPayloadFlagged() {
+        DefenceFormPayload payload = DefenceFormPayload.builder().legalRepresentative(true).build();
+        when(docAssemblyService.generateDocument(
+            eq(payload),
+            eq(DefenceFormDocumentGenerator.LR_TEMPLATE_ID),
+            eq(OutputType.PDF),
+            eq("Defence - Defendant 1")
+        )).thenReturn("https://dm-store/lr");
+
+        String url = generator.generate(payload, 1);
+
+        assertThat(url).isEqualTo("https://dm-store/lr");
+        verify(docAssemblyService).generateDocument(
+            payload, DefenceFormDocumentGenerator.LR_TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 1");
+    }
+
+    @Test
+    void templateIdsMatchRdoDocmosisNamingConvention() {
         assertThat(DefenceFormDocumentGenerator.TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
+        assertThat(DefenceFormDocumentGenerator.LR_TEMPLATE_ID)
+            .matches("^CV-PCS-CLM-(ENG|WEL)-.+-LR\\.docx$");
     }
 }

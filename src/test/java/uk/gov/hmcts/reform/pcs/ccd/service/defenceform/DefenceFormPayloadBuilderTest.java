@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -633,6 +635,56 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormPayload payload = builder.build(response);
 
             assertThat(payload.getSotFullName()).isEqualTo("Bob Tenant");
+            assertThat(payload.isLegalRepresentative()).isFalse();
+        }
+
+        @Test
+        void mapsFirmPositionAndLegalRepFlagForLegalRepresentative() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setStatementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Sam Solicitor")
+                .firmName("Test Firm LLP")
+                .positionHeld("Partner")
+                .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+                .build());
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.getSotFullName()).isEqualTo("Sam Solicitor");
+            assertThat(payload.getSotFirmName()).isEqualTo("Test Firm LLP");
+            assertThat(payload.getSotPositionHeld()).isEqualTo("Partner");
+            assertThat(payload.isLegalRepresentative()).isTrue();
+        }
+
+        @Test
+        void legalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setStatementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Sam Solicitor")
+                .firmName("Test Firm LLP")
+                .positionHeld("Partner")
+                .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+                .build());
+
+            String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(response));
+
+            assertThat(json).doesNotContain("legalRepresentative");
+            assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
+        }
+
+        @Test
+        void legalRepresentativeFalseWhenCompletedByIsNotLegalRepresentative() {
+            DefendantResponseEntity response = response(LegislativeCountry.ENGLAND);
+            response.setStatementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Bob Tenant")
+                .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
+                .build());
+
+            DefenceFormPayload payload = builder.build(response);
+
+            assertThat(payload.isLegalRepresentative()).isFalse();
+            assertThat(payload.getSotFirmName()).isNull();
+            assertThat(payload.getSotPositionHeld()).isNull();
         }
 
         @Test
@@ -643,6 +695,9 @@ class DefenceFormPayloadBuilderTest {
             DefenceFormPayload payload = builder.build(response);
 
             assertThat(payload.getSotFullName()).isNull();
+            assertThat(payload.getSotFirmName()).isNull();
+            assertThat(payload.getSotPositionHeld()).isNull();
+            assertThat(payload.isLegalRepresentative()).isFalse();
         }
     }
 

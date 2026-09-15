@@ -7,12 +7,15 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 /**
  * Thin Docmosis wrapper for the defence form. The filename carries the responding defendant's
- * position on the case, e.g. {@code Defence - Defendant 1}.
+ * position on the case, e.g. {@code Defence - Defendant 1}. The legal-representative template is
+ * used when the statement of truth was completed by a legal representative; both templates share
+ * the same merge fields, the LR one adds firm name and position held and reads in the third person.
  */
 @Service
 public class DefenceFormDocumentGenerator {
 
     static final String TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form.docx";
+    static final String LR_TEMPLATE_ID = "CV-PCS-CLM-ENG-Defence-Form-LR.docx";
     static final String OUTPUT_FILENAME_PREFIX = "Defence - Defendant ";
 
     private final DocAssemblyService docAssemblyService;
@@ -31,10 +34,14 @@ public class DefenceFormDocumentGenerator {
     public String generate(DefenceFormPayload payload, int defendantNumber) {
         return docAssemblyService.generateDocument(
             payload,
-            TEMPLATE_ID,
+            templateId(payload),
             OutputType.PDF,
             OUTPUT_FILENAME_PREFIX + defendantNumber
         );
+    }
+
+    static String templateId(DefenceFormPayload payload) {
+        return payload.isLegalRepresentative() ? LR_TEMPLATE_ID : TEMPLATE_ID;
     }
 
 }

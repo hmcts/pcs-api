@@ -40,8 +40,26 @@ class CounterClaimFormDocumentGeneratorTest {
     }
 
     @Test
-    void templateIdMatchesRdoDocmosisNamingConvention() {
+    void usesLegalRepTemplateWhenPayloadFlagged() {
+        CounterClaimFormPayload payload = CounterClaimFormPayload.builder().legalRepresentative(true).build();
+        when(docAssemblyService.generateDocument(eq(payload),
+            eq(CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID),
+            eq(OutputType.PDF),
+            eq("Counterclaim - Defendant 1")
+        )).thenReturn("https://dm-store/lr");
+
+        String url = generator.generate(payload, 1);
+
+        assertThat(url).isEqualTo("https://dm-store/lr");
+        verify(docAssemblyService).generateDocument(
+            payload, CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID, OutputType.PDF, "Counterclaim - Defendant 1");
+    }
+
+    @Test
+    void templateIdsMatchRdoDocmosisNamingConvention() {
         assertThat(CounterClaimFormDocumentGenerator.TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
+        assertThat(CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID)
+            .matches("^CV-PCS-CLM-(ENG|WEL)-.+-LR\\.docx$");
     }
 }

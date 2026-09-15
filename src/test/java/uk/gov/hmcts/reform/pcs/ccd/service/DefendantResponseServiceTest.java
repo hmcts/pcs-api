@@ -1163,7 +1163,31 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+    void shouldScheduleDefenceFormGenerationOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        Integer responseId = 7;
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then - the LR response generates the defence form just like a citizen one.
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+    }
+
+    @Test
+    void shouldNotScheduleDefenceFormGenerationForCaseworkerPaperResponse() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1174,9 +1198,9 @@ class DefendantResponseServiceTest {
 
         // When
         underTest.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
 
-        // Then
+        // Then - the paper form is uploaded by the caseworker, nothing is generated.
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 

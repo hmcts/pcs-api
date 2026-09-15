@@ -6,6 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -131,6 +133,93 @@ class CounterClaimFormPayloadBuilderTest {
         CounterClaimFormPayload payload = builder.build(counterClaim);
 
         assertThat(payload.getStatementOfTruthName()).isNull();
+        assertThat(payload.getSotFirmName()).isNull();
+        assertThat(payload.getSotPositionHeld()).isNull();
+        assertThat(payload.isLegalRepresentative()).isFalse();
+    }
+
+    @Test
+    void mapsFirmPositionAndLegalRepFlagForLegalRepresentative() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Bob").lastName("Defendant").build();
+
+        PcsCaseEntity pcsCase = minimalCase(null);
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(defendant)
+            .statementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Sam Solicitor")
+                .firmName("Test Firm LLP")
+                .positionHeld("Partner")
+                .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+                .build())
+            .build());
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(pcsCase)
+            .party(defendant)
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getStatementOfTruthName()).isEqualTo("Sam Solicitor");
+        assertThat(payload.getSotFirmName()).isEqualTo("Test Firm LLP");
+        assertThat(payload.getSotPositionHeld()).isEqualTo("Partner");
+        assertThat(payload.isLegalRepresentative()).isTrue();
+        assertThat(payload.getShowStatementOfTruthName()).isTrue();
+    }
+
+    @Test
+    void legalRepresentativeFlagIsNotSerialisedAsMergeField() throws Exception {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Bob").lastName("Defendant").build();
+
+        PcsCaseEntity pcsCase = minimalCase(null);
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(defendant)
+            .statementOfTruth(StatementOfTruthEntity.builder()
+                .fullName("Sam Solicitor")
+                .firmName("Test Firm LLP")
+                .positionHeld("Partner")
+                .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+                .build())
+            .build());
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(pcsCase)
+            .party(defendant)
+            .build();
+
+        String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(counterClaim));
+
+        assertThat(json).doesNotContain("legalRepresentative");
+        assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
+    }
+
+    @Test
+    void legalRepresentativeFalseForCitizenStatementOfTruth() {
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID())
+            .firstName("Bob").lastName("Defendant").build();
+
+        PcsCaseEntity pcsCase = minimalCase(null);
+        pcsCase.getDefendantResponses().add(DefendantResponseEntity.builder()
+            .party(defendant)
+            .statementOfTruth(StatementOfTruthEntity.builder().fullName("Robert J Defendant").build())
+            .build());
+
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(pcsCase)
+            .party(defendant)
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getStatementOfTruthName()).isEqualTo("Robert J Defendant");
+        assertThat(payload.getSotFirmName()).isNull();
+        assertThat(payload.getSotPositionHeld()).isNull();
+        assertThat(payload.isLegalRepresentative()).isFalse();
     }
 
     @Test

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.counterclaimform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
@@ -25,6 +26,10 @@ public class CounterClaimFormPayload implements FormPayload {
     private String otherOrderRequestDetails;
     private String otherOrderRequestFacts;
     private String statementOfTruthName;
+    // Legal-representative statement of truth only; rendered by the LR template inside the
+    // showStatementOfTruthName block.
+    private String sotFirmName;
+    private String sotPositionHeld;
 
     private Boolean showCounterClaimDetailsSection;
     private Boolean showClaimingFor;
@@ -39,4 +44,11 @@ public class CounterClaimFormPayload implements FormPayload {
     private Boolean showCounterClaimReasons;
     private Boolean showOtherOrderSection;
     private Boolean showStatementOfTruthName;
+
+    /**
+     * True when the statement of truth was completed by a legal representative. Drives template
+     * selection in {@code CounterClaimFormDocumentGenerator}; not a merge field, so kept off the wire.
+     */
+    @JsonIgnore
+    private boolean legalRepresentative;
 }

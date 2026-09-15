@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.defenceform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +10,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Typed payload rendered into the defence form Docmosis template
- * ({@code CV-PCS-CLM-ENG-Defence-Form.docx}). One form is produced for the defendant who submits
- * the response.
+ * Typed payload rendered into the defence form Docmosis templates
+ * ({@code CV-PCS-CLM-ENG-Defence-Form.docx} for citizens, {@code CV-PCS-CLM-ENG-Defence-Form-LR.docx}
+ * when a legal representative completed the statement of truth). One form is produced for the
+ * defendant who submits the response.
  *
  * <p>Values are pre-formatted by {@code DefenceFormPayloadBuilder}, except the two title-block dates
  * ({@code issueDateSealed}, {@code submittedOn}) which stay {@link LocalDate} and are formatted in
@@ -134,5 +136,15 @@ public class DefenceFormPayload implements FormPayload {
 
     // ---------- Statement of truth ----------
     private String sotFullName;
+    // Firm name and position held are only captured on the legal-representative journey; the LR
+    // template renders them, the citizen template has no tags for them.
+    private String sotFirmName;
+    private String sotPositionHeld;
+    /**
+     * True when the statement of truth was completed by a legal representative. Drives template
+     * selection in {@code DefenceFormDocumentGenerator}; not a merge field, so kept off the wire.
+     */
+    @JsonIgnore
+    private boolean legalRepresentative;
 
 }
