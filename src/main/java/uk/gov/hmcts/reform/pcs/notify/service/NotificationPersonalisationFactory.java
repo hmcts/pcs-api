@@ -106,7 +106,7 @@ public class NotificationPersonalisationFactory {
         return ClaimantBasePersonalisation.builder()
             .toLineClaimantName(toLineClaimantName)
             .caseNumber(formatCaseReference(Long.toString(caseReference)))
-            .caseName(formatDraftCaseName(pcsCase, toLineClaimantName))
+            .caseName(getFormattedDraftCaseName(pcsCase, toLineClaimantName))
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
             .nextStepUrl(nextStepUrl)
@@ -317,7 +317,7 @@ public class NotificationPersonalisationFactory {
         return caseReference.replaceAll("(.{4})(?!$)", "$1-");
     }
 
-    public String formatDraftCaseName(PCSCase pcsCase, String claimantName) {
+    public String getFormattedDraftCaseName(PCSCase pcsCase, String claimantName) {
         List<Party> claimant = List.of(Party.builder().orgName(claimantName).build());
         List<Party> defendants = new ArrayList<>();
         defendants.add(toDraftParty(pcsCase.getDefendant1()));
