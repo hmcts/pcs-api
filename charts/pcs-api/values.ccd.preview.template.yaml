@@ -81,7 +81,7 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
-        DEFINITION_STORE_DB_MAX_POOL_SIZE: 2
+        DEFINITION_STORE_DB_MAX_POOL_SIZE: 6
         ELASTIC_SEARCH_INDEX_SHARDS: 1
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
@@ -107,7 +107,7 @@ ccd:
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
-        DATA_STORE_DB_MAX_POOL_SIZE: 5
+        DATA_STORE_DB_MAX_POOL_SIZE: 15
         DATA_STORE_DB_MIN_IDLE: 1
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
@@ -245,8 +245,10 @@ xui-webapp:
       JURISDICTIONS: PCS
       WA_SUPPORTED_JURISDICTIONS: PCS
       GLOBAL_SEARCH_SERVICES: PCS,CIVIL,SSCS
-      FEATURE_REDIS_ENABLED: false
-      REDISCLOUD_URL: http://dummyrediscloudurl
+      FEATURE_REDIS_ENABLED: true
+      REDIS_KEY_PREFIX: 'xui-${SERVICE_NAME}'
+      DOCUMENT_UPLOAD_THROTTLE_INITIAL_MS: 0
+      DOCUMENT_UPLOAD_THROTTLE_MAX_MS: 0
       FEATURE_APP_INSIGHTS_ENABLED: false
       FEATURE_SECURE_COOKIE_ENABLED: false
       FEATURE_HELMET_ENABLED: false
@@ -272,6 +274,8 @@ xui-webapp:
           - system-user-password
           - mc-session-secret
           - appinsights-connection-string-mc
+          - name: webapp-redis6-connection-string
+            alias: webapp-redis-connection-string
 
 
 ccd-case-document-am-api:

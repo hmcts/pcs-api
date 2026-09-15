@@ -55,8 +55,8 @@ users.forEach(({ user, email, password, tabAccess }) => {
       await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadDefault, email: email, password: password });
     }
     await clearBrowserSession(page, context);
-    await dismissCookieBanner(page, 'additional');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}`);
+    await dismissCookieBanner(page, 'additional');
     await performAction('login', { email: email, password: password });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);

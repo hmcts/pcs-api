@@ -46,8 +46,10 @@ test.afterEach(async () => {
 test.describe.skip('[Enforcement - Confirm Eviction]', async () => {
   test('Confirm Eviction - Eviction data provide by Bailiff @enforcement',
     async () => {
-      await performAction('select', caseSummary.nextStepEventList, caseSummary.confirmEvictionEvent);
-      await performAction('clickButton', caseSummary.go);
+      await performAction('selectEventAndGo', {
+        eventType: caseSummary.confirmEvictionEvent,
+        nextPage: confirmEvictionDetails.mainHeader
+      });
       await performValidation('mainHeader', confirmEvictionDetails.mainHeader);
       await performAction('reTryOnCallBackError', confirmEvictionDetails.continueButton, evictionDate.mainHeader);
     });

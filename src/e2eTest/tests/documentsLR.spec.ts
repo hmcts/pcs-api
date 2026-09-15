@@ -7,7 +7,8 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm, uploadYourDocuments
+  confirmIfTheseDocumentsRelateToAnApplication, documentsUploadConfirm,
+  uploadAdditionalDocumentsInformation, uploadYourDocuments
 } from "@data/page-data-figma/page-data-legalRepresentative";
 import {makeAnApplicationApiData} from "@data/api-data";
 import {initializeCMExecutor} from "@utils/controller-caseManagement";
@@ -93,8 +94,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   },async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -117,8 +120,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
   });
 
   test('Upload documents when GenApps submitted - Single def @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -146,8 +151,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async ({page}) => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performAction('verifyDocumentRelatesToApplication', {
@@ -180,8 +187,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', confirmIfTheseDocumentsRelateToAnApplication.mainHeader);
     await performValidation('elementNotToBeVisible', {
@@ -196,8 +205,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
     },
   }, async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
     await performAction('uploadFiles', {
@@ -217,8 +228,10 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
   });
 
   test('Upload documents when GenApps not submitted - Single def @regression', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
-    await performAction('clickButton', caseSummary.go);
+    await performAction('selectEventAndGo', {
+      eventType: caseSummary.uploadAdditionalDocuments,
+      nextPage: uploadAdditionalDocumentsInformation.mainHeader
+    });
     await performAction('uploadAdditionalDocumentsInfo');
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
     await performAction('uploadFiles', {
