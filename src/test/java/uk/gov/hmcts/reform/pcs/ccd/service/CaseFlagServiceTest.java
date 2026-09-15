@@ -341,7 +341,7 @@ class CaseFlagServiceTest {
     }
 
     @Test
-    void shouldSaveAndReplaceOtherFlagUnderTheReasonableAdjustmentPath() {
+    void shouldReplaceTheAdjustmentSetWhenAResubmissionOmitsAPreviousOtherFlag() {
         // Given a previously supplied "Other" adjustment and a caseworker flag
         List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
         CasePartyFlagEntity previousOtherFlag = createPartyFlagEntity("OT0001", "previous other comment");
@@ -364,7 +364,8 @@ class CaseFlagServiceTest {
         underTest.saveReasonableAdjustmentFlags(
             partyEntity, Flags.builder().details(List.of(incomingOtherFlag)).build(), CASE_REFERENCE);
 
-        // Then the previous "Other" adjustment is replaced and the caseworker flag retained
+        // Then the omitted "Other" adjustment is dropped (the draft is the complete current selection),
+        // the newly supplied one is stored, and the caseworker flag is untouched
         assertThat(partyEntity.getDefendantFlags())
             .extracting(flag -> flag.getFlagRefData().getFlagCode())
             .containsExactlyInAnyOrder("PF0015", "OT0001");
@@ -380,6 +381,41 @@ class CaseFlagServiceTest {
         // A requested flag raises a request review task, but not the active flag review task
         verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_CASE_FLAG_REQUEST, "request description");
         verifyNoMoreInteractions(camundaService);
+    }
+
+    @Test
+    void shouldRetainEveryOtherFlagSuppliedInAResubmission() {
+        // Given a previously supplied "Other" adjustment under one category
+        List<CasePartyFlagEntity> existingFlags = new ArrayList<>();
+        CasePartyFlagEntity previousOtherFlag = createPartyFlagEntity("OT0001", "comment X");
+        previousOtherFlag.setPaths(":Party_:Reasonable adjustment_:I need documents in an alternative format");
+        previousOtherFlag.setOtherDescription("I need documents in an alternative format");
+        existingFlags.add(previousOtherFlag);
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .defendantFlags(existingFlags)
+            .build();
+
+        // and a resubmission that keeps it and adds a second "Other" from a different category
+        List<ListValue<FlagDetail>> details = List.of(
+            createOtherReasonableAdjustmentDetail("I need documents in an alternative format", "comment X"),
+            createOtherReasonableAdjustmentDetail("I need something to feel comfortable during my hearing",
+                                                  "comment Y"));
+
+        // When
+        underTest.saveReasonableAdjustmentFlags(
+            partyEntity, Flags.builder().details(details).build(), CASE_REFERENCE);
+
+        // Then both "Other" adjustments are held as separate flags; the second does not overwrite the first
+        assertThat(partyEntity.getDefendantFlags()).hasSize(2);
+        assertThat(partyEntity.getDefendantFlags())
+            .extracting(CasePartyFlagEntity::getFlagComment, CasePartyFlagEntity::getOtherDescription)
+            .containsExactlyInAnyOrder(
+                tuple("comment X", "I need documents in an alternative format"),
+                tuple("comment Y", "I need something to feel comfortable during my hearing"));
+        assertThat(partyEntity.getDefendantFlags())
+            .allSatisfy(flag -> assertThat(flag.getFlagRefData().getFlagCode()).isEqualTo("OT0001"));
     }
 
     @Test
