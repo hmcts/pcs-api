@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -572,7 +573,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then - nothing saved, distinct error the UI can act on
-        assertThat(response.getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
-        assertThat(response.getErrors().getFirst()).startsWith(DraftVersionConflictException.ERROR_CODE);
+        assertThat(response.getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
     }
 }

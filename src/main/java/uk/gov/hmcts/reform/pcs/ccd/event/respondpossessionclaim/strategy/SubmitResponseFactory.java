@@ -7,11 +7,11 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
-import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class SubmitResponseFactory {
         if (reviewedVersion == null || !reviewedVersion.equals(currentVersion)) {
             log.warn("Submit rejected for case {}: reviewed draft version {} but stored draft is at {}",
                      caseReference, reviewedVersion, currentVersion);
-            return Optional.of(error(DraftVersionConflictException.ERROR_MESSAGE));
+            return Optional.of(error(RespondToClaimCallbackError.DRAFT_CHANGED));
         }
         return Optional.empty();
     }

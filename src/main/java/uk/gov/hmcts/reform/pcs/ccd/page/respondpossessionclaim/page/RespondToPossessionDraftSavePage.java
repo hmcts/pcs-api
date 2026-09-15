@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -91,7 +92,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
                 .build();
         } catch (DraftVersionConflictException e) {
             log.warn("Rejecting draft save for case {}: {}", caseRef, e.getMessage());
-            return error(List.of(DraftVersionConflictException.ERROR_MESSAGE));
+            return error(List.of(RespondToClaimCallbackError.DRAFT_CHANGED));
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseRef, e);
             return error(List.of("We couldn't save your response. Please try again or contact support."));

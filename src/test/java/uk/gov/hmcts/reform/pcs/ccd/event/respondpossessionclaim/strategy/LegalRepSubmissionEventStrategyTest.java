@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -487,14 +487,14 @@ class LegalRepSubmissionEventStrategyTest {
                                                          organisationId)).thenReturn(Optional.of(storedDraft));
         when(submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE))
             .thenReturn(Optional.of(SubmitResponse.<State>builder()
-                                        .errors(List.of(DraftVersionConflictException.ERROR_MESSAGE))
+                                        .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
                                         .build()));
 
         // when
         SubmitResponse<State> result = underTest.process(eventPayload);
 
         // then - nothing persisted
-        assertThat(result.getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+        assertThat(result.getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
         verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
     }
 }

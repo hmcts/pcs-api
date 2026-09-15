@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -15,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
-import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 
 import java.util.Optional;
 
@@ -192,7 +192,7 @@ class SubmitResponseFactoryTest {
             submitResponseFactory.validateReviewedDraftVersion(4L, 5L, CASE_REFERENCE);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+        assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
     }
 
     @Test
@@ -201,6 +201,6 @@ class SubmitResponseFactoryTest {
             submitResponseFactory.validateReviewedDraftVersion(null, 5L, CASE_REFERENCE);
 
         assertThat(result).isPresent();
-        assertThat(result.get().getErrors()).containsExactly(DraftVersionConflictException.ERROR_MESSAGE);
+        assertThat(result.get().getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
     }
 }
