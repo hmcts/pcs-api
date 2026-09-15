@@ -910,6 +910,28 @@ class DraftCaseDataServiceTest {
         underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
 
         verify(draftCaseDataRepository, times(2)).save(draftCaseDataEntity);
+        verify(draftCaseDataRepository, times(2))
+            .findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(CASE_REFERENCE, eventId, USER_ID);
+    }
+
+    @Test
+    void shouldRetryStepSaveThatPostsNoVersionThroughTheVersionedOverload() throws JsonProcessingException {
+        EventId eventId = EventId.respondPossessionClaim;
+        PCSCase newCaseData = PCSCase.builder().build();
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn("{}");
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+            CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenThrow(new ObjectOptimisticLockingFailureException(DraftCaseDataEntity.class, "draft"))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(securityContextService.getCurrentUserDetails())
+            .thenReturn(UserInfo.builder().uid(USER_ID.toString()).build());
+
+        underTest.saveUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, (Long) null);
+
+        verify(draftCaseDataRepository, times(2)).save(draftCaseDataEntity);
     }
 
     @Test

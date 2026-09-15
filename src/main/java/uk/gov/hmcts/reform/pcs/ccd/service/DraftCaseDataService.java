@@ -189,7 +189,7 @@ public class DraftCaseDataService {
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId) {
-        retryingLastWriteWins(() -> saveCitizenDraft(caseReference, eventData, eventId, null));
+        saveUnsubmittedEventData(caseReference, eventData, eventId, null);
     }
 
     /**
@@ -198,12 +198,12 @@ public class DraftCaseDataService {
      * @return the draft version after this save
      * @throws DraftVersionConflictException if the stored draft is at a different version
      */
-    @Transactional
     public <T> Long saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId,
                                              Long expectedVersion) {
-        return saveCitizenDraft(caseReference, eventData, eventId, expectedVersion);
+        return inDraftTransaction(expectedVersion,
+                                  () -> saveCitizenDraft(caseReference, eventData, eventId, expectedVersion));
     }
 
     public <T> void saveUnsubmittedEventData(long caseReference,
@@ -211,19 +211,24 @@ public class DraftCaseDataService {
                                              EventId eventId,
                                              UUID partyId,
                                              String legalRepresentativeOrganisationId) {
-        retryingLastWriteWins(() -> saveLegalRepresentativeDraft(
-            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null));
+        saveUnsubmittedEventData(caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, null);
     }
 
-    @Transactional
     public <T> Long saveUnsubmittedEventData(long caseReference,
                                              T eventData,
                                              EventId eventId,
                                              UUID partyId,
                                              String legalRepresentativeOrganisationId,
                                              Long expectedVersion) {
-        return saveLegalRepresentativeDraft(
-            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, expectedVersion);
+        return inDraftTransaction(expectedVersion, () -> saveLegalRepresentativeDraft(
+            caseReference, eventData, eventId, partyId, legalRepresentativeOrganisationId, expectedVersion));
+    }
+
+    // A write that posted no version keeps last-write-wins; one that did must surface a conflict, never retry.
+    private Long inDraftTransaction(Long expectedVersion, Supplier<Long> write) {
+        return expectedVersion == null
+            ? retryingLastWriteWins(write)
+            : transactionTemplate.execute(status -> write.get());
     }
 
     private <T> Long saveCitizenDraft(long caseReference, T eventData, EventId eventId, Long expectedVersion) {
