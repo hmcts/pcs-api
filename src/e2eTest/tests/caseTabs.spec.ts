@@ -374,7 +374,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     });
   });
 
-  test('Case tabs - CaseList view test @MAC @regression', async () => {
+  test('Case tabs - CaseList view test @MAC @regression @rerun', async () => {
     await performValidation('mainHeader', home.mainHeader);
     await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
     await performAction('validateCaseListTable', {

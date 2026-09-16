@@ -86,7 +86,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-  test('Fee And Pay - Pay by Card', async ({ page, context }) => {
+  test('Fee And Pay - Pay by Card @rerun', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -195,7 +195,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
 });
 
 test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay' , async () => {
-  test('Fee And Pay - Remission Process', async ({ page, context }) => {
+  test('Fee And Pay - Remission Process @rerun', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -225,7 +225,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
     await performAction('approveRefund');
   });
 
-  test('Fee And Pay - Refund Process', async ({ page, context }) => {
+  test('Fee And Pay - Refund Process @rerun', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -255,7 +255,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
     await performAction('approveRefund');
   });
 
-  test('Fee And Pay - Refund Reject Process', async ({ page, context }) => {
+  test('Fee And Pay - Refund Reject Process @rerun', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {
       amountLabel: serviceRequest.amountToPayLabel,
