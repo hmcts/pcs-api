@@ -2,7 +2,7 @@
   import path from 'path';
   import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
   import { performAction, performValidation } from '@utils/controller';
-  import { VERY_LONG_TIMEOUT } from 'playwright.config';
+  import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
   export class UploadFileAction implements IAction {
     async execute(page: Page, action: string, files: actionData | actionRecord): Promise<void> {
@@ -20,7 +20,15 @@
 
     private async uploadFile(page: Page, file: string): Promise<void> {
       await performAction('clickButton', 'Add new');
-      const fileInput = page.locator('input[type="file"].form-control.bottom-30');
+      let fileInput = page.locator('input[type="file"].form-control.bottom-30');
+      await expect(async () => {
+        if (!(await fileInput.isVisible())) {
+          await performAction('clickButton', 'Add new');
+        }
+        await expect(fileInput).toBeVisible({timeout : SHORT_TIMEOUT});
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
       const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
       await fileInput.last().setInputFiles(filePath);
       let timeout = 6000;

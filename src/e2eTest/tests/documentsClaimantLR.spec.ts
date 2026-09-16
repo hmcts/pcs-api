@@ -34,15 +34,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   const isMultiDef = title.toLowerCase().includes('multi def');
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-
   await performAction('submitCaseAPI', { data: submitPayload });
-
-  console.log(submitPayload);
-  
-
-
-  
-  //await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
