@@ -755,6 +755,7 @@ export class CreateCaseAction implements IAction {
   private async uploadAdditionalDocs(documentsData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performAction('removeFile');
     if (Array.isArray(documentsData.documents)) {
       for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
         const document = documentsData.documents[fileIndex]; await performActions(
