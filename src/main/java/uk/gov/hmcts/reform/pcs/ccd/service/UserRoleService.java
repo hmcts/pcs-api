@@ -66,39 +66,55 @@ public class UserRoleService {
         String authorisation = securityContextService.getCurrentUserAuthToken();
         String serviceAuthorisation = authTokenGenerator.generate();
         String userId = cacheKey.userId();
+
+        Set<String> roles = getCaseRoles(authorisation, serviceAuthorisation, cacheKey.caseReference(), userId);
+        getRoleAssignments(authorisation, serviceAuthorisation, userId, roles);
+
+        return roles;
+    }
+
+    private Set<String> getCaseRoles(
+        String authorisation,
+        String serviceAuthorisation,
+        Long caseId,
+        String userId
+    ) {
         CaseAssignmentUserRolesResource caseAssignedUserRoles = caseAssignmentApi.getUserRoles(
             authorisation,
             serviceAuthorisation,
-            List.of(String.valueOf(cacheKey.caseReference())),
+            List.of(String.valueOf(caseId)),
             List.of(userId)
         );
 
+        if (caseAssignedUserRoles == null || caseAssignedUserRoles.getCaseAssignmentUserRoles() == null) {
+            return new LinkedHashSet<>();
+        }
+
+        return caseAssignedUserRoles.getCaseAssignmentUserRoles().stream()
+            .map(CaseAssignmentUserRole::getCaseRole)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void getRoleAssignments(
+        String authorisation,
+        String serviceAuthorisation,
+        String userId,
+        Set<String> roles
+    ) {
         RoleAssignmentResponse roleAssignmentResponse = roleAssignmentApi.getRoles(
             serviceAuthorisation,
             authorisation,
             userId
         );
 
-        Set<String> roles;
-
-        if (caseAssignedUserRoles == null || caseAssignedUserRoles.getCaseAssignmentUserRoles() == null) {
-            roles = new LinkedHashSet<>();
-        } else {
-            roles = caseAssignedUserRoles.getCaseAssignmentUserRoles().stream()
-                .map(CaseAssignmentUserRole::getCaseRole)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (roleAssignmentResponse == null || CollectionUtils.isEmpty(roleAssignmentResponse.getRoleAssignment())) {
+            return;
         }
 
-        if (roleAssignmentResponse != null && !CollectionUtils.isEmpty(roleAssignmentResponse.getRoleAssignment())) {
-            Set<String> roleAssignments = roleAssignmentResponse.getRoleAssignment().stream()
-                .filter(UserRoleService::isNotSpecificGrantType)
-                .map(RoleAssignment::getRoleName)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-            roles.addAll(roleAssignments);
-        }
-
-        return roles;
+        roleAssignmentResponse.getRoleAssignment().stream()
+            .filter(UserRoleService::isNotSpecificGrantType)
+            .map(RoleAssignment::getRoleName)
+            .forEach(roles::add);
     }
 
     private static Collection<String> safeRoles(Collection<String> roles) {

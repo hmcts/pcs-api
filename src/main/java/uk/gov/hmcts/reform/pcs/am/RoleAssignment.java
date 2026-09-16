@@ -14,17 +14,17 @@ import java.util.UUID;
 @NoArgsConstructor
 public class RoleAssignment {
 
-    UUID id;
-    String actorIdType;
-    UUID actorId;
-    String roleType;
-    String roleName;
-    String classification;
-    String grantType;
-    String roleCategory;
-    boolean readOnly;
-    LocalDateTime beginTime;
-    LocalDateTime created;
-    RoleAssignmentAttributes attributes;
+    private UUID id;
+    private String actorIdType;
+    private UUID actorId;
+    private String roleType;
+    private String roleName;
+    private String classification;
+    private String grantType;
+    private String roleCategory;
+    private boolean readOnly;
+    private LocalDateTime beginTime;
+    private LocalDateTime created;
+    private RoleAssignmentAttributes attributes;
 
 }

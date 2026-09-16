@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RoleAssignmentAttributes {
 
-    String substantive;
-    Long caseId;
-    String jurisdiction;
-    String caseType;
-    String workTypes;
-    String primaryLocation;
+    private String substantive;
+    private Long caseId;
+    private String jurisdiction;
+    private String caseType;
+    private String workTypes;
+    private String primaryLocation;
 
 }
