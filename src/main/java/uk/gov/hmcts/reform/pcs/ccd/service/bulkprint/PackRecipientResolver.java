@@ -10,12 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.LegalRepRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -31,7 +29,6 @@ public class PackRecipientResolver {
     private final GenAppPackSelector genAppPackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
-    private final LegalRepRecipientResolver legalRepRecipientResolver;
     private final AddressMapper addressMapper;
 
     public PackRecipientResolver(PcsCaseRepository pcsCaseRepository,
@@ -40,7 +37,6 @@ public class PackRecipientResolver {
                                  GenAppPackSelector genAppPackSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
-                                 LegalRepRecipientResolver legalRepRecipientResolver,
                                  AddressMapper addressMapper) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.claimPackSelector = claimPackSelector;
@@ -48,7 +44,6 @@ public class PackRecipientResolver {
         this.genAppPackSelector = genAppPackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
-        this.legalRepRecipientResolver = legalRepRecipientResolver;
         this.addressMapper = addressMapper;
     }
 
@@ -91,23 +86,12 @@ public class PackRecipientResolver {
         PartyEntity recipient = candidate.recipient();
         PartyRole role = candidate.role();
         List<DocumentEntity> documents = candidate.documents();
-        LetterType letterType = defenceLetterType(documents);
-        // A represented defendant is served at their legal representative's address (CPR 6.23); the recipient party
-        // is unchanged so dispatch dedup and the activity log still key on the defendant.
-        if (role == PartyRole.DEFENDANT) {
-            Optional<LegalRepRecipientResolver.LegalRepAddressee> legalRep =
-                legalRepRecipientResolver.resolve(recipient, pcsCase.getCaseReference());
-            if (legalRep.isPresent()) {
-                return new ResolvedRecipient(pcsCase, recipient, letterType, documents,
-                    legalRep.get().name(), legalRep.get().address());
-            }
-        }
-        return new ResolvedRecipient(pcsCase, recipient, letterType, documents,
+        return new ResolvedRecipient(pcsCase, recipient, defenceLetterType(documents), documents,
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
 
-    // Packs carrying a form from a legal representative's response are posted under their own letter type.
+    // DEF-01-IN1 when any form comes from a legal representative's response.
     private LetterType defenceLetterType(List<DocumentEntity> documents) {
         return documents.stream().anyMatch(LegalRepResponseDocuments::isFromLegalRepResponse)
             ? LetterType.DEFENCE_PACK_LEGAL_REP

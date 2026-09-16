@@ -6,10 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 
 import java.util.Optional;
 
-/**
- * Whether a defence-phase form came from a response submitted by the defendant's legal representative, judged by
- * who completed the statement of truth. A counter-claim form is judged by its defendant's response.
- */
+// Whether a form came from a legal representative's response.
 final class LegalRepResponseDocuments {
 
     private LegalRepResponseDocuments() {

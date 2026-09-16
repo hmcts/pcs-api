@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -94,8 +95,7 @@ public class DefencePackSelector {
         return candidates;
     }
 
-    // A form from a legal representative's response is not posted to the defendant it was filed for, nor to the
-    // representative; every other eligible party still receives it.
+    // Skip the defendant whose legal representative filed this form.
     private List<PartyEntity> recipientsOf(DocumentEntity form, PartyEntity owner, List<PartyEntity> eligible) {
         if (!LegalRepResponseDocuments.isFromLegalRepResponse(form)) {
             return eligible;
@@ -109,12 +109,19 @@ public class DefencePackSelector {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
                 .filter(this::wantsPost)
+                .filter(defendant -> !isRepresented(defendant))
                 .toList();
         }
 
         List<PartyEntity> allParties = new ArrayList<>(claimants);
         allParties.addAll(defendants);
         return allParties;
+    }
+
+    // Represented defendants are served digitally through their legal representative, never by post.
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
     }
 
     private boolean wantsPost(PartyEntity party) {
