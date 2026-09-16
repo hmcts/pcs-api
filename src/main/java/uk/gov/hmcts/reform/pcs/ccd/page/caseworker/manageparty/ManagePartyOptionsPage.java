@@ -37,8 +37,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemoveP
 public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String MANAGE_PARTY_OPTIONS_FIELD = "addParty_ManagePartyOptions";
     private static final String REMOVE_PARTY_CONDITION =
-        ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.REMOVE_PARTY);
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.REMOVE_PARTY);
     private static final String DATE_OF_BIRTH_UNKNOWN = "(Date of birth unknown)";
     private static final String ADDRESS_UNKNOWN = "(Address unknown)";
     private static final String CAN_SELECT_PARTY_CONDITION =
@@ -62,7 +63,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
                 .mandatory(AddPartyDetails::getManagePartyOptions)
                 .mandatory(
                     AddPartyDetails::getAddPartyType,
-                    ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.ADD_PARTY))
+                    ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.ADD_PARTY))
             .done()
             .complex(PCSCase::getRemovePartyDetails)
                 .readonly(RemovePartyDetails::getCanSelectParty, ShowConditions.NEVER_SHOW, true)
@@ -76,7 +77,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             .complex(PCSCase::getUpdatePartyDetails)
                 .mandatory(
                     UpdatePartyDetails::getPartyToUpdate,
-                    ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.UPDATE))
+                    ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.UPDATE))
                 .readonly(UpdatePartyDetails::getPreviouslySelectedPartyId, ShowConditions.NEVER_SHOW, true)
                 .readonly(UpdatePartyDetails::getPartyType, ShowConditions.NEVER_SHOW, true)
             .done();

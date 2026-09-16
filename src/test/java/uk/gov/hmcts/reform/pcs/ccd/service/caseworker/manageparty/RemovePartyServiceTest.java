@@ -129,6 +129,47 @@ class RemovePartyServiceTest {
             .hasMessage(OPEN_APPLICATION_OR_COUNTERCLAIM_ERROR);
     }
 
+    @Test
+    void shouldRejectPartyWithOpenCounterClaim() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        buildCaseWithParties(partyToRemove, remainingParty);
+
+        when(partyService.getPartyRole(partyToRemove)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(remainingParty)).thenReturn(true);
+        when(counterClaimRepository.existsByPcsCaseCaseReferenceAndPartyIdAndStatusIn(
+            eq(TEST_CASE_REFERENCE), eq(partyToRemove.getId()), anyCollection())).thenReturn(true);
+
+        assertThatThrownBy(() -> underTest.validateCanRemove(partyToRemove, TEST_CASE_REFERENCE))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage(OPEN_APPLICATION_OR_COUNTERCLAIM_ERROR);
+    }
+
+    @Test
+    void shouldAllowSelectingPartyWhenMoreThanOneActivePartyHasSameRole() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, remainingParty);
+
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(remainingParty)).thenReturn(true);
+
+        assertThat(underTest.canSelectForRemoval(mainClaim.getClaimParties().getFirst(), mainClaim)).isTrue();
+    }
+
+    @Test
+    void shouldNotAllowSelectingPartyWhenOnlyOneActivePartyHasSameRole() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity inactiveParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.NO).build();
+        ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, inactiveParty);
+
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(inactiveParty)).thenReturn(false);
+
+        assertThat(underTest.canSelectForRemoval(mainClaim.getClaimParties().getFirst(), mainClaim)).isFalse();
+    }
+
     private ClaimEntity buildCaseWithParties(PartyEntity... parties) {
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
