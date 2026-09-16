@@ -9,14 +9,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
-import uk.gov.hmcts.reform.pcs.ccd.service.form.LegalRepRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -25,7 +28,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,8 +48,6 @@ class PackRecipientResolverTest {
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
-    @Mock
-    private LegalRepRecipientResolver legalRepRecipientResolver;
     @Mock
     private AddressMapper addressMapper;
 
@@ -132,6 +132,64 @@ class PackRecipientResolverTest {
     }
 
     @Test
+    @DisplayName("Posts a defence pack carrying a legal representative's defence form as DEF-01-IN1")
+    void shouldUseLegalRepLetterTypeForLegalRepDefenceForm() {
+        DocumentEntity lrDefenceForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .defendantResponse(response(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)).build();
+        stubDefenceCandidate(List.of(lrDefenceForm));
+
+        List<ResolvedRecipient> resolved = underTest.resolveDefenceRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK_LEGAL_REP);
+            assertThat(recipient.letterType().getCode()).isEqualTo("DEF-01-IN1");
+        });
+    }
+
+    @Test
+    @DisplayName("Posts a late counterclaim from a legal representative's response as DEF-01-IN1")
+    void shouldUseLegalRepLetterTypeForLegalRepCounterClaimForm() {
+        PartyEntity respondingDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        DefendantResponseEntity lrResponse = response(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        lrResponse.setParty(respondingDefendant);
+        PcsCaseEntity caseWithResponse = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
+        caseWithResponse.getDefendantResponses().add(lrResponse);
+        DocumentEntity counterClaimForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .counterClaim(CounterClaimEntity.builder().party(respondingDefendant).pcsCase(caseWithResponse).build())
+            .build();
+        stubDefenceCandidate(List.of(counterClaimForm));
+
+        List<ResolvedRecipient> resolved = underTest.resolveDefenceRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement()
+            .satisfies(recipient -> assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK_LEGAL_REP));
+    }
+
+    @Test
+    @DisplayName("Posts a pack mixing citizen and legal representative forms as DEF-01-IN1")
+    void shouldUseLegalRepLetterTypeForMixedPack() {
+        DocumentEntity citizenForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .defendantResponse(response(null)).build();
+        DocumentEntity lrForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .defendantResponse(response(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)).build();
+        stubDefenceCandidate(List.of(citizenForm, lrForm));
+
+        assertThat(underTest.resolveDefenceRecipients(CASE_ID)).singleElement()
+            .satisfies(recipient -> assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK_LEGAL_REP));
+    }
+
+    @Test
+    @DisplayName("Keeps DEF-01-IN0 for a citizen defence form")
+    void shouldKeepDefenceLetterTypeForCitizenForm() {
+        DocumentEntity citizenForm = DocumentEntity.builder().id(UUID.randomUUID())
+            .defendantResponse(response(null)).build();
+        stubDefenceCandidate(List.of(citizenForm));
+
+        assertThat(underTest.resolveDefenceRecipients(CASE_ID)).singleElement()
+            .satisfies(recipient -> assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK));
+    }
+
+    @Test
     @DisplayName("Serves the counter-claim on the claimant using the claimant's own address")
     void shouldResolveClaimantForDefencePackViaOwnAddress() {
         AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 Landlord Lane").build();
@@ -173,67 +231,22 @@ class PackRecipientResolverTest {
     }
 
     @Test
-    @DisplayName("Addresses a represented defendant's defence pack to their legal representative")
-    void shouldResolveRepresentedDefendantDefencePackToLegalRep() {
-        AddressUK firmAddress = AddressUK.builder().addressLine1("102 Petty France").postCode("SW1H 9AJ").build();
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(defencePackSelector.findDefencePackCandidates(pcsCase))
-            .thenReturn(List.of(new DefencePackCandidate(PartyRole.DEFENDANT, defendant, List.of(defenceForm))));
-        when(legalRepRecipientResolver.resolve(defendant, pcsCase.getCaseReference()))
-            .thenReturn(Optional.of(new LegalRepRecipientResolver.LegalRepAddressee("Firm LLP", firmAddress)));
-
-        List<ResolvedRecipient> resolved = underTest.resolveDefenceRecipients(CASE_ID);
-
-        assertThat(resolved).singleElement().satisfies(recipient -> {
-            assertThat(recipient.recipient()).isEqualTo(defendant);
-            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK);
-            assertThat(recipient.recipientName()).isEqualTo("Firm LLP");
-            assertThat(recipient.address()).isEqualTo(firmAddress);
-            assertThat(recipient.documents()).containsExactly(defenceForm);
-        });
-        verifyNoInteractions(defenceCorrespondenceAddressResolver);
-    }
-
-    @Test
-    @DisplayName("Addresses a represented defendant's gen-app pack to their legal representative")
-    void shouldResolveRepresentedDefendantGenAppPackToLegalRep() {
-        AddressUK firmAddress = AddressUK.builder().addressLine1("102 Petty France").postCode("SW1H 9AJ").build();
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(genAppPackSelector.findGenAppPackCandidates(pcsCase))
-            .thenReturn(List.of(new GenAppPackCandidate(PartyRole.DEFENDANT, defendant, List.of(defenceForm))));
-        when(legalRepRecipientResolver.resolve(defendant, pcsCase.getCaseReference()))
-            .thenReturn(Optional.of(new LegalRepRecipientResolver.LegalRepAddressee("Firm LLP", firmAddress)));
-
-        List<ResolvedRecipient> resolved = underTest.resolveGenAppRecipients(CASE_ID);
-
-        assertThat(resolved).singleElement().satisfies(recipient -> {
-            assertThat(recipient.recipient()).isEqualTo(defendant);
-            assertThat(recipient.letterType()).isEqualTo(LetterType.GEN_APP_PACK);
-            assertThat(recipient.recipientName()).isEqualTo("Firm LLP");
-            assertThat(recipient.address()).isEqualTo(firmAddress);
-        });
-    }
-
-    @Test
-    @DisplayName("Does not look up a legal representative for a claimant recipient")
-    void shouldNotResolveLegalRepForClaimantRecipient() {
-        AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 Landlord Lane").build();
-        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
-        when(defencePackSelector.findDefencePackCandidates(pcsCase))
-            .thenReturn(List.of(new DefencePackCandidate(PartyRole.CLAIMANT, claimant, List.of(defenceForm))));
-        when(recipientAddressResolver.resolvePostalAddress(claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
-            .thenReturn(postalAddress);
-
-        underTest.resolveDefenceRecipients(CASE_ID);
-
-        verifyNoInteractions(legalRepRecipientResolver);
-    }
-
-    @Test
     @DisplayName("Returns no gen-app recipients when the case is not found")
     void shouldReturnNoGenAppRecipientsWhenCaseNotFound() {
         when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.empty());
 
         assertThat(underTest.resolveGenAppRecipients(CASE_ID)).isEmpty();
+    }
+
+    private void stubDefenceCandidate(List<DocumentEntity> documents) {
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(defencePackSelector.findDefencePackCandidates(pcsCase))
+            .thenReturn(List.of(new DefencePackCandidate(PartyRole.DEFENDANT, defendant, documents)));
+    }
+
+    private static DefendantResponseEntity response(StatementOfTruthCompletedBy completedBy) {
+        return DefendantResponseEntity.builder()
+            .statementOfTruth(StatementOfTruthEntity.builder().completedBy(completedBy).build())
+            .build();
     }
 }

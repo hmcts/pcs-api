@@ -70,12 +70,12 @@ public class DefencePackSelector {
         for (PartyEntity defendant : defendants) {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
-                eligibleRecipients.forEach(
+                recipientsOf(defenceForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
             DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
             if (counterClaimForm != null) {
-                eligibleRecipients.forEach(
+                recipientsOf(counterClaimForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
             }
         }
@@ -92,6 +92,17 @@ public class DefencePackSelector {
             }
         }
         return candidates;
+    }
+
+    // A form from a legal representative's response is not posted to the defendant it was filed for, nor to the
+    // representative; every other eligible party still receives it.
+    private List<PartyEntity> recipientsOf(DocumentEntity form, PartyEntity owner, List<PartyEntity> eligible) {
+        if (!LegalRepResponseDocuments.isFromLegalRepResponse(form)) {
+            return eligible;
+        }
+        return eligible.stream()
+            .filter(party -> !party.getId().equals(owner.getId()))
+            .toList();
     }
 
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
