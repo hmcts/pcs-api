@@ -272,6 +272,10 @@ class PCSCaseViewTest {
         assertThat(mappedParties.getFirst().getValue()).isSameAs(party);
     }
 
+    /**
+     * The collection item id has to be the party's own id: the flag view matches a projected party back
+     * to its entity by it, and the support review write-back resolves the reviewed party from it.
+     */
     @Test
     void shouldSetCollectionItemIdFromPartyId() {
         // Given
