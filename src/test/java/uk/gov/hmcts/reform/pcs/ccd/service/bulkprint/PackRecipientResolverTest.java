@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.LegalRepRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +50,8 @@ class PackRecipientResolverTest {
     private RecipientAddressResolver recipientAddressResolver;
     @Mock
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
+    @Mock
+    private LegalRepRecipientResolver legalRepRecipientResolver;
     @Mock
     private AddressMapper addressMapper;
 
@@ -228,6 +232,58 @@ class PackRecipientResolverTest {
             assertThat(recipient.address()).isEqualTo(addressUk);
             assertThat(recipient.documents()).containsExactly(defenceForm);
         });
+    }
+
+    @Test
+    @DisplayName("Addresses a represented defendant's defence pack to their legal representative")
+    void shouldAddressRepresentedDefendantDefencePackToLegalRep() {
+        AddressUK firmAddress = AddressUK.builder().addressLine1("102 Petty France").postCode("SW1H 9AJ").build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(defencePackSelector.findDefencePackCandidates(pcsCase))
+            .thenReturn(List.of(new DefencePackCandidate(PartyRole.DEFENDANT, defendant, List.of(defenceForm))));
+        when(legalRepRecipientResolver.resolve(defendant, pcsCase.getCaseReference()))
+            .thenReturn(Optional.of(new LegalRepRecipientResolver.LegalRepAddressee("Firm LLP", firmAddress)));
+
+        List<ResolvedRecipient> resolved = underTest.resolveDefenceRecipients(CASE_ID);
+
+        assertThat(resolved).singleElement().satisfies(recipient -> {
+            assertThat(recipient.recipient()).isEqualTo(defendant);
+            assertThat(recipient.letterType()).isEqualTo(LetterType.DEFENCE_PACK);
+            assertThat(recipient.recipientName()).isEqualTo("Firm LLP");
+            assertThat(recipient.address()).isEqualTo(firmAddress);
+            assertThat(recipient.documents()).containsExactly(defenceForm);
+        });
+        verifyNoInteractions(defenceCorrespondenceAddressResolver);
+    }
+
+    @Test
+    @DisplayName("Does not look up a legal representative for a claimant recipient")
+    void shouldNotResolveLegalRepForClaimantRecipient() {
+        AddressEntity postalAddress = AddressEntity.builder().addressLine1("1 Landlord Lane").build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(defencePackSelector.findDefencePackCandidates(pcsCase))
+            .thenReturn(List.of(new DefencePackCandidate(PartyRole.CLAIMANT, claimant, List.of(defenceForm))));
+        when(recipientAddressResolver.resolvePostalAddress(claimant, PartyRole.CLAIMANT, pcsCase.getPropertyAddress()))
+            .thenReturn(postalAddress);
+
+        underTest.resolveDefenceRecipients(CASE_ID);
+
+        verifyNoInteractions(legalRepRecipientResolver);
+    }
+
+    @Test
+    @DisplayName("Keeps a represented defendant's gen-app pack at their own correspondence address")
+    void shouldKeepGenAppPackAtDefendantAddress() {
+        AddressUK addressUk = AddressUK.builder().addressLine1("42 Renters Way").build();
+        when(pcsCaseRepository.findById(CASE_ID)).thenReturn(Optional.of(pcsCase));
+        when(genAppPackSelector.findGenAppPackCandidates(pcsCase))
+            .thenReturn(List.of(new GenAppPackCandidate(PartyRole.DEFENDANT, defendant, List.of(defenceForm))));
+        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant, pcsCase.getPropertyAddress()))
+            .thenReturn(addressUk);
+
+        underTest.resolveGenAppRecipients(CASE_ID);
+
+        verifyNoInteractions(legalRepRecipientResolver);
     }
 
     @Test
