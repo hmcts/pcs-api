@@ -139,9 +139,9 @@ public class DefenceFormPayloadBuilder {
         mapResponse(response, isWales, claimantServedNotice(claim), hasRentArrearsGround, hasOnlyRentArrearsGrounds,
             assertions, payload);
         mapPaymentAgreement(response.getPaymentAgreement(), hasRentArrearsGround, payload);
-        boolean legalRepresentative = response.getStatementOfTruth() != null
+        boolean completedByLegalRepresentative = response.getStatementOfTruth() != null
             && response.getStatementOfTruth().isCompletedByLegalRepresentative();
-        mapHouseholdCircumstances(response.getHouseholdCircumstances(), legalRepresentative, payload);
+        mapHouseholdCircumstances(response.getHouseholdCircumstances(), completedByLegalRepresentative, payload);
         mapStatementOfTruth(response.getStatementOfTruth(), payload);
 
         return payload.build();
@@ -246,7 +246,7 @@ public class DefenceFormPayloadBuilder {
     }
 
     private void mapHouseholdCircumstances(HouseholdCircumstancesEntity household,
-                                           boolean legalRepresentative,
+                                           boolean completedByLegalRepresentative,
                                            DefenceFormPayload.DefenceFormPayloadBuilder payload) {
         if (household == null) {
             return;
@@ -271,7 +271,7 @@ public class DefenceFormPayloadBuilder {
         payload.exceptionalHardshipDetails(household.getExceptionalHardshipDetails());
 
         payload.showIncomeExpenseSection(isYes(household.getShareIncomeExpenseDetails()));
-        mapRegularIncome(household.getRegularIncomeEntity(), legalRepresentative, payload);
+        mapRegularIncome(household.getRegularIncomeEntity(), completedByLegalRepresentative, payload);
         mapUniversalCreditApplication(household, payload);
 
         payload.priorityDebts(toLabel(household.getPriorityDebts()));
@@ -293,7 +293,7 @@ public class DefenceFormPayloadBuilder {
     }
 
     private void mapRegularIncome(RegularIncomeEntity regularIncome,
-                                  boolean legalRepresentative,
+                                  boolean completedByLegalRepresentative,
                                   DefenceFormPayload.DefenceFormPayloadBuilder payload) {
         if (regularIncome == null) {
             payload.income(List.of());
@@ -306,7 +306,7 @@ public class DefenceFormPayloadBuilder {
         List<DefenceFormAmountRow> incomeRows = INCOME_ROW_ORDER.stream()
             .filter(byType::containsKey)
             .map(byType::get)
-            .map(item -> amountRow(incomeLabel(item.getIncomeType(), legalRepresentative),
+            .map(item -> amountRow(incomeLabel(item.getIncomeType(), completedByLegalRepresentative),
                 item.getAmount(), formatFrequency(item.getFrequency())))
             .toList();
         payload.income(incomeRows);
@@ -425,9 +425,9 @@ public class DefenceFormPayloadBuilder {
     }
 
     // Defence-form wording (Cook's design), fuller than the shared IncomeType/RegularExpenseType labels.
-    private static String incomeLabel(IncomeType type, boolean legalRepresentative) {
+    private static String incomeLabel(IncomeType type, boolean completedByLegalRepresentative) {
         return switch (type) {
-            case INCOME_FROM_JOBS -> legalRepresentative
+            case INCOME_FROM_JOBS -> completedByLegalRepresentative
                 ? "Income from all jobs they do"
                 : "Income from all jobs you do";
             case PENSION -> "Pension – state and private";
