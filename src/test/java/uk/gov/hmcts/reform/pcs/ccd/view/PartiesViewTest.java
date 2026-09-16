@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Organisation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -492,6 +493,55 @@ class PartiesViewTest {
         assertThat(pcsCase.getAllClaimants())
             .extracting(lv -> lv.getValue().getOrganisationPolicy())
             .containsOnlyNulls();
+    }
+
+    /**
+     * The data store reads Organisation.OrganisationID off a matched policy without checking the
+     * Organisation node exists, so an unrepresented defendant must still carry an empty organisation.
+     */
+    @Test
+    void shouldGiveAnUnrepresentedDefendantAnEmptyOrganisationInItsPolicy() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Organisation organisation = pcsCase.getAllDefendants().getFirst().getValue()
+            .getOrganisationPolicy().getOrganisation();
+        assertThat(organisation).isNotNull();
+        assertThat(organisation.getOrganisationId()).isNull();
+        assertThat(organisation.getOrganisationName()).isNull();
+    }
+
+    @Test
+    void shouldPutTheActiveLegalRepresentativeOrganisationInTheDefendantPolicy() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
+
+        OrganisationEntity previousFirm = OrganisationEntity.builder()
+            .organisationId("OLDFIRM").organisationName("Old Firm").build();
+        OrganisationEntity currentFirm = OrganisationEntity.builder()
+            .organisationId("NEWFIRM").organisationName("New Firm").build();
+        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        defendant.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder().organisation(previousFirm).active(YesOrNo.NO).build(),
+            ClaimPartyOrganisationEntity.builder().organisation(currentFirm).active(YesOrNo.YES).build()
+        ));
+        when(claimEntity.getClaimParties()).thenReturn(List.of(
+            buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Organisation organisation = pcsCase.getAllDefendants().getFirst().getValue()
+            .getOrganisationPolicy().getOrganisation();
+        assertThat(organisation.getOrganisationId()).isEqualTo("NEWFIRM");
+        assertThat(organisation.getOrganisationName()).isEqualTo("New Firm");
     }
 
     private void stubCitizenUser(UUID userId) {

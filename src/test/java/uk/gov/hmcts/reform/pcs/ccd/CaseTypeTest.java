@@ -201,9 +201,7 @@ class CaseTypeTest {
     void shouldNotGrantTheSupportTabToAnyClaimantSideOrInternalProfile() {
         assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES)
             .doesNotContain(AccessProfile.CLAIMANT,
-                            AccessProfile.GA_CLAIMANT_SOLICITOR,
-                            AccessProfile.CLAIMANT_SOLICITOR,
-                            AccessProfile.PCS_SOLICITOR)
+                            AccessProfile.GA_CLAIMANT_SOLICITOR)
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
     }
 

@@ -24,7 +24,6 @@ class CaseNoteAccessTest {
     void shouldNotGrantReadAccessToProfessionalUsers() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        assertThat(grants.get(UserRole.PCS_SOLICITOR)).isEmpty();
         assertThat(grants.get(UserRole.CLAIMANT)).isEmpty();
         assertThat(grants.get(UserRole.GA_CLAIMANT_SOLICITOR)).isEmpty();
         assertThat(grants.get(UserRole.DEFENDANT)).isEmpty();

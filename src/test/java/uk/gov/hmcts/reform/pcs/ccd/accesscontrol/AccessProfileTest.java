@@ -62,7 +62,7 @@ class AccessProfileTest {
     void shouldDeclareAccessGroupsOnTheCanonicalCaseType() {
         assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.accessGroupsFor(false))
             .containsExactly(SOLICITOR_ORG_CLAIMANT_ACCESS);
-        assertThat(AccessProfile.PCS_SOLICITOR.accessGroupsFor(false)).isEmpty();
+        assertThat(AccessProfile.CITIZEN.accessGroupsFor(false)).isEmpty();
     }
 
     @Test

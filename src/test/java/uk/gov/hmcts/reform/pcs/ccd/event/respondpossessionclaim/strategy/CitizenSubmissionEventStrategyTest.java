@@ -199,6 +199,6 @@ class CitizenSubmissionEventStrategyTest {
 
     @Test
     void supports_WithNonCitizenUser_ReturnsFalse() {
-        assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
+        assertThat(underTest.supports(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()))).isFalse();
     }
 }

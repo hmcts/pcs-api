@@ -28,10 +28,11 @@ public enum AccessProfile implements HasRole {
     RAS_VALIDATOR("caseworker-ras-validation", Set.of(R)),
     CITIZEN("citizen", CRU),
     DEFENDANT("[DEFENDANT]", CRU),
-    CLAIMANT_SOLICITOR("[CLAIMANTSOLICITOR]", CRU),
-    DEFENDANT_SOLICITOR("[DEFENDANTSOLICITOR]", CRU),
+    /**
+     * Notice of Change key only, no grants - see {@link NocCaseRoles#DEFENDANT}.
+     */
+    DEFENDANT_SOLICITOR(NocCaseRoles.DEFENDANT, CRU),
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
-    PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
     CLAIMANT("claimant", CRU,
              LOCAL_AUTHORITY_CLAIMANT_ACCESS,
