@@ -49,7 +49,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   } else {
     throw new Error(`No genAppPayload configured for ${title}`);
   }
-  console.log(genAppPayload);
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
