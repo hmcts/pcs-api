@@ -86,7 +86,7 @@ class SubmitEventHandlerTest {
             .thenReturn(submittingParty);
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder().build();
-        when(counterClaimService.saveCounterClaim(
+        when(counterClaimService.saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             any(CounterClaim.class),
             eq(submittingParty)
@@ -129,7 +129,7 @@ class SubmitEventHandlerTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -185,7 +185,7 @@ class SubmitEventHandlerTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -231,7 +231,7 @@ class SubmitEventHandlerTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -268,7 +268,7 @@ class SubmitEventHandlerTest {
 
         // Then
         ArgumentCaptor<CounterClaim> counterClaimCaptor = ArgumentCaptor.forClass(CounterClaim.class);
-        verify(counterClaimService).saveCounterClaim(
+        verify(counterClaimService).saveCaseworkerEnteredCounterClaim(
             eq(TEST_CASE_REFERENCE),
             counterClaimCaptor.capture(),
             eq(submittingParty));
@@ -284,7 +284,38 @@ class SubmitEventHandlerTest {
     }
 
     @Test
-    void shouldReturnPendingIssueConfirmation() {
+    void shouldReturnSubmittedConfirmationWhenNotAppliedForHwf() {
+        // Given
+        UUID submittingPartyId = UUID.randomUUID();
+        when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
+            .thenReturn(mock(PartyEntity.class));
+
+        PCSCase caseData = PCSCase.builder()
+            .enterCounterClaim(EnterCounterClaimDetails.builder()
+                                   .claimTypeOption(CounterClaimType.SOMETHING_ELSE)
+                                   .appliedForHwf(VerticalYesNo.NO)
+                                   .build())
+            .partyRadioList(DynamicList.builder()
+                                .value(DynamicListElement.builder().code(submittingPartyId).build())
+                                .build())
+            .caseNameHmctsInternal("Smith v Jones")
+            .build();
+
+        // When
+        SubmitResponse<State> response = submit(caseData);
+
+        // Then
+        assertThat(response.getConfirmationBody())
+            .contains("Counterclaim submitted")
+            .contains("Case number: " + TEST_CASE_REFERENCE)
+            .contains("1 High Street, London, W1 1AA")
+            .contains("Smith v Jones")
+            .doesNotContain("pending issue")
+            .doesNotContain("What happens next");
+    }
+
+    @Test
+    void shouldReturnPendingIssueConfirmationWhenAppliedForHwf() {
         // Given
         UUID submittingPartyId = UUID.randomUUID();
         when(partyService.getPartyEntityByEntityId(submittingPartyId, TEST_CASE_REFERENCE))
