@@ -55,7 +55,6 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(ManagePartyStates.ALLOWED_STATES)
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
-            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
             .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .showSummary()
