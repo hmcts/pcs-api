@@ -135,8 +135,7 @@ public class DefendantResponseService {
                           caseReference, userId)
         );
 
-        // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
-        if (JourneyType.CITIZEN.equals(journeyType)) {
+        if (JourneyType.CITIZEN.equals(journeyType) || JourneyType.LEGAL_REPRESENTATIVE.equals(journeyType)) {
             Integer defendantResponseId = savedResponse.getId();
             UUID defendantPartyId = savedResponse.getParty().getId();
             scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(

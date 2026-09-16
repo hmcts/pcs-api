@@ -1163,10 +1163,15 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+    void shouldScheduleDefenceFormGenerationOnLegalRepPath() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        Integer responseId = 2;
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(DefendantResponses.builder().build())
@@ -1176,8 +1181,8 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(
             CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
 
-        // Then
-        verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
     }
 
     @Test

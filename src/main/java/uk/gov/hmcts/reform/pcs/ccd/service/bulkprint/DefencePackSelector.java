@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -98,12 +99,18 @@ public class DefencePackSelector {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
                 .filter(this::wantsPost)
+                .filter(defendant -> !isRepresented(defendant))
                 .toList();
         }
 
         List<PartyEntity> allParties = new ArrayList<>(claimants);
         allParties.addAll(defendants);
         return allParties;
+    }
+
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()) && link.getOrganisation() != null);
     }
 
     private boolean wantsPost(PartyEntity party) {
