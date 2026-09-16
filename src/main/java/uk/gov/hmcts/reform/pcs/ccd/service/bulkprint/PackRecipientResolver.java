@@ -4,15 +4,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.DefenceCorrespondenceAddressResolver;
+import uk.gov.hmcts.reform.pcs.ccd.service.form.LegalRepRecipientResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -28,6 +31,7 @@ public class PackRecipientResolver {
     private final GenAppPackSelector genAppPackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
+    private final LegalRepRecipientResolver legalRepRecipientResolver;
     private final AddressMapper addressMapper;
 
     public PackRecipientResolver(PcsCaseRepository pcsCaseRepository,
@@ -36,6 +40,7 @@ public class PackRecipientResolver {
                                  GenAppPackSelector genAppPackSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
+                                 LegalRepRecipientResolver legalRepRecipientResolver,
                                  AddressMapper addressMapper) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.claimPackSelector = claimPackSelector;
@@ -43,6 +48,7 @@ public class PackRecipientResolver {
         this.genAppPackSelector = genAppPackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
+        this.legalRepRecipientResolver = legalRepRecipientResolver;
         this.addressMapper = addressMapper;
     }
 
@@ -82,17 +88,28 @@ public class PackRecipientResolver {
     }
 
     private ResolvedRecipient resolveDefenceRecipient(PcsCaseEntity pcsCase, DefencePackCandidate candidate) {
-        PartyEntity recipient = candidate.recipient();
-        PartyRole role = candidate.role();
-        return new ResolvedRecipient(pcsCase, recipient, LetterType.DEFENCE_PACK, candidate.documents(),
-            recipientAddressResolver.resolveDisplayName(recipient),
-            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
+        return resolveServedRecipient(pcsCase, candidate.recipient(), candidate.role(), LetterType.DEFENCE_PACK,
+            candidate.documents());
     }
 
     private ResolvedRecipient resolveGenAppRecipient(PcsCaseEntity pcsCase, GenAppPackCandidate candidate) {
-        PartyEntity recipient = candidate.recipient();
-        PartyRole role = candidate.role();
-        return new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, candidate.documents(),
+        return resolveServedRecipient(pcsCase, candidate.recipient(), candidate.role(), LetterType.GEN_APP_PACK,
+            candidate.documents());
+    }
+
+    // A represented defendant is served at their legal representative's address (CPR 6.23); the recipient party is
+    // unchanged so dispatch dedup and the activity log still key on the defendant.
+    private ResolvedRecipient resolveServedRecipient(PcsCaseEntity pcsCase, PartyEntity recipient, PartyRole role,
+                                                     LetterType letterType, List<DocumentEntity> documents) {
+        if (role == PartyRole.DEFENDANT) {
+            Optional<LegalRepRecipientResolver.LegalRepAddressee> legalRep =
+                legalRepRecipientResolver.resolve(recipient, pcsCase.getCaseReference());
+            if (legalRep.isPresent()) {
+                return new ResolvedRecipient(pcsCase, recipient, letterType, documents,
+                    legalRep.get().name(), legalRep.get().address());
+            }
+        }
+        return new ResolvedRecipient(pcsCase, recipient, letterType, documents,
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }
