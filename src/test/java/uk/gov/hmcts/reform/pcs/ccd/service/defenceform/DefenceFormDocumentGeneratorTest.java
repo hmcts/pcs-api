@@ -41,6 +41,12 @@ class DefenceFormDocumentGeneratorTest {
     }
 
     @Test
+    void expectedDefenceFormFilenameMatchesGeneratedFilename() {
+        assertThat(DefenceFormDocumentGenerator.expectedDefenceFormFilename(2))
+            .isEqualTo("Defence - Defendant 2");
+    }
+
+    @Test
     void templateIdMatchesRdoDocmosisNamingConvention() {
         assertThat(DefenceFormDocumentGenerator.TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");

@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -114,6 +115,7 @@ class GenAppDocumentGeneratorTest {
 
         when(genAppEntity.getParty()).thenReturn(applicantPartyEntity);
         when(genAppEntity.getStatementOfTruth()).thenReturn(statementOfTruthEntity);
+        when(genAppEntity.getDocuments()).thenReturn(new ArrayList<>());
 
         underTest = new GenAppDocumentGenerator(pcsCaseService, partyService, docAssemblyService, addressMapper,
                                                 addressFormatter, caseReferenceFormatter, caseNameFormatter,
@@ -400,7 +402,7 @@ class GenAppDocumentGeneratorTest {
         String filename2 = "filename2";
         DocumentEntity documentEntity1 = createDocumentEntity(filename1);
         DocumentEntity documentEntity2 = createDocumentEntity(filename2);
-        when(genAppEntity.getDocuments()).thenReturn(List.of(documentEntity1, documentEntity2));
+        when(genAppEntity.getDocuments()).thenReturn(new ArrayList<>(List.of(documentEntity1, documentEntity2)));
 
         // When
         underTest.createSubmissionDocument(CASE_REFERENCE, genAppEntity);

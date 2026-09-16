@@ -1206,6 +1206,49 @@ class DefendantResponseServiceTest {
     }
 
     @Test
+    void shouldCreateTranslateTaskWithoutGeneratedDefenceDocumentOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                          .url("url1").filename("evidence.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .defendantDocuments(uploadedDocs)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+        when(documentService.createDefendantUploadedDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
+            .thenReturn(List.of(activeDocument));
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("evidence.pdf");
+    }
+
+    @Test
     void shouldNotCreateTranslateTaskWhenResponseLanguageIsEnglish() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);

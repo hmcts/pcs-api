@@ -147,25 +147,32 @@ class GenAppWaTaskServiceTest {
     }
 
     @Test
-    void shouldNotCreateTranslationTaskWhenNoDocumentsExist() {
+    void shouldCreateTranslationTaskWhenClaimantWelshDocumentsExist() {
         // Given
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        PcsCaseEntity genAppPcsCase = PcsCaseEntity.builder().caseReference(1234567890123456L).build();
+        PcsCaseEntity genAppPcsCase = PcsCaseEntity.builder()
+            .caseReference(1234567890123456L)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+        DocumentEntity removedDocument = DocumentEntity.builder().removed(true).build();
+
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .party(party)
             .pcsCase(genAppPcsCase)
-            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
-            .documents(List.of())
+            .languageUsed(LanguageUsed.WELSH)
+            .documents(List.of(activeDocument, removedDocument))
             .build();
 
-        when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
-        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
+        when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(genAppPcsCase, party, List.of());
+        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(
+            genAppPcsCase.getCaseReference(), List.of(activeDocument));
     }
 
 }
