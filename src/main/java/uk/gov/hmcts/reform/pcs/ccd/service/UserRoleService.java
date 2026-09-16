@@ -65,19 +65,19 @@ public class UserRoleService {
     }
 
     private Set<String> getRasRoles(CacheKey cacheKey) {
-        String serviceAuthorisation = securityContextService.getCurrentUserAuthToken();
-        String authToken = authTokenGenerator.generate();
+        String authorisation = securityContextService.getCurrentUserAuthToken();
+        String serviceAuthorisation = authTokenGenerator.generate();
         String userId = cacheKey.userId();
         CaseAssignmentUserRolesResource caseAssignedUserRoles = caseAssignmentApi.getUserRoles(
+            authorisation,
             serviceAuthorisation,
-            authToken,
             List.of(String.valueOf(cacheKey.caseReference())),
             List.of(userId)
         );
 
         RoleAssignmentResponse roleAssignmentResponse = roleAssignmentApi.getRoles(
             serviceAuthorisation,
-            authToken,
+            authorisation,
             userId
         );
 

@@ -74,8 +74,8 @@ class UserRoleServiceTest {
         underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
         verify(caseAssignmentApi, times(1)).getUserRoles(
-            S2S_AUTH_HEADER,
             USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         );
@@ -92,8 +92,8 @@ class UserRoleServiceTest {
         stubAuth();
         stubCurrentUserDetails(null);
         when(caseAssignmentApi.getUserRoles(
-            S2S_AUTH_HEADER,
             USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
@@ -159,14 +159,14 @@ class UserRoleServiceTest {
     }
 
     private void stubAuth() {
-        when(securityContextService.getCurrentUserAuthToken()).thenReturn(S2S_AUTH_HEADER);
-        when(authTokenGenerator.generate()).thenReturn(USER_AUTH_HEADER);
+        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
+        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
     }
 
     private void stubRasRoles(String... roles) {
         when(caseAssignmentApi.getUserRoles(
-            S2S_AUTH_HEADER,
             USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
             List.of(CURRENT_USER_ID.toString())
         )).thenReturn(CaseAssignmentUserRolesResource.builder()
