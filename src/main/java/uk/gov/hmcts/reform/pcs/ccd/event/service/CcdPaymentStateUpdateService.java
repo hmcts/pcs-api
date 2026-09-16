@@ -14,7 +14,10 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
+import java.util.UUID;
+
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.genAppIssuePayment;
 
 @AllArgsConstructor
 @Service
@@ -42,6 +45,23 @@ public class CcdPaymentStateUpdateService {
         return caseResource;
     }
 
+    public CaseResource submitGenAppPaymentSuccess(long caseId, UUID genAppId) {
+        String serviceAuthorization = authTokenGenerator.generate();
+        String idamToken = systemUpdateUserTokenProvider.getAuthToken();
+        log.debug("Submitting gen app payment event for case: {}, gen app: {}", caseId, genAppId);
+        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
+                                                                           String.valueOf(caseId),
+                                                                           genAppIssuePayment.name());
+        CaseDataContent submitContent = CaseDataContent.builder()
+            .event(Event.builder().id(genAppIssuePayment.name()).build())
+            .eventToken(startEventResponse.getToken())
+            .data(toJsonNode(PCSCase.builder().pendingGenAppPaymentId(genAppId.toString()).build()))
+            .build();
+        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
+                                                                String.valueOf(caseId), submitContent);
+        log.debug("CaseResource response : {}", caseResource);
+        return caseResource;
+    }
 
     private JsonNode toJsonNode(PCSCase pcsCase) {
         return objectMapper.valueToTree(pcsCase);
