@@ -1207,7 +1207,7 @@ class DefendantResponseServiceTest {
 
         // Then - the persisted response id and party id are carried to the scheduler.
         verify(defenceFormScheduler)
-            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
     }
 
     @Test
@@ -1231,7 +1231,7 @@ class DefendantResponseServiceTest {
 
         // Then - the LR response generates the defence form just like a citizen one.
         verify(defenceFormScheduler)
-            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
     }
 
     @Test

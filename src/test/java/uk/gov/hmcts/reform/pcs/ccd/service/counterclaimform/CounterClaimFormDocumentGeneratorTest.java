@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormP
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,10 +25,10 @@ class CounterClaimFormDocumentGeneratorTest {
     @Test
     void delegatesToDocAssemblyWithPerDefendantFilename() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
-        when(docAssemblyService.generateDocument(eq(payload),
-            eq(CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID),
-            eq(OutputType.PDF),
-            eq("Counterclaim - Defendant 2")
+        when(docAssemblyService.generateDocument(payload,
+            CounterClaimFormDocumentGenerator.LIP_TEMPLATE_ID,
+            OutputType.PDF,
+            "Counterclaim - Defendant 2"
         )).thenReturn("https://dm-store/abc");
 
         String url = generator.generate(payload, 2);
@@ -43,10 +42,10 @@ class CounterClaimFormDocumentGeneratorTest {
     void usesLegalRepTemplateWhenPayloadFlagged() {
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder()
             .completedByLegalRepresentative(true).build();
-        when(docAssemblyService.generateDocument(eq(payload),
-            eq(CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID),
-            eq(OutputType.PDF),
-            eq("Counterclaim - Defendant 1")
+        when(docAssemblyService.generateDocument(payload,
+            CounterClaimFormDocumentGenerator.LR_TEMPLATE_ID,
+            OutputType.PDF,
+            "Counterclaim - Defendant 1"
         )).thenReturn("https://dm-store/lr");
 
         String url = generator.generate(payload, 1);

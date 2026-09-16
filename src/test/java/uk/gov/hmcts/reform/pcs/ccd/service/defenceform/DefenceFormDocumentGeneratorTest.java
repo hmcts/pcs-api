@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,10 +26,10 @@ class DefenceFormDocumentGeneratorTest {
     void delegatesToDocAssemblyWithPerDefendantFilename() {
         DefenceFormPayload payload = DefenceFormPayload.builder().build();
         when(docAssemblyService.generateDocument(
-            eq(payload),
-            eq(DefenceFormDocumentGenerator.LIP_TEMPLATE_ID),
-            eq(OutputType.PDF),
-            eq("Defence - Defendant 2")
+            payload,
+            DefenceFormDocumentGenerator.LIP_TEMPLATE_ID,
+            OutputType.PDF,
+            "Defence - Defendant 2"
         )).thenReturn("https://dm-store/abc");
 
         String url = generator.generate(payload, 2);
@@ -44,10 +43,10 @@ class DefenceFormDocumentGeneratorTest {
     void usesLegalRepTemplateWhenPayloadFlagged() {
         DefenceFormPayload payload = DefenceFormPayload.builder().completedByLegalRepresentative(true).build();
         when(docAssemblyService.generateDocument(
-            eq(payload),
-            eq(DefenceFormDocumentGenerator.LR_TEMPLATE_ID),
-            eq(OutputType.PDF),
-            eq("Defence - Defendant 1")
+            payload,
+            DefenceFormDocumentGenerator.LR_TEMPLATE_ID,
+            OutputType.PDF,
+            "Defence - Defendant 1"
         )).thenReturn("https://dm-store/lr");
 
         String url = generator.generate(payload, 1);

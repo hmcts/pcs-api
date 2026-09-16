@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -695,8 +694,9 @@ class DefenceFormPayloadBuilderTest {
 
             String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(response));
 
-            assertThat(json).doesNotContain("completedByLegalRepresentative");
-            assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
+            assertThat(json)
+                .doesNotContain("completedByLegalRepresentative")
+                .contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
         }
 
         @Test

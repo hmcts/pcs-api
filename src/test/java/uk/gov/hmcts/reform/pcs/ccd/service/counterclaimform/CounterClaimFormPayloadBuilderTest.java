@@ -193,8 +193,9 @@ class CounterClaimFormPayloadBuilderTest {
 
         String json = new ObjectMapper().findAndRegisterModules().writeValueAsString(builder.build(counterClaim));
 
-        assertThat(json).doesNotContain("completedByLegalRepresentative");
-        assertThat(json).contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
+        assertThat(json)
+            .doesNotContain("completedByLegalRepresentative")
+            .contains("\"sotFirmName\":\"Test Firm LLP\"", "\"sotPositionHeld\":\"Partner\"");
     }
 
     @Test
