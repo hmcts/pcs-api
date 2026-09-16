@@ -94,6 +94,8 @@ public class CounterClaimService {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
 
+        VerticalYesNo appliedForHwf = counterClaim.getAppliedForHwf();
+
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(counterClaim.getClaimType())
             .isClaimAmountKnown(claimAmountApplies ? counterClaim.getIsClaimAmountKnown() : null)
@@ -114,7 +116,7 @@ public class CounterClaimService {
             .permissionOrderDate(counterClaim.getCourtPermissionGranted() == VerticalYesNo.YES
                 ? counterClaim.getPermissionOrderDate() : null)
             .claimReceivedDate(counterClaim.getClaimReceivedDate())
-            .status(getInitialStatus(caseworkerEntered))
+            .status(getInitialStatus(caseworkerEntered, appliedForHwf))
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -134,8 +136,8 @@ public class CounterClaimService {
         return counterClaimEntity;
     }
 
-    private CounterClaimState getInitialStatus(boolean caseworkerEntered) {
-        return caseworkerEntered
+    private CounterClaimState getInitialStatus(boolean caseworkerEntered, VerticalYesNo appliedForHwf) {
+        return caseworkerEntered && appliedForHwf == VerticalYesNo.NO
             ? CounterClaimState.COUNTER_CLAIM_ISSUED
             : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
