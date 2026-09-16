@@ -106,9 +106,8 @@ public class CaseFlagService {
         Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
 
         List<CaseFlagEntity> mergedFlagDetails = mergeFlagDetails(
-            incomingCaseFlags, FlagVisibility.INTERNAL, pcsCaseEntity, null,
-            CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD,
-            pcsCaseEntity.getCaseFlags(), flagRefDataByCode
+            incomingCaseFlags, FlagVisibility.INTERNAL, () -> newCaseFlag(pcsCaseEntity),
+            RefDataPolicy.UPDATE_FROM_PAYLOAD, pcsCaseEntity.getCaseFlags(), flagRefDataByCode
         );
         flagRefDataRepository.saveAll(flagRefDataByCode.values());
 
@@ -169,7 +168,7 @@ public class CaseFlagService {
 
         Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
         List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
-            reasonableAdjustmentFlags, FlagVisibility.EXTERNAL, null, partyEntity, CasePartyFlagEntity::new,
+            reasonableAdjustmentFlags, FlagVisibility.EXTERNAL, () -> newPartyFlag(partyEntity),
             RefDataPolicy.CREATE_IF_ABSENT, List.of(), flagRefDataByCode
         );
         flagRefDataRepository.saveAll(flagRefDataByCode.values());
@@ -260,9 +259,21 @@ public class CaseFlagService {
         }
 
         return mergeFlagDetails(
-            incomingFlags, visibility, null, partyEntity, CasePartyFlagEntity::new,
+            incomingFlags, visibility, () -> newPartyFlag(partyEntity),
             RefDataPolicy.UPDATE_FROM_PAYLOAD, existingFlagsForVisibility, flagRefDataByCode
         );
+    }
+
+    private static CaseFlagEntity newCaseFlag(PcsCaseEntity pcsCaseEntity) {
+        CaseFlagEntity flagEntity = new CaseFlagEntity();
+        flagEntity.setParentEntity(pcsCaseEntity, null);
+        return flagEntity;
+    }
+
+    private static CasePartyFlagEntity newPartyFlag(PartyEntity partyEntity) {
+        CasePartyFlagEntity flagEntity = new CasePartyFlagEntity();
+        flagEntity.setParentEntity(null, partyEntity);
+        return flagEntity;
     }
 
     private boolean hasNoFlagDetails(Flags flags) {
@@ -270,12 +281,14 @@ public class CaseFlagService {
     }
 
     /**
-     * "Other" chosen in several reasonable adjustment categories shares one row rather than creating duplicates
-     * that breach the unique constraint on flag_code.
+     * Builds the flag entities for a payload, updating those in {@code existingFlags} that the payload echoes
+     * by id and creating the rest via {@code newFlagEntity}, which attaches the new flag to its parent.
+     * Reference data is resolved through {@code flagRefDataByCode} so a code repeated in the payload (e.g.
+     * "Other" chosen in several reasonable adjustment categories) shares one row rather than creating
+     * duplicates that breach the unique constraint on flag_code. The caller owns that map and saves it.
      */
     private <T extends BaseCaseFlag> List<T> mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
-                                                              PcsCaseEntity pcsCaseEntity, PartyEntity partyEntity,
-                                                              Supplier<T> flagEntitySupplier,
+                                                              Supplier<T> newFlagEntity,
                                                               RefDataPolicy refDataPolicy,
                                                               List<T> existingFlags,
                                                               Map<String, FlagRefDataEntity> flagRefDataByCode) {
@@ -297,9 +310,7 @@ public class CaseFlagService {
                 flagCode -> mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy));
 
             T flagEntity = findExistingFlag(incomingFlagDetailListValue, unmatchedExistingFlags)
-                .orElseGet(flagEntitySupplier);
-
-            flagEntity.setParentEntity(pcsCaseEntity, partyEntity);
+                .orElseGet(newFlagEntity);
 
             applyEditedFlagFields(flagEntity, incomingFlagDetail);
             applyCarriedThroughFlagFields(flagEntity, incomingFlagDetail);
