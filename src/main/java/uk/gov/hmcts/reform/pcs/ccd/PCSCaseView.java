@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
@@ -165,7 +166,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
-        String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
+        Supplier<String> organisationIdForCurrentUser = organisationService.lazyOrganisationIdForCurrentUser();
 
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);

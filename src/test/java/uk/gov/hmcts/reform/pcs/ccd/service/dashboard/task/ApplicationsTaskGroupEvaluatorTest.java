@@ -55,7 +55,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     @Test
     void shouldMarkViewApplicationsAsAvailableWhenCaseHasVisibleApplication() {
         stubUserRoles();
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        when(organisationService.lazyOrganisationIdForCurrentUser()).thenReturn(() -> CURRENT_ORGANISATION_ID);
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.NO, OTHER_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
@@ -66,7 +66,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     @Test
     void shouldUseSecurityContextUserWhenCheckingWithoutNoticeApplicationVisibility() {
         stubUserRoles();
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        when(organisationService.lazyOrganisationIdForCurrentUser()).thenReturn(() -> CURRENT_ORGANISATION_ID);
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(visibleGenApp));
@@ -78,6 +78,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     void shouldMarkViewApplicationsAsNotAvailableWhenOnlyApplicationIsHiddenFromCurrentUser() {
         stubUserRoles();
         when(securityContextService.getCurrentUserId()).thenReturn(CURRENT_USER_ID);
+        when(organisationService.lazyOrganisationIdForCurrentUser()).thenReturn(() -> null);
         GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_ORGANISATION_ID);
 
         TaskGroup taskGroup = underTest.evaluate(contextWith(hiddenGenApp));
@@ -88,7 +89,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     @Test
     void shouldCountOnlyVisibleApplicationsWhenDeterminingAvailability() {
         stubUserRoles();
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(CURRENT_ORGANISATION_ID);
+        when(organisationService.lazyOrganisationIdForCurrentUser()).thenReturn(() -> CURRENT_ORGANISATION_ID);
         GenAppEntity hiddenGenApp = createGenApp(VerticalYesNo.YES, OTHER_ORGANISATION_ID);
         GenAppEntity visibleGenApp = createGenApp(VerticalYesNo.YES, CURRENT_ORGANISATION_ID);
 

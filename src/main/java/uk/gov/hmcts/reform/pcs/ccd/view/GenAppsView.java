@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ public class GenAppsView {
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, Supplier<String> organisationId) {
         Collection<GenAppEntity> genAppEntities = pcsCaseEntity.getGenApps();
         if (genAppEntities == null || genAppEntities.isEmpty()) {
             pcsCase.setGenApps(List.of());

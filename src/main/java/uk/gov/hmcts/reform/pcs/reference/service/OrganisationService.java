@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -92,6 +93,27 @@ public class OrganisationService {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
         }
+    }
+
+    /**
+     * {@link #getOrganisationIdForCurrentUser()}, deferred until first asked for and then remembered for
+     * the caller (including "no organisation"). Lets a view pass the organisation down without
+     * resolving it for users whose visibility is decided without one.
+     */
+    public Supplier<String> lazyOrganisationIdForCurrentUser() {
+        return new Supplier<>() {
+            private boolean resolved;
+            private String organisationId;
+
+            @Override
+            public String get() {
+                if (!resolved) {
+                    organisationId = getOrganisationIdForCurrentUser();
+                    resolved = true;
+                }
+                return organisationId;
+            }
+        };
     }
 
     /**

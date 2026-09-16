@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +40,17 @@ public class GenAppVisibilityService {
                                          UUID userId,
                                          String organisationId,
                                          Collection<String> currentUserRoles) {
+        return isGenAppVisibleToUser(genAppEntity, userId, () -> organisationId, currentUserRoles);
+    }
+
+    /**
+     * As {@link #isGenAppVisibleToUser(GenAppEntity, UUID, String, Collection)}, but the organisation is
+     * only resolved if the decision needs it, so users it isn't needed for cost no rd-professional lookup.
+     */
+    public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
+                                         UUID userId,
+                                         Supplier<String> organisationId,
+                                         Collection<String> currentUserRoles) {
         if (genAppEntity == null) {
             return false;
         }
@@ -58,6 +70,17 @@ public class GenAppVisibilityService {
                                                 UUID userId,
                                                 String organisationId,
                                                 Collection<String> currentUserRoles) {
+        return isWithoutNoticeVisibleToUser(party, userId, () -> organisationId, currentUserRoles);
+    }
+
+    /**
+     * The organisation is the last thing checked: internal users, the party themselves and cases with no
+     * party are decided without it.
+     */
+    public boolean isWithoutNoticeVisibleToUser(PartyEntity party,
+                                                UUID userId,
+                                                Supplier<String> organisationIdSupplier,
+                                                Collection<String> currentUserRoles) {
 
         if (isInternalUser(currentUserRoles)) {
             return true;
@@ -70,6 +93,8 @@ public class GenAppVisibilityService {
         if (userId.equals(party.getIdamId())) {
             return true;
         }
+
+        String organisationId = organisationIdSupplier.get();
 
         if (organisationId == null) {
             return false;
@@ -86,6 +111,13 @@ public class GenAppVisibilityService {
     public boolean isGenAppDocumentVisibleToUser(GenAppEntity genAppEntity,
                                                  UUID userId,
                                                  String organisationId,
+                                                 Collection<String> currentUserRoles) {
+        return isGenAppDocumentVisibleToUser(genAppEntity, userId, () -> organisationId, currentUserRoles);
+    }
+
+    public boolean isGenAppDocumentVisibleToUser(GenAppEntity genAppEntity,
+                                                 UUID userId,
+                                                 Supplier<String> organisationId,
                                                  Collection<String> currentUserRoles) {
         if (genAppEntity == null) {
             return false;
@@ -107,6 +139,13 @@ public class GenAppVisibilityService {
     public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps,
                                                       UUID userId,
                                                       String organisationId,
+                                                      Collection<String> currentUserRoles) {
+        return getVisibleGenAppsToUser(genApps, userId, () -> organisationId, currentUserRoles);
+    }
+
+    public List<GenAppEntity> getVisibleGenAppsToUser(Collection<GenAppEntity> genApps,
+                                                      UUID userId,
+                                                      Supplier<String> organisationId,
                                                       Collection<String> currentUserRoles) {
         if (genApps == null || genApps.isEmpty()) {
             return List.of();

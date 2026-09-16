@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepresentativeContactDetails;
 
@@ -55,14 +56,14 @@ public class LegalRepresentativeSummaryService {
     private String frontendUrl;
 
     public void handleLegalRepresentativeSummary(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, State state,
-                                                 String organisationId) {
+                                                 Supplier<String> organisationId) {
         if (isFeatureDisabled()) {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
             return;
         }
 
         Optional<ClaimPartyOrganisationEntity> partyLink =
-            isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
+            isActivelyLinkedToAnyDefendant(pcsCaseEntity, state, organisationId);
 
         if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
             setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());
@@ -93,17 +94,31 @@ public class LegalRepresentativeSummaryService {
         }
     }
 
-    private Optional<ClaimPartyOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
-                                                                                                    pcsCaseEntity,
-                                                                                  String orgId) {
+    /**
+     * Only resolves the viewer's organisation when the summary could show: an issued case with an active
+     * legal-rep organisation on a defendant. Anyone else viewing the case costs no rd-professional lookup.
+     */
+    private Optional<ClaimPartyOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity pcsCaseEntity,
+                                                                                  State state,
+                                                                                  Supplier<String> organisationId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
-        return defendants.stream()
+        List<ClaimPartyOrganisationEntity> activeLinks = defendants.stream()
             .flatMap(partyEntity -> partyEntity.getClaimPartyOrganisationList().stream())
+            .filter(claimPartyLegalRepresentative -> YesOrNo.YES.equals(claimPartyLegalRepresentative.getActive()))
+            .toList();
+
+        if (activeLinks.isEmpty() || state != State.CASE_ISSUED) {
+            return Optional.empty();
+        }
+
+        String orgId = organisationId.get();
+        if (orgId == null) {
+            return Optional.empty();
+        }
+
+        return activeLinks.stream()
             .filter(claimPartyLegalRepresentative ->
-                        claimPartyLegalRepresentative.getOrganisation()
-                            .getOrganisationId().equals(
-                                orgId)
-                            && claimPartyLegalRepresentative.getActive().equals(YesOrNo.YES))
+                        orgId.equals(claimPartyLegalRepresentative.getOrganisation().getOrganisationId()))
             .findFirst();
     }
 

@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -120,7 +122,7 @@ class GenAppVisibilityServiceTest {
         boolean genAppVisibleToUser = underTest.isGenAppVisibleToUser(
             genAppEntity,
             CURRENT_USER_ID,
-            null,
+            (String) null,
             List.of(internalRole.getRole())
         );
 
@@ -137,7 +139,7 @@ class GenAppVisibilityServiceTest {
         boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
             party,
             CURRENT_USER_ID,
-            null,
+            (String) null,
             List.of(UserRole.PCS_CASE_WORKER.getRole())
         );
 
@@ -154,7 +156,7 @@ class GenAppVisibilityServiceTest {
         boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
             party,
             CURRENT_USER_ID,
-            null,
+            (String) null,
             List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.PCS_SOLICITOR.getRole())
         );
 
@@ -342,4 +344,65 @@ class GenAppVisibilityServiceTest {
             .build();
     }
 
+    @Test
+    void shouldNotResolveOrganisationForInternalUser() {
+        AtomicInteger lookups = new AtomicInteger();
+
+        boolean visible = underTest.isWithoutNoticeVisibleToUser(
+            mock(PartyEntity.class),
+            CURRENT_USER_ID,
+            countingSupplier(lookups, ORG_ID),
+            List.of(UserRole.PCS_CASE_WORKER.getRole())
+        );
+
+        assertThat(visible).isTrue();
+        assertThat(lookups).hasValue(0);
+    }
+
+    @Test
+    void shouldNotResolveOrganisationWhenUserIsTheParty() {
+        AtomicInteger lookups = new AtomicInteger();
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getIdamId()).thenReturn(CURRENT_USER_ID);
+
+        boolean visible = underTest.isWithoutNoticeVisibleToUser(
+            party, CURRENT_USER_ID, countingSupplier(lookups, ORG_ID), List.of());
+
+        assertThat(visible).isTrue();
+        assertThat(lookups).hasValue(0);
+    }
+
+    @Test
+    void shouldNotResolveOrganisationForGenAppWithNotice() {
+        AtomicInteger lookups = new AtomicInteger();
+        GenAppEntity genAppEntity = mock(GenAppEntity.class);
+        when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
+        when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.NO);
+
+        boolean visible = underTest.isGenAppVisibleToUser(
+            genAppEntity, CURRENT_USER_ID, countingSupplier(lookups, ORG_ID), List.of());
+
+        assertThat(visible).isTrue();
+        assertThat(lookups).hasValue(0);
+    }
+
+    @Test
+    void shouldResolveOrganisationWhenOnlyTheOrganisationCanDecide() {
+        AtomicInteger lookups = new AtomicInteger();
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getOrganisationId()).thenReturn(ORG_ID);
+
+        boolean visible = underTest.isWithoutNoticeVisibleToUser(
+            party, CURRENT_USER_ID, countingSupplier(lookups, ORG_ID), List.of());
+
+        assertThat(visible).isTrue();
+        assertThat(lookups).hasValue(1);
+    }
+
+    private static Supplier<String> countingSupplier(AtomicInteger lookups, String organisationId) {
+        return () -> {
+            lookups.incrementAndGet();
+            return organisationId;
+        };
+    }
 }
