@@ -38,21 +38,25 @@ public class GenAppWaTaskService {
     }
 
     public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
-        PartyEntity party = genAppEntity.getParty();
-        if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
-            return;
-        }
-
         if (!translationWAService.isTranslationRequired(genAppEntity.getLanguageUsed())) {
             return;
         }
+
+        PartyEntity party = genAppEntity.getParty();
+        PartyRole partyRole = partyService.getPartyRole(party);
 
         List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
             .filter(document -> !document.isRemoved())
             .toList();
 
         PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
+
+        if (partyRole == PartyRole.DEFENDANT) {
+            translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
+        } else if (partyRole == PartyRole.CLAIMANT) {
+            translationWAService.createTranslateClaimantSubmittedDocumentTask(
+                pcsCaseEntity.getCaseReference(), documents);
+        }
     }
 
 }

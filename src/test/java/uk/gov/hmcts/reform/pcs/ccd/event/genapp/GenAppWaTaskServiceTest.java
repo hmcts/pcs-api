@@ -26,9 +26,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -110,18 +110,23 @@ class GenAppWaTaskServiceTest {
     }
 
     @Test
-    void shouldNotCreateTranslationTaskWhenApplicantIsNotDefendant() {
+    void shouldNotCreateTranslationTaskWhenApplicantIsNeitherClaimantNorDefendant() {
         // Given
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
-        GenAppEntity genAppEntity = GenAppEntity.builder().party(party).build();
+        GenAppEntity genAppEntity = GenAppEntity.builder()
+            .party(party)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
 
-        when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
+        when(partyService.getPartyRole(party)).thenReturn(PartyRole.UNDERLESSEE_OR_MORTGAGEE);
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
-        verifyNoInteractions(translationWAService);
+        verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
+        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(anyLong(), any());
     }
 
     @Test
@@ -133,13 +138,12 @@ class GenAppWaTaskServiceTest {
             .languageUsed(LanguageUsed.ENGLISH)
             .build();
 
-        when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
-
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
+        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(anyLong(), any());
     }
 
     @Test

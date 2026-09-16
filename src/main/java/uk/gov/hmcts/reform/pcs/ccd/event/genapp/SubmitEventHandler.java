@@ -104,6 +104,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         if (!paymentRequired) {
             genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
             genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+            genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
         } else {
             schedulePaymentServiceRequest(genAppEntity, caseReference, feeDetails);
         }
