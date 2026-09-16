@@ -41,7 +41,7 @@ public class PartyAccessCodeLinkService {
             accessCode
         );
 
-        UUID partyId = pac.getPartyId();
+        UUID partyId = pac.getParty().getId();
 
         List<PartyEntity> defendantPartyEntities = caseEntity.getClaims().getFirst()
             .getClaimParties().stream()

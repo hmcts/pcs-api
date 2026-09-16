@@ -72,7 +72,9 @@ class PartyAccessCodeConstraintIT extends AbstractPostgresContainerIT {
 
     private PartyAccessCodeEntity accessCode(PcsCaseEntity pcsCase, PartyEntity defendant, String code) {
         return PartyAccessCodeEntity.builder()
-            .partyId(defendant.getId())
+            .party(PartyEntity.builder()
+                    .id(defendant.getId())
+                    .build())
             .pcsCase(pcsCase)
             .code(code)
             .role(PartyRole.DEFENDANT)
