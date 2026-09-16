@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Expiry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -33,6 +35,13 @@ public class OrganisationService {
      */
     private static final Duration ORGANISATION_CACHE_TTL = Duration.ofMinutes(1);
 
+    /**
+     * rd-professional creates the professional user when they are invited, before they can sign in, so
+     * a user it doesn't know (judge, caseworker) stays unknown. Remembering that for longer stops every
+     * case view re-asking and rd-professional logging "ProfessionalUserUser info null" each time.
+     */
+    private static final Duration NO_ORGANISATION_CACHE_TTL = Duration.ofHours(1);
+
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
     /**
@@ -46,7 +55,8 @@ public class OrganisationService {
         this.securityContextService = securityContextService;
         this.organisationDetailsService = organisationDetailsService;
         this.organisationIdCache = Caffeine.newBuilder()
-            .expireAfterWrite(ORGANISATION_CACHE_TTL)
+            .expireAfter(Expiry.creating((String userId, Optional<String> organisationId) ->
+                organisationId.isPresent() ? ORGANISATION_CACHE_TTL : NO_ORGANISATION_CACHE_TTL))
             .build();
     }
 
@@ -92,6 +102,27 @@ public class OrganisationService {
             log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
         }
+    }
+
+    /**
+     * {@link #getOrganisationIdForCurrentUser()}, deferred until first asked for and then remembered for
+     * the caller (including "no organisation"). Lets a view pass the organisation down without
+     * resolving it for users whose visibility is decided without one.
+     */
+    public Supplier<String> lazyOrganisationIdForCurrentUser() {
+        return new Supplier<>() {
+            private boolean resolved;
+            private String organisationId;
+
+            @Override
+            public String get() {
+                if (!resolved) {
+                    organisationId = getOrganisationIdForCurrentUser();
+                    resolved = true;
+                }
+                return organisationId;
+            }
+        };
     }
 
     /**

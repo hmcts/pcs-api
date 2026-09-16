@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -40,8 +41,8 @@ class OrganisationServiceTest {
     private static final UUID USER_ID = UUID.fromString("dc3f786d-4ad4-4b5d-a79f-6e35a6520ace");
     private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
     private static final String ORGANISATION_IDENTIFIER = "ORG-123";
-    private static final String S2S_TOKEN = "test-s2s-token";
-    private static final String PRD_ADMIN_TOKEN = "Bearer test-prd-admin-token";
+    private static final String S2S_AUTH = "test-s2s-token";
+    private static final String PRD_ADMIN_AUTH = "Bearer test-prd-admin-token";
 
     @Mock
     private SecurityContextService securityContextService;
@@ -364,8 +365,8 @@ class OrganisationServiceTest {
     private OrganisationService serviceBackedBy(RdProfessionalApi rdProfessionalApi) {
         AuthTokenGenerator authTokenGenerator = mock(AuthTokenGenerator.class);
         IdamTokenProvider prdAdminTokenProvider = mock(IdamTokenProvider.class);
-        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
-        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH);
+        when(prdAdminTokenProvider.getAuthToken()).thenReturn(PRD_ADMIN_AUTH);
 
         return new OrganisationService(
             securityContextService,
@@ -388,5 +389,27 @@ class OrganisationServiceTest {
 
         assertThat(result).isNull();
         verify(organisationDetailsService, never()).requireOrganisationIdentifier(anyString());
+    }
+
+    @Test
+    @DisplayName("The lazy organisation id is not looked up until asked for")
+    void shouldNotLookUpLazyOrganisationIdUntilAskedFor() {
+        organisationService.lazyOrganisationIdForCurrentUser();
+
+        verifyNoInteractions(organisationDetailsService);
+    }
+
+    @Test
+    @DisplayName("The lazy organisation id is looked up once, including when the user has no organisation")
+    void shouldLookUpLazyOrganisationIdOnce() {
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.requireOrganisationIdentifier(anyString())).thenReturn(null);
+
+        Supplier<String> organisationId = organisationService.lazyOrganisationIdForCurrentUser();
+
+        assertThat(organisationId.get()).isNull();
+        assertThat(organisationId.get()).isNull();
+        verify(securityContextService, times(1)).getCurrentUserId();
+        verify(organisationDetailsService, times(1)).requireOrganisationIdentifier(anyString());
     }
 }

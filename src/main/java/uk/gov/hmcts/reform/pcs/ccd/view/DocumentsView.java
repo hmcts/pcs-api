@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,11 +29,12 @@ public class DocumentsView {
     private final GenAppVisibilityService genAppVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, Supplier<String> organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity,
+                                                          Supplier<String> organisationId) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
@@ -58,7 +60,8 @@ public class DocumentsView {
             .collect(Collectors.toList());
     }
 
-    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles,
+                                            Supplier<String> organisationId) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }

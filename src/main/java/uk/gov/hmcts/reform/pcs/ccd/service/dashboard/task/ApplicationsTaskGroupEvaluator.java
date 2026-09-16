@@ -68,7 +68,7 @@ public class ApplicationsTaskGroupEvaluator implements TaskGroupEvaluator {
         return !genAppVisibilityService.getVisibleGenAppsToUser(
             ctx.caseEntity().getGenApps(),
             userRoles.userId(),
-            organisationService.getOrganisationIdForCurrentUser(),
+            organisationService.lazyOrganisationIdForCurrentUser(),
             userRoles.roles()
         ).isEmpty();
     }

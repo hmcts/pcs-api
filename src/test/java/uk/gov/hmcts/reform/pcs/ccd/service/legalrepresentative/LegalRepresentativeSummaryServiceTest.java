@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
@@ -110,7 +111,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
@@ -148,7 +149,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
@@ -180,7 +181,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.PENDING_CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.PENDING_CASE_ISSUED,
+                                                                           () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -211,7 +213,8 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.PENDING_CASE_ISSUED, organisationId);
+                                                                           State.PENDING_CASE_ISSUED,
+                                                                           () -> organisationId);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -239,7 +242,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -268,7 +271,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -297,7 +300,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -329,7 +332,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+                                                                           State.CASE_ISSUED, () -> ORGANISATION_ID);
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(UPDATE_DETAILS_MARKDOWN);
@@ -345,7 +348,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, "org");
+                                                                           State.CASE_ISSUED, () -> "org");
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
@@ -361,10 +364,61 @@ class LegalRepresentativeSummaryServiceTest {
 
         // when
         legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
-                                                                           State.CASE_ISSUED, "org");
+                                                                           State.CASE_ISSUED, () -> "org");
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
+    @Test
+    void handleLegalRepresentativeSummary_WithNoActiveLegalRepresentative_DoesNotResolveOrganisation() {
+        // given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1L).build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity))
+            .thenReturn(List.of(PartyEntity.builder().claimPartyOrganisationList(List.of()).build()));
+        AtomicInteger lookups = new AtomicInteger();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED,
+            () -> {
+                lookups.incrementAndGet();
+                return ORGANISATION_ID;
+            });
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(lookups).hasValue(0);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WhenCaseNotIssued_DoesNotResolveOrganisation() {
+        // given
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1L).build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity))
+            .thenReturn(List.of(PartyEntity.builder()
+                                    .claimPartyOrganisationList(List.of(
+                                        ClaimPartyOrganisationEntity.builder()
+                                            .active(YesOrNo.YES)
+                                            .organisation(OrganisationEntity.builder()
+                                                              .organisationId(ORGANISATION_ID)
+                                                              .build())
+                                            .build()))
+                                    .build()));
+        AtomicInteger lookups = new AtomicInteger();
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.AWAITING_SUBMISSION_TO_HMCTS,
+            () -> {
+                lookups.incrementAndGet();
+                return ORGANISATION_ID;
+            });
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(lookups).hasValue(0);
+    }
 }

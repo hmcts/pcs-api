@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,6 +40,7 @@ class GenAppsViewTest {
     private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "organisation";
+    private static final Supplier<String> ORGANISATION_ID_SUPPLIER = () -> ORGANISATION_ID;
 
     @Mock
     private OrganisationService organisationService;
@@ -62,7 +64,7 @@ class GenAppsViewTest {
         lenient().when(genAppVisibilityService.isGenAppVisibleToUser(
             isA(GenAppEntity.class),
             eq(CURRENT_USER_IDAM_ID),
-            eq(ORGANISATION_ID),
+            eq(ORGANISATION_ID_SUPPLIER),
             eq(List.of())
         ))
             .thenReturn(true);
@@ -78,7 +80,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of());
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         assertThat(pcsCase.getGenApps()).isEmpty();
@@ -106,7 +108,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -133,27 +135,27 @@ class GenAppsViewTest {
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
         GenAppEntity genAppEntity1 = createGenAppEntity(genApp1Id, genApp1SubmittedDate);
         when(genAppVisibilityService
-                 .isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
+                 .isGenAppVisibleToUser(genAppEntity1, CURRENT_USER_IDAM_ID, ORGANISATION_ID_SUPPLIER, List.of()))
             .thenReturn(true);
 
         UUID genApp2Id = UUID.randomUUID();
         LocalDateTime genApp2SubmittedDate = LocalDateTime.parse("2026-05-04T10:00:00");
         GenAppEntity genAppEntity2 = createGenAppEntity(genApp2Id, genApp2SubmittedDate);
         when(genAppVisibilityService
-                 .isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
+                 .isGenAppVisibleToUser(genAppEntity2, CURRENT_USER_IDAM_ID, ORGANISATION_ID_SUPPLIER, List.of()))
             .thenReturn(false);
 
         UUID genApp3Id = UUID.randomUUID();
         LocalDateTime genApp3SubmittedDate = LocalDateTime.parse("2026-05-04T09:00:00");
         GenAppEntity genAppEntity3 = createGenAppEntity(genApp3Id, genApp3SubmittedDate);
         when(genAppVisibilityService
-                 .isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID, ORGANISATION_ID, List.of()))
+                 .isGenAppVisibleToUser(genAppEntity3, CURRENT_USER_IDAM_ID, ORGANISATION_ID_SUPPLIER, List.of()))
             .thenReturn(true);
 
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2, genAppEntity3));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -194,7 +196,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1, genAppEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -230,7 +232,7 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -261,7 +263,7 @@ class GenAppsViewTest {
         genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
@@ -335,7 +337,7 @@ class GenAppsViewTest {
         ));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()
@@ -377,7 +379,7 @@ class GenAppsViewTest {
         genAppEntity.setDocuments(List.of(supportingDocument, duplicateSupportingDocument));
 
         // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID_SUPPLIER);
 
         // Then
         List<ListValue<Document>> actualSupportingDocuments = pcsCase.getGenApps()

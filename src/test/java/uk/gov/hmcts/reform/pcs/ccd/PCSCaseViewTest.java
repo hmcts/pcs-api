@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -370,8 +371,8 @@ class PCSCaseViewTest {
     @Test
     void shouldSetCaseFieldsInViewHelpers() {
         // Given
-        String orgId = "org";
-        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        Supplier<String> orgId = () -> "org";
+        when(organisationService.lazyOrganisationIdForCurrentUser()).thenReturn(orgId);
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
