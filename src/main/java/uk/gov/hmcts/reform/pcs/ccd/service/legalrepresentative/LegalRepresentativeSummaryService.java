@@ -63,15 +63,11 @@ public class LegalRepresentativeSummaryService {
             return;
         }
 
-        boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
-            .validateAndGetDefendants(pcsCaseEntity, organisationId, false).isEmpty();
-        pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
-
         Optional<ClaimPartyOrganisationEntity> partyLink =
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
 
         if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
-            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());
+            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity);
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
         }
@@ -80,22 +76,26 @@ public class LegalRepresentativeSummaryService {
     private void setLegalRepresentativeFields(PCSCase pcsCase,
                                                              ClaimPartyOrganisationEntity
                                                                  partyLink,
-                                              long caseReference) {
+                                              PcsCaseEntity pcsCaseEntity) {
+        String organisationId = partyLink.getOrganisation().getOrganisationId();
 
         // Direct lookup: walking the organisation's contact details loads every case it has ever been
         // party to (one query per row), which is O(cases per organisation).
         YesOrNo hasAmendedContactDetails = claimPartyContactDetailsRepository
             .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
-                partyLink.getOrganisation().getOrganisationId(), caseReference)
+                organisationId, pcsCaseEntity.getCaseReference())
             .map(ClaimPartyContactDetailsEntity::getContactDetailsCorrectConfirmation)
             .orElse(YesOrNo.NO);
 
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
+            // Only reached for an actively linked organisation, so the case has a claim and defendants
+            boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
+                .validateAndGetDefendants(pcsCaseEntity, organisationId, false).isEmpty();
+            pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
-            pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
-            if (pcsCase.getHasUnsubmittedDefendantResponses().toBoolean()) {
-                pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
-            }
+            pcsCase.setSummaryLegalRepresentativeMarkdown(hasUnsubmittedDefendantResponses
+                ? RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl)
+                : StringUtils.EMPTY);
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(UPDATE_DETAILS_MARKDOWN
                                                               .formatted(legalRepresentativeContactDetails));
