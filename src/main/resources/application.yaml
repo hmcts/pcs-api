@@ -351,6 +351,9 @@ work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}
 
+role-assigment:
+  url: ${ROLE_ASSIGNMENT_URL:http://localhost:4096}
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
 
