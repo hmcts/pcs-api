@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
@@ -54,6 +55,7 @@ public class AddPartyService {
 
     private PartyEntity buildParty(PartyType partyType, AddPartyDetails addPartyDetails) {
         PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setActive(YesOrNo.YES);
         switch (partyType) {
             case CLAIMANT -> applyClaimantDetails(addPartyDetails, partyEntity);
             case DEFENDANT -> applyDefendantDetails(addPartyDetails, partyEntity);

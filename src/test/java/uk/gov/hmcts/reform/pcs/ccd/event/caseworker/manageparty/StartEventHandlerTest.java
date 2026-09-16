@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
@@ -37,12 +38,14 @@ class StartEventHandlerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private PartyService partyService;
+    @Mock
+    private RemovePartyService removePartyService;
 
     private StartEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(pcsCaseService, partyService);
+        underTest = new StartEventHandler(pcsCaseService, partyService, removePartyService);
     }
 
     @Test
@@ -68,6 +71,8 @@ class StartEventHandlerTest {
         when(partyService.getPartyName(claimantParty)).thenReturn("Jane Doe");
         when(partyService.getPartyLabel(mainClaim, claimantParty.getId())).thenReturn("Claimant 1");
         when(partyService.getPartyLabel(mainClaim, defendantParty.getId())).thenReturn("Defendant 1");
+        when(partyService.isActive(claimantParty)).thenReturn(true);
+        when(partyService.isActive(defendantParty)).thenReturn(true);
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().build())

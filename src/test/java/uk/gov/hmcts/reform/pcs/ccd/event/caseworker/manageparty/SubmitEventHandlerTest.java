@@ -16,12 +16,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.AddPartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.UpdatePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -47,12 +50,15 @@ class SubmitEventHandlerTest {
     private AddPartyService addPartyService;
     @Mock
     private UpdatePartyService updatePartyService;
+    @Mock
+    private RemovePartyService removePartyService;
 
     private SubmitEventHandler underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(pcsCaseService, addressFormatter, addPartyService, updatePartyService);
+        underTest = new SubmitEventHandler(
+            pcsCaseService, addressFormatter, addPartyService, updatePartyService, removePartyService);
     }
 
     @ParameterizedTest
@@ -123,6 +129,48 @@ class SubmitEventHandlerTest {
             .contains("Case number: " + TEST_CASE_REFERENCE)
             .contains("1 Test Street, Test Town")
             .contains("Smith v Jones");
+    }
+
+    @ParameterizedTest
+    @MethodSource("removeConfirmationPageScenarios")
+    void shouldBuildRemoveConfirmationPage(PartyRole partyRole, String partyName, String expectedPartyDescription) {
+        // Given
+        AddPartyDetails partyDetails = AddPartyDetails.builder()
+            .managePartyOptions(ManagePartyOptions.REMOVE_PARTY)
+            .build();
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder().build();
+
+        AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
+        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
+            .thenReturn("1 Test Street, Test Town");
+        when(removePartyService.removeParty(removePartyDetails, TEST_CASE_REFERENCE))
+            .thenReturn(new RemovePartyService.RemovedParty(partyName, partyRole, partyRole.name()));
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(partyDetails)
+            .removePartyDetails(removePartyDetails)
+            .propertyAddress(propertyAddress)
+            .caseNameHmctsInternal("Smith v Jones")
+            .build();
+        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
+
+        // When
+        SubmitResponse<State> response = underTest.submit(eventPayload);
+
+        // Then
+        verify(removePartyService).removeParty(removePartyDetails, TEST_CASE_REFERENCE);
+        assertThat(response.getConfirmationBody())
+            .contains(expectedPartyDescription + " removed")
+            .contains("Case number: " + TEST_CASE_REFERENCE)
+            .contains("1 Test Street, Test Town")
+            .contains("Smith v Jones");
+    }
+
+    private static Stream<Arguments> removeConfirmationPageScenarios() {
+        return Stream.of(
+            Arguments.of(PartyRole.CLAIMANT, "Treetops Housing", "Claimant Treetops Housing"),
+            Arguments.of(PartyRole.DEFENDANT, "Billy Wright", "Defendant Billy Wright")
+        );
     }
 
     private static Stream<Arguments> updateConfirmationPageScenarios() {

@@ -79,9 +79,14 @@ public class PartiesView {
                                                     boolean isCitizen, UUID currentUserId) {
         List<ListValue<Party>> result = claimParties.stream()
             .filter(cp -> cp.getRole() == role)
+            .filter(cp -> isActive(cp.getParty()))
             .map(cp -> toListValue(cp, isCitizen, currentUserId))
             .toList();
         return result.isEmpty() ? null : result;
+    }
+
+    private boolean isActive(PartyEntity partyEntity) {
+        return partyEntity.getActive() == null || partyEntity.getActive() == YesOrNo.YES;
     }
 
     private ListValue<Party> toListValue(ClaimPartyEntity claimPartyEntity, boolean isCitizen, UUID currentUserId) {

@@ -23,16 +23,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
-
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -97,6 +95,10 @@ public class PartyService {
 
             return !partyName.isBlank() ? partyName : PERSON_UNKNOWN_NAME;
         }
+    }
+
+    public boolean isActive(PartyEntity partyEntity) {
+        return partyEntity.getActive() == null || partyEntity.getActive() == YesOrNo.YES;
     }
 
     public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
@@ -179,6 +181,7 @@ public class PartyService {
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);
         }
         PartyEntity claimantParty = new PartyEntity();
+        claimantParty.setActive(YesOrNo.YES);
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
         claimantParty.setClaimCreator(true);
@@ -198,6 +201,7 @@ public class PartyService {
         requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
+        claimantParty.setActive(YesOrNo.YES);
         setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
@@ -275,6 +279,7 @@ public class PartyService {
 
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
+        defendantEntity.setActive(YesOrNo.YES);
 
         VerticalYesNo nameKnown = defendantDetails.getNameKnown();
         defendantEntity.setNameKnown(nameKnown);
@@ -321,6 +326,7 @@ public class PartyService {
     private PartyEntity createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
 
         PartyEntity underlesseeMortgageeEntity = new PartyEntity();
+        underlesseeMortgageeEntity.setActive(YesOrNo.YES);
 
         VerticalYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
         underlesseeMortgageeEntity.setNameKnown(nameKnown);
