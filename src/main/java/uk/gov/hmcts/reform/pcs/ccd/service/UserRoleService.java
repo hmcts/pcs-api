@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -24,7 +23,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class UserRoleService {
 
@@ -97,12 +95,9 @@ public class UserRoleService {
                 .map(RoleAssignment::getRoleName)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            log.info("roleAssignments: {}", roleAssignments);
-
             roles.addAll(roleAssignments);
         }
 
-        log.info("getRasRoles: {}", roles);
         return roles;
     }
 
