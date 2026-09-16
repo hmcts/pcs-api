@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Expiry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -35,13 +34,6 @@ public class OrganisationService {
      */
     private static final Duration ORGANISATION_CACHE_TTL = Duration.ofMinutes(1);
 
-    /**
-     * rd-professional creates the professional user when they are invited, before they can sign in, so
-     * a user it doesn't know (judge, caseworker) stays unknown. Remembering that for longer stops every
-     * case view re-asking and rd-professional logging "ProfessionalUserUser info null" each time.
-     */
-    private static final Duration NO_ORGANISATION_CACHE_TTL = Duration.ofHours(1);
-
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
     /**
@@ -55,8 +47,7 @@ public class OrganisationService {
         this.securityContextService = securityContextService;
         this.organisationDetailsService = organisationDetailsService;
         this.organisationIdCache = Caffeine.newBuilder()
-            .expireAfter(Expiry.creating((String userId, Optional<String> organisationId) ->
-                organisationId.isPresent() ? ORGANISATION_CACHE_TTL : NO_ORGANISATION_CACHE_TTL))
+            .expireAfterWrite(ORGANISATION_CACHE_TTL)
             .build();
     }
 
