@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -200,6 +201,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -291,6 +293,56 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithNoOrganisationAndActiveLink_DoesNotCheckDefendantResponses() {
+        // given
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1L)
+            .build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, null);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isNull();
+        verifyNoInteractions(legalRepForDefendantAccessValidator);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithNoClaim_DoesNotCheckDefendantResponses() {
+        // given
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1L)
+            .build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity))
+            .thenReturn(Collections.emptyList());
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        verifyNoInteractions(legalRepForDefendantAccessValidator);
     }
 
     @Test
