@@ -209,6 +209,7 @@ tasks.register('integration', Test) {
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
+  // The suite starts multiple Spring contexts and exceeds Gradle's default 512 MB test heap.
   maxHeapSize = "2g"
   failFast = true
 }
