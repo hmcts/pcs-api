@@ -1276,6 +1276,7 @@ class NotificationServiceTest {
 
             legalRepresentativeOrganisation.addClaimPartyContactDetails(
                 ClaimPartyContactDetailsEntity.builder()
+                    .pcsCase(pcsCase)
                     .emailAddress(email)
                     .build());
 
