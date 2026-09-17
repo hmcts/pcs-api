@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormP
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatGbp;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.formatUkDate;
@@ -47,7 +48,16 @@ public class CounterClaimFormPayloadBuilder {
         String counterClaimReasons = counterClaim.getCounterClaimReasons();
         String otherOrderDetails = counterClaim.getOtherOrderRequestDetails();
         String otherOrderFacts = counterClaim.getOtherOrderRequestFacts();
-        String statementOfTruthName = buildStatementOfTruthName(counterClaim);
+        Optional<StatementOfTruthEntity> statementOfTruth = findStatementOfTruth(counterClaim);
+        String statementOfTruthName = statementOfTruth
+            .map(StatementOfTruthEntity::getFullName)
+            .filter(StringUtils::hasText)
+            .orElse(null);
+        String sotFirmName = statementOfTruth.map(StatementOfTruthEntity::getFirmName).orElse(null);
+        String sotPositionHeld = statementOfTruth.map(StatementOfTruthEntity::getPositionHeld).orElse(null);
+        boolean isCompletedByLegalRepresentative = statementOfTruth
+            .map(StatementOfTruthEntity::isCompletedByLegalRepresentative)
+            .orElse(false);
         boolean showOtherOrder = StringUtils.hasText(otherOrderDetails) || StringUtils.hasText(otherOrderFacts);
         boolean showCounterClaimDetails =
             StringUtils.hasText(claimingFor)
@@ -78,6 +88,9 @@ public class CounterClaimFormPayloadBuilder {
             .otherOrderRequestDetails(otherOrderDetails)
             .otherOrderRequestFacts(otherOrderFacts)
             .statementOfTruthName(statementOfTruthName)
+            .sotFirmName(sotFirmName)
+            .sotPositionHeld(sotPositionHeld)
+            .completedByLegalRepresentative(isCompletedByLegalRepresentative)
             .showCounterClaimDetailsSection(showCounterClaimDetails)
             .showClaimingFor(StringUtils.hasText(claimingFor))
             .showClaimingSpecificSum(StringUtils.hasText(claimingSpecificSum))
@@ -115,12 +128,9 @@ public class CounterClaimFormPayloadBuilder {
         return names.isEmpty() ? null : String.join("\n", names);
     }
 
-    private String buildStatementOfTruthName(CounterClaimEntity counterClaim) {
+    private Optional<StatementOfTruthEntity> findStatementOfTruth(CounterClaimEntity counterClaim) {
         return counterClaim.findAssociatedDefendantResponse()
-            .map(DefendantResponseEntity::getStatementOfTruth)
-            .map(StatementOfTruthEntity::getFullName)
-            .filter(StringUtils::hasText)
-            .orElse(null);
+            .map(DefendantResponseEntity::getStatementOfTruth);
     }
 
     private String formatPartyDisplayName(PartyEntity party) {
