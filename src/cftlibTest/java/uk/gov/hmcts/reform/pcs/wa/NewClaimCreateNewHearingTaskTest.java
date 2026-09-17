@@ -9,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.client.TaskManagementClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 import uk.gov.hmcts.reform.pcs.model.FeePaymentSummary;
 import uk.gov.hmcts.reform.pcs.model.WaTask;
@@ -17,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 import uk.gov.hmcts.reform.pcs.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.service.CaseStateService;
 import uk.gov.hmcts.reform.pcs.service.FeePaymentService;
-import uk.gov.hmcts.reform.pcs.client.TaskManagementClient;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import java.util.List;
@@ -62,9 +63,9 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
 
     @Test
     @EnabledIfEnvironmentVariable(named = "WA_TESTS_ENABLED", matches = "true")
-    void createNewClaimCreateNewHearingTask() throws InterruptedException {
+    void createNewClaimCreateNewHearingTask() {
 
-        long caseReference = caseCreationService.createMinimalCase(solicitorToken);
+        long caseReference = caseCreationService.createMinimalCase(solicitorToken, LanguageUsed.ENGLISH);
 
         List<FeePaymentSummary> feePaymentSummaries
             = feePaymentService.waitForFeePaymentRequests(caseReference, PaymentCallbackHandlerType.CLAIM);
@@ -73,7 +74,7 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
 
         caseStateService.waitForCaseState(caseReference, State.CASE_ISSUED, solicitorToken);
 
-        List<WaTask> tasks = taskManagementClient.getTasksOfType(
+        List<WaTask> tasks = taskManagementClient.waitForTasksOfType(
             caseReference,
             TaskType.NEW_CLAIM_CREATE_NEW_HEARING,
             hearingCentreTeamLeaderToken
