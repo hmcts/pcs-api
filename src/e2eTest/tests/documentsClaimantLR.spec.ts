@@ -12,7 +12,6 @@ import {
 import { makeAnApplicationApiData } from "@data/api-data";
 import { initializeCMExecutor } from "@utils/controller-caseManagement";
 import { getCaseTypeId } from "@utils/common/caseType.utils";
-import { VERY_LONG_TIMEOUT } from "../playwright.config";
 import {
   checkYourAnswersUploadAdditionalDocs,
 } from "@data/page-data-figma/page-data-legalRepresentative/checkYourAnswersUploadAdditionalDocs.page.data";
@@ -195,13 +194,12 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
 
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let fileName1 = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, uploadYourDocuments.mainHeader as string);
     await performAction('uploadAdditionalDocsLR', {
       documents: [
-        { type: uploadYourDocuments.rentStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+        { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
         { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: fileName1, description: uploadYourDocuments.witnessStatementDropDownInput }
       ]
     });
