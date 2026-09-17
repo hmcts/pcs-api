@@ -197,14 +197,13 @@ class PartyServiceTest {
         }
 
         @ParameterizedTest
-        @NullSource
-        @ValueSource(strings = {"YES", "NO"})
-        void shouldCheckPartyIsActive(String activeValue) {
+        @ValueSource(booleans = {true, false})
+        void shouldCheckPartyIsActive(boolean removed) {
             PartyEntity partyEntity = PartyEntity.builder()
-                .active(activeValue == null ? null : YesOrNo.valueOf(activeValue))
+                .removed(removed)
                 .build();
 
-            assertThat(underTest.isActive(partyEntity)).isEqualTo(activeValue == null || "YES".equals(activeValue));
+            assertThat(underTest.isActive(partyEntity)).isEqualTo(!removed);
         }
 
         @Test

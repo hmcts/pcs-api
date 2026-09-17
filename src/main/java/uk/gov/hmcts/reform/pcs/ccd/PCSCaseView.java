@@ -302,7 +302,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private boolean isActive(PartyEntity partyEntity) {
-        return partyEntity.getActive() == null || partyEntity.getActive() == YesOrNo.YES;
+        return !partyEntity.isRemoved();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

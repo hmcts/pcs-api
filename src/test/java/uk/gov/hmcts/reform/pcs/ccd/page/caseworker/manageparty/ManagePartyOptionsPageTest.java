@@ -251,8 +251,8 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
         assertThat(removePartyDetails.getSelectedPartyLabel()).isEqualTo("Person unknown - Defendant 1");
-        assertThat(removePartyDetails.getDateOfBirth()).isEqualTo("(Date of birth unknown)");
-        assertThat(removePartyDetails.getAddress()).isEqualTo("(Address unknown)");
+        assertThat(removePartyDetails.getDateOfBirth()).isEqualTo("Date of birth unknown");
+        assertThat(removePartyDetails.getAddress()).isEqualTo("Address unknown");
     }
 
     @Test

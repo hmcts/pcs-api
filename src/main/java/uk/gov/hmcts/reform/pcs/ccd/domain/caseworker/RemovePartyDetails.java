@@ -35,7 +35,7 @@ public class RemovePartyDetails {
     private String lastPartyMessage;
 
     @JsonProperty("removeParty_CanSelectParty")
-    @CCD(label = "Can select party")
+    @CCD
     private YesOrNo canSelectParty;
 
     @JsonProperty("removeParty_SelectedPartyLabel")

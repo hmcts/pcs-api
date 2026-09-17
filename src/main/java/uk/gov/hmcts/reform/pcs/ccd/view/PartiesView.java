@@ -86,7 +86,7 @@ public class PartiesView {
     }
 
     private boolean isActive(PartyEntity partyEntity) {
-        return partyEntity.getActive() == null || partyEntity.getActive() == YesOrNo.YES;
+        return !partyEntity.isRemoved();
     }
 
     private ListValue<Party> toListValue(ClaimPartyEntity claimPartyEntity, boolean isCitizen, UUID currentUserId) {

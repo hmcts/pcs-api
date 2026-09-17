@@ -57,8 +57,8 @@ class RemovePartyServiceTest {
     @Test
     void shouldSoftDeletePartyAndDeactivateLegalRepresentativeLinks() {
         // Given
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         ClaimPartyOrganisationEntity legalRepresentativeLink = ClaimPartyOrganisationEntity.builder()
             .active(YesOrNo.YES)
             .build();
@@ -81,7 +81,7 @@ class RemovePartyServiceTest {
         RemovePartyService.RemovedParty result = underTest.removeParty(removePartyDetails, TEST_CASE_REFERENCE);
 
         // Then
-        assertThat(partyToRemove.getActive()).isEqualTo(YesOrNo.NO);
+        assertThat(partyToRemove.isRemoved()).isTrue();
         assertThat(legalRepresentativeLink.getActive()).isEqualTo(YesOrNo.NO);
         assertThat(result.partyName()).isEqualTo("Billy Wright");
         assertThat(result.partyRole()).isEqualTo(PartyRole.DEFENDANT);
@@ -102,7 +102,7 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldRejectLastPartyOfRole() {
-        PartyEntity onlyDefendant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity onlyDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         buildCaseWithParties(onlyDefendant);
 
         when(partyService.getPartyRole(onlyDefendant)).thenReturn(PartyRole.DEFENDANT);
@@ -115,8 +115,8 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldRejectPartyWithOpenGeneralApplication() {
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         buildCaseWithParties(partyToRemove, remainingParty);
 
         when(partyService.getPartyRole(partyToRemove)).thenReturn(PartyRole.DEFENDANT);
@@ -132,8 +132,8 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldRejectPartyWithOpenCounterClaim() {
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         buildCaseWithParties(partyToRemove, remainingParty);
 
         when(partyService.getPartyRole(partyToRemove)).thenReturn(PartyRole.DEFENDANT);
@@ -149,8 +149,8 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldAllowSelectingPartyWhenMoreThanOneActivePartyHasSameRole() {
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, remainingParty);
 
         when(partyService.isActive(partyToRemove)).thenReturn(true);
@@ -161,8 +161,8 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldNotAllowSelectingPartyWhenOnlyOneActivePartyHasSameRole() {
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity inactiveParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.NO).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity inactiveParty = PartyEntity.builder().id(UUID.randomUUID()).removed(true).build();
         ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, inactiveParty);
 
         when(partyService.isActive(partyToRemove)).thenReturn(true);
@@ -173,8 +173,8 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldFindAnyRemovableParty() {
-        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
         ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, remainingParty);
 
         when(partyService.isActive(partyToRemove)).thenReturn(true);
@@ -185,10 +185,10 @@ class RemovePartyServiceTest {
 
     @Test
     void shouldFilterActiveClaimantsAndDefendants() {
-        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity litigationFriend = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
-        PartyEntity inactiveDefendant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.NO).build();
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity litigationFriend = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity inactiveDefendant = PartyEntity.builder().id(UUID.randomUUID()).removed(true).build();
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         mainClaim.addParty(claimant, PartyRole.CLAIMANT);
         mainClaim.addParty(defendant, PartyRole.DEFENDANT);

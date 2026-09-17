@@ -40,8 +40,8 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
     private static final String MANAGE_PARTY_OPTIONS_FIELD = "addParty_ManagePartyOptions";
     private static final String REMOVE_PARTY_CONDITION =
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.REMOVE_PARTY);
-    private static final String DATE_OF_BIRTH_UNKNOWN = "(Date of birth unknown)";
-    private static final String ADDRESS_UNKNOWN = "(Address unknown)";
+    private static final String DATE_OF_BIRTH_UNKNOWN = "Date of birth unknown";
+    private static final String ADDRESS_UNKNOWN = "Address unknown";
     private static final String REMOVE_PARTY_REQUIRED_ERROR = "Which party are you removing? is required";
     private static final String CAN_SELECT_PARTY_CONDITION =
         ShowConditions.and(REMOVE_PARTY_CONDITION, "removeParty_CanSelectParty=\"Yes\"");

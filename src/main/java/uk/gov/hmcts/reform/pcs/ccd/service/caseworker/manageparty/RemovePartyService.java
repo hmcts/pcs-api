@@ -53,7 +53,7 @@ public class RemovePartyService {
         PartyEntity partyEntity = partyService.getPartyEntityById(partyId, caseReference);
         validateCanRemove(partyEntity, caseReference);
 
-        partyEntity.setActive(YesOrNo.NO);
+        partyEntity.setRemoved(true);
         partyEntity.getClaimPartyOrganisationList()
             .forEach(organisation -> organisation.setActive(YesOrNo.NO));
         partyRepository.save(partyEntity);

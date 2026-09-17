@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -19,33 +18,22 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
     @Query("SELECT p FROM PartyEntity p WHERE p.id = :id AND p.pcsCase.caseReference = :caseReference")
     Optional<PartyEntity> queryPartyById(@Param("id") UUID id, @Param("caseReference") long caseReference);
 
-    default Optional<PartyEntity> queryPartyByIdamId(UUID idamId, long caseReference) {
-        return queryPartyByIdamIdAndActive(idamId, caseReference, YesOrNo.YES);
-    }
-
     @Query("""
         SELECT p FROM PartyEntity p
         WHERE p.idamId = :idamId
         AND p.pcsCase.caseReference = :caseReference
-        AND (p.active IS NULL OR p.active = :active)
+        AND p.removed = false
         """)
-    Optional<PartyEntity> queryPartyByIdamIdAndActive(@Param("idamId") UUID idamId,
-                                                      @Param("caseReference") long caseReference,
-                                                      @Param("active") YesOrNo active);
-
-    default List<ClaimEntity> findClaimsByIdamIdAndRole(UUID idamId, PartyRole role) {
-        return findClaimsByIdamIdAndRoleAndActive(idamId, role, YesOrNo.YES);
-    }
+    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId,
+                                             @Param("caseReference") long caseReference);
 
     @Query("""
         SELECT cp.claim FROM ClaimPartyEntity cp
         WHERE cp.party.idamId = :idamId
         AND cp.role = :role
-        AND (cp.party.active IS NULL OR cp.party.active = :active)
+        AND cp.party.removed = false
         """)
-    List<ClaimEntity> findClaimsByIdamIdAndRoleAndActive(@Param("idamId") UUID idamId,
-                                                         @Param("role") PartyRole role,
-                                                         @Param("active") YesOrNo active);
+    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") UUID idamId, @Param("role") PartyRole role);
 
     Optional<PartyEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 

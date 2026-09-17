@@ -98,7 +98,7 @@ public class PartyService {
     }
 
     public boolean isActive(PartyEntity partyEntity) {
-        return partyEntity.getActive() == null || partyEntity.getActive() == YesOrNo.YES;
+        return !partyEntity.isRemoved();
     }
 
     public String getPartyLabel(ClaimEntity mainClaim, UUID partyId) {
@@ -181,7 +181,7 @@ public class PartyService {
                 "Organisation profile ID must be provided to create a case for organisation " + organisationId);
         }
         PartyEntity claimantParty = new PartyEntity();
-        claimantParty.setActive(YesOrNo.YES);
+        claimantParty.setRemoved(false);
         claimantParty.setOrganisationId(organisationId);
         claimantParty.setOrganisationProfileId(organisationProfileId);
         claimantParty.setClaimCreator(true);
@@ -201,7 +201,7 @@ public class PartyService {
         requireNonNull(claimantInformation, "Claimant must be provided");
 
         setClaimantOrgName(claimantInformation, claimantParty);
-        claimantParty.setActive(YesOrNo.YES);
+        claimantParty.setRemoved(false);
         setClaimantOrganisation(claimantParty, organisationIdForCurrentUser, orgProfileId);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
@@ -279,7 +279,7 @@ public class PartyService {
 
     private PartyEntity createDefendant(DefendantDetails defendantDetails) {
         PartyEntity defendantEntity = new PartyEntity();
-        defendantEntity.setActive(YesOrNo.YES);
+        defendantEntity.setRemoved(false);
 
         VerticalYesNo nameKnown = defendantDetails.getNameKnown();
         defendantEntity.setNameKnown(nameKnown);
@@ -326,7 +326,7 @@ public class PartyService {
     private PartyEntity createUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
 
         PartyEntity underlesseeMortgageeEntity = new PartyEntity();
-        underlesseeMortgageeEntity.setActive(YesOrNo.YES);
+        underlesseeMortgageeEntity.setRemoved(false);
 
         VerticalYesNo nameKnown = underlesseeMortgageeDetails.getNameKnown();
         underlesseeMortgageeEntity.setNameKnown(nameKnown);

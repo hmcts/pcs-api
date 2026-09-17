@@ -115,10 +115,7 @@ public class PartyEntity {
 
     private String pcqId;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Builder.Default
-    private YesOrNo active = YesOrNo.YES;
+    private boolean removed;
 
     @Column(name = "dob")
     private LocalDate dateOfBirth;

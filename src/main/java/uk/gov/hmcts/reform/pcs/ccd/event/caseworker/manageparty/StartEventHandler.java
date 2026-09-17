@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -80,7 +79,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .map(claimPartyEntity -> DynamicListElement.builder()
                 .code(claimPartyEntity.getParty().getId())
                 .label("%s - %s".formatted(
-                    buildPartyDisplayName(claimPartyEntity.getParty()),
+                    partyService.getPartyName(claimPartyEntity.getParty()),
                     partyService.getPartyLabel(mainClaim, claimPartyEntity.getParty().getId())
                 ))
                 .build())
@@ -120,15 +119,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     private String buildPartyListLabel(ClaimEntity mainClaim, PartyEntity partyEntity) {
         return "%s - %s".formatted(
-            buildPartyDisplayName(partyEntity),
+            partyService.getPartyName(partyEntity),
             partyService.getPartyLabel(mainClaim, partyEntity.getId())
         );
-    }
-
-    private String buildPartyDisplayName(PartyEntity partyEntity) {
-        if (partyEntity.getNameKnown() == VerticalYesNo.NO) {
-            return "Person unknown";
-        }
-        return partyService.getPartyName(partyEntity);
     }
 }

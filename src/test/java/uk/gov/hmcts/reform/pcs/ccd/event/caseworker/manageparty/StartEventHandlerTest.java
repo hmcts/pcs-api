@@ -69,6 +69,7 @@ class StartEventHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         when(partyService.getPartyName(claimantParty)).thenReturn("Jane Doe");
+        when(partyService.getPartyName(defendantParty)).thenReturn("Person unknown");
         when(partyService.getPartyLabel(mainClaim, claimantParty.getId())).thenReturn("Claimant 1");
         when(partyService.getPartyLabel(mainClaim, defendantParty.getId())).thenReturn("Defendant 1");
         when(partyService.isActive(claimantParty)).thenReturn(true);
