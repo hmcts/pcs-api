@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
@@ -168,6 +169,39 @@ class RemovePartyServiceTest {
         when(partyService.isActive(inactiveParty)).thenReturn(false);
 
         assertThat(underTest.canSelectForRemoval(mainClaim.getClaimParties().getFirst(), mainClaim)).isFalse();
+    }
+
+    @Test
+    void shouldFindAnyRemovableParty() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, remainingParty);
+
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(remainingParty)).thenReturn(true);
+
+        assertThat(underTest.hasAnyRemovableParty(mainClaim)).isTrue();
+    }
+
+    @Test
+    void shouldFilterActiveClaimantsAndDefendants() {
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity litigationFriend = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.YES).build();
+        PartyEntity inactiveDefendant = PartyEntity.builder().id(UUID.randomUUID()).active(YesOrNo.NO).build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        mainClaim.addParty(claimant, PartyRole.CLAIMANT);
+        mainClaim.addParty(defendant, PartyRole.DEFENDANT);
+        mainClaim.addParty(litigationFriend, PartyRole.LITIGATION_FRIEND);
+        mainClaim.addParty(inactiveDefendant, PartyRole.DEFENDANT);
+
+        when(partyService.isActive(claimant)).thenReturn(true);
+        when(partyService.isActive(defendant)).thenReturn(true);
+        when(partyService.isActive(inactiveDefendant)).thenReturn(false);
+
+        assertThat(underTest.getActiveClaimantsAndDefendants(mainClaim))
+            .extracting(ClaimPartyEntity::getParty)
+            .containsExactly(claimant, defendant);
     }
 
     private ClaimEntity buildCaseWithParties(PartyEntity... parties) {
