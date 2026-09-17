@@ -6,13 +6,11 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFormScheduler;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.UUID;
 
@@ -22,9 +20,7 @@ import java.util.UUID;
 public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
-    private final GenAppDocumentGenerator genAppDocumentGenerator;
-    private final NotificationService notificationService;
-    private final GenAppWaTaskService genAppWaTaskService;
+    private final GenAppFormScheduler genAppFormScheduler;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -37,11 +33,7 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
             GenAppEntity genAppEntity = findGenAppEntity(genAppId);
             if (genAppEntity.getState() == GenAppState.PENDING_GEN_APP_ISSUED) {
                 genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
-                long caseReference = genAppEntity.getPcsCase().getCaseReference();
-                genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
-                notificationService.sendGenAppReceivedEmail(genAppEntity);
-                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
-                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+                genAppFormScheduler.scheduleGenAppDocumentGeneration(genAppId);
             } else {
                 log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
             }
