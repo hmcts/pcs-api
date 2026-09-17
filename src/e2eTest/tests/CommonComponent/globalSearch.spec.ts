@@ -88,31 +88,31 @@ const runGlobalSearchScenarios = () => {
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-  test('Valid case reference using Mortgage and Landlord Possession Claim Service', async () => {
+  test('Valid case reference using Mortgage and Landlord Possession Claim Service @rerun', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption2);
     await performAction('validateResults');
   });
 
-  test('Valid case reference using All Services', async () => {
+  test('Valid case reference using All Services @rerun', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption1);
     await performAction('validateResults');
   });
 
-  test('Search by postcode', async () => {
+  test('Search by postcode @rerun', async () => {
     await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
-  test('Search by email address', async () => {
+  test('Search by email address @rerun', async () => {
     await runFieldSearch(globalSearch.emailAddressLabel, globalSearchTestData.email);
   });
 
-  test('first line of address', async () => {
+  test('first line of address @rerun', async () => {
     await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearchTestData.addressLine1);
   });
 
-  test('Search by party name', async () => {
+  test('Search by party name @rerun', async () => {
     await runFieldSearch(globalSearch.nameLabel, globalSearchTestData.name);
   });
 
@@ -121,7 +121,7 @@ const runGlobalSearchScenarios = () => {
     await performAction('invalidCaseReferenceSearch', globalSearch.invalidCaseReferenceInputText);
   });
 
-  test('Change search criteria link', async () => {
+  test('Change search criteria link @rerun', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
     await performAction('changeSearchLink', 'changeSearch');
