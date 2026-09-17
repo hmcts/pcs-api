@@ -36,8 +36,8 @@ public class UploadSupportingDocuments implements CcdPageConfiguration {
             .page("uploadSupportingDocuments")
             .pageLabel("Upload documents to support your application")
             .showCondition(fieldEquals("xui_genapp_HasSupportingDocuments", VerticalYesNo.YES))
-            .label("uploadSupportingDocuments-lineSeparator", "---")
-            .label("uploadSupportingDocuments-info", INFO_MARKDOWN)
+            .label("cma-uploadSupportingDocuments-lineSeparator", "---")
+            .label("cma-uploadSupportingDocuments-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getUploadedDocuments)
             .done();

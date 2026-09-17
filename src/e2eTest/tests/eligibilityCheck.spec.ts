@@ -87,7 +87,7 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performAction('extractCaseIdFromAlert');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @MAC', async () => {
+  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @regression @MAC', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -116,7 +116,7 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performValidation('link', {text: postcodeNotAssignedToCourt.possessionClaimOnlineDynamicLink});
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only @MAC', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only @regression @MAC', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -165,7 +165,7 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @MAC', async () => {
+  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression @MAC', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -191,7 +191,7 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only  @MAC', async () => {
+  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression @MAC', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -215,4 +215,3 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 })
-

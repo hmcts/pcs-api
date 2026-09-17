@@ -2,12 +2,12 @@ import {initializeExecutor, performAction, performValidation} from '@utils/contr
 import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
-import {caseSummary, user} from '@data/page-data';
-import { createAndManageSupport } from '@data/page-data-figma/page-data-common-component/createAndManageSupport.page.data';
+import {caseSummary, home, user} from '@data/page-data';
+import {reviewSupport} from '@data/page-data-figma/page-data-common-component/reviewSupport.page.data';
 import {dismissCookieBanner} from '@config/cookie-banner';
 import {BrowserContext, Page} from '@playwright/test';
-
-const ACCESS_CONTROL_TEST_TIMEOUT = 30 * 60 * 1000;
+import { staff } from '@data/user-data/staff.user.data';
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 
 async function clearBrowserSession(page: Page, context: BrowserContext): Promise<void> {
   await context.clearCookies();
@@ -30,8 +30,6 @@ test.beforeEach(async ({page, context}) => {
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
-
-  console.log("caseNumber",process.env.CASE_NUMBER);
 });
 
 test.afterEach(async () => {
@@ -42,55 +40,174 @@ test.afterEach(async () => {
 
 test.describe('Create and Manage Support Events @nightly @CC @supportEvents', async () => {
 
-  test('Create and manage support events', async ({page}) => {
-    //Email needs changing to solicitor user to create support event
-    await performAction('login', {email: user.claimantSolicitor.email, password: user.claimantSolicitor.password});
+  test('Create and manage support events - Special measure', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
     await dismissCookieBanner(page, 'analytics');
-    
-    // Create RequestSupport Event
+
+    await performAction('clickTab', home.noticeOfChangeTab);
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await performAction('clickLink', reviewSupport.viewThisCase);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+
     await performAction('navigateToCaseSummary');
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.requestSupport);
-    await performAction('clickButton', caseSummary.go);
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    // Select the Possession Claims Solicitor Org (Claimant) radio option
-    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant)' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Select 'Reasonable adjustment' and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'Reasonable adjustment' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Choose to bring support to a hearing and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'I need to bring support with me to a hearing' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Select type of support and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('clickRadioButton', { option: 'Friend or family with me' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Enter support details and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeader);
-    await performAction('inputText', createAndManageSupport.addCommentLabel, createAndManageSupport.addCommentText);
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Submit the request
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.specialMeasureOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.specialMeasureHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.evidenceByLiveLinkOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.addCommentLabel
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
     await performAction('clickButton', 'Submit');
-    // Validate success header after submission
     await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
 
-    // Now create ManageSupport Event
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
-    // Select the Support request and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
-    await performAction('clickRadioButton', { option: 'Possession Claims Solicitor Org (Claimant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Add comments and continue
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
-    await performAction('inputText', createAndManageSupport.updateCommentLabel, createAndManageSupport.updateCommentText);
-    await performAction('clickButton', createAndManageSupport.continueButton);
-    // Submit and validate success message
-    await performValidation('mainHeader', createAndManageSupport.mainHeaderManage);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Special measure, Evidence by live link (Claimant Test Create Support)' });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('clickButton', 'Submit');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Create and manage support events - Reasonable adjustment', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('clickTab', home.noticeOfChangeTab);
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await performAction('clickLink', reviewSupport.viewThisCase);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.reasonableAdjustmentOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.reasonableAdjustmentHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.iNeedToBringSupportOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.iNeedToBringSupportHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.friendOrFamilyOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.addCommentLabel
+    });
+
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
+
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Create and manage support events - Language Interpreter', async ({page}) => {
+    await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
+    await dismissCookieBanner(page, 'analytics');
+
+    await performAction('clickTab', home.noticeOfChangeTab);
+    await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
+    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await performAction('clickLink', reviewSupport.viewThisCase);
+    await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
+    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.supporTypeHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('selectRadioButtonInYourSupport', {
+      optionToSelect: reviewSupport.languageInterpreterOption,
+      continueButton: reviewSupport.continueButton,
+      headerToCheck: reviewSupport.languageInterpreterHeader
+    });
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('check', reviewSupport.enterLanguageCheckBox);
+    await performAction('inputText', reviewSupport.languageInterpreterLabel, reviewSupport.languageInterpreterText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeader);
+    await performAction('inputText', reviewSupport.addCommentOptionalLabel, reviewSupport.addCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', `Case #.* has been updated with event: Request support`);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Language Interpreter, Telugu (Claimant Test Create Support)' });
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
+    await performAction('clickButton', reviewSupport.continueButton);
+    await performValidation('mainHeader', reviewSupport.mainHeaderManage);
+    await performAction('clickButton', 'Submit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage support');
+  });
+
+  test('Staff users can not see Support tab', async ({page}) => {
+    await performAction('login', { email: staff.pcs_ctsc_admin_email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToCaseSummary');
+    await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'History', 'Service Request', 'Notes', 'Linked Cases', 'Case flags'] });
   });
 
 });

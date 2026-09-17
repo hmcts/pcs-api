@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -15,12 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.DefendantResponseTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.task.DefendantResponseSubmittedNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.ccd.task.PendingCounterClaimIssuedNotificationTaskComponent;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -43,11 +46,11 @@ public class RespondPossessionClaimSubmitService {
     private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final DocumentService documentService;
     private final DraftCaseDataService draftCaseDataService;
+    private final SchedulerClient schedulerClient;
     private final TaskDescriptionService taskDescriptionService;
     private final CamundaService camundaService;
     private final TranslationWAService translationWAService;
     private final OrganisationService organisationService;
-    private final SchedulerClient schedulerClient;
 
     @Transactional
     public RespondPossessionClaimSubmitPersistenceResult persistFinalSubmit(
@@ -81,9 +84,8 @@ public class RespondPossessionClaimSubmitService {
 
         if (counterClaimEntity != null) {
             feeDetails = counterClaimFeeCalculator.getFeeDetails(counterClaim);
-
-            boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
-            if (hwfReferencePresent) {
+            schedulePendingCounterClaimIssuedNotification(counterClaimEntity);
+            if (counterClaimFeeCalculator.isHwfReferencePresent(counterClaim)) {
                 createCounterClaimReviewWaTask(caseReference, counterClaimEntity, feeDetails);
                 createTranslationTaskForCounterClaim(
                     counterClaimDocuments,
@@ -115,6 +117,27 @@ public class RespondPossessionClaimSubmitService {
             feeDetails,
             paymentRequired
         );
+    }
+
+    private void schedulePendingCounterClaimIssuedNotification(CounterClaimEntity counterClaimEntity) {
+        if (CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED == counterClaimEntity.getStatus()) {
+            String taskId = UUID.randomUUID().toString();
+            UUID counterClaimId = counterClaimEntity.getId();
+            log.info(
+                "Scheduling pending counter claim issued notification for: {}, with task id: {}",
+                counterClaimId,
+                taskId
+            );
+
+            schedulerClient.scheduleIfNotExists(
+                PendingCounterClaimIssuedNotificationTaskComponent.PENDING_COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR
+                    .instance(taskId)
+                    .data(CounterClaimTaskData.builder()
+                              .counterClaimId(counterClaimId)
+                              .build())
+                    .scheduledTo(Instant.now())
+            );
+        }
     }
 
     private void createCounterClaimReviewWaTask(long caseReference,

@@ -56,8 +56,8 @@ public class IdamTokenProvider {
             return BEARER_PREFIX + authorizedClient.getAccessToken().getTokenValue();
 
         } catch (OAuth2AuthorizationException ex) {
-            log.error("OAuth2 authorization error retrieving {} token. Error: {}, Description: {}",
-                clientRegistrationId, ex.getError().getErrorCode(), ex.getError().getDescription(), ex);
+            log.error("OAuth2 authorization error retrieving {} token. Error: {}",
+                clientRegistrationId, ex.getError().getErrorCode(), ex);
             throw new IdamException("Unable to get access token response", ex);
         }
     }
