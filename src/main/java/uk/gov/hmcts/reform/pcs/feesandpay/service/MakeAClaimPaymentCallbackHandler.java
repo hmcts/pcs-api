@@ -29,7 +29,7 @@ public class MakeAClaimPaymentCallbackHandler implements PaymentCallbackStrategy
         PartyEntity claimParty = getResponsibleParty(feesAndPayTaskData);
         feePaymentEntity.setParty(claimParty);
         if (PaymentStatus.PAID == feePaymentEntity.getPaymentStatus()) {
-            ccdPaymentStateUpdateService.submitPaymentSuccess(feesAndPayTaskData.getCaseReference());
+            ccdPaymentStateUpdateService.submitClaimPaymentSuccess(feesAndPayTaskData.getCaseReference());
         } else {
             log.warn("The payment was not successful [{}] for case: {}", feePaymentEntity.getPaymentStatus(),
                      feesAndPayTaskData.getCaseReference());

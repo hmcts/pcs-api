@@ -29,33 +29,26 @@ public class CcdPaymentStateUpdateService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
 
-    public CaseResource submitPaymentSuccess(long caseId) {
-        String serviceAuthorization = authTokenGenerator.generate();
-        String idamToken = systemUpdateUserTokenProvider.getAuthToken();
+    public CaseResource submitClaimPaymentSuccess(long caseId) {
         log.debug("Submitting payment event for case: {}", caseId);
-        StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
-                                                                           String.valueOf(caseId),
-                                                                           claimIssuePayment.name());
-        CaseDataContent submitContent = CaseDataContent.builder()
-            .event(Event.builder().id(claimIssuePayment.name()).build())
-            .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
-        CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
-                                                                String.valueOf(caseId), submitContent);
-        log.debug("CaseResource response : {}", caseResource);
-        return caseResource;
+        return submitEvent(caseId, claimIssuePayment.name(), PCSCase.builder().build());
     }
 
     public CaseResource submitGenAppPaymentSuccess(long caseId, UUID genAppId) {
+        log.debug("Submitting gen app payment event for case: {}, gen app: {}", caseId, genAppId);
+        return submitEvent(caseId, genAppIssuePayment.name(),
+                           PCSCase.builder().pendingGenAppPaymentId(genAppId.toString()).build());
+    }
+
+    private CaseResource submitEvent(long caseId, String eventId, PCSCase caseData) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
-        log.debug("Submitting gen app payment event for case: {}, gen app: {}", caseId, genAppId);
         StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
-                                                                           String.valueOf(caseId),
-                                                                           genAppIssuePayment.name());
+                                                                           String.valueOf(caseId), eventId);
         CaseDataContent submitContent = CaseDataContent.builder()
-            .event(Event.builder().id(genAppIssuePayment.name()).build())
+            .event(Event.builder().id(eventId).build())
             .eventToken(startEventResponse.getToken())
-            .data(toJsonNode(PCSCase.builder().pendingGenAppPaymentId(genAppId.toString()).build()))
+            .data(toJsonNode(caseData))
             .build();
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                                                                 String.valueOf(caseId), submitContent);

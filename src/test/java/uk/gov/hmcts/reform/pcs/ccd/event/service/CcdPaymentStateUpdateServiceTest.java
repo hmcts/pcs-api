@@ -65,10 +65,11 @@ class CcdPaymentStateUpdateServiceTest {
         when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                          any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
-        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
+        JsonNode caseDataNode = mock(JsonNode.class);
+        when(objectMapper.valueToTree(any())).thenReturn(caseDataNode);
 
         // When
-        CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
+        CaseResource result = underTest.submitClaimPaymentSuccess(CASE_ID);
 
         // Then
         assertThat(result).isSameAs(expectedCaseResource);
@@ -96,7 +97,8 @@ class CcdPaymentStateUpdateServiceTest {
         when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                          any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
-        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
+        JsonNode caseDataNode = mock(JsonNode.class);
+        when(objectMapper.valueToTree(any())).thenReturn(caseDataNode);
 
         // When
         CaseResource result = underTest.submitGenAppPaymentSuccess(CASE_ID, genAppId);
