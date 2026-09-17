@@ -29,14 +29,14 @@ class CounterClaimFormDocumentGeneratorTest {
         when(docAssemblyService.generateDocument(eq(payload),
             eq(CounterClaimFormDocumentGenerator.TEMPLATE_ID),
             eq(OutputType.PDF),
-            eq("Counterclaim - Defendant 2")
+            eq("Counterclaim CC1 - Defendant 2")
         )).thenReturn("https://dm-store/abc");
 
-        String url = generator.generate(payload, 2);
+        String url = generator.generate(payload, 1, 2);
 
         assertThat(url).isEqualTo("https://dm-store/abc");
         verify(docAssemblyService).generateDocument(
-            payload, CounterClaimFormDocumentGenerator.TEMPLATE_ID, OutputType.PDF, "Counterclaim - Defendant 2");
+            payload, CounterClaimFormDocumentGenerator.TEMPLATE_ID, OutputType.PDF, "Counterclaim CC1 - Defendant 2");
     }
 
     @Test

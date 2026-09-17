@@ -55,7 +55,7 @@ class CounterClaimServiceTest {
     private PartyEntity partyEntity;
     @Mock
     private ClaimEntity claimEntity;
-    @Mock
+    
     private PcsCaseEntity pcsCaseEntity;
 
     @Captor
@@ -65,6 +65,7 @@ class CounterClaimServiceTest {
 
     @BeforeEach
     void setUp() {
+        pcsCaseEntity = new PcsCaseEntity();
         underTest = new CounterClaimService(
             partyRepository,
             claimRepository,
