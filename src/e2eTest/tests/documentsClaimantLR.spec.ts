@@ -46,9 +46,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
   } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
-  } else {
-    throw new Error(`No genAppPayload configured for ${title}`);
-  }
+  } 
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
@@ -193,7 +191,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
 
   });
 
-  test('Claimant LR Upload documents when GenApps not submitted - Single def', async () => {
+  test('Claimant LR Upload documents when GenApps not submitted - Single def @regression', async () => {
 
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let fileName1 = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
@@ -225,7 +223,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     });
   });
 
-  test('Claimant LR Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
+  test('Claimant LR Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression', async ({ page, context }) => {
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);

@@ -56,16 +56,12 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
   } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
-  } else {
-    throw new Error(`No genAppPayload configured for ${title}`);
-  }
+  } 
 
   if (genAppPayload) {
-    //for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
       data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
-    // }
   }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -271,7 +267,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     });
   });
 
-  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE', async ({ page, context }) => {
+  test('Upload documents when GenApps submitted - Single def GENADJ_WITHOUT_NOTICE @regression', async ({ page, context }) => {
     let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToAdjournRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[5];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
