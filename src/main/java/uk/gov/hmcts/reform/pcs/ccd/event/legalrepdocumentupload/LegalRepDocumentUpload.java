@@ -201,8 +201,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
-                                                                            organisationId);
+        return legalRepForDefendantAccessValidator
+            .validateAndGetDefendantsIncludingResponded(pcsCaseEntity, organisationId);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

@@ -276,14 +276,16 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @BeforeEach
         void setUp() {
-            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            when(legalRepForDefendantAccessValidator
+                     .validateAndGetDefendantsIncludingResponded(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty));
         }
 
         @Test
         void shouldReturnErrorIfLrRepresentsZeroDefendants() {
             // Given
-            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            when(legalRepForDefendantAccessValidator
+                     .validateAndGetDefendantsIncludingResponded(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of());
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
@@ -299,7 +301,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         @Test
         void shouldReturnErrorIfLrRepresentsMultipleDefendants() {
             // Given
-            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            when(legalRepForDefendantAccessValidator
+                     .validateAndGetDefendantsIncludingResponded(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
