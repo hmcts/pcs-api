@@ -38,7 +38,6 @@ export class CaseLinking implements IAction {
       console.log(`selected Case ${i}: ${caseRefs[i]} to link`);
     }
     await performAction('clickButton', selectCasesToLink.saveAndContinueButton);
-
   }
 
   private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
