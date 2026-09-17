@@ -103,13 +103,6 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       count: defendantUserDetails.length,
     });
     await performValidation('mainHeader', uploadYourDocuments.mainHeader);
-    // await performAction('uploadFiles', {
-    //   documents: [
-    //     {type: uploadYourDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadYourDocuments.rentStatementDropDownInput},
-    //     {type: uploadYourDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadYourDocuments.witnessStatementDropDownInput},
-    //   ]
-    // });
-
     await performAction('uploadAdditionalDocsLR', {
       documents: [
         { type: uploadYourDocuments.rentStatementClaimantDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementDropDownInput },
