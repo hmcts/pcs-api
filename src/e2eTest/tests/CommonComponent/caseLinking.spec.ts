@@ -51,8 +51,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking @CC', async
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
-    const caseLinking = new CaseLinking();
-    caseNumbers = await caseLinking.createCases(5);
+    await performAction('createCases',5);
     await performAction('selectCasesToLink', {
       caseRefInput: caseNumbers,
       question: selectCasesToLink.whyToLinkQuestion,
@@ -88,8 +87,7 @@ test.describe('[Common Component Case Linking] @nightly @caseLinking @CC', async
     await performValidation('mainHeader', beforeYouStart.mainHeader);
     await performAction('clickButton', beforeYouStart.saveAndContinueButton);
     await performValidation('mainHeader', selectCasesToLink.mainHeader);
-    const caseLinking = new CaseLinking();
-    caseNumbers = await caseLinking.createCases(5);
+    await performAction('createCases',5);
     await performAction('selectCasesToLink', {
       caseRefInput: caseNumbers,
       question: selectCasesToLink.whyToLinkQuestion,

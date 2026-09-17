@@ -9,7 +9,7 @@ import { caseList, caseSummary } from '@data/page-data';
 import { beforeYouStart } from '@data/page-data/beforeYouStart.page.data';
 import { checkYourAnswersCaseLinking } from '@data/page-data/checkYourAnswersCaseLinking.page.data';
 import { workAccess } from '@data/page-data-figma';
-let caseNumbers: string[] = [];
+export let caseNumbers: string[] = [];
 
 export class CaseLinking implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -21,7 +21,8 @@ export class CaseLinking implements IAction {
       ['canLinkCases', () => this.canLinkCases(fieldName as actionRecord, page)],
       ['canManageCases', () => this.canManageCases(fieldName as actionRecord, page)],
       ['canViewLinkedCases', () => this.canViewLinkedCases(fieldName as actionRecord, page)],
-      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)]
+      ['handleJudgeBookingPage', () => this.handleJudgeBookingPage(page)],
+      ['createCases', () => this.createCases(fieldName as number)] 
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -29,7 +30,7 @@ export class CaseLinking implements IAction {
   }
 
   private async selectCasesToLink(caseData: actionRecord, page: Page) {
-    const caseRefs = String(caseData.caseRefInput).split(',');
+    const caseRefs = String(caseNumbers).split(',');
     for (let i = 0; i < caseRefs.length - 1; i++) {
       await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
       await performAction('check', { question: caseData.question, option: caseData.option });
@@ -41,7 +42,7 @@ export class CaseLinking implements IAction {
   }
 
   private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
-    const caseRefs = String(caseData.caseRefInput).split(',');
+    const caseRefs = String(caseNumbers).split(',');
     for (let i = 0; i < (caseRefs.length - 3); i++) {
       console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
       const selectBox = page.locator(
@@ -53,7 +54,7 @@ export class CaseLinking implements IAction {
   }
 
   private async verifyLinkedCases(caseData: actionRecord, page: Page) {
-    const caseRefs = String(caseData.caseRefInput).split(',');
+    const caseRefs = String(caseNumbers).split(',');
     await page.locator('div[role="tab"]:has-text("Linked cases")').click();
     for (let i = 2; i < (caseRefs.length - 1); i++) {
       await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toBeVisible();
@@ -90,9 +91,9 @@ export class CaseLinking implements IAction {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.linkCaseEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', beforeYouStart.mainHeader);
-      await performAction('clickButton', beforeYouStart.submitButton);
+      await performAction('clickButton', beforeYouStart.saveAndContinueButton);
       await performValidation('mainHeader', selectCasesToLink.mainHeader);
-      caseNumbers = await this.createCases(5);
+      await performAction('createCases', 5)
       await performAction('selectCasesToLink', {
         caseRefInput: caseNumbers,
         question: selectCasesToLink.whyToLinkQuestion,
@@ -105,7 +106,7 @@ export class CaseLinking implements IAction {
         proposeButton: selectCasesToLink.proposeLinkButton
       });
       await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-      await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+      await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Link cases');
     } else {
       await this.assertCaseFlagsNotInNextStep(caseSummary.linkCaseEvent, page);
@@ -117,13 +118,13 @@ export class CaseLinking implements IAction {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.manageCaseEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', beforeYouStart.mainHeader);
-      await performAction('clickButton', beforeYouStart.submitButton);
+      await performAction('clickButton', beforeYouStart.saveAndContinueButton);
       await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
       console.log('canManageCases');
       console.log(caseNumbers);
       await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
       await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
-      await performAction('clickButton', checkYourAnswersCaseLinking.submitButton);
+      await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
 
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage case links');
     } else {
@@ -155,8 +156,7 @@ export class CaseLinking implements IAction {
     await performValidation('mainHeader', caseList.mainHeader);
   }
 
-  public async createCases(count: number): Promise<string[]> {
-    const caseNumbers: string[] = [];
+  private async createCases(count: number): Promise<void> {
     for (let i = 0; i < count; i++) {
       await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
       await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -168,7 +168,5 @@ export class CaseLinking implements IAction {
       // 🔹 log each case number immediately
       console.log(`Created Case ${i + 1}: ${caseNumber}`);
     }
-    return caseNumbers;
   }
-
 }

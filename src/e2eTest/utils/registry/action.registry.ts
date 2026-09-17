@@ -172,6 +172,7 @@ export class ActionRegistry {
     ['canManageCases', new CaseLinking()],
     ['canViewLinkedCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseLinking()],
+    ['createCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseFlagAction()],
     ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
     ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
