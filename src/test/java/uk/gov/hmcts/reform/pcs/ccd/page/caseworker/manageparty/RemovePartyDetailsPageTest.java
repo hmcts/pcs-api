@@ -20,7 +20,7 @@ class RemovePartyDetailsPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldRejectNoSelection() {
+    void shouldRejectNoConfirmation() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .removePartyDetails(RemovePartyDetails.builder()

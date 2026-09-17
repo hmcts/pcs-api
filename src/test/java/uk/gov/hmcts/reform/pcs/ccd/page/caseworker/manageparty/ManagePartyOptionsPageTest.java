@@ -266,8 +266,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(partyService.isActive(claimant)).thenReturn(true);
-        when(partyService.isActive(defendant)).thenReturn(true);
+        when(removePartyService.hasAnyRemovableParty(mainClaim)).thenReturn(false);
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())

@@ -73,6 +73,8 @@ class StartEventHandlerTest {
         when(partyService.getPartyLabel(mainClaim, defendantParty.getId())).thenReturn("Defendant 1");
         when(partyService.isActive(claimantParty)).thenReturn(true);
         when(partyService.isActive(defendantParty)).thenReturn(true);
+        when(removePartyService.getActiveClaimantsAndDefendants(mainClaim))
+            .thenReturn(mainClaim.getClaimParties().subList(0, 2));
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().build())

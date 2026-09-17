@@ -65,13 +65,9 @@ public class RemovePartyService {
     }
 
     public void validateCanRemove(PartyEntity partyEntity, long caseReference) {
-        PartyRole partyRole = partyService.getPartyRole(partyEntity);
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-
-        long partiesWithSameRole = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == partyRole)
-            .filter(claimParty -> partyService.isActive(claimParty.getParty()))
-            .count();
+        PartyRole partyRole = partyService.getPartyRole(partyEntity);
+        long partiesWithSameRole = countActivePartiesWithRole(partyRole, getActiveClaimantsAndDefendants(mainClaim));
 
         if (partiesWithSameRole <= 1) {
             throw new IllegalStateException(LAST_PARTY_ERROR);
@@ -89,11 +85,33 @@ public class RemovePartyService {
     }
 
     public boolean canSelectForRemoval(ClaimPartyEntity claimPartyEntity, ClaimEntity mainClaim) {
+        return canSelectForRemoval(claimPartyEntity, getActiveClaimantsAndDefendants(mainClaim));
+    }
+
+    public boolean canSelectForRemoval(ClaimPartyEntity claimPartyEntity,
+                                       List<ClaimPartyEntity> activeClaimantsAndDefendants) {
         PartyRole role = claimPartyEntity.getRole();
+        return countActivePartiesWithRole(role, activeClaimantsAndDefendants) > 1;
+    }
+
+    public boolean hasAnyRemovableParty(ClaimEntity mainClaim) {
+        List<ClaimPartyEntity> activeClaimantsAndDefendants = getActiveClaimantsAndDefendants(mainClaim);
+        return activeClaimantsAndDefendants.stream()
+            .anyMatch(claimParty -> canSelectForRemoval(claimParty, activeClaimantsAndDefendants));
+    }
+
+    public List<ClaimPartyEntity> getActiveClaimantsAndDefendants(ClaimEntity mainClaim) {
         return mainClaim.getClaimParties().stream()
-            .filter(other -> other.getRole() == role)
-            .filter(other -> partyService.isActive(other.getParty()))
-            .count() > 1;
+            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
+                || claimParty.getRole() == PartyRole.DEFENDANT)
+            .filter(claimParty -> partyService.isActive(claimParty.getParty()))
+            .toList();
+    }
+
+    private long countActivePartiesWithRole(PartyRole role, List<ClaimPartyEntity> activeClaimantsAndDefendants) {
+        return activeClaimantsAndDefendants.stream()
+            .filter(claimParty -> claimParty.getRole() == role)
+            .count();
     }
 
     public record RemovedParty(String partyName, PartyRole partyRole, String partyLabel) {

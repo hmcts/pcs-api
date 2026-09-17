@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -45,12 +46,16 @@ public class StartEventHandler implements Start<PCSCase, State> {
             buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
         caseData.getUpdatePartyDetails().setPartyToUpdate(
             buildPartyList(mainClaim, PartyRole.CLAIMANT, PartyRole.DEFENDANT));
-        DynamicList removablePartyList = buildRemovablePartyList(mainClaim);
+        List<ClaimPartyEntity> activeClaimantsAndDefendants =
+            removePartyService.getActiveClaimantsAndDefendants(mainClaim);
+        DynamicList removablePartyList = buildRemovablePartyList(mainClaim, activeClaimantsAndDefendants);
         caseData.getRemovePartyDetails().setPartyToRemove(removablePartyList);
         boolean canSelectParty = !removablePartyList.getListItems().isEmpty();
         caseData.getRemovePartyDetails().setCanSelectParty(YesOrNo.from(canSelectParty));
-        caseData.getRemovePartyDetails().setLastPartyMessage(canSelectParty ? null : buildLastPartyMessage(mainClaim));
-        caseData.getRemovePartyDetails().setUnremovablePartyList(buildUnremovablePartyList(mainClaim));
+        caseData.getRemovePartyDetails().setLastPartyMessage(canSelectParty ? null
+            : buildLastPartyMessage(mainClaim, activeClaimantsAndDefendants));
+        caseData.getRemovePartyDetails().setUnremovablePartyList(
+            buildUnremovablePartyList(mainClaim, activeClaimantsAndDefendants));
 
         return caseData;
     }
@@ -84,12 +89,10 @@ public class StartEventHandler implements Start<PCSCase, State> {
         return DynamicList.builder().listItems(listItems).build();
     }
 
-    private DynamicList buildRemovablePartyList(ClaimEntity mainClaim) {
-        List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
-                || claimParty.getRole() == PartyRole.DEFENDANT)
-            .filter(claimParty -> partyService.isActive(claimParty.getParty()))
-            .filter(claimParty -> removePartyService.canSelectForRemoval(claimParty, mainClaim))
+    private DynamicList buildRemovablePartyList(ClaimEntity mainClaim,
+                                                List<ClaimPartyEntity> activeClaimantsAndDefendants) {
+        List<DynamicListElement> listItems = activeClaimantsAndDefendants.stream()
+            .filter(claimParty -> removePartyService.canSelectForRemoval(claimParty, activeClaimantsAndDefendants))
             .map(claimParty -> DynamicListElement.builder()
                 .code(claimParty.getParty().getId())
                 .label(buildPartyListLabel(mainClaim, claimParty.getParty()))
@@ -99,22 +102,20 @@ public class StartEventHandler implements Start<PCSCase, State> {
         return DynamicList.builder().listItems(listItems).build();
     }
 
-    private String buildUnremovablePartyList(ClaimEntity mainClaim) {
-        return mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
-                || claimParty.getRole() == PartyRole.DEFENDANT)
-            .filter(claimParty -> partyService.isActive(claimParty.getParty()))
-            .filter(claimParty -> !removePartyService.canSelectForRemoval(claimParty, mainClaim))
+    private String buildUnremovablePartyList(ClaimEntity mainClaim,
+                                             List<ClaimPartyEntity> activeClaimantsAndDefendants) {
+        return activeClaimantsAndDefendants.stream()
+            .filter(claimParty -> !removePartyService.canSelectForRemoval(claimParty, activeClaimantsAndDefendants))
             .map(claimParty -> buildPartyListLabel(mainClaim, claimParty.getParty()))
             .collect(Collectors.joining("\n"));
     }
 
-    private String buildLastPartyMessage(ClaimEntity mainClaim) {
+    private String buildLastPartyMessage(ClaimEntity mainClaim, List<ClaimPartyEntity> activeClaimantsAndDefendants) {
         return """
             You cannot remove a claimant or defendant if only one of these parties exist on the case.
 
             %s
-            """.formatted(buildUnremovablePartyList(mainClaim));
+            """.formatted(buildUnremovablePartyList(mainClaim, activeClaimantsAndDefendants));
     }
 
     private String buildPartyListLabel(ClaimEntity mainClaim, PartyEntity partyEntity) {

@@ -42,6 +42,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.REMOVE_PARTY);
     private static final String DATE_OF_BIRTH_UNKNOWN = "(Date of birth unknown)";
     private static final String ADDRESS_UNKNOWN = "(Address unknown)";
+    private static final String REMOVE_PARTY_REQUIRED_ERROR = "Which party are you removing? is required";
     private static final String CAN_SELECT_PARTY_CONDITION =
         ShowConditions.and(REMOVE_PARTY_CONDITION, "removeParty_CanSelectParty=\"Yes\"");
     private static final String CANNOT_SELECT_PARTY_CONDITION =
@@ -155,7 +156,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             || removePartyDetails.getPartyToRemove() == null
             || removePartyDetails.getPartyToRemove().getValueCode() == null) {
             return Optional.of(hasAnyRemovableParty(caseReference)
-                ? "Which party are you removing? is required"
+                ? REMOVE_PARTY_REQUIRED_ERROR
                 : LAST_PARTY_ERROR);
         }
 
@@ -175,7 +176,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             partyService.getPartyName(partyEntity),
             partyService.getPartyLabel(mainClaim, partyId)
         ));
-        removePartyDetails.setPartyType(role == PartyRole.CLAIMANT ? PartyType.CLAIMANT : PartyType.DEFENDANT);
+        removePartyDetails.setPartyType(PartyType.valueOf(role.name()));
         removePartyDetails.setDateOfBirth(partyEntity.getDateOfBirth() != null
             ? partyEntity.getDateOfBirth().format(DATE_FORMATTER)
             : DATE_OF_BIRTH_UNKNOWN);
@@ -187,11 +188,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
     private boolean hasAnyRemovableParty(long caseReference) {
         ClaimEntity mainClaim = pcsCaseService.loadCase(caseReference).getClaims().getFirst();
-        return mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT
-                || claimParty.getRole() == PartyRole.DEFENDANT)
-            .filter(claimParty -> partyService.isActive(claimParty.getParty()))
-            .anyMatch(claimParty -> removePartyService.canSelectForRemoval(claimParty, mainClaim));
+        return removePartyService.hasAnyRemovableParty(mainClaim);
     }
 
     private String formatAddress(AddressEntity addressEntity) {
