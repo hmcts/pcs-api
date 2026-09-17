@@ -20,6 +20,12 @@ public class DraftResponseDeletionService {
 
     private final DraftCaseDataRepository draftCaseDataRepository;
 
+    @Transactional
+    public void deleteRespondPossessionClaimBatch(long discardDays) {
+        Instant cutoff = Instant.now().minus(discardDays, java.time.temporal.ChronoUnit.DAYS);
+        draftCaseDataRepository.deleteByEventIdAndCutoff(EventId.respondPossessionClaim.name(), cutoff);
+    }
+
     public List<DraftCaseDataEntity> findExpiredDraftResponses(long discardDays, int sqlLimit) {
         Instant cutoff = Instant.now().minus(discardDays, java.time.temporal.ChronoUnit.DAYS);
         return draftCaseDataRepository.findExpiredDraftResponses(

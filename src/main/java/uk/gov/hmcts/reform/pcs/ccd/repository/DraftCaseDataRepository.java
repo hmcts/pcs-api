@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
@@ -52,4 +54,13 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     List<DraftCaseDataEntity> findExpiredDraftResponses(@Param("eventId") EventId eventId,
                                                         @Param("cutoff") Instant cutoff,
                                                         Pageable pageable);
+
+    @Modifying
+    @Query("""
+        DELETE FROM DraftCaseDataEntity d
+        WHERE d.eventId = :eventId
+          AND d.createdAt < :cutoff
+        """)
+    int deleteByEventIdAndCutoff(@Param("eventId") String eventId, @Param("cutoff") Instant cutoff);
+
 }
