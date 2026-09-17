@@ -40,6 +40,7 @@ public class GenAppIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             .forStates(State.values())
             .name("Gen App Payment Confirmation")
             .showCondition(ShowConditions.NEVER_SHOW)
+            .fields().mandatory(PCSCase::getPendingGenAppPaymentId).done()
             .grant(Permission.CRU, UserRole.SYSTEM_USER)
             .grant(Permission.R, UserRole.CLAIMANT)
             .grant(Permission.R, UserRole.PCS_SOLICITOR)
