@@ -25,6 +25,7 @@ export const uploadYourDocuments = {
   shortDescriptionHiddenTextLabel: `Short description`,
   witnessStatementDropDownInput: `Witness statement`,
   rentStatementDropDownInput: `Rent or payments`,
+  rentStatementClaimantDropDownInput: `Rent statement`,
   correspondenceFromDefendantDropDownInput: `Correspondence from Defendant`,
   correspondenceFromClaimantDropDownInput: `Correspondence from Claimant`,
   photographicEvidenceDropDownInput: `Photographic evidence`,
