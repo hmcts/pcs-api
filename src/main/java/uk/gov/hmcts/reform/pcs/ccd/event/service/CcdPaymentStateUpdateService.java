@@ -14,10 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
-import java.util.UUID;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.genAppIssuePayment;
 
 @AllArgsConstructor
 @Service
@@ -29,32 +26,22 @@ public class CcdPaymentStateUpdateService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final ObjectMapper objectMapper;
 
-    public CaseResource submitClaimPaymentSuccess(long caseId) {
-        log.debug("Submitting payment event for case: {}", caseId);
-        return submitEvent(caseId, claimIssuePayment.name(), PCSCase.builder().build());
-    }
-
-    public CaseResource submitGenAppPaymentSuccess(long caseId, UUID genAppId) {
-        log.debug("Submitting gen app payment event for case: {}, gen app: {}", caseId, genAppId);
-        return submitEvent(caseId, genAppIssuePayment.name(),
-                           PCSCase.builder().pendingGenAppPaymentId(genAppId.toString()).build());
-    }
-
-    private CaseResource submitEvent(long caseId, String eventId, PCSCase caseData) {
+    public CaseResource submitPaymentSuccess(long caseId) {
         String serviceAuthorization = authTokenGenerator.generate();
         String idamToken = systemUpdateUserTokenProvider.getAuthToken();
+        log.debug("Submitting payment event for case: {}", caseId);
         StartEventResponse startEventResponse = coreCaseDataApi.startEvent(idamToken, serviceAuthorization,
-                                                                           String.valueOf(caseId), eventId);
+                                                                           String.valueOf(caseId),
+                                                                           claimIssuePayment.name());
         CaseDataContent submitContent = CaseDataContent.builder()
-            .event(Event.builder().id(eventId).build())
-            .eventToken(startEventResponse.getToken())
-            .data(toJsonNode(caseData))
-            .build();
+            .event(Event.builder().id(claimIssuePayment.name()).build())
+            .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                                                                 String.valueOf(caseId), submitContent);
         log.debug("CaseResource response : {}", caseResource);
         return caseResource;
     }
+
 
     private JsonNode toJsonNode(PCSCase pcsCase) {
         return objectMapper.valueToTree(pcsCase);

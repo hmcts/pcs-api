@@ -17,8 +17,6 @@ import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.genAppIssuePayment;
 
 @ExtendWith(MockitoExtension.class)
 class CcdPaymentStateUpdateServiceTest {
@@ -65,11 +62,10 @@ class CcdPaymentStateUpdateServiceTest {
         when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                          any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
-        JsonNode caseDataNode = mock(JsonNode.class);
-        when(objectMapper.valueToTree(any())).thenReturn(caseDataNode);
+        when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
 
         // When
-        CaseResource result = underTest.submitClaimPaymentSuccess(CASE_ID);
+        CaseResource result = underTest.submitPaymentSuccess(CASE_ID);
 
         // Then
         assertThat(result).isSameAs(expectedCaseResource);
@@ -80,38 +76,5 @@ class CcdPaymentStateUpdateServiceTest {
         CaseDataContent submitted = contentCaptor.getValue();
         assertThat(submitted.getEventToken()).isEqualTo(IDAM_BEARER);
         assertThat(submitted.getEvent().getId()).isEqualTo(claimIssuePayment.name());
-    }
-
-    @Test
-    void shouldStartEventAndSubmitGenAppPaymentSuccessfully() {
-        // Given
-        UUID genAppId = UUID.randomUUID();
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_BEARER);
-        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_BEARER);
-
-        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_BEARER).build();
-        when(coreCaseDataApi.startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), genAppIssuePayment.name()))
-            .thenReturn(startEventResponse);
-
-        CaseResource expectedCaseResource = new CaseResource();
-        when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
-                                         any(CaseDataContent.class)))
-            .thenReturn(expectedCaseResource);
-        JsonNode caseDataNode = mock(JsonNode.class);
-        when(objectMapper.valueToTree(any())).thenReturn(caseDataNode);
-
-        // When
-        CaseResource result = underTest.submitGenAppPaymentSuccess(CASE_ID, genAppId);
-
-        // Then
-        assertThat(result).isSameAs(expectedCaseResource);
-        verify(coreCaseDataApi).startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID),
-                                           genAppIssuePayment.name());
-        ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        verify(coreCaseDataApi).createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
-                                            contentCaptor.capture());
-        CaseDataContent submitted = contentCaptor.getValue();
-        assertThat(submitted.getEventToken()).isEqualTo(IDAM_BEARER);
-        assertThat(submitted.getEvent().getId()).isEqualTo(genAppIssuePayment.name());
     }
 }

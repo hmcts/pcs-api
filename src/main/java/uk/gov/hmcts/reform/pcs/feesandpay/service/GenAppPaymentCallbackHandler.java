@@ -3,10 +3,12 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.service.CcdPaymentStateUpdateService;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatusCallback;
@@ -20,8 +22,9 @@ import java.util.UUID;
 public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
     private final GenAppRepository genAppRepository;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
-    private final CcdPaymentStateUpdateService ccdPaymentStateUpdateService;
+    private final GenAppWaTaskService genAppWaTaskService;
 
     @Override
     public void handle(PaymentStatusCallback paymentStatusCallback, FeePaymentEntity feePaymentEntity) {
@@ -29,12 +32,19 @@ public class GenAppPaymentCallbackHandler implements PaymentCallbackStrategy {
 
         log.info("Handling callback for gen app payment for gen app ID {}", genAppId);
 
+
         if (feePaymentEntity.getPaymentStatus() == PaymentStatus.PAID) {
             GenAppEntity genAppEntity = findGenAppEntity(genAppId);
-            long caseReference = genAppEntity.getPcsCase().getCaseReference();
-
-            notificationService.sendGenAppReceivedEmail(genAppEntity);
-            ccdPaymentStateUpdateService.submitGenAppPaymentSuccess(caseReference, genAppId);
+            if (genAppEntity.getState() == GenAppState.PENDING_GEN_APP_ISSUED) {
+                genAppEntity.setState(GenAppState.GEN_APP_ISSUED);
+                long caseReference = genAppEntity.getPcsCase().getCaseReference();
+                genAppDocumentGenerator.createSubmissionDocument(caseReference, genAppEntity);
+                notificationService.sendGenAppReceivedEmail(genAppEntity);
+                genAppWaTaskService.createReviewGenAppTask(caseReference, genAppEntity);
+                genAppWaTaskService.createTranslationTaskForGenApp(genAppEntity);
+            } else {
+                log.warn("Gen app {} state {} not valid for this callback", genAppId, genAppEntity.getState());
+            }
         } else {
             log.warn("The payment was not successful [{}] for gen app {} on case {}",
                      feePaymentEntity.getPaymentStatus(), genAppId, paymentStatusCallback.getCcdCaseNumber());
