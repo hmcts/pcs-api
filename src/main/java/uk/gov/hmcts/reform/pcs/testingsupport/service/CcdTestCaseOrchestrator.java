@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -79,7 +80,7 @@ public class CcdTestCaseOrchestrator {
         CaseDataContent resumeContent = CaseDataContent.builder()
             .event(Event.builder().id(RESUME_EVENT).build())
             .eventToken(resumeEvent.getToken())
-            .data(resumePossessionClaimPayload)
+            .data(toCaseData(resumePossessionClaimPayload))
             .build();
 
         CaseResource caseResource = coreCaseDataApi.createEvent(
@@ -95,6 +96,10 @@ public class CcdTestCaseOrchestrator {
             "caseId", Long.valueOf(caseId),
             "caseDetails", caseResource.getData()
         );
+    }
+
+    Map<String, Object> toCaseData(JsonNode payload) {
+        return objectMapper.convertValue(payload, new TypeReference<>() {});
     }
 
     private JsonNode buildResumePossessionClaimPayload(LegislativeCountry legislativeCountry, JsonNode payloadMerge

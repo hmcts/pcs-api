@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import uk.gov.hmcts.reform.pcs.config.PasswordGrantOAuth2AuthorizedClientProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,8 +37,10 @@ class IdamTokenProviderConfigTest {
         OAuth2AuthorizeRequest request = captureAuthorizeRequestFrom(provider);
 
         assertThat(request.getClientRegistrationId()).isEqualTo("system-user");
-        assertThat((String) request.getAttribute(OAuth2ParameterNames.USERNAME)).isEqualTo("system-user@test.com");
-        assertThat((String) request.getAttribute(OAuth2ParameterNames.PASSWORD)).isEqualTo("system-secret");
+        assertThat((String) request.getAttribute(PasswordGrantOAuth2AuthorizedClientProvider.USERNAME_ATTRIBUTE_NAME))
+            .isEqualTo("system-user@test.com");
+        assertThat((String) request.getAttribute(PasswordGrantOAuth2AuthorizedClientProvider.PASSWORD_ATTRIBUTE_NAME))
+            .isEqualTo("system-secret");
     }
 
     @Test
@@ -49,8 +51,10 @@ class IdamTokenProviderConfigTest {
         OAuth2AuthorizeRequest request = captureAuthorizeRequestFrom(provider);
 
         assertThat(request.getClientRegistrationId()).isEqualTo("prd-admin");
-        assertThat((String) request.getAttribute(OAuth2ParameterNames.USERNAME)).isEqualTo("prd-admin@test.com");
-        assertThat((String) request.getAttribute(OAuth2ParameterNames.PASSWORD)).isEqualTo("prd-secret");
+        assertThat((String) request.getAttribute(PasswordGrantOAuth2AuthorizedClientProvider.USERNAME_ATTRIBUTE_NAME))
+            .isEqualTo("prd-admin@test.com");
+        assertThat((String) request.getAttribute(PasswordGrantOAuth2AuthorizedClientProvider.PASSWORD_ATTRIBUTE_NAME))
+            .isEqualTo("prd-secret");
     }
 
     private OAuth2AuthorizeRequest captureAuthorizeRequestFrom(IdamTokenProvider provider) {

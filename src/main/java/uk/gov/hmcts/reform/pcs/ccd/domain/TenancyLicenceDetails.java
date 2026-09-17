@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,7 @@ public class TenancyLicenceDetails {
         label = "What type of tenancy or licence is in place, or was in place?",
         access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
+    @JsonProperty("TypeOfTenancyLicence")
     private TenancyLicenceType typeOfTenancyLicence;
 
     @CCD(
@@ -43,6 +45,7 @@ public class TenancyLicenceDetails {
         typeOverride = TextArea,
         access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
+    @JsonProperty("DetailsOfOtherTypeOfTenancyLicence")
     private String detailsOfOtherTypeOfTenancyLicence;
 
     @CCD(
@@ -50,16 +53,19 @@ public class TenancyLicenceDetails {
         hint = "For example, 16 4 2021",
         access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
+    @JsonProperty("TenancyLicenceDate")
     private LocalDate tenancyLicenceDate;
 
     @CCD(
         label = "Upload a copy of the tenancy or licence agreement"
     )
+    @JsonProperty("TenancyLicenceDocuments")
     private List<ListValue<Document>> tenancyLicenceDocuments;
 
     @CCD(
         label = "Do you have a copy of the tenancy or licence agreement?"
     )
+    @JsonProperty("HasCopyOfTenancyLicence")
     private VerticalYesNo  hasCopyOfTenancyLicence;
 
     @CCD(
@@ -67,5 +73,6 @@ public class TenancyLicenceDetails {
         hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
+    @JsonProperty("ReasonsForNoTenancyLicenceDocuments")
     private String reasonsForNoTenancyLicenceDocuments;
 }
