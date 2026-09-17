@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -31,7 +31,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
-    private final SelectedPartyRetriever selectedPartyRetriever;
+    private final LegalRepPartySelectionService legalRepPartySelectionService;
     private final OrganisationService organisationService;
 
     @Override
@@ -69,7 +69,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             } else {
                 String organisationId = organisationService.getOrganisationIdForCurrentUser();
 
-                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef, organisationId);
+                Optional<UUID> selectedPartyId =
+                    legalRepPartySelectionService.getRespondingPartyId(caseRef, organisationId);
                 if (selectedPartyId.isEmpty()) {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }

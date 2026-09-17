@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -280,15 +281,20 @@ class LegalRepStartEventStrategyTest {
         when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, defendantId))
             .thenReturn(true);
 
+        LegalRepForDefendantAccessValidator accessValidator =
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor()),
+            accessValidator,
             new LegalRepPartySelectionService(
                 mock(SelectedPartyRetriever.class),
                 responseRepo,
                 mock(DraftCaseDataService.class),
                 mock(PossessionClaimResponseMapper.class),
-                mock(PossessionClaimMerger.class)),
+                mock(PossessionClaimMerger.class),
+                accessValidator,
+                pcsCaseService),
             organisationService,
             tenancyLicenceView,
             noticeOfPossessionView,
@@ -306,6 +312,138 @@ class LegalRepStartEventStrategyTest {
         assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
             .isEqualTo(DefendantResponseStatus.SUBMITTED);
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldExcludeRespondedDefendantsFromSelectionList() {
+        // Given
+        String organisationId = "ORG-123";
+        UUID respondedId = UUID.randomUUID();
+        UUID awaitingId1 = UUID.randomUUID();
+        UUID awaitingId2 = UUID.randomUUID();
+
+        PartyEntity responded = representedDefendant(respondedId, "Responded", organisationId);
+        PartyEntity awaiting1 = representedDefendant(awaitingId1, "AwaitingOne", organisationId);
+        PartyEntity awaiting2 = representedDefendant(awaitingId2, "AwaitingTwo", organisationId);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        Stream.of(responded, awaiting1, awaiting2).forEach(defendant ->
+            claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
+                                                  .party(defendant)
+                                                  .role(PartyRole.DEFENDANT)
+                                                  .build()));
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(claimEntity))
+            .build();
+
+        DefendantResponseRepository responseRepo = mock(DefendantResponseRepository.class);
+        when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, respondedId)).thenReturn(true);
+        when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, awaitingId1)).thenReturn(false);
+        when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, awaitingId2)).thenReturn(false);
+
+        LegalRepForDefendantAccessValidator accessValidator =
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+
+        LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
+            pcsCaseService,
+            accessValidator,
+            new LegalRepPartySelectionService(
+                mock(SelectedPartyRetriever.class),
+                responseRepo,
+                mock(DraftCaseDataService.class),
+                mock(PossessionClaimResponseMapper.class),
+                mock(PossessionClaimMerger.class),
+                accessValidator,
+                pcsCaseService),
+            organisationService,
+            tenancyLicenceView,
+            noticeOfPossessionView,
+            rentArrearsView);
+
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+
+        // When
+        PCSCase result = strategy.loadDraft(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getParties())
+            .extracting(party -> party.getValue().getLastName())
+            .containsExactlyInAnyOrder("AwaitingOne", "AwaitingTwo");
+        assertThat(result.getAllLinkedDefendants())
+            .extracting(party -> party.getValue().getLastName())
+            .containsExactlyInAnyOrder("AwaitingOne", "AwaitingTwo");
+    }
+
+    @Test
+    void shouldExposeAllRepresentedDefendantsWhenEveryRepresentedDefendantHasSubmitted() {
+        // Given
+        String organisationId = "ORG-123";
+        UUID respondedId1 = UUID.randomUUID();
+        UUID respondedId2 = UUID.randomUUID();
+
+        PartyEntity responded1 = representedDefendant(respondedId1, "RespondedOne", organisationId);
+        PartyEntity responded2 = representedDefendant(respondedId2, "RespondedTwo", organisationId);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        Stream.of(responded1, responded2).forEach(defendant ->
+            claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
+                                                  .party(defendant)
+                                                  .role(PartyRole.DEFENDANT)
+                                                  .build()));
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(claimEntity))
+            .build();
+
+        DefendantResponseRepository responseRepo = mock(DefendantResponseRepository.class);
+        when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, respondedId1)).thenReturn(true);
+        when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, respondedId2)).thenReturn(true);
+
+        LegalRepForDefendantAccessValidator accessValidator =
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+
+        LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
+            pcsCaseService,
+            accessValidator,
+            new LegalRepPartySelectionService(
+                mock(SelectedPartyRetriever.class),
+                responseRepo,
+                mock(DraftCaseDataService.class),
+                mock(PossessionClaimResponseMapper.class),
+                mock(PossessionClaimMerger.class),
+                accessValidator,
+                pcsCaseService),
+            organisationService,
+            tenancyLicenceView,
+            noticeOfPossessionView,
+            rentArrearsView);
+
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+
+        // When
+        PCSCase result = strategy.loadDraft(CASE_REFERENCE, PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getAllLinkedDefendants())
+            .extracting(party -> party.getValue().getLastName())
+            .containsExactlyInAnyOrder("RespondedOne", "RespondedTwo");
+        assertThat(result.getPossessionClaimResponse().getDefendantResponses().getStatus())
+            .isEqualTo(DefendantResponseStatus.SUBMITTED);
+    }
+
+    private PartyEntity representedDefendant(UUID partyId, String lastName, String organisationId) {
+        PartyEntity defendant = PartyEntity.builder().id(partyId).lastName(lastName).build();
+        defendant.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder()
+                .party(defendant)
+                .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
+                .active(YesOrNo.YES)
+                .build()
+        ));
+        return defendant;
     }
 
     @Test

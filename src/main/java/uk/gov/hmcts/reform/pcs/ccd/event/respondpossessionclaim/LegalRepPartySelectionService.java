@@ -10,10 +10,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -35,6 +38,8 @@ public class LegalRepPartySelectionService {
     private final DraftCaseDataService draftCaseDataService;
     private final PossessionClaimResponseMapper responseMapper;
     private final PossessionClaimMerger possessionClaimMerger;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final PcsCaseService pcsCaseService;
 
     public PCSCase getDraft(PCSCase pcsCase, List<PartyEntity> defendantPartiesLinkedAndActive, long caseReference,
                             String legalRepresentativeOrganisationId) {
@@ -48,6 +53,21 @@ public class LegalRepPartySelectionService {
 
         return getDraftCaseData(caseReference, pcsCase, matchedDefendant, defendantPartiesLinkedAndActive,
                                 legalRepresentativeOrganisationId);
+    }
+
+    public List<PartyEntity> getDefendantsAwaitingResponse(PcsCaseEntity caseEntity, String organisationId) {
+        List<PartyEntity> representedDefendants =
+            legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId);
+        return filterDefendantsAwaitingResponse(caseEntity.getCaseReference(), representedDefendants);
+    }
+
+    public Optional<UUID> getRespondingPartyId(long caseReference, String organisationId) {
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        List<PartyEntity> defendantsAwaitingResponse = getDefendantsAwaitingResponse(caseEntity, organisationId);
+
+        return defendantsAwaitingResponse.size() == 1
+            ? Optional.of(defendantsAwaitingResponse.getFirst().getId())
+            : selectedPartyRetriever.getRequiredPartyId();
     }
 
     public List<PartyEntity> filterDefendantsAwaitingResponse(long caseReference, List<PartyEntity> defendants) {
