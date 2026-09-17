@@ -29,6 +29,10 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.Us
 
 public class ApiSteps {
 
+    private static final String CREATE_CASE_NOT_REPLAYABLE =
+        "Create test case failed before a usable response was read, so it is not known whether the case "
+            + "was created. The endpoint is not idempotent, so the request is deliberately not retried.";
+
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
@@ -185,11 +189,15 @@ public class ApiSteps {
         return createCase(legislativeCountry, true);
     }
 
+    /**
+     * Single-shot on purpose: create-case is not idempotent. The CCD case is created part-way through the
+     * server-side orchestration, so no failure response proves it was not created, and replaying would
+     * create a second case. Add an idempotency key to the endpoint before reintroducing any retry.
+     */
     private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
-        final int maxAttempts = 3;
-
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            var response = SerenityRest.given()
+        Response createCaseResponse;
+        try {
+            createCaseResponse = SerenityRest.given()
                 .baseUri(baseUrl)
                 .contentType(ContentType.JSON)
                 .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
@@ -198,15 +206,35 @@ public class ApiSteps {
                 .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
-            if (response.statusCode() == 201) {
-                return response.then().extract().path("caseId");
-            }
-
-            if (attempt == maxAttempts) {
-                response.then().statusCode(201);
-            }
+        } catch (Exception e) {
+            throw new IllegalStateException(CREATE_CASE_NOT_REPLAYABLE, e);
         }
-        throw new IllegalStateException("Unexpected retry failure");
+
+        int statusCode = createCaseResponse.statusCode();
+        if (statusCode == 201) {
+            return createCaseResponse.then().extract().path("caseId");
+        }
+        if (statusCode <= 0) {
+            // SerenityRest substitutes a stubbed response with status 0 when the request itself failed.
+            throw new IllegalStateException(CREATE_CASE_NOT_REPLAYABLE);
+        }
+
+        throw new AssertionError(
+            "Create test case for " + legislativeCountry + " returned HTTP " + statusCode
+                + " - " + summarise(createCaseResponse)
+        );
+    }
+
+    private static String summarise(Response response) {
+        try {
+            String body = response.getBody().asString();
+            if (body == null || body.isBlank()) {
+                return "<empty body>";
+            }
+            return body.length() > 500 ? body.substring(0, 500) + "..." : body;
+        } catch (Exception e) {
+            return "<unreadable body: " + e + ">";
+        }
     }
 
     @Step("a pin is fetched")

@@ -63,7 +63,10 @@ public class FeePaymentCallbackTests extends BaseApi {
         List<Map<String,Object>> paymentRefs =  apiSteps.getFeePaymentDetailsForCaseReference(caseReference);
         assertNotNull(paymentRefs, "Payment references should not be null");
         assertFalse(paymentRefs.isEmpty(), "Payment references should not be empty");
-        return paymentRefs.getFirst();
+        Map<String,Object> firstPaymentRef = paymentRefs.getFirst();
+        assertNotNull(firstPaymentRef, "First payment reference should not be null - "
+            + "a null here means an earlier step failed and Serenity substituted a mock");
+        return firstPaymentRef;
     }
 
     @Title("Fee Payment callback return 404 for invalid requestReference")
