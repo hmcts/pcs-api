@@ -35,7 +35,7 @@ export class CaseLinking implements IAction {
       await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
       await performAction('check', { question: caseData.question, option: caseData.option });
       await performAction('clickButton', caseData.proposeButton);
-      console.log(`selected Case ${i}: ${caseRefs[i]}`);
+      console.log(`selected Case ${i}: ${caseRefs[i]} to link`);
     }
     await performAction('clickButton', selectCasesToLink.saveAndContinueButton);
 
@@ -44,7 +44,7 @@ export class CaseLinking implements IAction {
   private async selectCasesToUnLink(caseData: actionRecord, page: Page) {
     const caseRefs = String(caseNumbers).split(',');
     for (let i = 0; i < (caseRefs.length - 3); i++) {
-      console.log(`UNselected Case ${i}: ${caseRefs[i]}`);
+      console.log(`Deselected Case ${i}: ${caseRefs[i]} to unlink`);
       const selectBox = page.locator(
         `input[type="checkbox"][value="${caseRefs[i]}"]`
       );
@@ -58,7 +58,7 @@ export class CaseLinking implements IAction {
     await page.locator('div[role="tab"]:has-text("Linked cases")').click();
     for (let i = 2; i < (caseRefs.length - 1); i++) {
       await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toBeVisible();
-      console.log(`Found Linked Case ${i}: ${caseRefs[i]}`);
+      console.log(`Found Case ${i}: ${caseRefs[i]} under linked section`);
     }
     for (let i = 0; i < (caseRefs.length - 3); i++) {
       await expect(page.locator(`a[href*="${caseRefs[i]}"]`).first()).toHaveCount(0);
@@ -120,8 +120,6 @@ export class CaseLinking implements IAction {
       await performValidation('mainHeader', beforeYouStart.mainHeader);
       await performAction('clickButton', beforeYouStart.saveAndContinueButton);
       await performValidation('mainHeader', selectCasesToUnLink.mainHeader);
-      console.log('canManageCases');
-      console.log(caseNumbers);
       await performAction('selectCasesToUnLink', { caseRefInput: caseNumbers });
       await performValidation('mainHeader', checkYourAnswersCaseLinking.mainHeader);
       await performAction('clickButton', checkYourAnswersCaseLinking.saveAndContinueButton);
@@ -165,8 +163,6 @@ export class CaseLinking implements IAction {
         throw new Error('CASE_NUMBER not set');
       }
       caseNumbers.push(caseNumber);
-      // 🔹 log each case number immediately
-      console.log(`Created Case ${i + 1}: ${caseNumber}`);
     }
   }
 }
