@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -46,11 +47,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 
 @ExtendWith(MockitoExtension.class)
 class RespondToPossessionDraftSavePageTest extends BasePageTest {
@@ -103,7 +106,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getErrors()).isNull();
 
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -136,7 +139,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
     }
 
@@ -163,7 +166,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails().getParty()).isNull();
@@ -199,7 +202,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         Party savedParty = savedDraft.getPossessionClaimResponse().getDefendantContactDetails().getParty();
@@ -231,7 +234,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         DefendantResponses savedResponses = savedDraft.getPossessionClaimResponse().getDefendantResponses();
@@ -289,7 +292,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         Party savedParty = savedDraft.getPossessionClaimResponse().getDefendantContactDetails().getParty();
@@ -324,7 +327,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails().getParty()).isNull();
@@ -347,7 +350,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails()).isNull();
@@ -389,7 +392,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
@@ -454,7 +457,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         //Then
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+            eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), isNull()
         );
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantFlags()).isEqualTo(defendantFlags);
@@ -474,7 +477,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
 
         doThrow(new RuntimeException("DB connection failed"))
             .when(draftCaseDataService)
-            .saveUnsubmittedEventData(anyLong(), any(), any());
+            .saveUnsubmittedEventData(anyLong(), any(), any(), any());
 
         //When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -506,7 +509,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
         assertThat(response.getErrors()).isNull();
         verify(draftCaseDataService).saveUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim), eq(representedPartyId),
-            eq(organisationId)
+            eq(organisationId), isNull()
         );
     }
 
@@ -536,5 +539,40 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .build();
 
     }
-}
 
+    @Test
+    void shouldBindStatementOfTruthSaveToReviewedDraftVersion() {
+        // Given - the review page posted the version it rendered (HDPI-8866 W05)
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(DefendantResponses.builder().build())
+                                             .draftVersion(4L)
+                                             .build());
+        when(draftCaseDataService.saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), any(), eq(respondPossessionClaim), eq(4L))).thenReturn(5L);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then - the expected version is checked and the post-save version echoed back for the submit
+        assertThat(response.getErrors()).isNull();
+        assertThat(response.getData().getPossessionClaimResponse().getDraftVersion()).isEqualTo(5L);
+    }
+
+    @Test
+    void shouldRejectStatementOfTruthSaveWhenDraftChangedSinceReview() {
+        // Given
+        PCSCase caseData = buildCaseData(PossessionClaimResponse.builder()
+                                             .defendantResponses(DefendantResponses.builder().build())
+                                             .draftVersion(4L)
+                                             .build());
+        when(draftCaseDataService.saveUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), any(), eq(respondPossessionClaim), eq(4L)))
+            .thenThrow(new DraftVersionConflictException(TEST_CASE_REFERENCE, 4L, 6L));
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then - nothing saved, distinct error the UI can act on
+        assertThat(response.getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
+    }
+}

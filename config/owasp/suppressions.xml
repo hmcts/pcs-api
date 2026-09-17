@@ -31,17 +31,14 @@
   </suppress>
   <suppress until="2026-10-15">
     <notes><![CDATA[
-    CVE-2026-54285 concerns the Javascript OpenTelemetry client. Re-review by the until date.
+    CPE mismatch: PCS uses only the Java OTel client;
+    these CVEs target the JS/Go clients which are absent from this codebase
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
-    <cve>CVE-2026-54285</cve>
-  </suppress>
-  <suppress until="2026-10-15">
-    <notes><![CDATA[
-    CVE-2026-41178 concerns the Go OpenTelemetry client. Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.semconv/opentelemetry-semconv@.*$</packageUrl>
+    <cve>CVE-2026-39882</cve>
+    <cve>CVE-2026-39883</cve>
     <cve>CVE-2026-41178</cve>
+    <cve>CVE-2026-54285</cve>
   </suppress>
   <!--End of false positives section -->
 
@@ -49,61 +46,12 @@
     <notes><![CDATA[
     HDPI-8150: temporary. CVE-2026-53914 against kotlin-stdlib; no fixed release
     published upstream yet. Remove when a patched kotlin-stdlib is available.
+    The risk vector (build-cache deserialization) is irrelevant to PCS's runtime —
+    PCS ships kotlin-stdlib as a transitive runtime jar but does not run the Kotlin compiler or
+    consume Kotlin build-cache metadata in production
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
-  </suppress>
-  <suppress until="2026-10-15">
-    <notes><![CDATA[
-    HDPI-8150: temporary. jackson-databind 2.17.x still arrives transitively.
-    Remove once every consumer resolves to a patched 2.21.x.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.17(\..*)?$</packageUrl>
-    <cve>CVE-2026-54512</cve>
-    <cve>CVE-2026-54513</cve>
-    <cve>CVE-2026-54514</cve>
-    <cve>CVE-2026-54515</cve>
-  </suppress>
-  <suppress until="2026-10-15">
-    <notes><![CDATA[
-    HDPI-8150: CVEs against opentelemetry-api/context 1.49.0 and opentelemetry-semconv 1.41.1.
-    These now only resolve on the cftlibIDE* configurations, which are not shipped.
-    Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\.semconv)?/opentelemetry\-.*$</packageUrl>
-    <cve>CVE-2026-54285</cve>
-    <cve>CVE-2026-39882</cve>
-    <cve>CVE-2026-39883</cve>
-    <cve>CVE-2026-41178</cve>
-  </suppress>
-  <suppress until="2026-10-15">
-    <notes><![CDATA[
-    HDPI-8150: CVE-2026-66299 against embedded Tomcat 11.0.25. No fixed
-    Tomcat release published yet; suppression is temporary and MUST be
-    removed when tomcatEmbedVersion is bumped to the fixed version.
-    Still no fixed 11.0.x release. Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-.*$</packageUrl>
-    <cve>CVE-2026-66299</cve>
-    <cve>CVE-2026-65637</cve>
-    <cve>CVE-2026-65905</cve>
-    <cve>CVE-2026-65182</cve>
-    <cve>CVE-2026-68525</cve>
-    <cve>CVE-2026-65183</cve>
-    <cve>CVE-2026-66422</cve>
-    <cve>CVE-2026-68569</cve>
-    <cve>CVE-2026-65927</cve>
-    <cve>CVE-2026-68763</cve>
-    <cve>CVE-2026-73180</cve>
-  </suppress>
-  <suppress until="2026-10-15">
-    <notes><![CDATA[
-    CVE-2026-39883/39882 concern the OpenTelemetry Collector and the Javascript
-    client. Re-review by the until date.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.opentelemetry(\..*)?/.*@.*$</packageUrl>
-    <cve>CVE-2026-39883</cve>
-    <cve>CVE-2026-39882</cve>
   </suppress>
   <suppress until="2026-09-30">
     <notes><![CDATA[
@@ -253,6 +201,8 @@
     <notes><![CDATA[
     HDPI-8772: temporary. CVE-2026-47834 against spring-data-jpa 3.5.13; no fixed 3.5.x
     release published yet. Remove when the Boot BOM brings a patched version.
+    CVE-2026-47834 is not currently reachable in PCS — there's no code path that
+    binds a Spring Data Sort/Pageable object from user-controlled input.
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring\-data\-jpa@.*$</packageUrl>
     <cve>CVE-2026-47834</cve>
