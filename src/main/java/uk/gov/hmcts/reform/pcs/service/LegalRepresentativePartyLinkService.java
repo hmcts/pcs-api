@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.exception.LegalRepresentativeAlreadyLinkedToParty
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
 import java.time.Clock;
@@ -35,7 +35,7 @@ public class LegalRepresentativePartyLinkService {
     private final PcsCaseService pcsCaseService;
     private final OrganisationRepository organisationRepository;
     private final ClaimPartyContactDetailsRepository legalRepOrganisationContactDetailsRepository;
-    private final OrganisationDetailsService organisationDetailsService;
+    private final OrganisationService organisationService;
     private final AddressMapper addressMapper;
     private final RevokeAccessHelper revokeAccessHelper;
     private final NotificationService notificationService;
@@ -46,7 +46,7 @@ public class LegalRepresentativePartyLinkService {
                                                    organisationRepository,
                                                ClaimPartyContactDetailsRepository
                                                    legalRepOrganisationContactDetailsRepository,
-                                               OrganisationDetailsService organisationDetailsService,
+                                               OrganisationService organisationService,
                                                AddressMapper addressMapper,
                                                RevokeAccessHelper revokeAccessHelper,
                                                NotificationService notificationService,
@@ -54,7 +54,7 @@ public class LegalRepresentativePartyLinkService {
         this.pcsCaseService = pcsCaseService;
         this.organisationRepository = organisationRepository;
         this.legalRepOrganisationContactDetailsRepository = legalRepOrganisationContactDetailsRepository;
-        this.organisationDetailsService = organisationDetailsService;
+        this.organisationService = organisationService;
         this.addressMapper = addressMapper;
         this.revokeAccessHelper = revokeAccessHelper;
         this.notificationService = notificationService;
@@ -196,7 +196,7 @@ public class LegalRepresentativePartyLinkService {
                 .organisation(legalRepresentativeOrganisation)
                 .emailAddress(legalRepEmail)
                 .address(addressMapper.toAddressEntityAndNormalise(
-                    organisationDetailsService.getOrganisationAddress(orgDetails)))
+                    organisationService.getOrganisationAddress(orgDetails)))
                 .build();
     }
 }

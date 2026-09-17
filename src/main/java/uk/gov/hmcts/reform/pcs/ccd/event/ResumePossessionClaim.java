@@ -104,7 +104,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         OrganisationDetailsResponse orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
-        String organisationName = organisationService.getOrganisationName(orgDetails);
+        String organisationName = orgDetails != null ? orgDetails.getName() : null;
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
