@@ -686,7 +686,7 @@ dockerCompose.isRequiredBy cftlibTest
 
 def cleanUpContainers = System.getenv("CI") != null
 def composeFiles = ['docker-compose-wiremock.yml']
-if (System.getenv("WA_TESTS_ENABLED") == "true") {
+if (System.getenv("WA_FUNCTIONAL_TESTS_ENABLED") == "true") {
   composeFiles.add('docker-compose-wa.yml')
 }
 

@@ -62,7 +62,7 @@ public class NewClaimCreateNewHearingTaskTest extends CftlibTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "WA_TESTS_ENABLED", matches = "true")
+    @EnabledIfEnvironmentVariable(named = "WA_FUNCTIONAL_TESTS_ENABLED", matches = "true")
     void createNewClaimCreateNewHearingTask() {
 
         long caseReference = caseCreationService.createMinimalCase(solicitorToken, LanguageUsed.ENGLISH);
