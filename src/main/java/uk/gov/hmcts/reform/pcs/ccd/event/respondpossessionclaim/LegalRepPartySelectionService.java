@@ -50,6 +50,13 @@ public class LegalRepPartySelectionService {
                                 legalRepresentativeOrganisationId);
     }
 
+    public List<PartyEntity> filterDefendantsAwaitingResponse(long caseReference, List<PartyEntity> defendants) {
+        return defendants.stream()
+            .filter(defendant -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                caseReference, defendant.getId()))
+            .toList();
+    }
+
     public boolean hasSubmittedResponseForCurrentlySelectedParty(long caseReference) {
         Optional<UUID> selectedPartyId = selectedPartyRetriever.getRequiredPartyId();
         if (selectedPartyId.isEmpty()) {
