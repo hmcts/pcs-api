@@ -9,7 +9,9 @@ import java.util.UUID;
 
 public interface PcsCaseRepository extends JpaRepository<PcsCaseEntity, UUID> {
 
-    @EntityGraph(attributePaths = {"propertyAddress", "parties", "parties.address"})
+    // tenancyLicence is the non-owning side of a @OneToOne, so Hibernate loads it regardless;
+    // fetching it here folds that into the main query instead of a separate select.
+    @EntityGraph(attributePaths = {"propertyAddress", "parties", "parties.address", "tenancyLicence"})
     Optional<PcsCaseEntity> findByCaseReference(long caseReference);
 
 }
