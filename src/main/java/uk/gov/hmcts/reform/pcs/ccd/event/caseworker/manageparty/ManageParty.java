@@ -53,6 +53,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(manageParties.name(), submitEventHandler, startEventHandler)
             .forStates(ManagePartyStates.ALLOWED_STATES)
+            .nonConcurrent()
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
