@@ -53,6 +53,7 @@ java:
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
     PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
+    MANAGE_CASE_BASE_URL: ${MANAGE_CASE_BASE_URL}
     # Work allocation should only be called in Preview when dedicated pods are included via the pr-values:wa label.
     # Otherwise, the requests are sent to WA AAT, which attempts to fetch the case data from CCD AAT where it
     # cannot be found. This leads to the task initiation failing and being retried multiple times.
