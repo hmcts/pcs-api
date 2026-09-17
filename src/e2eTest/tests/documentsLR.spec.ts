@@ -85,7 +85,7 @@ test.afterEach(async () => {
 
 });
  /* The skipped tests will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755 */
-test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
+test.describe('Legal Representative - Upload Documents- e2e Journey', async () => {
 
   test.skip('Upload documents when GenApps submitted - Multi def', {
     annotation: {
@@ -116,7 +116,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performAction('readDocumentsSubmit');
   });
 
-  test('Upload documents when GenApps submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps submitted - Single def @regression @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
@@ -216,7 +216,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
   });
 
-  test('Upload documents when GenApps not submitted - Single def @regression', async () => {
+  test('Upload documents when GenApps not submitted - Single def @regression @nightly', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.uploadAdditionalDocuments);
     await performAction('clickButton', caseSummary.go);
     await performAction('uploadAdditionalDocumentsInfo');
