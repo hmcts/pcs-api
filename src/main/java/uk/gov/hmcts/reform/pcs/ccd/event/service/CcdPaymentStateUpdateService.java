@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,8 +9,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 
@@ -24,7 +23,6 @@ public class CcdPaymentStateUpdateService {
     private final IdamTokenProvider systemUpdateUserTokenProvider;
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
-    private final ObjectMapper objectMapper;
 
     public CaseResource submitPaymentSuccess(long caseId) {
         String serviceAuthorization = authTokenGenerator.generate();
@@ -35,16 +33,13 @@ public class CcdPaymentStateUpdateService {
                                                                            claimIssuePayment.name());
         CaseDataContent submitContent = CaseDataContent.builder()
             .event(Event.builder().id(claimIssuePayment.name()).build())
-            .eventToken(startEventResponse.getToken()).data(toJsonNode(PCSCase.builder().build())).build();
+            .eventToken(startEventResponse.getToken())
+            .data(Map.of())
+            .build();
         CaseResource caseResource = coreCaseDataApi.createEvent(idamToken, serviceAuthorization,
                                                                 String.valueOf(caseId), submitContent);
         log.debug("CaseResource response : {}", caseResource);
         return caseResource;
-    }
-
-
-    private JsonNode toJsonNode(PCSCase pcsCase) {
-        return objectMapper.valueToTree(pcsCase);
     }
 
 }

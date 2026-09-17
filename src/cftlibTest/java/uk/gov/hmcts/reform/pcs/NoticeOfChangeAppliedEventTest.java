@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -113,7 +114,11 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
             .containsEntry("user_id", ACTING_SOLICITOR_ID)
             .containsEntry("proxied_by", SYSTEM_USER_ID);
 
-        JsonNode snapshot = objectMapper.readTree((String) event.get("data"));
+        Map<String, Object> snapshot = objectMapper.readValue(
+            (String) event.get("data"),
+            new TypeReference<>() {
+            }
+        );
         assertThat(hasExpectedAccessGroup(snapshot)).isTrue();
         assertThat(countActiveOrganisationLinks(defendantId)).isEqualTo(1);
 
@@ -202,23 +207,37 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         );
     }
 
-    // Read straight to JsonNode - reading a String trips HTTPCLIENT-2409 on the ES response
-    private JsonNode indexedCase(long caseDataId) {
-        JsonNode response = RestClient.create("http://localhost:9200")
+    private Map<String, Object> indexedCase(long caseDataId) {
+        Map<String, Object> response = RestClient.create("http://localhost:9200")
             .get()
             .uri("/pcs_cases/_doc/{caseDataId}", caseDataId)
             .retrieve()
-            .body(JsonNode.class);
-        return response.path("_source");
+            .body(new ParameterizedTypeReference<>() {
+            });
+        return mapValue(response, "_source");
     }
 
-    private boolean hasExpectedAccessGroup(JsonNode caseData) {
-        JsonNode data = caseData.has("data") ? caseData.path("data") : caseData;
-        for (JsonNode group : data.path("CaseAccessGroups")) {
-            if (EXPECTED_ACCESS_GROUP.equals(group.path("value").path("caseAccessGroupId").asText())) {
+    private boolean hasExpectedAccessGroup(Map<String, Object> caseData) {
+        Map<String, Object> data = caseData.containsKey("data") ? mapValue(caseData, "data") : caseData;
+        Object groups = data.get("CaseAccessGroups");
+        if (!(groups instanceof List<?> groupList)) {
+            return false;
+        }
+
+        for (Object group : groupList) {
+            if (EXPECTED_ACCESS_GROUP.equals(mapValue(mapValue(group), "value").get("caseAccessGroupId"))) {
                 return true;
             }
         }
         return false;
+    }
+
+    private Map<String, Object> mapValue(Map<String, Object> source, String key) {
+        return mapValue(source == null ? null : source.get(key));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> mapValue(Object value) {
+        return value instanceof Map<?, ?> ? (Map<String, Object>) value : Map.of();
     }
 }

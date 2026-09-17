@@ -3,8 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -100,6 +102,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
  */
 @Builder(toBuilder = true)
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PCSCase {
 
     // Field label constants - shared between domain annotations and validation
@@ -190,7 +194,7 @@ public class PCSCase {
         access = {CaseLinkingAccess.class},
         label = "Component Launcher (for displaying Linked Cases data)"
     )
-    @JsonProperty("LinkedCasesComponentLauncher")
+    @JsonProperty(value = "LinkedCasesComponentLauncher", access = JsonProperty.Access.WRITE_ONLY)
     private ComponentLauncher linkedCasesComponentLauncher;
 
     @CCD(

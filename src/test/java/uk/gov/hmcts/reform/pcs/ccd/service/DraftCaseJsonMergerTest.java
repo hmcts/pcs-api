@@ -96,6 +96,7 @@ class DraftCaseJsonMergerTest {
                             "casePartiesTab",
                             "caseDetailsTab",
                             "summaryTab",
+                            "linkedCasesComponentLauncher",
                             "defendantPaperResponse")
             .isEqualTo(existingCaseData);
 
