@@ -53,6 +53,12 @@ java:
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
     PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
+    # Work allocation should only be called in Preview when dedicated pods are included via the pr-values:wa label.
+    # Otherwise, the requests are sent to WA AAT, which attempts to fetch the case data from CCD AAT where it
+    # cannot be found. This leads to the task initiation failing and being retried multiple times.
+    # The sending of WA requests is controlled by a feature flag as well, but the API url is overridden here as
+    # a safety mechanism in case the feature flag config is incorrect for a preview environment.
+    WA_WORKFLOW_API: http://localhost/should-not-be-called
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
