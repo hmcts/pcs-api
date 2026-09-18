@@ -220,7 +220,7 @@ public class DefendantResponseService {
 
         // The defence form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
-        if (JourneyType.CITIZEN.equals(journeyType)) {
+        if (generatesDefenceForm(journeyType)) {
             documents.add(DocumentEntity.builder()
                 .fileName(expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse)))
                 .build());

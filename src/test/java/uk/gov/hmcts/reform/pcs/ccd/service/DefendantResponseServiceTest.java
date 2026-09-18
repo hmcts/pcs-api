@@ -1278,7 +1278,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldCreateTranslateTaskWithoutGeneratedDefenceDocumentOnLegalRepPath() {
+    void shouldCreateTranslateTaskWithGeneratedDefenceDocumentOnLegalRepPath() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1317,7 +1317,7 @@ class DefendantResponseServiceTest {
             eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("evidence.pdf");
+            .containsExactly("Defence - Defendant 1", "evidence.pdf");
     }
 
     @Test

@@ -82,7 +82,7 @@ public class TranslationWAService {
                 // The claim form belongs to whichever claimant created the claim
                 List<DocumentEntity> documents = new ArrayList<>();
                 if (party.isClaimCreator()) {
-                    documents.add(resolveGeneratedClaimForm(mainClaim));
+                    documents.add(resolveGeneratedClaimForm());
                 }
                 documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
 
@@ -121,7 +121,7 @@ public class TranslationWAService {
         }
     }
 
-    private DocumentEntity resolveGeneratedClaimForm(ClaimEntity mainClaim) {
+    private DocumentEntity resolveGeneratedClaimForm() {
         return DocumentEntity.builder().fileName(expectedClaimFormFilename()).build();
     }
 
