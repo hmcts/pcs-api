@@ -244,7 +244,6 @@ class TaskDescriptionServiceTest {
         @Test
         void shouldRenderTaskDescription() throws IOException {
             // Given
-            ClaimEntity mainClaim = mock(ClaimEntity.class);
             PartyEntity partyEntity = mock(PartyEntity.class);
 
             UUID partyId = UUID.randomUUID();
@@ -282,7 +281,6 @@ class TaskDescriptionServiceTest {
         @Test
         void shouldThrowExceptionWhenUnableToRenderTemplate() throws IOException {
             // Given
-            ClaimEntity mainClaim = mock(ClaimEntity.class);
             PartyEntity partyEntity = mock(PartyEntity.class);
             UUID partyId = UUID.randomUUID();
             when(partyEntity.getId()).thenReturn(partyId);
