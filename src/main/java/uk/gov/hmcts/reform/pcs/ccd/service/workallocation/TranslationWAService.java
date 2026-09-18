@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class TranslationWAService {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final PartyService partyService;
-    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final DocumentNameService documentNameService;
 
     public void createTranslateDefendantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
                                                       List<DocumentEntity> documents) {
@@ -151,7 +151,7 @@ public class TranslationWAService {
         return pcsCaseEntity.getGenApps().stream()
             .filter(genApp -> genApp.getParty() != null && genApp.getParty().getId().equals(party.getId()))
             .map(genApp -> DocumentEntity.builder()
-                .fileName(genAppDocumentGenerator.expectedGenAppFilename(genApp, mainClaim))
+                .fileName(documentNameService.expectedGenAppFilename(genApp, mainClaim))
                 .build())
             .toList();
     }

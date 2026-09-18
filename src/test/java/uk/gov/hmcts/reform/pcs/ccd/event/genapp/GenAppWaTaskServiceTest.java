@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -51,7 +51,7 @@ class GenAppWaTaskServiceTest {
     @Mock
     private TranslationWAService translationWAService;
     @Mock
-    private GenAppDocumentGenerator genAppDocumentGenerator;
+    private DocumentNameService documentNameService;
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
@@ -61,7 +61,7 @@ class GenAppWaTaskServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new GenAppWaTaskService(taskDescriptionService, camundaService, partyService,
-                                            translationWAService, genAppDocumentGenerator);
+                                            translationWAService, documentNameService);
     }
 
     @ParameterizedTest
@@ -113,7 +113,7 @@ class GenAppWaTaskServiceTest {
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
-        when(genAppDocumentGenerator.expectedGenAppFilename(genAppEntity, mainClaim))
+        when(documentNameService.expectedGenAppFilename(genAppEntity, mainClaim))
             .thenReturn("General Application GA1 - Defendant 1");
 
         // When
@@ -186,7 +186,7 @@ class GenAppWaTaskServiceTest {
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
-        when(genAppDocumentGenerator.expectedGenAppFilename(genAppEntity, mainClaim))
+        when(documentNameService.expectedGenAppFilename(genAppEntity, mainClaim))
             .thenReturn("General Application GA1 - Claimant 1");
 
         // When

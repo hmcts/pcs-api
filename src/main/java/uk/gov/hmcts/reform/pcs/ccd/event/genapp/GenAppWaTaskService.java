@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -26,7 +26,7 @@ public class GenAppWaTaskService {
     private final CamundaService camundaService;
     private final PartyService partyService;
     private final TranslationWAService translationWAService;
-    private final GenAppDocumentGenerator genAppDocumentGenerator;
+    private final DocumentNameService documentNameService;
 
     public void createReviewGenAppTask(long caseReference, GenAppEntity genAppEntity) {
         String description = taskDescriptionService
@@ -59,7 +59,7 @@ public class GenAppWaTaskService {
         // The gen app form will be scheduled for generation so it's referenced by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(genAppDocumentGenerator.expectedGenAppFilename(genAppEntity, mainClaim))
+            .fileName(documentNameService.expectedGenAppFilename(genAppEntity, mainClaim))
             .build());
 
         documents.addAll(genAppEntity.getDocuments().stream()

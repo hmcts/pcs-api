@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.HashSet;
@@ -49,7 +49,7 @@ class TranslationWAServiceTest {
     @Mock
     private PartyService partyService;
     @Mock
-    private GenAppDocumentGenerator genAppDocumentGenerator;
+    private DocumentNameService documentNameService;
 
     @Captor
     private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
@@ -372,7 +372,7 @@ class TranslationWAServiceTest {
         pcsCaseEntity.setDocuments(List.of(genAppSubmissionDocument, evidenceDocument));
 
         when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
-        when(genAppDocumentGenerator.expectedGenAppFilename(otherDefendantGenApp, mainClaim))
+        when(documentNameService.expectedGenAppFilename(otherDefendantGenApp, mainClaim))
             .thenReturn("General Application GA1 - Defendant 1");
 
         String expectedDescription = "Defendant 1 has uploaded the following documents";
@@ -412,9 +412,9 @@ class TranslationWAServiceTest {
         pcsCaseEntity.setGenApps(new HashSet<>(List.of(firstGenApp, secondGenApp)));
 
         when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
-        when(genAppDocumentGenerator.expectedGenAppFilename(firstGenApp, mainClaim))
+        when(documentNameService.expectedGenAppFilename(firstGenApp, mainClaim))
             .thenReturn("General Application GA1 - Defendant 1");
-        when(genAppDocumentGenerator.expectedGenAppFilename(secondGenApp, mainClaim))
+        when(documentNameService.expectedGenAppFilename(secondGenApp, mainClaim))
             .thenReturn("General Application GA2 - Defendant 1");
 
         String expectedDescription = "Defendant 1 has uploaded the following documents";
