@@ -16,8 +16,13 @@ import java.util.UUID;
 public class DocumentNameService {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("ddMMyyyy");
+    private static final String GEN_APP_FILENAME_PREFIX = "General Application";
 
     private final PartyService partyService;
+
+    public String expectedGenAppFilename(GenAppEntity genAppEntity, ClaimEntity mainClaim) {
+        return appendGenAppPostfix(GEN_APP_FILENAME_PREFIX, genAppEntity, mainClaim, genAppEntity.getParty().getId());
+    }
 
     public String appendGenAppPostfix(String originalFilename,
                                       GenAppEntity genAppEntity,

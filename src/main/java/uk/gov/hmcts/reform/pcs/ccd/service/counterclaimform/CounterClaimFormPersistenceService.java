@@ -84,7 +84,7 @@ public class CounterClaimFormPersistenceService {
                 "No counter claim found for id: " + counterClaimId));
     }
 
-    private static int defendantNumber(CounterClaimEntity counterClaim) {
+    public static int defendantNumber(CounterClaimEntity counterClaim) {
         UUID defendantPartyId = counterClaim.getParty().getId();
         return counterClaim.getPcsCase().getClaims().stream()
             .flatMap(claim -> claim.getClaimParties().stream())

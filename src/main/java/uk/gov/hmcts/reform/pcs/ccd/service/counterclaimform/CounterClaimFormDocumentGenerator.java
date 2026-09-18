@@ -20,11 +20,15 @@ public class CounterClaimFormDocumentGenerator {
             payload,
             getTemplateId(payload),
             OutputType.PDF,
-            OUTPUT_FILENAME_PREFIX + defendantNumber
+            expectedCounterClaimFormFilename(defendantNumber)
         );
     }
 
     private static String getTemplateId(CounterClaimFormPayload payload) {
         return payload.isCompletedByLegalRepresentative() ? LR_TEMPLATE_ID : LIP_TEMPLATE_ID;
+    }
+
+    public static String expectedCounterClaimFormFilename(int defendantNumber) {
+        return OUTPUT_FILENAME_PREFIX + defendantNumber;
     }
 }

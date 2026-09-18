@@ -77,7 +77,7 @@ public class DefenceFormPersistenceService {
                 "No defendant response found for id: " + defendantResponseId));
     }
 
-    private static int defendantNumber(DefendantResponseEntity response) {
+    public static int defendantNumber(DefendantResponseEntity response) {
         ClaimEntity claim = response.getClaim();
         UUID defendantPartyId = response.getParty().getId();
         return claim.getClaimParties().stream()

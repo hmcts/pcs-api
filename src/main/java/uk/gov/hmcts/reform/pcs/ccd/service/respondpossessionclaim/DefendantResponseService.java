@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PartyAttributeAssertationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormPersistenceService;
 import uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -30,11 +30,13 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.expectedDefenceFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
 /**
@@ -189,16 +191,15 @@ public class DefendantResponseService {
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
-        if (!CollectionUtils.isEmpty(responses.getDefendantDocuments())) {
-            List<DocumentEntity> savedDocuments = documentService.createDefendantUploadedDocuments(
-                responses.getDefendantDocuments(),
-                savedResponse,
-                claimRef.getPcsCase(),
-                defendantParty
-            );
+        List<DocumentEntity> uploadedDocuments = documentService.createDefendantUploadedDocuments(
+            responses.getDefendantDocuments(),
+            savedResponse,
+            claimRef.getPcsCase(),
+            defendantParty
+        );
 
-            createTranslationTaskForResponse(savedResponse, savedDocuments, defendantParty, claimRef.getPcsCase());
-        }
+        createTranslationTaskForResponse(
+            savedResponse, uploadedDocuments, defendantParty, claimRef.getPcsCase(), journeyType);
 
         partyAttributeAssertationService.buildPartyAttributeEntities(possessionClaimResponse, defendantParty);
 
@@ -210,15 +211,24 @@ public class DefendantResponseService {
     private void createTranslationTaskForResponse(DefendantResponseEntity savedResponse,
                                                    List<DocumentEntity> responseDocuments,
                                                    PartyEntity defendantParty,
-                                                   PcsCaseEntity pcsCaseEntity) {
+                                                   PcsCaseEntity pcsCaseEntity,
+                                                   JourneyType journeyType) {
 
         if (!translationWAService.isTranslationRequired(savedResponse.getLanguageUsed())) {
             return;
         }
 
-        List<DocumentEntity> documents = responseDocuments.stream()
+        // The defence form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
+        if (generatesDefenceForm(journeyType)) {
+            documents.add(DocumentEntity.builder()
+                .fileName(expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse)))
+                .build());
+        }
+
+        documents.addAll(responseDocuments.stream()
             .filter(document -> !document.isRemoved())
-            .toList();
+            .toList());
 
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
