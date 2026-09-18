@@ -18,9 +18,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemoveP
 public class RemovePartyDetailsPage implements CcdPageConfiguration {
 
     private static final String CANNOT_REMOVE_PARTY_GUIDANCE = """
-        <p class="govuk-body govuk-!-font-size-19 govuk-!-font-weight-bold govuk-!-margin-bottom-1">
-        You cannot remove this party
-        </p>
         <p class="govuk-body govuk-!-font-size-19">
         You must return to the previous screen and select a different party to continue
         </p>

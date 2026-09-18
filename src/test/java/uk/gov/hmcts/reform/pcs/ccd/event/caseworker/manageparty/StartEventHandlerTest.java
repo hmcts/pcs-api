@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.LAST_PARTY_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 class StartEventHandlerTest {
@@ -141,6 +142,109 @@ class StartEventHandlerTest {
         assertThat(result.getRemovePartyDetails().getPartyToRemove().getListItems())
             .extracting(DynamicListElement::getLabel)
             .containsExactly("Danny Defendant - Defendant 1", "Daisy Defendant - Defendant 2");
+    }
+
+    @Test
+    void shouldShowReasonAboveUnremovableClaimantWhenDefendantsCanBeSelected() {
+        // Given
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity firstDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity secondDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        ClaimPartyEntity claimantClaimParty = claimParty(claimant, PartyRole.CLAIMANT);
+        ClaimPartyEntity firstDefendantClaimParty = claimParty(firstDefendant, PartyRole.DEFENDANT);
+        ClaimPartyEntity secondDefendantClaimParty = claimParty(secondDefendant, PartyRole.DEFENDANT);
+        List<ClaimPartyEntity> activeClaimantsAndDefendants = List.of(
+            claimantClaimParty, firstDefendantClaimParty, secondDefendantClaimParty);
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(activeClaimantsAndDefendants).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(partyService.isActive(claimant)).thenReturn(true);
+        when(partyService.isActive(firstDefendant)).thenReturn(true);
+        when(partyService.isActive(secondDefendant)).thenReturn(true);
+        when(removePartyService.getActiveClaimantsAndDefendants(mainClaim))
+            .thenReturn(activeClaimantsAndDefendants);
+        when(removePartyService.canSelectForRemoval(claimantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(false);
+        when(removePartyService.canSelectForRemoval(firstDefendantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(true);
+        when(removePartyService.canSelectForRemoval(secondDefendantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(true);
+        when(partyService.getPartyName(claimant)).thenReturn("Jane Claimant");
+        when(partyService.getPartyName(firstDefendant)).thenReturn("Danny Defendant");
+        when(partyService.getPartyName(secondDefendant)).thenReturn("Daisy Defendant");
+        when(partyService.getPartyLabel(mainClaim, claimant.getId())).thenReturn("Claimant 1");
+        when(partyService.getPartyLabel(mainClaim, firstDefendant.getId())).thenReturn("Defendant 1");
+        when(partyService.getPartyLabel(mainClaim, secondDefendant.getId())).thenReturn("Defendant 2");
+
+        // When
+        PCSCase result = underTest.start(new EventPayload<>(TEST_CASE_REFERENCE, PCSCase.builder().build(), null));
+
+        // Then
+        assertThat(result.getRemovePartyDetails().getPartyToRemove().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly("Danny Defendant - Defendant 1", "Daisy Defendant - Defendant 2");
+        assertThat(result.getRemovePartyDetails().getUnremovablePartyList()).isEqualTo("""
+            %s
+
+            Jane Claimant - Claimant 1
+            """.formatted(LAST_PARTY_ERROR));
+    }
+
+    @Test
+    void shouldShowReasonAboveUnremovableDefendantWhenClaimantsCanBeSelected() {
+        // Given
+        PartyEntity firstClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity secondClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        ClaimPartyEntity firstClaimantClaimParty = claimParty(firstClaimant, PartyRole.CLAIMANT);
+        ClaimPartyEntity secondClaimantClaimParty = claimParty(secondClaimant, PartyRole.CLAIMANT);
+        ClaimPartyEntity defendantClaimParty = claimParty(defendant, PartyRole.DEFENDANT);
+        List<ClaimPartyEntity> activeClaimantsAndDefendants = List.of(
+            firstClaimantClaimParty, secondClaimantClaimParty, defendantClaimParty);
+        ClaimEntity mainClaim = ClaimEntity.builder().claimParties(activeClaimantsAndDefendants).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
+
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(partyService.isActive(firstClaimant)).thenReturn(true);
+        when(partyService.isActive(secondClaimant)).thenReturn(true);
+        when(partyService.isActive(defendant)).thenReturn(true);
+        when(removePartyService.getActiveClaimantsAndDefendants(mainClaim))
+            .thenReturn(activeClaimantsAndDefendants);
+        when(removePartyService.canSelectForRemoval(firstClaimantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(true);
+        when(removePartyService.canSelectForRemoval(secondClaimantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(true);
+        when(removePartyService.canSelectForRemoval(defendantClaimParty, activeClaimantsAndDefendants))
+            .thenReturn(false);
+        when(partyService.getPartyName(firstClaimant)).thenReturn("Jane Claimant");
+        when(partyService.getPartyName(secondClaimant)).thenReturn("Jack Claimant");
+        when(partyService.getPartyName(defendant)).thenReturn("Danny Defendant");
+        when(partyService.getPartyLabel(mainClaim, firstClaimant.getId())).thenReturn("Claimant 1");
+        when(partyService.getPartyLabel(mainClaim, secondClaimant.getId())).thenReturn("Claimant 2");
+        when(partyService.getPartyLabel(mainClaim, defendant.getId())).thenReturn("Defendant 1");
+
+        // When
+        PCSCase result = underTest.start(new EventPayload<>(TEST_CASE_REFERENCE, PCSCase.builder().build(), null));
+
+        // Then
+        assertThat(result.getRemovePartyDetails().getPartyToRemove().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly("Jane Claimant - Claimant 1", "Jack Claimant - Claimant 2");
+        assertThat(result.getRemovePartyDetails().getUnremovablePartyList()).isEqualTo("""
+            %s
+
+            Danny Defendant - Defendant 1
+            """.formatted(LAST_PARTY_ERROR));
+    }
+
+    private ClaimPartyEntity claimParty(PartyEntity partyEntity, PartyRole role) {
+        return ClaimPartyEntity.builder()
+            .party(partyEntity)
+            .role(role)
+            .build();
     }
 
 }

@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.LAST_PARTY_ERROR;
+
 @Component("managePartyStartEventHandler")
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {
@@ -103,6 +105,17 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     private String buildUnremovablePartyList(ClaimEntity mainClaim,
                                              List<ClaimPartyEntity> activeClaimantsAndDefendants) {
+        String unremovablePartyNames = buildUnremovablePartyNames(mainClaim, activeClaimantsAndDefendants);
+
+        return unremovablePartyNames.isBlank() ? null : """
+            %s
+
+            %s
+            """.formatted(LAST_PARTY_ERROR, unremovablePartyNames);
+    }
+
+    private String buildUnremovablePartyNames(ClaimEntity mainClaim,
+                                              List<ClaimPartyEntity> activeClaimantsAndDefendants) {
         return activeClaimantsAndDefendants.stream()
             .filter(claimParty -> !removePartyService.canSelectForRemoval(claimParty, activeClaimantsAndDefendants))
             .map(claimParty -> buildPartyListLabel(mainClaim, claimParty.getParty()))
@@ -111,10 +124,10 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     private String buildLastPartyMessage(ClaimEntity mainClaim, List<ClaimPartyEntity> activeClaimantsAndDefendants) {
         return """
-            You cannot remove a claimant or defendant if only one of these parties exist on the case.
+            %s
 
             %s
-            """.formatted(buildUnremovablePartyList(mainClaim, activeClaimantsAndDefendants));
+            """.formatted(LAST_PARTY_ERROR, buildUnremovablePartyNames(mainClaim, activeClaimantsAndDefendants));
     }
 
     private String buildPartyListLabel(ClaimEntity mainClaim, PartyEntity partyEntity) {
