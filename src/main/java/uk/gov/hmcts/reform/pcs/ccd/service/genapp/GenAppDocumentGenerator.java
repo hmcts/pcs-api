@@ -108,6 +108,11 @@ public class GenAppDocumentGenerator {
         claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), applicantParty);
     }
 
+    public String expectedGenAppFilename(GenAppEntity genAppEntity, ClaimEntity mainClaim) {
+        return documentNameService.appendGenAppPostfix(
+            OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, genAppEntity.getParty().getId());
+    }
+
     private String generateSubmissionDocument(long caseReference,
                                               GenAppEntity genAppEntity,
                                               PartyEntity applicantParty) {
@@ -115,8 +120,7 @@ public class GenAppDocumentGenerator {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
         UUID applicantPartyId = applicantParty.getId();
-        String outputFilename = documentNameService
-            .appendGenAppPostfix(OUTPUT_FILENAME_PREFIX, genAppEntity, mainClaim, applicantPartyId);
+        String outputFilename = expectedGenAppFilename(genAppEntity, mainClaim);
 
         GenAppFormPayload genAppFormPayload = createGenAppFormPayload(caseReference,
                                                                       pcsCaseEntity,

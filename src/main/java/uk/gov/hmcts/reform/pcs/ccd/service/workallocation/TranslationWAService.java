@@ -12,9 +12,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
+import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.expectedDefenceFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormPersistenceService.defendantNumber;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +32,7 @@ public class TranslationWAService {
     private final CamundaService camundaService;
     private final TaskDescriptionService taskDescriptionService;
     private final PartyService partyService;
+    private final GenAppDocumentGenerator genAppDocumentGenerator;
 
     public void createTranslateDefendantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
                                                       List<DocumentEntity> documents) {
@@ -64,31 +74,86 @@ public class TranslationWAService {
         long caseReference = pcsCaseEntity.getCaseReference();
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
-        List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getClaim() != null
-                && document.getClaim().getId().equals(mainClaim.getId()))
-            .toList();
+        for (PartyEntity party : pcsCaseEntity.getParties()) {
+            boolean isOtherClaimant = !party.getId().equals(flaggingParty.getId())
+                && partyService.getPartyRole(party) == PartyRole.CLAIMANT;
 
-        createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
+            if (isOtherClaimant) {
+                // The claim form belongs to whichever claimant created the claim
+                List<DocumentEntity> documents = new ArrayList<>();
+                if (party.isClaimCreator()) {
+                    documents.add(resolveGeneratedClaimForm(mainClaim));
+                }
+                documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
+
+                documents.addAll(pcsCaseEntity.getDocuments().stream()
+                    .filter(document -> !document.isRemoved()
+                        && document.getClaim() != null
+                        && document.getClaim().getId().equals(mainClaim.getId()))
+                    .toList());
+
+                createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
+            }
+        }
     }
 
     private void triggerDefendantDocumentTranslationTask(PartyEntity flaggingParty) {
         PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         for (PartyEntity party : pcsCaseEntity.getParties()) {
             boolean isOtherDefendant = !party.getId().equals(flaggingParty.getId())
                 && partyService.getPartyRole(party) == PartyRole.DEFENDANT;
 
             if (isOtherDefendant) {
-                List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
+                List<DocumentEntity> documents = new ArrayList<>();
+                resolveGeneratedDefenceForm(pcsCaseEntity, party).ifPresent(documents::add);
+                resolveGeneratedCounterClaimForm(pcsCaseEntity, party).ifPresent(documents::add);
+                documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
+
+                documents.addAll(pcsCaseEntity.getDocuments().stream()
                     .filter(document -> !document.isRemoved())
                     .filter(document -> isDefendantDocument(document, party))
-                    .toList();
+                    .toList());
 
                 createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
             }
         }
+    }
+
+    private DocumentEntity resolveGeneratedClaimForm(ClaimEntity mainClaim) {
+        return DocumentEntity.builder().fileName(expectedClaimFormFilename()).build();
+    }
+
+    private Optional<DocumentEntity> resolveGeneratedDefenceForm(PcsCaseEntity pcsCaseEntity, PartyEntity party) {
+        return pcsCaseEntity.getDefendantResponses().stream()
+            .filter(response -> response.getParty() != null
+                && response.getParty().getId().equals(party.getId()))
+            .findFirst()
+            .map(response -> DocumentEntity.builder()
+                .fileName(expectedDefenceFormFilename(defendantNumber(response)))
+                .build());
+    }
+
+    private Optional<DocumentEntity> resolveGeneratedCounterClaimForm(PcsCaseEntity pcsCaseEntity,
+                                                                       PartyEntity party) {
+        return pcsCaseEntity.getCounterClaims().stream()
+            .filter(counterClaim -> counterClaim.getParty() != null
+                && counterClaim.getParty().getId().equals(party.getId()))
+            .findFirst()
+            .map(counterClaim -> DocumentEntity.builder()
+                .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaim)))
+                .build());
+    }
+
+    private List<DocumentEntity> resolveGeneratedGenAppDocuments(PcsCaseEntity pcsCaseEntity, PartyEntity party,
+                                                                   ClaimEntity mainClaim) {
+        return pcsCaseEntity.getGenApps().stream()
+            .filter(genApp -> genApp.getParty() != null && genApp.getParty().getId().equals(party.getId()))
+            .map(genApp -> DocumentEntity.builder()
+                .fileName(genAppDocumentGenerator.expectedGenAppFilename(genApp, mainClaim))
+                .build())
+            .toList();
     }
 
     private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {

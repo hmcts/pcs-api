@@ -6,17 +6,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -25,8 +29,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,13 +50,18 @@ class GenAppWaTaskServiceTest {
     private PartyService partyService;
     @Mock
     private TranslationWAService translationWAService;
+    @Mock
+    private GenAppDocumentGenerator genAppDocumentGenerator;
+
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
 
     private GenAppWaTaskService underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new GenAppWaTaskService(taskDescriptionService, camundaService, partyService,
-                                            translationWAService);
+                                            translationWAService, genAppDocumentGenerator);
     }
 
     @ParameterizedTest
@@ -83,9 +94,11 @@ class GenAppWaTaskServiceTest {
     @Test
     void shouldCreateTranslationTaskWhenDefendantWelshDocumentsExist() {
         // Given
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity genAppPcsCase = PcsCaseEntity.builder()
             .caseReference(1234567890123456L)
+            .claims(List.of(mainClaim))
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
@@ -100,13 +113,18 @@ class GenAppWaTaskServiceTest {
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+        when(genAppDocumentGenerator.expectedGenAppFilename(genAppEntity, mainClaim))
+            .thenReturn("General Application GA1 - Defendant 1");
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            genAppPcsCase, party, List.of(activeDocument));
+            eq(genAppPcsCase), eq(party), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("General Application GA1 - Defendant 1", "evidence.pdf");
     }
 
     @Test
@@ -149,9 +167,11 @@ class GenAppWaTaskServiceTest {
     @Test
     void shouldCreateTranslationTaskWhenClaimantWelshDocumentsExist() {
         // Given
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
         PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity genAppPcsCase = PcsCaseEntity.builder()
             .caseReference(1234567890123456L)
+            .claims(List.of(mainClaim))
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
@@ -166,13 +186,18 @@ class GenAppWaTaskServiceTest {
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+        when(genAppDocumentGenerator.expectedGenAppFilename(genAppEntity, mainClaim))
+            .thenReturn("General Application GA1 - Claimant 1");
 
         // When
         underTest.createTranslationTaskForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(
-            genAppPcsCase.getCaseReference(), List.of(activeDocument));
+            eq(genAppPcsCase.getCaseReference()), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("General Application GA1 - Claimant 1", "evidence.pdf");
     }
 
 }
