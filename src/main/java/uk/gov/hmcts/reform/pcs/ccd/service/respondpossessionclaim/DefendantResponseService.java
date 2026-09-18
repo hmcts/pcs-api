@@ -215,16 +215,17 @@ public class DefendantResponseService {
             return;
         }
 
-        List<DocumentEntity> documents = responseDocuments.stream()
-            .filter(document -> !document.isRemoved())
-            .collect(Collectors.toCollection(ArrayList::new));
-
         // The defence form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
         if (JourneyType.CITIZEN.equals(journeyType)) {
             documents.add(DocumentEntity.builder()
                 .fileName(expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse)))
                 .build());
         }
+
+        documents.addAll(responseDocuments.stream()
+            .filter(document -> !document.isRemoved())
+            .toList());
 
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }

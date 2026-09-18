@@ -115,7 +115,7 @@ class FeePaymentNotificationServiceTest {
         verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(eq(1234L), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Uploaded doc.pdf", "Claim - Claimant 1");
+            .containsExactly("Claim - Claimant 1", "Uploaded doc.pdf");
         verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
     }
 

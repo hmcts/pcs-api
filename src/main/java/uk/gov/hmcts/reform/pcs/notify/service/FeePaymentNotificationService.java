@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
 
@@ -59,16 +58,17 @@ public class FeePaymentNotificationService {
     }
 
     private void createTranslationTaskForClaim(long caseReference, ClaimEntity claimEntity) {
-        List<DocumentEntity> documents = claimEntity.getPcsCase().getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getClaim() != null
-                && document.getClaim().getId().equals(claimEntity.getId()))
-            .collect(Collectors.toCollection(ArrayList::new));
-
         // The claim form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
             .fileName(expectedClaimFormFilename())
             .build());
+
+        documents.addAll(claimEntity.getPcsCase().getDocuments().stream()
+            .filter(document -> !document.isRemoved()
+                && document.getClaim() != null
+                && document.getClaim().getId().equals(claimEntity.getId()))
+            .toList());
 
         translationWAService.createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
     }

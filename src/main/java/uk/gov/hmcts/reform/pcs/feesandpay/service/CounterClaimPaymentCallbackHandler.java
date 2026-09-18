@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
@@ -138,17 +137,18 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             return List.of();
         }
 
-        List<DocumentEntity> documents = counterClaimEntity.getPcsCase().getDocuments().stream()
+        // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
+        documents.add(DocumentEntity.builder()
+            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)))
+            .build());
+
+        documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()
             .filter(document -> !document.isRemoved()
                 && document.getType() != DocumentType.COUNTERCLAIM
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
-            .collect(Collectors.toCollection(ArrayList::new));
-
-        // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
-        documents.add(DocumentEntity.builder()
-            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)))
-            .build());
+            .toList());
 
         return documents;
     }
