@@ -5,15 +5,15 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -25,6 +25,10 @@ public class CaseCreationService {
     private final CcdClient ccdClient;
 
     public long createMinimalCase(String authorisation) {
+        return createMinimalCase(authorisation, LanguageUsed.ENGLISH);
+    }
+
+    public long createMinimalCase(String authorisation, LanguageUsed languageUsed) {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
@@ -53,7 +57,7 @@ public class CaseCreationService {
                             .build())
             .noticeServed(YesOrNo.NO)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
-            .languageUsed(LanguageUsed.ENGLISH)
+            .languageUsed(languageUsed)
             .build();
 
         ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, authorisation);
