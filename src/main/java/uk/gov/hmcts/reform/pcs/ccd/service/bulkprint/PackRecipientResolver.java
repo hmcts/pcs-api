@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -25,6 +26,7 @@ public class PackRecipientResolver {
     private final PcsCaseRepository pcsCaseRepository;
     private final ClaimPackSelector claimPackSelector;
     private final DefencePackSelector defencePackSelector;
+    private final GenAppPackSelector genAppPackSelector;
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
@@ -32,12 +34,14 @@ public class PackRecipientResolver {
     public PackRecipientResolver(PcsCaseRepository pcsCaseRepository,
                                  ClaimPackSelector claimPackSelector,
                                  DefencePackSelector defencePackSelector,
+                                 GenAppPackSelector genAppPackSelector,
                                  RecipientAddressResolver recipientAddressResolver,
                                  DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                  AddressMapper addressMapper) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.claimPackSelector = claimPackSelector;
         this.defencePackSelector = defencePackSelector;
+        this.genAppPackSelector = genAppPackSelector;
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
@@ -61,6 +65,15 @@ public class PackRecipientResolver {
             .orElseGet(List::of);
     }
 
+    @Transactional(readOnly = true)
+    public List<ResolvedRecipient> resolveGenAppRecipients(UUID caseId) {
+        return pcsCaseRepository.findById(caseId)
+            .map(pcsCase -> genAppPackSelector.findGenAppPackCandidates(pcsCase).stream()
+                .map(candidate -> resolveGenAppRecipient(pcsCase, candidate))
+                .toList())
+            .orElseGet(List::of);
+    }
+
     private ResolvedRecipient resolveClaimRecipient(PcsCaseEntity pcsCase, ClaimPackCandidate candidate) {
         PartyEntity recipient = candidate.party();
         PartyRole role = candidate.recipientType();
@@ -72,7 +85,23 @@ public class PackRecipientResolver {
     private ResolvedRecipient resolveDefenceRecipient(PcsCaseEntity pcsCase, DefencePackCandidate candidate) {
         PartyEntity recipient = candidate.recipient();
         PartyRole role = candidate.role();
-        return new ResolvedRecipient(pcsCase, recipient, LetterType.DEFENCE_PACK, candidate.documents(),
+        List<DocumentEntity> documents = candidate.documents();
+        return new ResolvedRecipient(pcsCase, recipient, defenceLetterType(documents), documents,
+            recipientAddressResolver.resolveDisplayName(recipient),
+            correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
+    }
+
+    // DEF-01-IN1 when any form comes from a legal representative's response.
+    private LetterType defenceLetterType(List<DocumentEntity> documents) {
+        return documents.stream().anyMatch(LegalRepResponseDocuments::isFromLegalRepResponse)
+            ? LetterType.DEFENCE_PACK_LEGAL_REP
+            : LetterType.DEFENCE_PACK;
+    }
+
+    private ResolvedRecipient resolveGenAppRecipient(PcsCaseEntity pcsCase, GenAppPackCandidate candidate) {
+        PartyEntity recipient = candidate.recipient();
+        PartyRole role = candidate.role();
+        return new ResolvedRecipient(pcsCase, recipient, LetterType.GEN_APP_PACK, candidate.documents(),
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
     }

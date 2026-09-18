@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -21,5 +23,7 @@ public class CamundaRequestTaskData {
     private final TaskType taskType;
 
     private final String taskDescription;
+
+    private final UUID idempotencyKey;
 
 }

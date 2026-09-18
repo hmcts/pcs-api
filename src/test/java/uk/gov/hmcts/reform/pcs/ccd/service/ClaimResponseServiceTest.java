@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -36,6 +37,7 @@ class ClaimResponseServiceTest {
         .postTown("London")
         .postCode("SW1A 1AA")
         .build();
+    private static final long CASE_REFERENCE = 1234L;
 
     @Mock
     private ModelMapper modelMapper;
@@ -77,7 +79,7 @@ class ClaimResponseServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
@@ -115,7 +117,7 @@ class ClaimResponseServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
@@ -144,7 +146,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
@@ -164,7 +166,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getEmailAddress()).isEqualTo("defendant@example.com");
@@ -185,7 +187,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getContactPreferences()).isNotNull();
@@ -201,7 +203,7 @@ class ClaimResponseServiceTest {
         );
 
         // When / Then
-        assertThatThrownBy(() -> underTest.saveDraftDataForParty(response, null))
+        assertThatThrownBy(() -> underTest.saveDraftDataForParty(response, null, CASE_REFERENCE))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("defendant party is null");
     }
@@ -220,7 +222,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         ContactPreferencesEntity savedPrefs = testParty.getContactPreferences();
@@ -256,7 +258,7 @@ class ClaimResponseServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getAddress()).isNotNull();
@@ -284,7 +286,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getFirstName()).isEqualTo("John");
@@ -306,7 +308,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getFirstName()).isEqualTo("ClaimantFirst");
@@ -328,7 +330,7 @@ class ClaimResponseServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getAddress()).isEqualTo(addressEntity);
@@ -350,7 +352,7 @@ class ClaimResponseServiceTest {
         );
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getAddress().getAddressLine1()).isEqualTo("Claimant Street");
@@ -365,7 +367,7 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.NO).build()
         );
 
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
     }
@@ -379,7 +381,7 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
         );
 
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
     }
@@ -393,7 +395,7 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().correspondenceAddressConfirmation(VerticalYesNo.YES).build()
         );
 
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
     }
@@ -407,9 +409,136 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder().build()
         );
 
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         assertThat(testParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldSaveTextMessageNumberWhenOptedInToText() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .textMessageNumber("07700900982")
+                .build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isEqualTo("07700900982");
+        assertThat(testParty.getContactPreferences().getContactByText()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldSavePcqId() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .pcqId("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+    }
+
+    @Test
+    void shouldClearTextMessageNumberWhenTextAnswerIsNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().phoneNumber("07123456789").build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.NO)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
+    }
+
+    @Test
+    void shouldNotClearExistingPcqIdWhenResponseOmitsIt() {
+        // Given
+        testParty.setPcqId("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .emailAddress("defendant@example.com")
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
+    }
+
+    @Test
+    void shouldClearTextMessageNumberWhenTelephoneChangedToNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        // Telephone is now No, which also disables text messaging
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
+    }
+
+    @Test
+    void shouldNotWriteBackTextMessageNumberWhenTelephoneIsNo() {
+        // Given a party that already has a stored mobile number
+        testParty.setTextMessageNumber("07700900982");
+
+        // Telephone is No (which disables text), but the payload still carries a mobile number
+        // alongside contactByText Yes. The number must stay cleared and not be written back.
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .textMessageNumber("07700900982")
+                .build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
+
+        // Then
+        assertThat(testParty.getTextMessageNumber()).isNull();
     }
 
     @Test
@@ -431,12 +560,11 @@ class ClaimResponseServiceTest {
         );
 
         AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
 
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
@@ -471,11 +599,10 @@ class ClaimResponseServiceTest {
         );
 
         AddressEntity addressEntity = new AddressEntity();
-        UUID partyId = UUID.randomUUID();
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
         assertThat(testParty.getPhoneNumber()).isEqualTo("07123456789");
@@ -502,10 +629,87 @@ class ClaimResponseServiceTest {
             .build();
 
         // When
-        underTest.saveDraftDataForParty(response, testParty);
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE);
 
         // Then
-        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags);
+        verify(caseFlagService).saveReasonableAdjustmentFlags(testParty, defendantFlags, CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldKeepExistingPostPhoneAndTextPreferencesOnLegalRepSubmit() {
+        // Given a defendant who previously opted out of post and into phone and text
+        testParty.setTextMessageNumber("07700900982");
+        testParty.setContactPreferences(ContactPreferencesEntity.builder()
+            .contactByEmail(VerticalYesNo.NO)
+            .contactByPost(VerticalYesNo.NO)
+            .contactByPhone(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.YES)
+            .build());
+
+        // The legal rep journey only asks about email
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().emailAddress("defendant@example.com").build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.YES).build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        ContactPreferencesEntity preferences = testParty.getContactPreferences();
+        assertThat(preferences.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(preferences.getContactByPost()).isEqualTo(VerticalYesNo.NO);
+        assertThat(preferences.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(preferences.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(testParty.getTextMessageNumber()).isEqualTo("07700900982");
+    }
+
+    @Test
+    void shouldOnlySetEmailPreferenceOnLegalRepSubmitWithoutExistingPreferences() {
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().contactByEmail(VerticalYesNo.NO).build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        ContactPreferencesEntity preferences = testParty.getContactPreferences();
+        assertThat(preferences.getContactByEmail()).isEqualTo(VerticalYesNo.NO);
+        assertThat(preferences.getContactByPost()).isNull();
+        assertThat(preferences.getContactByPhone()).isNull();
+        assertThat(preferences.getContactByText()).isNull();
+    }
+
+    @Test
+    void shouldOverwritePostPhoneAndTextPreferencesOnCitizenSubmit() {
+        // Given
+        testParty.setTextMessageNumber("07700900982");
+        testParty.setContactPreferences(ContactPreferencesEntity.builder()
+            .contactByPost(VerticalYesNo.NO)
+            .contactByPhone(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.YES)
+            .build());
+
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.YES)
+                .contactByPhone(VerticalYesNo.NO)
+                .build()
+        );
+
+        // When
+        underTest.saveDraftDataForParty(response, testParty, CASE_REFERENCE, JourneyType.CITIZEN);
+
+        // Then
+        ContactPreferencesEntity preferences = testParty.getContactPreferences();
+        assertThat(preferences.getContactByPost()).isEqualTo(VerticalYesNo.YES);
+        assertThat(preferences.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(testParty.getTextMessageNumber()).isNull();
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {

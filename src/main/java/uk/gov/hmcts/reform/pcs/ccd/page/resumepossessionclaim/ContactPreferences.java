@@ -41,7 +41,7 @@ public class ContactPreferences implements CcdPageConfiguration {
 
             // Email section
             .complex(PCSCase::getClaimantContactPreferences)
-                .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW)
+                .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW, true)
             .label("contactPreferences-email", """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
@@ -67,7 +67,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .readonly(ClaimantContactPreferences::getOrgAddressFound, NEVER_SHOW)
             // Address found
             .readonly(ClaimantContactPreferences::getOrganisationAddress, NEVER_SHOW, true)
-            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW, true)
             .label("contactPreferences-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Service address</h2>

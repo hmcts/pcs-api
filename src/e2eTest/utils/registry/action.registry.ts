@@ -21,8 +21,10 @@ import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/fe
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
 import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 
 
 
@@ -36,6 +38,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['selectAnEvent', new CreateCaseAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -138,6 +141,7 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -148,6 +152,7 @@ export class ActionRegistry {
     ['selectFlagType', new CaseFlagAction()],
     ['selectSpecialMeasureForFlag', new CaseFlagAction()],
     ['addCommentsForFlag', new CaseFlagAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
     ['clickChangeLinkForRow', new CaseFlagAction()],
     ['reviewFlagDetails', new CaseFlagAction()],
     ['viewCaseFlags', new CaseFlagAction()],
@@ -162,7 +167,8 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
-    ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
@@ -175,6 +181,8 @@ export class ActionRegistry {
     ['verifyChangeLink', new CreateCaseAction()],
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
+    ['createPartialClaimDetails', new CreateCaseAction()],
+    ['resumePartialClaim', new CreateCaseAction()],  
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
@@ -183,6 +191,8 @@ export class ActionRegistry {
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
+    ['selectRadioButtonInYourSupport', new YourSupportAction()],
   ]);
 
   static getAction(actionName: string): IAction {

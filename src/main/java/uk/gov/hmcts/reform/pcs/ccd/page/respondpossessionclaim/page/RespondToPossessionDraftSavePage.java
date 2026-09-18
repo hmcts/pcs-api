@@ -12,7 +12,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
+import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -28,7 +31,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
     private final SecurityContextService securityContextService;
-    private final SelectedPartyRetriever selectedPartyRetriever;
+    private final LegalRepPartySelectionService legalRepPartySelectionService;
+    private final OrganisationService organisationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -54,25 +58,42 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .possessionClaimResponse(defendantAnswersOnly)
             .build();
 
+        // Only the statement-of-truth save posts a version; ordinary step saves are not checked.
+        Long expectedVersion = response.getDraftVersion();
+
         try {
+            Long savedVersion;
             if (securityContextService.getCurrentUserDetails().getRoles().contains(UserRole.CITIZEN.getRole())) {
-                draftCaseDataService.saveUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+                savedVersion = draftCaseDataService.saveUnsubmittedEventData(
+                    caseRef, partialUpdate, respondPossessionClaim, expectedVersion);
             } else {
-                Optional<UUID> selectedPartyId = selectedPartyRetriever.getSelectedPartyId(caseRef);
+                String organisationId = organisationService.getOrganisationIdForCurrentUser();
+
+                Optional<UUID> selectedPartyId =
+                    legalRepPartySelectionService.getRespondingPartyId(caseRef, organisationId);
                 if (selectedPartyId.isEmpty()) {
                     return error(List.of("No selected responding party id for respond to claim"));
                 }
                 UUID representedPartyId = selectedPartyId.get();
-                draftCaseDataService.saveUnsubmittedEventData(
+
+                savedVersion = draftCaseDataService.saveUnsubmittedEventData(
                     caseRef,
                     partialUpdate,
                     respondPossessionClaim,
-                    representedPartyId
+                    representedPartyId,
+                    organisationId,
+                    expectedVersion
                 );
+            }
+            if (expectedVersion != null) {
+                defendantAnswersOnly.setDraftVersion(savedVersion);
             }
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(partialUpdate)
                 .build();
+        } catch (DraftVersionConflictException e) {
+            log.warn("Rejecting draft save for case {}: {}", caseRef, e.getMessage());
+            return error(List.of(RespondToClaimCallbackError.DRAFT_CHANGED));
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseRef, e);
             return error(List.of("We couldn't save your response. Please try again or contact support."));
@@ -85,5 +106,4 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
             .errors(errorMessages)
             .build();
     }
-
 }

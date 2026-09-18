@@ -11,36 +11,39 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class DocumentsView {
 
-    private final SecurityContextService securityContextService;
+    private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final UploadTimestampProvider uploadTimestampProvider;
 
-    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity));
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
+        pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
     }
 
-    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> mapAndWrapDocuments(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
         if (pcsCaseEntity.getDocuments().isEmpty()) {
             return List.of();
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        UserRoles userRoles =
+            userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, currentUserId))
-            .filter(this::isNotInCaseDetailsTab)
+            .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
+                                                                   organisationId))
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -48,16 +51,13 @@ public class DocumentsView {
                            .url(entity.getUrl())
                            .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(entity.getSubmittedDate() == null
-                                                ? null
-                                                : entity.getSubmittedDate()
-                               .atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
+                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
                            .build())
                 .build())
             .collect(Collectors.toList());
     }
 
-    public boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UUID currentUserId) {
+    private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {
         if (isExcludedFromCaseFile(documentEntity)) {
             return false;
         }
@@ -65,7 +65,18 @@ public class DocumentsView {
         GenAppEntity genAppEntity = documentEntity.getGeneralApplication();
 
         if (genAppEntity != null) {
-            return genAppVisibilityService.isGenAppVisibleToUser(genAppEntity, currentUserId);
+            return genAppVisibilityService.isGenAppDocumentVisibleToUser(
+                genAppEntity,
+                userRoles.userId(),
+                organisationId,
+                userRoles.roles()
+            );
+        }
+
+        if (documentEntity.getType() == DocumentType.WITHOUT_NOTICE_ORDER) {
+            PartyEntity party = documentEntity.getParty();
+            return genAppVisibilityService
+                .isWithoutNoticeVisibleToUser(party, userRoles.userId(), organisationId, userRoles.roles());
         }
 
         CounterClaimEntity counterClaim = documentEntity.getCounterClaim();
@@ -90,24 +101,8 @@ public class DocumentsView {
         return !documentEntity.isRemoved();
     }
 
-    private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
-        List<DocumentType> caseDetailsDocuments = List.of(
-            DocumentType.TENANCY_AGREEMENT,
-            DocumentType.POSSESSION_NOTICE,
-            DocumentType.RENT_STATEMENT,
-            DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
-            DocumentType.EICR_REPORT,
-            DocumentType.GAS_SAFETY_CERTIFICATE,
-            DocumentType.OCCUPATION_LICENCE
-        );
-
-        DocumentType type = documentEntity.getType();
-        if (type == null || !caseDetailsDocuments.contains(type)) {
-            return true;
-        }
-
-        // Is not an additional document
-        return !isDescriptionEmpty(documentEntity);
+    public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
+        return documentEntity.getGeneralApplication() == null;
     }
 
 }

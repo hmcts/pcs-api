@@ -502,8 +502,9 @@ export class CYAPageValidation {
     pageAnswer: string;
     extractedQuestion: string;
   } {
+   
+   
     const cleanQuestion = this.normalizeText(question);
-
     for (const qa of extractedQA) {
       const pageQuestion = this.normalizeText(qa.question);
       if (pageQuestion === cleanQuestion || pageQuestion.includes(cleanQuestion) || cleanQuestion.includes(pageQuestion)) {

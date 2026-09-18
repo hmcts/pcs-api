@@ -34,6 +34,7 @@ public class DashboardView implements CCDConfig<PCSCase, State, UserRole> {
             .name("Dashboard view")
             .description("Compute dashboard notifications for case journey")
             .grant(Permission.R, UserRole.DEFENDANT)
+            .grant(Permission.R, UserRole.GA_DEFENDANT_SOLICITOR)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
     }
 }

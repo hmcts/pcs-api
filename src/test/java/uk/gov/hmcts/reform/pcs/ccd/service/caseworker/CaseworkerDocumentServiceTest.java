@@ -277,6 +277,7 @@ class CaseworkerDocumentServiceTest {
                 = dynamicStringListWithSelection(GEN_APP_ID_PREFIX + ":" + SELECTED_GEN_APP_ID);
 
             GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getWithoutNotice()).thenReturn(VerticalYesNo.YES);
 
             when(genAppService.loadGenApp(SELECTED_GEN_APP_ID)).thenReturn(genAppEntity);
             when(documentNameService.appendGenAppPostfix(originalFilename, genAppEntity, mainClaim, SELECTED_PARTY_ID))
@@ -296,6 +297,7 @@ class CaseworkerDocumentServiceTest {
             DocumentEntity savedDocumentEntity = getSavedDocumentEntity();
             assertThat(savedDocumentEntity.getFileName()).isEqualTo(modifiedFilenameForGenApp);
             assertThat(savedDocumentEntity.getGeneralApplication()).isEqualTo(genAppEntity);
+            assertThat(savedDocumentEntity.getGeneralApplication().getWithoutNotice()).isEqualTo(VerticalYesNo.YES);
         }
 
         @Test

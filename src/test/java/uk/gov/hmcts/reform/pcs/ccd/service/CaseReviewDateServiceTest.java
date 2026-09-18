@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -7,19 +8,28 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseReviewDateEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class CaseReviewDateServiceTest {
@@ -30,8 +40,29 @@ public class CaseReviewDateServiceTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
+    @Mock
+    private Clock ukClock;
+
+    @Mock
+    private CamundaService camundaService;
+
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+
     @InjectMocks
     private CaseReviewDateService caseReviewDateService;
+
+    private static final Instant FIXED_INSTANT = Instant.parse("2026-08-17T10:15:30Z");
+    private static final LocalDateTime FIXED_UK_DATE_TIME = LocalDateTime.of(2026, 8, 17, 11, 15, 30);
+
+    @BeforeEach
+    void setUp() {
+        when(ukClock.instant()).thenReturn(FIXED_INSTANT);
+        when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
+    }
 
     @Test
     void shouldAddCaseReviewDate() {
@@ -45,20 +76,29 @@ public class CaseReviewDateServiceTest {
                     .build()
             ).build();
 
-        PCSCase pcsCase = PCSCase.builder()
-            .reviewDates(List.of(reviewDate1))
-            .build();
-
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().name("Case Worker").build());
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        PCSCase pcsCase = PCSCase.builder()
+            .reviewDates(List.of(reviewDate1))
+            .build();
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        Instant taskCreationTime = LocalDateTime.of(2026, 2, 1, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime
+        );
 
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(1);
@@ -67,6 +107,8 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity.getDescription()).isEqualTo("review description 1");
+        assertThat(caseReviewDateEntity.getCreatedBy()).isEqualTo("Case Worker");
+        assertThat(caseReviewDateEntity.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
     }
 
     @Test
@@ -90,20 +132,37 @@ public class CaseReviewDateServiceTest {
                     .build()
             ).build();
 
-        PCSCase pcsCase = PCSCase.builder()
-            .reviewDates(List.of(reviewDate1, reviewDate2))
-            .build();
-
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder().name("Case Worker").build());
+        when(taskDescriptionService.createReviewDueDateDescription(caseReference)).thenReturn("task description");
 
         // When
-        caseReviewDateService.addCaseReviewDate(caseReference, pcsCase);
+        PCSCase pcsCase = PCSCase.builder()
+            .reviewDates(List.of(reviewDate1, reviewDate2))
+            .build();
+        caseReviewDateService.addCaseReviewDates(caseReference, pcsCase);
 
         // Then
         ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor = ArgumentCaptor.forClass(PcsCaseEntity.class);
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        Instant taskCreationTime1 = LocalDateTime.of(2026, 2, 1, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime1
+        );
+
+        Instant taskCreationTime2 = LocalDateTime.of(2026, 3, 2, 0, 0, 0).atZone(UK_ZONE_ID).toInstant();
+        verify(camundaService).createTask(
+            caseReference,
+            TaskType.REVIEW_DATE_DUE,
+            "task description",
+            taskCreationTime2
+        );
 
         PcsCaseEntity persistedCaseEntity = pcsCaseEntityCaptor.getValue();
         assertThat(persistedCaseEntity.getReviewDates()).hasSize(2);
@@ -113,11 +172,15 @@ public class CaseReviewDateServiceTest {
         assertThat(caseReviewDateEntity1.getDate()).isEqualTo(LocalDate.of(2026, 2, 1));
         assertThat(caseReviewDateEntity1.getReason()).isEqualTo(ReviewReason.DISMISS_CASE);
         assertThat(caseReviewDateEntity1.getDescription()).isEqualTo("review description 1");
+        assertThat(caseReviewDateEntity1.getCreatedBy()).isEqualTo("Case Worker");
+        assertThat(caseReviewDateEntity1.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
 
         CaseReviewDateEntity caseReviewDateEntity2 = persistedCaseEntity.getReviewDates().getLast();
         assertThat(caseReviewDateEntity2.getPcsCase()).isEqualTo(persistedCaseEntity);
         assertThat(caseReviewDateEntity2.getDate()).isEqualTo(LocalDate.of(2026, 3, 2));
         assertThat(caseReviewDateEntity2.getReason()).isEqualTo(ReviewReason.OTHER);
         assertThat(caseReviewDateEntity2.getDescription()).isEqualTo("review description 2");
+        assertThat(caseReviewDateEntity2.getCreatedBy()).isEqualTo("Case Worker");
+        assertThat(caseReviewDateEntity2.getCreatedDate()).isEqualTo(FIXED_UK_DATE_TIME);
     }
 }

@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -41,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -58,6 +59,8 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -70,7 +73,9 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 
+import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
 @AllArgsConstructor
@@ -88,7 +93,6 @@ public class TestingSupportController {
     private final PartyRepository partyRepository;
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
-    private final CaseRoleAssignmentService caseRoleAssignmentService;
     private final LegalRepresentativePartyLinkService legalRepresentativePartyLinkService;
     private final IdamAuthenticator idamAuthenticator;
     private final OrganisationDetailsService organisationDetailsService;
@@ -425,15 +429,18 @@ public class TestingSupportController {
         User user = idamAuthenticator.validateAuthToken(authorization);
         UserInfo userDetails = user.getUserDetails();
 
-        caseRoleAssignmentService.assignRasRole(caseReference, userDetails.getUid(), UserRole.DEFENDANT_SOLICITOR);
-
         OrganisationDetailsResponse organisationDetails = organisationDetailsService
             .getOrganisationDetails(userDetails.getUid());
+
+        if (isNull(organisationDetails)) {
+            log.error("No organisation details found for userId: {}", userDetails.getUid());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
         legalRepresentativePartyLinkService.linkLegalRepresentativeToParty(
             caseReference,
             partyId,
-            UUID.fromString(userDetails.getUid()),
+            userDetails.getSub(),
             organisationDetails
         );
         return ResponseEntity.ok().build();
@@ -532,5 +539,67 @@ public class TestingSupportController {
         partyRepository.save(partyEntity);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(
+        summary = "Reschedule Camunda request",
+        description = "Reschedules all scheduled Camunda requests within the specified window from now to be "
+            + "triggered immediately"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Camunda request tasks rescheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/reschedule-camunda-requests")
+    public ResponseEntity<String> rescheduleCamundaRequest(
+        @Parameter(
+            description = "Days to add to current time (default: 0)",
+            example = "1"
+        )
+        @RequestParam(value = "days", defaultValue = "0") int days,
+        @Parameter(
+            description = "Hours to add to current time (default: 0)",
+            example = "2"
+        )
+        @RequestParam(value = "hours", defaultValue = "0") int hours,
+        @Parameter(
+            description = "Minutes to add to current time (default: 0)",
+            example = "10"
+        )
+        @RequestParam(value = "minutes", defaultValue = "0") int minutes,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
+        try {
+
+            Instant taskTriggerTime = Instant.now().plus(Duration.ofDays(days)
+                                   .plusHours(hours)
+                                   .plusMinutes(minutes));
+
+            List<String> taskIds = jdbcTemplate.query(
+                """
+                    SELECT task_instance
+                    FROM scheduled_tasks
+                    WHERE task_name = 'camunda-request-task' and execution_time <= ?
+                """,
+                (rs, rowNum) -> rs.getString("task_instance"),
+                Timestamp.from(taskTriggerTime)
+            );
+
+            for (String taskId : taskIds) {
+                schedulerClient.reschedule(
+                    CAMUNDA_REQUEST_TASK_DESCRIPTOR.instance(taskId).build(),
+                    Instant.now()
+                );
+
+                log.info("Rescheduled Camunda request task with ID: {}", taskId);
+            }
+
+            return ResponseEntity.ok("Camunda request rescheduled successfully");
+        } catch (Exception e) {
+            log.error("Failed to reschedule Camunda request task", e);
+            return ResponseEntity.internalServerError()
+                .body("Failed to reschedule Camunda request task: " + e.getMessage());
+        }
     }
 }

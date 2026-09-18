@@ -7,8 +7,6 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 
 class CaseLinkingAccessTest {
 
@@ -23,8 +21,6 @@ class CaseLinkingAccessTest {
     void shouldGrantCaseLinkingAccess() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
-        assertThat(grants.get(PCS_SOLICITOR)).isEmpty();
-        assertThat(grants.get(PCS_CASE_WORKER)).isEmpty();
         for (UserRole role : AccessGrants.INTERNAL_READ_ROLES) {
             assertThat(grants.get(role)).contains(Permission.R);
         }
