@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.document.model.defenceform.DefenceFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,17 +26,17 @@ class DefenceFormDocumentGeneratorTest {
     void delegatesToDocAssemblyWithPerDefendantFilename() {
         DefenceFormPayload payload = DefenceFormPayload.builder().build();
         when(docAssemblyService.generateDocument(
-            eq(payload),
-            eq(DefenceFormDocumentGenerator.TEMPLATE_ID),
-            eq(OutputType.PDF),
-            eq("Defence - Defendant 2")
+            payload,
+            DefenceFormDocumentGenerator.LIP_TEMPLATE_ID,
+            OutputType.PDF,
+            "Defence - Defendant 2"
         )).thenReturn("https://dm-store/abc");
 
         String url = generator.generate(payload, 2);
 
         assertThat(url).isEqualTo("https://dm-store/abc");
         verify(docAssemblyService).generateDocument(
-            payload, DefenceFormDocumentGenerator.TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 2");
+            payload, DefenceFormDocumentGenerator.LIP_TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 2");
     }
 
     @Test
@@ -47,8 +46,27 @@ class DefenceFormDocumentGeneratorTest {
     }
 
     @Test
-    void templateIdMatchesRdoDocmosisNamingConvention() {
-        assertThat(DefenceFormDocumentGenerator.TEMPLATE_ID)
+    void usesLegalRepTemplateWhenPayloadFlagged() {
+        DefenceFormPayload payload = DefenceFormPayload.builder().completedByLegalRepresentative(true).build();
+        when(docAssemblyService.generateDocument(
+            payload,
+            DefenceFormDocumentGenerator.LR_TEMPLATE_ID,
+            OutputType.PDF,
+            "Defence - Defendant 1"
+        )).thenReturn("https://dm-store/lr");
+
+        String url = generator.generate(payload, 1);
+
+        assertThat(url).isEqualTo("https://dm-store/lr");
+        verify(docAssemblyService).generateDocument(
+            payload, DefenceFormDocumentGenerator.LR_TEMPLATE_ID, OutputType.PDF, "Defence - Defendant 1");
+    }
+
+    @Test
+    void templateIdsMatchRdoDocmosisNamingConvention() {
+        assertThat(DefenceFormDocumentGenerator.LIP_TEMPLATE_ID)
             .matches("^CV-PCS-CLM-(ENG|WEL)-.+\\.docx$");
+        assertThat(DefenceFormDocumentGenerator.LR_TEMPLATE_ID)
+            .matches("^CV-PCS-CLM-(ENG|WEL)-.+-LR\\.docx$");
     }
 }
