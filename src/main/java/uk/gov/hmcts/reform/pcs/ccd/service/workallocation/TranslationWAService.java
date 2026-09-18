@@ -49,13 +49,17 @@ public class TranslationWAService {
         camundaService.createTask(caseReference, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, description);
     }
 
-    public void createTranslateClaimantSubmittedDocumentTask(long caseReference, List<DocumentEntity> documents) {
+    public void createTranslateClaimantSubmittedDocumentTask(PcsCaseEntity pcsCaseEntity, PartyEntity party,
+                                                     List<DocumentEntity> documents) {
         if (documents.isEmpty()) {
             return;
         }
 
+        long caseReference = pcsCaseEntity.getCaseReference();
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
         String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-            caseReference, documents);
+            caseReference, mainClaim, party, documents);
 
         camundaService.createTask(caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
     }
@@ -71,7 +75,6 @@ public class TranslationWAService {
 
     private void triggerClaimantDocumentTranslationTask(PartyEntity flaggingParty) {
         PcsCaseEntity pcsCaseEntity = flaggingParty.getPcsCase();
-        long caseReference = pcsCaseEntity.getCaseReference();
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         for (PartyEntity party : pcsCaseEntity.getParties()) {
@@ -79,20 +82,23 @@ public class TranslationWAService {
                 && partyService.getPartyRole(party) == PartyRole.CLAIMANT;
 
             if (isOtherClaimant) {
-                // The claim form belongs to whichever claimant created the claim
                 List<DocumentEntity> documents = new ArrayList<>();
                 if (party.isClaimCreator()) {
                     documents.add(resolveGeneratedClaimForm());
+                    documents.addAll(pcsCaseEntity.getDocuments().stream()
+                        .filter(document -> !document.isRemoved()
+                            && document.getClaim() != null
+                            && document.getClaim().getId().equals(mainClaim.getId()))
+                        .toList());
                 }
                 documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
 
                 documents.addAll(pcsCaseEntity.getDocuments().stream()
-                    .filter(document -> !document.isRemoved()
-                        && document.getClaim() != null
-                        && document.getClaim().getId().equals(mainClaim.getId()))
+                    .filter(document -> !document.isRemoved())
+                    .filter(document -> isPartyDocument(document, party))
                     .toList());
 
-                createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
+                createTranslateClaimantSubmittedDocumentTask(pcsCaseEntity, party, documents);
             }
         }
     }
@@ -113,7 +119,7 @@ public class TranslationWAService {
 
                 documents.addAll(pcsCaseEntity.getDocuments().stream()
                     .filter(document -> !document.isRemoved())
-                    .filter(document -> isDefendantDocument(document, party))
+                    .filter(document -> isPartyDocument(document, party))
                     .toList());
 
                 createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
@@ -156,7 +162,7 @@ public class TranslationWAService {
             .toList();
     }
 
-    private boolean isDefendantDocument(DocumentEntity document, PartyEntity partyEntity) {
+    private boolean isPartyDocument(DocumentEntity document, PartyEntity partyEntity) {
         if (document.getType() == DocumentType.DEFENDANT_ACCESS_CODE
             || document.getType() == DocumentType.COUNTERCLAIM) {
             return false;

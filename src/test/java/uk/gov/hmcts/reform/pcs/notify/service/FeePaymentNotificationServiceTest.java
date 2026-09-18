@@ -17,11 +17,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,6 +75,8 @@ class FeePaymentNotificationServiceTest {
     void shouldNotCreateHearingTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {
         Integer feePaymentId = 1;
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).claimCreator(true).build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(claimant)));
         ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(languageUsed).build();
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
@@ -103,6 +107,8 @@ class FeePaymentNotificationServiceTest {
             .caseReference(1234L)
             .documents(List.of(documentEntity, removedDocument))
             .build();
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).claimCreator(true).build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(claimant)));
         claim.setPcsCase(pcsCaseEntity);
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
             .id(feePaymentId)
@@ -112,7 +118,8 @@ class FeePaymentNotificationServiceTest {
 
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
 
-        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(eq(1234L), documentsCaptor.capture());
+        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(
+            eq(pcsCaseEntity), eq(claimant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
             .containsExactly("Claim - Claimant 1", "Uploaded doc.pdf");

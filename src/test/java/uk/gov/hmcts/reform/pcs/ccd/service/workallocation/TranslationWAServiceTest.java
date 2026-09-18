@@ -90,13 +90,20 @@ class TranslationWAServiceTest {
 
     @Test
     void shouldCreateTranslateClaimantSubmittedDocumentTask() {
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+        PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
         List<DocumentEntity> documents = List.of(DocumentEntity.builder().fileName("claim-form.pdf").build());
 
         String expectedDescription = "Claimant 1 has uploaded the following documents: claim-form.pdf";
-        when(taskDescriptionService.createTranslateClaimantDocumentDescription(CASE_REFERENCE, documents))
+        when(taskDescriptionService.createTranslateClaimantDocumentDescription(
+            CASE_REFERENCE, mainClaim, party, documents))
             .thenReturn(expectedDescription);
 
-        underTest.createTranslateClaimantSubmittedDocumentTask(CASE_REFERENCE, documents);
+        underTest.createTranslateClaimantSubmittedDocumentTask(pcsCaseEntity, party, documents);
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, expectedDescription);
@@ -104,7 +111,10 @@ class TranslationWAServiceTest {
 
     @Test
     void shouldNotCreateClaimantTaskWhenDocumentsEmpty() {
-        underTest.createTranslateClaimantSubmittedDocumentTask(CASE_REFERENCE, List.of());
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
+        PartyEntity party = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        underTest.createTranslateClaimantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
 
         verifyNoInteractions(camundaService, taskDescriptionService);
     }
@@ -132,25 +142,26 @@ class TranslationWAServiceTest {
     @Test
     void shouldCreateClaimantTaskForOtherNonCreatorClaimantWithTheirOwnDocuments() {
         ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
-        DocumentEntity claimDocument = DocumentEntity.builder()
-            .fileName("claim-form.pdf")
-            .claim(mainClaim)
-            .build();
-        DocumentEntity removedDocument = DocumentEntity.builder().claim(mainClaim).removed(true).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .claims(List.of(mainClaim))
-            .documents(List.of(claimDocument, removedDocument))
             .build();
         PartyEntity flaggingClaimant = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
         PartyEntity otherClaimant = PartyEntity.builder().id(UUID.randomUUID()).pcsCase(pcsCaseEntity).build();
         pcsCaseEntity.setParties(new HashSet<>(List.of(flaggingClaimant, otherClaimant)));
 
+        DocumentEntity ownDocument = DocumentEntity.builder()
+            .fileName("evidence.pdf")
+            .party(otherClaimant)
+            .build();
+        DocumentEntity removedDocument = DocumentEntity.builder().party(otherClaimant).removed(true).build();
+        pcsCaseEntity.setDocuments(List.of(ownDocument, removedDocument));
+
         when(partyService.getPartyRole(otherClaimant)).thenReturn(PartyRole.CLAIMANT);
 
-        String expectedDescription = "Claimant 1 has uploaded the following documents: claim-form.pdf";
+        String expectedDescription = "Claimant 2 has uploaded the following documents: evidence.pdf";
         when(taskDescriptionService.createTranslateClaimantDocumentDescription(
-            CASE_REFERENCE, List.of(claimDocument)))
+            CASE_REFERENCE, mainClaim, otherClaimant, List.of(ownDocument)))
             .thenReturn(expectedDescription);
 
         underTest.triggerTranslationTasksForFlaggingParty(flaggingClaimant);
@@ -197,13 +208,14 @@ class TranslationWAServiceTest {
         when(partyService.getPartyRole(otherClaimant)).thenReturn(PartyRole.CLAIMANT);
 
         String expectedDescription = "Claimant 1 has uploaded the following documents";
-        when(taskDescriptionService.createTranslateClaimantDocumentDescription(eq(CASE_REFERENCE), any()))
+        when(taskDescriptionService.createTranslateClaimantDocumentDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(otherClaimant), any()))
             .thenReturn(expectedDescription);
 
         underTest.triggerTranslationTasksForFlaggingParty(flaggingParty);
 
         verify(taskDescriptionService).createTranslateClaimantDocumentDescription(
-            eq(CASE_REFERENCE), documentsCaptor.capture());
+            eq(CASE_REFERENCE), eq(mainClaim), eq(otherClaimant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
             .containsExactly("Claim - Claimant 1", "uploaded.pdf");

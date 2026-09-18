@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -144,7 +143,7 @@ class GenAppWaTaskServiceTest {
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
-        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(anyLong(), any());
+        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(any(), any(), any());
     }
 
     @Test
@@ -161,7 +160,7 @@ class GenAppWaTaskServiceTest {
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
-        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(anyLong(), any());
+        verify(translationWAService, never()).createTranslateClaimantSubmittedDocumentTask(any(), any(), any());
     }
 
     @Test
@@ -194,7 +193,7 @@ class GenAppWaTaskServiceTest {
 
         // Then
         verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(
-            eq(genAppPcsCase.getCaseReference()), documentsCaptor.capture());
+            eq(genAppPcsCase), eq(party), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
             .containsExactly("General Application GA1 - Claimant 1", "evidence.pdf");

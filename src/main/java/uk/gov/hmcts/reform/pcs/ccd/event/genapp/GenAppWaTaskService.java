@@ -70,8 +70,7 @@ public class GenAppWaTaskService {
         if (partyRole == PartyRole.DEFENDANT) {
             translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
         } else {
-            translationWAService.createTranslateClaimantSubmittedDocumentTask(
-                pcsCaseEntity.getCaseReference(), documents);
+            translationWAService.createTranslateClaimantSubmittedDocumentTask(pcsCaseEntity, party, documents);
         }
     }
 
