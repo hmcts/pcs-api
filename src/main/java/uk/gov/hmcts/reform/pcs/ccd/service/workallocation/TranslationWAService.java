@@ -178,13 +178,16 @@ public class TranslationWAService {
     }
 
     private PartyEntity resolveOwningParty(DocumentEntity document) {
+        if (document.getParty() != null) {
+            return document.getParty();
+        }
         if (document.getCounterClaim() != null) {
             return document.getCounterClaim().getParty();
         }
         if (document.getGeneralApplication() != null) {
             return document.getGeneralApplication().getParty();
         }
-        return document.getParty();
+        return null;
     }
 
 }

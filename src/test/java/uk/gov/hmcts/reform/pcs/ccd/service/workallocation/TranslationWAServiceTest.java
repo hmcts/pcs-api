@@ -32,6 +32,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -524,6 +525,62 @@ class TranslationWAServiceTest {
         underTest.triggerTranslationTasksForFlaggingParty(flaggingParty);
 
         verifyNoInteractions(camundaService, taskDescriptionService);
+    }
+
+    @Test
+    void shouldResolveDocumentOwnershipFromPartyOverLinkedCounterClaimOrGenApp() {
+        UUID flaggingDefendantId = UUID.randomUUID();
+        UUID otherDefendantId = UUID.randomUUID();
+        UUID otherClaimantId = UUID.randomUUID();
+
+        ClaimEntity mainClaim = ClaimEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(mainClaim))
+            .build();
+
+        PartyEntity flaggingDefendant = PartyEntity.builder().id(flaggingDefendantId).pcsCase(pcsCaseEntity).build();
+        PartyEntity otherDefendant = PartyEntity.builder().id(otherDefendantId).pcsCase(pcsCaseEntity).build();
+        PartyEntity otherClaimant = PartyEntity.builder().id(otherClaimantId).pcsCase(pcsCaseEntity).build();
+        pcsCaseEntity.setParties(new HashSet<>(List.of(flaggingDefendant, otherDefendant, otherClaimant)));
+
+        CounterClaimEntity otherDefendantCounterClaim = CounterClaimEntity.builder()
+            .party(otherDefendant)
+            .build();
+        GenAppEntity otherDefendantGenApp = GenAppEntity.builder()
+            .party(otherDefendant)
+            .build();
+
+        DocumentEntity counterClaimLinkedDocument = DocumentEntity.builder()
+            .fileName("counterclaim-evidence.pdf")
+            .party(otherClaimant)
+            .counterClaim(otherDefendantCounterClaim)
+            .build();
+        DocumentEntity genAppLinkedDocument = DocumentEntity.builder()
+            .fileName("genapp-evidence.pdf")
+            .party(otherClaimant)
+            .generalApplication(otherDefendantGenApp)
+            .build();
+        pcsCaseEntity.setDocuments(List.of(counterClaimLinkedDocument, genAppLinkedDocument));
+
+        when(partyService.getPartyRole(otherDefendant)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.getPartyRole(otherClaimant)).thenReturn(PartyRole.CLAIMANT);
+
+        String expectedClaimantDescription = "Claimant 2 has uploaded the following documents";
+        when(taskDescriptionService.createTranslateClaimantDocumentDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(otherClaimant), any()))
+            .thenReturn(expectedClaimantDescription);
+
+        underTest.triggerTranslationTasksForFlaggingParty(flaggingDefendant);
+
+        verify(taskDescriptionService).createTranslateClaimantDocumentDescription(
+            eq(CASE_REFERENCE), eq(mainClaim), eq(otherClaimant), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactlyInAnyOrder("counterclaim-evidence.pdf", "genapp-evidence.pdf");
+
+        verify(camundaService, never()).createTask(
+            eq(CASE_REFERENCE), eq(TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT), any(String.class));
     }
 
     @ParameterizedTest
