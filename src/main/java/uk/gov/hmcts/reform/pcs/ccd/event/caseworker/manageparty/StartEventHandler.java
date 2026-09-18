@@ -106,7 +106,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private String buildUnremovablePartyList(ClaimEntity mainClaim,
                                              List<ClaimPartyEntity> activeClaimantsAndDefendants) {
         String unremovablePartyNames = buildUnremovablePartyNames(mainClaim, activeClaimantsAndDefendants);
-
         return unremovablePartyNames.isBlank() ? null : """
             %s
 
