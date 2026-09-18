@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Service
 public class CamundaService {
 
-    private final CamundaApi camundaApi;
+    private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
@@ -155,6 +155,7 @@ public class CamundaService {
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
             .processVariables(processVariables)
+            .all(false)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -177,6 +178,7 @@ public class CamundaService {
             .messageName(CANCEL)
             .processVariables(processVariables)
             .correlationKeys(correlationKeys)
+            .all(true)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -187,7 +189,7 @@ public class CamundaService {
 
         try {
             log.info("Camunda request for case id {}: {}", caseId, request);
-            camundaApi.sendMessage(s2sToken, request);
+            workAllocationWorkflowApi.sendMessage(s2sToken, request);
         } catch (Exception e) {
             log.error("Failed to send Camunda request for caseId {}", caseId, e);
             throw e;

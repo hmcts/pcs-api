@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles.belongsToOrganisation;
 
 /**
  * Service to populate organisation info from rd-professional API.
@@ -35,6 +37,7 @@ public class OrganisationService {
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
+    private final UserRoleService userRoleService;
     /**
      * {@link Optional#empty()} = genuinely no organisation (citizens stop re-asking). Failed
      * lookups throw and are not cached - a blip must not be remembered as "no organisation".
@@ -42,9 +45,11 @@ public class OrganisationService {
     private final Cache<String, Optional<String>> organisationIdCache;
 
     public OrganisationService(SecurityContextService securityContextService,
-                               OrganisationDetailsService organisationDetailsService) {
+                               OrganisationDetailsService organisationDetailsService,
+                               UserRoleService userRoleService) {
         this.securityContextService = securityContextService;
         this.organisationDetailsService = organisationDetailsService;
+        this.userRoleService = userRoleService;
         this.organisationIdCache = Caffeine.newBuilder()
             .expireAfterWrite(ORGANISATION_CACHE_TTL)
             .build();
@@ -62,14 +67,13 @@ public class OrganisationService {
             String organisationName = organisationDetailsService.getOrganisationName(userId.toString());
 
             if (organisationName == null || organisationName.isEmpty()) {
-                log.warn("Organisation name is null or empty for user ID: {}", userId);
+                log.warn("Organisation name is null or empty");
             }
 
             return organisationName;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation name from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation name from rd-professional API", ex);
             // Return null instead of throwing to allow graceful degradation
             return null;
         }
@@ -86,12 +90,11 @@ public class OrganisationService {
 
             return organisationIdCache.get(
                 userId.toString(),
-                id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+                id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
             ).orElse(null);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation ID from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation ID from rd-professional API", ex);
             return null;
         }
     }
@@ -112,7 +115,7 @@ public class OrganisationService {
 
         return organisationIdCache.get(
             userId.toString(),
-            id -> Optional.ofNullable(organisationDetailsService.getOrganisationIdentifier(id))
+            id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
         ).orElse(null);
     }
 
@@ -133,8 +136,7 @@ public class OrganisationService {
             return organisationDetailsService.getOrganisationDetails(userId.toString());
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
-            log.error("Error retrieving organisation details from rd-professional API. Error: {}",
-                ex.getMessage(), ex);
+            log.error("Error retrieving organisation details from rd-professional API", ex);
             return null;
         }
     }
@@ -214,21 +216,30 @@ public class OrganisationService {
 
             // Return null if address is null or all key address fields to be displayed are empty
             if (keyAddressFieldsEmpty(organisationAddress)) {
-                log.warn("Organisation address is null or empty for user ID: {}", userId);
+                log.warn("Organisation address is null or empty");
                 return null;
             }
 
             return organisationAddress;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation address from rd-professional API. Error: {}",
-                      ex.getMessage(), ex);
+            log.error("Error retrieving organisation address from rd-professional API", ex);
             return null;
         }
     }
 
+    /**
+     * Only users who belong to a professional organisation have one to look up. Citizens, the system
+     * identity, HMCTS staff and judiciary do not, and asking rd-professional on their behalf is a
+     * round trip that can only 404 - which PRD logs as an error. Returning null here is the same
+     * "no organisation" answer the 404 produced, reached without the call.
+     *
+     * <p>Gated on the PRM group-access roles rather than on {@code caseworker-pcs-solicitor}: that
+     * IDAM role is being retired under HDPI-7333, and it never distinguished the organisation types
+     * anyway.
+     */
     private UUID resolveProfessionalUserId() {
-        if (currentUserIsCitizen()) {
+        if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
             return null;
         }
         UUID userId = securityContextService.getCurrentUserId();
@@ -242,6 +253,10 @@ public class OrganisationService {
         UserInfo details = securityContextService.getCurrentUserDetails();
         return details != null && details.getRoles() != null
             && details.getRoles().contains(UserRole.CITIZEN.getRole());
+    }
+
+    private boolean currentUserBelongsToOrganisation() {
+        return belongsToOrganisation(userRoleService.getCurrentUserOrganisationalRoles().roles());
     }
 
     private boolean keyAddressFieldsEmpty(AddressUK organisationAddress) {

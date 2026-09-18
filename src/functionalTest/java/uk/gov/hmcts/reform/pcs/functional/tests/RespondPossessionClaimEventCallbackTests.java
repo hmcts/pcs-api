@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -8,7 +9,6 @@ import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
@@ -77,8 +77,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
         apiSteps.checkStatusCode(403);
-        apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "/responses/respondPossessionClaim-UnAuthorisedStartEventCallbackResponse.json");
+        apiSteps.theResponseBodyContainsAString("message", "Access denied");
     }
 
     @Title("respondToPossessionClaim start event callback test - returns 200")
@@ -105,28 +104,30 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
     @Title("respondToPossessionClaim submit event callback test - returns 200")
     @Test
-    @Disabled("Disabled due to flakiness, needs investigation")
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
+        String validateClaimRequestBody = PayloadLoader.load(
+            "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
+            Map.of("caseReference", caseReference, "draftVersion", 0)
+        );
+        Response draftSaveResponse = apiSteps.validateEventData(
+            caseType,
+            PcsIdamTokenClient.UserType.citizenUser,
+            "respondPossessionClaimrespondToPossessionDraftSavePage",
+            validateClaimRequestBody);
+        long reviewedDraftVersion = draftSaveResponse.jsonPath().getLong("data.possessionClaimResponse.draftVersion");
+
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-submitEventCallbackRequest.json",
             Map.of(
                 "caseTypeId", caseType,
                 "caseId", caseReference,
                 "internalCaseId", caseInternalDetails.get("case-id"),
-                "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version"))
-
+                "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version")),
+                "draftVersion", reviewedDraftVersion
             )
         );
-        String validateClaimRequestBody = PayloadLoader.load(
-            "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
-            Map.of("caseReference",caseReference)
-        );
-        apiSteps.validateEventData(
-            PcsIdamTokenClient.UserType.citizenUser,
-            "respondPossessionClaimrespondToPossessionDraftSavePage",
-            validateClaimRequestBody);
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);

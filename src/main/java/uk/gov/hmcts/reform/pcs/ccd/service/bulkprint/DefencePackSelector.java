@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
@@ -35,17 +37,23 @@ public class DefencePackSelector {
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
     private final FeatureToggleService featureToggleService;
+    private final PackSkipRules packSkipRules;
 
     public DefencePackSelector(ClaimActivityLogRepository claimActivityLogRepository,
                                SentPackDocuments sentPackDocuments,
-                               FeatureToggleService featureToggleService) {
+                               FeatureToggleService featureToggleService,
+                               PackSkipRules packSkipRules) {
         this.claimActivityLogRepository = claimActivityLogRepository;
         this.sentPackDocuments = sentPackDocuments;
         this.featureToggleService = featureToggleService;
+        this.packSkipRules = packSkipRules;
     }
 
     public List<DefencePackCandidate> findDefencePackCandidates(PcsCaseEntity pcsCase) {
         if (pcsCase.getClaims().isEmpty()) {
+            return List.of();
+        }
+        if (packSkipRules.shouldSkipDefencePack(pcsCase)) {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
@@ -63,12 +71,12 @@ public class DefencePackSelector {
         for (PartyEntity defendant : defendants) {
             DocumentEntity defenceForm = defenceFormDocument(pcsCase, defendant);
             if (defenceForm != null) {
-                eligibleRecipients.forEach(
+                recipientsOf(defenceForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, defenceForm));
             }
             DocumentEntity counterClaimForm = counterClaimDocument(pcsCase, defendant);
             if (counterClaimForm != null) {
-                eligibleRecipients.forEach(
+                recipientsOf(counterClaimForm, defendant, eligibleRecipients).forEach(
                     party -> addPending(recipients, documentsByRecipient, party, counterClaimForm));
             }
         }
@@ -87,10 +95,21 @@ public class DefencePackSelector {
         return candidates;
     }
 
+    // Skip the defendant whose legal representative filed this form.
+    private List<PartyEntity> recipientsOf(DocumentEntity form, PartyEntity owner, List<PartyEntity> eligible) {
+        if (!LegalRepResponseDocuments.isFromLegalRepResponse(form)) {
+            return eligible;
+        }
+        return eligible.stream()
+            .filter(party -> !party.getId().equals(owner.getId()))
+            .toList();
+    }
+
     private List<PartyEntity> eligibleRecipients(List<PartyEntity> claimants, List<PartyEntity> defendants) {
         if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)) {
             return defendants.stream()
-                .filter(this::contactByPost)
+                .filter(this::wantsPost)
+                .filter(defendant -> !isRepresented(defendant))
                 .toList();
         }
 
@@ -99,9 +118,18 @@ public class DefencePackSelector {
         return allParties;
     }
 
-    private boolean contactByPost(PartyEntity party) {
-        return party.getContactPreferences() != null
-            && party.getContactPreferences().getContactByPost() == VerticalYesNo.YES;
+    // Represented defendants are served digitally through their legal representative, never by post.
+    private boolean isRepresented(PartyEntity party) {
+        return party.getClaimPartyOrganisationList().stream()
+            .anyMatch(link -> YesOrNo.YES.equals(link.getActive()));
+    }
+
+    private boolean wantsPost(PartyEntity party) {
+        ContactPreferencesEntity preferences = party.getContactPreferences();
+        if (preferences == null || preferences.getContactByPost() == null) {
+            return true;
+        }
+        return preferences.getContactByPost() != VerticalYesNo.NO;
     }
 
     private void addPending(Map<UUID, PartyEntity> recipients, Map<UUID, Set<DocumentEntity>> documentsByRecipient,

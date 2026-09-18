@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
 
 class AccessGrantsParityTest {
 
@@ -22,6 +23,12 @@ class AccessGrantsParityTest {
     void shouldKeepInternalTabProfilesAlignedWithFieldAccessRoles() throws Exception {
         assertThat(caseTypeAccessProfiles("INTERNAL_TAB_ROLES"))
             .isEqualTo(accessGrantProfiles(AccessGrants.INTERNAL_READ_ROLES));
+    }
+
+    @Test
+    void shouldKeepCaseNoteTabProfilesAlignedWithFieldAccessRoles() throws Exception {
+        assertThat(caseTypeAccessProfiles("CASE_NOTE_TAB_ROLES"))
+            .isEqualTo(accessGrantProfiles(CASE_NOTE_ROLES));
     }
 
     private Set<String> caseTypeAccessProfiles(String fieldName) throws Exception {

@@ -137,6 +137,14 @@ await performValidationGroup(
 
 On the **nightly** job, parameters `PLAYWRIGHT_GREP_TAG` and `PLAYWRIGHT_SPEC` become `E2E_TEST_SCOPE` and `E2E_SPEC` for Gradle → `yarn test:<browser>`. `playwright.config.ts` reads those env vars for grep and `testMatch`.
 
+### Parallel workers
+
+Defaults to 2 workers on preview, 4 elsewhere. Set `E2E_WORKERS` to override:
+
+```bash
+E2E_WORKERS=1 yarn test:pr
+```
+
 ### Environment variables (local)
 
 **With `ENVIRONMENT` set to `aat`, `demo`, `perftest`, or `ithc`:** global setup fills **`MANAGE_CASE_BASE_URL`**, **`DATA_STORE_URL_BASE`**, IdAM, and S2S URLs from standard HMCTS patterns (same idea as the nightly job). You can still override any of those by exporting them first.

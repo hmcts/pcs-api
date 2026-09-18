@@ -24,6 +24,7 @@ import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolici
 import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
 
 
 
@@ -37,6 +38,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['selectAnEvent', new CreateCaseAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -165,7 +167,8 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
-    ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
@@ -188,6 +191,8 @@ export class ActionRegistry {
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
+    ['selectRadioButtonInYourSupport', new YourSupportAction()],
   ]);
 
   static getAction(actionName: string): IAction {

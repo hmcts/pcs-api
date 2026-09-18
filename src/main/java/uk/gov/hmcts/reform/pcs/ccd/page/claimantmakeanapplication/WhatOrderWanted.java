@@ -49,14 +49,14 @@ public class WhatOrderWanted implements CcdPageConfiguration {
         pageBuilder
             .page("whatOrderWanted")
             .pageLabel("What order do you want the court to make, and why?")
-            .label("whatOrderWanted-lineSeparator", "---")
-            .label("whatOrderWanted-adjourn", ADJOURN_EXAMPLES,
+            .label("cma-whatOrderWanted-lineSeparator", "---")
+            .label("cma-whatOrderWanted-adjourn", ADJOURN_EXAMPLES,
                    fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
-            .label("whatOrderWanted-setAside", SET_ASIDE_INFO,
+            .label("cma-whatOrderWanted-setAside", SET_ASIDE_INFO,
                    fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE))
-            .label("whatOrderWanted-somethingElse", SOMETHING_ELSE_EXAMPLES,
+            .label("cma-whatOrderWanted-somethingElse", SOMETHING_ELSE_EXAMPLES,
                    fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE))
-            .label("whatOrderWanted-info", INFO_MARKDOWN)
+            .label("cma-whatOrderWanted-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getWhatOrderWanted, null, null,
                        "Explain what you want the court to do, and why")

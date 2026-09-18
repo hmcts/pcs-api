@@ -5,8 +5,9 @@ import com.google.common.collect.SetMultimap;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
@@ -58,6 +59,10 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> internalReadAccess() {
         return readAccess(INTERNAL_READ_ROLES);
+    }
+
+    static SetMultimap<HasRole, Permission> caseNoteReadAccess() {
+        return readAccess(CASE_NOTE_ROLES);
     }
 
     static SetMultimap<HasRole, Permission> documentAccess() {

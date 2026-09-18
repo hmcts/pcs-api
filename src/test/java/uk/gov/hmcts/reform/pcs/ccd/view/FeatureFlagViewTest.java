@@ -92,4 +92,20 @@ class FeatureFlagViewTest {
             .isEqualTo(VerticalYesNo.from(flagEnabled));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetCuiRespondToClaimLrFeatureFlagInCaseData(boolean flagEnabled) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(flagEnabled);
+
+        // When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getFeatureFlags().getCuiRespondToClaimLrEnabled())
+            .isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
 }

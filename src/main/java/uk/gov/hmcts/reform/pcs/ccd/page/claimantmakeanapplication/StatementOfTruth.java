@@ -47,8 +47,8 @@ public class StatementOfTruth implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfTruth", this::midEvent)
             .pageLabel("Statement of truth")
-            .label("statementOfTruth-lineSeparator", "---")
-            .label("statementOfTruth-info", INFO_MARKDOWN)
+            .label("cma-statementOfTruth-lineSeparator", "---")
+            .label("cma-statementOfTruth-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .readonly(XuiGenAppRequest::getApplicantPartyId, ShowConditions.NEVER_SHOW, true)
             .mandatory(XuiGenAppRequest::getSotCompletedBy)

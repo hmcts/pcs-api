@@ -19,10 +19,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -30,6 +32,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RentArrearsViewTest {
+
+    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
 
     @Mock
     private PCSCase pcsCase;
@@ -39,6 +43,8 @@ class RentArrearsViewTest {
     private ClaimEntity mainClaimEntity;
     @Mock
     private RentArrearsEntity rentArrearsEntity;
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
 
     private RentArrearsView underTest;
 
@@ -47,7 +53,7 @@ class RentArrearsViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
         when(mainClaimEntity.getRentArrears()).thenReturn(rentArrearsEntity);
 
-        underTest = new RentArrearsView();
+        underTest = new RentArrearsView(uploadTimestampProvider);
     }
 
     @Test
@@ -86,6 +92,7 @@ class RentArrearsViewTest {
         when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttempted()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getRecoveryAttemptDetails()).thenReturn(details);
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
@@ -110,6 +117,7 @@ class RentArrearsViewTest {
         List<ListValue<Document>> statementDocuments = rentArrears.getStatementDocuments();
         assertThat(statementDocuments).hasSize(1);
         assertThat(statementDocuments.getFirst().getId()).isEqualTo(rentDocumentId.toString());
+        assertThat(statementDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
 
         verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
