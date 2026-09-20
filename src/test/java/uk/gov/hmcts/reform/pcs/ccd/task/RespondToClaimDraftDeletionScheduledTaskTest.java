@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DraftResponseD
 
 import java.time.Duration;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
