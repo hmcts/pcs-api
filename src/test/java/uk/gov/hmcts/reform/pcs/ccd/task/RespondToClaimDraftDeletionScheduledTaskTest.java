@@ -1,31 +1,26 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
-import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DraftResponseDeletionService;
 
-import java.util.Collections;
-import java.util.List;
+import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RespondToClaimDraftDeletionScheduledTaskTest {
+
+    private static final int DISCARD_AFTER_DAYS = 30;
 
     @Mock
     private DraftResponseDeletionService draftResponseDeletionService;
@@ -33,74 +28,40 @@ class RespondToClaimDraftDeletionScheduledTaskTest {
     private RespondToClaimDraftDeletionScheduledTask underTest;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         underTest = new RespondToClaimDraftDeletionScheduledTask(
-            "DAILY|02:00",
-            7,
-            2,
-            50,
-            draftResponseDeletionService
-        );
+                "DAILY|02:00",
+                DISCARD_AFTER_DAYS,
+                3,
+                Duration.ofSeconds(10),
+                draftResponseDeletionService
+            );
     }
 
     @Test
-    @DisplayName("Builds the recurring task")
-    void shouldBuildRecurringTask() {
-        // When
-        RecurringTask<Void> task = underTest.respondToClaimDraftDeletionTask();
-
-        // Then
-        assertThat(task).isNotNull();
-    }
-
-    @Test
-    @DisplayName("Does nothing when no expired drafts are returned")
-    void shouldDoNothingWhenNoExpiredDrafts() {
-        // Given
-        when(draftResponseDeletionService.findExpiredDraftResponses(7, 50)).thenReturn(Collections.emptyList());
-
-        // When
+    void shouldDeleteDraftResponsesOlderThanConfiguredNumberOfDays() {
+        // Given / When
         underTest.runSweep();
 
         // Then
-        verify(draftResponseDeletionService).findExpiredDraftResponses(7, 50);
-        verify(draftResponseDeletionService, never()).deleteDraftData(any());
+        verify(draftResponseDeletionService)
+            .deleteRespondPossessionClaimBatch(DISCARD_AFTER_DAYS);
     }
 
     @Test
-    @DisplayName("Deletes each expired draft returned by the service")
-    void shouldDeleteExpiredDrafts() {
+    void shouldPropagateExceptionWhenDraftDeletionFails() {
         // Given
-        DraftCaseDataEntity first = new DraftCaseDataEntity();
-        first.setCaseReference(1234L);
-        DraftCaseDataEntity second = new DraftCaseDataEntity();
-        second.setCaseReference(5678L);
-        when(draftResponseDeletionService.findExpiredDraftResponses(7, 50))
-            .thenReturn(List.of(first, second));
+        RuntimeException exception = new RuntimeException("Deletion failed");
+        doThrow(exception)
+            .when(draftResponseDeletionService)
+            .deleteRespondPossessionClaimBatch(DISCARD_AFTER_DAYS);
 
         // When
-        underTest.runSweep();
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> underTest.runSweep());
 
-        // Then
-        verify(draftResponseDeletionService).deleteDraftData(first);
-        verify(draftResponseDeletionService).deleteDraftData(second);
+        verify(draftResponseDeletionService)
+            .deleteRespondPossessionClaimBatch(DISCARD_AFTER_DAYS);
+        assertSame(exception, thrown);
     }
 
-    @Test
-    @DisplayName("Continues processing when a draft deletion fails")
-    void shouldContinueProcessingWhenDeleteFails() {
-        // Given
-        DraftCaseDataEntity first = new DraftCaseDataEntity();
-        first.setCaseReference(1234L);
-        DraftCaseDataEntity second = new DraftCaseDataEntity();
-        second.setCaseReference(5678L);
-        when(draftResponseDeletionService.findExpiredDraftResponses(7, 50))
-            .thenReturn(List.of(first, second));
-        doThrow(new RuntimeException("boom")).when(draftResponseDeletionService).deleteDraftData(first);
-
-        // When / Then
-        assertThatCode(underTest::runSweep).doesNotThrowAnyException();
-        verify(draftResponseDeletionService).deleteDraftData(first);
-        verify(draftResponseDeletionService).deleteDraftData(second);
-    }
 }

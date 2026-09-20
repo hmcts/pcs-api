@@ -3,25 +3,19 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
-import uk.gov.hmcts.reform.pcs.exception.DraftResponseDataDeletionException;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DraftResponseDeletionServiceTest {
@@ -40,54 +34,45 @@ class DraftResponseDeletionServiceTest {
     }
 
     @Test
-    void shouldFindExpiredDraftResponses() {
+    void shouldDeleteRespondPossessionClaimDraftsOlderThanDiscardDays() {
         // Given
-        List<DraftCaseDataEntity> expected = List.of(draftCaseDataEntity);
-        when(draftCaseDataRepository.findExpiredDraftResponses(
-            eq(EventId.respondPossessionClaim),
-            any(Instant.class),
-            eq(PageRequest.of(0, 50))
-        )).thenReturn(expected);
+        long discardDays = 30L;
+        Instant beforeInvocation = Instant.now();
 
         // When
-        List<DraftCaseDataEntity> result = underTest.findExpiredDraftResponses(30, 50);
+        underTest.deleteRespondPossessionClaimBatch(discardDays);
 
         // Then
-        assertThat(result).isSameAs(expected);
-        verify(draftCaseDataRepository).findExpiredDraftResponses(
-            eq(EventId.respondPossessionClaim),
-            any(Instant.class),
-            eq(PageRequest.of(0, 50))
+        Instant afterInvocation = Instant.now();
+        ArgumentCaptor<Instant> cutoffCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(eq(EventId.respondPossessionClaim),
+                                                                 cutoffCaptor.capture()
         );
+
+        Instant cutoff = cutoffCaptor.getValue();
+        assertThat(cutoff)
+            .isAfterOrEqualTo(beforeInvocation.minus(discardDays, ChronoUnit.DAYS))
+            .isBeforeOrEqualTo(afterInvocation.minus(discardDays, ChronoUnit.DAYS));
     }
 
     @Test
-    void shouldDeleteDraftData() {
+    void shouldUseCurrentTimeAsCutoffWhenDiscardDaysIsZero() {
+        // Given
+        Instant beforeInvocation = Instant.now();
+
         // When
-        underTest.deleteDraftData(draftCaseDataEntity);
+        underTest.deleteRespondPossessionClaimBatch(0L);
 
         // Then
-        verify(draftCaseDataRepository).delete(draftCaseDataEntity);
+        Instant afterInvocation = Instant.now();
+        ArgumentCaptor<Instant> cutoffCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(draftCaseDataRepository).deleteByEventIdAndCutoff(eq(EventId.respondPossessionClaim),
+            cutoffCaptor.capture()
+        );
+
+        Instant cutoff = cutoffCaptor.getValue();
+        assertThat(cutoff.isBefore(beforeInvocation)).isFalse();
+        assertThat(cutoff.isAfter(afterInvocation)).isFalse();
     }
 
-    @Test
-    void shouldWrapDeleteException() {
-        // Given
-        long caseReference = 1234L;
-        UUID partyId = UUID.randomUUID();
-        String organisationId = "org-1";
-        when(draftCaseDataEntity.getCaseReference()).thenReturn(caseReference);
-        when(draftCaseDataEntity.getEventId()).thenReturn(EventId.respondPossessionClaim);
-        when(draftCaseDataEntity.getPartyId()).thenReturn(partyId);
-        when(draftCaseDataEntity.getOrganisationId()).thenReturn(organisationId);
-        doThrow(new RuntimeException("boom")).when(draftCaseDataRepository).delete(draftCaseDataEntity);
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.deleteDraftData(draftCaseDataEntity))
-            .isInstanceOf(DraftResponseDataDeletionException.class)
-            .hasMessageContaining("Failed to delete draft response data for case reference: " + caseReference)
-            .hasMessageContaining("respondPossessionClaim")
-            .hasMessageContaining(partyId.toString())
-            .hasMessageContaining(organisationId);
-    }
 }
