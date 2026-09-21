@@ -140,6 +140,47 @@ class UserRoleServiceTest {
     }
 
     @Test
+    void shouldReturnIdamAndOrganisationalRolesWithoutACaseInScope() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
+        stubRoleAssignmentRoles("claimant-solicitor");
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker", "claimant-solicitor");
+        verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @Test
+    void shouldShareTheOrganisationalRoleLookupBetweenBothEntryPoints() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
+        stubRasRoles("[DEFENDANT]");
+        stubRoleAssignmentRoles("claimant-solicitor");
+
+        underTest.getCurrentUserOrganisationalRoles();
+        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        verify(roleAssignmentApi, times(1)).getRoles(
+            S2S_AUTH_HEADER,
+            USER_AUTH_HEADER,
+            CURRENT_USER_ID.toString()
+        );
+    }
+
+    @Test
+    void shouldSkipTheOrganisationalRoleLookupForTheSystemUser() {
+        stubCurrentUserDetails(List.of("system"));
+        when(securityContextService.isSystemUser()).thenReturn(true);
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.roles()).containsExactly("system");
+        verifyNoInteractions(roleAssignmentApi);
+    }
+
+    @Test
     void shouldSkipRasLookupForTheSystemUser() {
         stubCurrentUserDetails(List.of("system"));
         when(securityContextService.isSystemUser()).thenReturn(true);
