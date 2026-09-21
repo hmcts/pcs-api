@@ -17,13 +17,12 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.16'
-  id 'io.github.ben-manes.versions' version '0.61.0'
+  id 'org.springframework.boot' version '4.0.8'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
   id 'hmcts.ccd.sdk' version '7.1.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2377'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2391'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -352,18 +351,6 @@ sonarqube {
   }
 }
 
-// before committing a change, make sure task still works
-dependencyUpdates {
-  def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { qualifier -> version.toUpperCase().contains(qualifier) }
-    def regex = /^[0-9,.v-]+$/
-    return !stableKeyword && !(version ==~ regex)
-  }
-  rejectVersionIf { selection -> // <---- notice how the closure argument is named
-    return isNonStable(selection.candidate.version) && !isNonStable(selection.currentVersion)
-  }
-}
-
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
   suppressionFile = 'config/owasp/suppressions.xml'
@@ -380,9 +367,10 @@ ext {
   logbackVersion = "1.6.3"
   testcontainersVersion = "2.0.5"
   testcontainersAdditionsVersion = "1.21.4"
-  springFrameworkBootVersion = "3.5.16"
+  springFrameworkBootVersion = "4.0.8"
+  springCloudVersion = "2025.1.3"
   lombokVersion = "1.18.48"
-  springSecurityVersion = "6.5.11"
+  springSecurityVersion = "7.0.7"
   pactVersion = "4.7.5"
   tomcatEmbedVersion = "11.0.25"
   nettyVersion = "4.1.137.Final"
@@ -392,6 +380,12 @@ ext {
   mockitoVersion = "5.23.0"
   jackson3Version = "3.1.6"
   cucumberVersion = "7.34.8"
+}
+
+dependencyManagement {
+  imports {
+    mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+  }
 }
 
 ext['snakeyaml.version'] = '2.7'
@@ -419,21 +413,23 @@ dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
 
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
+  implementation(group: 'org.springframework.boot', name: 'spring-boot-starter-webmvc', version: springFrameworkBootVersion) {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-jackson'
+  }
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: springFrameworkBootVersion
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aspectj', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: springFrameworkBootVersion
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-flyway', version: springFrameworkBootVersion
+  implementation 'org.springframework.boot:spring-boot-jackson2'
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.16.0'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '3.1.1'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
@@ -443,11 +439,16 @@ dependencies {
   implementation group: 'io.opentelemetry.semconv', name: 'opentelemetry-semconv', version: '1.43.0'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
-  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.3.0'
+  implementation(group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '6.1.0') {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-jackson'
+  }
   // Compile-time only: needed for IdamApi.class reference in @EnableFeignClients (ccd-sdk's IdamClient depends on it).
-  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
-  implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
-  implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.59.2'
+  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '4.0.0'
+  implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.3'
+  implementation(group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.60.0') {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-jackson'
+    exclude group: 'org.springframework.boot', module: 'spring-boot-jackson'
+  }
   implementation group: 'com.github.hmcts', name: 'send-letter-client', version: '5.1.1'
   implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '3.0.8'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
@@ -464,9 +465,9 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.5'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '6.0.1'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
+  implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
@@ -513,12 +514,16 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
-  testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+  testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+  testImplementation('org.springframework.boot:spring-boot-starter-webflux') {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-jackson'
+  }
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersAdditionsVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersAdditionsVersion
 
-  integrationTestImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner', version: '4.3.4'
+  integrationTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
@@ -527,7 +532,7 @@ dependencies {
   cftlibImplementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
   mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
-  mockitoAgent 'org.mockito:mockito-core'
+  mockitoAgent "org.mockito:mockito-core:$mockitoVersion"
 
 }
 
