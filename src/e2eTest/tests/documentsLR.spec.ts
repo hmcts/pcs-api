@@ -232,7 +232,6 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
 
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let fileName1 = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, uploadYourDocuments.mainHeader as string);

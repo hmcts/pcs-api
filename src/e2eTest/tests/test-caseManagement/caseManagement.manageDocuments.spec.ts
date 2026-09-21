@@ -65,7 +65,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
-    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
@@ -85,7 +85,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -100,7 +100,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = CaseManagementCommonUtils.getRandomDate(uploadADocument.dateTypeHiddenUserInput);
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
-    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].split('-')[0].trim();
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
@@ -121,7 +121,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -136,7 +136,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let date = '';
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[0];
-    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].split('-')[0].trim();
+    let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
@@ -157,7 +157,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);

@@ -160,7 +160,7 @@ export class CaseManagementCommonUtils {
     if (gaNumber) {
       parts.push(gaNumber);
     }
-
+console.log(`parts is :${parts.join(' ')}${extension}`)
     return `${parts.join(' ')}${extension}`;
   }
 }
