@@ -49,7 +49,6 @@ public enum GroupAccessType implements CCDAccessGroup {
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
-        NocCaseRoles.DEFENDANT,
         "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(

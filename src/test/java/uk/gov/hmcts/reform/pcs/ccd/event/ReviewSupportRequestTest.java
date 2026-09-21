@@ -130,7 +130,6 @@ class ReviewSupportRequestTest extends BaseEventTest {
     void shouldNotGrantReviewAccessToExternalUsers() {
         assertThat(configuredEvent.getGrants().get(UserRole.CITIZEN)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.DEFENDANT)).isEmpty();
-        assertThat(configuredEvent.getGrants().get(UserRole.DEFENDANT_SOLICITOR)).isEmpty();
     }
 
     @Test

@@ -72,7 +72,7 @@ public class PartiesView {
 
         return OrganisationPolicy.<UserRole>builder()
             .organisation(organisation)
-            .orgPolicyCaseAssignedRole(UserRole.DEFENDANT_SOLICITOR)
+            .orgPolicyCaseAssignedRole(UserRole.GA_DEFENDANT_SOLICITOR)
             .build();
     }
 

@@ -24,10 +24,6 @@ public enum UserRole implements HasRole {
 
     CITIZEN("citizen", CRU, IDAM),
     DEFENDANT("[DEFENDANT]", CRU, RAS),
-    /**
-     * Notice of Change key only, no grants - see {@link NocCaseRoles#DEFENDANT}.
-     */
-    DEFENDANT_SOLICITOR(NocCaseRoles.DEFENDANT, CRU, RAS),
 
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R), IDAM),
 

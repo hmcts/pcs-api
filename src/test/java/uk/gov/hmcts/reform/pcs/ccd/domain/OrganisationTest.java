@@ -20,7 +20,7 @@ class OrganisationTest {
     void shouldAlwaysSerialiseTheOrganisationIdEvenWhenNull() throws Exception {
         OrganisationPolicy<UserRole> policy = OrganisationPolicy.<UserRole>builder()
             .organisation(new Organisation())
-            .orgPolicyCaseAssignedRole(UserRole.DEFENDANT_SOLICITOR)
+            .orgPolicyCaseAssignedRole(UserRole.GA_DEFENDANT_SOLICITOR)
             .build();
 
         String json = objectMapper.writeValueAsString(policy);
@@ -28,7 +28,7 @@ class OrganisationTest {
         assertThat(objectMapper.readTree(json).path("Organisation").has("OrganisationID")).isTrue();
         assertThat(objectMapper.readTree(json).path("Organisation").get("OrganisationID").isNull()).isTrue();
         assertThat(objectMapper.readTree(json).get("OrgPolicyCaseAssignedRole").asText())
-            .isEqualTo("[DEFENDANTSOLICITOR]");
+            .isEqualTo("defendant-solicitor");
     }
 
     @Test

@@ -67,6 +67,9 @@ ccd:
       enabled: true
   ccd-definition-store-api:
     java:
+      # HDPI-7333: unbracketed ChallengeQuestion Answer roles (ccd-definition-store-api#1861).
+      # Revert to the chart default once #1861 is merged and promoted.
+      image: hmctsprod.azurecr.io/ccd/definition-store-api:pr-1861
       devmemoryRequests: '1024Mi'
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
