@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentati
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.CurrentUserView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
@@ -98,6 +99,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final CurrentUserView currentUserView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -167,6 +169,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
 
+        currentUserView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);
         partiesView.setCaseFields(pcsCase, pcsCaseEntity);
         claimView.setCaseFields(pcsCase, pcsCaseEntity);
         documentsView.setCaseFields(pcsCase, pcsCaseEntity, organisationIdForCurrentUser);

@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.view.CurrentUserView;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -145,6 +146,8 @@ class PCSCaseViewTest {
 
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private CurrentUserView currentUserView;
 
     private PCSCaseView underTest;
 
@@ -161,7 +164,7 @@ class PCSCaseViewTest {
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, legalRepresentativeSummaryService, organisationService
+                                    hearingView, legalRepresentativeSummaryService, organisationService, currentUserView
         );
     }
 

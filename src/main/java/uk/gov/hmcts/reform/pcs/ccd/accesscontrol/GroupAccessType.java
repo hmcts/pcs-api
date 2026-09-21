@@ -135,6 +135,19 @@ public enum GroupAccessType implements CCDAccessGroup {
     }
 
     /**
+     * The group role an organisation profile holds when acting in a party role, empty where the
+     * combination has no access type. The read-side counterpart of
+     * {@link #caseAccessGroupIdFor}: that builds the group the data store matches against, this
+     * names the role a caller in that organisation holds on the case.
+     */
+    public static Optional<String> groupRoleFor(String orgProfileId, PartyRole partyRole) {
+        return Optional.ofNullable(orgProfileId)
+            .map(profileId -> new Key(profileId, partyRole))
+            .map(CASE_ACCESS_GROUP_MAP::get)
+            .map(GroupAccessType::getGroupRoleName);
+    }
+
+    /**
      * The group ID template for an organisation profile acting in a party role, empty where the
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
