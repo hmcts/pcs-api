@@ -64,6 +64,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.WLU_ADMIN
     };
 
+    static final AccessProfile[] JUDICIAL_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE
+    };
+
     static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -187,6 +194,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
+
+        buildJudicialNotesTab(builder);
 
         if (shutterService) {
             builder.shutterService();
@@ -353,5 +362,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("judicialNotes", "Judicial Notes")
+            .forRoles(JUDICIAL_NOTE_TAB_ROLES)
+            .field(PCSCase::getJudicialNotes);
     }
 }
