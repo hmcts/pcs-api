@@ -145,6 +145,12 @@ class GenAppVisibilityServiceTest {
         assertThat(documentVisibleToUser).isTrue();
     }
 
+    /**
+     * External professionals also hold {@code caseworker-pcs}, so the generic caseworker role alone
+     * must not make them internal. The distinguishing signals are their rd-professional organisation
+     * and their {@code pui-} roles - both of which genuinely reach this method, unlike the
+     * group-access roles, which are RAS ORGANISATION assignments and never appear here.
+     */
     @Test
     void shouldNotTreatSolicitorWithGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
         // Given
@@ -154,8 +160,29 @@ class GenAppVisibilityServiceTest {
         boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
             party,
             CURRENT_USER_ID,
+            ORG_ID,
+            List.of(UserRole.PCS_CASE_WORKER.getRole(), "pui-case-manager")
+        );
+
+        // Then
+        assertThat(documentVisibleToUser).isFalse();
+    }
+
+    /**
+     * Fails closed: if the rd-professional lookup yields no organisation - a 404 or a transient
+     * failure both surface as null - the {@code pui-} role alone still marks the caller external.
+     */
+    @Test
+    void shouldNotTreatSolicitorAsInternalWhenOrganisationLookupYieldsNothing() {
+        // Given
+        PartyEntity party = mock(PartyEntity.class);
+
+        // When
+        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
+            party,
+            CURRENT_USER_ID,
             null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.GA_CLAIMANT_SOLICITOR.getRole())
+            List.of(UserRole.PCS_CASE_WORKER.getRole(), "pui-case-manager")
         );
 
         // Then

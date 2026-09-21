@@ -33,10 +33,7 @@ public class GenAppVisibilityService {
         Arrays.stream(JUDICIAL_HISTORY_ROLES)
     ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
     private static final String PCS_CASEWORKER_ROLE = UserRole.PCS_CASE_WORKER.getRole();
-    private static final Set<String> SOLICITOR_ORG_ROLES = Set.of(
-        UserRole.GA_CLAIMANT_SOLICITOR.getRole(),
-        UserRole.GA_DEFENDANT_SOLICITOR.getRole()
-    );
+    private static final String PROFESSIONAL_ROLE_PREFIX = "pui-";
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
                                          UUID userId,
@@ -62,7 +59,7 @@ public class GenAppVisibilityService {
                                                 String organisationId,
                                                 Collection<String> currentUserRoles) {
 
-        if (isInternalUser(currentUserRoles)) {
+        if (isInternalUser(currentUserRoles, organisationId)) {
             return true;
         }
 
@@ -125,17 +122,28 @@ public class GenAppVisibilityService {
             .toList();
     }
 
-    private boolean isInternalUser(Collection<String> currentUserRoles) {
+    private boolean isInternalUser(Collection<String> currentUserRoles, String organisationId) {
         if (currentUserRoles == null || currentUserRoles.isEmpty()) {
             return false;
         }
 
         return currentUserRoles.stream().anyMatch(INTERNAL_ROLES::contains)
-            || isPcsCaseworkerWithoutSolicitorRole(currentUserRoles);
+            || isPcsCaseworkerWithoutOrganisation(currentUserRoles, organisationId);
     }
 
-    private boolean isPcsCaseworkerWithoutSolicitorRole(Collection<String> currentUserRoles) {
+    /**
+     * An HMCTS caseworker, as opposed to an external professional who also holds
+     * {@code caseworker-pcs}. Both signals must agree before the caller is treated as internal, so
+     * any hint of being external falls through to the party and organisation checks below.
+     *
+     * <p>Deliberately not keyed on a group-access role: those are RAS ORGANISATION assignments and
+     * never reach {@code currentUserRoles}, which is IDAM userinfo plus CCD case roles only. Testing
+     * for their absence would always pass and silently open this guard.
+     */
+    private boolean isPcsCaseworkerWithoutOrganisation(Collection<String> currentUserRoles,
+                                                       String organisationId) {
         return currentUserRoles.contains(PCS_CASEWORKER_ROLE)
-            && currentUserRoles.stream().noneMatch(SOLICITOR_ORG_ROLES::contains);
+            && organisationId == null
+            && currentUserRoles.stream().noneMatch(role -> role.startsWith(PROFESSIONAL_ROLE_PREFIX));
     }
 }
