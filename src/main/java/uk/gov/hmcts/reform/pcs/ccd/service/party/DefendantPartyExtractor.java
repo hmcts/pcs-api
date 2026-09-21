@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -41,6 +42,19 @@ public class DefendantPartyExtractor {
 
         return mainClaim.map(this::extractDefendantParties).orElse(Collections.emptyList());
 
+    }
+
+    public List<PartyEntity> extractDefendantsRepresentedBy(PcsCaseEntity caseEntity, String organisationId) {
+        return summaryScreenSafeExtractDefendants(caseEntity).stream()
+            .filter(defendant -> isActivelyRepresentedBy(defendant, organisationId))
+            .toList();
+    }
+
+    private boolean isActivelyRepresentedBy(PartyEntity defendant, String organisationId) {
+        return defendant.getClaimPartyOrganisationList().stream()
+            .anyMatch(partyOrganisation ->
+                          organisationId.equals(partyOrganisation.getOrganisation().getOrganisationId())
+                              && YesOrNo.YES.equals(partyOrganisation.getActive()));
     }
 
     private List<PartyEntity> extractDefendantParties(ClaimEntity mainClaim) {

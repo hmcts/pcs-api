@@ -176,6 +176,20 @@ public class DraftCaseDataService {
             .isPresent();
     }
 
+    public boolean hasMeaningfulRespondDraft(long caseReference,
+                                             EventId eventId,
+                                             UUID partyId,
+                                             String legalRepresentativeOrganisationId) {
+
+        if (!hasUnsubmittedCaseData(caseReference, eventId, partyId, legalRepresentativeOrganisationId)) {
+            return false;
+        }
+        return getUnsubmittedCaseData(caseReference, eventId, partyId, legalRepresentativeOrganisationId)
+            .map(PCSCase::getPossessionClaimResponse)
+            .map(PossessionClaimResponse::getDefendantResponses)
+            .isPresent();
+    }
+
     @Transactional
     public <T> void saveUnsubmittedEventData(long caseReference,
                                              T eventData,
