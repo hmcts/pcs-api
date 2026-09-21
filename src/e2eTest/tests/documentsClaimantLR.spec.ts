@@ -161,8 +161,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
 
   test('Claimant LR Upload documents for Claim or CounterClaim submitted - SOMETHING_ELSE', async () => {
     let docRelatedToOption = confirmIfTheseDocumentsRelateToAnApplication.noRadioOption;
-    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[2];
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[3];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
     await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
     await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
@@ -173,7 +172,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     });
     await performAction('uploadAdditionalDocsLR', {
       documents: [
-        { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementDropDownInput },
+        { type: uploadYourDocuments.witnessStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.witnessStatementDropDownInput },
       ]
     });
     await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
@@ -185,7 +184,7 @@ test.describe('Claimant Legal Representative - Upload Documents- e2e Journey @ni
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
       submitPayload: submitPayload,
-      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+      claimantLRUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
 
   });
