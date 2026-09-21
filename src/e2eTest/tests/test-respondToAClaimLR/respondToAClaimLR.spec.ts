@@ -73,4 +73,22 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performValidation('mainHeader', home.caseParties);
     await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
   });
+
+  test('Respond to a claim - Verify respond to claim link', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
+    await performAction('clickButton', caseSummary.go);
+    await performAction('selectRespondToClaimContactPreferences', {
+      representativeReference: contactDetailsLR.defendantLegalRepresentativeReferenceTextInput,
+      notifications: contactDetailsLR.yesRadioOption,
+      correspondenceAddress: contactDetailsLR.noRadioOption,
+      phoneNumber: contactDetailsLR.noRadioOption
+    });
+    await performAction('clickButton', 'Close and Return to case details');
+    await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
+    //enabled
+    await performAction('midEventRespondPossessionClaimLRAPI');
+    await performAction('submitPossessionClaimResponseLRAPI');
+    await performAction('clickButton', caseSummary.summaryTab);
+    //disabled
+  });
 });
