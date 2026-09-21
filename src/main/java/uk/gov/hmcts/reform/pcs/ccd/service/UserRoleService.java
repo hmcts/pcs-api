@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@Slf4j
 public class UserRoleService {
 
     private static final Duration RAS_ROLE_CACHE_TTL = Duration.ofMinutes(1);
@@ -70,7 +72,11 @@ public class UserRoleService {
             ));
         }
 
-        return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
+        List<String> combined = List.copyOf(roles);
+        log.info("PCS-ROLE-DIAG caseRef={} idamRoles={} combinedRoles={}",
+                 caseReference, safeRoles(currentUserDetails.getRoles()), combined);
+
+        return new UserRoles(UUID.fromString(currentUserId), combined);
     }
 
     /**
@@ -93,15 +99,23 @@ public class UserRoleService {
         Collection<String> roles = safeRoles(securityContextService.getCurrentUserDetails().getRoles());
 
         if (roles.contains(CITIZEN_ROLE)) {
+            logCapacity(roles, organisationId, UserCapacity.CITIZEN);
             return UserCapacity.CITIZEN;
         }
         if (isExternalProfessional(roles, organisationId)) {
+            logCapacity(roles, organisationId, UserCapacity.PROFESSIONAL);
             return UserCapacity.PROFESSIONAL;
         }
         if (roles.stream().anyMatch(INTERNAL_ROLES::contains) || roles.contains(PCS_CASEWORKER_ROLE)) {
+            logCapacity(roles, organisationId, UserCapacity.INTERNAL);
             return UserCapacity.INTERNAL;
         }
+        logCapacity(roles, organisationId, UserCapacity.CITIZEN);
         return UserCapacity.CITIZEN;
+    }
+
+    private static void logCapacity(Collection<String> roles, String organisationId, UserCapacity capacity) {
+        log.info("PCS-ROLE-DIAG capacity={} organisationId={} idamRoles={}", capacity, organisationId, roles);
     }
 
     private static boolean isExternalProfessional(Collection<String> roles, String organisationId) {
