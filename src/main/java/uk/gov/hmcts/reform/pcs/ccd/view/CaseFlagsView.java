@@ -38,7 +38,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVis
 @Slf4j
 public class CaseFlagsView {
 
-    private static final String DEFENDANT = "Defendant";
+    public static final String DEFENDANT = "Defendant";
     private static final String CLAIMANT = "Claimant";
     public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";
@@ -89,14 +89,20 @@ public class CaseFlagsView {
                        caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
                        caseFlagEntity.getFlagRefData().getAvailableExternally()))
-                   .path(getPaths(caseFlagEntity.getPaths()))
+                   .path(parsePaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
     }
 
-    // The limit of 2 keeps a value containing the path delimiter intact
-    private List<ListValue<String>> getPaths(String entityPaths) {
+    /**
+     * Parses the delimited {@code paths} column of a stored flag back into the CCD path list.
+     * The limit of 2 keeps a value containing the path delimiter intact.
+     */
+    public static List<ListValue<String>> parsePaths(String entityPaths) {
+        if (entityPaths == null) {
+            return List.of();
+        }
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER, 2))

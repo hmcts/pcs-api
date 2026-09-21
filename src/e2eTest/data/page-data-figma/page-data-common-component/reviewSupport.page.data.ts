@@ -28,6 +28,12 @@ export const reviewSupport = {
     updateCommentLabel: `Please provide your comments below`,
     updateCommentHintText: `Do not include any sensitive information such as personal details.`,
     updateCommentText: `Test Change Manage Support`,
-    reviewCommentLabel: `Please provide your comments below`,
+    reviewCommentLabel: `Update flag "Evidence by live link"comments`,
     reviewCommentText: `Test Change Review Support`,
+    reviewStatusLabel: `Evidence by live link`,
+    activeOption: `Active`,
+    inActiveOption: `Inactive`,
+    notApproveOption: `Not approved`,
+    reasonForStatusChangeHintText: `Describe reason for status change.`,
+    reasonForStatusChangeText: `Test Change Reason for Status Change`,
 };
