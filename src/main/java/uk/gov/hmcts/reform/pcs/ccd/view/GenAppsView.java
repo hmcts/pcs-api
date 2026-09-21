@@ -90,6 +90,7 @@ public class GenAppsView {
 
     private DocumentWithId getSubmissionDocument(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
+            .filter(documentEntity -> !documentEntity.isRemoved())
             .map(documentEntity -> DocumentWithId.builder()
                 .id(documentEntity.getId().toString())
                 .document(mapDocument(documentEntity))
@@ -102,6 +103,7 @@ public class GenAppsView {
         addDocumentReferences(genAppEntity.getSubmissionDocument(), seenDocumentReferences);
 
         return genAppEntity.getDocuments().stream()
+            .filter(documentEntity -> !documentEntity.isRemoved())
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
                 return ListValue.<Document>builder()

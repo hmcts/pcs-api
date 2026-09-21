@@ -32,6 +32,7 @@ public class RequestSupport implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.requestSupport.name(), this::submit, this::start)
                 .forStates(CASE_FLAG_STATES)
+                .nonConcurrent()
                 .name("Request support")
                 .description("To request support")
                 .showSummary()
