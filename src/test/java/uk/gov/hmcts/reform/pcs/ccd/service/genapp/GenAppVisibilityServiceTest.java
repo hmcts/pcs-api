@@ -17,9 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserCapacity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -28,7 +25,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -45,17 +41,11 @@ class GenAppVisibilityServiceTest {
     @Mock(strictness = Mock.Strictness.LENIENT)
     private OrganisationRepository organisationRepository;
 
-    @Mock(strictness = Mock.Strictness.LENIENT)
-    private UserRoleService userRoleService;
-
     private GenAppVisibilityService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppVisibilityService(organisationRepository, userRoleService);
-        // The classification rule itself is covered by UserRoleServiceTest; here we state the
-        // population directly. External is the default, so the party and organisation checks run.
-        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.PROFESSIONAL);
+        underTest = new GenAppVisibilityService(organisationRepository);
     }
 
     @ParameterizedTest
@@ -121,7 +111,6 @@ class GenAppVisibilityServiceTest {
     @ParameterizedTest
     @MethodSource("internalRoles")
     void shouldShowWithoutNoticeGenAppsToInternalUsers(UserRole internalRole) {
-        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
@@ -139,29 +128,11 @@ class GenAppVisibilityServiceTest {
         assertThat(genAppVisibleToUser).isTrue();
     }
 
-    @Test
-    void shouldTreatGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
-        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
-        // Given
-        PartyEntity party = mock(PartyEntity.class);
-
-        // When
-        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
-            party,
-            CURRENT_USER_ID,
-            null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole())
-        );
-
-        // Then
-        assertThat(documentVisibleToUser).isTrue();
-    }
-
     /**
-     * External professionals also hold {@code caseworker-pcs}, so the generic caseworker role alone
-     * must not make them internal. The distinguishing signals are their rd-professional organisation
-     * and their {@code pui-} roles - both of which genuinely reach this method, unlike the
-     * group-access roles, which are RAS ORGANISATION assignments and never appear here.
+     * External solicitors also hold {@code caseworker-pcs}, so the generic caseworker role alone
+     * must not make them internal. Keyed on the group access role now that HDPI-7333 has retired
+     * {@code caseworker-pcs-solicitor}; organisational role assignments reach this service, so the
+     * group role genuinely appears here.
      */
     @Test
     void shouldNotTreatSolicitorWithGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
@@ -172,29 +143,8 @@ class GenAppVisibilityServiceTest {
         boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
             party,
             CURRENT_USER_ID,
-            ORG_ID,
-            List.of(UserRole.PCS_CASE_WORKER.getRole(), "pui-case-manager")
-        );
-
-        // Then
-        assertThat(documentVisibleToUser).isFalse();
-    }
-
-    /**
-     * Fails closed: if the rd-professional lookup yields no organisation - a 404 or a transient
-     * failure both surface as null - the {@code pui-} role alone still marks the caller external.
-     */
-    @Test
-    void shouldNotTreatSolicitorAsInternalWhenOrganisationLookupYieldsNothing() {
-        // Given
-        PartyEntity party = mock(PartyEntity.class);
-
-        // When
-        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
-            party,
-            CURRENT_USER_ID,
             null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole(), "pui-case-manager")
+            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.GA_DEFENDANT_SOLICITOR.getRole())
         );
 
         // Then
@@ -287,7 +237,6 @@ class GenAppVisibilityServiceTest {
 
     @Test
     void shouldReturnVisibleGenAppsForUserUsingRoles() {
-        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
         // Given
         GenAppEntity olderWithoutNoticeGenApp = createGenApp(
             GEN_APP_ISSUED,

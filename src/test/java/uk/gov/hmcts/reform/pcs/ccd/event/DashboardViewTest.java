@@ -80,7 +80,7 @@ class DashboardViewTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(organisationRepository, userRoleService);
+        genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
 
         dashboardJourneyService = new DashboardJourneyService(
             draftCaseDataService,

@@ -2,27 +2,36 @@ package uk.gov.hmcts.reform.pcs.ccd.service.genapp;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserCapacity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Service
 @AllArgsConstructor
 public class GenAppVisibilityService {
 
     private final OrganisationRepository organisationRepository;
-    private final UserRoleService userRoleService;
+
+    private static final Set<String> INTERNAL_ROLES = Stream.concat(
+        Arrays.stream(CASEWORKER_ROLES),
+        Arrays.stream(JUDICIAL_HISTORY_ROLES)
+    ).map(UserRole::getRole).collect(Collectors.toUnmodifiableSet());
 
     public boolean isGenAppVisibleToUser(GenAppEntity genAppEntity,
                                          UUID userId,
@@ -48,7 +57,7 @@ public class GenAppVisibilityService {
                                                 String organisationId,
                                                 Collection<String> currentUserRoles) {
 
-        if (isInternalUser(currentUserRoles, organisationId)) {
+        if (isInternalUser(currentUserRoles)) {
             return true;
         }
 
@@ -111,11 +120,11 @@ public class GenAppVisibilityService {
             .toList();
     }
 
-    private boolean isInternalUser(Collection<String> currentUserRoles, String organisationId) {
+    private boolean isInternalUser(Collection<String> currentUserRoles) {
         if (currentUserRoles == null || currentUserRoles.isEmpty()) {
             return false;
         }
 
-        return userRoleService.getCurrentUserCapacity(organisationId) == UserCapacity.INTERNAL;
+        return currentUserRoles.stream().anyMatch(INTERNAL_ROLES::contains);
     }
 }

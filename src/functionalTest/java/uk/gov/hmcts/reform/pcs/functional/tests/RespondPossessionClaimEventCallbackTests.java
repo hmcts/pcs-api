@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -93,25 +94,27 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
     @Order(3)
     void respondToPossessionClaimSubmitEventCallbackTest() {
         Map<String,String> caseInternalDetails = apiSteps.getInternalCaseDetails(caseReference);
+        String validateClaimRequestBody = PayloadLoader.load(
+            "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
+            Map.of("caseReference", caseReference, "draftVersion", 0)
+        );
+        Response draftSaveResponse = apiSteps.validateEventData(
+            caseType,
+            PcsIdamTokenClient.UserType.citizenUser,
+            "respondPossessionClaimrespondToPossessionDraftSavePage",
+            validateClaimRequestBody);
+        long reviewedDraftVersion = draftSaveResponse.jsonPath().getLong("data.possessionClaimResponse.draftVersion");
+
         String respondClaimRequestBody = PayloadLoader.load(
             "/payloads/repondPossessionClaim-submitEventCallbackRequest.json",
             Map.of(
                 "caseTypeId", caseType,
                 "caseId", caseReference,
                 "internalCaseId", caseInternalDetails.get("case-id"),
-                "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version"))
-
+                "caseVersion", Integer.parseInt(caseInternalDetails.get("case-version")),
+                "draftVersion", reviewedDraftVersion
             )
         );
-        String validateClaimRequestBody = PayloadLoader.load(
-            "/payloads/repondPossessionClaim-validateEventCallbackRequest.json",
-            Map.of("caseReference",caseReference)
-        );
-        apiSteps.validateEventData(
-            caseType,
-            PcsIdamTokenClient.UserType.citizenUser,
-            "respondPossessionClaimrespondToPossessionDraftSavePage",
-            validateClaimRequestBody);
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
