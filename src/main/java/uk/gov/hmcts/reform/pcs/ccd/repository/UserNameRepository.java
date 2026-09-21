@@ -12,6 +12,6 @@ import java.util.UUID;
 public interface UserNameRepository extends JpaRepository<UserNameEntity, Integer> {
 
     @Query("SELECT u FROM UserNameEntity u WHERE u.idamId = :idamId")
-    Optional<UserNameEntity> findByIdamId(UUID id);
+    Optional<UserNameEntity> findByIdamId(UUID idamId);
 
 }
