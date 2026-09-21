@@ -122,6 +122,14 @@ public class JacksonConfiguration {
             .addModules(new Jdk8Module(), new JavaTimeModule(), new ParameterNamesModule())
             .build();
 
+        com.fasterxml.jackson.databind.module.SimpleModule jackson3Compatibility =
+            new com.fasterxml.jackson.databind.module.SimpleModule();
+        jackson3Compatibility.addDeserializer(
+            tools.jackson.databind.JsonNode.class,
+            new Jackson3JsonNodeDeserializer()
+        );
+        mapper.registerModule(jackson3Compatibility);
+
         mapper.setDateFormat(new StdDateFormat());
 
         return mapper;
@@ -144,5 +152,33 @@ public class JacksonConfiguration {
         mapper.configOverride(ArrayNode.class).setMergeable(false);
 
         return mapper;
+    }
+
+    private static class Jackson3JsonNodeDeserializer
+        extends com.fasterxml.jackson.databind.deser.std.StdDeserializer<tools.jackson.databind.JsonNode> {
+
+        private final tools.jackson.databind.ObjectMapper jackson3Mapper =
+            tools.jackson.databind.json.JsonMapper.builder().build();
+
+        Jackson3JsonNodeDeserializer() {
+            super(tools.jackson.databind.JsonNode.class);
+        }
+
+        @Override
+        public tools.jackson.databind.JsonNode deserialize(
+            com.fasterxml.jackson.core.JsonParser parser,
+            com.fasterxml.jackson.databind.DeserializationContext context
+        ) throws java.io.IOException {
+            com.fasterxml.jackson.databind.JsonNode node = parser.getCodec().readTree(parser);
+            try {
+                return jackson3Mapper.readTree(node.toString());
+            } catch (tools.jackson.core.JacksonException exception) {
+                throw com.fasterxml.jackson.databind.JsonMappingException.from(
+                    parser,
+                    "Failed to bridge JSON into Jackson 3",
+                    exception
+                );
+            }
+        }
     }
 }
