@@ -2,13 +2,17 @@ package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class DefendantPartyExtractorTest {
 
     private static final long CASE_REFERENCE = 12345L;
+    private static final String ORGANISATION_ID = "organisation-1";
+    private static final String OTHER_ORGANISATION_ID = "organisation-2";
 
     private DefendantPartyExtractor underTest;
 
@@ -186,5 +192,74 @@ class DefendantPartyExtractorTest {
 
         // Then
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void extractDefendantsRepresentedBy_shouldReturnOnlyDefendantsRepresentedByOrganisation() {
+        // Given
+        PartyEntity representedDefendant = defendantRepresentedBy(ORGANISATION_ID, YesOrNo.YES);
+        PartyEntity otherFirmsDefendant = defendantRepresentedBy(OTHER_ORGANISATION_ID, YesOrNo.YES);
+
+        PcsCaseEntity caseEntity = caseWithDefendants(representedDefendant, otherFirmsDefendant);
+
+        // When
+        List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(result).containsExactly(representedDefendant);
+    }
+
+    @Test
+    void extractDefendantsRepresentedBy_shouldExcludeDefendantWhenRepresentationIsNotActive() {
+        // Given
+        PartyEntity inactivelyRepresentedDefendant = defendantRepresentedBy(ORGANISATION_ID, YesOrNo.NO);
+
+        PcsCaseEntity caseEntity = caseWithDefendants(inactivelyRepresentedDefendant);
+
+        // When
+        List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void extractDefendantsRepresentedBy_shouldReturnEmptyListWhenDefendantHasNoRepresentation() {
+        // Given
+        PcsCaseEntity caseEntity = caseWithDefendants(PartyEntity.builder().build());
+
+        // When
+        List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    private PartyEntity defendantRepresentedBy(String organisationId, YesOrNo active) {
+        ClaimPartyOrganisationEntity partyOrganisation = ClaimPartyOrganisationEntity.builder()
+            .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
+            .active(active)
+            .build();
+
+        return PartyEntity.builder()
+            .claimPartyOrganisationList(List.of(partyOrganisation))
+            .build();
+    }
+
+    private PcsCaseEntity caseWithDefendants(PartyEntity... defendants) {
+        List<ClaimPartyEntity> claimParties = Arrays.stream(defendants)
+            .map(defendant -> ClaimPartyEntity.builder()
+                .role(PartyRole.DEFENDANT)
+                .party(defendant)
+                .build())
+            .toList();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .claimParties(claimParties)
+            .build();
+
+        return PcsCaseEntity.builder()
+            .claims(List.of(claimEntity))
+            .build();
     }
 }
