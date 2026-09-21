@@ -144,7 +144,8 @@ export class CaseManagementCommonUtils {
   }
 
   public static renameDocument(fileName: string, fileDate?: string, app?: string): string {
-    const baseName = fileName.replace(/\.pdf$/i, '');
+    const extension = fileName.match(/\.[^.]+$/)?.[0] ?? '';
+    const baseName = fileName.replace(/\.[^.]+$/, '');
     const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
       const [day, month, year] = fileDate.split('/');
@@ -160,6 +161,6 @@ export class CaseManagementCommonUtils {
       parts.push(gaNumber);
     }
 
-    return `${parts.join(' ')}.pdf`;
+    return `${parts.join(' ')}${extension}`;
   }
 }

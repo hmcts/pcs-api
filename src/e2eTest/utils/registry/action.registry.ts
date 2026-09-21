@@ -199,7 +199,7 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
-    ['removeFile', new RemoveFileAction()],
+    ['removeFile', new RemoveFileAction()],    
   ]);
 
   static getAction(actionName: string): IAction {

@@ -1628,6 +1628,11 @@ export class CreateCaseAction implements IAction {
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let userInputFiles:string[]= [];
+    const file =
+      caseFile.caseWorkerUpload ??
+      caseFile.caseWorkerAmend ??
+      caseFile.genApp;    
+
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1675,20 +1680,16 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
-        if (caseFile.caseWorkerUpload) {
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1701,7 +1702,7 @@ export class CreateCaseAction implements IAction {
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
-    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+    let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
     if (caseFile.allowEmptyFolder) {
       if (fileCount > 0) {
@@ -1712,7 +1713,20 @@ export class CreateCaseAction implements IAction {
       return;
     }
 
-    if (fileCount === 0) {
+    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+      await expect(async () => {        
+        await performAction('clickTab', home.caseSummary);
+        await performAction('clickTab', home.caseFileView);        
+        await this.checkFolderCount(page);
+        const text = await folder.innerText();
+        fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+        expect(fileCount).toBeGreaterThan(0);
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
+    }
+
+    if (fileCount === 0) {      
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -2057,5 +2071,13 @@ export class CreateCaseAction implements IAction {
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
+  }
+  private async checkFolderCount(page:Page){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
   }
 }
