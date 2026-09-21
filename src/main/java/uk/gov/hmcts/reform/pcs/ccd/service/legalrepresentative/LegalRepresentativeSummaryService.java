@@ -90,7 +90,7 @@ public class LegalRepresentativeSummaryService {
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
             // Only reached for an actively linked organisation, so the case has a claim and defendants
             boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
-                .validateAndGetDefendants(pcsCaseEntity, organisationId, false).isEmpty();
+                .validateAndGetDefendants(pcsCaseEntity, organisationId).isEmpty();
             pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
             pcsCase.setSummaryLegalRepresentativeMarkdown(hasUnsubmittedDefendantResponses
