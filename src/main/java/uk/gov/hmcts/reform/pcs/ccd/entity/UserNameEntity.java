@@ -21,7 +21,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "judicial_note")
+@Table(name = "user_name")
 @Setter
 @Getter
 @NoArgsConstructor
