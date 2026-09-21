@@ -48,6 +48,9 @@ spring:
     import: "optional:configtree:/mnt/secrets/pcs/"
   application:
     name: pcs api
+  cloud:
+    loadbalancer:
+      enabled: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${PCS_DB_PORT:6432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
@@ -350,6 +353,9 @@ camunda:
 work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}
+
+role-assigment:
+  url: ${ROLE_ASSIGNMENT_URL:http://localhost:4096}
 
 shutter:
   service: ${SHUTTER_SERVICE:false}

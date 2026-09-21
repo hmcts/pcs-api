@@ -24,7 +24,7 @@ public class DocumentsYouveUploadedChecklistPage implements CcdPageConfiguration
             .showCondition(and(WALES, featureFlagsEnabled(RELEASE_1_DOT_2, WALES_MAKE_A_CLAIM)))
             .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label("documentsYouveUploadedChecklist-separator", "---")
-            .mandatory(PCSCase::getDocumentsYouveUploaded)
+            .optional(PCSCase::getDocumentsYouveUploaded)
             .label("documentsYouveUploadedChecklist-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
