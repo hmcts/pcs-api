@@ -29,10 +29,17 @@ public enum DocumentUploadCategory {
         DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
 
     public String getLabel(LocalDateTime dateTime) {
+        return getLabel(dateTime, null);
+    }
+
+    public String getLabel(LocalDateTime dateTime, String applicationReference) {
         if (!requiresDate) {
             return label;
         }
         String dateText = dateTime == null ? "" : dateTime.format(LABEL_DATE_FORMAT);
-        return String.format(label, dateText);
+        String labelText = String.format(label, dateText);
+        return applicationReference == null || applicationReference.isBlank()
+            ? labelText
+            : labelText.replace("relate to ", "relate to %s: ".formatted(applicationReference));
     }
 }
