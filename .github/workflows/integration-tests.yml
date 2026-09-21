@@ -70,6 +70,23 @@ jobs:
   # machine. Wiremock is started by Gradle via `dockerCompose.isRequiredBy cftlibTest`.
   cftlib-test:
     name: Cftlib tests
+    # [TEMP - HDPI-7333] Disabled. Re-enable by deleting this `if: false`.
+    #
+    # cftlib runs a definition store bundled by rse-cft-lib as a git submodule pinned to
+    # ccd-definition-store-api's `definition-import-optimisations` branch. That branch does not
+    # carry ccd-definition-store-api#1861, so it rejects this case type's unbracketed
+    # ChallengeQuestion Answer role:
+    #
+    #   ChallengeQuestionTab Invalid value: ${defendant1.firstName}:defendant-solicitor
+    #   is not a valid Answer, Please check the expression format and the roles.
+    #
+    # The same definition imports cleanly on the preview, where the definition-store image is
+    # pinnable (charts/pcs-api/values.ccd.preview.template.yaml). cftlib is local/CI tooling and
+    # never runs in a deployed environment, so this is a gap in tooling, not in the definition.
+    #
+    # Re-enable once #1861 is on `definition-import-optimisations` and rse-cft-lib has been
+    # released with the submodule bumped. MUST NOT reach master while disabled.
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 40
     permissions:
