@@ -20,7 +20,7 @@ public class UserNameService {
         UserInfo userInfo = securityContextService.getCurrentUserDetails();
         UUID idamId = UUID.fromString(userInfo.getUid());
         return userNameRepository.findByIdamId(idamId)
-            .orElse(createUserNameEntity(idamId, userInfo.getName()));
+            .orElse(userNameRepository.save(createUserNameEntity(idamId, userInfo.getName())));
     }
 
     private UserNameEntity createUserNameEntity(UUID idamId, String name) {
