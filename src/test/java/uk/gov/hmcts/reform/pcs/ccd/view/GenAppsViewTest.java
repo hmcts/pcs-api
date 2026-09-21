@@ -244,7 +244,29 @@ class GenAppsViewTest {
     }
 
     @Test
-    void shouldSetSupporingDocsDocument() {
+    void shouldNotSetSubmissionDocumentWhenSoftDeleted() {
+        // Given
+        LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
+        GenAppEntity genAppEntity1 = createGenAppEntity(UUID.randomUUID(), genApp1SubmittedDate);
+        DocumentEntity submissionDocumentEntity = mock(DocumentEntity.class);
+        when(submissionDocumentEntity.isRemoved()).thenReturn(true);
+        genAppEntity1.setSubmissionDocument(submissionDocumentEntity);
+
+        when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity1));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        // Then
+        List<ListValue<GeneralApplication>> genApps = pcsCase.getGenApps();
+        assertThat(genApps).hasSize(1);
+
+        DocumentWithId actualSubmissionDocument = genApps.getFirst().getValue().getSubmissionDocument();
+        assertThat(actualSubmissionDocument).isNull();
+    }
+
+    @Test
+    void shouldSetSupportingDocuments() {
         // Given
         UUID pcsDocumentId1 = UUID.randomUUID();
         UUID pcsDocumentId2 = UUID.randomUUID();
@@ -254,11 +276,13 @@ class GenAppsViewTest {
         when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(genAppEntity));
         DocumentEntity documentEntity1 = mock(DocumentEntity.class);
         DocumentEntity documentEntity2 = mock(DocumentEntity.class);
+        DocumentEntity documentEntity3 = mock(DocumentEntity.class);
+        when(documentEntity3.isRemoved()).thenReturn(true);
 
         final Document expectedSupportingDocument1 = stubDocument(documentEntity1, pcsDocumentId1, "document1.pdf");
         final Document expectedSupportingDocument2 = stubDocument(documentEntity2, pcsDocumentId2, "document2.pdf");
 
-        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2));
+        genAppEntity.setDocuments(List.of(documentEntity1, documentEntity2, documentEntity3));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
