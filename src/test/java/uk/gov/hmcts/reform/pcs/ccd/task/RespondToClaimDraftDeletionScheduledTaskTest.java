@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DraftResponseDeletionService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -37,7 +40,8 @@ class RespondToClaimDraftDeletionScheduledTaskTest {
 
     @Mock
     private DraftResponseDeletionService draftResponseDeletionService;
-
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Mock
     private ExecutionOperations<Void> executionOperations;
 
@@ -46,6 +50,19 @@ class RespondToClaimDraftDeletionScheduledTaskTest {
     @BeforeEach
     void beforeEach() {
         underTest = newScheduledTask("DAILY|02:00");
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+    }
+
+    @Test
+    void shouldIgnoreDeleteDraftResponsesWhenNotEnabled() {
+        // Given
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+        // When
+        underTest.runSweep();
+
+        // Then
+        verify(draftResponseDeletionService, never()).deleteRespondPossessionClaimBatch(DISCARD_AFTER_DAYS);
     }
 
     @Test
@@ -132,7 +149,8 @@ class RespondToClaimDraftDeletionScheduledTaskTest {
 
     private RespondToClaimDraftDeletionScheduledTask newScheduledTask(String schedule) {
         return new RespondToClaimDraftDeletionScheduledTask(schedule, DISCARD_AFTER_DAYS, MAX_RETRIES,
-                                                            Duration.ofSeconds(10), draftResponseDeletionService
+                                                            Duration.ofSeconds(10), draftResponseDeletionService,
+                                                            featureToggleService
         );
     }
 
