@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.hearing;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
-
-import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -21,13 +19,14 @@ public class HearingEntityTest {
     @Test
     void shouldAddParty() {
         // Given
-        UUID uuid = mock(UUID.class);
+        PartyEntity partyEntity = mock(PartyEntity.class);
 
         // When
-        hearingEntity.addParty(uuid);
+        hearingEntity.addParty(partyEntity);
 
         // Then
-        assertThat(hearingEntity.getNoticeParties()).hasSize(1);
-        assertThat(hearingEntity.getNoticeParties().getFirst()).isEqualTo(uuid);
+        assertThat(hearingEntity.getHearingNoticeParties()).hasSize(1);
+        assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity);
+        assertThat(hearingEntity.getHearingNoticeParties().getFirst().getHearing()).isEqualTo(hearingEntity);
     }
 }

@@ -34,9 +34,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.ClaimantDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DefendantDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.ClaimantDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.DefendantDocumentTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -70,6 +72,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -83,6 +86,10 @@ class DocumentServiceTest {
     private DocumentIdExtractor documentIdExtractor;
     @Mock
     private DocumentNameService documentNameService;
+    @Mock
+    private DocumentTypeMapper documentTypeMapper;
+    @Mock
+    private DocumentCategoryMapper documentCategoryMapper;
     @Mock
     private TaskDescriptionService taskDescriptionService;
     @Mock
@@ -104,6 +111,7 @@ class DocumentServiceTest {
         when(pcsCase.getCaseReference()).thenReturn(CASE_REFERENCE);
 
         underTest = new DocumentService(documentRepository, documentIdExtractor, documentNameService,
+                                        documentTypeMapper, documentCategoryMapper,
                                         taskDescriptionService, camundaService);
     }
 
@@ -187,6 +195,11 @@ class DocumentServiceTest {
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
 
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.WITNESS_STATEMENT))
+            .thenReturn(DocumentType.WITNESS_STATEMENT);
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.RENT_STATEMENT))
+            .thenReturn(DocumentType.RENT_STATEMENT);
+
         // When
         underTest.createAllDocuments(pcsCase);
 
@@ -206,51 +219,55 @@ class DocumentServiceTest {
             .containsExactlyInAnyOrder(DocumentType.WITNESS_STATEMENT, DocumentType.RENT_STATEMENT);
     }
 
-    @ParameterizedTest
-    @EnumSource(AdditionalDocumentType.class)
-    void shouldMapAllAdditionalDocumentTypes(AdditionalDocumentType additionalDocumentType) {
+    @Test
+    void shouldMapAdditionalDocumentType() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.OCCUPATION_LICENCE;
         DynamicList documentTypeList = new DynamicList(
                 new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
                 new ArrayList<>()
         );
         AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .document(Document.builder()
-                    .filename("userEnteredDetails.pdf")
-                    .uploadTimestamp(LocalDateTime.now())
-                    .url("https://host/" + UUID.randomUUID())
-                    .binaryUrl("someUrl")
-                    .categoryId("uploaded-category")
-                    .build())
-            .documentType(documentTypeList)
-            .build();
+                .document(Document.builder()
+                        .filename("userEnteredDetails.pdf")
+                        .uploadTimestamp(LocalDateTime.now())
+                        .url("https://host/" + UUID.randomUUID())
+                        .binaryUrl("someUrl")
+                        .categoryId("uploaded-category")
+                        .build())
+                .documentType(documentTypeList)
+                .build();
 
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
                 ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
 
+        DocumentType expectedDocumentType = mock(DocumentType.class);
+        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(expectedDocumentType);
+
         // When
         underTest.createAllDocuments(pcsCase);
 
         // Then
-        DocumentType expectedDocumentType = DocumentType.valueOf(additionalDocumentType.name());
-
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
 
         assertThat(capturedEntities)
-            .extracting(DocumentEntity::getType)
-            .containsExactly(expectedDocumentType);
+                .extracting(DocumentEntity::getType)
+                .containsExactly(expectedDocumentType);
     }
 
     @ParameterizedTest
-    @MethodSource("additionalDocumentCategoryScenarios")
-    void shouldMapAdditionalDocumentsToCaseFileCategories(AdditionalDocumentType additionalDocumentType,
+    @MethodSource("documentCategoryScenarios")
+    void shouldMapAdditionalDocumentsToCaseFileCategories(DocumentType documentType,
                                                           String expectedCategoryId) {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.OTHER; // Doesn't matter for the test
+        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(documentType);
 
         DynamicList documentTypeList = new DynamicList(
                 new DynamicListElement(UUID.randomUUID(), additionalDocumentType.getLabel()),
@@ -543,6 +560,8 @@ class DocumentServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.WITNESS_STATEMENT;
+        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(DocumentType.WITNESS_STATEMENT);
+
         String description = "A short description";
 
         DynamicList documentTypeList = new DynamicList(
@@ -1243,45 +1262,25 @@ class DocumentServiceTest {
         verify(documentRepository, never()).saveAll(anyList());
     }
 
-    @ParameterizedTest
-    @MethodSource("additionalDocumentTypeScenarios")
-    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
-                                                       DocumentType expectedDocumentType) {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType);
-
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
-    }
-
-    @Test
-    void shouldReturnNullWhenAdditionalDocumentTypeIsNull() {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(null);
-
-        // Then
-        assertThat(actualDocumentType).isNull();
-    }
-
-    private static Stream<Arguments> additionalDocumentCategoryScenarios() {
+    private static Stream<Arguments> documentCategoryScenarios() {
         return Stream.of(
             Arguments.of(
-                AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
+                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
                 CaseFileCategory.STATEMENTS_OF_CASE.getId()
             ),
-            Arguments.of(AdditionalDocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
-            Arguments.of(AdditionalDocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
-            Arguments.of(AdditionalDocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
-            Arguments.of(AdditionalDocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.CORRESPONDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.CORRESPONDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
+            Arguments.of(DocumentType.RENT_STATEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(DocumentType.TENANCY_AGREEMENT, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(DocumentType.POSSESSION_NOTICE, CaseFileCategory.PROPERTY_DOCUMENTS.getId()),
+            Arguments.of(DocumentType.WITNESS_STATEMENT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SERVICE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_DEFENDANT, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(DocumentType.CORRESPONDENCE_FROM_CLAIMANT, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(DocumentType.PHOTOGRAPHIC_EVIDENCE, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(DocumentType.INSPECTION_OR_REPORT, CaseFileCategory.EVIDENCE.getId()),
+            Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
                          CaseFileCategory.CORRESPONDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
-            Arguments.of(AdditionalDocumentType.OTHER, CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
+            Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE, CaseFileCategory.CORRESPONDENCE.getId()),
+            Arguments.of(DocumentType.OTHER, CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId())
         );
     }
 
@@ -1326,17 +1325,21 @@ class DocumentServiceTest {
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
                 .document(document)
-                .legalRepDocumentType(LegalRepDocumentType.PHOTOGRAPHIC_EVIDENCE)
+                .defendantDocumentType(DefendantDocumentType.PHOTOGRAPHIC_EVIDENCE)
                 .description(description)
                 .contentType("application/pdf")
                 .sizeInBytes(123L)
                 .build();
 
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(DefendantDocumentType.PHOTOGRAPHIC_EVIDENCE))
+                .thenReturn(expectedDocumentType);
+
             UUID partyId = UUID.randomUUID();
+            when(party.getId()).thenReturn(partyId);
 
             final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
 
-            when(party.getId()).thenReturn(partyId);
             UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
             when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
 
@@ -1362,7 +1365,7 @@ class DocumentServiceTest {
             assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
             assertThat(documentEntity.getDocumentId()).isEqualTo(expectedDocumentId);
             assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
-            assertThat(documentEntity.getType().getLabel()).isEqualTo("Photographic evidence");
+            assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
             assertThat(documentEntity.getDescription()).isEqualTo(description);
             assertThat(documentEntity.getContentType()).isEqualTo("application/pdf");
             assertThat(documentEntity.getSize()).isEqualTo(123L);
@@ -1381,7 +1384,7 @@ class DocumentServiceTest {
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
                 .document(Document.builder().build())
-                .legalRepDocumentType(LegalRepDocumentType.RENT_STATEMENT)
+                .defendantDocumentType(DefendantDocumentType.RENT_STATEMENT)
                 .build();
 
             List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument, legalRepDocument);
@@ -1397,6 +1400,7 @@ class DocumentServiceTest {
             // Then
             verify(camundaService).createTask(CASE_REFERENCE, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, taskDescription);
         }
+
     }
 
     @Test
@@ -1576,28 +1580,190 @@ class DocumentServiceTest {
             .isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
     }
 
-    @ParameterizedTest
-    @EnumSource(LegalRepDocumentTypeWales.class)
-    void shouldResolveWalesDocumentTypeWhenWalesTypePresent(LegalRepDocumentTypeWales walesType) {
-        LegalRepDocument doc = LegalRepDocument.builder()
-            .legalRepDocumentTypeWales(walesType)
-            .build();
+    @Nested
+    @DisplayName("Resolve document type tests")
+    class ResolveDocumentTypeTests {
+        @Test
+        void shouldCheckClaimantDocumentTypeFirstWhenResolvingType() {
+            // Given
+            ClaimantDocumentType claimantDocumentType = mock(ClaimantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(claimantDocumentType)
+                .claimantDocumentTypeWales(mock(ClaimantDocumentTypeWales.class))
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
 
-        DocumentType result = underTest.resolveDocumentType(doc);
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(claimantDocumentType)).thenReturn(expectedDocumentType);
 
-        assertThat(result).isEqualTo(DocumentType.valueOf(walesType.name()));
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckClaimantDocumentTypeWalesSecondWhenResolvingType() {
+            // Given
+            ClaimantDocumentTypeWales claimantDocumentTypeWales = mock(ClaimantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(claimantDocumentTypeWales)
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(claimantDocumentTypeWales)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeThirdWhenResolvingType() {
+            // Given
+            DefendantDocumentType defendantDocumentType = mock(DefendantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(defendantDocumentType)
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(defendantDocumentType)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeFourthWhenResolvingType() {
+            // Given
+            DefendantDocumentTypeWales defendantDocumentTypeWales = mock(DefendantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(null)
+                .defendantDocumentTypeWales(defendantDocumentTypeWales)
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(defendantDocumentTypeWales)).thenReturn(expectedDocumentType);
+
+            // When
+            DocumentType actualDocumentType = underTest.resolveDocumentType(legalRepDocument);
+
+            // Then
+            assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
+            verifyNoMoreInteractions(documentTypeMapper);
+        }
     }
 
-    @ParameterizedTest
-    @EnumSource(LegalRepDocumentType.class)
-    void shouldResolveDocumentTypeWhenWalesTypeNull(LegalRepDocumentType legalRepType) {
-        LegalRepDocument doc = LegalRepDocument.builder()
-            .legalRepDocumentType(legalRepType)
-            .build();
+    @Nested
+    @DisplayName("Resolve document category tests")
+    class ResolveDocumentCategoryTests {
+        @Test
+        void shouldCheckClaimantDocumentTypeFirstWhenResolvingCategory() {
+            // Given
+            ClaimantDocumentType claimantDocumentType = mock(ClaimantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(claimantDocumentType)
+                .claimantDocumentTypeWales(mock(ClaimantDocumentTypeWales.class))
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
 
-        DocumentType result = underTest.resolveDocumentType(doc);
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(claimantDocumentType)).thenReturn(Optional.of(expectedCategory));
 
-        assertThat(result).isEqualTo(DocumentType.valueOf(legalRepType.name()));
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckClaimantDocumentTypeWalesSecondWhenResolvingCategory() {
+            // Given
+            ClaimantDocumentTypeWales claimantDocumentTypeWales = mock(ClaimantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(claimantDocumentTypeWales)
+                .defendantDocumentType(mock(DefendantDocumentType.class))
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(claimantDocumentTypeWales))
+                .thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeThirdWhenResolvingCategory() {
+            // Given
+            DefendantDocumentType defendantDocumentType = mock(DefendantDocumentType.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(defendantDocumentType)
+                .defendantDocumentTypeWales(mock(DefendantDocumentTypeWales.class))
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(defendantDocumentType)).thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
+
+        @Test
+        void shouldCheckDefendantDocumentTypeFourthWhenResolvingCategory() {
+            // Given
+            DefendantDocumentTypeWales defendantDocumentTypeWales = mock(DefendantDocumentTypeWales.class);
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .claimantDocumentType(null)
+                .claimantDocumentTypeWales(null)
+                .defendantDocumentType(null)
+                .defendantDocumentTypeWales(defendantDocumentTypeWales)
+                .build();
+
+            CaseFileCategory expectedCategory = mock(CaseFileCategory.class);
+            when(documentCategoryMapper.mapToCategory(defendantDocumentTypeWales))
+                .thenReturn(Optional.of(expectedCategory));
+
+            // When
+            Optional<CaseFileCategory> actualCategory = underTest.resolveDocumentCategory(legalRepDocument);
+
+            // Then
+            assertThat(actualCategory).contains(expectedCategory);
+            verifyNoMoreInteractions(documentCategoryMapper);
+        }
     }
 
     private static Stream<Arguments> documentTypeToCategoryScenarios() {
@@ -1708,67 +1874,6 @@ class DocumentServiceTest {
                 WalesDocuments.builder().electricalInstallation(documents).build();
             default -> throw new IllegalArgumentException("Unsupported document type: " + documentType);
         };
-    }
-
-    private static Stream<Arguments> additionalDocumentTypeScenarios() {
-        return Stream.of(
-            Arguments.of(
-                null,
-                null
-            ),
-            Arguments.of(
-                AdditionalDocumentType.WITNESS_STATEMENT,
-                DocumentType.WITNESS_STATEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.RENT_STATEMENT,
-                DocumentType.RENT_STATEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.TENANCY_AGREEMENT,
-                DocumentType.TENANCY_AGREEMENT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CERTIFICATE_OF_SERVICE,
-                DocumentType.CERTIFICATE_OF_SERVICE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CORRESPONDENCE_FROM_DEFENDANT,
-                DocumentType.CORRESPONDENCE_FROM_DEFENDANT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CORRESPONDENCE_FROM_CLAIMANT,
-                DocumentType.CORRESPONDENCE_FROM_CLAIMANT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.POSSESSION_NOTICE,
-                DocumentType.POSSESSION_NOTICE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
-                DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION
-            ),
-            Arguments.of(
-                AdditionalDocumentType.PHOTOGRAPHIC_EVIDENCE,
-                DocumentType.PHOTOGRAPHIC_EVIDENCE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.INSPECTION_OR_REPORT,
-                DocumentType.INSPECTION_OR_REPORT
-            ),
-            Arguments.of(
-                AdditionalDocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF,
-                DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF
-            ),
-            Arguments.of(
-                AdditionalDocumentType.LEGAL_AID_CERTIFICATE,
-                DocumentType.LEGAL_AID_CERTIFICATE
-            ),
-            Arguments.of(
-                AdditionalDocumentType.OTHER,
-                DocumentType.OTHER
-            )
-        );
     }
 
 }

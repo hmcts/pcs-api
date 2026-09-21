@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -49,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.Possession
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
@@ -66,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -73,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.model.JourneyType;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -163,9 +167,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
+    private NoticeOfPossessionView noticeOfPossessionView;
+    @Mock
     private RentArrearsView rentArrearsView;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private OrganisationRepository organisationRepository;
+    @Mock
+    private NotificationService notificationService;
 
     private StartEventHandler startEventHandler;
     private SubmitEventHandler submitEventHandler;
@@ -192,12 +202,18 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                   rentArrearsView),
                     new LegalRepStartEventStrategy(pcsCaseService,
                                                             legalRepForDefendantAccessValidator,
-                                                   new LegalRepPartySelectionService(selectedPartyRetriever,
-                                                                                     defendantResponseRepository,
-                                                                                     draftCaseDataService,
-                                                                                     responseMapper,
-                                                                                     possessionClaimMerger),
-                                                   organisationService)
+                                                   new LegalRepPartySelectionService(
+                                                       selectedPartyRetriever,
+                                                       defendantResponseRepository,
+                                                       draftCaseDataService,
+                                                       responseMapper,
+                                                       possessionClaimMerger,
+                                                       legalRepForDefendantAccessValidator,
+                                                       pcsCaseService),
+                                                   organisationService,
+                                                   tenancyLicenceView,
+                                                   noticeOfPossessionView,
+                                                   rentArrearsView)
             )
         );
 
@@ -240,10 +256,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
                     selectedPartyRetriever,
                     submitResponseFactory,
                     partyService,
+                    organisationRepository,
+                    pcsCaseService,
                     submitService,
                     confirmationService,
                     securityContextService,
-                    organisationService
+                    organisationService,
+                    notificationService
                 )
             ),
             securityContextService
@@ -807,7 +826,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
@@ -842,7 +861,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, PartyEntity.builder().id(UUID.randomUUID()).build()));
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId, orgId))
@@ -895,7 +914,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                                                          representedPartyId, orgId))
             .thenReturn(Optional.of(savedDraft));
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId, orgId))
@@ -937,7 +956,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(differentPartyId));
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
 
         // when / then
@@ -961,7 +980,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty));
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
                                                          representedPartyId, orgId))
@@ -1010,6 +1029,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
             )
             .counterClaimDocuments(counterClaimDocuments)
             .build();
+        when(organisationRepository.findByPartyLinkedToOrganisationAndCaseAndActive(representedPartyId,
+                                                                                    TEST_CASE_REFERENCE))
+            .thenReturn(
+                Optional.of(new OrganisationEntity())
+            );
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantResponses(responses)
@@ -1041,7 +1065,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // then
-        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, representedParty, 1234L);
+        verify(claimResponseService).saveDraftDataForParty(
+            possessionClaimResponse, representedParty, 1234L, JourneyType.LEGAL_REPRESENTATIVE);
         verify(defendantResponseService).saveDefendantResponse(
             TEST_CASE_REFERENCE, possessionClaimResponse, representedParty, JourneyType.LEGAL_REPRESENTATIVE);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
