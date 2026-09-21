@@ -2,23 +2,23 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
+//import org.springframework.util.CollectionUtils;
+//import uk.gov.hmcts.ccd.sdk.type.Document;
+//import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+//import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+//import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.List;
+//import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -43,8 +43,8 @@ public class NoticeOfPossessionView {
         setAbletoUploadDocument(noticeServedDetails, noticeOfPossessionEntity);
         noticeServedDetails.setUnableToUploadReason(noticeOfPossessionEntity.getUnableToUploadReason());
 
-        List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
-        noticeServedDetails.setDocuments(documents);
+        //List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
+        //noticeServedDetails.setDocuments(documents);
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
@@ -93,7 +93,7 @@ public class NoticeOfPossessionView {
             .findFirst();
     }
 
-    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
+    /*private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return List.of();
         }
@@ -123,7 +123,7 @@ public class NoticeOfPossessionView {
                     .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
                     .build()
             ).build();
-    }
+    }*/
 
     private static void setAbletoUploadDocument(NoticeServedDetails noticeServedDetails,
                                                 NoticeOfPossessionEntity noticeOfPossessionEntity) {

@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -16,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
@@ -30,8 +33,14 @@ class NoticeDetailsBuilderTest {
 
     private final String noAnswer = " ";
 
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
+
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+
     @InjectMocks
-    private NoticeDetailsBuilder noticeDetailsBuilder = new NoticeDetailsBuilder();
+    private NoticeDetailsBuilder noticeDetailsBuilder;
 
     @Test
     void shouldHandleNullNoticeServed() {
