@@ -23,11 +23,13 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantSolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DocumentAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
@@ -38,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
@@ -194,13 +197,6 @@ public class PCSCase {
         searchable = false,
         access = {DefendantAccess.class}
     )
-    @External
-    private String userPcqId;
-
-    @CCD(
-        searchable = false,
-        access = {DefendantAccess.class}
-    )
     private YesOrNo userPcqIdSet;
 
     @CCD(
@@ -285,12 +281,12 @@ public class PCSCase {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantReadAccess.class}
     )
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, DefendantReadAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
@@ -298,7 +294,7 @@ public class PCSCase {
     @CCD(access = {DefendantAccess.class})
     private DashboardData dashboardData;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class, DefendantReadAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -372,7 +368,8 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class, AcaSystemUserAccess.class})
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class, InternalCaseFlagAccess.class,
+        AcaSystemUserAccess.class, DefendantReadAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     /**
@@ -654,6 +651,9 @@ public class PCSCase {
     )
     private PossessionClaimResponse possessionClaimResponse;
 
+    @JsonUnwrapped
+    private DefendantPaperResponseRequest defendantPaperResponse;
+
     @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
@@ -777,10 +777,17 @@ public class PCSCase {
 
     @CCD (
         label = "Note",
-        access = {InternalTabAccess.class},
+        access = {CaseNoteAccess.class},
         typeOverride = Collection,
         typeParameterOverride = "CaseNote")
     List<ListValue<CaseNote>> caseNotes;
+
+    @CCD (
+        label = "Review date",
+        access = {InternalTabAccess.class},
+        typeOverride = Collection,
+        typeParameterOverride = "CaseReviewDate")
+    private List<ListValue<CaseReviewDate>> caseReviewDates;
 
     @CCD(
         label = "Review date",
@@ -807,18 +814,24 @@ public class PCSCase {
     )
     private FlagLauncher flagLauncherExternal;
 
+    @CCD(
+        access = {ExternalCaseFlagAccess.class},
+        label = "Party support"
+    )
+    private List<ListValue<PartySupport>> partySupport;
+
+    @CCD(
+        access = {InternalCaseFlagAccess.class},
+        label = "Requested support"
+    )
+    private List<ListValue<PartySupport>> supportReviewFlags;
+
     @CCD(access = {DefendantSolicitorAccess.class})
     private List<ListValue<Party>> allLinkedDefendants;
 
     /**
      * The groups a role assignment's caseAccessGroupId is matched against. Derived on read rather
      * than stored - the name must be CaseAccessGroups to match what data store expects.
-     *
-     * <p>Left searchable even though nothing searches it. Marking it {@code searchable = false}
-     * emits the mapping as {@code {"enabled": false}}, and Elasticsearch cannot flip [enabled] on a
-     * field already mapped as an object - the put mapping returns 500 and the whole definition
-     * import fails. Any environment that has imported this field once, or has dynamically mapped it
-     * from a case document, would break on the next import.
      */
     @JsonProperty("CaseAccessGroups")
     @CCD
@@ -842,14 +855,12 @@ public class PCSCase {
     )
     private CaseStateOption targetState;
 
-
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
         searchable = false
     )
     private Document uploadSingleDocument;
-
 
     @CCD(access = {AcaSystemUserAccess.class})
     private ChangeOrganisationRequest<CaseRoleID> changeOrganisationRequestField;
@@ -886,6 +897,12 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String hearingLocation;
+
+    @CCD(
+        label = "Which defendant submitted this response?",
+        typeOverride = FieldType.DynamicRadioList
+    )
+    private DynamicList defendantRadioList;
 
     @CCD(
         searchable = false,

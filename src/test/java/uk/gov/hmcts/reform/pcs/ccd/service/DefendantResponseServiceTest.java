@@ -141,8 +141,7 @@ class DefendantResponseServiceTest {
     }
 
     private void stubClaimLookup() {
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(claimEntity));
         when(claimEntity.getPcsCase()).thenReturn(pcsCaseEntity);
     }
 
@@ -462,7 +461,7 @@ class DefendantResponseServiceTest {
     void shouldThrowExceptionWhenClaimNotFound() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         DefendantResponses responses = DefendantResponses.builder()
             .freeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -479,61 +478,6 @@ class DefendantResponseServiceTest {
             .hasMessage(String.format("No claim found for case: %d", CASE_REFERENCE));
 
         verify(defendantResponseRepository, never()).save(any());
-    }
-
-    @Test
-    void shouldUseGetReferenceByIdForOptimalPerformance() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        // When
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then - Verify JPA proxy pattern used
-        verify(claimRepository).getReferenceById(CLAIM_ID);
-
-        // Verify ID-only queries used (not findById which loads full entity)
-        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
-    }
-
-    @Test
-    void shouldFollowOptimalExecutionOrder() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .freeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then - Verify execution order matches optimal pattern:
-        // 1. Get current user ID
-        verify(securityContextService).getCurrentUserId();
-
-        // 2. Get IDs only (minimal lock time)
-        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
-
-        // 3. Get JPA proxies (no database query)
-        verify(claimRepository).getReferenceById(CLAIM_ID);
-
-        // 4. Save (only locks new row)
-        verify(defendantResponseRepository).save(any(DefendantResponseEntity.class));
     }
 
     @ParameterizedTest
@@ -1044,7 +988,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourney() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1055,7 +999,6 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1063,7 +1006,7 @@ class DefendantResponseServiceTest {
             .defendantResponses(responses)
             .build();
 
-        // When — legal rep path (passes party ID explicitly)
+        // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
                                         JourneyType.LEGAL_REPRESENTATIVE);
 
@@ -1082,7 +1025,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
+    void shouldNotSetCompletedByOnCitizenJourneyEvenWhenPayloadClaimsLegalRepresentation() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1093,7 +1036,7 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                // hasLegalRepresentation intentionally omitted
+                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1110,6 +1053,55 @@ class DefendantResponseServiceTest {
 
         assertThat(saved.getStatementOfTruth()).isNotNull();
         assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
+    }
+
+    @Test
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourneyWithoutSignedStatementOfTruth() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        when(partyEntity.getFirstName()).thenReturn("Test");
+        when(partyEntity.getLastName()).thenReturn("Defendant");
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthCompletedBy("DEFENDANT")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
+                                        JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy())
+            .isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+    }
+
+    @Test
+    void shouldNotSetCompletedByForCaseworkerPaperResponse() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .build())
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy()).isNull();
     }
 
     @Test
@@ -1215,11 +1207,35 @@ class DefendantResponseServiceTest {
 
         // Then - the persisted response id and party id are carried to the scheduler.
         verify(defenceFormScheduler)
-            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
     }
 
     @Test
-    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+    void shouldScheduleDefenceFormGenerationOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        Integer responseId = 7;
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then - the LR response generates the defence form just like a citizen one.
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
+    }
+
+    @Test
+    void shouldNotScheduleDefenceFormGenerationForCaseworkerPaperResponse() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1230,9 +1246,9 @@ class DefendantResponseServiceTest {
 
         // When
         underTest.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
 
-        // Then
+        // Then - the paper form is uploaded by the caseworker, nothing is generated.
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 

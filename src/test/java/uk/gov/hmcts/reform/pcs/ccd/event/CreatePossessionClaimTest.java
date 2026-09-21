@@ -9,15 +9,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
+import uk.gov.hmcts.reform.pcs.ccd.model.RoleAssignmentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.task.CaseRoleAssignmentTaskComponent;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -63,12 +65,26 @@ class CreatePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldScheduleRoleAssignmentTaskOnSubmit() {
+    void shouldCreateCaseFromTheAddressAndCountryEntered() {
         // Given
-        PCSCase caseData = PCSCase.builder().build();
+        AddressUK propertyAddress = AddressUK.builder().addressLine1("1 Test Street").build();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
 
         // When
         callSubmitHandler(caseData);
+
+        // Then
+        verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress,
+                                          LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    void shouldScheduleCreatorRoleRevocationOnSubmit() {
+        // When
+        callSubmitHandler(PCSCase.builder().build());
 
         // Then
         RoleAssignmentTaskData taskData = getCapturedRoleAssignmentTaskData();

@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -84,7 +86,6 @@ class BulkPrintServiceTest {
         verify(letterDocumentFetcher).fetchBytes(claimForm.getDocumentId());
         verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
         LetterV3 letter = letterCaptor.getValue();
-        assertThat(letter.type).isEqualTo("CPC-01-IN1");
         assertThat(letter.documents).singleElement()
             .extracting(document -> document.content)
             .isEqualTo(Base64.getEncoder().encodeToString(mergedBytes));
@@ -92,6 +93,33 @@ class BulkPrintServiceTest {
         assertThat(letter.additionalData.get("recipients"))
             .asInstanceOf(list(String.class))
             .containsExactly("Jane Doe", "1 High Street", "London", "W1 1AA");
+    }
+
+    @ParameterizedTest(name = "{0} sends letter type {1}")
+    @CsvSource({
+        "CLAIMANT_CLAIM_PACK, CPC-01-IN0",
+        "DEFENCE_PACK, DEF-01-IN0"
+    })
+    @DisplayName("Sends renamed IN0 letter type codes for claim and defence packs")
+    void shouldSendRenamedLetterTypeCode(LetterType letterType, String expectedLetterType) {
+        byte[] coversheetBytes = "coversheet".getBytes();
+        byte[] documentBytes = "document".getBytes();
+        byte[] mergedBytes = "merged-pdf".getBytes();
+        when(authTokenGenerator.generate()).thenReturn("s2s");
+        when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
+        when(coversheetProvider.render(any(), any(), any())).thenReturn(coversheetBytes);
+        when(letterDocumentFetcher.fetchBytes(any())).thenReturn(documentBytes);
+        when(pdfMerger.merge(List.of(coversheetBytes, documentBytes))).thenReturn(mergedBytes);
+        when(sendLetterApi.sendLetter(any(), any(LetterV3.class))).thenReturn(new SendLetterResponse(LETTER_ID));
+
+        DocumentEntity document = DocumentEntity.builder().id(UUID.randomUUID()).documentId(UUID.randomUUID()).build();
+        AddressUK address = AddressUK.builder()
+            .addressLine1("1 High Street").postTown("London").postCode("W1 1AA").build();
+
+        underTest.sendPack(pcsCase, recipient, letterType, "Jane Doe", address, List.of(document));
+
+        verify(sendLetterApi).sendLetter(eq("s2s"), letterCaptor.capture());
+        assertThat(letterCaptor.getValue().type).isEqualTo(expectedLetterType);
     }
 
     @Test

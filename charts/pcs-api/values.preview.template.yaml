@@ -42,16 +42,23 @@ java:
     ENABLE_TESTING_SUPPORT: true
     LAUNCHDARKLY_ENV: "${SERVICE_NAME}"
     DB_SCHEDULER_EXECUTOR_ENABLED: true
-    BULK_PRINT_SCHEDULE: "FIXED_DELAY|300s"
+    BULK_PRINT_SCHEDULE: "FIXED_DELAY|600s"
     BULK_PRINT_LOOKBACK_HOURS: "1"
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     SEND_LETTER_URL: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+    NOTIFY_URL: https://api.notifications.service.gov.uk
     CCD_SDK_DECENTRALISED: "true"
     PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/payment-update
     PCS_FRONTEND_URL: ${PCS_FRONTEND_URL}
+    # Work allocation should only be called in Preview when dedicated pods are included via the pr-values:wa label.
+    # Otherwise, the requests are sent to WA AAT, which attempts to fetch the case data from CCD AAT where it
+    # cannot be found. This leads to the task initiation failing and being retried multiple times.
+    # The sending of WA requests is controlled by a feature flag as well, but the API url is overridden here as
+    # a safety mechanism in case the feature flag config is incorrect for a preview environment.
+    WA_WORKFLOW_API: http://localhost/should-not-be-called
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"

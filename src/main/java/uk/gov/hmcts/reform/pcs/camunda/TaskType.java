@@ -24,6 +24,14 @@ public enum TaskType {
             been completed.
             """
     ),
+    REVIEW_CASE_FLAG_REQUEST(
+        "ReviewCaseFlagRequest",
+        "Review Case Flag request",
+        """
+            Review the case flag request, decide whether it should be approved or rejected, and record the decision.
+            The task will close when the approval or rejection event is completed.
+            """
+    ),
     REVIEW_DATE_DUE(
         "ReviewDateDue",
         "Review Date Due",
@@ -84,6 +92,15 @@ public enum TaskType {
             Review the additional documents submitted on the claim, check whether any further case action is required,
             and take the appropriate action. Only mark the task as complete once the documents have been reviewed
             and any required action has been completed.
+            """
+    ),
+    REVIEW_ADDITIONAL_DOCS_COUNTERCLAIM(
+        "ReviewAdditionalDocumentsCounterclaim",
+        "Review additional documents - counterclaim",
+        """
+            Review the additional documents submitted on the counterclaim, check whether any further case action is
+            required, and take the appropriate action. Only mark the task as complete once the documents have been
+            reviewed and any required action has been completed.
             """
     ),
     REVIEW_DEFENDANT_RESPONSE_AND_COUNTERCLAIM(

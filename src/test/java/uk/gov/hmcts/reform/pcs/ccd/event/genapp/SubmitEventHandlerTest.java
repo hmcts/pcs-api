@@ -133,6 +133,37 @@ class SubmitEventHandlerTest {
         }
 
         @Test
+        void shouldCreateGenAppWithCaseDataAndClaimantParty() {
+            // Given
+            UUID claimantPartyId = UUID.randomUUID();
+            PartyEntity claimantParty = mock(PartyEntity.class);
+
+            XuiGenAppRequest genAppRequest = XuiGenAppRequest.builder()
+                .applicationType(GenAppType.SET_ASIDE)
+                .applicantPartyId(claimantPartyId.toString())
+                .build();
+
+            when(partyService.getPartyEntityById(claimantPartyId, TEST_CASE_REFERENCE))
+                .thenReturn(claimantParty);
+
+            stubCreateGenAppEntity(genAppRequest, pcsCaseEntity, claimantParty);
+
+            stubApplicationFeeCalculation(genAppRequest);
+
+            PCSCase caseData = PCSCase.builder()
+                .currentRepresentedPartyId(claimantPartyId.toString())
+                .xuiGenAppRequest(genAppRequest)
+                .build();
+
+            // When
+            underTest.submit(eventPayload(caseData));
+
+            // Then
+            verify(genAppService)
+                .createGenAppEntity(genAppRequest, pcsCaseEntity, claimantParty, PENDING_GEN_APP_ISSUED);
+        }
+
+        @Test
         void shouldCreateGenAppWithCaseDataAndRepresentedParty() {
             // Given
             UUID representedPartyUuid = UUID.randomUUID();

@@ -35,6 +35,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,7 +54,7 @@ public class CamundaServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private CamundaApi camundaApi;
+    private WorkAllocationWorkflowApi workAllocationWorkflowApi;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -151,6 +152,23 @@ public class CamundaServiceTest {
     }
 
     @Test
+    void shouldScheduleCamundaCreateRequestTaskWithIdempotencyKey() {
+        // Given
+        stubWaFeatureFlag(true);
+
+        // When
+        camundaService.createTask(CASE_REFERENCE, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+
+        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+
+        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getIdempotencyKey()).isNotNull();
+    }
+
+    @Test
     void shouldScheduleCamundaCancelRequestTask() {
         // Given
         stubWaFeatureFlag(true);
@@ -217,11 +235,12 @@ public class CamundaServiceTest {
 
         // Then
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
         assertThat(sendMessageRequest).isNotNull();
         assertThat(sendMessageRequest.getMessageName()).isEqualTo("createTaskMessage");
+        assertThat(sendMessageRequest.isAll()).isFalse();
 
         Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
         assertThat(processVariables).isNotEmpty();
@@ -255,6 +274,43 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("taskLocationName").getType()).isEqualTo("String");
         assertThat(processVariables.get("taskRegion").getValue()).isEqualTo(2);
         assertThat(processVariables.get("taskRegion").getType()).isEqualTo("Integer");
+        assertThat(processVariables.get("idempotencyKey").getValue()).isNotNull();
+        assertThat(processVariables.get("idempotencyKey").getType()).isEqualTo("String");
+    }
+
+    @Test
+    void shouldHandleNoIdempotencyKeyWhenCreatingTask() {
+        // Given
+        final TaskType taskType = TaskType.NEW_CLAIM_CREATE_NEW_HEARING;
+
+        when(authTokenGenerator.generate()).thenReturn("authToken");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(
+            Optional.ofNullable(PcsCaseEntity.builder().baseLocation(1).regionId(2).build())
+        );
+        when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of());
+        stubWaFeatureFlag(true);
+
+        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
+            .action(Action.CREATE)
+            .caseReference(CASE_REFERENCE)
+            .taskType(taskType)
+            .taskDescription("some description")
+            .idempotencyKey(null)
+            .build();
+
+        // When
+        camundaService.handleRequest(taskData);
+
+        // Then
+        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
+
+        assertThat(sendMessageRequest).isNotNull();
+        assertThat(sendMessageRequest.getMessageName()).isEqualTo("createTaskMessage");
+
+        Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
+        assertThat(processVariables.get("idempotencyKey")).isNull();
     }
 
     @Test
@@ -277,7 +333,7 @@ public class CamundaServiceTest {
 
         // Then
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
         assertThat(sendMessageRequest).isNotNull();
@@ -312,7 +368,7 @@ public class CamundaServiceTest {
 
         // Then
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
         assertThat(sendMessageRequest).isNotNull();
@@ -346,7 +402,7 @@ public class CamundaServiceTest {
             .filter(e -> e.getFormattedMessage().contains("Skipped creating task for " + CASE_REFERENCE))
             .toList();
         assertThat(infoMessages).hasSize(1);
-        verify(camundaApi, never()).sendMessage(any(), any());
+        verify(workAllocationWorkflowApi, never()).sendMessage(any(), any());
     }
 
     @Test
@@ -362,7 +418,7 @@ public class CamundaServiceTest {
         when(courtVenue.courtName()).thenReturn("court name");
         when(locationReferenceService.getCourtVenues(List.of(1))).thenReturn(List.of(courtVenue));
         stubWaFeatureFlag(true);
-        doThrow(new RuntimeException()).when(camundaApi).sendMessage(any(), any());
+        doThrow(new RuntimeException()).when(workAllocationWorkflowApi).sendMessage(any(), any());
 
         CamundaRequestTaskData taskData = buildTaskDataForCreate(taskType, "some description");
 
@@ -393,11 +449,12 @@ public class CamundaServiceTest {
 
         // Then
         ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(camundaApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
+        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
         SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
 
         assertThat(sendMessageRequest).isNotNull();
         assertThat(sendMessageRequest.getMessageName()).isEqualTo("cancelTasks");
+        assertThat(sendMessageRequest.isAll()).isTrue();
 
         Map<String, DmnValue<?>> processVariables = sendMessageRequest.getProcessVariables();
         assertThat(processVariables).isNotEmpty();
@@ -427,7 +484,7 @@ public class CamundaServiceTest {
             .filter(e -> e.getFormattedMessage().contains("Skipped cancelling task for " + CASE_REFERENCE))
             .toList();
         assertThat(infoMessages).hasSize(1);
-        verify(camundaApi, never()).sendMessage(any(), any());
+        verify(workAllocationWorkflowApi, never()).sendMessage(any(), any());
     }
 
     @Test
@@ -475,6 +532,7 @@ public class CamundaServiceTest {
             .caseReference(CASE_REFERENCE)
             .taskType(taskType)
             .taskDescription(taskDescription)
+            .idempotencyKey(UUID.randomUUID())
             .build();
     }
 

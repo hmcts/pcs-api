@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUND
 @Service
 public class CamundaService {
 
-    private final CamundaApi camundaApi;
+    private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
@@ -66,6 +66,7 @@ public class CamundaService {
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
+            .idempotencyKey(UUID.randomUUID())
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -83,9 +84,17 @@ public class CamundaService {
     void handleRequest(CamundaRequestTaskData taskData) {
         switch (taskData.getAction()) {
             case CREATE ->
-                requestTaskCreation(taskData.getCaseReference(), taskData.getTaskType(), taskData.getTaskDescription());
+                requestTaskCreation(
+                    taskData.getCaseReference(),
+                    taskData.getTaskType(),
+                    taskData.getTaskDescription(),
+                    taskData.getIdempotencyKey()
+                );
             case CANCEL ->
-                requestTaskCancellation(taskData.getCaseReference(), taskData.getTaskType());
+                requestTaskCancellation(
+                    taskData.getCaseReference(),
+                    taskData.getTaskType()
+                );
         }
     }
 
@@ -102,7 +111,7 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(Long caseId, TaskType taskType, String taskDescription) {
+    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -125,11 +134,16 @@ public class CamundaService {
         processVariables.put("name", dmnStringValue(taskType.getName()));
         processVariables.put("taskDescription", dmnStringValue(taskDescription));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
-        processVariables.put("caseId", dmnStringValue(caseId.toString()));
+        processVariables.put("caseId", dmnStringValue(Long.toString(caseId)));
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        if (idempotencyKey != null) {
+            processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
+        } else {
+            log.warn("No idempotency key provided for task of type {}", taskType);
+        }
 
         // Default values - WA task due date is configured in configuration dmn
         LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
@@ -141,6 +155,7 @@ public class CamundaService {
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
             .processVariables(processVariables)
+            .all(false)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -163,6 +178,7 @@ public class CamundaService {
             .messageName(CANCEL)
             .processVariables(processVariables)
             .correlationKeys(correlationKeys)
+            .all(true)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -173,7 +189,7 @@ public class CamundaService {
 
         try {
             log.info("Camunda request for case id {}: {}", caseId, request);
-            camundaApi.sendMessage(s2sToken, request);
+            workAllocationWorkflowApi.sendMessage(s2sToken, request);
         } catch (Exception e) {
             log.error("Failed to send Camunda request for caseId {}", caseId, e);
             throw e;

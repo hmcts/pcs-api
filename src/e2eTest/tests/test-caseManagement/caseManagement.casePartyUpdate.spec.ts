@@ -252,4 +252,3 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
 });
-

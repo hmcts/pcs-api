@@ -9,11 +9,16 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
+    // PartyIdIsNull is load-bearing: LR drafts share case/event/org but carry a party;
+    // without it a firm's defendant draft matches here (and two defendants -> non-unique).
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, String organisationId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserId(
-        long caseReference, EventId eventId, UUID idamUserId);
+    boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, String organisationId);
+
+    void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, String organisationId);
 
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
@@ -23,6 +28,18 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
 
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
+
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
+        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, UUID idamUserId);
+
+    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, UUID idamUserId);
+
+    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
+        long caseReference, EventId eventId, UUID idamUserId);
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);

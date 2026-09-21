@@ -63,12 +63,13 @@ class ManageFlagsTest extends BaseEventTest {
     @Test
     void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
         assertThat(getSubFieldIds("allDefendants"))
-            .contains("defendantFlags", "defendantFlagsExternal");
+            .contains("defendantFlags", "partyFlagsExternal");
     }
 
     /**
-     * Managing flags before the case is issued is a confirmed requirement, so it is asserted in its own
-     * right rather than only through the state helper the event happens to call.
+     * Availability before the case is issued is a confirmed requirement, so it is asserted in its own
+     * right and the whole state set is spelled out, rather than mirroring whichever helper the event
+     * happens to call.
      */
     @Test
     void shouldBeAvailableBeforeTheCaseIsIssued() {
@@ -77,7 +78,7 @@ class ManageFlagsTest extends BaseEventTest {
     }
 
     @Test
-    void shouldBeAvailableInEveryPostIssueStateAndNeverInDraft() {
+    void shouldBeAvailableInTheRequiredStatesAndNeverInDraft() {
         assertThat(configuredEvent.getPreState())
             .containsExactlyInAnyOrder(
                 State.PENDING_CASE_ISSUED,

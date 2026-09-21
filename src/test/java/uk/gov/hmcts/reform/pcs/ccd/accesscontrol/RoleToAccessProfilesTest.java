@@ -71,15 +71,15 @@ class RoleToAccessProfilesTest {
      */
     @Test
     void shouldMapGroupAccessRolesToProfilesOfTheSameName() {
-        assertThat(UserRole.GA_CLAIMANT.getAccessProfiles())
-            .containsExactly(AccessProfile.GA_CLAIMANT.getRole());
+        assertThat(UserRole.CLAIMANT.getAccessProfiles())
+            .containsExactly(AccessProfile.CLAIMANT.getRole());
         assertThat(UserRole.GA_CLAIMANT_SOLICITOR.getAccessProfiles())
             .containsExactly(AccessProfile.GA_CLAIMANT_SOLICITOR.getRole());
     }
 
     @Test
     void shouldGiveTheGroupAccessProfilesRead() {
-        assertThat(AccessProfile.GA_CLAIMANT.getCaseTypePermissions()).contains("R");
+        assertThat(AccessProfile.CLAIMANT.getCaseTypePermissions()).contains("R");
         assertThat(AccessProfile.GA_CLAIMANT_SOLICITOR.getCaseTypePermissions()).contains("R");
     }
 }

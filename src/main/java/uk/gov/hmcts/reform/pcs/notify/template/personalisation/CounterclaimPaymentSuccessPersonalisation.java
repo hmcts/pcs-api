@@ -9,6 +9,7 @@ import java.util.Map;
 public class CounterclaimPaymentSuccessPersonalisation implements TemplatePersonalisation {
     private final BasePersonalisation base;
     private final String paymentReferenceNumber;
+    private final String organisationName;
 
     @Override
     public Map<String, Object> toMap() {

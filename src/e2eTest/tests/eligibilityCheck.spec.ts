@@ -215,4 +215,3 @@ test.describe('[Eligibility Check - Create Case] @nightly @MAC', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 })
-
