@@ -43,7 +43,7 @@ class ApplicationsTaskGroupEvaluatorTest {
     private final OrganisationRepository organisationRepository =
         mock(OrganisationRepository.class);
     private final GenAppVisibilityService genAppVisibilityService =
-        new GenAppVisibilityService(organisationRepository);
+        new GenAppVisibilityService(organisationRepository, userRoleService);
     private final ApplicationsTaskGroupEvaluator underTest =
         new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService, organisationService);
 

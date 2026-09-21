@@ -99,6 +99,56 @@ class UserRoleServiceTest {
         verifyNoInteractions(caseAssignmentApi);
     }
 
+    @Test
+    void shouldClassifyCitizenFromTheIdamRole() {
+        stubCurrentUserDetails(List.of("citizen"));
+
+        assertThat(underTest.getCurrentUserCapacity(null)).isEqualTo(UserCapacity.CITIZEN);
+    }
+
+    @Test
+    void shouldClassifyProfessionalFromTheOrganisation() {
+        stubCurrentUserDetails(List.of("caseworker-pcs"));
+
+        assertThat(underTest.getCurrentUserCapacity("ORG123")).isEqualTo(UserCapacity.PROFESSIONAL);
+    }
+
+    /**
+     * Fails closed: an rd-professional 404 and a transient lookup failure both surface as a null
+     * organisation, so the pui- role alone must still mark the caller external.
+     */
+    @Test
+    void shouldClassifyProfessionalFromPuiRoleWhenOrganisationIsUnknown() {
+        stubCurrentUserDetails(List.of("caseworker-pcs", "pui-case-manager"));
+
+        assertThat(underTest.getCurrentUserCapacity(null)).isEqualTo(UserCapacity.PROFESSIONAL);
+    }
+
+    @Test
+    void shouldClassifyInternalCaseworker() {
+        stubCurrentUserDetails(List.of("caseworker-pcs"));
+
+        assertThat(underTest.getCurrentUserCapacity(null)).isEqualTo(UserCapacity.INTERNAL);
+    }
+
+    /**
+     * Group-access roles are RAS ORGANISATION assignments and never reach this service, so they
+     * must not be what distinguishes a professional - otherwise the check silently always passes.
+     */
+    @Test
+    void shouldNotRelyOnGroupAccessRolesToClassifyAProfessional() {
+        stubCurrentUserDetails(List.of("caseworker-pcs", "defendant-solicitor"));
+
+        assertThat(underTest.getCurrentUserCapacity(null)).isEqualTo(UserCapacity.INTERNAL);
+    }
+
+    @Test
+    void shouldNotClassifyAnUnrecognisedAccountAsInternal() {
+        stubCurrentUserDetails(List.of("some-other-jurisdiction-role"));
+
+        assertThat(underTest.getCurrentUserCapacity(null)).isEqualTo(UserCapacity.CITIZEN);
+    }
+
     private void stubCurrentUserDetails(List<String> roles) {
         when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
             .uid(CURRENT_USER_ID.toString())

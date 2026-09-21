@@ -17,6 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserCapacity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -25,6 +28,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -41,11 +45,17 @@ class GenAppVisibilityServiceTest {
     @Mock(strictness = Mock.Strictness.LENIENT)
     private OrganisationRepository organisationRepository;
 
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    private UserRoleService userRoleService;
+
     private GenAppVisibilityService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new GenAppVisibilityService(organisationRepository);
+        underTest = new GenAppVisibilityService(organisationRepository, userRoleService);
+        // The classification rule itself is covered by UserRoleServiceTest; here we state the
+        // population directly. External is the default, so the party and organisation checks run.
+        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.PROFESSIONAL);
     }
 
     @ParameterizedTest
@@ -111,6 +121,7 @@ class GenAppVisibilityServiceTest {
     @ParameterizedTest
     @MethodSource("internalRoles")
     void shouldShowWithoutNoticeGenAppsToInternalUsers(UserRole internalRole) {
+        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
         // Given
         GenAppEntity genAppEntity = mock(GenAppEntity.class);
         when(genAppEntity.getState()).thenReturn(GEN_APP_ISSUED);
@@ -130,6 +141,7 @@ class GenAppVisibilityServiceTest {
 
     @Test
     void shouldTreatGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
+        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
         // Given
         PartyEntity party = mock(PartyEntity.class);
 
@@ -275,6 +287,7 @@ class GenAppVisibilityServiceTest {
 
     @Test
     void shouldReturnVisibleGenAppsForUserUsingRoles() {
+        when(userRoleService.getCurrentUserCapacity(any())).thenReturn(UserCapacity.INTERNAL);
         // Given
         GenAppEntity olderWithoutNoticeGenApp = createGenApp(
             GEN_APP_ISSUED,

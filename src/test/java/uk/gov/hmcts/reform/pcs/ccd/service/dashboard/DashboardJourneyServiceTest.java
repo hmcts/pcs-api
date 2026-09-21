@@ -82,7 +82,7 @@ class DashboardJourneyServiceTest {
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
+        genAppVisibilityService = new GenAppVisibilityService(organisationRepository, userRoleService);
         when(featureToggleService.isEnabled(RELEASE_1_DOT_2)).thenReturn(true);
         underTest = new DashboardJourneyService(
             draftCaseDataService,
