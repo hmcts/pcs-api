@@ -151,7 +151,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
-            pcsCaseEntity, ORGANISATION_ID, false)).thenReturn(parties);
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -191,7 +191,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
-            pcsCaseEntity, ORGANISATION_ID, false)).thenReturn(Collections.emptyList());
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(Collections.emptyList());
 
         PCSCase pcsCase = PCSCase.builder().build();
 
