@@ -62,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ccd-report
-          npx -q @hmcts/ccd-diff build/master build/branch > ccd-report/ccd-diff-report.html
+          npx -q --ignore-scripts @hmcts/ccd-diff@4.7.13 build/master build/branch > ccd-report/ccd-diff-report.html
           SUMMARY_FILE="ccd-report/ccd-comment-summary.md"
           MAX_CHARS=65000
           REPORT_FILE="ccd-report/ccd-diff-report.html"

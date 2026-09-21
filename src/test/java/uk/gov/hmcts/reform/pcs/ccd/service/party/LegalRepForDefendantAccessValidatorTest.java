@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisa
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.List;
@@ -30,15 +29,12 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @Mock
     private DefendantPartyExtractor defendantPartyExtractor;
-    @Mock
-    private DefendantResponseRepository defendantResponseRepository;
 
     private LegalRepForDefendantAccessValidator underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor,
-                                                            defendantResponseRepository);
+        underTest = new LegalRepForDefendantAccessValidator(defendantPartyExtractor);
     }
 
     @Test
@@ -210,6 +206,85 @@ class LegalRepForDefendantAccessValidatorTest {
         // When / Then
         assertThatThrownBy(() ->
                                underTest.validateAndGetDefendants(caseEntity, organisationId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant solicitor on this case");
+    }
+
+    @Test
+    void shouldReturnOnlyDefendantsLinkedToAuthenticatedOrganisation() {
+        String organisationId = "ORG-123";
+
+        PartyEntity linkedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        linkedDefendant.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder()
+                .party(linkedDefendant)
+                .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
+                .active(YesOrNo.YES)
+                .build()
+        ));
+
+        PartyEntity unlinkedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        PcsCaseEntity caseEntity = createCaseWithDefendant(linkedDefendant);
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(linkedDefendant, unlinkedDefendant));
+
+        List<PartyEntity> result = underTest.validateAndGetDefendants(caseEntity, organisationId);
+
+        assertThat(result).containsExactly(linkedDefendant);
+    }
+
+    @Test
+    void shouldThrowWhenDefendantHasNoOrganisationLink() {
+        String organisationId = "ORG-123";
+
+        PartyEntity defendant = PartyEntity.builder().build();
+
+        PcsCaseEntity caseEntity = createCaseWithDefendant(defendant);
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(defendant));
+
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, organisationId))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant solicitor on this case");
+    }
+
+    @Test
+    void shouldThrowWhenOrganisationOnlyRepresentsTheClaimant() {
+        String organisationId = "ORG-123";
+
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        claimant.setClaimPartyOrganisationList(List.of(
+            ClaimPartyOrganisationEntity.builder()
+                .party(claimant)
+                .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
+                .active(YesOrNo.YES)
+                .build()
+        ));
+
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
+                                              .party(claimant)
+                                              .role(PartyRole.CLAIMANT)
+                                              .build());
+        claimEntity.getClaimParties().add(ClaimPartyEntity.builder()
+                                              .party(defendant)
+                                              .role(PartyRole.DEFENDANT)
+                                              .build());
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .claims(List.of(claimEntity))
+            .build();
+
+        when(defendantPartyExtractor.extractDefendants(caseEntity, CASE_REFERENCE))
+            .thenReturn(List.of(defendant));
+
+        assertThatThrownBy(() -> underTest.validateAndGetDefendants(caseEntity, organisationId))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant solicitor on this case");
     }
