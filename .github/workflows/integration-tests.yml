@@ -91,7 +91,7 @@ jobs:
       # The federated credential is granted to hmcts/pcs-api on the "DTS Developers GitHub
       # Actions ACR Puller 1" app registration (AcrPull on rpe-acr-prod-rg).
       - name: Azure login (OIDC)
-        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: 7dbe3da2-315b-4937-bac6-3ab22a9c7b91 # DTS Developers GitHub Actions ACR Puller 1
           tenant-id: 531ff96d-0ae9-462a-8d2d-bec7c0b42082 # HMCTS.NET
