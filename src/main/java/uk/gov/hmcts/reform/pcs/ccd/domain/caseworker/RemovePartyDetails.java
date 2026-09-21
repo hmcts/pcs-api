@@ -27,7 +27,7 @@ public class RemovePartyDetails {
     private DynamicList partyToRemove;
 
     @JsonProperty("removeParty_UnremovablePartyList")
-    @CCD(label = "Which party are you removing?", typeOverride = FieldType.TextArea)
+    @CCD(label = "", typeOverride = FieldType.TextArea)
     private String unremovablePartyList;
 
     @JsonProperty("removeParty_LastPartyMessage")
