@@ -37,7 +37,7 @@ public class UserNameEntity {
 
     private UUID idamId;
 
-    @OneToMany(mappedBy = "user", fetch = LAZY, cascade = ALL)
+    @OneToMany(mappedBy = "user", fetch = LAZY)
     @Builder.Default
     @JsonManagedReference
     private List<JudicialNoteEntity> judicialNotes = new ArrayList<>();
