@@ -931,7 +931,10 @@ public class PCSCase {
     @JsonUnwrapped
     private LegalRepresentativeDetails legalRepresentativeDetails;
 
-    @CCD(label = "Upload document")
+    @CCD(
+        label = "Upload document",
+        regex = NON_MULTIMEDIA_FILE_TYPES
+    )
     private Document counterclaimForm;
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})

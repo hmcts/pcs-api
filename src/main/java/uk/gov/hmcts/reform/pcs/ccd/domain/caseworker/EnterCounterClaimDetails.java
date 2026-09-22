@@ -20,6 +20,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.model.AcceptedFileTypes.NON_MULTIMEDIA_FILE_TYPES;
 
 @Builder
 @Data
@@ -55,7 +56,10 @@ public class EnterCounterClaimDetails {
     @CCD(label = "What is their Help With Fees reference number?", max = 60)
     private String hwfReferenceNumber;
 
-    @CCD(label = "Upload document")
+    @CCD(
+        label = "Upload document",
+        regex = NON_MULTIMEDIA_FILE_TYPES
+    )
     private List<ListValue<Document>> relatedDocuments;
 
 }
