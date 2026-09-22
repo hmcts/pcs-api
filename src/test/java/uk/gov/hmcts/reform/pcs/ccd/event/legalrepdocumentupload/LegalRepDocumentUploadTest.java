@@ -443,9 +443,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(validCCs).isNotNull();
             assertThat(validCCs.getListItems()).hasSize(2);
             assertThat(validCCs.getListItems().get(0).getLabel())
-                .contains("Yes, the documents I’m uploading relate to the counterclaim made on Thursday 2 April 2026");
+                .contains("Yes, the documents I'm uploading relate to the counterclaim made by John Doe"
+                    + " on Thursday 2 April 2026");
             assertThat(validCCs.getListItems().get(1).getLabel())
-                .contains("No, the documents I’m uploading relate to the main claim");
+                .contains("No, the documents I'm uploading do not relate to a counterclaim");
         }
 
 

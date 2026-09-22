@@ -128,7 +128,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        setupCounterclaimDetails(pcsCaseEntity, legalRepDocumentUploadDetails);
+        setupCounterclaimDetails(pcsCaseEntity, legalRepDocumentUploadDetails, organisationId);
 
         boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
@@ -142,7 +142,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private void setupCounterclaimDetails(
         PcsCaseEntity pcsCaseEntity,
-        LegalRepDocumentUploadDetails details
+        LegalRepDocumentUploadDetails details,
+        String currentUserOrganisationId
     ) {
         List<CounterClaimEntity> counterClaims = pcsCaseEntity.getCounterClaims();
         if (counterClaims == null || counterClaims.isEmpty()) {
@@ -163,9 +164,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             String fileName = String.format("Counterclaim CC%d - %s.pdf", ccIndex, defName);
             String docUrl = findCounterclaimDocumentUrl(pcsCaseEntity, cc);
 
-
             linksHtml.append(String.format(
-                "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new Link)</a></p>\n",
+                "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new tab)</a></p>\n",
                 docUrl, fileName
             ));
 
@@ -173,10 +173,14 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 ? cc.getClaimSubmittedDate().format(CC_LABEL_DATE_FORMAT)
                 : "";
 
-            String radioLabel = String.format(
-                "Yes, the documents I’m uploading relate to the counterclaim made on %s",
-                dateStr
-            );
+            boolean isCurrentUsersCounterclaim = cc.getParty() != null
+                && currentUserOrganisationId != null
+                && currentUserOrganisationId.equals(cc.getParty().getOrganisationId());
+
+            String radioLabel = isCurrentUsersCounterclaim
+                ? String.format("Yes, the documents I'm uploading relate to the counterclaim I made on %s", dateStr)
+                : String.format("Yes, the documents I'm uploading relate to the counterclaim made by %s on %s",
+                                defName, dateStr);
 
             ccRadioItems.add(
                 DynamicStringListElement.builder()
@@ -189,7 +193,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         ccRadioItems.add(
             DynamicStringListElement.builder()
                 .code("MAIN_CLAIM")
-                .label("No, the documents I’m uploading relate to the main claim")
+                .label("No, the documents I'm uploading do not relate to a counterclaim")
                 .build()
         );
 
@@ -201,6 +205,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .build()
         );
     }
+
 
     private String getPartyDisplayName(uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity party, int fallbackIndex) {
         if (party != null) {
