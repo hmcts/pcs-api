@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -54,8 +54,6 @@ class NoticeOfPossessionViewTest {
     private ClaimEntity mainClaimEntity;
     @Mock(strictness = LENIENT)
     private NoticeOfPossessionEntity noticeOfPossessionEntity;
-    @Mock
-    private UploadTimestampProvider uploadTimestampProvider;
     @Captor
     private ArgumentCaptor<NoticeServedDetails> noticeServedDetailsCaptor;
 
@@ -66,7 +64,7 @@ class NoticeOfPossessionViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
         when(mainClaimEntity.getNoticeOfPossession()).thenReturn(noticeOfPossessionEntity);
 
-        underTest = new NoticeOfPossessionView(uploadTimestampProvider);
+        underTest = new NoticeOfPossessionView();
     }
 
     @Test
@@ -279,15 +277,14 @@ class NoticeOfPossessionViewTest {
     }
 
     @Test
-    void shouldSetNoticeDocumentIfPresent() {
+    void shouldNotSetNoticeDocumentIfPresent() {
         // Given
         LocalDate postedDate = mock(LocalDate.class);
         UUID noticeDocumentId = UUID.randomUUID();
 
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
         when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
-        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
-        when(pcsCaseEntity.getDocuments()).thenReturn(
+        lenient().when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
@@ -295,7 +292,7 @@ class NoticeOfPossessionViewTest {
                     .build()
             )
         );
-
+ 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
@@ -305,10 +302,7 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(FIRST_CLASS_POST);
         assertThat(noticeServedDetails.getPostedDate()).isSameAs(postedDate);
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
-        assertThat(noticeDocuments).hasSize(1);
-        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
-        assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
+        assertThat(noticeServedDetails.getDocuments()).isNull();
     }
 
     @Test

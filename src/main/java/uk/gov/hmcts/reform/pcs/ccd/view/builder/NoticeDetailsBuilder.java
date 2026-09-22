@@ -32,12 +32,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatDateTime
 public class NoticeDetailsBuilder {
 
     private final UploadTimestampProvider uploadTimestampProvider;
-
-    public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase, boolean isSubmitted) {
-        // dummy method
-        return new NoticeTabDetails();
-    }
-
     
     public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {

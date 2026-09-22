@@ -92,11 +92,6 @@ public class CaseDetailsTabView {
     private final UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
 
-    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, boolean isSubmitted) {
-        // dummy method
-        return new CaseDetailsTab();
-    }
-
     public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, boolean isSubmitted) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
         GroundsForPossessionTabDetails groundsForPossessionTabDetails = buildGroundsForPossessionTabDetails(pcsCase);
