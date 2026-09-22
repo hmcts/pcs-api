@@ -72,7 +72,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
                 .mandatoryWithoutDefaultValue(
                     RemovePartyDetails::getPartyToRemove,
                     CAN_SELECT_PARTY_CONDITION,
-                    "Which party are you removing?")
+                    "Select an option below")
                 .readonly(RemovePartyDetails::getLastPartyMessage, CANNOT_SELECT_PARTY_CONDITION, true)
             .done()
             .complex(PCSCase::getUpdatePartyDetails)
