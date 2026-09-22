@@ -252,6 +252,166 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
+        void shouldSetNoCounterclaimPageWhenNoCounterclaims() {
+            // Given
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of());
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getShowCounterclaimPage())
+                .isEqualTo(VerticalYesNo.NO);
+        }
+
+        @Test
+        void shouldUseOrgNameAsCounterclaimPartyDisplayName() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            PartyEntity org = PartyEntity.builder().orgName("Acme Corp").build();
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(org)
+                    .build();
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("Counterclaim CC1 - Acme Corp.pdf");
+        }
+
+        @Test
+        void shouldUseFullNameAsCounterclaimPartyDisplayName() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            PartyEntity person = PartyEntity.builder().firstName("Jane").lastName("Smith").build();
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(person)
+                    .build();
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("Counterclaim CC1 - Jane Smith.pdf");
+        }
+
+        @Test
+        void shouldUseFallbackIndexWhenPartyIsNull() {
+            // Given
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(UUID.randomUUID())
+                    .party(null)
+                    .build();
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("Counterclaim CC1 - Defendant 1.pdf");
+        }
+
+        @Test
+        void shouldUseBinaryUrlForCounterclaimDocumentLink() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(null)
+                    .build();
+
+            uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity doc =
+                uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity.builder()
+                    .counterClaim(counterClaim)
+                    .binaryUrl("https://dm-store/binary/abc")
+                    .url("https://dm-store/abc")
+                    .build();
+
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+            when(pcsCaseEntity.getDocuments()).thenReturn(List.of(doc));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("https://dm-store/binary/abc");
+        }
+
+        @Test
+        void shouldFallBackToUrlWhenBinaryUrlMissingForCounterclaimDocument() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(null)
+                    .build();
+
+            uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity doc =
+                uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity.builder()
+                    .counterClaim(counterClaim)
+                    .binaryUrl(null)
+                    .url("https://dm-store/abc")
+                    .build();
+
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+            when(pcsCaseEntity.getDocuments()).thenReturn(List.of(doc));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("https://dm-store/abc");
+        }
+
+        @Test
+        void shouldUseFallbackHashUrlWhenNoDocumentMatchesCounterclaim() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            UUID otherId = UUID.randomUUID();
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(null)
+                    .build();
+
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity otherCc =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(otherId)
+                    .build();
+
+            uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity doc =
+                uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity.builder()
+                    .counterClaim(otherCc)
+                    .binaryUrl("https://dm-store/other")
+                    .build();
+
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+            when(pcsCaseEntity.getDocuments()).thenReturn(List.of(doc));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
+                .contains("href=\"#\"");
+        }
+
+        @Test
         void shouldPopulateCounterclaimDetailsWhenCounterclaimsExist() {
             // Given
             UUID ccId = UUID.randomUUID();
