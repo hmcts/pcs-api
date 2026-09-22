@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -22,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
@@ -36,6 +39,7 @@ import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -60,6 +64,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final GenAppVisibilityService genAppVisibilityService;
     private final OrganisationService organisationService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
+    private final LegalRepresentativeService legalRepresentativeService;
     private final PartyService partyService;
 
     @Override
@@ -114,13 +119,43 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .build()
         );
 
+        DynamicList representedPartyNames = legalRepresentativeService.getRepresentedPartiesDynamicList(
+            organisationId,
+            caseReference
+        );
+
+        boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+        caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+        caseData.setRepresentedPartyNames(representedPartyNames);
+
         // By default, Main claim is always added
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
+        PartyType partyType = isClaimantSolicitor(pcsCaseEntity, organisationId) ? PartyType.CLAIMANT : PartyType.DEFENDANT;
+        legalRepDocumentUploadDetails.setPartyType(partyType);
 
-        legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
+        /*
+        ======= ALTERNATIVE =======
+
+        List<PartyEntity> defendantPartyEntities = legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
+                                                                    organisationId);
+        List<DynamicListElement> listItems = defendantPartyEntities.stream()
+            .map(partyEntity -> DynamicListElement.builder()
+                .code(partyEntity.getId())
+                .label(partyEntity.getFirstName() + " " + partyEntity.getLastName())
+                .build())
+            .toList();
+
+        DynamicList representedDefendantPartyNames = DynamicList.builder()
+            .listItems(listItems)
+            .build();
+
+            boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+            caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+            caseData.setRepresentedPartyNames(representedDefendantPartyNames);
+        }
+        */
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
         legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));

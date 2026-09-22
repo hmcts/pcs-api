@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,6 +72,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
+    @Mock
+    private LegalRepresentativeService legalRepresentativeService;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -112,6 +115,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             genAppVisibilityService,
             organisationService,
             legalRepPartySelectionService,
+            legalRepresentativeService,
             partyService);
 
         setEventUnderTest(legalRepDocumentUpload);
