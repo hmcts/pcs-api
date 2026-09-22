@@ -37,10 +37,17 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+
 import java.time.LocalDateTime;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -52,6 +59,9 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 @Component
 @AllArgsConstructor
 public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRole> {
+
+    private static final DateTimeFormatter CC_LABEL_DATE_FORMAT =
+        DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
 
     private final LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
     private final PcsCaseService pcsCaseService;
@@ -118,6 +128,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
+        setupCounterclaimDetails(pcsCaseEntity, legalRepDocumentUploadDetails);
+
         boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
         legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
@@ -127,6 +139,101 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         return caseData;
     }
+
+    private void setupCounterclaimDetails(
+        PcsCaseEntity pcsCaseEntity,
+        LegalRepDocumentUploadDetails details
+    ) {
+        List<CounterClaimEntity> counterClaims = pcsCaseEntity.getCounterClaims();
+        if (counterClaims == null || counterClaims.isEmpty()) {
+            details.setShowCounterclaimPage(VerticalYesNo.NO);
+            return;
+        }
+
+        details.setShowCounterclaimPage(VerticalYesNo.YES);
+
+        StringBuilder linksHtml = new StringBuilder("<div class=\"govuk-inset-text\">\n");
+        List<DynamicStringListElement> ccRadioItems = new ArrayList<>();
+
+        for (int i = 0; i < counterClaims.size(); i++) {
+            CounterClaimEntity cc = counterClaims.get(i);
+            int ccIndex = i + 1;
+            String defName = getPartyDisplayName(cc.getParty(), ccIndex);
+
+            String fileName = String.format("Counterclaim CC%d - %s.pdf", ccIndex, defName);
+            String docUrl = findCounterclaimDocumentUrl(pcsCaseEntity, cc);
+
+
+            linksHtml.append(String.format(
+                "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new Link)</a></p>\n",
+                docUrl, fileName
+            ));
+
+            String dateStr = cc.getClaimSubmittedDate() != null
+                ? cc.getClaimSubmittedDate().format(CC_LABEL_DATE_FORMAT)
+                : "";
+
+            String radioLabel = String.format(
+                "Yes, the documents I’m uploading relate to the counterclaim made on %s",
+                dateStr
+            );
+
+            ccRadioItems.add(
+                DynamicStringListElement.builder()
+                    .code(cc.getId() != null ? cc.getId().toString() : "CC_" + ccIndex)
+                    .label(radioLabel)
+                    .build()
+            );
+        }
+
+        ccRadioItems.add(
+            DynamicStringListElement.builder()
+                .code("MAIN_CLAIM")
+                .label("No, the documents I’m uploading relate to the main claim")
+                .build()
+        );
+
+        linksHtml.append("</div>");
+        details.setCounterclaimDocumentLinks(linksHtml.toString());
+        details.setValidCounterclaims(
+            DynamicStringList.builder()
+                .listItems(ccRadioItems)
+                .build()
+        );
+    }
+
+    private String getPartyDisplayName(uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity party, int fallbackIndex) {
+        if (party != null) {
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(party.getOrgName())) {
+                return party.getOrgName().trim();
+            }
+            String fullName = Stream.of(party.getFirstName(), party.getLastName())
+                .filter(org.apache.commons.lang3.StringUtils::isNotBlank)
+                .collect(java.util.stream.Collectors.joining(" "));
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(fullName)) {
+                return fullName;
+            }
+        }
+        return "Defendant " + fallbackIndex;
+    }
+
+    private String findCounterclaimDocumentUrl(PcsCaseEntity pcsCaseEntity, CounterClaimEntity cc) {
+
+        if (pcsCaseEntity.getDocuments() != null && cc.getId() != null) {
+            for (DocumentEntity doc : pcsCaseEntity.getDocuments()) {
+                if (doc.getCounterClaim() != null && cc.getId().equals(doc.getCounterClaim().getId())) {
+                    if (doc.getBinaryUrl() != null) {
+                        return doc.getBinaryUrl();
+                    }
+                    if (doc.getUrl() != null) {
+                        return doc.getUrl();
+                    }
+                }
+            }
+        }
+        return "#";
+    }
+
 
     private DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,

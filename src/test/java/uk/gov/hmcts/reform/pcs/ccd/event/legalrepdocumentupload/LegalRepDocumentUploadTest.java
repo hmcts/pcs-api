@@ -252,6 +252,44 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
         @Test
+        void shouldPopulateCounterclaimDetailsWhenCounterclaimsExist() {
+            // Given
+            UUID ccId = UUID.randomUUID();
+            PartyEntity defendant = PartyEntity.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+            uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
+                uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .id(ccId)
+                    .party(defendant)
+                    .claimSubmittedDate(LocalDateTime.of(2026, 4, 2, 12, 0))
+                    .build();
+
+            when(pcsCaseEntity.getCounterClaims()).thenReturn(List.of(counterClaim));
+
+            // When
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            // Then
+            LegalRepDocumentUploadDetails details = result.getLegalRepDocumentUploadDetails();
+            assertThat(details).isNotNull();
+            assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
+            assertThat(details.getCounterclaimDocumentLinks()).contains("govuk-inset-text");
+            assertThat(details.getCounterclaimDocumentLinks()).contains("Counterclaim CC1 - John Doe.pdf");
+
+            DynamicStringList validCCs = details.getValidCounterclaims();
+            assertThat(validCCs).isNotNull();
+            assertThat(validCCs.getListItems()).hasSize(2);
+            assertThat(validCCs.getListItems().get(0).getLabel())
+                .contains("Yes, the documents I’m uploading relate to the counterclaim made on Thursday 2 April 2026");
+            assertThat(validCCs.getListItems().get(1).getLabel())
+                .contains("No, the documents I’m uploading relate to the main claim");
+        }
+
+
+        @Test
         void shouldSetPartyTypeFieldForClaimant() {
             // Given
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
