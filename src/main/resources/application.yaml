@@ -350,6 +350,9 @@ camunda:
     max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
     backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
 
+pcsApiEnv:
+  env: ${PCS_API_ENV:default}
+
 work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}

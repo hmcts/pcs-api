@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -29,7 +29,6 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class CamundaService {
 
@@ -47,6 +46,25 @@ public class CamundaService {
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
     private final Clock utcClock;
+    private final String pcsApiEnvironment;
+
+    public CamundaService(WorkAllocationWorkflowApi workAllocationWorkflowApi,
+                          AuthTokenGenerator authTokenGenerator,
+                          SchedulerClient schedulerClient,
+                          FeatureToggleService featureToggleService,
+                          LocationReferenceService locationReferenceService,
+                          PcsCaseRepository pcsCaseRepository,
+                          Clock utcClock,
+                          @Value("${pcsApiEnv.env}") String pcsApiEnvironment) {
+        this.workAllocationWorkflowApi = workAllocationWorkflowApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.schedulerClient = schedulerClient;
+        this.featureToggleService = featureToggleService;
+        this.locationReferenceService = locationReferenceService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.utcClock = utcClock;
+        this.pcsApiEnvironment = pcsApiEnvironment;
+    }
 
     public void createTask(long caseId, TaskType taskType) {
         createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
@@ -83,18 +101,16 @@ public class CamundaService {
 
     void handleRequest(CamundaRequestTaskData taskData) {
         switch (taskData.getAction()) {
-            case CREATE ->
-                requestTaskCreation(
-                    taskData.getCaseReference(),
-                    taskData.getTaskType(),
-                    taskData.getTaskDescription(),
-                    taskData.getIdempotencyKey()
-                );
-            case CANCEL ->
-                requestTaskCancellation(
-                    taskData.getCaseReference(),
-                    taskData.getTaskType()
-                );
+            case CREATE -> requestTaskCreation(
+                taskData.getCaseReference(),
+                taskData.getTaskType(),
+                taskData.getTaskDescription(),
+                taskData.getIdempotencyKey()
+            );
+            case CANCEL -> requestTaskCancellation(
+                taskData.getCaseReference(),
+                taskData.getTaskType()
+            );
         }
     }
 
@@ -139,6 +155,7 @@ public class CamundaService {
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
         if (idempotencyKey != null) {
             processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
         } else {
