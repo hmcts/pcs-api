@@ -46,6 +46,15 @@ public class CounterClaimService {
         CounterClaim counterClaim,
         PartyEntity partyRef
     ) {
+        return saveCounterClaim(caseReference, counterClaim, partyRef, false);
+    }
+
+    private Optional<CounterClaimEntity> saveCounterClaim(
+        long caseReference,
+        CounterClaim counterClaim,
+        PartyEntity partyRef,
+        boolean caseworkerEntered
+    ) {
         if (partyRef == null) {
             throw new IllegalStateException("party is null for case: " + caseReference);
         }
@@ -59,18 +68,33 @@ public class CounterClaimService {
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
         CounterClaimEntity counterClaimEntity = buildCounterClaimEntity(
-            counterClaim, partyRef, LocalDateTime.now(utcClock));
+            counterClaim, partyRef, LocalDateTime.now(utcClock), caseworkerEntered);
         counterClaimEntity.setPcsCase(claimRef.getPcsCase());
         CounterClaimEntity savedCounterClaim = counterClaimRepository.save(counterClaimEntity);
         log.info("Saved counterclaim {} for case {}", savedCounterClaim.getId(), caseReference);
         return Optional.of(savedCounterClaim);
     }
 
+    /*
+    * Saves a counterclaim entered directly by a caseworker
+    * There is no fee/payment step in this event, so it is issued immediately when no Help With Fees reference is given
+    */
+    public Optional<CounterClaimEntity> saveCaseworkerEnteredCounterClaim(
+        long caseReference,
+        CounterClaim counterClaim,
+        PartyEntity partyRef
+    ) {
+        return saveCounterClaim(caseReference, counterClaim, partyRef, true);
+    }
+
     private CounterClaimEntity buildCounterClaimEntity(CounterClaim counterClaim,
                                                        PartyEntity partyRef,
-                                                       LocalDateTime submittedAt) {
+                                                       LocalDateTime submittedAt,
+                                                       boolean caseworkerEntered) {
         boolean claimAmountApplies = counterClaim.getClaimType() != null
             && counterClaim.getClaimType() != CounterClaimType.SOMETHING_ELSE;
+
+        VerticalYesNo appliedForHwf = counterClaim.getAppliedForHwf();
 
         CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
             .claimType(counterClaim.getClaimType())
@@ -88,7 +112,11 @@ public class CounterClaimService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .courtPermissionGranted(counterClaim.getCourtPermissionGranted())
+            .permissionOrderDate(counterClaim.getCourtPermissionGranted() == VerticalYesNo.YES
+                ? counterClaim.getPermissionOrderDate() : null)
+            .claimReceivedDate(counterClaim.getClaimReceivedDate())
+            .status(getInitialStatus(caseworkerEntered, appliedForHwf))
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -106,6 +134,12 @@ public class CounterClaimService {
         }
 
         return counterClaimEntity;
+    }
+
+    private CounterClaimState getInitialStatus(boolean caseworkerEntered, VerticalYesNo appliedForHwf) {
+        return caseworkerEntered && appliedForHwf == VerticalYesNo.NO
+            ? CounterClaimState.COUNTER_CLAIM_ISSUED
+            : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
 
 }

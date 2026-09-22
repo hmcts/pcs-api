@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,6 +107,42 @@ class CounterClaimServiceTest {
     }
 
     @Test
+    void shouldSetStateWhenCounterClaimEnteredByCaseworker() {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+
+        when(counterClaim.getAppliedForHwf()).thenReturn(VerticalYesNo.NO);
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
+    }
+
+    @Test
+    void shouldSetStateToPendingClaimIssuedWhenCounterClaimEnteredByCaseworkerWithHwf() {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+
+        when(counterClaim.getAppliedForHwf()).thenReturn(VerticalYesNo.YES);
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+    }
+
+    @Test
     void shouldReturnEmptyWhenCounterClaimIsNull() {
         assertThat(underTest.saveCounterClaim(CASE_REFERENCE, null, partyEntity)).isEmpty();
     }
@@ -128,6 +166,51 @@ class CounterClaimServiceTest {
         assertThat(captured.getClaimAmount()).isNull();
         assertThat(captured.getOtherOrderRequestDetails()).isEqualTo("Stop eviction");
         assertThat(captured.getOtherOrderRequestFacts()).isEqualTo("Landlord did not serve notice");
+    }
+
+    @Test
+    void shouldSaveCourtPermissionFieldsWhenPermissionGranted() {
+        stubSaveDependencies();
+
+        LocalDate permissionOrderDate = LocalDate.of(2026, 4, 1);
+        LocalDate claimReceivedDate = LocalDate.of(2026, 4, 10);
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .courtPermissionGranted(VerticalYesNo.YES)
+            .permissionOrderDate(permissionOrderDate)
+            .claimReceivedDate(claimReceivedDate)
+            .build();
+
+        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        CounterClaimEntity captured = counterClaimCaptor.getValue();
+        assertThat(captured.getCourtPermissionGranted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(captured.getPermissionOrderDate()).isEqualTo(permissionOrderDate);
+        assertThat(captured.getClaimReceivedDate()).isEqualTo(claimReceivedDate);
+    }
+
+    @Test
+    void shouldNullPermissionOrderDateWhenPermissionNotGranted() {
+        stubSaveDependencies();
+
+        LocalDate claimReceivedDate = LocalDate.of(2026, 4, 10);
+
+        CounterClaim counterClaim = CounterClaim.builder()
+            .claimType(CounterClaimType.PAYMENT_OR_COMPENSATION)
+            .courtPermissionGranted(VerticalYesNo.NO)
+            .permissionOrderDate(LocalDate.of(2026, 4, 1))
+            .claimReceivedDate(claimReceivedDate)
+            .build();
+
+        underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        CounterClaimEntity captured = counterClaimCaptor.getValue();
+        assertThat(captured.getCourtPermissionGranted()).isEqualTo(VerticalYesNo.NO);
+        assertThat(captured.getPermissionOrderDate()).isNull();
+        assertThat(captured.getClaimReceivedDate()).isEqualTo(claimReceivedDate);
     }
 
     @Test
