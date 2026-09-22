@@ -36,19 +36,19 @@ public class TaskManagementClient {
         this.serviceAuthorisation = generateTestS2SToken("pcs_api");
     }
 
-    public List<WaTask> getTasksOfType(
-        Long caseId,
+    public List<WaTask> waitForTasksOfType(
+        long caseId,
         TaskType taskType,
         String authorisation
     ) {
         return Awaitility.await()
-            .atMost(Duration.ofSeconds(180))
+            .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofMillis(500))
             .until(() -> getTasksOfTypeForCase(caseId, taskType, authorisation), not(empty()));
     }
 
     private List<WaTask> getTasksOfTypeForCase(
-        Long caseId,
+        long caseId,
         TaskType taskType,
         String authorisation
     ) {
