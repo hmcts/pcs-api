@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -44,7 +42,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
@@ -64,6 +61,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final OrganisationService organisationService;
     private final LegalRepPartySelectionService legalRepPartySelectionService;
     private final PartyService partyService;
+    private final ExistingApplicationDocumentLinkBuilder existingApplicationDocumentLinkBuilder;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -95,6 +93,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         UUID currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
+        List<GenAppEntity> existingApplications = existingApplications(pcsCaseEntity, currentUserId, organisationId);
 
         List<DynamicStringListElement> validCategoryItems =
             Arrays.stream(DocumentUploadCategory.values())
@@ -103,7 +102,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                         return Stream.of(buildCategoryItem(category, category.name(), null, null));
                     }
 
-                    return findGenAppsForCategory(pcsCaseEntity, currentUserId, organisationId, category)
+                    return filterGenAppsForCategory(existingApplications, category)
                         .stream()
                         .map(genApp -> buildCategoryItem(
                             category,
@@ -120,7 +119,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .build()
         );
         legalRepDocumentUploadDetails.setExistingApplicationDocumentLinks(
-            buildExistingApplicationDocumentLinks(pcsCaseEntity, currentUserId, organisationId)
+            existingApplicationDocumentLinkBuilder.build(pcsCaseEntity, existingApplications)
         );
 
         // By default, Main claim is always added
@@ -167,91 +166,25 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .toList();
     }
 
-    private String buildExistingApplicationDocumentLinks(PcsCaseEntity pcsCaseEntity,
-                                                         UUID currentUserId,
-                                                         String organisationId) {
-        List<String> links = Arrays.stream(DocumentUploadCategory.values())
+    private List<GenAppEntity> existingApplications(PcsCaseEntity pcsCaseEntity,
+                                                    UUID currentUserId,
+                                                    String organisationId) {
+        return Arrays.stream(DocumentUploadCategory.values())
             .filter(category -> category != DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
             .flatMap(category -> findGenAppsForCategory(pcsCaseEntity, currentUserId, organisationId, category)
                 .stream())
-            .map(genApp -> buildExistingApplicationDocumentLink(pcsCaseEntity, genApp))
-            .filter(link -> !link.isBlank())
             .toList();
-
-        if (links.isEmpty()) {
-            return "";
-        }
-
-        String listItems = links.stream()
-            .map(link -> "<li class=\"govuk-!-margin-bottom-1\">" + link + "</li>")
-            .collect(Collectors.joining());
-
-        return """
-            <div class="govuk-inset-text">
-                <ul class="govuk-list">
-                    %s
-                </ul>
-            </div>
-            """.formatted(listItems);
     }
 
-    private String buildExistingApplicationDocumentLink(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        DocumentEntity submissionDocument = genApp.getSubmissionDocument();
-        String documentLink = documentLink(submissionDocument);
-        if (documentLink == null) {
-            return "";
-        }
-
-        String linkText = "%s (opens in new tab)".formatted(existingApplicationLabel(pcsCaseEntity, genApp));
-
-        return """
-            <a href="%s" target="_blank" rel="noopener noreferrer" class="govuk-link">%s</a>
-            """.formatted(
-                HtmlUtils.htmlEscape(documentLink),
-                HtmlUtils.htmlEscape(linkText)
-            );
+    private List<GenAppEntity> filterGenAppsForCategory(List<GenAppEntity> genApps, DocumentUploadCategory category) {
+        return genApps.stream()
+            .filter(genApp -> isGenAppForCategory(genApp, category))
+            .toList();
     }
 
-    private String documentLink(DocumentEntity documentEntity) {
-        if (documentEntity == null) {
-            return null;
-        }
-        if (documentEntity.getDocumentId() != null) {
-            return "/documents/%s/binary".formatted(documentEntity.getDocumentId());
-        }
-        return documentEntity.getBinaryUrl() == null ? documentEntity.getUrl() : documentEntity.getBinaryUrl();
-    }
-
-    private String existingApplicationLabel(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        return "General app (%s)%s".formatted(genAppReference(genApp), partyLabelText(pcsCaseEntity, genApp));
-    }
-
-    private String radioApplicationLabel(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        return genApp.getRank() == null && (genApp.getParty() == null || genApp.getParty().getId() == null)
-            ? null
-            : existingApplicationLabel(pcsCaseEntity, genApp);
-    }
-
-    private String genAppReference(GenAppEntity genApp) {
-        return genApp.getRank() == null ? "GA" : "GA%d".formatted(genApp.getRank());
-    }
-
-    private String partyLabelText(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        if (genApp.getParty() == null || genApp.getParty().getId() == null) {
-            return "";
-        }
-
-        String partyLabel = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), genApp.getParty().getId());
-        return partyLabel == null ? "" : " - " + partyLabel;
-    }
-
-    GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
-        return switch (category) {
-            case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
-            case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
-            case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
-            default -> null;
-        };
+    private boolean isGenAppForCategory(GenAppEntity genApp, DocumentUploadCategory category) {
+        GenAppType mapped = mapCategoryToGenAppType(category);
+        return mapped != null && genApp.getType() == mapped;
     }
 
     private List<GenAppEntity> visibleGenAppsForUser(PcsCaseEntity pcsCaseEntity,
@@ -262,6 +195,21 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             currentUserId,
             organisationId
         );
+    }
+
+    private String radioApplicationLabel(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
+        return genApp.getRank() == null && (genApp.getParty() == null || genApp.getParty().getId() == null)
+            ? null
+            : existingApplicationDocumentLinkBuilder.applicationLabel(pcsCaseEntity, genApp);
+    }
+
+    GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {
+        return switch (category) {
+            case ADJOURN_HEARING_APPLICATION -> GenAppType.ADJOURN;
+            case SET_ASIDE_ORDER_APPLICATION -> GenAppType.SET_ASIDE;
+            case GENERAL_APPLICATION -> GenAppType.SOMETHING_ELSE;
+            default -> null;
+        };
     }
 
     private GenAppEntity resolveSelectedGenApp(PCSCase caseData,
