@@ -55,7 +55,7 @@ public class CamundaService {
                           LocationReferenceService locationReferenceService,
                           PcsCaseRepository pcsCaseRepository,
                           Clock utcClock,
-                          @Value("${pcs-api-env}") String pcsApiEnvironment) {
+                          @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
         this.workAllocationWorkflowApi = workAllocationWorkflowApi;
         this.authTokenGenerator = authTokenGenerator;
         this.schedulerClient = schedulerClient;
