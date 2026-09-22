@@ -434,7 +434,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.1-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
 
@@ -482,7 +482,7 @@ dependencies {
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.1'
   testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.13.2'
 
-  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.10') {
+  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.11') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
