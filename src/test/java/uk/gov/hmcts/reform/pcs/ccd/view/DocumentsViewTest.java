@@ -149,7 +149,7 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shouldExcludePossessionNoticeBecauseItAppearsInCaseDetailsTab() {
+    void shouldIncludePossessionNoticeInCaseDocuments() {
         DocumentEntity possessionNotice = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .fileName("possession-notice.pdf")
@@ -161,7 +161,12 @@ class DocumentsViewTest {
 
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
-        assertThat(pcsCase.getAllDocuments()).isEmpty();
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> {
+                assertThat(document.getId()).isEqualTo(possessionNotice.getId().toString());
+                assertThat(document.getValue().getFilename()).isEqualTo("possession-notice.pdf");
+                assertThat(document.getValue().getUrl()).isEqualTo("possession-notice-url");
+            });
     }
 
     @Test
