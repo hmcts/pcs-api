@@ -4,7 +4,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.groupRol
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 /**
@@ -36,20 +35,20 @@ public class CurrentUserView {
     }
 
     private Optional<String> groupRole(PcsCaseEntity pcsCaseEntity, String organisationId) {
-        if (organisationId == null || pcsCaseEntity.getClaims().isEmpty()) {
+        if (organisationId == null) {
             return Optional.empty();
         }
 
-        List<PartyEntity> parties = pcsCaseEntity.getClaims().getFirst().getClaimParties()
-            .stream()
-            .map(ClaimPartyEntity::getParty)
-            .toList();
+        // The case-level party set, the same input CaseAccessGroupsUtil derives the case's access
+        // groups from. Reading the main claim's parties instead would be a second source of truth
+        // for who is on this case, and the two only coincide while a case has exactly one claim.
+        Collection<PartyEntity> parties = pcsCaseEntity.getParties();
 
         return claimantRole(parties, organisationId)
             .or(() -> defendantSolicitorRole(parties, organisationId));
     }
 
-    private Optional<String> claimantRole(List<PartyEntity> parties, String organisationId) {
+    private Optional<String> claimantRole(Collection<PartyEntity> parties, String organisationId) {
         return parties.stream()
             .filter(party -> party.isClaimCreator() && organisationId.equals(party.getOrganisationId()))
             .findFirst()
@@ -61,7 +60,7 @@ public class CurrentUserView {
      * inactive row behind, and treating that as current would keep the previous firm in the
      * defendant's journey.
      */
-    private Optional<String> defendantSolicitorRole(List<PartyEntity> parties, String organisationId) {
+    private Optional<String> defendantSolicitorRole(Collection<PartyEntity> parties, String organisationId) {
         return parties.stream()
             .flatMap(party -> party.getClaimPartyOrganisationList().stream())
             .filter(link -> YesOrNo.YES == link.getActive())

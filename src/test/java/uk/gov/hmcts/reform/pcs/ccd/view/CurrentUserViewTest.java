@@ -4,17 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 class CurrentUserViewTest {
@@ -101,19 +100,8 @@ class CurrentUserViewTest {
     }
 
     private PcsCaseEntity caseWith(PartyEntity... parties) {
-        List<ClaimPartyEntity> claimParties = List.of(parties).stream()
-            .map(party -> {
-                ClaimPartyEntity claimParty = mock(ClaimPartyEntity.class);
-                when(claimParty.getParty()).thenReturn(party);
-                return claimParty;
-            })
-            .toList();
-
-        ClaimEntity claim = mock(ClaimEntity.class);
-        when(claim.getClaimParties()).thenReturn(claimParties);
-
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
-        when(caseEntity.getClaims()).thenReturn(List.of(claim));
+        when(caseEntity.getParties()).thenReturn(new LinkedHashSet<>(List.of(parties)));
         return caseEntity;
     }
 
