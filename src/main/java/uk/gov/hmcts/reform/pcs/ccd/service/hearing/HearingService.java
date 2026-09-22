@@ -271,7 +271,6 @@ public class HearingService {
 
     private boolean isActiveClaimParty(ClaimPartyEntity claimPartyEntity) {
         return claimPartyEntity != null
-            && claimPartyEntity.getParty() != null
             && !claimPartyEntity.getParty().isRemoved();
     }
 

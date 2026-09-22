@@ -89,7 +89,6 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
         List<DynamicListElement> listItems = mainClaim.getClaimParties().stream()
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.CLAIMANT
                 || claimPartyEntity.getRole() == PartyRole.DEFENDANT)
-            .filter(claimPartyEntity -> claimPartyEntity.getParty() != null)
             .filter(claimPartyEntity -> !claimPartyEntity.getParty().isRemoved())
             .map(claimPartyEntity -> DynamicListElement.builder()
                 .code(claimPartyEntity.getParty().getId())

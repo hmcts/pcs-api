@@ -99,7 +99,6 @@ public class DefendantPaperResponse implements CCDConfig<PCSCase, State, UserRol
     private DynamicList buildDefendantPartyList(ClaimEntity claimEntity) {
         List<DynamicListElement> listItems = claimEntity.getClaimParties().stream()
             .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.DEFENDANT)
-            .filter(claimPartyEntity -> claimPartyEntity.getParty() != null)
             .filter(claimPartyEntity -> !claimPartyEntity.getParty().isRemoved())
             .map(claimPartyEntity -> DynamicListElement.builder()
                 .code(claimPartyEntity.getParty().getId())

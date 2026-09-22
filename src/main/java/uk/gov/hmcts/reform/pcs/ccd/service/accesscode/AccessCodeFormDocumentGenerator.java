@@ -97,7 +97,7 @@ public class AccessCodeFormDocumentGenerator {
         return mainClaim.getClaimParties().stream()
             .filter(claimParty -> PartyRole.CLAIMANT == claimParty.getRole())
             .map(ClaimPartyEntity::getParty)
-            .filter(party -> party != null && !party.isRemoved())
+            .filter(party -> !party.isRemoved())
             .map(this::formatPartyName)
             .filter(StringUtils::isNotBlank)
             .findFirst()
