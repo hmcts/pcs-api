@@ -2,13 +2,13 @@
 // Run with bin/db-schema-lint.sh, which migrates a throwaway Postgres and points this at it.
 // Rule reference: https://github.com/kristiandupont/schemalint/tree/master/src/rules
 
-// baseline.json grandfathers the violations that existed when this lint was introduced, so a
-// rule can be enforced on new migrations without first clearing its backlog. Regenerate with
-// `bin/db-schema-lint.sh --baseline` — it should only ever shrink.
-const baseline =
-  process.env.SCHEMALINT_IGNORE_BASELINE === "true"
+// ignored.json holds the violations that existed when this lint was introduced, so a rule can be
+// enforced on new migrations without first clearing its backlog. Regenerate with
+// `bin/db-schema-lint.sh --update-ignored` — it should only ever shrink.
+const ignored =
+  process.env.SCHEMALINT_INCLUDE_IGNORED === "true"
     ? []
-    : require("./baseline.json");
+    : require("./ignored.json");
 
 /** @type {import("schemalint").Config } */
 module.exports = {
@@ -33,7 +33,7 @@ module.exports = {
     // relationship, not a convention.
     "reference-actions": ["error", { onUpdate: "NO ACTION" }],
 
-    // Enforced on new objects only — the violations that already existed are in baseline.json.
+    // Enforced on new objects only — the violations that already existed are in ignored.json.
     "require-primary-key": ["error"],
     "prefer-text-to-varchar": ["error"],
     "prefer-timestamptz-to-timestamp": ["error"],
@@ -59,7 +59,7 @@ module.exports = {
     // Created by db-scheduler-spring-boot-starter.
     { identifierPattern: "public\\.scheduled_tasks.*", rulePattern: ".*" },
 
-    // Permanent name-inflection exceptions rather than baseline entries: renaming a live table
+    // Permanent name-inflection exceptions rather than ignored.json entries: renaming a live table
     // is a breaking change that has to be staged across releases, and several of these are not
     // really plurals (flag_ref_data, help_with_fees, rent_arrears) — the inflection library just
     // sees a trailing s.
@@ -77,6 +77,6 @@ module.exports = {
       "public.rent_arrears",
     ].map((identifier) => ({ identifier, rule: "name-inflection" })),
 
-    ...baseline,
+    ...ignored,
   ],
 };

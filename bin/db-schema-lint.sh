@@ -3,9 +3,9 @@
 # Lints the schema that the Flyway migrations produce against the conventions in
 # config/schemalint/.schemalintrc.js.
 #
-#   bin/db-schema-lint.sh              migrate a throwaway Postgres and lint it
-#   bin/db-schema-lint.sh --all        report the baselined violations too, without failing
-#   bin/db-schema-lint.sh --baseline   rewrite config/schemalint/baseline.json from the findings
+#   bin/db-schema-lint.sh                    migrate a throwaway Postgres and lint it
+#   bin/db-schema-lint.sh --all              report the ignored violations too, without failing
+#   bin/db-schema-lint.sh --update-ignored   rewrite config/schemalint/ignored.json from the findings
 #
 # Set PGHOST (and optionally PGPORT/PGUSER/PGPASSWORD/PGDATABASE) to lint a database that is
 # already migrated; nothing is started or torn down in that case.
@@ -24,9 +24,9 @@ MIGRATIONS_DIR="$PROJECT_ROOT/src/main/resources/db/migration"
 case "${1:-}" in
   "") MODE=lint ;;
   --all) MODE=all ;;
-  --baseline) MODE=baseline ;;
+  --update-ignored) MODE=update-ignored ;;
   *)
-    echo "Unknown argument: $1. Expected --all or --baseline." >&2
+    echo "Unknown argument: $1. Expected --all or --update-ignored." >&2
     exit 1
     ;;
 esac
@@ -92,11 +92,11 @@ if [ "$MODE" = lint ]; then
   exit 0
 fi
 
-# --all and --baseline both need the findings that baseline.json is suppressing. The deliberate
+# --all and --update-ignored both need the findings ignored.json is suppressing. The deliberate
 # ignores in .schemalintrc.js still apply, as do the disabled rules.
 # schemalint reports findings on stderr as "<identifier>: error <rule> : <message>".
 set +e
-SCHEMALINT_IGNORE_BASELINE=true yarn --silent lint 2>findings.txt >/dev/null
+SCHEMALINT_INCLUDE_IGNORED=true yarn --silent lint 2>findings.txt >/dev/null
 set -e
 
 if [ "$MODE" = all ]; then
@@ -113,7 +113,7 @@ if [ "$MODE" = all ]; then
   exit 0
 fi
 
-echo "Regenerating baseline.json"
+echo "Regenerating ignored.json"
 node -e '
   const fs = require("fs");
   const findings = fs.readFileSync("findings.txt", "utf8")
@@ -124,7 +124,7 @@ node -e '
     .map(([, identifier, rule]) => ({ identifier, rule }));
   const unique = [...new Map(findings.map((f) => [`${f.rule}|${f.identifier}`, f])).values()]
     .sort((a, b) => a.rule.localeCompare(b.rule) || a.identifier.localeCompare(b.identifier));
-  fs.writeFileSync("baseline.json", JSON.stringify(unique, null, 2) + "\n");
-  console.info(`Baselined ${unique.length} pre-existing violations`);
+  fs.writeFileSync("ignored.json", JSON.stringify(unique, null, 2) + "\n");
+  console.info(`Ignoring ${unique.length} pre-existing violations`);
 '
 rm -f findings.txt

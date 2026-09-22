@@ -6,8 +6,6 @@ name: DB schema lint
 
 on:
   pull_request:
-    branches:
-      - master
 
 concurrency:
   group: db-schema-lint-${{ github.event.pull_request.number || github.ref }}
