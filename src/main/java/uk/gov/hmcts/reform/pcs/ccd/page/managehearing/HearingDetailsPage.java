@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.HOUR_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing.MINUTE_LABEL;
 
@@ -46,6 +47,7 @@ public class HearingDetailsPage implements CcdPageConfiguration, CcdPage {
         FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page
     ) {
         page
+            .readonly(PCSCase::getHearingLocation, NEVER_SHOW)
             .label("separator", "---")
             .label(
                 "hearingLocationHeading",
