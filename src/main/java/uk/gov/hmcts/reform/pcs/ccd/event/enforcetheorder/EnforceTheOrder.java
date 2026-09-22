@@ -33,12 +33,11 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
 
