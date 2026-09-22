@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -99,16 +98,12 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             Arrays.stream(DocumentUploadCategory.values())
                 .flatMap(category -> {
                     if (category == DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM) {
-                        return Stream.of(buildCategoryItem(category, category.name(), null, null));
+                        return Stream.of(buildCategoryItemForMainOrCounterclaim());
                     }
 
                     return filterGenAppsForCategory(existingApplications, category)
                         .stream()
-                        .map(genApp -> buildCategoryItem(
-                            category,
-                            genApp.getId().toString(),
-                            genApp.getApplicationSubmittedDate(),
-                            radioApplicationLabel(pcsCaseEntity, genApp)));
+                        .map(genApp -> buildCategoryItemForExistingApplication(pcsCaseEntity, category, genApp));
                 })
                 .toList();
 
@@ -136,15 +131,23 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         return caseData;
     }
 
-    private DynamicStringListElement buildCategoryItem(
+    private DynamicStringListElement buildCategoryItemForMainOrCounterclaim() {
+        return DynamicStringListElement.builder()
+            .code(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name())
+            .label(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.getLabel())
+            .build();
+    }
+
+    private DynamicStringListElement buildCategoryItemForExistingApplication(
+        PcsCaseEntity pcsCaseEntity,
         DocumentUploadCategory category,
-        String code,
-        LocalDateTime genAppDate,
-        String applicationReference
+        GenAppEntity genApp
     ) {
         return DynamicStringListElement.builder()
-            .code(code)
-            .label(category.getLabel(genAppDate, applicationReference))
+            .code(genApp.getId().toString())
+            .label(category.getLabel(
+                genApp.getApplicationSubmittedDate(),
+                existingApplicationDocumentLinkBuilder.applicationLabel(pcsCaseEntity, genApp)))
             .build();
     }
 
@@ -195,12 +198,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             currentUserId,
             organisationId
         );
-    }
-
-    private String radioApplicationLabel(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        return genApp.getRank() == null && (genApp.getParty() == null || genApp.getParty().getId() == null)
-            ? null
-            : existingApplicationDocumentLinkBuilder.applicationLabel(pcsCaseEntity, genApp);
     }
 
     GenAppType mapCategoryToGenAppType(DocumentUploadCategory category) {

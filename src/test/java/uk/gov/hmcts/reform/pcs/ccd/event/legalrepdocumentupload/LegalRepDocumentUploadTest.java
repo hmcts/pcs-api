@@ -190,15 +190,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .filteredOn(item -> item.getLabel().contains("adjourn the hearing"))
                 .extracting(DynamicStringListElement::getLabel)
                 .containsExactlyInAnyOrder(
-                    "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    "Yes, the documents I’m uploading relate to General app (GA): the application to adjourn the "
                         + "hearing - submitted on Monday 20 April 2026",
-                    "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    "Yes, the documents I’m uploading relate to General app (GA): the application to adjourn the "
                         + "hearing - submitted on Saturday 25 April 2026"
                 );
 
             assertThat(categories.getListItems())
                 .filteredOn(item -> item.getLabel().equals(
-                    "Yes, the documents I’m uploading relate to an application submitted on "
+                    "Yes, the documents I’m uploading relate to General app (GA): an application submitted on "
                         + "Saturday 25 April 2026"))
                 .extracting(DynamicStringListElement::getCode)
                 .containsExactly(generalId.toString());
