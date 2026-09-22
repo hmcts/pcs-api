@@ -113,6 +113,7 @@ class CounterClaimServiceTest {
 
         CounterClaim counterClaim = mock(CounterClaim.class);
 
+        when(counterClaim.getAppliedForHwf()).thenReturn(VerticalYesNo.NO);
         when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
 
         // When
@@ -121,6 +122,24 @@ class CounterClaimServiceTest {
         // Then
         verify(counterClaimRepository).save(counterClaimCaptor.capture());
         assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
+    }
+
+    @Test
+    void shouldSetStateToPendingClaimIssuedWhenCounterClaimEnteredByCaseworkerWithHwf() {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+
+        when(counterClaim.getAppliedForHwf()).thenReturn(VerticalYesNo.YES);
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
     }
 
     @Test

@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.HelpWithFee
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.PartyCounterClaimAgainst;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.TypeOfCounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.UploadCounterClaimForm;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim.UploadRelatedDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
@@ -46,6 +47,7 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final HelpWithFees helpWithFees;
     private final PartyCounterClaimAgainst partyCounterClaimAgainst;
     private final UploadCounterClaimForm uploadCounterClaimForm;
+    private final UploadRelatedDocuments uploadRelatedDocuments;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -65,7 +67,8 @@ public class EnterCounterClaim implements CCDConfig<PCSCase, State, UserRole> {
             .add(counterClaimAmount)
             .add(helpWithFees)
             .add(partyCounterClaimAgainst)
-            .add(uploadCounterClaimForm);
+            .add(uploadCounterClaimForm)
+            .add(uploadRelatedDocuments);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
