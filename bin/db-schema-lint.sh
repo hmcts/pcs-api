@@ -4,6 +4,7 @@
 # config/schemalint/.schemalintrc.js.
 #
 #   bin/db-schema-lint.sh              migrate a throwaway Postgres and lint it
+#   bin/db-schema-lint.sh --all        report the baselined violations too, without failing
 #   bin/db-schema-lint.sh --baseline   rewrite config/schemalint/baseline.json from the findings
 #
 # Set PGHOST (and optionally PGPORT/PGUSER/PGPASSWORD/PGDATABASE) to lint a database that is
@@ -20,10 +21,15 @@ PROJECT_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 CONFIG_DIR="$PROJECT_ROOT/config/schemalint"
 MIGRATIONS_DIR="$PROJECT_ROOT/src/main/resources/db/migration"
 
-REGENERATE_BASELINE=false
-if [ "${1:-}" = "--baseline" ]; then
-  REGENERATE_BASELINE=true
-fi
+case "${1:-}" in
+  "") MODE=lint ;;
+  --all) MODE=all ;;
+  --baseline) MODE=baseline ;;
+  *)
+    echo "Unknown argument: $1. Expected --all or --baseline." >&2
+    exit 1
+    ;;
+esac
 
 # Not 5432 or 6432, which the cftlib stack uses.
 export PGPORT=${PGPORT:-55432}
@@ -81,27 +87,44 @@ if [ ! -d node_modules ]; then
   yarn install --frozen-lockfile --silent
 fi
 
-if [ "$REGENERATE_BASELINE" = true ]; then
-  echo "Regenerating baseline.json"
-  # schemalint reports findings on stderr as "<identifier>: error <rule> : <message>".
-  set +e
-  SCHEMALINT_IGNORE_BASELINE=true yarn --silent lint 2>findings.txt >/dev/null
-  set -e
-  node -e '
-    const fs = require("fs");
-    const findings = fs.readFileSync("findings.txt", "utf8")
-      .replace(/\x1b\[[0-9;]*m/g, "")
-      .split("\n")
-      .map((line) => /^(\S+): error (\S+) : /.exec(line))
-      .filter(Boolean)
-      .map(([, identifier, rule]) => ({ identifier, rule }));
-    const unique = [...new Map(findings.map((f) => [`${f.rule}|${f.identifier}`, f])).values()]
-      .sort((a, b) => a.rule.localeCompare(b.rule) || a.identifier.localeCompare(b.identifier));
-    fs.writeFileSync("baseline.json", JSON.stringify(unique, null, 2) + "\n");
-    console.info(`Baselined ${unique.length} pre-existing violations`);
-  '
+if [ "$MODE" = lint ]; then
+  yarn --silent lint
+  exit 0
+fi
+
+# --all and --baseline both need the findings that baseline.json is suppressing. The deliberate
+# ignores in .schemalintrc.js still apply, as do the disabled rules.
+# schemalint reports findings on stderr as "<identifier>: error <rule> : <message>".
+set +e
+SCHEMALINT_IGNORE_BASELINE=true yarn --silent lint 2>findings.txt >/dev/null
+set -e
+
+if [ "$MODE" = all ]; then
+  cat findings.txt
+  echo
+  echo "Totals by rule:"
+  grep ': error ' findings.txt \
+    | awk -F' : ' '{ print $1 }' \
+    | awk '{ print $NF }' \
+    | sort \
+    | uniq -c \
+    | sort -rn
   rm -f findings.txt
   exit 0
 fi
 
-yarn --silent lint
+echo "Regenerating baseline.json"
+node -e '
+  const fs = require("fs");
+  const findings = fs.readFileSync("findings.txt", "utf8")
+    .replace(/\x1b\[[0-9;]*m/g, "")
+    .split("\n")
+    .map((line) => /^(\S+): error (\S+) : /.exec(line))
+    .filter(Boolean)
+    .map(([, identifier, rule]) => ({ identifier, rule }));
+  const unique = [...new Map(findings.map((f) => [`${f.rule}|${f.identifier}`, f])).values()]
+    .sort((a, b) => a.rule.localeCompare(b.rule) || a.identifier.localeCompare(b.identifier));
+  fs.writeFileSync("baseline.json", JSON.stringify(unique, null, 2) + "\n");
+  console.info(`Baselined ${unique.length} pre-existing violations`);
+'
+rm -f findings.txt
