@@ -8,8 +8,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -365,7 +363,7 @@ class NoticeDetailsBuilderTest {
     }
 
     @Test
-    void shouldMoveNoticeDocumentsToCaseDetailsTabIfCaseIsSubmitted() {
+    void shouldBuildNoticeDocumentsFromPersistedCase() {
         // Given
         UUID documentId = UUID.randomUUID();
         DocumentEntity noticeDocument = DocumentEntity.builder()
@@ -392,30 +390,6 @@ class NoticeDetailsBuilderTest {
             assertThat(document.getValue().getFilename()).isEqualTo("notice.pdf");
             assertThat(document.getValue().getUrl()).isEqualTo("notice-url");
         });
-    }
-    
-    @Test
-    void shouldNotUnsetNoticeDocumentsIfCaseIsInDraft() {
-        // Given
-        List<ListValue<Document>> noticeDocuments = List.of(
-            ListValue.<Document>builder().value(Document.builder().build()).build()
-        );
-        NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
-            .serviceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-            .documents(noticeDocuments)
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .noticeServed(YesOrNo.YES)
-            .noticeServedDetails(noticeServedDetails)
-            .build();
-
-        // When
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(noticeTabDetails.getNoticeDocuments()).isEqualTo(noticeDocuments);
-        assertThat(noticeServedDetails.getDocuments()).isEqualTo(noticeDocuments);
     }
 
     private static Stream<Arguments> noticeServiceMethodWithNullDatesProvider() {

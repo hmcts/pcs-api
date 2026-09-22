@@ -7,8 +7,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -17,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -43,8 +40,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_
 
 @ExtendWith(MockitoExtension.class)
 class NoticeOfPossessionViewTest {
-
-    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
 
     @Mock
     private PCSCase pcsCase;
@@ -147,9 +142,7 @@ class NoticeOfPossessionViewTest {
 
         assertThat(noticeServedDetails)
             .usingRecursiveComparison()
-            .isEqualTo(NoticeServedDetails.builder()
-                    .documents(List.of())
-                    .build());
+            .isEqualTo(NoticeServedDetails.builder().build());
     }
 
     @Test
@@ -339,66 +332,4 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
     }
 
-    @Test
-    void shouldHandleNullDocument() {
-        // Given
-        LocalDate postedDate = mock(LocalDate.class);
-
-        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
-        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
-        when(pcsCaseEntity.getDocuments()).thenReturn(null);
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
-
-        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
-        assertThat(noticeDocuments).isEmpty();
-    }
-
-    @Test
-    void shouldNotIncludeAdditionalDocumentUploaded() {
-        // Given
-        LocalDate postedDate = mock(LocalDate.class);
-        UUID noticeDocumentId = UUID.randomUUID();
-
-        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
-        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
-        when(pcsCaseEntity.getDocuments()).thenReturn(
-                List.of(
-                        DocumentEntity.builder()
-                                .id(noticeDocumentId)
-                                .type(DocumentType.POSSESSION_NOTICE)
-                                .build(),
-                        DocumentEntity.builder()
-                                .id(noticeDocumentId)
-                                .type(DocumentType.POSSESSION_NOTICE)
-                                .generalApplication(GenAppEntity.builder().build())
-                                .build(),
-                        DocumentEntity.builder()
-                                .id(UUID.randomUUID())
-                                .type(DocumentType.POSSESSION_NOTICE)
-                                .description("Additional document uploaded")
-                                .build(),
-                        DocumentEntity.builder()
-                                .id(UUID.randomUUID())
-                                .type(DocumentType.WITNESS_STATEMENT)
-                                .build()
-                )
-        );
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
-
-        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
-        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
-        assertThat(noticeDocuments).hasSize(1);
-        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
-    }
 }
