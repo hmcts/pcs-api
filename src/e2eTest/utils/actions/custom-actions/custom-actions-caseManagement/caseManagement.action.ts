@@ -441,23 +441,23 @@ export class CaseManagementAction implements IAction {
     });
     const validations = [
       {
-        heading: 'Hearing location:',
+        heading: cancelHearing.hearingLocationHeader,
         value: `${hearingInfo.hearingLocation}`,
       },
       {
-        heading: 'Which type of hearing is this?',
+        heading: cancelHearing.hearingTypeHeader,
         value: 'Application hearing',
       },
       {
-        heading: 'When is the hearing?',
+        heading: cancelHearing.hearingDateHeader,
         value: formattedHearingDate,
       },
       {
-        heading: 'Hearing duration',
+        heading: cancelHearing.hearingDurationHeader,
         value: `${hearingInfo.hearing_DurationDays} days ${hearingInfo.hearing_DurationHours} hour ${hearingInfo.hearing_DurationMinutes} minutes`,
       },
       {
-        heading: 'Hearing notes',
+        heading: cancelHearing.hearingNotesHeader,
         value: hearingInfo.hearing_Notes,
       },
     ];
