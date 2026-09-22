@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.model.AcceptedFileTypes.NON_MULTIMEDIA_FILE_TYPES;
 
 @Builder
 @Data
@@ -69,7 +70,8 @@ public class EnterGenAppRequest {
     @CCD(
         label = "Upload related evidence",
         hint = "Upload a document to the system",
-        searchable = false
+        searchable = false,
+        regex = NON_MULTIMEDIA_FILE_TYPES
     )
     private List<ListValue<Document>> relatedEvidence;
 

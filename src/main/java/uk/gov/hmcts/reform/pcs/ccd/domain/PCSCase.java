@@ -93,6 +93,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+import static uk.gov.hmcts.reform.pcs.ccd.model.AcceptedFileTypes.NON_MULTIMEDIA_FILE_TYPES;
 
 
 /**
@@ -858,7 +859,8 @@ public class PCSCase {
     @CCD(
         label = "Add document",
         hint = "Upload a document to the system",
-        searchable = false
+        searchable = false,
+        regex = NON_MULTIMEDIA_FILE_TYPES
     )
     private Document uploadSingleDocument;
 
