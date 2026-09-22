@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class RemovePartyService {
     private final PartyRepository partyRepository;
     private final GenAppRepository genAppRepository;
     private final CounterClaimRepository counterClaimRepository;
+    private final RevokeAccessHelper revokeAccessHelper;
 
     @Transactional
     public RemovedParty removeParty(RemovePartyDetails removePartyDetails, long caseReference) {
@@ -53,6 +55,11 @@ public class RemovePartyService {
         PartyEntity partyEntity = partyService.getPartyEntityById(partyId, caseReference);
         validateCanRemove(partyEntity, caseReference);
 
+        PartyRole partyRole = partyService.getPartyRole(partyEntity);
+        if (partyRole == PartyRole.DEFENDANT) {
+            revokeAccessHelper.closeDefendantsSelfRepresentation(partyEntity.getPcsCase(), partyEntity);
+        }
+
         partyEntity.setRemoved(true);
         partyEntity.getClaimPartyOrganisationList()
             .forEach(organisation -> organisation.setActive(YesOrNo.NO));
@@ -60,7 +67,7 @@ public class RemovePartyService {
 
         ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
         String partyLabel = partyService.getPartyLabel(mainClaim, partyId);
-        return new RemovedParty(partyService.getPartyName(partyEntity), partyService.getPartyRole(partyEntity),
+        return new RemovedParty(partyService.getPartyName(partyEntity), partyRole,
                                 partyLabel);
     }
 

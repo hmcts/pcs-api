@@ -161,6 +161,7 @@ public class HearingService {
     public DynamicMultiSelectStringList buildPartyList(PcsCaseEntity pcsCaseEntity) {
         ClaimEntity mainClaim = pcsCaseEntity.getMainClaim();
         Map<PartyRole, List<ClaimPartyEntity>> partyRoleListMap = mainClaim.getClaimParties().stream()
+            .filter(this::isActiveClaimParty)
             .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
 
         List<DynamicStringListElement> partyElementList = new ArrayList<>();
@@ -238,7 +239,9 @@ public class HearingService {
                 }
             }
 
-            List<PartyEntity> partyEntities = partyRepository.findAllById(partyIds);
+            List<PartyEntity> partyEntities = partyRepository.findAllById(partyIds).stream()
+                .filter(party -> party != null && !party.isRemoved())
+                .toList();
             partyEntities.forEach(hearingEntity::addParty);
         } else {
             hearingNoticeParties.forEach(HearingNoticePartyEntity::removeHearingNoticeParty);
@@ -264,6 +267,12 @@ public class HearingService {
             .code(partyEntity.getId().toString())
             .label(label)
             .build();
+    }
+
+    private boolean isActiveClaimParty(ClaimPartyEntity claimPartyEntity) {
+        return claimPartyEntity != null
+            && claimPartyEntity.getParty() != null
+            && !claimPartyEntity.getParty().isRemoved();
     }
 
     private Set<UUID> selectedNoticePartyIds(PCSCase pcsCase) {

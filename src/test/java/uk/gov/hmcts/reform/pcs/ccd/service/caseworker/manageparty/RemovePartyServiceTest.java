@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.util.RevokeAccessHelper;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.LAST_PARTY_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.OPEN_APPLICATION_OR_COUNTERCLAIM_ERROR;
@@ -46,12 +48,15 @@ class RemovePartyServiceTest {
     private GenAppRepository genAppRepository;
     @Mock
     private CounterClaimRepository counterClaimRepository;
+    @Mock
+    private RevokeAccessHelper revokeAccessHelper;
 
     private RemovePartyService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new RemovePartyService(partyService, partyRepository, genAppRepository, counterClaimRepository);
+        underTest = new RemovePartyService(
+            partyService, partyRepository, genAppRepository, counterClaimRepository, revokeAccessHelper);
     }
 
     @Test
@@ -87,6 +92,53 @@ class RemovePartyServiceTest {
         assertThat(result.partyRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(result.partyLabel()).isEqualTo("Defendant 1");
         verify(partyRepository).save(partyToRemove);
+    }
+
+    @Test
+    void shouldRevokeDefendantSelfRepresentationAccessWhenRemovingDefendant() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingParty = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = buildCaseWithParties(partyToRemove, remainingParty);
+
+        when(partyService.getPartyEntityById(partyToRemove.getId(), TEST_CASE_REFERENCE)).thenReturn(partyToRemove);
+        when(partyService.getPartyRole(partyToRemove)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(remainingParty)).thenReturn(true);
+        when(partyService.getPartyLabel(mainClaim, partyToRemove.getId())).thenReturn("Defendant 1");
+
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder()
+            .partyToRemove(buildPartyList(partyToRemove.getId()))
+            .removeSelectedParty(YesOrNo.YES)
+            .build();
+
+        underTest.removeParty(removePartyDetails, TEST_CASE_REFERENCE);
+
+        verify(revokeAccessHelper).closeDefendantsSelfRepresentation(partyToRemove.getPcsCase(), partyToRemove);
+    }
+
+    @Test
+    void shouldNotRevokeDefendantSelfRepresentationAccessWhenRemovingClaimant() {
+        PartyEntity partyToRemove = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity remainingClaimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = buildCaseWithPartiesByRole(
+            List.of(partyWithRole(partyToRemove, PartyRole.CLAIMANT),
+                    partyWithRole(remainingClaimant, PartyRole.CLAIMANT)));
+
+        when(partyService.getPartyEntityById(partyToRemove.getId(), TEST_CASE_REFERENCE)).thenReturn(partyToRemove);
+        when(partyService.getPartyRole(partyToRemove)).thenReturn(PartyRole.CLAIMANT);
+        when(partyService.isActive(partyToRemove)).thenReturn(true);
+        when(partyService.isActive(remainingClaimant)).thenReturn(true);
+        when(partyService.getPartyLabel(mainClaim, partyToRemove.getId())).thenReturn("Claimant 1");
+
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder()
+            .partyToRemove(buildPartyList(partyToRemove.getId()))
+            .removeSelectedParty(YesOrNo.YES)
+            .build();
+
+        underTest.removeParty(removePartyDetails, TEST_CASE_REFERENCE);
+
+        verify(revokeAccessHelper, never()).closeDefendantsSelfRepresentation(partyToRemove.getPcsCase(),
+                                                                              partyToRemove);
     }
 
     @Test
@@ -205,20 +257,34 @@ class RemovePartyServiceTest {
     }
 
     private ClaimEntity buildCaseWithParties(PartyEntity... parties) {
+        return buildCaseWithPartiesByRole(
+            java.util.Arrays.stream(parties)
+                .map(party -> partyWithRole(party, PartyRole.DEFENDANT))
+                .toList());
+    }
+
+    private ClaimEntity buildCaseWithPartiesByRole(List<PartyWithRole> parties) {
         ClaimEntity mainClaim = ClaimEntity.builder().build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
         mainClaim.setPcsCase(pcsCaseEntity);
 
-        for (PartyEntity party : parties) {
-            party.setPcsCase(pcsCaseEntity);
-            mainClaim.addParty(party, PartyRole.DEFENDANT);
+        for (PartyWithRole partyWithRole : parties) {
+            partyWithRole.party().setPcsCase(pcsCaseEntity);
+            mainClaim.addParty(partyWithRole.party(), partyWithRole.role());
         }
         return mainClaim;
+    }
+
+    private PartyWithRole partyWithRole(PartyEntity party, PartyRole role) {
+        return new PartyWithRole(party, role);
     }
 
     private DynamicList buildPartyList(UUID partyId) {
         return DynamicList.builder()
             .value(DynamicListElement.builder().code(partyId).label("Billy Wright - Defendant 1").build())
             .build();
+    }
+
+    private record PartyWithRole(PartyEntity party, PartyRole role) {
     }
 }

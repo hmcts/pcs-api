@@ -49,6 +49,7 @@ public class DefendantSupportEligibilityResolver {
 
         return claims.getFirst().getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .filter(claimParty -> claimParty.getParty() == null || !claimParty.getParty().isRemoved())
             .map(this::partyId)
             .filter(Objects::nonNull)
             .collect(toCollection(LinkedHashSet::new));

@@ -213,6 +213,8 @@ public class GenAppDocumentGenerator {
 
     private Map<PartyRole, List<Party>> getPartyMap(ClaimEntity claim) {
         return claim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getParty() != null)
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .collect(Collectors.groupingBy(
                 ClaimPartyEntity::getRole,
                 Collectors.mapping(this::toParty, Collectors.toList())
