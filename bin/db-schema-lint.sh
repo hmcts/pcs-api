@@ -61,17 +61,8 @@ else
     -p "127.0.0.1:$PGPORT:5432" \
     "$POSTGRES_IMAGE" >/dev/null
 
-  for _ in $(seq 1 60); do
-    if docker exec "$CONTAINER" pg_isready -U "$PGUSER" -q; then
-      break
-    fi
-    sleep 1
-  done
-  if ! docker exec "$CONTAINER" pg_isready -U "$PGUSER" -q; then
-    echo "Postgres did not become ready" >&2
-    exit 1
-  fi
-
+  # -connectRetries waits for Postgres to accept connections. Polling pg_isready instead reports
+  # ready during initdb's temporary server, before the restart that follows it.
   echo "Applying migrations from src/main/resources/db/migration"
   docker run --rm --network "$NETWORK" \
     -v "$MIGRATIONS_DIR:/flyway/sql:ro" \
@@ -81,6 +72,7 @@ else
     -password="$PGPASSWORD" \
     -baselineOnMigrate=true \
     -baselineVersion=000 \
+    -connectRetries=60 \
     migrate >/dev/null
 fi
 

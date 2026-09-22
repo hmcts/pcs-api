@@ -54,8 +54,10 @@ jobs:
           cache: yarn
           cache-dependency-path: config/schemalint/yarn.lock
 
+      # shell: bash for pipefail — the default shell would report the exit status of tee.
       - name: Lint database schema
         if: steps.detect.outputs.changed == 'true'
+        shell: bash
         run: bin/db-schema-lint.sh 2>&1 | tee db-schema-lint.log
 
       - name: Publish findings to the job summary
