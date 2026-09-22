@@ -5,7 +5,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { generateRandomString } from "@utils/common/string.utils";
+import {formatDateTimeBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -427,13 +427,9 @@ export class CaseManagementAction implements IAction {
 
   private async cancelHearing(cancelHearingData: actionRecord) {
     const hearingInfo = manageHearingApiData.AddHearingPayload;
-    const hearingDate = new Date(hearingInfo.hearing_Date);
-    const formattedHearingDate = hearingDate.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }) + ', 12:00am';
-
+    const formattedHearingDate = formatDateTimeBST(hearingInfo.hearing_Date)
+      .replace(':00:00AM', ':00am')
+      .replace(':00:00PM', ':00pm');
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
