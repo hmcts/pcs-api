@@ -495,10 +495,7 @@ class PartiesViewTest {
             .containsOnlyNulls();
     }
 
-    /**
-     * The data store reads Organisation.OrganisationID off a matched policy without checking the
-     * Organisation node exists, so an unrepresented defendant must still carry an empty organisation.
-     */
+    /** CCD reads Organisation.OrganisationID without a null check on the node. */
     @Test
     void shouldGiveAnUnrepresentedDefendantAnEmptyOrganisationInItsPolicy() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);

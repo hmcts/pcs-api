@@ -8,14 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 
-/**
- * The organisation half of an {@link OrganisationPolicy}.
- *
- * <p>Serialised with {@code ALWAYS} inclusion, overriding the application's NON_NULL default, so an
- * unrepresented party still emits {@code "Organisation": {"OrganisationID": null, ...}}. The data
- * store's CaseAccessGroups stamping reads {@code Organisation.OrganisationID} without a null check on
- * the {@code Organisation} node, so the node must exist even when there is no organisation.</p>
- */
+/** Always write OrganisationID so CCD CaseAccessGroups can stamp an unrepresented party. */
 @NoArgsConstructor
 @Builder
 @Data

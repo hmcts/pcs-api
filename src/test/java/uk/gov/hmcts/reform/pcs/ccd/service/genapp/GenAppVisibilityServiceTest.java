@@ -128,12 +128,7 @@ class GenAppVisibilityServiceTest {
         assertThat(genAppVisibleToUser).isTrue();
     }
 
-    /**
-     * External solicitors also hold {@code caseworker-pcs}, so the generic caseworker role alone
-     * must not make them internal. Keyed on the group access role now that HDPI-7333 has retired
-     * {@code caseworker-pcs-solicitor}; organisational role assignments reach this service, so the
-     * group role genuinely appears here.
-     */
+    /** caseworker-pcs alone is not internal; solicitors hold it too. */
     @Test
     void shouldNotTreatSolicitorWithGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
         // Given

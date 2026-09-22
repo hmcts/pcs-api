@@ -39,12 +39,6 @@ class CurrentUserViewTest {
         assertThat(pcsCase.getCurrentUserGroupRole()).isEqualTo("claimant");
     }
 
-    /**
-     * A solicitor firm that brought the claim is on the claimant side, so it must not be named
-     * the defendant's representative. pcs-frontend treats only {@code defendant-solicitor} as the
-     * legal-rep journey, so this role has to stay distinct for it to fail closed.
-     */
-    @Test
     void shouldNameTheClaimantSolicitorRoleForASolicitorOrganisationThatBroughtTheClaim() {
         PcsCaseEntity caseEntity = caseWith(claimant(SOLICITOR_ORG, OrganisationProfile.SOLICITOR_PROFILE));
 
@@ -64,11 +58,6 @@ class CurrentUserViewTest {
         assertThat(pcsCase.getCurrentUserGroupRole()).isEqualTo("defendant-solicitor");
     }
 
-    /**
-     * A notice of change deactivates the outgoing firm's link. Treating that as current would keep
-     * the previous representative in the defendant's journey.
-     */
-    @Test
     void shouldNotNameARoleForAnEndedRepresentation() {
         PcsCaseEntity caseEntity = caseWith(
             claimant(CLAIMANT_ORG, OrganisationProfile.LOCALAUTH_PROFILE),

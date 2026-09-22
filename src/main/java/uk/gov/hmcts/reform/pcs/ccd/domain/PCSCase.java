@@ -138,15 +138,7 @@ public class PCSCase {
     )
     private DynamicList representedPartyNames;
 
-    /**
-     * The Group Access role the caller holds on this case - {@code claimant},
-     * {@code claimant-solicitor} or {@code defendant-solicitor} - or null for a citizen or an
-     * internal user. Stated here so consumers need not infer a capacity from IDAM roles, which
-     * never carry the group roles.
-     *
-     * <p>Access is declared explicitly: the default authorisation set omits {@code citizen} and
-     * {@code claimant}, so an undeclared field would silently not reach them.
-     */
+    /** Group Access role on this case; access listed so citizen and claimant can read it. */
     @CCD(searchable = false,
          access = {ClaimantAccess.class, DefendantAccess.class, DefendantSolicitorAccess.class})
     private String currentUserGroupRole;

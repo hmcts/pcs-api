@@ -14,18 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-/**
- * States which Group Access role the caller holds on this case, so consumers do not have to infer
- * it from IDAM roles.
- *
- * <p>Read-side counterpart of {@code CaseAccessGroupsUtil.deriveCaseAccessGroups}, from the same
- * inputs: the caller's rd-professional organisation and the case's party-to-organisation links.
- *
- * <p>Deliberately not read from RAS. Every user in a solicitor organisation holds
- * {@code claimant-solicitor} and {@code defendant-solicitor} alike - {@code GroupAccessType}
- * declares both with {@code accessMandatory} and {@code accessDefault} - so the role assignment
- * cannot say which side of a case they act on. Only the case can.
- */
+/** Caller's group role on the case. RAS cannot tell claimant-solicitor from defendant-solicitor. */
 @Component
 @AllArgsConstructor
 public class CurrentUserView {
@@ -39,9 +28,6 @@ public class CurrentUserView {
             return Optional.empty();
         }
 
-        // The case-level party set, the same input CaseAccessGroupsUtil derives the case's access
-        // groups from. Reading the main claim's parties instead would be a second source of truth
-        // for who is on this case, and the two only coincide while a case has exactly one claim.
         Collection<PartyEntity> parties = pcsCaseEntity.getParties();
 
         return claimantRole(parties, organisationId)
@@ -55,11 +41,7 @@ public class CurrentUserView {
             .flatMap(party -> groupRoleFor(party.getOrganisationProfileId(), CLAIMANT));
     }
 
-    /**
-     * Only an active link counts. A representation ended by a later notice of change leaves an
-     * inactive row behind, and treating that as current would keep the previous firm in the
-     * defendant's journey.
-     */
+    /** Active representation only; an ended NoC link must not keep the previous firm on the journey. */
     private Optional<String> defendantSolicitorRole(Collection<PartyEntity> parties, String organisationId) {
         return parties.stream()
             .flatMap(party -> party.getClaimPartyOrganisationList().stream())

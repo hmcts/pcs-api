@@ -46,13 +46,7 @@ public class CcdCaseAssignmentConsumerTest {
     private static final String CASE_ID = "1764062392941112";
     private static final String USER_ID = "9a2d861a-6264-4765-9f61-1d403079f71b";
     private static final String CASE_ROLE = "[DEFENDANT]";
-    /**
-     * An example value behind a {@code stringType} matcher, not an assertion about the role: the
-     * contract only requires case_role to be a string. Held at the value ccd-data-store-api has
-     * already verified, so the published pact keeps its existing content hash and can-i-deploy does
-     * not block on a re-verification this change does not need. Realign once the provider has
-     * verified a pact carrying the group-access role.
-     */
+    /** Provider-verified example for a stringType matcher; changing it forces a re-verify. */
     private static final String DELETE_ROLE = "[CLAIMANTSOLICITOR]";
 
     @Autowired

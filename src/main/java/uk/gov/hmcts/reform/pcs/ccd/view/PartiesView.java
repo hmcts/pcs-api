@@ -56,12 +56,7 @@ public class PartiesView {
                                                           isCitizen, currentUserId));
     }
 
-    /**
-     * The organisation policy that Notice of Change and the data store's group-access stamping key on.
-     * The role is the NoC case role the challenge question answers with, and the organisation is the
-     * defendant's active legal representative, or an organisation with null fields when unrepresented
-     * so the node is still present for the data store to read.
-     */
+    /** NoC / CaseAccessGroups key: defendant-solicitor policy, empty organisation if unrepresented. */
     private OrganisationPolicy<UserRole> buildOrganisationPolicy(PartyEntity partyEntity) {
         Organisation organisation = activeLegalRepOrganisation(partyEntity)
             .map(orgEntity -> Organisation.builder()

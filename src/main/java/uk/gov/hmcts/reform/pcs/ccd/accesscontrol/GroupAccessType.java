@@ -65,11 +65,7 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
-    /**
-
-     * Null for duty-advisor access, which is requested per case rather than stamped on one.
-
-     */
+    /** Null for duty-advisor access; requested per case rather than stamped on one. */
     private final PartyRole partyRole;
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -80,9 +76,7 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean accessDefault;
     private final boolean display;
     private final boolean groupAccessEnabled;
-    /**
-     * Segment of the group ID template; matches the attaching {@code AccessProfile}'s role name.
-     */
+    /** Segment of the group ID template; matches the attaching AccessProfile role name. */
     private final String groupRoleName;
     private final String caseAssignedRoleField;
 
@@ -129,12 +123,7 @@ public enum GroupAccessType implements CCDAccessGroup {
                 identity()));
     }
 
-    /**
-     * The group role an organisation profile holds when acting in a party role, empty where the
-     * combination has no access type. The read-side counterpart of
-     * {@link #caseAccessGroupIdFor}: that builds the group the data store matches against, this
-     * names the role a caller in that organisation holds on the case.
-     */
+    /** Role an organisation profile holds in a party role; empty when that combination has no access type. */
     public static Optional<String> groupRoleFor(String orgProfileId, PartyRole partyRole) {
         return Optional.ofNullable(orgProfileId)
             .map(profileId -> new Key(profileId, partyRole))
@@ -142,11 +131,7 @@ public enum GroupAccessType implements CCDAccessGroup {
             .map(GroupAccessType::getGroupRoleName);
     }
 
-    /**
-     * The group ID template for an organisation profile acting in a party role, empty where the
-     * combination has no access type. Keyed lookup, so selection does not depend on the order these
-     * constants are declared in.
-     */
+    /** Group ID template for a profile+party role; keyed so declaration order does not matter. */
     public static Optional<String> caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole,
                                                         String organisationId) {
         return Optional.ofNullable(orgProfileId)
@@ -156,10 +141,7 @@ public enum GroupAccessType implements CCDAccessGroup {
                      groupAccessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
     }
 
-    /**
-     * Builds the case access group ID template from this constant's own {@code accessTypeId} and
-     * group role, e.g. {@code "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$"}.
-     */
+    /** Group ID template, e.g. PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$. */
     @Override
     public String getCaseAccessGroupIdTemplate() {
         return "PCS:PCS:" + accessTypeId + ":" + groupRoleName + ":$ORGID$";

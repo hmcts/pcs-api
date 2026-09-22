@@ -9,21 +9,11 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import java.util.List;
 
-/**
- * Stubs organisation lookups for local and CFTLib test runs.
- *
- * <p>PRD (rd-professional) is not bundled in CFTLib, so any call through
- * {@link OrganisationService} would fail with a connection error. This {@code @Primary}
- * override returns a fixed test organisation, bypassing PRD entirely, so that case creation
- * (which requires an org ID for group-access derivation) succeeds. The org ID must match
- * the {@code caseAccessGroupId} configured in {@code cftlib-am-role-assignments.json}.</p>
- */
+/** CFTLib has no PRD; return the test org that matches cftlib-am-role-assignments.json. */
 @Configuration
 public class CftlibOrganisationConfig {
 
-    /**
-     * Must match the {@code caseAccessGroupId} suffix in cftlib-am-role-assignments.json.
-     */
+    /** Must match the caseAccessGroupId suffix in cftlib-am-role-assignments.json. */
     static final String TEST_ORG_ID = "TEST-123";
 
     @Bean("cftlibOrganisationService")

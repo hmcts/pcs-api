@@ -22,15 +22,9 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  // HDPI-7333: branch build of config-generator#1108, rebased onto SDK master so it carries
-  // 7.1.0+ as well as answerAsDeclared, which the unbracketed ChallengeQuestion Answer needs.
-  // Branch builds embed a run number and commit sha, so this pin must be refreshed whenever
-  // that branch moves. Replace with the released version once #1108 is merged.
+  // HDPI-7333: #1108 branch pin until answerAsDeclared is released.
   id 'hmcts.ccd.sdk' version 'HDPI-7333-challenge-question-unbracketed-roles-150.1-83abda30'
-  // HDPI-7333: tag build of rse-cft-lib#2702, which bumps cftlib's bundled definition-store
-  // submodule to the branch that accepts unbracketed ChallengeQuestion answers. Without it
-  // cftlibTest fails importing the PCS definition with "not a valid Answer".
-  // Replace with the released 0.19.x once #2702 is merged.
+  // HDPI-7333: #2702 tag pin until rse-cft-lib 0.19.x is released.
   id 'com.github.hmcts.rse-cft-lib' version 'hdpi7333-cftlib-1'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'

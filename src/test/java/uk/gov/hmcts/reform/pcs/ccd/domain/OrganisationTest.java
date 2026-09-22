@@ -11,11 +11,7 @@ class OrganisationTest {
 
     private final ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
 
-    /**
-     * The application mapper drops nulls, but the data store reads Organisation.OrganisationID off a
-     * matched OrganisationPolicy without a null check on the Organisation node, so the node and its
-     * ID key must be written even when empty.
-     */
+    /** CCD reads Organisation.OrganisationID without a null check on the node. */
     @Test
     void shouldAlwaysSerialiseTheOrganisationIdEvenWhenNull() throws Exception {
         OrganisationPolicy<UserRole> policy = OrganisationPolicy.<UserRole>builder()
