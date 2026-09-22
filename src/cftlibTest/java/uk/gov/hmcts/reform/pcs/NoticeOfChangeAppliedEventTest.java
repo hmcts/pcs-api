@@ -17,6 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
@@ -203,8 +204,12 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
     }
 
     // Read straight to JsonNode - reading a String trips HTTPCLIENT-2409 on the ES response
+    @SuppressWarnings("removal")
     private JsonNode indexedCase(long caseDataId) {
-        JsonNode response = RestClient.create("http://localhost:9200")
+        JsonNode response = RestClient.builder()
+            .baseUrl("http://localhost:9200")
+            .messageConverters(converters -> converters.add(0, new MappingJackson2HttpMessageConverter(objectMapper)))
+            .build()
             .get()
             .uri("/pcs_cases/_doc/{caseDataId}", caseDataId)
             .retrieve()
