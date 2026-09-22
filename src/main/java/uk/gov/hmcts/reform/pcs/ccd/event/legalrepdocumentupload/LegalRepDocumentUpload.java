@@ -228,15 +228,22 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             for (DocumentEntity doc : pcsCaseEntity.getDocuments()) {
                 if (doc.getCounterClaim() != null && cc.getId().equals(doc.getCounterClaim().getId())) {
                     if (doc.getBinaryUrl() != null) {
-                        return doc.getBinaryUrl();
+                        return formatDocumentUrl(doc.getBinaryUrl());
                     }
                     if (doc.getUrl() != null) {
-                        return doc.getUrl();
+                        return formatDocumentUrl(doc.getUrl());
                     }
                 }
             }
         }
         return "#";
+    }
+
+    private String formatDocumentUrl(String url) {
+        if (url != null && url.contains("/documents/")) {
+            return url.substring(url.indexOf("/documents/"));
+        }
+        return url;
     }
 
 
