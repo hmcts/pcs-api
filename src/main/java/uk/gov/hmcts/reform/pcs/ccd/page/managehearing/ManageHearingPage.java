@@ -37,6 +37,7 @@ public class ManageHearingPage implements CcdPageConfiguration, CcdPage {
             .mandatory(PCSCase::getManageHearingOption)
             .readonly(PCSCase::getSelectedHearingId, NEVER_SHOW, true)
             .readonly(PCSCase::getMhDraftPartyList, NEVER_SHOW, true)
+            .readonly(PCSCase::getHearingLocation, NEVER_SHOW, true)
             .complex(PCSCase::getHearing)
                 .readonly(Hearing::getHearingId, ShowConditions.NEVER_SHOW, true)
                 .readonly(Hearing::getHearingSummaryMarkdown, ShowConditions.NEVER_SHOW, true)
