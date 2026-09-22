@@ -40,6 +40,20 @@ class CurrentUserViewTest {
         assertThat(pcsCase.getCurrentUserGroupRole()).isEqualTo("claimant");
     }
 
+    /**
+     * A solicitor firm that brought the claim is on the claimant side, so it must not be named
+     * the defendant's representative. pcs-frontend treats only {@code defendant-solicitor} as the
+     * legal-rep journey, so this role has to stay distinct for it to fail closed.
+     */
+    @Test
+    void shouldNameTheClaimantSolicitorRoleForASolicitorOrganisationThatBroughtTheClaim() {
+        PcsCaseEntity caseEntity = caseWith(claimant(SOLICITOR_ORG, OrganisationProfile.SOLICITOR_PROFILE));
+
+        underTest.setCaseFields(pcsCase, caseEntity, SOLICITOR_ORG);
+
+        assertThat(pcsCase.getCurrentUserGroupRole()).isEqualTo("claimant-solicitor");
+    }
+
     @Test
     void shouldNameTheDefendantSolicitorRoleForAnActiveRepresentative() {
         PcsCaseEntity caseEntity = caseWith(

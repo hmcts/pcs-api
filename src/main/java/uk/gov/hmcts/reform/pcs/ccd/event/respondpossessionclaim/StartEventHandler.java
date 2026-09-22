@@ -44,9 +44,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No start event strategy found"));
 
-        log.info("PCS-ROLE-DIAG caseRef={} strategy={} idamRoles={}",
-                 caseReference, strategy.getClass().getSimpleName(), roles);
-
         return strategy.loadDraft(caseReference, eventPayload.caseData());
     }
 }
