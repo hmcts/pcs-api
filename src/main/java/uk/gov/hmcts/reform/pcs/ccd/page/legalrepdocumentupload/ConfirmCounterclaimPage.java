@@ -32,11 +32,12 @@ public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
             .showCondition(fieldEquals("lrDocUpload_ShowCounterclaimPage", VerticalYesNo.YES))
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .readonly(LegalRepDocumentUploadDetails::getShowCounterclaimPage, NEVER_SHOW)
+            .readonly(LegalRepDocumentUploadDetails::getCounterclaimDocumentLinks, NEVER_SHOW)
             .done()
             .label(pageKey + "-line-separator", "---")
             .label(pageKey + "-content", GUIDANCE_CONTENT)
+            .label(pageKey + "-links", "${lrDocUpload_CounterclaimDocumentLinks}")
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
-            .readonly(LegalRepDocumentUploadDetails::getCounterclaimDocumentLinks)
             .mandatory(LegalRepDocumentUploadDetails::getValidCounterclaims)
             .done();
     }
