@@ -31,13 +31,13 @@ class DurationFormatterTest {
 
     private static Stream<Arguments> daysHoursAndMinutesScenarios() {
         return Stream.of(
-            Arguments.arguments(null, 0, 0, "0 hours 0 minutes"),
-            Arguments.arguments(null, 0, 1, "0 hours 1 minute"),
-            Arguments.arguments(null, 0, 2, "0 hours 2 minutes"),
-            Arguments.arguments(null, 1, 0, "1 hour 0 minutes"),
-            Arguments.arguments(null, 2, 0, "2 hours 0 minutes"),
-            Arguments.arguments(null, null, 0, "0 minutes"),
-            Arguments.arguments(null, 0, null, "0 hours"),
+            Arguments.arguments(null, 0, 0, ""),
+            Arguments.arguments(null, 0, 1, "1 minute"),
+            Arguments.arguments(null, 0, 2, "2 minutes"),
+            Arguments.arguments(null, 1, 0, "1 hour"),
+            Arguments.arguments(null, 2, 0, "2 hours"),
+            Arguments.arguments(null, null, 0, ""),
+            Arguments.arguments(null, 0, null, ""),
             Arguments.arguments(null, null, 1, "1 minute"),
             Arguments.arguments(null, 1, null, "1 hour"),
             Arguments.arguments(null, null, null, ""),

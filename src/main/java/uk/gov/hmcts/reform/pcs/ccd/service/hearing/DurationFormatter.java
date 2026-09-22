@@ -14,10 +14,10 @@ public class DurationFormatter {
         if (days != null && days > 0) {
             durationParts.add(buildDurationLabel(days, "day"));
         }
-        if (hours != null) {
+        if (hours != null && hours > 0) {
             durationParts.add(buildDurationLabel(hours, "hour"));
         }
-        if (minutes != null) {
+        if (minutes != null && minutes > 0) {
             durationParts.add(buildDurationLabel(minutes, "minute"));
         }
 
