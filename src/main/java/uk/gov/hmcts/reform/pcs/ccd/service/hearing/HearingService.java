@@ -96,7 +96,9 @@ public class HearingService {
     }
 
     public void clearHearingForm(PCSCase pcsCase) {
-        pcsCase.setHearing(Hearing.builder().build());
+        Hearing currentHearing = pcsCase.getHearing();
+        String hearingSummaryMarkdown = currentHearing == null ? null : currentHearing.getHearingSummaryMarkdown();
+        pcsCase.setHearing(Hearing.builder().hearingSummaryMarkdown(hearingSummaryMarkdown).build());
         pcsCase.setManageHearingDraft(null);
         pcsCase.setPartyMultiSelectionList(clearSelectedParties(pcsCase.getPartyMultiSelectionList()));
         pcsCase.setMhDraftPartyList(null);
