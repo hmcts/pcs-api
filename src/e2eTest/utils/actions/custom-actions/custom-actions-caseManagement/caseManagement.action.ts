@@ -3,7 +3,7 @@ import { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
 import { generateRandomString } from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
@@ -30,7 +30,9 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing
+  confirmCancelHearing,
+  courtPermission,
+  typeOfCounterClaim
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -82,6 +84,8 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['addCourtPermissionDetails', () => this.addCourtPermissionDetails(page, fieldName as actionRecord)],
+      ['selectCounterClaimType', () => this.selectCounterClaimType(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -106,6 +110,7 @@ export class CaseManagementAction implements IAction {
   private async selectAnEvent(event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
+    if(event.nextPage) await performValidation('mainHeader', event.nextPage);
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
@@ -760,6 +765,34 @@ export class CaseManagementAction implements IAction {
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async addCourtPermissionDetails(page: Page, courtPermissions: actionRecord) {
+    const warningLoc =  page.locator('strong.govuk-warning-text__text');
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', { question: courtPermissions.question, option: courtPermissions.option });
+    await expect(warningLoc).toBeVisible({ timeout: SHORT_TIMEOUT });
+    await expect(warningLoc).toContainText(courtPermission.warningTextHidden,{timeout: SHORT_TIMEOUT});
+    if(courtPermissions.option === 'Yes'){
+      await performAction('inputDate', courtPermissions.grantPermissionLabel as string, courtPermissions.permissionDate);
+    }
+    await performAction('clickRadioButton', { question: courtPermissions.question1, option: courtPermissions.option1 });
+    await performAction('inputDate', courtPermissions.ccReceivedLabel as string, courtPermissions.ccReceivedDate);
+    await performAction('reTryOnCallBackError', courtPermission.continueButton, courtPermissions.nextPage as string);
+  }
+
+  private async selectCounterClaimType(ccType: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', { question: ccType.question, option: ccType.option });
+    await performAction('reTryOnCallBackError', typeOfCounterClaim.continueButton, ccType.nextPage as string);
   }
 
 

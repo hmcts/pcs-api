@@ -30,4 +30,8 @@ export default {
   'manageParties/submit': 'managePartiesCheckYourAnswers',
   'manageParties/confirm': 'confirmManageParties',
   'managePartiesaddLitigationParty': 'addAParty',
+  'enterCounterClaimcourtPermission': 'courtPermission',
+  'enterCounterClaimtypeOfCounterClaim': 'typeOfCounterClaim',
+  'enterCounterClaimcounterClaimAmount': 'counterClaimAmount',
+  'enterCounterClaim/submit': 'checkYourAnswersEnterCounterClaim',
 };

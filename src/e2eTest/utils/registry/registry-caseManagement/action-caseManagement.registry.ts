@@ -92,6 +92,8 @@ export class ActionCMRegistry {
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
     ['validateCaseNotesDetails', new CaseManagementAction()],
+    ['addCourtPermissionDetails', new CaseManagementAction()],
+    ['selectCounterClaimType', new CaseManagementAction()],
 
   ]);
 

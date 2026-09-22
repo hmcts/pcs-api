@@ -1,0 +1,15 @@
+export const courtPermission = {
+  mainHeader: `Court permission`,
+  hasTheCOurtGivenPermissionQuestion: `Has the court given the party permission to enter a counterclaim?`,
+  warningTextHidden: `You should check whether permission is required. If it is, you must advise the party to get permission from the court to make their counterclaim.`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  dateTypeGrantPermissionHiddenUserInput: `past`,
+  grantPermissionHiddenLabel: `Enter the date the order was made granting permission`,
+  partySubmittedCCHiddenQuestion: `Which party submitted the counterclaim?`,
+  dateTypeCCReceivedHiddenUserInput: `present`,
+  ccReceivedDateHiddenLabel: `When was the counterclaim received?`,
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
+};

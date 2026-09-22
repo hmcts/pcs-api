@@ -85,7 +85,8 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'selectParty'
     || action === 'updatePartyDetails'
     || action === 'selectManageHearing'
-    || action === 'addReviewDates') {
+    || action === 'addReviewDates'
+    || action === 'addCourtPermissionDetails') {
     captureDataForCYAPage = true;
   }
 
