@@ -9,7 +9,6 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -131,12 +130,13 @@ public class DefendantResponseService {
             caseReference,
             possessionClaimResponse,
             defendantParty,
+            journeyType,
             String.format("Successfully saved defendant response for case %s user %s",
                           caseReference, userId)
         );
 
-        // Citizen path only. Schedule after commit so generation can't run against a rolled-back response.
-        if (JourneyType.CITIZEN.equals(journeyType)) {
+        // Schedule after commit so generation can't run against a rolled-back response.
+        if (generatesDefenceForm(journeyType)) {
             Integer defendantResponseId = savedResponse.getId();
             UUID defendantPartyId = savedResponse.getParty().getId();
             scheduleAfterCommit(() -> defenceFormScheduler.scheduleDefenceFormGeneration(
@@ -144,6 +144,10 @@ public class DefendantResponseService {
         }
 
         return savedResponse;
+    }
+
+    private static boolean generatesDefenceForm(JourneyType journeyType) {
+        return journeyType != JourneyType.CASEWORKER;
     }
 
     private void scheduleAfterCommit(Runnable schedule) {
@@ -163,6 +167,7 @@ public class DefendantResponseService {
         long caseReference,
         PossessionClaimResponse possessionClaimResponse,
         PartyEntity defendantParty,
+        JourneyType journeyType,
         String successLogMessage
     ) {
         ClaimEntity claimRef = claimRepository.findClaimByCaseReference(caseReference)
@@ -178,9 +183,9 @@ public class DefendantResponseService {
             buildDefendantResponseEntity(claimRef, claimRef.getPcsCase(), defendantParty, responses, submittedAt);
 
         buildAndLinkChildEntities(responseEntity, responses);
-        linkStatementOfTruth(responseEntity, responses, defendantParty);
+        linkStatementOfTruth(responseEntity, responses, defendantParty, journeyType);
 
-        buildStatementOfTruth(responses, responseEntity);
+        buildStatementOfTruth(responses, responseEntity, journeyType);
 
         DefendantResponseEntity savedResponse = defendantResponseRepository.save(responseEntity);
 
@@ -295,7 +300,8 @@ public class DefendantResponseService {
     private void linkStatementOfTruth(
         DefendantResponseEntity defendantResponse,
         DefendantResponses responses,
-        PartyEntity party
+        PartyEntity party,
+        JourneyType journeyType
     ) {
         if (StringUtils.isBlank(responses.getStatementOfTruthCompletedBy())) {
             return;
@@ -313,13 +319,16 @@ public class DefendantResponseService {
             StatementOfTruthEntity.builder()
                 .accepted(YesOrNo.YES)
                 .fullName(fullName)
+                .completedBy(completedBy(journeyType))
                 .completedDate(LocalDateTime.now(utcClock))
                 .claim(defendantResponse.getClaim())
                 .build()
         );
     }
 
-    private void buildStatementOfTruth(DefendantResponses responses, DefendantResponseEntity responseEntity) {
+    private void buildStatementOfTruth(DefendantResponses responses,
+                                       DefendantResponseEntity responseEntity,
+                                       JourneyType journeyType) {
         if (responses.getStatementOfTruth() == null || responses.getStatementOfTruth().getAccepted() == null) {
             return;
         }
@@ -329,12 +338,16 @@ public class DefendantResponseService {
             .completedDate(LocalDateTime.now(utcClock))
             .positionHeld(responses.getStatementOfTruth().getPositionHeld())
             .firmName(responses.getStatementOfTruth().getNameOfFirm())
+            .completedBy(completedBy(journeyType))
             .claim(responseEntity.getClaim())
             .build();
-        if (VerticalYesNo.YES.equals(responses.getStatementOfTruth().getHasLegalRepresentation())) {
-            sot.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        }
         responseEntity.setStatementOfTruth(sot);
+    }
+
+    private static StatementOfTruthCompletedBy completedBy(JourneyType journeyType) {
+        return journeyType == JourneyType.LEGAL_REPRESENTATIVE
+            ? StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE
+            : null;
     }
 
     public boolean hasSubmittedResponse(long caseReference) {
