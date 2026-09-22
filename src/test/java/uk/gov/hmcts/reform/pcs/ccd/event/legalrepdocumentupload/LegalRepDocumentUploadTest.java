@@ -222,6 +222,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             UUID defendant1Id = UUID.fromString("11111111-1111-1111-1111-111111111111");
             UUID defendant2Id = UUID.fromString("22222222-2222-2222-2222-222222222222");
             ClaimEntity mainClaim = mock(ClaimEntity.class);
+            UUID defendant1DocumentId = UUID.fromString("55555555-5555-5555-5555-555555555555");
+            UUID defendant2DocumentId = UUID.fromString("66666666-6666-6666-6666-666666666666");
 
             PartyEntity defendant1 = PartyEntity.builder().id(defendant1Id).build();
             PartyEntity defendant2 = PartyEntity.builder().id(defendant2Id).build();
@@ -235,6 +237,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .submissionDocument(DocumentEntity.builder()
                                         .url("http://dm-store/documents/defendant-1-summary")
                                         .binaryUrl("http://dm-store/documents/defendant-1-summary/binary")
+                                        .documentId(defendant1DocumentId)
                                         .build())
                 .build();
 
@@ -247,6 +250,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .submissionDocument(DocumentEntity.builder()
                                         .url("http://dm-store/documents/defendant-2-summary")
                                         .binaryUrl("http://dm-store/documents/defendant-2-summary/binary")
+                                        .documentId(defendant2DocumentId)
                                         .build())
                 .build();
 
@@ -262,9 +266,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             String documentLinks = result.getLegalRepDocumentUploadDetails().getExistingApplicationDocumentLinks();
 
             assertThat(documentLinks).contains(
-                "href=\"http://dm-store/documents/defendant-1-summary/binary\"",
+                "href=\"/documents/55555555-5555-5555-5555-555555555555/binary\"",
                 "General app (GA1) - Defendant 1 (opens in new tab)",
-                "href=\"http://dm-store/documents/defendant-2-summary/binary\"",
+                "href=\"/documents/66666666-6666-6666-6666-666666666666/binary\"",
                 "General app (GA2) - Defendant 2 (opens in new tab)",
                 "target=\"_blank\"",
                 "rel=\"noopener noreferrer\"",

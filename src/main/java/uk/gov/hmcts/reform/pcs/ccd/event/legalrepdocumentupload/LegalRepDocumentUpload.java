@@ -216,6 +216,9 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         if (documentEntity == null) {
             return null;
         }
+        if (documentEntity.getDocumentId() != null) {
+            return "/documents/%s/binary".formatted(documentEntity.getDocumentId());
+        }
         return documentEntity.getBinaryUrl() == null ? documentEntity.getUrl() : documentEntity.getBinaryUrl();
     }
 
