@@ -378,7 +378,6 @@ ext {
   httpCore5Version = "5.4.3"
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
-  jackson3Version = "3.1.6"
   cucumberVersion = "7.34.8"
 }
 
@@ -397,9 +396,6 @@ ext['mockito.version'] = mockitoVersion
 
 dependencies {
   constraints {
-    implementation("tools.jackson:jackson-bom:$jackson3Version")
-    implementation("tools.jackson.core:jackson-databind:$jackson3Version")
-    implementation("tools.jackson.core:jackson-core:$jackson3Version")
     implementation("io.cucumber:cucumber-core:$cucumberVersion")
     implementation("io.cucumber:cucumber-java:$cucumberVersion")
     implementation("io.cucumber:cucumber-junit:$cucumberVersion")
