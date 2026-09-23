@@ -15,7 +15,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,6 +53,6 @@ public class AddJudicialNotePageTest extends BasePageTest {
         // Then
         assertThat(response.getErrorMessageOverride()).isNull();
         verify(textAreaValidationService, times(1))
-            .validateSingleTextArea(eq(note), eq(label), eq(characterLimit));
+            .validateSingleTextArea(note, label, characterLimit);
     }
 }

@@ -14,13 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.JUDICIAL_NOTE_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.JUDICIAL_NOTE_LIMIT;
 
 @AllArgsConstructor
 @Component
 public class AddJudicialNotePage implements CcdPageConfiguration, CcdPage {
 
     private final TextAreaValidationService textAreaValidationService;
+
+    private static final int JUDICIAL_NOTE_LIMIT = 30000;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

@@ -50,18 +50,4 @@ public class JudicialNoteEntity {
 
     private String note;
 
-    public static JudicialNote fromEntity(JudicialNoteEntity entity) {
-        LocalDateTime ukDateTime = LocalDateTime.ofInstant(
-            entity.getCreatedOn(),
-            UK_ZONE_ID
-        );
-
-        UserNameEntity userNameEntity = entity.getUser();
-
-        return JudicialNote.builder()
-            .note(entity.getNote())
-            .createdBy(userNameEntity.getName())
-            .createdOn(ukDateTime)
-            .build();
-    }
 }
