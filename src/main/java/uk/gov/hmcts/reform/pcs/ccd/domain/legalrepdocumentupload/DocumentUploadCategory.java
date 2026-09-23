@@ -24,21 +24,21 @@ public enum DocumentUploadCategory {
         false);
 
     private final String label;
-    private final boolean requiresDate;
+    private final boolean requiresParams;
 
     private static final DateTimeFormatter LABEL_DATE_FORMAT =
         DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
 
     public String getLabel() {
-        if (requiresDate) {
-            throw new IllegalArgumentException("Existing application labels require submitted application details");
+        if (requiresParams) {
+            throw new IllegalArgumentException("Label requires parameters");
         }
         return label;
     }
 
     public String getLabel(LocalDateTime dateTime, String relatedEntityLabel) {
-        if (!requiresDate) {
-            throw new IllegalArgumentException("Main claim or counterclaim label does not use submitted application details");
+        if (!requiresParams) {
+            throw new IllegalArgumentException("Label does not use parameters");
         }
         Objects.requireNonNull(relatedEntityLabel, "relatedEntityLabel must not be null");
         Objects.requireNonNull(dateTime, "dateTime must not be null");
