@@ -14,13 +14,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.JudicialNote;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 import static jakarta.persistence.FetchType.LAZY;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @Entity
 @Table(name = "judicial_note")
