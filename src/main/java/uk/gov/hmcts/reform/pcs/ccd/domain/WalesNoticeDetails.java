@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -24,7 +25,7 @@ public class WalesNoticeDetails {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, DefendantReadAccess.class}
     )
     private YesOrNo noticeServed;
 

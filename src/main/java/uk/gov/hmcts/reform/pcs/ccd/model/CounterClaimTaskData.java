@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CounterClaimStatusChangeTaskData implements Serializable {
+public class CounterClaimTaskData implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;

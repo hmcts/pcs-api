@@ -88,7 +88,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
                 .content(objectMapper.writeValueAsString(buildCallbackRequest())))
             .andExpect(status().isForbidden())
             .andExpect(content().json("""
-                {"message":"User is not linked as a defendant on this case"}
+                {"message":"Access denied"}
                 """));
     }
 
@@ -113,7 +113,7 @@ class CcdCallbackControllerIT extends AbstractPostgresContainerIT {
                 .content(objectMapper.writeValueAsString(callbackRequest)))
             .andExpect(status().isForbidden())
             .andExpect(content().json("""
-                {"message":"User is not linked as a defendant on this case"}
+                {"message":"Access denied"}
                 """));
     }
 

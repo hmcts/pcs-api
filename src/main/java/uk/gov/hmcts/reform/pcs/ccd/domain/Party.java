@@ -48,6 +48,7 @@ public class Party {
 
     private VerticalYesNo phoneNumberProvided;
 
+    private String textMessageNumber;
     @CCD(searchable = false)
     private String pcqId;
 

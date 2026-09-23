@@ -38,7 +38,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Case tabs - Wales Journey] @nightly', async () => {
-  test('Case tabs Wales - Summary tab test @MAC', async () => {
+  test('Case tabs Wales - Summary tab test @MAC @regression', async () => {
     await performAction('clickTab', home.caseSummary);
     await performAction('validateCaseSummaryDetails', {
       defendant1NameKnown: submitCaseApiDataWales.submitCasePayloadCaseSummary.defendant1.nameKnown,
@@ -106,7 +106,7 @@ test.describe('[Case tabs - Wales Journey] @nightly', async () => {
     });
   });
   
-  test('Case tabs Wales - Case Details tab test @MAC', async () => {
+  test('Case tabs Wales - Case Details tab test @MAC @regression', async () => {
     await performValidation('mainHeader', home.caseSummary)
     await performAction('clickTab', home.caseDetails);
     await performAction('validateCaseSummaryDetails', {

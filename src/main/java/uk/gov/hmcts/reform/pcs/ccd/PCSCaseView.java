@@ -264,6 +264,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {
+        if (securityContextService.isSystemUser()) {
+            return Optional.empty();
+        }
+
         UUID userId = securityContextService.getCurrentUserId();
 
         if (userId != null) {
