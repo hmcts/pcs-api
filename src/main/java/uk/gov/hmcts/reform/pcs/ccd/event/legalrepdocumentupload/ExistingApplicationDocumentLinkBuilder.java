@@ -64,10 +64,16 @@ public class ExistingApplicationDocumentLinkBuilder {
         if (documentEntity == null) {
             return null;
         }
-        if (documentEntity.getDocumentId() != null) {
-            return "/documents/%s/binary".formatted(documentEntity.getDocumentId());
+        if (documentEntity.getBinaryUrl() != null) {
+            return documentEntity.getBinaryUrl();
         }
-        return documentEntity.getBinaryUrl() == null ? documentEntity.getUrl() : documentEntity.getBinaryUrl();
+        if (documentEntity.getUrl() != null) {
+            return documentEntity.getUrl();
+        }
+        if (documentEntity.getDocumentId() == null) {
+            return null;
+        }
+        return "/documents/%s/binary".formatted(documentEntity.getDocumentId());
     }
 
     private String genAppReference(GenAppEntity genApp) {

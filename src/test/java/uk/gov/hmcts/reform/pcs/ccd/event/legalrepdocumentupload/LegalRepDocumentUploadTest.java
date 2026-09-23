@@ -267,9 +267,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             String documentLinks = result.getLegalRepDocumentUploadDetails().getExistingApplicationDocumentLinks();
 
             assertThat(documentLinks).contains(
-                "href=\"/documents/55555555-5555-5555-5555-555555555555/binary\"",
+                "href=\"http://dm-store/documents/defendant-1-summary/binary\"",
                 "General app (GA1) - Defendant 1 (opens in new tab)",
-                "href=\"/documents/66666666-6666-6666-6666-666666666666/binary\"",
+                "href=\"http://dm-store/documents/defendant-2-summary/binary\"",
                 "General app (GA2) - Defendant 2 (opens in new tab)",
                 "target=\"_blank\"",
                 "rel=\"noopener noreferrer\"",
