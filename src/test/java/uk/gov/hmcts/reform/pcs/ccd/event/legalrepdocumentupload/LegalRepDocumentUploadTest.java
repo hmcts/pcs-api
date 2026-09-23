@@ -13,8 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -54,8 +52,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -118,7 +114,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             genAppVisibilityService,
             organisationService,
             legalRepPartySelectionService,
-            legalRepresentativeService,
             partyService);
 
         setEventUnderTest(legalRepDocumentUpload);
@@ -166,7 +161,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .applicationSubmittedDate(null)
                 .build();
 
-            mockRepresentedPartiesWithOrganisation();
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
@@ -224,7 +218,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldKeepOnlyMainClaimOrCounterclaimWhenNoGenAppDatesAvailable() {
-            mockRepresentedParties();
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -239,7 +232,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         void shouldSetWalesFlagForWales() {
             // Given
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(WALES);
-            mockRepresentedParties();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -253,7 +245,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         void shouldSetNotWalesFlagForOtherCountries(LegislativeCountry legislativeCountry) {
             // Given
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);
-            mockRepresentedParties();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -267,7 +258,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Given
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
             when(primaryClaimantParty.getOrganisationId()).thenReturn(ORGANISATION_ID);
-            mockRepresentedPartiesWithOrganisation();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -278,7 +268,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldSetPartyTypeFieldForDefendant() {
-            mockRepresentedParties();
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -517,29 +506,5 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
-    }
-
-    private void mockRepresentedParties() {
-        DynamicListElement dynamicListElement = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Sam Vimes").build();
-
-        DynamicList representedDefendantPartyNames = DynamicList.builder()
-            .listItems(List.of(dynamicListElement))
-            .build();
-
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(eq(null), anyLong()))
-            .thenReturn(representedDefendantPartyNames);
-    }
-
-    private void mockRepresentedPartiesWithOrganisation() {
-        DynamicListElement dynamicListElement = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Sam Vimes").build();
-
-        DynamicList representedDefendantPartyNames = DynamicList.builder()
-            .listItems(List.of(dynamicListElement))
-            .build();
-
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(eq(ORGANISATION_ID), anyLong()))
-            .thenReturn(representedDefendantPartyNames);
     }
 }
