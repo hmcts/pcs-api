@@ -295,8 +295,10 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-static def getCheckedOutGitCommitHash() {
-  'git rev-parse --verify --short HEAD'.execute().text.trim()
+def getCheckedOutGitCommitHash() {
+  providers.exec {
+    commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
+  }.standardOutput.asText.map { it.trim() }.get()
 }
 
 // integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
