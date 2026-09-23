@@ -60,7 +60,7 @@ public class MakeOrderService {
             .orElseGet(() -> new MakeOrderEnvelope.Order(
                 null, OrderState.DRAFT, 0, objectMapper.createObjectNode()));
 
-        return writeJson(new MakeOrderEnvelope(
+        return new MakeOrderEnvelope(
             null,
             order,
             new MakeOrderEnvelope.MakeOrderCaseContext(
@@ -70,12 +70,12 @@ public class MakeOrderService {
                 toParties(pcsCase.getAllDefendants()),
                 toCaseFacts(pcsCase)
             )
-        ));
+        ).toJson(objectMapper);
     }
 
     @Transactional
     public Action submit(long caseReference, String payload) {
-        MakeOrderEnvelope submitted = readEnvelope(payload);
+        MakeOrderEnvelope submitted = MakeOrderEnvelope.parse(objectMapper, payload);
         if (submitted.action() == null) {
             throw new IllegalArgumentException("The order action is missing");
         }
@@ -214,21 +214,6 @@ public class MakeOrderService {
             .filter(Objects::nonNull)
             .filter(value -> !value.isBlank())
             .toList());
-    }
-
-    private MakeOrderEnvelope readEnvelope(String payload) {
-        if (payload == null || payload.isBlank()) {
-            throw new IllegalArgumentException("The order draft payload is missing");
-        }
-        try {
-            JsonNode envelope = objectMapper.readTree(payload);
-            if (envelope.isTextual()) {
-                envelope = objectMapper.readTree(envelope.textValue());
-            }
-            return objectMapper.treeToValue(envelope, MakeOrderEnvelope.class);
-        } catch (JsonProcessingException exception) {
-            throw new IllegalArgumentException("The order draft payload is not valid JSON", exception);
-        }
     }
 
     private JsonNode readJson(String payload) {

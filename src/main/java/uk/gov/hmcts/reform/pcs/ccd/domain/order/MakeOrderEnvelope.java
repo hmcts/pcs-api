@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
 import java.math.BigDecimal;
@@ -12,6 +14,30 @@ import java.util.UUID;
 public record MakeOrderEnvelope(Action action,
                                 Order order,
                                 MakeOrderCaseContext caseContext) {
+
+    /** Reads the envelope from the case's order payload, which the frontend may send as JSON or a JSON string. */
+    public static MakeOrderEnvelope parse(ObjectMapper objectMapper, String payload) {
+        if (payload == null || payload.isBlank()) {
+            throw new IllegalArgumentException("The order draft payload is missing");
+        }
+        try {
+            JsonNode envelope = objectMapper.readTree(payload);
+            if (envelope.isTextual()) {
+                envelope = objectMapper.readTree(envelope.textValue());
+            }
+            return objectMapper.treeToValue(envelope, MakeOrderEnvelope.class);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalArgumentException("The order draft payload is not valid JSON", exception);
+        }
+    }
+
+    public String toJson(ObjectMapper objectMapper) {
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("The order envelope could not be encoded", exception);
+        }
+    }
 
     public enum Action {
         START_DRAFT,
