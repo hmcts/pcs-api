@@ -23,9 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -35,22 +38,24 @@ public class MakeOrderService {
     private final PcsCaseRepository pcsCaseRepository;
     private final ObjectMapper objectMapper;
     private final AddressMapper addressMapper;
+    private final SecurityContextService securityContextService;
 
     public MakeOrderService(OrderRepository orderRepository,
                             PcsCaseRepository pcsCaseRepository,
                             ObjectMapper objectMapper,
-                            AddressMapper addressMapper) {
+                            AddressMapper addressMapper,
+                            SecurityContextService securityContextService) {
         this.orderRepository = orderRepository;
         this.pcsCaseRepository = pcsCaseRepository;
         this.objectMapper = objectMapper;
         this.addressMapper = addressMapper;
+        this.securityContextService = securityContextService;
     }
 
     @Transactional(readOnly = true)
     public String start(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity caseEntity = findCase(caseReference);
-        MakeOrderEnvelope.Order order = orderRepository
-            .findFirstByPcsCaseCaseReferenceAndStateOrderByUpdatedAtDesc(caseReference, OrderState.DRAFT)
+        MakeOrderEnvelope.Order order = findDraft(caseReference, securityContextService.getCurrentUserId())
             .map(this::toOrder)
             .orElseGet(() -> new MakeOrderEnvelope.Order(
                 null, OrderState.DRAFT, 0, objectMapper.createObjectNode()));
@@ -78,13 +83,14 @@ public class MakeOrderService {
             throw new IllegalArgumentException("The order is missing");
         }
 
+        UUID userId = securityContextService.getCurrentUserId();
         if (submitted.action() == Action.START_DRAFT) {
-            if (orderRepository.findFirstByPcsCaseCaseReferenceAndStateOrderByUpdatedAtDesc(
-                caseReference, OrderState.DRAFT).isPresent()) {
-                throw new IllegalStateException("An order draft already exists for this case");
+            if (findDraft(caseReference, userId).isPresent()) {
+                throw new IllegalStateException("You already have an order draft for this case");
             }
             orderRepository.saveAndFlush(OrderEntity.builder()
                 .pcsCase(findCase(caseReference))
+                .idamUserId(userId)
                 .state(OrderState.DRAFT)
                 .draftPayload(writeJson(payloadOrEmpty(submitted.order().draftPayload())))
                 .build());
@@ -96,7 +102,7 @@ public class MakeOrderService {
         }
 
         OrderEntity order = orderRepository
-            .findByIdAndPcsCaseCaseReference(submitted.order().id(), caseReference)
+            .findByIdAndPcsCaseCaseReferenceAndIdamUserId(submitted.order().id(), caseReference, userId)
             .orElseThrow(() -> new IllegalStateException("The order draft does not exist for this case"));
 
         if (order.getVersion() != submitted.order().version()) {
@@ -113,6 +119,11 @@ public class MakeOrderService {
             : OrderState.SUBMITTED_FOR_REVIEW);
         orderRepository.saveAndFlush(order);
         return submitted.action();
+    }
+
+    private Optional<OrderEntity> findDraft(long caseReference, UUID userId) {
+        return orderRepository.findFirstByPcsCaseCaseReferenceAndIdamUserIdAndStateOrderByUpdatedAtDesc(
+            caseReference, userId, OrderState.DRAFT);
     }
 
     private PcsCaseEntity findCase(long caseReference) {

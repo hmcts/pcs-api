@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.1.0'
+  id 'hmcts.ccd.sdk' version '7.6.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2377'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -520,6 +520,7 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersAdditionsVersion
 
   integrationTestImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner', version: '4.3.4'
+  integrationTestImplementation 'com.github.hmcts:ccd-sdk-test-support'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'

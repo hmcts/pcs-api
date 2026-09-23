@@ -44,6 +44,9 @@ public class OrderEntity {
     @JoinColumn(name = "case_id", nullable = false)
     private PcsCaseEntity pcsCase;
 
+    @Column(nullable = false, updatable = false)
+    private UUID idamUserId;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
