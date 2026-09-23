@@ -53,9 +53,14 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mock.Strictness.LENIENT;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -97,10 +102,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
-        DynamicListElement dynamicListElement = DynamicListElement.builder().
-            code(UUID.randomUUID()).label("ff").build();
+        DynamicListElement dynamicListElement = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("ff").build();
 
-//        List<DynamicListElement> listItems = dynamicListElement;
         DynamicList representedDefendantPartyNames = DynamicList.builder()
             .listItems(List.of(dynamicListElement))
             .build();

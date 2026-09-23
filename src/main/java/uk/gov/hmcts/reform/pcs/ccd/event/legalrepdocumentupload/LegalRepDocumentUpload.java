@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
@@ -124,7 +122,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             caseReference
         );
 
-//        boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+        // boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
         boolean representingMultipleParties = true;
         caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
         caseData.setRepresentedPartyNames(representedPartyNames);
@@ -133,14 +131,15 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        PartyType partyType = isClaimantSolicitor(pcsCaseEntity, organisationId) ? PartyType.CLAIMANT : PartyType.DEFENDANT;
+        PartyType partyType = isClaimantSolicitor(pcsCaseEntity, organisationId) ? PartyType.CLAIMANT :
+            PartyType.DEFENDANT;
         legalRepDocumentUploadDetails.setPartyType(partyType);
 
         /*
         ======= ALTERNATIVE =======
 
-        List<PartyEntity> defendantPartyEntities = legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
-                                                                    organisationId);
+        List<PartyEntity> defendantPartyEntities =
+            legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity, organisationId);
         List<DynamicListElement> listItems = defendantPartyEntities.stream()
             .map(partyEntity -> DynamicListElement.builder()
                 .code(partyEntity.getId())
