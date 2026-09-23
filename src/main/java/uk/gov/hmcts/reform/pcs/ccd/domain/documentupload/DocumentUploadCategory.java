@@ -7,7 +7,8 @@ public enum DocumentUploadCategory implements HasLabel {
     ADJOURN_HEARING_APPLICATION,
     SUSPEND_EVICTION_APPLICATION,
     SET_ASIDE_ORDER_APPLICATION,
-    GENERAL_APPLICATION;
+    GENERAL_APPLICATION,
+    COUNTERCLAIM;
 
     @Override
     public String getLabel() {

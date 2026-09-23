@@ -34,18 +34,33 @@ export function stringToCamelCase(input: string): string {
  */
 export function getCurrentBSTTime(): string {
   const now = new Date();
-  const formatted = now.toLocaleString("en-GB", {
+
+  const day = now.toLocaleString("en-GB", {
     timeZone: "Europe/London",
     day: "numeric",
-    month: "short",
+  });
+
+  const month = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    month: "long",
+  }).format(now).slice(0, 3);
+
+  const year = now.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
     year: "numeric",
+  });
+
+  const time = now.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
     hour: "numeric",
     minute: "2-digit",
     second: "2-digit",
     hour12: true,
   });
 
-  return formatted.replace(/am|pm/, (match) => match.toUpperCase());
+  const currentTime = `${day} ${month} ${year}, ${time}`.replace(/am|pm/i,match => match.toUpperCase());
+
+  return currentTime;
 }
 
 /* convert YYY-MM-DD to DD/MM/YYYY format or DD MONTH YYYY */
@@ -126,6 +141,16 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' pm', 'PM');
 }
 
+export const getFormattedDate = (date = new Date()): string =>
+  new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+    .format(date)
+    .replace(',', '');
+
 /* Formats a numeric case number by inserting a hyphen after every 4 digits.
 Example: "1781518470935861" -> "1781-5184-7093-5861"
 */
@@ -135,13 +160,13 @@ export function formatTheCaseNumber(caseNumber: string): string {
 
 /* format document name for eg "rentStatement.pdf" to rentStatement - Claimant 1.pdf */
 export function formatUploadDocName(docName: string): string {
-const fileExtension = docName.lastIndexOf('.');
-const newFilename =
-  fileExtension !== -1
-    ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
-    : `${docName} - Claimant 1`;
+  const fileExtension = docName.lastIndexOf('.');
+  const newFilename =
+    fileExtension !== -1
+      ? `${docName.substring(0, fileExtension)} - Claimant 1${docName.substring(fileExtension)}`
+      : `${docName} - Claimant 1`;
 
-return newFilename;
+  return newFilename;
 }
 
 /* convert string for ex RENT_ARREARS to Rent Arrears */

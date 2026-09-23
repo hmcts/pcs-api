@@ -65,8 +65,15 @@ public class DefendantResponseReadMapper {
             .defendantContactDetails(toDefendantContactDetails(party, pcsCase))
             .defendantResponses(toDefendantResponses(entity, party, assertions))
             .currentDefendantPartyId(party.getId() != null ? party.getId().toString() : null)
+            .responseDocumentId(toResponseDocumentId(entity))
             .claimIssuedDate(toClaimIssuedDate(entity.getClaim()))
             .build();
+    }
+
+    private static String toResponseDocumentId(DefendantResponseEntity entity) {
+        return Optional.ofNullable(entity.getSubmissionDocument())
+            .map(document -> document.getId().toString())
+            .orElse(null);
     }
 
     private static LocalDate toClaimIssuedDate(ClaimEntity claim) {
@@ -90,6 +97,7 @@ public class DefendantResponseReadMapper {
             .emailAddress(party.getEmailAddress())
             .phoneNumber(party.getPhoneNumber())
             .phoneNumberProvided(party.getPhoneNumberProvided())
+            .textMessageNumber(party.getTextMessageNumber())
             .dateOfBirth(party.getDateOfBirth())
             .address(resolveAddress(party, pcsCase))
             .build();

@@ -14,12 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SolicitorAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementClaimantLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.AgreementDefendantLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 
 import java.util.List;
-import java.util.Optional;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @Builder
 @Data
@@ -30,6 +33,9 @@ public class XuiGenAppRequest implements GenAppRequest {
 
     @CCD(label = "What do you want to apply for?")
     private GenAppType applicationType;
+
+    @CCD(label = "What do you want to apply for?")
+    private ClaimantGenAppType claimantGenAppType;
 
     @CCD(
         label = "Is the defendant’s court hearing in the next 14 days?",
@@ -95,6 +101,21 @@ public class XuiGenAppRequest implements GenAppRequest {
     )
     protected List<AgreementDefendantLegalRep> agreementDefendantLegalRep;
 
+    @CCD(label = "Completed by")
+    protected StatementOfTruthCompletedBy sotCompletedBy;
+
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "StatementOfTruthAgreementClaimant"
+    )
+    protected List<StatementOfTruthAgreementClaimant> agreementClaimant;
+
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AgreementClaimantLegalRep"
+    )
+    protected List<AgreementClaimantLegalRep> agreementClaimantLegalRep;
+
     @CCD(
         label = "Full name",
         max = 100
@@ -122,12 +143,24 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(searchable = false)
     private VerticalYesNo showHwfScreens;
 
+    private String applicantPartyId;
+
     @Override
     @JsonIgnore
     public VerticalYesNo getSotAccepted() {
-        return Optional.ofNullable(agreementDefendantLegalRep)
-            .map(list -> list.contains(AgreementDefendantLegalRep.AGREED) ? VerticalYesNo.YES : null)
-            .orElse(null);
+        if (agreementClaimant != null) {
+            return agreementClaimant.contains(StatementOfTruthAgreementClaimant.BELIEVE_TRUE) ? YES : null;
+        }
+
+        if (agreementClaimantLegalRep != null) {
+            return agreementClaimantLegalRep.contains(AgreementClaimantLegalRep.AGREED) ? YES : null;
+        }
+
+        if (agreementDefendantLegalRep != null) {
+            return agreementDefendantLegalRep.contains(AgreementDefendantLegalRep.AGREED) ? YES : null;
+        }
+
+        return null;
     }
 
 }

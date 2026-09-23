@@ -41,32 +41,39 @@ export class CaseManagementCommonUtils {
     return Number(amount.toFixed(2));
   }
 
+  public static getRandomDate(type: string, format?: string): string {
+    const formatDate = (date: Date): string => {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
 
-  // public static inputDOB(inputArray: string[]): string {
-  //   return inputArray.map((item) => item + " - " + CaseManagementCommonUtils.getRandomDate(18, 30)).join('\n');
-  // }
+      if (format) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
 
+        return `${day}/${month}/${year}/${hours}/${minutes}/${seconds}`;
+      }
 
-  public static getRandomDate(type: string): string {
+      return `${day}/${month}/${year}`;
+    };
 
     if (type === 'invalid') {
-      return '32/13/9999';
+      return format
+        ? '32/13/9999/25/61/61'
+        : '32/13/9999';
     }
 
     const today = new Date();
 
     if (type === 'present') {
-      const day = String(today.getDate());
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const year = today.getFullYear();
-
-      return `${day}/${month}/${year}`;
+      return formatDate(today);
     }
 
     let minDate: Date;
     let maxDate: Date;
 
-    if (type === 'future') {
+    if (type === 'future'|| type === 'validFuture') {
       minDate = today;
       maxDate = new Date(
         today.getFullYear() + 10,
@@ -88,11 +95,7 @@ export class CaseManagementCommonUtils {
 
     const randomDate = new Date(randomTime);
 
-    const day = String(randomDate.getDate());
-    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
-    const year = randomDate.getFullYear();
-
-    return `${day}/${month}/${year}`;
+    return formatDate(randomDate);
   }
 
   public static getRandomElementForAnArray<T>(arr: T[]): T | undefined {
@@ -144,9 +147,9 @@ export class CaseManagementCommonUtils {
     const baseName = fileName.replace(/\.pdf$/i, '');
     const gaNumber = app?.match(/\bGA\d+\b/i)?.[0] ?? '';
     const formattedDate = fileDate ? (() => {
-        const [day, month, year] = fileDate.split('/');
-        return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
-      })(): '';
+      const [day, month, year] = fileDate.split('/');
+      return `${day.padStart(2, '0')}${month.padStart(2, '0')}${year}`;
+    })(): '';
     const parts = [baseName];
 
     if (formattedDate) {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
@@ -13,13 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimTyp
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.RespondPossessionClaimSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.math.BigDecimal;
 
@@ -30,9 +28,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerTyp
 public class CounterClaimSubmitConfirmationService {
 
     private final PartyService partyService;
-    private final FeeService feeService;
     private final PaymentService paymentService;
-    private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final ObjectMapper objectMapper;
 
     public SubmitResponse<State> buildSubmitResponse(
@@ -61,11 +57,9 @@ public class CounterClaimSubmitConfirmationService {
         CounterClaim counterClaim = persistenceResult.possessionClaimResponse()
             .getDefendantResponses()
             .getCounterClaim();
-        FeeType feeType = counterClaimFeeCalculator.resolveFeeType(counterClaim);
-        FeeDetails feeDetails = feeService.getFee(
-            feeType,
-            counterClaimFeeCalculator.resolveFeeLookupAmountInPounds(counterClaim)
-        );
+
+        FeeDetails feeDetails = persistenceResult.feeDetails();
+
         String serviceRequestReference = createPaymentServiceRequest(
             counterClaimEntity,
             responsibleParty,

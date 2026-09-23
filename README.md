@@ -1,5 +1,5 @@
 # pcs-api
- 
+
 ## Building and deploying the application
 
 ### Building the application
@@ -35,6 +35,25 @@ This will start several containers:
 Once successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
+#### Local environment variables
+
+pcs-api reads configuration from the **process environment** (and Spring system properties). Values are wired in
+`src/main/resources/application.yaml` using the usual `${VAR_NAME:default}` pattern.
+
+A root `.env` file is **not** loaded automatically by Spring or by `./gradlew bootWithCCD`. To override local
+defaults, set variables in the same terminal session (or IDE run configuration) before starting the app, for
+example:
+
+```bash
+export SOME_VAR=value
+./gradlew bootWithCCD
+```
+
+**Only export the variables you intend to override.** A local `.env` can be a handy place to
+keep candidate values, but pcs-api will not read that file. If you export every variable
+from it into the shell (or IDE run config) before `bootWithCCD`, values such as
+`SERVER_PORT` can conflict with the managed local stack.
+
 By default, this runs with local instance of IDAM and
 S2S services. However sometimes it may be required to run
 with the AAT instances of those services, (for example when running both pcs-frontend and pcs-api locally).
@@ -51,7 +70,7 @@ with
 authMode = AuthMode.AAT
 ```
 
-Then set the following environment variables based on the value below or named secret
+Then set the following environment variables (as above) based on the value below or named secret
 from the PCS AAT key vault:
 
 | Environment Variable         | Value or Secret Name                                                         |
@@ -115,6 +134,53 @@ az login
 ```
 - az acr login -n hmctsprod
 ```
+
+### Enabling work allocation for local Dev
+
+To enable work allocation for local dev, run:
+
+```
+docker compose -f docker-compose-wa.yml up -d
+```
+
+You may need to authenticate to the `hmctssandbox` and `hmctsprod` ACR repos first:
+
+```
+az acr login -n hmctssandbox
+az acr login -n hmctsprod
+```
+
+This will start a local Camunda instance, wa-workflow-api and wa-task-monitor.
+
+IMPORTANT: The Camunda container only uses an in-memory H2 DB for simplicity, so after (re-)starting
+it, it is necessary to upload the DMNs again:
+
+```
+cd /bin/wa
+./local-import-dmn-diagrams.sh
+```
+
+To trigger the task
+monitor to check for and configure any unconfigured Camunda tasks, make this request in your Rest
+client or with curl:
+
+```
+POST http://localhost:8077/monitor/tasks/jobs
+Headers:
+  ServiceAuthorization:Bearer {{s2s token for 'pcs_api'}}
+
+Payload:
+
+{
+    "job_details": {
+        "name": "INITIATION"
+    }
+}
+```
+
+Note that there seems to be a delay of a couple of seconds before a freshly submitted Camunda task
+is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
+up and configured as WA tasks.
 
 ### Running the tests
 

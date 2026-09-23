@@ -34,7 +34,7 @@ class CaseworkerDocumentListServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseworkerDocumentListService(new PartyService(null, null));
+        underTest = new CaseworkerDocumentListService(new PartyService(null, null, null));
     }
 
     @Test

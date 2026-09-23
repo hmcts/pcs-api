@@ -9,7 +9,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum CounterClaimState implements HasLabel {
 
     PENDING_COUNTER_CLAIM_ISSUED("Pending counter claim issued"),
+    PENDING_REVIEW("Pending review"),
     COUNTER_CLAIM_ISSUED("Counter claim issued");
 
-    private String label;
+    private final String label;
 }

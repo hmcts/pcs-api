@@ -39,7 +39,6 @@ public class CaseFieldsView {
         pcsCase.setCaseNamePublic(formattedCaseName);
     }
 
-
     private void setCaseManagementLocationField(final PCSCase pcsCase) {
         Integer epimsId = pcsCase.getCaseManagementLocationNumber();
         Integer region = pcsCase.getRegionId();

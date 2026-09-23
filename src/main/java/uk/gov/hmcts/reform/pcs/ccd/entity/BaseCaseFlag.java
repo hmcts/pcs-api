@@ -61,6 +61,8 @@ public abstract class BaseCaseFlag {
     @Column(name = "status")
     private String defaultStatus;
 
+    private String visibility;
+
     private String paths;
 
     public abstract void setParentEntity(PcsCaseEntity caseEntity, PartyEntity partyEntity);

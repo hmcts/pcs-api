@@ -42,7 +42,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         users.put("caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-hearing-centre-team-leader-01@localhost", List.of("caseworker", "caseworker-pcs"));
         users.put("pcs-solicitor1@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
-        users.put("pcs-defendant-solicitor@test.com", List.of("caseworker", "caseworker-pcs-solicitor"));
+        users.put("pcs-defendant-solicitor@test.com", List.of("pui-case-manager", "caseworker",
+                                                              "caseworker-pcs-solicitor",  "caseworker-pcs"));
         users.put("citizen@pcs.com", List.of("citizen"));
         users.put("data.store.idam.system.user@gmail.com", List.of());
         users.put("ccd.import@pcs.com", List.of("ccd-import"));
@@ -52,6 +53,7 @@ public class CftlibConfig implements CFTLibConfigurer {
                   List.of("caseworker", "caseworker-civil", "caseworker-wa-task-configuration"));
         users.put("exui-system-user@localhost", List.of("caseworker", "caseworker-pcs", "ccd-import"));
         users.put("prd-admin-user@localhost", List.of());
+        users.put("master.caa@gmail.com", List.of("caseworker-caa"));
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
@@ -77,6 +79,9 @@ public class CftlibConfig implements CFTLibConfigurer {
         roleNames.add("caseworker");
         roleNames.add("caseworker-ras-validation");
         roleNames.add("GS_profile");
+        roleNames.add("caseworker-wa-task-configuration");
+        roleNames.add("pui-case-manager");
+        roleNames.add("caseworker-caa");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }

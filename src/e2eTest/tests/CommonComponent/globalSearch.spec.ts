@@ -62,7 +62,7 @@ const setupGlobalSearchUser = async (
   await performAction('login', {email: loggedInUser, password: process.env.IDAM_PCS_USER_PASSWORD});
 
   if (loggedInUser === judicial.possessionFeePaid_Judge_email) {
-    await performAction('handleJudgeBookingPage');
+    await performAction('handleJudgeBookingPageForGlobalSearch');
   }
 
   await dismissCookieBanner(page, 'analytics');
