@@ -22,9 +22,9 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  // HDPI-7333: #1108 branch pin until answerAsDeclared is released.
+  // HDPI-7333: #1108 branch pin until answerAsDeclared is released; 7.1.0 lacks it.
   id 'hmcts.ccd.sdk' version 'HDPI-7333-challenge-question-unbracketed-roles-150.1-83abda30'
-  // HDPI-7333: #2702 tag pin until rse-cft-lib 0.19.x is released.
+  // HDPI-7333: #2702 tag pin until rse-cft-lib 0.19.x carries it; 0.19.2399 does not.
   id 'com.github.hmcts.rse-cft-lib' version 'hdpi7333-cftlib-1'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -386,7 +386,7 @@ ext {
   lombokVersion = "1.18.48"
   springSecurityVersion = "6.5.11"
   pactVersion = "4.7.5"
-  tomcatEmbedVersion = "11.0.25"
+  tomcatEmbedVersion = "11.0.26"
   nettyVersion = "4.1.137.Final"
   httpClient5Version = "5.6.4"
   httpCore5Version = "5.4.3"
@@ -436,7 +436,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.1-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
 
