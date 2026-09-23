@@ -115,4 +115,44 @@ public class JudicialNoteViewTest {
         assertThat(zonedDateTime.getOffset()).isEqualTo(ZoneOffset.UTC);
     }
 
+    @Test
+    void shouldOrderJudicialNotesInByMostRecentCreationDate() {
+        // Given
+        String oldNote = "Old note";
+        String newNote = "New note";
+        String name = "John Smith";
+        UserNameEntity userNameEntity = UserNameEntity.builder().name(name).build();
+
+        JudicialNoteEntity oldJudicialNoteEntity = JudicialNoteEntity.builder()
+            .note(oldNote)
+            .createdOn(WINTER_INSTANT)
+            .user(userNameEntity)
+            .build();
+
+        JudicialNoteEntity newJudicialNoteEntity = JudicialNoteEntity.builder()
+            .note(newNote)
+            .createdOn(SUMMER_INSTANT)
+            .user(userNameEntity)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .judicialNotes(List.of(oldJudicialNoteEntity, newJudicialNoteEntity))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        List<ListValue<JudicialNote>> judicialNotes = pcsCase.getJudicialNotes();
+        assertThat(judicialNotes).hasSize(2);
+
+        JudicialNote judicialNote1 = judicialNotes.getFirst().getValue();
+        assertThat(judicialNote1.getNote()).isEqualTo(newNote);
+
+        JudicialNote judicialNote2 = judicialNotes.getLast().getValue();
+        assertThat(judicialNote2.getNote()).isEqualTo(oldNote);
+    }
+
 }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
@@ -21,7 +22,12 @@ public class JudicialNoteView {
     }
 
     private void setJudicialNoteFields(PCSCase pcsCase, List<JudicialNoteEntity> judicialNoteEntities) {
-        List<ListValue<JudicialNote>> judicialNotes = judicialNoteEntities.stream().map(
+        List<ListValue<JudicialNote>> judicialNotes = judicialNoteEntities.stream()
+            .sorted(Comparator.comparing(
+                JudicialNoteEntity::getCreatedOn,
+                Comparator.nullsLast(Comparator.reverseOrder())
+            ))
+            .map(
             judicialNoteEntity -> {
                 JudicialNote judicialNote = covertToJudicialNote(judicialNoteEntity);
                 ListValue<JudicialNote> judicialNoteListValue = new ListValue<>();
