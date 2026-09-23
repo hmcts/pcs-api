@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -71,5 +72,29 @@ public class FileTypeServiceTest {
             argumentSet("doc", "test.doc"),
             argumentSet("docx", "test.dox")
         );
+    }
+
+    @Test
+    void shouldHandleNullDocumentsList() {
+        // Given
+        List<String> errors = new ArrayList<>();
+
+        // When
+        fileTypeService.validateNonMultiMediaFiles(null, errors);
+
+        // Then
+        assertThat(errors).hasSize(0);
+    }
+
+    @Test
+    void shouldHandleEmptyDocumentsList() {
+        // Given
+        List<String> errors = new ArrayList<>();
+
+        // When
+        fileTypeService.validateNonMultiMediaFiles(List.of(), errors);
+
+        // Then
+        assertThat(errors).hasSize(0);
     }
 }
