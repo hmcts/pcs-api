@@ -57,8 +57,7 @@ public class EnterCounterClaimDetails {
     private String hwfReferenceNumber;
 
     @CCD(
-        label = "Upload document",
-        regex = NON_MULTIMEDIA_FILE_TYPES
+        label = "Upload document"
     )
     private List<ListValue<Document>> relatedDocuments;
 

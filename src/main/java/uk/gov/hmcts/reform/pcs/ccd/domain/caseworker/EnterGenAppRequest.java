@@ -70,8 +70,7 @@ public class EnterGenAppRequest {
     @CCD(
         label = "Upload related evidence",
         hint = "Upload a document to the system",
-        searchable = false,
-        regex = NON_MULTIMEDIA_FILE_TYPES
+        searchable = false
     )
     private List<ListValue<Document>> relatedEvidence;
 

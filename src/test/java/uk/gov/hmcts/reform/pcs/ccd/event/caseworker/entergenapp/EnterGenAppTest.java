@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.UploadRelatedEvidence;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -48,11 +49,13 @@ class EnterGenAppTest extends BaseEventTest {
     private GenAppService genAppService;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private UploadRelatedEvidence uploadRelatedEvidence;
 
     @BeforeEach
     void setUp() {
         EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails,
-                                                  addressFormatter);
+                                                  addressFormatter, uploadRelatedEvidence);
         setEventUnderTest(enterGenApp);
     }
 
