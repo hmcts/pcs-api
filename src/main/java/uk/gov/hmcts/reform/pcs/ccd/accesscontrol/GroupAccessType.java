@@ -25,57 +25,42 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     LOCAL_AUTHORITY_CLAIMANT_ACCESS(
         LOCALAUTH_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 1,
-        false, false, true, true
+        "Grants claimant access on all cases associated with this organisation", 1
     ),
     REAL_ESTATE_ORG_CLAIMANT_ACCESS(
         OTHER_REALT_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 2,
-        false, false, true, true
+        "Grants claimant access on all cases associated with this organisation", 2
     ),
     PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS(
         OTHER_PROP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 3,
-        false, false, true, true
+        "Grants claimant access on all cases associated with this organisation", 3
     ),
     NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS(
         OTHER_NFP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 4,
-        false, false, true, true
+        "Grants claimant access on all cases associated with this organisation", 4
     ),
     CHARITY_ORG_CLAIMANT_ACCESS(
         OTHER_CHARITY_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 5,
-        false, false, true, true
+        "Grants claimant access on all cases associated with this organisation", 5
     ),
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts for the claimant",
-        "", 6,
-        false, false, true, true
+        "Grants solicitors claimant access on all cases associated with this organisation", 6
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
         SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
-        "Grants users access to all possession cases in which this organisation is the defendant or acts for the defendant",
-        "", 7,
-        false, false, true, true
+        "Grants solicitors defendant access on all cases associated with this organisation", 7
     ),
     DUTY_ADVISOR_ACCESS(
         SOLICITOR_PROFILE, null, "duty-advisor-access", "duty-advisor-request",
-        "Where the organisation is the provider of the Housing Loss Prevention Advice Service (HLPAS)" +
-            "In court duty scheme, this grants users temporary access to possession cases.",
-        "", 8,
+        "Grants solicitors access to request time-bound duty-advisor role",
+        "Assign to Users who may need to request time-bound duty-advisor access", 8,
         false, false, false, true
     );
 
+    private static final String ASSIGN_HINT =
+        "Assign to Users to enable access to all cases associated with this organisation";
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
-    private static final String JURISDICTION = "PCS";
-    private static final String CASE_TYPE = "PCS";
 
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
@@ -91,6 +76,21 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean groupAccessEnabled;
 
     private final String caseAssignedRoleField;
+
+    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
+                    String caseAssignedRoleField, String description, int displayOrder) {
+        this.partyRole = partyRole;
+        this.organisationProfileId = orgProfileId.getId();
+        this.accessTypeId = accessTypeId;
+        this.accessMandatory = false;
+        this.accessDefault = false;
+        this.display = true;
+        this.description = description;
+        this.hintText = ASSIGN_HINT;
+        this.groupAccessEnabled = true;
+        this.displayOrder = displayOrder;
+        this.caseAssignedRoleField = caseAssignedRoleField;
+    }
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
                     String caseAssignedRoleField, String description, String hintText, int displayOrder,
@@ -138,8 +138,7 @@ public enum GroupAccessType implements CCDAccessGroup {
      */
     @Override
     public String getCaseAccessGroupIdTemplate() {
-        return String.join(":", JURISDICTION, CASE_TYPE, accessTypeId, caseAssignedRoleField,
-            ORG_IDENTIFIER_TEMPLATE);
+        return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
     }
 
 
