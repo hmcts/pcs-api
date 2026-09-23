@@ -34,6 +34,29 @@ public class AddressValidator {
         return validationErrors;
     }
 
+    public List<String> validateCorrespondenceAddress(AddressUK address) {
+        return validateCorrespondenceAddress(address, null);
+    }
+
+    public List<String> validateCorrespondenceAddress(AddressUK address, String sectionHint) {
+        if (address == null) {
+            return List.of(withSectionHint("Correspondence address is required", sectionHint));
+        }
+
+        List<String> validationErrors = new ArrayList<>();
+        if (StringUtils.isBlank(address.getAddressLine1())) {
+            validationErrors.add(withSectionHint("Address line 1 is required", sectionHint));
+        }
+        if (StringUtils.isBlank(address.getAddressLine2())) {
+            validationErrors.add(withSectionHint("Address line 2 is required", sectionHint));
+        }
+        if (StringUtils.isBlank(address.getPostCode())) {
+            validationErrors.add(withSectionHint("Postcode is required", sectionHint));
+        }
+
+        return validationErrors;
+    }
+
     private static String withSectionHint(String errorMessage, String sectionHint) {
         if (sectionHint != null && !sectionHint.isBlank()) {
             return errorMessage + " for " + sectionHint;

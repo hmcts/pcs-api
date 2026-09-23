@@ -32,7 +32,6 @@ import java.util.UUID;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -340,7 +339,7 @@ public class PartyService {
 
     private AddressEntity mapAddress(AddressUK address) {
         return address != null
-            ? addressMapper.toAddressEntityAndNormalise(address) : null;
+            ? addressMapper.toCorrespondenceAddressEntity(address) : null;
     }
 
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {

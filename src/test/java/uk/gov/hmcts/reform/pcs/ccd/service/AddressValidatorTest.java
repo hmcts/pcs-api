@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -77,6 +78,21 @@ class AddressValidatorTest {
             assertThat(actualValidationErrors.get(i))
                 .isEqualTo(expectedValidationErrors.get(i) + " for " + sectionHint);
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12345", "12345-6789", "A1B 0C1"})
+    void shouldAcceptCorrespondenceAddressWithInternationalPostalCode(String postalCode) {
+        AddressUK address = AddressUK.builder()
+            .addressLine1("10 some street")
+            .addressLine2("Flat 2")
+            .postTown("Paris")
+            .country("France")
+            .postCode(postalCode)
+            .build();
+
+        assertThat(underTest.validateCorrespondenceAddress(address)).isEmpty();
+        assertThat(underTest.validateAddressFields(address)).isNotEmpty();
     }
 
     private static Stream<Arguments> addressScenarios() {
