@@ -23,10 +23,12 @@ export const courtPermission = {
     errorDateField: [
       { type: `empty`, input: `empty`, multiField: 0, errMessage: `Enter the date the order was made granting permission is required`, errInlineMessage: `Enter the date the order was made granting permission is required` },
       { type: `invalid`, input: `invalid`, multiField: 0, errMessage: `Enter the date the order was made granting permission is not valid`, errInlineMessage: `The data entered is not valid for Enter the date the order was made granting permission` },
+      { type: `past`, input: `past`, multiField: 0, errMessage: ``, errInlineMessage: `` },
     ],
     errorDateField1: [
       { type: `empty`, input: `empty`, multiField: 1, errMessage: `When was the counterclaim received? is required`, errInlineMessage: `When was the counterclaim received? is required` },
       { type: `invalid`, input: `invalid`, multiField: 1, errMessage: `When was the counterclaim received? is not valid`, errInlineMessage: `The data entered is not valid for When was the counterclaim received?` },
+      { type: `future`, input: `future`, multiField: 1, errMessage: `Date the counterclaim was received must not be in the future`, errInlineMessage: `Date the counterclaim was received must not be in the future` },
     ],
     errorRadioOption: [
       { type: `none`, input: ``, errMessage: `Has the court given the party permission to enter a counterclaim? is required`, errInlineMessage: `Has the court given the party permission to enter a counterclaim? is required` }

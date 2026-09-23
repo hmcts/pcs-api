@@ -6,7 +6,8 @@ import {
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
   enterGenAppUploadGeneralApplication,
-  courtPermission
+  courtPermission,
+  typeOfCounterClaim
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -29,6 +30,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
       ['errorValidationCourtPermissionPage', () => this.errorValidationCourtPermissionPage(errorFlag as string)],
+      ['errorValidationTypeOfCounterClaimPage', () => this.errorValidationTypeOfCounterClaimPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -56,7 +58,7 @@ export class ErrorValidationAction implements IAction {
 
   private async errorValidationAddReviewDatesPage(validationReq: string) {
     if (validationReq === 'YES') {
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.five,
         inputArray: addReviewDates.errorValidationField.errorDateField,
         question: addReviewDates.dateOfReviewHiddenLabel,
@@ -67,7 +69,7 @@ export class ErrorValidationAction implements IAction {
         button: addReviewDates.continueButton
       });
 
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: addReviewDates.errorValidationType.two,
         inputArray: addReviewDates.errorValidationField.errorRadioOption,
         question: addReviewDates.reasonHiddenLabel,
@@ -265,7 +267,7 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.two,
         inputArray: addHearing.errorValidationField.errorRadioOption1,
         question: addHearing.typeOfHearingQuestion,
-        option:  addHearing.typeOfHearingOption[0],
+        option: addHearing.typeOfHearingOption[0],
         button: addHearing.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -292,7 +294,7 @@ export class ErrorValidationAction implements IAction {
         validationType: addHearing.errorValidationType.two,
         inputArray: addHearing.errorValidationField.errorRadioOption2,
         question: addHearing.hearingNoticeQuestion,
-        option:  addHearing.hearingNoticeNoRadioOption,
+        option: addHearing.hearingNoticeNoRadioOption,
         button: addHearing.continueButton
       });
 
@@ -302,7 +304,7 @@ export class ErrorValidationAction implements IAction {
         // header: addHearing.eventCouldNotBeCreatedErrorMessageHeader,
         label1: addHearing.daysTextLabel,
         label: addHearing.hoursTextLabel,
-        labelMulti :addHearing.minutesTextLabel,
+        labelMulti: addHearing.minutesTextLabel,
         button: addHearing.continueButton
       });
     }
@@ -342,24 +344,24 @@ export class ErrorValidationAction implements IAction {
     }
   }
 
-   private async errorValidationCourtPermissionPage(validationReq: string) {
+  private async errorValidationCourtPermissionPage(validationReq: string) {
     let party = allPartyDetails[0];
     if (validationReq === 'YES') {
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: courtPermission.errorValidationType.two,
         inputArray: courtPermission.errorValidationField.errorRadioOption,
         question: courtPermission.hasTheCOurtGivenPermissionQuestion,
         option: courtPermission.yesRadioOption,
         button: courtPermission.continueButton
       });
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: courtPermission.errorValidationType.two,
         inputArray: courtPermission.errorValidationField.errorRadioOption1,
         question: courtPermission.partySubmittedCCHiddenQuestion,
         option: party,
         button: courtPermission.continueButton
       });
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: courtPermission.errorValidationType.five,
         inputArray: courtPermission.errorValidationField.errorDateField,
         question: courtPermission.grantPermissionHiddenLabel,
@@ -369,39 +371,28 @@ export class ErrorValidationAction implements IAction {
         label3: courtPermission.yearHiddenTextLabel,
         button: courtPermission.continueButton
       });
-      await performAction('inputErrorValidation',{
+      await performAction('inputErrorValidation', {
         validationType: courtPermission.errorValidationType.five,
         inputArray: courtPermission.errorValidationField.errorDateField1,
         question: courtPermission.ccReceivedDateHiddenLabel,
+        header: courtPermission.eventCouldNotBeCreatedErrorMessageHeader,
         header1: courtPermission.thereIsProbErrorMessageHeader,
         label1: courtPermission.dayHiddenTextLabel,
         label2: courtPermission.monthHiddenTextLabel,
         label3: courtPermission.yearHiddenTextLabel,
         button: courtPermission.continueButton
       });
-
-      
-
-      // await performAction('inputErrorValidation', {
-      //   validationType: addReviewDates.errorValidationType.one,
-      //   inputArray: addReviewDates.errorValidationField.errorTextField,
-      //   header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
-      //   label: addReviewDates.descriptionHiddenTextLabel,
-      //   button: addReviewDates.continueButton
-      // });
-
-      // await performAction('inputErrorValidation', {
-      //   validationType: addReviewDates.errorValidationType.six,
-      //   inputArray: addReviewDates.errorValidationField.errorDateRadioOption,
-      //   header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
-      //   label1: addReviewDates.dayHiddenTextLabel,
-      //   label2: addReviewDates.monthHiddenTextLabel,
-      //   label3: addReviewDates.yearHiddenTextLabel,
-      //   label: addReviewDates.descriptionHiddenTextLabel,
-      //   question: addReviewDates.reasonHiddenLabel,
-      //   option: addReviewDates.OtherHiddenRadioOption,
-      //   button: addReviewDates.continueButton
-      // });
+    }
+  }
+  private async errorValidationTypeOfCounterClaimPage(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: typeOfCounterClaim.errorValidationType.two,
+        inputArray: typeOfCounterClaim.errorValidationField.errorRadioOption,
+        question: typeOfCounterClaim.typeOfCounterClaimQuestion,
+        option: typeOfCounterClaim.bothRadioOption,
+        button: typeOfCounterClaim.continueButton
+      });
     }
   }
 }
