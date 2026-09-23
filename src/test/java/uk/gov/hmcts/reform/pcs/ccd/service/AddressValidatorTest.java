@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -29,13 +32,16 @@ class AddressValidatorTest {
     @Mock(strictness = LENIENT)
     private PostcodeValidator postcodeValidator;
 
+    @Mock(strictness = LENIENT)
+    private FeatureToggleService featureToggleService;
+
     private AddressValidator underTest;
 
     @BeforeEach
     void setUp() {
         when(postcodeValidator.isValidPostcode(VALID_POSTCODE)).thenReturn(true);
 
-        underTest = new AddressValidator(postcodeValidator);
+        underTest = new AddressValidator(postcodeValidator, featureToggleService);
     }
 
     @ParameterizedTest
@@ -83,6 +89,7 @@ class AddressValidatorTest {
     @ParameterizedTest
     @ValueSource(strings = {"12345", "12345-6789", "A1B 0C1"})
     void shouldAcceptCorrespondenceAddressWithInternationalPostalCode(String postalCode) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         AddressUK address = AddressUK.builder()
             .addressLine1("10 some street")
             .addressLine2("Flat 2")
@@ -93,6 +100,20 @@ class AddressValidatorTest {
 
         assertThat(underTest.validateCorrespondenceAddress(address)).isEmpty();
         assertThat(underTest.validateAddressFields(address)).isNotEmpty();
+    }
+
+    @Test
+    void shouldRequireCorrespondenceAddressWhenAddressIsNull() {
+        // Given
+        String sectionHint = "defendant 1";
+
+        // When
+        List<String> errorsWithoutHint = underTest.validateCorrespondenceAddress(null);
+        List<String> errorsWithHint = underTest.validateCorrespondenceAddress(null, sectionHint);
+
+        // Then
+        assertThat(errorsWithoutHint).containsExactly("Correspondence address is required");
+        assertThat(errorsWithHint).containsExactly("Correspondence address is required for defendant 1");
     }
 
     private static Stream<Arguments> addressScenarios() {

@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 public class AddressValidator {
 
     private final PostcodeValidator postcodeValidator;
+    private final FeatureToggleService featureToggleService;
 
     public List<String> validateAddressFields(AddressUK address) {
         return validateAddressFields(address, null);
@@ -41,6 +44,10 @@ public class AddressValidator {
     public List<String> validateCorrespondenceAddress(AddressUK address, String sectionHint) {
         if (address == null) {
             return List.of(withSectionHint("Correspondence address is required", sectionHint));
+        }
+
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            return validateAddressFields(address, sectionHint);
         }
 
         List<String> validationErrors = new ArrayList<>();

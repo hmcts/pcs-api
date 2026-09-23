@@ -35,6 +35,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +73,8 @@ class PartyServiceTest {
     private AddressMapper addressMapper;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private FeatureToggleService featureToggleService;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -91,7 +95,8 @@ class PartyServiceTest {
             .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
             .build();
         lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
-        underTest = new PartyService(partyRepository, addressMapper, organisationService);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService, featureToggleService);
     }
 
     @Nested
