@@ -55,9 +55,7 @@ public class EnterCounterClaimDetails {
     @CCD(label = "What is their Help With Fees reference number?", max = 60)
     private String hwfReferenceNumber;
 
-    @CCD(
-        label = "Upload document"
-    )
+    @CCD(label = "Upload document")
     private List<ListValue<Document>> relatedDocuments;
 
 }
