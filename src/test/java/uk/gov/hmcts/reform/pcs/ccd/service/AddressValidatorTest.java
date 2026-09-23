@@ -116,6 +116,43 @@ class AddressValidatorTest {
         assertThat(errorsWithHint).containsExactly("Correspondence address is required for defendant 1");
     }
 
+    @Test
+    void shouldUseUkAddressValidationWhenReleaseFlagIsDisabled() {
+        // Given
+        AddressUK address = AddressUK.builder()
+            .postTown(null)
+            .postCode(INVALID_POSTCODE)
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+        // When
+        List<String> errors = underTest.validateCorrespondenceAddress(address, "defendant 1");
+
+        // Then
+        assertThat(errors).containsExactly(
+            "Town or City is required for defendant 1",
+            "Enter a valid postcode for defendant 1");
+    }
+
+    @ParameterizedTest
+    @MethodSource("incompleteCorrespondenceAddressScenarios")
+    void shouldRequireManualCorrespondenceAddressFields(String addressLine1, String addressLine2,
+                                                        String postCode, List<String> expectedErrors) {
+        // Given
+        AddressUK address = AddressUK.builder()
+            .addressLine1(addressLine1)
+            .addressLine2(addressLine2)
+            .postCode(postCode)
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+        // When
+        List<String> errors = underTest.validateCorrespondenceAddress(address, "defendant 1");
+
+        // Then
+        assertThat(errors).isEqualTo(expectedErrors);
+    }
+
     private static Stream<Arguments> addressScenarios() {
         return Stream.of(
             // Town, postcode, expected validation errors
@@ -131,6 +168,20 @@ class AddressValidatorTest {
             arguments(TEST_TOWN, " ", List.of("Postcode is required")),
             arguments(TEST_TOWN, INVALID_POSTCODE, List.of("Enter a valid postcode")),
             arguments(null, INVALID_POSTCODE, List.of("Town or City is required", "Enter a valid postcode"))
+        );
+    }
+
+    private static Stream<Arguments> incompleteCorrespondenceAddressScenarios() {
+        return Stream.of(
+            // Address line 1, address line 2, postcode, expected validation errors
+            arguments(null, "Flat 2", "1234567", List.of("Address line 1 is required for defendant 1")),
+            arguments("10 some street", null, "1234567", List.of("Address line 2 is required for defendant 1")),
+            arguments("10 some street", "Flat 2", null, List.of("Postcode is required for defendant 1")),
+            arguments(null, null, null, List.of(
+                "Address line 1 is required for defendant 1",
+                "Address line 2 is required for defendant 1",
+                "Postcode is required for defendant 1"
+            ))
         );
     }
 
