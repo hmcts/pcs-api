@@ -38,7 +38,6 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 
 import java.time.LocalDateTime;
 
@@ -153,7 +152,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         details.setShowCounterclaimPage(VerticalYesNo.YES);
 
-        StringBuilder linksHtml = new StringBuilder("<div class=\"govuk-inset-text\">\n");
+        StringBuilder linksHtml = new StringBuilder("<div class=\"govuk-inset-text\">%n".formatted());
         List<DynamicStringListElement> ccRadioItems = new ArrayList<>();
 
         for (int i = 0; i < counterClaims.size(); i++) {
@@ -165,7 +164,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             String docUrl = findCounterclaimDocumentUrl(pcsCaseEntity, cc);
 
             linksHtml.append(String.format(
-                "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new tab)</a></p>\n",
+                "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new tab)</a></p>%n",
                 docUrl, fileName
             ));
 
@@ -223,20 +222,15 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private String findCounterclaimDocumentUrl(PcsCaseEntity pcsCaseEntity, CounterClaimEntity cc) {
-
-        if (pcsCaseEntity.getDocuments() != null && cc.getId() != null) {
-            for (DocumentEntity doc : pcsCaseEntity.getDocuments()) {
-                if (doc.getCounterClaim() != null && cc.getId().equals(doc.getCounterClaim().getId())) {
-                    if (doc.getBinaryUrl() != null) {
-                        return formatDocumentUrl(doc.getBinaryUrl());
-                    }
-                    if (doc.getUrl() != null) {
-                        return formatDocumentUrl(doc.getUrl());
-                    }
-                }
-            }
+        if (pcsCaseEntity.getDocuments() == null || cc.getId() == null) {
+            return "#";
         }
-        return "#";
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(doc -> doc.getCounterClaim() != null && cc.getId().equals(doc.getCounterClaim().getId()))
+            .findFirst()
+            .map(doc -> doc.getBinaryUrl() != null ? doc.getBinaryUrl() : doc.getUrl())
+            .map(this::formatDocumentUrl)
+            .orElse("#");
     }
 
     private String formatDocumentUrl(String url) {
