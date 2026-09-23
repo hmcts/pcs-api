@@ -57,14 +57,6 @@ public class CaseTabView {
         pcsCase.setCaseDetailsTab(detailsTab);
     }
 
-    public void setCaseTabFields(PCSCase pcsCase) {
-        //dummy method
-    }
-
-    public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData) {
-        // dummy method
-    }
-
     public void setDraftCaseTabFields(PCSCase pcsCase, PCSCase draftCaseData, PcsCaseEntity pcsCaseEntity) {
         if (draftCaseData.getDefendant1() != null) {
             draftCaseData.setAllDefendants(buildDefendants(draftCaseData));
