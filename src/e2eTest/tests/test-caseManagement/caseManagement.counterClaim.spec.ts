@@ -49,6 +49,7 @@ test.describe('Case management - Counter Claim e2e Journey @nightly', async () =
     let date1 = CaseManagementCommonUtils.getRandomDate(courtPermission.dateTypeCCReceivedHiddenUserInput as string);
     let party = allPartyDetails[0];
     await performAction('selectAnEvent', { eventType: caseSummary.counterClaim , nextPage: courtPermission.mainHeader});
+    await performAction('errorValidationCourtPermissionPage', courtPermission.errorValidation);
     await performAction('addCourtPermissionDetails',{
       question: courtPermission.hasTheCOurtGivenPermissionQuestion,
       option: courtPermission.yesRadioOption,

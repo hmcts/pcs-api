@@ -796,7 +796,7 @@ export const submitCaseApiData = {
     notice_AbleToUploadDocument: 'Yes',    
     notice_Documents: [
       {
-        id: '83193877-14e5-4955-b589-c80fbe0edb53',
+        //id: '83193877-14e5-4955-b589-c80fbe0edb53',
         value: {
           document_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e`,
           document_binary_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e/binary`,
@@ -809,7 +809,7 @@ export const submitCaseApiData = {
     rentDetails_CalculatedDailyCharge: '171',
     rentArrears_StatementDocuments: [
       {
-        id: '468ec779-350f-4484-9694-ea6b3285d86e',
+        //id: '468ec779-350f-4484-9694-ea6b3285d86e',
         value: {
           document_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
           document_binary_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
@@ -927,7 +927,7 @@ export const submitCaseApiData = {
             document_filename: 'inspectionOrReport.pdf',
           }
         },
-        id: '87b02265-f876-43da-bcd4-2cbb998cb948'
+        //id: '87b02265-f876-43da-bcd4-2cbb998cb948'
       },
       {
         value: {
@@ -1000,7 +1000,7 @@ export const submitCaseApiData = {
             document_filename: 'otherDocument.pdf',
           }
         },
-        id: '66246982-90b5-407d-8b5b-59565a0cb091'
+        //id: '66246982-90b5-407d-8b5b-59565a0cb091'
       },
       {
         value: {
@@ -1073,7 +1073,7 @@ export const submitCaseApiData = {
             document_filename: 'legalAidCertificate.pdf',
           }
         },
-        id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
+       // id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
       },
       {
         value: {
@@ -1146,7 +1146,7 @@ export const submitCaseApiData = {
             document_filename: 'noticeForService.pdf',
           }
         },
-        id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
+        //id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
       }
     ],
     applicationWithClaim: 'NO',

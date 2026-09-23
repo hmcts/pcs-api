@@ -110,7 +110,7 @@ export class CaseManagementAction implements IAction {
   private async selectAnEvent(event: actionRecord) {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
-    if(event.nextPage) await performValidation('mainHeader', event.nextPage);
+    if (event.nextPage) await performValidation('mainHeader', event.nextPage);
   }
 
   private async selectDocumentToAmend(selectDoc: actionRecord) {
@@ -208,9 +208,9 @@ export class CaseManagementAction implements IAction {
 
   private async enterApplicationDetails(appDetails: actionRecord) {
     let date = CaseManagementCommonUtils.getRandomDate(appDetails.dateType as string);
-    await performAction('clickRadioButton', {question: appDetails.question1, option: appDetails.option1});
+    await performAction('clickRadioButton', { question: appDetails.question1, option: appDetails.option1 });
     await performAction('inputDate', appDetails.label1 as string, appDetails.date);
-    await performAction('clickRadioButton', {question: appDetails.question2, option: appDetails.option2});
+    await performAction('clickRadioButton', { question: appDetails.question2, option: appDetails.option2 });
     if (appDetails.option2 === 'Something else') {
       performAction('inputText', appDetails.label, CaseManagementCommonUtils.generateRandomString(appDetails.input as number))
     }
@@ -308,13 +308,13 @@ export class CaseManagementAction implements IAction {
   }
 
   private async uploadRelativeEvidence(uploadEvidence: actionRecord): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     if (uploadEvidence.files) {
-      await performAction('uploadFile', {files: uploadEvidence.files, label: uploadEvidence.label});
+      await performAction('uploadFile', { files: uploadEvidence.files, label: uploadEvidence.label });
     }
     await performAction('reTryOnCallBackError', enterGenAppPreferApplicationToJudge.continueButton, uploadEvidence.nextPage as string);
   }
@@ -330,23 +330,23 @@ export class CaseManagementAction implements IAction {
   }
 
   private async verifyGenAppConfirm(): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('mainHeader', enterGenAppConfirmation.mainHeader);
-    await performValidation('text', {elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText});
+    await performValidation('text', { elementType: 'inlineText', text: enterGenAppConfirmation.applicationEnteredText });
     await performAction('clickButton', enterGenAppConfirmation.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectManageHearing(manageHearingOption: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -359,7 +359,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async editHearing(editHearingData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -374,11 +374,11 @@ export class CaseManagementAction implements IAction {
     await performAction('inputText', editHearingData.daysLabel, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
     await performAction('inputText', {
       textLabel: editHearingData.hourLabel,
-      index: 1
+      index: 0
     }, CaseManagementCommonUtils.getRandomNumberAsString(0, 10));
     await performAction('inputText', {
       textLabel: editHearingData.minutesLabel,
-      index: 1
+      index: 0
     }, CaseManagementCommonUtils.getRandomNumberAsString(1, 59));
     await performAction('inputText', editHearingData.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(editHearingData.hearingNotesInput as number));
     await performAction('clickRadioButton', {
@@ -416,14 +416,14 @@ export class CaseManagementAction implements IAction {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('mainHeader',confirmEditHearing.mainHeader);
-    await performValidation('text',{  elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
+    await performValidation('mainHeader', confirmEditHearing.mainHeader);
+    await performValidation('text', { elementType: 'inlineText', text: confirmEditHearing.hearingEditedText });
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performAction('clickButton', confirmEditHearing.closeAndReturnToCaseOverviewButton);
   }
 
   private async cancelHearing(cancelHearingData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -451,7 +451,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async selectDynamicAppAndPartyDocRelatedTo(selectApp: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -467,14 +467,14 @@ export class CaseManagementAction implements IAction {
       await performAction('inputDate', selectApp.label as string, selectApp.date as string);
     }
 
-    await performAction('clickRadioButton', {question: selectApp.question1, option: selectApp.option1});
+    await performAction('clickRadioButton', { question: selectApp.question1, option: selectApp.option1 });
     await performAction('reTryOnCallBackError', uploadADocument.continueButton, selectApp.nextPage as string);
   }
 
   private async confirmUpload(confirm: actionRecord): Promise<void> {
     let submitPayLoad = confirm.submitPayload as Record<string, any>;
     let formattedDate;
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -490,12 +490,12 @@ export class CaseManagementAction implements IAction {
     const role = String(confirm.party).split(' - ')[1] ?? '';
 
     const uploadedFileName = `${baseName} ${formattedDate} ${gaNumber} - ${role}`;
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number #' + caseInfo.fid});
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', {elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded`});
+    await performValidation('text', { elementType: 'inlineText', text: `‘${uploadedFileName}’ uploaded` });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
@@ -516,9 +516,9 @@ export class CaseManagementAction implements IAction {
     });
     await performAction('select', addAHearing.wordingQuestion, addAHearing.option1);
     await performAction('inputDate', addAHearing.whenIsHearingLabel as string, addAHearing.date);
-    await performAction('inputText', { textLabel: addAHearing.daysLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
-    await performAction('inputText', { textLabel: addAHearing.hoursLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
-    await performAction('inputText', { textLabel: addAHearing.minsLabel, index: 1 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
+    await performAction('inputText', { textLabel: addAHearing.daysLabel, index: 0 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 10));
+    await performAction('inputText', { textLabel: addAHearing.hoursLabel, index: 0 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 5));
+    await performAction('inputText', { textLabel: addAHearing.minsLabel, index: 0 }, CaseManagementCommonUtils.getRandomNumberAsString(1, 60));
     await performAction('inputText', addAHearing.hearingNotesLabel, CaseManagementCommonUtils.generateRandomString(addAHearing.hearingNotesInput as number));
     await performAction('clickRadioButton', {
       question: addAHearing.noticeQuestion,
@@ -598,7 +598,7 @@ export class CaseManagementAction implements IAction {
 
   private async confirmAmend(confirm: actionRecord): Promise<void> {
     let formattedDate;
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -613,19 +613,19 @@ export class CaseManagementAction implements IAction {
     const role = String(confirm.party).split(' - ')[0] ?? '';
 
     const amendedFileName = `${baseName} ${formattedDate}`;
-    await performValidation('text', {elementType: 'inlineText', text: 'Case number #' + caseInfo.fid});
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', {elementType: 'inlineText', text: `Document ${amendedFileName} amended`});
-    await performValidation('text', {elementType: 'inlineText', text: `${role}`});
+    await performValidation('text', { elementType: 'inlineText', text: `Document ${amendedFileName} amended` });
+    await performValidation('text', { elementType: 'inlineText', text: `${role}` });
     await performValidation('mainHeader', confirmAmend.mainHeader);
     await performAction('clickButton', confirmAmend.closeAndReturnToCaseOverviewButton);
   }
 
   private async selectParty(partyData: actionRecord): Promise<void> {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -645,10 +645,10 @@ export class CaseManagementAction implements IAction {
   }
 
   private async updatePartyDetails(page: Page, updatePartyData: actionRecord): Promise<void> {
-    const addLoc = page.locator('button').filter({hasText: 'Find address'})
+    const addLoc = page.locator('button').filter({ hasText: 'Find address' })
     const count = await addLoc.count();
-    const dobField = page.locator('span').filter({hasText: 'Date of birth'}).first();
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    const dobField = page.locator('span').filter({ hasText: 'Date of birth' }).first();
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -729,7 +729,7 @@ export class CaseManagementAction implements IAction {
   private async confirmPartyDetailsUpdated(confirmParty: actionRecord): Promise<void> {
     let submitPayLoad = confirmParty.submitPayload as Record<string, any>;
     const newUser = `${confirmParty.userType}`
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -739,7 +739,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'inlineText',
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performValidation('text', {elementType: 'inlineText', text: `${newUser} updated`});
+    await performValidation('text', { elementType: 'inlineText', text: `${newUser} updated` });
     await performValidation('text', {
       elementType: 'inlineText',
       text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}`
@@ -768,16 +768,16 @@ export class CaseManagementAction implements IAction {
   }
 
   private async addCourtPermissionDetails(page: Page, courtPermissions: actionRecord) {
-    const warningLoc =  page.locator('strong.govuk-warning-text__text');
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    const warningLoc = page.locator('strong.govuk-warning-text__text');
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performAction('clickRadioButton', { question: courtPermissions.question, option: courtPermissions.option });
     await expect(warningLoc).toBeVisible({ timeout: SHORT_TIMEOUT });
-    await expect(warningLoc).toContainText(courtPermission.warningTextHidden,{timeout: SHORT_TIMEOUT});
-    if(courtPermissions.option === 'Yes'){
+    await expect(warningLoc).toContainText(courtPermission.warningTextHidden, { timeout: SHORT_TIMEOUT });
+    if (courtPermissions.option === 'Yes') {
       await performAction('inputDate', courtPermissions.grantPermissionLabel as string, courtPermissions.permissionDate);
     }
     await performAction('clickRadioButton', { question: courtPermissions.question1, option: courtPermissions.option1 });
@@ -786,7 +786,7 @@ export class CaseManagementAction implements IAction {
   }
 
   private async selectCounterClaimType(ccType: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
@@ -841,7 +841,7 @@ export class CaseManagementAction implements IAction {
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
                 if (item.type === 'moreThanMax') {
-                  await performValidation('errorMessage', {header: validationArr.header, message: item.errMessage});
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
                 } else {
                   await performValidation('inputError', validationArr.label, item.errMessage);
                   await performValidation('errorMessage', validationArr.label, item.errMessage);
@@ -857,9 +857,9 @@ export class CaseManagementAction implements IAction {
             const enterDate = () =>
               performActions(
                 'Enter Date',
-                ['inputText', validationArr.label1, date.split('/')[0]],
-                ['inputText', validationArr.label2, date.split('/')[1]],
-                ['inputText', validationArr.label3, date.split('/')[2]]
+                ['inputText', item.multiField != null ? { textLabel: validationArr.label1, multiField: item.multiField } : validationArr.label1, date.split('/')[0]],
+                ['inputText', item.multiField != null ? { textLabel: validationArr.label2, multiField: item.multiField } : validationArr.label2, date.split('/')[1]],
+                ['inputText', item.multiField != null ? { textLabel: validationArr.label3, multiField: item.multiField } : validationArr.label3, date.split('/')[2]],
               );
 
             if (item.type === 'empty') {
@@ -899,11 +899,11 @@ export class CaseManagementAction implements IAction {
             break;
 
           case 'moneyField':
-            if (item.index && validationArr.labelMulti) {
+            if (item.index != null && validationArr.labelMulti) {
               await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
               await performAction('inputText', { textLabel: validationArr.label1, index: item.index }, item.input2);
               await performAction('inputText', { textLabel: validationArr.labelMulti, index: item.index }, item.input1);
-            } else if (item.index) {
+            } else if (item.index != null) {
               await performAction('inputText', { textLabel: validationArr.label, index: item.index }, item.input);
             } else {
               await performAction('inputText', validationArr.label, item.input);
@@ -947,7 +947,7 @@ export class CaseManagementAction implements IAction {
 
   private async getAddressInfo(address: actionRecord) {
     let createCasePayLoad = address.data as Record<string, any>;
-      addressInfo = {
+    addressInfo = {
       buildingStreet: createCasePayLoad.propertyAddress.AddressLine1,
       addressLine2: createCasePayLoad.propertyAddress.AddressLine2,
       townCity: createCasePayLoad.propertyAddress.PostTown,
@@ -972,7 +972,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -1015,7 +1015,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);

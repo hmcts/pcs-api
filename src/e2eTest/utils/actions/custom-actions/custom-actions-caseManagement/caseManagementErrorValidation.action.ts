@@ -5,7 +5,8 @@ import {
   addHearing, cancelHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
-  enterGenAppUploadGeneralApplication
+  enterGenAppUploadGeneralApplication,
+  courtPermission
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -27,6 +28,7 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
+      ['errorValidationCourtPermissionPage', () => this.errorValidationCourtPermissionPage(errorFlag as string)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -337,6 +339,69 @@ export class ErrorValidationAction implements IAction {
         inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
         button: enterGenAppUploadGeneralApplication.continueButton
       });
+    }
+  }
+
+   private async errorValidationCourtPermissionPage(validationReq: string) {
+    let party = allPartyDetails[0];
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation',{
+        validationType: courtPermission.errorValidationType.two,
+        inputArray: courtPermission.errorValidationField.errorRadioOption,
+        question: courtPermission.hasTheCOurtGivenPermissionQuestion,
+        option: courtPermission.yesRadioOption,
+        button: courtPermission.continueButton
+      });
+      await performAction('inputErrorValidation',{
+        validationType: courtPermission.errorValidationType.two,
+        inputArray: courtPermission.errorValidationField.errorRadioOption1,
+        question: courtPermission.partySubmittedCCHiddenQuestion,
+        option: party,
+        button: courtPermission.continueButton
+      });
+      await performAction('inputErrorValidation',{
+        validationType: courtPermission.errorValidationType.five,
+        inputArray: courtPermission.errorValidationField.errorDateField,
+        question: courtPermission.grantPermissionHiddenLabel,
+        header1: courtPermission.thereIsProbErrorMessageHeader,
+        label1: courtPermission.dayHiddenTextLabel,
+        label2: courtPermission.monthHiddenTextLabel,
+        label3: courtPermission.yearHiddenTextLabel,
+        button: courtPermission.continueButton
+      });
+      await performAction('inputErrorValidation',{
+        validationType: courtPermission.errorValidationType.five,
+        inputArray: courtPermission.errorValidationField.errorDateField1,
+        question: courtPermission.ccReceivedDateHiddenLabel,
+        header1: courtPermission.thereIsProbErrorMessageHeader,
+        label1: courtPermission.dayHiddenTextLabel,
+        label2: courtPermission.monthHiddenTextLabel,
+        label3: courtPermission.yearHiddenTextLabel,
+        button: courtPermission.continueButton
+      });
+
+      
+
+      // await performAction('inputErrorValidation', {
+      //   validationType: addReviewDates.errorValidationType.one,
+      //   inputArray: addReviewDates.errorValidationField.errorTextField,
+      //   header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+      //   label: addReviewDates.descriptionHiddenTextLabel,
+      //   button: addReviewDates.continueButton
+      // });
+
+      // await performAction('inputErrorValidation', {
+      //   validationType: addReviewDates.errorValidationType.six,
+      //   inputArray: addReviewDates.errorValidationField.errorDateRadioOption,
+      //   header: addReviewDates.eventCouldNotBeCreatedErrorMessageHeader,
+      //   label1: addReviewDates.dayHiddenTextLabel,
+      //   label2: addReviewDates.monthHiddenTextLabel,
+      //   label3: addReviewDates.yearHiddenTextLabel,
+      //   label: addReviewDates.descriptionHiddenTextLabel,
+      //   question: addReviewDates.reasonHiddenLabel,
+      //   option: addReviewDates.OtherHiddenRadioOption,
+      //   button: addReviewDates.continueButton
+      // });
     }
   }
 }
