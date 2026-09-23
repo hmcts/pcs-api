@@ -112,7 +112,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             genAppVisibilityService,
             organisationService,
             legalRepPartySelectionService,
-            partyService);
+            partyService,
+            new CounterclaimDetailsSetupService());
 
         setEventUnderTest(legalRepDocumentUpload);
     }

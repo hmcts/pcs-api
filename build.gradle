@@ -210,6 +210,7 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  maxHeapSize = '2048m'
 }
 
 tasks.register('smoke', Test) {
