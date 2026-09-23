@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp;
 
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.FileTypeService;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 @AllArgsConstructor
 public class UploadRelatedEvidence implements CcdPageConfiguration {
 
