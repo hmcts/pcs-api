@@ -55,9 +55,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mock.Strictness.LENIENT;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,13 +69,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PcsCaseEntity pcsCaseEntity;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
-    @Mock
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private LegalRepresentativeService legalRepresentativeService;
 
     @Mock
@@ -85,15 +83,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private OrganisationService organisationService;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private GenAppVisibilityService genAppVisibilityService;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PartyService partyService;
     @Mock
     private PartyEntity primaryClaimantParty;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private DefendantResponseRepository defendantResponseRepository;
 
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -102,15 +100,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
-        DynamicListElement dynamicListElement = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("ff").build();
-
-        DynamicList representedDefendantPartyNames = DynamicList.builder()
-            .listItems(List.of(dynamicListElement))
-            .build();
-
-        lenient().when(legalRepresentativeService.getRepresentedPartiesDynamicList(anyString(), anyLong()))
-            .thenReturn(representedDefendantPartyNames);
 
         LegalRepPartySelectionService legalRepPartySelectionService = new LegalRepPartySelectionService(
             mock(SelectedPartyRetriever.class),
@@ -177,6 +166,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .applicationSubmittedDate(null)
                 .build();
 
+            mockRepresentedPartiesWithOrganisation();
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
@@ -234,6 +224,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldKeepOnlyMainClaimOrCounterclaimWhenNoGenAppDatesAvailable() {
+            mockRepresentedParties();
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getLegalRepDocumentUploadDetails()).isNotNull();
@@ -261,6 +252,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         void shouldSetNotWalesFlagForOtherCountries(LegislativeCountry legislativeCountry) {
             // Given
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(legislativeCountry);
+            mockRepresentedParties();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -284,6 +276,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldSetPartyTypeFieldForDefendant() {
+            mockRepresentedParties();
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
@@ -524,4 +517,27 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     }
 
+    private void mockRepresentedParties() {
+        DynamicListElement dynamicListElement = DynamicListElement.builder().
+            code(UUID.randomUUID()).label("Sam Vimes").build();
+
+        DynamicList representedDefendantPartyNames = DynamicList.builder()
+            .listItems(List.of(dynamicListElement))
+            .build();
+
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(eq(null), anyLong()))
+            .thenReturn(representedDefendantPartyNames);
+    }
+
+    private void mockRepresentedPartiesWithOrganisation() {
+        DynamicListElement dynamicListElement = DynamicListElement.builder().
+            code(UUID.randomUUID()).label("Sam Vimes").build();
+
+        DynamicList representedDefendantPartyNames = DynamicList.builder()
+            .listItems(List.of(dynamicListElement))
+            .build();
+
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(eq(ORGANISATION_ID), anyLong()))
+            .thenReturn(representedDefendantPartyNames);
+    }
 }
