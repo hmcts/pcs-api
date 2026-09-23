@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimF
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.expectedDefenceFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormPersistenceService.defendantNumber;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +129,7 @@ public class TranslationWAService {
     }
 
     private DocumentEntity resolveGeneratedClaimForm() {
-        return DocumentEntity.builder().fileName(expectedClaimFormFilename()).build();
+        return DocumentEntity.builder().fileName(expectedClaimFormFilename() + GENERATED_DOC_EXTENSION).build();
     }
 
     private Optional<DocumentEntity> resolveGeneratedDefenceForm(PcsCaseEntity pcsCaseEntity, PartyEntity party) {
@@ -137,7 +138,7 @@ public class TranslationWAService {
                 && response.getParty().getId().equals(party.getId()))
             .findFirst()
             .map(response -> DocumentEntity.builder()
-                .fileName(expectedDefenceFormFilename(defendantNumber(response)))
+                .fileName(expectedDefenceFormFilename(defendantNumber(response)) + GENERATED_DOC_EXTENSION)
                 .build());
     }
 
@@ -148,7 +149,7 @@ public class TranslationWAService {
                 && counterClaim.getParty().getId().equals(party.getId()))
             .findFirst()
             .map(counterClaim -> DocumentEntity.builder()
-                .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaim)))
+                .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaim)) + GENERATED_DOC_EXTENSION)
                 .build());
     }
 
@@ -157,7 +158,7 @@ public class TranslationWAService {
         return pcsCaseEntity.getGenApps().stream()
             .filter(genApp -> genApp.getParty() != null && genApp.getParty().getId().equals(party.getId()))
             .map(genApp -> DocumentEntity.builder()
-                .fileName(documentNameService.expectedGenAppFilename(genApp, mainClaim))
+                .fileName(documentNameService.expectedGenAppFilename(genApp, mainClaim) + GENERATED_DOC_EXTENSION)
                 .build())
             .toList();
     }

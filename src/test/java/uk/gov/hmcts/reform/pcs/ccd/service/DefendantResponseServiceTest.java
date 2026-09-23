@@ -1274,7 +1274,7 @@ class DefendantResponseServiceTest {
             eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Defence - Defendant 1", "evidence.pdf");
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
     }
 
     @Test
@@ -1317,7 +1317,7 @@ class DefendantResponseServiceTest {
             eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Defence - Defendant 1", "evidence.pdf");
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
     }
 
     @Test

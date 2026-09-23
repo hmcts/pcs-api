@@ -123,7 +123,7 @@ class GenAppWaTaskServiceTest {
             eq(genAppPcsCase), eq(party), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("General Application GA1 - Defendant 1", "evidence.pdf");
+            .containsExactly("General Application GA1 - Defendant 1.pdf", "evidence.pdf");
     }
 
     @Test
@@ -196,7 +196,7 @@ class GenAppWaTaskServiceTest {
             eq(genAppPcsCase), eq(party), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("General Application GA1 - Claimant 1", "evidence.pdf");
+            .containsExactly("General Application GA1 - Claimant 1.pdf", "evidence.pdf");
     }
 
 }

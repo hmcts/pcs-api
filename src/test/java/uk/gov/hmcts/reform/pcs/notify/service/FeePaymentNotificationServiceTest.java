@@ -122,7 +122,7 @@ class FeePaymentNotificationServiceTest {
             eq(pcsCaseEntity), eq(claimant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Claim - Claimant 1", "Uploaded doc.pdf");
+            .containsExactly("Claim - Claimant 1.pdf", "Uploaded doc.pdf");
         verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
     }
 

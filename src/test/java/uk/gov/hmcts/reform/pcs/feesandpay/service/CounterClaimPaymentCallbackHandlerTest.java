@@ -270,7 +270,7 @@ class CounterClaimPaymentCallbackHandlerTest {
             eq(pcsCaseEntity), eq(party), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Counterclaim - Defendant 1", "counterclaim-evidence.pdf");
+            .containsExactly("Counterclaim - Defendant 1.pdf", "counterclaim-evidence.pdf");
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
         verify(schedulerClient).scheduleIfNotExists(any());
     }

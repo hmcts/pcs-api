@@ -219,7 +219,7 @@ class TranslationWAServiceTest {
             eq(CASE_REFERENCE), eq(mainClaim), eq(otherClaimant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Claim - Claimant 1", "uploaded.pdf");
+            .containsExactly("Claim - Claimant 1.pdf", "uploaded.pdf");
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, expectedDescription);
@@ -399,7 +399,7 @@ class TranslationWAServiceTest {
             eq(CASE_REFERENCE), eq(mainClaim), eq(otherDefendant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("General Application GA1 - Defendant 1", "evidence.pdf");
+            .containsExactly("General Application GA1 - Defendant 1.pdf", "evidence.pdf");
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
@@ -442,7 +442,7 @@ class TranslationWAServiceTest {
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
             .containsExactlyInAnyOrder(
-                "General Application GA1 - Defendant 1", "General Application GA2 - Defendant 1");
+                "General Application GA1 - Defendant 1.pdf", "General Application GA2 - Defendant 1.pdf");
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);
@@ -499,7 +499,7 @@ class TranslationWAServiceTest {
             eq(CASE_REFERENCE), eq(mainClaim), eq(otherDefendant), documentsCaptor.capture());
         assertThat(documentsCaptor.getValue())
             .extracting(DocumentEntity::getFileName)
-            .containsExactly("Defence - Defendant 1", "Counterclaim - Defendant 1", "evidence.pdf");
+            .containsExactly("Defence - Defendant 1.pdf", "Counterclaim - Defendant 1.pdf", "evidence.pdf");
 
         verify(camundaService).createTask(
             CASE_REFERENCE, TaskType.TRANSLATE_DEFENDANT_SUBMITTED_DOCUMENT, expectedDescription);

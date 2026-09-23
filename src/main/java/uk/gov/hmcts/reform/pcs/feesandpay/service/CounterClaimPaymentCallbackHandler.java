@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormDocumentGenerator.expectedCounterClaimFormFilename;
 import static uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormPersistenceService.defendantNumber;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
 @Component
 @Slf4j
@@ -140,7 +141,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         // The counterclaim form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)))
+            .fileName(expectedCounterClaimFormFilename(defendantNumber(counterClaimEntity)) + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()

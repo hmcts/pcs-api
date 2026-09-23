@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
 @Slf4j
 @Service
@@ -68,7 +69,7 @@ public class FeePaymentNotificationService {
         // The claim form is scheduled for generation so we reference it by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(expectedClaimFormFilename())
+            .fileName(expectedClaimFormFilename() + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(pcsCaseEntity.getDocuments().stream()

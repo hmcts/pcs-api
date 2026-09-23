@@ -17,6 +17,7 @@ public class DocumentNameService {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("ddMMyyyy");
     private static final String GEN_APP_FILENAME_PREFIX = "General Application";
+    public static final String GENERATED_DOC_EXTENSION = ".pdf";
 
     private final PartyService partyService;
 

@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.defenceform.DefenceFormDocumentGenerator.expectedDefenceFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
 /**
@@ -222,7 +223,9 @@ public class DefendantResponseService {
         List<DocumentEntity> documents = new ArrayList<>();
         if (generatesDefenceForm(journeyType)) {
             documents.add(DocumentEntity.builder()
-                .fileName(expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse)))
+                .fileName(
+                    expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse))
+                        + GENERATED_DOC_EXTENSION)
                 .build());
         }
 

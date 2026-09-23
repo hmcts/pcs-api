@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
+
 @Service
 @RequiredArgsConstructor
 public class GenAppWaTaskService {
@@ -59,7 +61,7 @@ public class GenAppWaTaskService {
         // The gen app form will be scheduled for generation so it's referenced by its deterministic filename.
         List<DocumentEntity> documents = new ArrayList<>();
         documents.add(DocumentEntity.builder()
-            .fileName(documentNameService.expectedGenAppFilename(genAppEntity, mainClaim))
+            .fileName(documentNameService.expectedGenAppFilename(genAppEntity, mainClaim) + GENERATED_DOC_EXTENSION)
             .build());
 
         documents.addAll(genAppEntity.getDocuments().stream()
