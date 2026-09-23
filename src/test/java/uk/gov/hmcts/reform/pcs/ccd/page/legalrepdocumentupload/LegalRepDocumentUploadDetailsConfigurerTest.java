@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +49,7 @@ class LegalRepDocumentUploadDetailsConfigurerTest extends BasePageTest {
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
 
+        verifyAndCount(inOrder, pageBuilder, SelectParty.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, UploadAdditionalDocumentsInformationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ExistingApplicationPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsPage, verificationCount);
