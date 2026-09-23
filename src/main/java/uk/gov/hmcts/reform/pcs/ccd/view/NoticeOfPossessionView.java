@@ -23,20 +23,16 @@ public class NoticeOfPossessionView {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getNoticeOfPossession)
             .ifPresent(noticeOfPossession ->
-                           setNoticeOfPossessionFields(pcsCase, noticeOfPossession, pcsCaseEntity));
+                           setNoticeOfPossessionFields(pcsCase, noticeOfPossession));
     }
 
-    private void setNoticeOfPossessionFields(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity,
-                                             PcsCaseEntity pcsCaseEntity) {
+    private void setNoticeOfPossessionFields(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity) {
         NoticeServedDetails noticeServedDetails = new NoticeServedDetails();
 
         NoticeServiceMethod servingMethod = noticeOfPossessionEntity.getServingMethod();
         noticeServedDetails.setServiceMethod(servingMethod);
         setAbletoUploadDocument(noticeServedDetails, noticeOfPossessionEntity);
         noticeServedDetails.setUnableToUploadReason(noticeOfPossessionEntity.getUnableToUploadReason());
-
-        //List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
-        //noticeServedDetails.setDocuments(documents);
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()

@@ -99,18 +99,10 @@ public class NoticeDetailsBuilder {
             return;
         }
 
-        //List<ListValue<Document>> documents = noticeServedDetails.getDocuments();
-        //noticeTabDetails.setNoticeDocuments(documents);
-
-
         List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
         noticeTabDetails.setNoticeDocuments(documents);
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
         noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
-
-        //if (isSubmitted) {
-        //    noticeServedDetails.setDocuments(null);
-        //}
 
         NoticeServiceMethod method = noticeServedDetails.getServiceMethod();
         noticeTabDetails.setNoticeMethod(method.getLabel());
