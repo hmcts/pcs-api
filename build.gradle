@@ -393,7 +393,7 @@ ext {
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
   jackson3Version = "3.1.6"
-  cucumberVersion = "7.34.8"
+  cucumberVersion = "7.34.9"
 }
 
 ext['snakeyaml.version'] = '2.7'
