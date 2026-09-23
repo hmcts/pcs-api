@@ -45,7 +45,7 @@ public class ExistingApplicationDocumentLinkBuilder {
     }
 
     private String buildLink(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        String documentLink = documentLink(genApp.getSubmissionDocument());
+        String documentLink = documentLink(pcsCaseEntity, genApp.getSubmissionDocument());
         if (documentLink == null) {
             return "";
         }
@@ -60,15 +60,15 @@ public class ExistingApplicationDocumentLinkBuilder {
             );
     }
 
-    private String documentLink(DocumentEntity documentEntity) {
+    private String documentLink(PcsCaseEntity pcsCaseEntity, DocumentEntity documentEntity) {
         if (documentEntity == null) {
             return null;
         }
-        if (documentEntity.getBinaryUrl() != null) {
-            return documentEntity.getBinaryUrl();
-        }
-        if (documentEntity.getUrl() != null) {
-            return documentEntity.getUrl();
+        if (documentEntity.getId() != null && pcsCaseEntity.getCaseReference() != null) {
+            return "/case/%s/view-documents/%s".formatted(
+                pcsCaseEntity.getCaseReference(),
+                documentEntity.getId()
+            );
         }
         if (documentEntity.getDocumentId() == null) {
             return null;
