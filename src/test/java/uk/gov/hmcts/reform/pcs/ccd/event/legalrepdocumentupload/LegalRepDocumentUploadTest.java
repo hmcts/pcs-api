@@ -239,6 +239,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         void shouldSetWalesFlagForWales() {
             // Given
             when(pcsCaseEntity.getLegislativeCountry()).thenReturn(WALES);
+            mockRepresentedParties();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -266,6 +267,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Given
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
             when(primaryClaimantParty.getOrganisationId()).thenReturn(ORGANISATION_ID);
+            mockRepresentedPartiesWithOrganisation();
 
             // When
             PCSCase result = callStartHandler(PCSCase.builder().build());
