@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.exception.DraftVersionConflictException;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
@@ -49,7 +50,6 @@ class DraftCaseDataServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String OWNER_ORGANISATION_ID = "QKLHPMU";
-    private static final String OTHER_ORGANISATION_ID = "IHOVCKH";
     private static final EventId PARTY_OWNED_EVENT = EventId.resumePossessionClaim;
 
     @Mock
@@ -614,6 +614,77 @@ class DraftCaseDataServiceTest {
 
         // Then
         assertThat(unsubmittedCaseData).contains(expected);
+    }
+
+    @Test
+    void shouldReportNoMeaningfulRespondDraftForPartyWhenNoDraftExists() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(false);
+
+        // When
+        boolean hasMeaningfulRespondDraft =
+            underTest.hasMeaningfulRespondDraft(CASE_REFERENCE, eventId, partyId, OWNER_ORGANISATION_ID);
+
+        // Then
+        assertThat(hasMeaningfulRespondDraft).isFalse();
+        verify(draftCaseDataRepository, never())
+            .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(anyLong(), any(), any(), any());
+    }
+
+    @Test
+    void shouldReportMeaningfulRespondDraftForPartyWhenDraftHasDefendantResponses() throws JsonProcessingException {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        String draftJson = "draft json";
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        PCSCase draftCaseData = mock(PCSCase.class);
+        PossessionClaimResponse possessionClaimResponse = mock(PossessionClaimResponse.class);
+
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(true);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataEntity.getCaseData()).thenReturn(draftJson);
+        when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(draftCaseData);
+        when(draftCaseData.getPossessionClaimResponse()).thenReturn(possessionClaimResponse);
+        when(possessionClaimResponse.getDefendantResponses()).thenReturn(mock(DefendantResponses.class));
+
+        // When
+        boolean hasMeaningfulRespondDraft =
+            underTest.hasMeaningfulRespondDraft(CASE_REFERENCE, eventId, partyId, OWNER_ORGANISATION_ID);
+
+        // Then
+        assertThat(hasMeaningfulRespondDraft).isTrue();
+    }
+
+    @Test
+    void shouldReportNoMeaningfulRespondDraftForPartyWhenDraftHasNoDefendantResponses()
+        throws JsonProcessingException {
+
+        // Given
+        UUID partyId = UUID.randomUUID();
+        String draftJson = "draft json";
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        PCSCase draftCaseData = mock(PCSCase.class);
+        PossessionClaimResponse possessionClaimResponse = mock(PossessionClaimResponse.class);
+
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(true);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataEntity.getCaseData()).thenReturn(draftJson);
+        when(objectMapper.readValue(draftJson, PCSCase.class)).thenReturn(draftCaseData);
+        when(draftCaseData.getPossessionClaimResponse()).thenReturn(possessionClaimResponse);
+        when(possessionClaimResponse.getDefendantResponses()).thenReturn(null);
+
+        // When
+        boolean hasMeaningfulRespondDraft =
+            underTest.hasMeaningfulRespondDraft(CASE_REFERENCE, eventId, partyId, OWNER_ORGANISATION_ID);
+
+        // Then
+        assertThat(hasMeaningfulRespondDraft).isFalse();
     }
 
     @Test

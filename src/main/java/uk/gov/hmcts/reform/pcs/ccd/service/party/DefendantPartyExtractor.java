@@ -1,13 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.Collections;
@@ -16,7 +17,10 @@ import java.util.Optional;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class DefendantPartyExtractor {
+
+    private final ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
 
     public List<PartyEntity> extractDefendants(PcsCaseEntity caseEntity, long caseReference) {
         ClaimEntity mainClaim = caseEntity.getClaims().stream()
@@ -45,16 +49,8 @@ public class DefendantPartyExtractor {
     }
 
     public List<PartyEntity> extractDefendantsRepresentedBy(PcsCaseEntity caseEntity, String organisationId) {
-        return summaryScreenSafeExtractDefendants(caseEntity).stream()
-            .filter(defendant -> isActivelyRepresentedBy(defendant, organisationId))
-            .toList();
-    }
-
-    private boolean isActivelyRepresentedBy(PartyEntity defendant, String organisationId) {
-        return defendant.getClaimPartyOrganisationList().stream()
-            .anyMatch(partyOrganisation ->
-                          organisationId.equals(partyOrganisation.getOrganisation().getOrganisationId())
-                              && YesOrNo.YES.equals(partyOrganisation.getActive()));
+        return claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+            caseEntity.getCaseReference(), organisationId, PartyRole.DEFENDANT);
     }
 
     private List<PartyEntity> extractDefendantParties(ClaimEntity mainClaim) {

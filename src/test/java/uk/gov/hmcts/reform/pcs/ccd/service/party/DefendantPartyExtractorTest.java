@@ -2,34 +2,39 @@ package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DefendantPartyExtractorTest {
 
     private static final long CASE_REFERENCE = 12345L;
     private static final String ORGANISATION_ID = "organisation-1";
-    private static final String OTHER_ORGANISATION_ID = "organisation-2";
+
+    @Mock
+    private ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
 
     private DefendantPartyExtractor underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DefendantPartyExtractor();
+        underTest = new DefendantPartyExtractor(claimPartyOrganisationRepository);
     }
 
     @Test
@@ -195,12 +200,14 @@ class DefendantPartyExtractorTest {
     }
 
     @Test
-    void extractDefendantsRepresentedBy_shouldReturnOnlyDefendantsRepresentedByOrganisation() {
+    void extractDefendantsRepresentedBy_shouldQueryActiveDefendantsForOrganisation() {
         // Given
-        PartyEntity representedDefendant = defendantRepresentedBy(ORGANISATION_ID, YesOrNo.YES);
-        PartyEntity otherFirmsDefendant = defendantRepresentedBy(OTHER_ORGANISATION_ID, YesOrNo.YES);
+        PartyEntity representedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        PcsCaseEntity caseEntity = caseWithDefendants(representedDefendant, otherFirmsDefendant);
+        when(claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+            CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
+            .thenReturn(List.of(representedDefendant));
 
         // When
         List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
@@ -210,56 +217,18 @@ class DefendantPartyExtractorTest {
     }
 
     @Test
-    void extractDefendantsRepresentedBy_shouldExcludeDefendantWhenRepresentationIsNotActive() {
+    void extractDefendantsRepresentedBy_shouldReturnEmptyListWhenOrganisationRepresentsNoDefendants() {
         // Given
-        PartyEntity inactivelyRepresentedDefendant = defendantRepresentedBy(ORGANISATION_ID, YesOrNo.NO);
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        PcsCaseEntity caseEntity = caseWithDefendants(inactivelyRepresentedDefendant);
+        when(claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+            CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
+            .thenReturn(List.of());
 
         // When
         List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(result).isEmpty();
-    }
-
-    @Test
-    void extractDefendantsRepresentedBy_shouldReturnEmptyListWhenDefendantHasNoRepresentation() {
-        // Given
-        PcsCaseEntity caseEntity = caseWithDefendants(PartyEntity.builder().build());
-
-        // When
-        List<PartyEntity> result = underTest.extractDefendantsRepresentedBy(caseEntity, ORGANISATION_ID);
-
-        // Then
-        assertThat(result).isEmpty();
-    }
-
-    private PartyEntity defendantRepresentedBy(String organisationId, YesOrNo active) {
-        ClaimPartyOrganisationEntity partyOrganisation = ClaimPartyOrganisationEntity.builder()
-            .organisation(OrganisationEntity.builder().organisationId(organisationId).build())
-            .active(active)
-            .build();
-
-        return PartyEntity.builder()
-            .claimPartyOrganisationList(List.of(partyOrganisation))
-            .build();
-    }
-
-    private PcsCaseEntity caseWithDefendants(PartyEntity... defendants) {
-        List<ClaimPartyEntity> claimParties = Arrays.stream(defendants)
-            .map(defendant -> ClaimPartyEntity.builder()
-                .role(PartyRole.DEFENDANT)
-                .party(defendant)
-                .build())
-            .toList();
-
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimParties(claimParties)
-            .build();
-
-        return PcsCaseEntity.builder()
-            .claims(List.of(claimEntity))
-            .build();
     }
 }
