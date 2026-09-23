@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.MakeOrderService;
@@ -20,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.order.MakeOrderService;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,15 +52,14 @@ class MakeOrderTest extends BaseEventTest {
     }
 
     @Test
-    void shouldPopulateTheCaseWithTheDraftForTodaysHearing() {
+    void shouldGiveTheFrontendTheEnvelopeFromTheService() {
         PCSCase caseData = PCSCase.builder().build();
-        when(makeOrderService.start(TEST_CASE_REFERENCE, caseData)).thenReturn("{\"order\":{\"state\":\"DRAFT\"}}");
+        MakeOrderEnvelope envelope = new MakeOrderEnvelope(null, null, null);
+        when(makeOrderService.start(TEST_CASE_REFERENCE, caseData)).thenReturn(envelope);
 
-        PCSCase result = callStartHandler(caseData);
+        MakeOrderEnvelope result = callPayloadStartHandler(caseData);
 
-        assertThat(result).isSameAs(caseData);
-        assertThat(result.getMakeOrderPayload()).isEqualTo("{\"order\":{\"state\":\"DRAFT\"}}");
-        verify(makeOrderService).start(TEST_CASE_REFERENCE, caseData);
+        assertThat(result).isSameAs(envelope);
     }
 
     @ParameterizedTest
@@ -70,14 +69,14 @@ class MakeOrderTest extends BaseEventTest {
         String expectedSummary,
         String expectedDescription
     ) {
-        PCSCase caseData = PCSCase.builder().makeOrderPayload("{\"action\":\"" + action + "\"}").build();
-        when(makeOrderService.submit(TEST_CASE_REFERENCE, caseData.getMakeOrderPayload())).thenReturn(action);
+        PCSCase caseData = PCSCase.builder().build();
+        MakeOrderEnvelope envelope = new MakeOrderEnvelope(action, null, null);
+        when(makeOrderService.submit(TEST_CASE_REFERENCE, envelope)).thenReturn(action);
 
-        SubmitResponse<State> response = callSubmitHandler(caseData);
+        SubmitResponse<State> response = callPayloadSubmitHandler(caseData, envelope);
 
         assertThat(response.getEventMetadata().getSummary()).isEqualTo(expectedSummary);
         assertThat(response.getEventMetadata().getDescription()).isEqualTo(expectedDescription);
-        verify(makeOrderService).submit(TEST_CASE_REFERENCE, caseData.getMakeOrderPayload());
     }
 
     private static Stream<Arguments> actionsAndMetadata() {

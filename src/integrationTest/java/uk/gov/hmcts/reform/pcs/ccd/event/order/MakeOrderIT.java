@@ -1,12 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.RowChange;
@@ -24,32 +23,26 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
-import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.config.IssuedClaims;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 import uk.gov.hmcts.reform.pcs.config.TestOrganisations;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.BaseClaimPayloads;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action.START_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @PcsCcdEventTest
 @DisplayName("Make an order")
 class MakeOrderIT {
 
-    private static final String CREATE_CLAIM = "createPossessionClaim";
-    private static final String RESUME_CLAIM = "resumePossessionClaim";
-    // pcs-api answers an IllegalStateException with 409, which is what CCD would receive.
+    private static final int BAD_REQUEST = 400;
     private static final int CONFLICT = 409;
 
     @Autowired
@@ -57,11 +50,7 @@ class MakeOrderIT {
     @Autowired
     private TestOrganisations organisations;
     @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private JdbcTemplate jdbc;
+    private IssuedClaims claims;
 
     private Actor firstJudge;
     private Actor secondJudge;
@@ -73,14 +62,14 @@ class MakeOrderIT {
         firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
         secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
         claimant = events.registerActor("Claimant", "Solicitor", "caseworker-pcs", "caseworker-pcs-solicitor");
-        organisations.register(claimant, "Possession Claims Solicitor Org", "ORG-MAKE-ORDER");
-        caseReference = issueClaim(baseClaim(LegislativeCountry.ENGLAND));
+        organisations.register(claimant, "Possession Claims Solicitor Org");
+        caseReference = claims.issue(claimant, ENGLAND);
     }
 
     @Test
     @DisplayName("gives the judge the facts and parties from the claim")
     void providesTheFactsAndPartiesFromTheClaim() {
-        PCSCase claim = baseClaim(LegislativeCountry.ENGLAND);
+        PCSCase claim = claims.baseClaim(ENGLAND);
         claim.getTenancyLicenceDetails().setTenancyLicenceDate(LocalDate.of(2020, 2, 3));
         claim.setNoticeServed(YesOrNo.YES);
         claim.setNoticeServedDetails(NoticeServedDetails.builder()
@@ -94,7 +83,7 @@ class MakeOrderIT {
         claim.setRentArrears(RentArrearsSection.builder().total(new BigDecimal("1500.00")).build());
         claim.getSecureOrFlexiblePossessionGrounds().setSecureOrFlexibleDiscretionaryGrounds(
             Set.of(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY));
-        caseReference = issueClaim(claim);
+        caseReference = claims.issue(claimant, claim);
 
         MakeOrderEnvelope opened = open(firstJudge);
 
@@ -117,9 +106,9 @@ class MakeOrderIT {
     @Test
     @DisplayName("uses the Welsh occupation contract when the claim has no tenancy")
     void usesTheWelshOccupationContract() {
-        PCSCase claim = baseClaim(LegislativeCountry.WALES);
+        PCSCase claim = claims.baseClaim(WALES);
         claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
-        caseReference = issueClaim(claim);
+        caseReference = claims.issue(claimant, claim);
 
         var facts = open(firstJudge).caseContext().caseFacts();
 
@@ -134,9 +123,11 @@ class MakeOrderIT {
         startDraft(firstJudge, "first judge's notes");
         startDraft(secondJudge, "second judge's notes");
 
-        assertThat(notesIn(open(firstJudge))).isEqualTo("first judge's notes");
-        assertThat(notesIn(open(secondJudge))).isEqualTo("second judge's notes");
-        assertThat(draftOf(firstJudge).orElseThrow().getId()).isNotEqualTo(draftOf(secondJudge).orElseThrow().getId());
+        Order firstJudgesDraft = open(firstJudge).order();
+        Order secondJudgesDraft = open(secondJudge).order();
+        assertThat(notesIn(firstJudgesDraft)).isEqualTo("first judge's notes");
+        assertThat(notesIn(secondJudgesDraft)).isEqualTo("second judge's notes");
+        assertThat(firstJudgesDraft.id()).isNotEqualTo(secondJudgesDraft.id());
     }
 
     @Test
@@ -145,9 +136,9 @@ class MakeOrderIT {
         startDraft(firstJudge, "first judge's notes");
         Order firstJudgesDraft = open(firstJudge).order();
 
-        submit(secondJudge, SAVE_DRAFT, withNotes(firstJudgesDraft, "overwritten")).submitExpectingFailure(CONFLICT);
+        reply(secondJudge, SAVE_DRAFT, withNotes(firstJudgesDraft, "overwritten")).submitExpectingFailure(CONFLICT);
 
-        assertThat(notesIn(open(firstJudge))).isEqualTo("first judge's notes");
+        assertThat(notesIn(open(firstJudge).order())).isEqualTo("first judge's notes");
     }
 
     @Test
@@ -155,9 +146,9 @@ class MakeOrderIT {
     void rejectsASecondDraftForTheSameJudge() {
         startDraft(firstJudge, "first draft");
 
-        submit(firstJudge, START_DRAFT, newDraft("second draft")).submitExpectingFailure(CONFLICT);
+        reply(firstJudge, START_DRAFT, newDraft("second draft")).submitExpectingFailure(CONFLICT);
 
-        assertThat(notesIn(open(firstJudge))).isEqualTo("first draft");
+        assertThat(notesIn(open(firstJudge).order())).isEqualTo("first draft");
     }
 
     @Test
@@ -166,13 +157,13 @@ class MakeOrderIT {
         startDraft(firstJudge, "first version");
         Order draft = open(firstJudge).order();
 
-        submit(firstJudge, SAVE_DRAFT, withNotes(draft, "second version")).submitExpectingSuccess();
+        reply(firstJudge, SAVE_DRAFT, withNotes(draft, "second version")).submitExpectingSuccess();
 
         Order saved = open(firstJudge).order();
         assertThat(saved.id()).isEqualTo(draft.id());
         assertThat(saved.state()).isEqualTo(OrderState.DRAFT);
         assertThat(saved.version()).isGreaterThan(draft.version());
-        assertThat(saved.draftPayload().path("notes").asText()).isEqualTo("second version");
+        assertThat(notesIn(saved)).isEqualTo("second version");
     }
 
     @Test
@@ -180,11 +171,11 @@ class MakeOrderIT {
     void rejectsAStaleChange() {
         startDraft(firstJudge, "first version");
         Order draft = open(firstJudge).order();
-        submit(firstJudge, SAVE_DRAFT, withNotes(draft, "second version")).submitExpectingSuccess();
+        reply(firstJudge, SAVE_DRAFT, withNotes(draft, "second version")).submitExpectingSuccess();
 
-        submit(firstJudge, SAVE_DRAFT, withNotes(draft, "stale version")).submitExpectingFailure(CONFLICT);
+        reply(firstJudge, SAVE_DRAFT, withNotes(draft, "stale version")).submitExpectingFailure(CONFLICT);
 
-        assertThat(notesIn(open(firstJudge))).isEqualTo("second version");
+        assertThat(notesIn(open(firstJudge).order())).isEqualTo("second version");
     }
 
     @Test
@@ -193,16 +184,15 @@ class MakeOrderIT {
         startDraft(firstJudge, "draft");
         Order draft = open(firstJudge).order();
 
-        var submission = submit(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
+        var submission = reply(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
 
-        OrderEntity submitted = orderRepository.findById(draft.id()).orElseThrow();
-        assertThat(submitted.getState()).isEqualTo(OrderState.SUBMITTED_FOR_REVIEW);
-        assertThat(submitted.getIdamUserId()).isEqualTo(UUID.fromString(firstJudge.uid()));
-        assertThat(submitted.getDraftPayload()).contains("final");
-        assertThat(submission.changes("orders"))
-            .filteredOn(change -> change.operation() == RowChange.Operation.UPDATE)
-            .extracting(change -> change.newValues().path("idam_user_id").asText())
-            .containsExactly(firstJudge.uid());
+        assertThat(submission.changes("orders")).singleElement().satisfies(change -> {
+            assertThat(change.operation()).isEqualTo(RowChange.Operation.UPDATE);
+            assertThat(change.newValues().path("id").asText()).isEqualTo(draft.id().toString());
+            assertThat(change.newValues().path("state").asText()).isEqualTo(OrderState.SUBMITTED_FOR_REVIEW.name());
+            assertThat(change.newValues().path("idam_user_id").asText()).isEqualTo(firstJudge.uid());
+            assertThat(change.newValues().path("draft_payload").path("notes").asText()).isEqualTo("final");
+        });
     }
 
     @Test
@@ -210,10 +200,10 @@ class MakeOrderIT {
     void rejectsAChangeToASubmittedOrder() {
         startDraft(firstJudge, "draft");
         Order draft = open(firstJudge).order();
-        submit(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
-        long submittedVersion = orderRepository.findById(draft.id()).orElseThrow().getVersion();
+        var submitted = reply(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
+        long submittedVersion = submitted.changes("orders").getFirst().newValues().path("version").asLong();
 
-        submit(firstJudge, SAVE_DRAFT, new Order(draft.id(), null, submittedVersion, notes("changed after submission")))
+        reply(firstJudge, SAVE_DRAFT, new Order(draft.id(), null, submittedVersion, notes("changed after submission")))
             .submitExpectingFailure(CONFLICT);
     }
 
@@ -222,78 +212,44 @@ class MakeOrderIT {
     void startsANewDraftAfterSubmission() {
         startDraft(firstJudge, "draft");
         Order draft = open(firstJudge).order();
-        submit(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
+        reply(firstJudge, SUBMIT_FOR_REVIEW, withNotes(draft, "final")).submitExpectingSuccess();
 
         assertThat(open(firstJudge).order().id()).isNull();
         startDraft(firstJudge, "next order");
 
-        assertThat(notesIn(open(firstJudge))).isEqualTo("next order");
+        assertThat(notesIn(open(firstJudge).order())).isEqualTo("next order");
     }
 
     @Test
     @DisplayName("rejects an order change that does not say which draft it is for")
     void rejectsAChangeWithoutADraftIdentifier() {
-        assertThatThrownBy(() -> submit(firstJudge, SAVE_DRAFT, newDraft("notes")).submit())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("The order draft identifier is missing");
+        var rejected = reply(firstJudge, SAVE_DRAFT, newDraft("notes")).submitExpectingFailure(BAD_REQUEST);
+
+        assertThat(rejected.body()).contains("The order draft identifier is missing");
     }
 
     @Test
     @DisplayName("rejects an order submission with no action or no order")
     void rejectsAnIncompleteEnvelope() {
-        assertThatThrownBy(() -> submitPayload(firstJudge, "{}").submit())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("The order action is missing");
-        assertThatThrownBy(() -> submitPayload(firstJudge, "{\"action\":\"SAVE_DRAFT\"}").submit())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("The order is missing");
+        var noAction = reply(firstJudge, null, null).submitExpectingFailure(BAD_REQUEST);
+        var noOrder = reply(firstJudge, SAVE_DRAFT, null).submitExpectingFailure(BAD_REQUEST);
+
+        assertThat(noAction.body()).contains("The order action is missing");
+        assertThat(noOrder.body()).contains("The order is missing");
     }
 
-    /** Creates a claim through pcs-api's own claim events, then issues it as the payment flow would. */
-    private long issueClaim(PCSCase claim) {
-        var create = events.create(CREATE_CLAIM, State.AWAITING_SUBMISSION_TO_HMCTS, PCSCase.builder()
-                .propertyAddress(claim.getPropertyAddress())
-                .legislativeCountry(claim.getLegislativeCountry())
-                .build())
-            .as(claimant);
-        create.submitExpectingSuccess();
-        events.event(create.reference(), RESUME_CLAIM, claim).as(claimant).submitExpectingSuccess();
-        jdbc.update("update ccd.case_data set state = 'CASE_ISSUED' where reference = ?", create.reference());
-        return create.reference();
-    }
-
-    /** The claim that pcs-api's testing support submits, at the property address it creates cases with. */
-    private PCSCase baseClaim(LegislativeCountry country) {
-        PCSCase claim = objectMapper.convertValue(BaseClaimPayloads.read(objectMapper, country), PCSCase.class);
-        claim.setLegislativeCountry(country);
-        claim.setPropertyAddress(BaseClaimPayloads.propertyAddress(country));
-        return claim;
-    }
-
-    /** Opens the event as the judge and returns the envelope the start handler gives the frontend. */
     private MakeOrderEnvelope open(Actor judge) {
-        PCSCase started = events.start(caseReference, MakeOrder.EVENT_ID).as(judge).startExpectingSuccess().caseData();
-        return MakeOrderEnvelope.parse(objectMapper, started.getMakeOrderPayload());
+        return events.start(caseReference, MakeOrder.EVENT_ID).as(judge).startExpectingSuccess().payload();
+    }
+
+    /** Opens the event as the judge and replies with an order action, as the frontend does. */
+    private CcdEventTestSupport<PCSCase, State>.EventSubmission reply(Actor judge, Action action, Order order) {
+        return events.start(caseReference, MakeOrder.EVENT_ID).as(judge).startExpectingSuccess()
+            .submittingPayload(new MakeOrderEnvelope(action, order, null));
     }
 
     private void startDraft(Actor judge, String notes) {
-        submit(judge, START_DRAFT, newDraft(notes)).submitExpectingSuccess();
-    }
-
-    /** Opens the event as the judge and submits the order action, as the frontend does. */
-    private CcdEventTestSupport<PCSCase, State>.CaseType.EventSubmission submit(Actor judge, Action action,
-                                                                                   Order order) {
-        return submitPayload(judge, new MakeOrderEnvelope(action, order, null).toJson(objectMapper));
-    }
-
-    private CcdEventTestSupport<PCSCase, State>.CaseType.EventSubmission submitPayload(Actor judge, String payload) {
-        return events.start(caseReference, MakeOrder.EVENT_ID).as(judge).startExpectingSuccess()
-            .edit(pcsCase -> pcsCase.setMakeOrderPayload(payload));
-    }
-
-    private Optional<OrderEntity> draftOf(Actor judge) {
-        return orderRepository.findFirstByPcsCaseCaseReferenceAndIdamUserIdAndStateOrderByUpdatedAtDesc(
-            caseReference, UUID.fromString(judge.uid()), OrderState.DRAFT);
+        reply(judge, START_DRAFT, newDraft(notes)).submitExpectingSuccess();
     }
 
     private static Order newDraft(String notes) {
@@ -304,11 +260,12 @@ class MakeOrderIT {
         return new Order(draft.id(), draft.state(), draft.version(), notes(notes));
     }
 
+    /** The frontend's form data is opaque to pcs-api; a single note stands in for it. */
     private static JsonNode notes(String notes) {
-        return new ObjectMapper().createObjectNode().put("notes", notes);
+        return JsonNodeFactory.instance.objectNode().put("notes", notes);
     }
 
-    private static String notesIn(MakeOrderEnvelope opened) {
-        return opened.order().draftPayload().path("notes").asText();
+    private static String notesIn(Order order) {
+        return order.draftPayload().path("notes").asText();
     }
 }

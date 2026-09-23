@@ -53,7 +53,7 @@ public class MakeOrderService {
     }
 
     @Transactional(readOnly = true)
-    public String start(long caseReference, PCSCase pcsCase) {
+    public MakeOrderEnvelope start(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity caseEntity = findCase(caseReference);
         MakeOrderEnvelope.Order order = findDraft(caseReference, securityContextService.getCurrentUserId())
             .map(this::toOrder)
@@ -70,12 +70,11 @@ public class MakeOrderService {
                 toParties(pcsCase.getAllDefendants()),
                 toCaseFacts(pcsCase)
             )
-        ).toJson(objectMapper);
+        );
     }
 
     @Transactional
-    public Action submit(long caseReference, String payload) {
-        MakeOrderEnvelope submitted = MakeOrderEnvelope.parse(objectMapper, payload);
+    public Action submit(long caseReference, MakeOrderEnvelope submitted) {
         if (submitted.action() == null) {
             throw new IllegalArgumentException("The order action is missing");
         }

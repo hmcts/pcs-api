@@ -23,10 +23,10 @@ public class TestOrganisations implements RoleAssignmentApi, RdProfessionalApi {
 
     private final Map<String, OrganisationDetailsResponse> organisations = new ConcurrentHashMap<>();
 
-    public void register(Actor claimant, String organisationName, String organisationIdentifier) {
+    public void register(Actor claimant, String organisationName) {
         organisations.put(claimant.uid(), OrganisationDetailsResponse.builder()
             .name(organisationName)
-            .organisationIdentifier(organisationIdentifier)
+            .organisationIdentifier("ORG-" + organisations.size())
             .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
             .build());
     }

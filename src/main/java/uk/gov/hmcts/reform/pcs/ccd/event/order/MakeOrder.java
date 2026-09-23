@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.MakeOrderService;
 
@@ -25,7 +26,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(EVENT_ID, this::submit, this::start)
+            .decentralisedEvent(EVENT_ID, MakeOrderEnvelope.class, this::submit, this::start)
             .forStates(
                 State.CASE_ISSUED,
                 State.CASE_PROGRESSION,
@@ -42,16 +43,12 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 UserRole.LEADERSHIP_JUDGE);
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase pcsCase = eventPayload.caseData();
-        pcsCase.setMakeOrderPayload(makeOrderService.start(eventPayload.caseReference(), pcsCase));
-        return pcsCase;
+    private MakeOrderEnvelope start(EventPayload<PCSCase, State> event) {
+        return makeOrderService.start(event.caseReference(), event.caseData());
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Action action = makeOrderService.submit(
-            eventPayload.caseReference(),
-            eventPayload.caseData().getMakeOrderPayload());
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> event, MakeOrderEnvelope submitted) {
+        Action action = makeOrderService.submit(event.caseReference(), submitted);
         return SubmitResponse.<State>builder()
             .eventMetadata(eventMetadata(action))
             .build();

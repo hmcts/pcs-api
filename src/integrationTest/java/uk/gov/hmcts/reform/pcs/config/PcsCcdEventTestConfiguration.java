@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -10,12 +11,15 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.containers.PostgreSQLContainer;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.TestActors;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
@@ -27,20 +31,15 @@ import java.util.List;
 @TestConfiguration(proxyBeanMethods = false)
 public class PcsCcdEventTestConfiguration {
 
-    private static final PostgreSQLContainer<?> POSTGRES =
-        new PostgreSQLContainer<>("postgres:16-alpine").withCommand("postgres", "-c", "max_connections=300");
-
-    static {
-        POSTGRES.start();
-    }
-
+    /** The same container as the other integration tests, so one Postgres serves the whole run. */
     @Bean
     DynamicPropertyRegistrar postgresProperties() {
+        PostgreSQLContainer<?> postgres = AbstractPostgresContainerIT.postgres;
         return registry -> {
-            registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-            registry.add("spring.datasource.username", POSTGRES::getUsername);
-            registry.add("spring.datasource.password", POSTGRES::getPassword);
-            registry.add("spring.datasource.driver-class-name", POSTGRES::getDriverClassName);
+            registry.add("spring.datasource.url", postgres::getJdbcUrl);
+            registry.add("spring.datasource.username", postgres::getUsername);
+            registry.add("spring.datasource.password", postgres::getPassword);
+            registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
         };
     }
 
@@ -80,6 +79,12 @@ public class PcsCcdEventTestConfiguration {
                 .roles(actor.roles())
                 .build();
         };
+    }
+
+    @Bean
+    IssuedClaims issuedClaims(CcdEventTestSupport<PCSCase, State> events, ObjectMapper objectMapper,
+                              JdbcTemplate jdbc) {
+        return new IssuedClaims(events, objectMapper, jdbc);
     }
 
     @Bean

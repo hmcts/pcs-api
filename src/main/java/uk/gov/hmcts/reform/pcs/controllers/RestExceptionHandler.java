@@ -75,6 +75,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error("Access denied"));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Error> handleBadRequest(IllegalArgumentException ex) {
+        log.warn("Rejected request: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Error(ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Error> handleConflict(IllegalStateException ex) {
         log.error("Conflict state detected", ex);
