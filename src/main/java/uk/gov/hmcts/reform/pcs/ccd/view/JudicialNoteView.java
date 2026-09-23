@@ -28,12 +28,12 @@ public class JudicialNoteView {
                 Comparator.nullsLast(Comparator.reverseOrder())
             ))
             .map(
-            judicialNoteEntity -> {
-                JudicialNote judicialNote = covertToJudicialNote(judicialNoteEntity);
-                ListValue<JudicialNote> judicialNoteListValue = new ListValue<>();
-                judicialNoteListValue.setValue(judicialNote);
-                return judicialNoteListValue;
-            }
+                judicialNoteEntity -> {
+                    JudicialNote judicialNote = covertToJudicialNote(judicialNoteEntity);
+                    ListValue<JudicialNote> judicialNoteListValue = new ListValue<>();
+                    judicialNoteListValue.setValue(judicialNote);
+                    return judicialNoteListValue;
+                }
         ).toList();
 
         pcsCase.setJudicialNotes(judicialNotes);
