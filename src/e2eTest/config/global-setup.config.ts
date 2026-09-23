@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { uploadTestDocuments } from '@utils/common/uploadDocument.utils';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -22,12 +23,14 @@ function applyPlaywrightServiceUrls(): void {
     process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
     process.env.CASE_API_URL ||= `http://pcs-api-${e}.service.core-compute-${e}.internal`;
     process.env.DM_STORE ||= `http://dm-store-${e}.service.core-compute-${e}.internal`;
+    process.env.CDAM_URL ||= `http://ccd-case-document-am-api-${e}.service.core-compute-${e}.internal`;
   } else {
     // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
     process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
     process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
     process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
-    process.env.DM_STORE ||= `http://dm-store-aat.service.core-compute-aat.internal`
+    process.env.DM_STORE ||= `http://dm-store-aat.service.core-compute-aat.internal`;
+    process.env.CDAM_URL ||= `http://ccd-case-document-am-api-aat.service.core-compute-aat.internal`;
   }
 }
 
@@ -36,6 +39,7 @@ async function globalSetupConfig(): Promise<void> {
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
+  await uploadTestDocuments()
 }
 
 async function authenticateAndSaveState(): Promise<string> {
