@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim;
 
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
+@Component
 public class UploadRelatedDocuments implements CcdPageConfiguration {
 
     private final FileTypeService fileTypeService;
