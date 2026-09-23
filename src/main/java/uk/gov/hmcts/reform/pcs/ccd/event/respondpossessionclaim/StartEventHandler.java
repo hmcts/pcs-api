@@ -37,10 +37,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
             caseReference
         );
 
-        return strategies.stream()
-            .filter(strategy -> strategy.supports(securityContextService.getCurrentUserDetails().getRoles()))
+        List<String> roles = securityContextService.getCurrentUserDetails().getRoles();
+
+        RespondPossessionClaimStartEventStrategy strategy = strategies.stream()
+            .filter(candidate -> candidate.supports(roles))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No start event strategy found"))
-            .loadDraft(caseReference, eventPayload.caseData());
+            .orElseThrow(() -> new IllegalStateException("No start event strategy found"));
+
+        return strategy.loadDraft(caseReference, eventPayload.caseData());
     }
 }

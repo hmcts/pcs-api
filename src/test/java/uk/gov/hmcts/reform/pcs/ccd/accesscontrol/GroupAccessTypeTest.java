@@ -9,11 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class GroupAccessTypeTest {
 
-    /**
-     * The lookup is keyed on organisation profile and party role, so two access types sharing a key
-     * would leave one unreachable and stamp cases with the other's group id - which reads as "the
-     * user cannot see the case" rather than as a configuration mistake.
-     */
+    /** Duplicate profile+party keys would stamp the wrong group id and look like a permissions miss. */
     @Test
     void shouldDeclareOneAccessTypePerOrganisationProfileAndPartyRole() {
         List<String> keys = Arrays.stream(GroupAccessType.values())
@@ -31,6 +27,20 @@ class GroupAccessTypeTest {
             .forEach(accessType -> assertThat(GroupAccessType.caseAccessGroupIdFor(
                 accessType.getOrganisationProfileId(), accessType.getPartyRole(), "$ORGID$"))
                 .contains(accessType.getCaseAccessGroupIdTemplate()));
+    }
+
+    /** OrgPolicyCaseAssignedRole and PartiesView must name the same NoC role. */
+    @Test
+    void shouldKeyTheDefendantAccessTypeOnTheGroupRole() {
+        assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getCaseAssignedRoleField())
+            .isEqualTo(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
+    }
+
+    /** PRM group IDs must stay on the group role name, not a retired case role. */
+    @Test
+    void shouldKeepTheGroupIdTemplateOnTheGroupRoleName() {
+        assertThat(GroupAccessType.SOLICITOR_ORG_DEFENDANT_ACCESS.getCaseAccessGroupIdTemplate())
+            .isEqualTo("PCS:PCS:solicitor-org-defendant-access:defendant-solicitor:$ORGID$");
     }
 
     @Test

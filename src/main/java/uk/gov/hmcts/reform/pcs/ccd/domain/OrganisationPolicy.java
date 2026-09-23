@@ -10,10 +10,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.PreviousOrganisationCollectionItem;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+/** SDK OrganisationPolicy using the PCS Organisation type so the organisation node is never omitted. */
 @NoArgsConstructor
 @Builder
 @Data

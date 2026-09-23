@@ -138,6 +138,11 @@ public class PCSCase {
     )
     private DynamicList representedPartyNames;
 
+    /** Group Access role on this case; access listed so citizen and claimant can read it. */
+    @CCD(searchable = false,
+         access = {ClaimantAccess.class, DefendantAccess.class, DefendantSolicitorAccess.class})
+    private String currentUserGroupRole;
+
     @CCD(searchable = false)
     private String currentRepresentedPartyId;
 

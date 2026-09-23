@@ -128,6 +128,7 @@ class GenAppVisibilityServiceTest {
         assertThat(genAppVisibleToUser).isTrue();
     }
 
+    /** caseworker-pcs alone is not internal; solicitors hold it too. */
     @Test
     void shouldNotTreatSolicitorWithGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
         // Given
@@ -138,7 +139,7 @@ class GenAppVisibilityServiceTest {
             party,
             CURRENT_USER_ID,
             null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.PCS_SOLICITOR.getRole())
+            List.of(UserRole.PCS_CASE_WORKER.getRole(), UserRole.GA_DEFENDANT_SOLICITOR.getRole())
         );
 
         // Then

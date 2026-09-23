@@ -34,8 +34,7 @@ class ClaimantMakeAnApplicationTest extends BaseEventTest {
     }
 
     @Test
-    void shouldGrantCaseRoleAndGroupAccessClaimantRoles() {
-        assertGrants(UserRole.CLAIMANT_SOLICITOR, Permission.CRUD);
+    void shouldGrantGroupAccessClaimantRoles() {
         assertGrants(UserRole.GA_CLAIMANT_SOLICITOR, Permission.CRUD);
         assertGrants(UserRole.CLAIMANT, Permission.CRUD);
     }
@@ -44,6 +43,6 @@ class ClaimantMakeAnApplicationTest extends BaseEventTest {
     void shouldNotGrantDefendantRoles() {
         assertThat(configuredEvent.getGrants().keySet())
             .isNotEmpty()
-            .doesNotContain(UserRole.DEFENDANT, UserRole.DEFENDANT_SOLICITOR, UserRole.GA_DEFENDANT_SOLICITOR);
+            .doesNotContain(UserRole.DEFENDANT, UserRole.GA_DEFENDANT_SOLICITOR);
     }
 }

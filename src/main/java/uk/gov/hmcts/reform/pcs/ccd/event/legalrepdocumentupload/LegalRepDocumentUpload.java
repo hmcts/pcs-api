@@ -70,8 +70,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .forStates(EventStates.legalRepUploadDocuments())
                 .name("Upload additional documents")
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showSummary()

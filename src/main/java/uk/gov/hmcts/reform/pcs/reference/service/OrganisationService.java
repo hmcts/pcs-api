@@ -228,16 +228,7 @@ public class OrganisationService {
         }
     }
 
-    /**
-     * Only users who belong to a professional organisation have one to look up. Citizens, the system
-     * identity, HMCTS staff and judiciary do not, and asking rd-professional on their behalf is a
-     * round trip that can only 404 - which PRD logs as an error. Returning null here is the same
-     * "no organisation" answer the 404 produced, reached without the call.
-     *
-     * <p>Gated on the PRM group-access roles rather than on {@code caseworker-pcs-solicitor}: that
-     * IDAM role is being retired under HDPI-7333, and it never distinguished the organisation types
-     * anyway.
-     */
+    /** Skip rd-professional unless the caller holds a PRM group-access organisation role. */
     private UUID resolveProfessionalUserId() {
         if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
             return null;

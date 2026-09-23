@@ -68,7 +68,7 @@ class SubmitEventHandlerTest {
     @Test
     void shouldLoadLegalRepStrategyForNoCitizenUser() {
         // given
-        List<String> userRoles = List.of(UserRole.DEFENDANT_SOLICITOR.getRole());
+        List<String> userRoles = List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole());
         when(legalRepSubmissionEventStrategy.supports(userRoles)).thenReturn(true);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(userRoles);
@@ -87,7 +87,7 @@ class SubmitEventHandlerTest {
         // given
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
 
         // when
         assertThat(assertThrows(

@@ -62,9 +62,10 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Assign to Users to enable access to all cases associated with this organisation";
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
+
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
-    /** Null for duty-advisor access, which is requested per case rather than stamped on one. */
+    /** Null for duty-advisor access; requested per case rather than stamped on one. */
     private final PartyRole partyRole;
     private final String organisationProfileId;
     private final String accessTypeId;
@@ -75,11 +76,12 @@ public enum GroupAccessType implements CCDAccessGroup {
     private final boolean accessDefault;
     private final boolean display;
     private final boolean groupAccessEnabled;
-
+    /** Segment of the group ID template; matches the attaching AccessProfile role name. */
+    private final String groupRoleName;
     private final String caseAssignedRoleField;
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, int displayOrder) {
+                    String groupRoleName, String description, int displayOrder) {
         this.partyRole = partyRole;
         this.organisationProfileId = orgProfileId.getId();
         this.accessTypeId = accessTypeId;
@@ -90,11 +92,12 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.hintText = ASSIGN_HINT;
         this.groupAccessEnabled = true;
         this.displayOrder = displayOrder;
-        this.caseAssignedRoleField = caseAssignedRoleField;
+        this.groupRoleName = groupRoleName;
+        this.caseAssignedRoleField = groupRoleName;
     }
 
     GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
-                    String caseAssignedRoleField, String description, String hintText, int displayOrder,
+                    String groupRoleName, String description, String hintText, int displayOrder,
                     boolean accessMandatory, boolean accessDefault, boolean display, boolean groupAccessEnabled) {
         this.partyRole = partyRole;
         this.organisationProfileId = orgProfileId.getId();
@@ -106,7 +109,8 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.hintText = hintText;
         this.displayOrder = displayOrder;
         this.groupAccessEnabled = groupAccessEnabled;
-        this.caseAssignedRoleField = caseAssignedRoleField;
+        this.groupRoleName = groupRoleName;
+        this.caseAssignedRoleField = groupRoleName;
     }
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }
@@ -119,11 +123,15 @@ public enum GroupAccessType implements CCDAccessGroup {
                 identity()));
     }
 
-    /**
-     * The group ID template for an organisation profile acting in a party role, empty where the
-     * combination has no access type. Keyed lookup, so selection does not depend on the order these
-     * constants are declared in.
-     */
+    /** Role an organisation profile holds in a party role; empty when that combination has no access type. */
+    public static Optional<String> groupRoleFor(String orgProfileId, PartyRole partyRole) {
+        return Optional.ofNullable(orgProfileId)
+            .map(profileId -> new Key(profileId, partyRole))
+            .map(CASE_ACCESS_GROUP_MAP::get)
+            .map(GroupAccessType::getGroupRoleName);
+    }
+
+    /** Group ID template for a profile+party role; keyed so declaration order does not matter. */
     public static Optional<String> caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole,
                                                         String organisationId) {
         return Optional.ofNullable(orgProfileId)
@@ -133,13 +141,10 @@ public enum GroupAccessType implements CCDAccessGroup {
                      groupAccessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
     }
 
-    /**
-     * Builds the case access group ID template from this constant's own {@code accessTypeId} and
-     * group role, e.g. {@code "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$"}.
-     */
+    /** Group ID template, e.g. PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$. */
     @Override
     public String getCaseAccessGroupIdTemplate() {
-        return "PCS:PCS:" + accessTypeId + ":" + caseAssignedRoleField + ":$ORGID$";
+        return "PCS:PCS:" + accessTypeId + ":" + groupRoleName + ":$ORGID$";
     }
 
 

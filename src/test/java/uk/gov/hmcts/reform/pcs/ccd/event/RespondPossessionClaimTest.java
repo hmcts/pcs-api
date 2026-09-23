@@ -829,7 +829,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId))
             .thenReturn(List.of(representedParty, representedParty2));
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
 
         // when
         PCSCase result = callStartHandler(caseData);
@@ -857,7 +857,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
@@ -907,7 +907,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String orgId = "org";
         String legalRepOrgId = UUID.randomUUID().toString();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
@@ -950,7 +950,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PartyEntity representedParty2 = PartyEntity.builder().id(thirdPartyId).build();
         String orgId = "org";
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         PCSCase caseData = PCSCase.builder()
             .build();
@@ -976,7 +976,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
         String orgId = "org";
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
@@ -1014,7 +1014,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeConfirmation(YesNoNotSure.YES)
             .counterClaim(CounterClaim.builder()
@@ -1095,7 +1095,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_DEFENDANT_SOLICITOR.getRole()));
         when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
 
         // when / then

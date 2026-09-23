@@ -67,11 +67,7 @@ public class UserRoleService {
         return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }
 
-    /**
-     * IDAM roles plus the current user's AM organisational role assignments, with no case in scope.
-     * Callers that need to know what kind of user this is - rather than what they can do on one case
-     * - can use this without paying for the per-case lookup.
-     */
+    /** IDAM roles plus AM organisational assignments, with no case in scope. */
     public UserRoles getCurrentUserOrganisationalRoles() {
         UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
         String currentUserId = currentUserDetails.getUid();

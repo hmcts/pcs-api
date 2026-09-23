@@ -7,7 +7,6 @@ import java.util.Map;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CaseRoleCleanUp;
 
 @Slf4j
 @Tag("Functional")
@@ -48,17 +46,6 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         apiSteps.requestIsPreparedWithAppropriateValues();
         caseReference = apiSteps.ccdCaseIsCreatedAndIssued("england");
         accessCode = apiSteps.accessCodeIsFetched(caseReference);
-    }
-
-    @AfterAll
-    void cleanUp() {
-        if (caseReference != null) {
-            CaseRoleCleanUp.cleanUpCaseRole(
-                caseReference.toString(),
-                TestConstants.PCS_SOLICITOR_AUTOMATION_IDAM_UID,
-                "[CLAIMANTSOLICITOR]"
-            );
-        }
     }
 
     @Title("respondToPossessionClaim start event callback test without access code - returns 403")
