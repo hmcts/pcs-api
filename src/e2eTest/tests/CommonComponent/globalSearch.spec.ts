@@ -74,6 +74,21 @@ test.afterEach(async () => {
   }
 });
 
+test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
+  test('should allow Wales Hearing Centre Team Leader to access a case with an England postcode after challenged access', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      staff.pcs_hearing_centre_team_leader_other_wales_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess');
+  });
+});
+
 const runFieldSearch = async (label: string, value: string) => {
   await performAction('accessingTheSearch');
   await performAction('inputText', label, value);

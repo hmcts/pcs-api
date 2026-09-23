@@ -193,6 +193,9 @@ export class ActionRegistry {
     ['readDocumentsSubmit', new DocumentsAction()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
+    ['requestChallengedAccess', new GlobalSearchCaseAction()],
+    ['findCaseReferenceRowAcrossPages', new GlobalSearchCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
