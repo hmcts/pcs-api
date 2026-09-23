@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
-import static uk.gov.hmcts.reform.pcs.ccd.model.AcceptedFileTypes.NON_MULTIMEDIA_FILE_TYPES;
 
 @Builder
 @Data
