@@ -518,8 +518,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     }
 
     private void mockRepresentedParties() {
-        DynamicListElement dynamicListElement = DynamicListElement.builder().
-            code(UUID.randomUUID()).label("Sam Vimes").build();
+        DynamicListElement dynamicListElement = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("Sam Vimes").build();
 
         DynamicList representedDefendantPartyNames = DynamicList.builder()
             .listItems(List.of(dynamicListElement))
@@ -530,8 +530,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     }
 
     private void mockRepresentedPartiesWithOrganisation() {
-        DynamicListElement dynamicListElement = DynamicListElement.builder().
-            code(UUID.randomUUID()).label("Sam Vimes").build();
+        DynamicListElement dynamicListElement = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("Sam Vimes").build();
 
         DynamicList representedDefendantPartyNames = DynamicList.builder()
             .listItems(List.of(dynamicListElement))
