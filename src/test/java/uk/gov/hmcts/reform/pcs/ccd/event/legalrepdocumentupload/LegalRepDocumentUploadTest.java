@@ -13,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -51,11 +53,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mock.Strictness.LENIENT;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -97,6 +97,16 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
+        DynamicListElement dynamicListElement = DynamicListElement.builder().
+            code(UUID.randomUUID()).label("ff").build();
+
+//        List<DynamicListElement> listItems = dynamicListElement;
+        DynamicList representedDefendantPartyNames = DynamicList.builder()
+            .listItems(List.of(dynamicListElement))
+            .build();
+
+        lenient().when(legalRepresentativeService.getRepresentedPartiesDynamicList(anyString(), anyLong()))
+            .thenReturn(representedDefendantPartyNames);
 
         LegalRepPartySelectionService legalRepPartySelectionService = new LegalRepPartySelectionService(
             mock(SelectedPartyRetriever.class),

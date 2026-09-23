@@ -124,7 +124,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             caseReference
         );
 
-        boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+//        boolean representingMultipleParties = representedPartyNames.getListItems().size() > 1;
+        boolean representingMultipleParties = true;
         caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
         caseData.setRepresentedPartyNames(representedPartyNames);
 
