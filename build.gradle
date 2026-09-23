@@ -23,7 +23,7 @@ plugins {
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
   id 'hmcts.ccd.sdk' version '7.1.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2377'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2399'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -295,8 +295,10 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-static def getCheckedOutGitCommitHash() {
-  'git rev-parse --verify --short HEAD'.execute().text.trim()
+def getCheckedOutGitCommitHash() {
+  providers.exec {
+    commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
+  }.standardOutput.asText.map { it.trim() }.get()
 }
 
 // integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
@@ -384,7 +386,7 @@ ext {
   lombokVersion = "1.18.48"
   springSecurityVersion = "6.5.11"
   pactVersion = "4.7.5"
-  tomcatEmbedVersion = "11.0.25"
+  tomcatEmbedVersion = "11.0.26"
   nettyVersion = "4.1.137.Final"
   httpClient5Version = "5.6.4"
   httpCore5Version = "5.4.3"
@@ -434,7 +436,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.1-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
 
