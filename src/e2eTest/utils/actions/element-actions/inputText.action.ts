@@ -6,10 +6,12 @@ export class InputTextAction implements IAction {
 
 
     let locator;
-    if (typeof fieldParams !== 'string' && fieldParams.index != null) {      
+    if (typeof fieldParams !== 'string' && fieldParams.index != null) {
       const labelText = fieldParams.textLabel ?? fieldParams.text;
-      locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`).nth(Number(fieldParams.index));
-      //locator = locator.nth(Number(fieldParams.index));
+      locator = page.locator(`//span[text()="${labelText}"]/parent::label/following-sibling::*[self::textarea or self::input][not(@disabled)]`);
+      locator = (await locator.count()) > 1
+        ? locator.nth(Number(fieldParams.index))
+        : locator.first();
     } else if (typeof fieldParams !== 'string' && fieldParams.multiField != null) {
       locator = page.locator(
         `//span[text()="${fieldParams.textLabel}"]/following-sibling::*[self::textarea or self::input][not(@disabled)]`
