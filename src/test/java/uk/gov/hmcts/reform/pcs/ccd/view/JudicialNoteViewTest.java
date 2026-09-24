@@ -1,13 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.JudicialNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.JudicialNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.tabs.JudicialNoteRenderer;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -16,20 +21,26 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
+@ExtendWith(MockitoExtension.class)
 public class JudicialNoteViewTest {
+
+    @Mock
+    private JudicialNoteRenderer judicialNoteRenderer;
+
+    @InjectMocks
+    private JudicialNoteView judicialNoteView;
+
+    @Captor
+    private ArgumentCaptor<List<JudicialNote>> judicialNotesCaptor;
 
     private static final Instant SUMMER_INSTANT = Instant.parse("2026-04-22T21:00:00Z");
 
     private static final Instant WINTER_INSTANT = Instant.parse("2026-01-15T12:00:00Z");
-
-    private JudicialNoteView judicialNoteView;
-
-    @BeforeEach
-    void setUp() {
-        judicialNoteView = new JudicialNoteView();
-    }
 
     @Test
     void shouldMapJudicialNoteEntityToJudicialNoteDuringSummer() {
@@ -50,14 +61,17 @@ public class JudicialNoteViewTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
+        when(judicialNoteRenderer.render(anyList())).thenReturn("Render");
+
         // When
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<JudicialNote>> judicialNotes = pcsCase.getJudicialNotes();
+        verify(judicialNoteRenderer).render(judicialNotesCaptor.capture());
+        List<JudicialNote> judicialNotes = judicialNotesCaptor.getValue();
         assertThat(judicialNotes).hasSize(1);
 
-        JudicialNote judicialNote = judicialNotes.getFirst().getValue();
+        JudicialNote judicialNote = judicialNotes.getFirst();
         assertThat(judicialNote.getNote()).isEqualTo(note);
         assertThat(judicialNote.getCreatedBy()).isEqualTo(name);
 
@@ -71,6 +85,8 @@ public class JudicialNoteViewTest {
 
         ZonedDateTime zonedDateTime = SUMMER_INSTANT.atZone(UK_ZONE_ID);
         assertThat(zonedDateTime.getOffset()).isEqualTo(ZoneOffset.ofHours(1));
+
+        assertThat(pcsCase.getJudicialNotesMarkdown()).isEqualTo("Render");
     }
 
     @Test
@@ -92,14 +108,17 @@ public class JudicialNoteViewTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
+        when(judicialNoteRenderer.render(anyList())).thenReturn("Render");
+
         // When
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<JudicialNote>> judicialNotes = pcsCase.getJudicialNotes();
+        verify(judicialNoteRenderer).render(judicialNotesCaptor.capture());
+        List<JudicialNote> judicialNotes = judicialNotesCaptor.getValue();
         assertThat(judicialNotes).hasSize(1);
 
-        JudicialNote judicialNote = judicialNotes.getFirst().getValue();
+        JudicialNote judicialNote = judicialNotes.getFirst();
         assertThat(judicialNote.getNote()).isEqualTo(note);
         assertThat(judicialNote.getCreatedBy()).isEqualTo(name);
 
@@ -113,6 +132,8 @@ public class JudicialNoteViewTest {
 
         ZonedDateTime zonedDateTime = WINTER_INSTANT.atZone(UK_ZONE_ID);
         assertThat(zonedDateTime.getOffset()).isEqualTo(ZoneOffset.UTC);
+
+        assertThat(pcsCase.getJudicialNotesMarkdown()).isEqualTo("Render");
     }
 
     @Test
@@ -141,18 +162,23 @@ public class JudicialNoteViewTest {
 
         PCSCase pcsCase = PCSCase.builder().build();
 
+        when(judicialNoteRenderer.render(anyList())).thenReturn("Render");
+
         // When
         judicialNoteView.setCaseFields(pcsCase, pcsCaseEntity);
 
         // Then
-        List<ListValue<JudicialNote>> judicialNotes = pcsCase.getJudicialNotes();
+        verify(judicialNoteRenderer).render(judicialNotesCaptor.capture());
+        List<JudicialNote> judicialNotes = judicialNotesCaptor.getValue();
         assertThat(judicialNotes).hasSize(2);
 
-        JudicialNote judicialNote1 = judicialNotes.getFirst().getValue();
+        JudicialNote judicialNote1 = judicialNotes.getFirst();
         assertThat(judicialNote1.getNote()).isEqualTo(newNote);
 
-        JudicialNote judicialNote2 = judicialNotes.getLast().getValue();
+        JudicialNote judicialNote2 = judicialNotes.getLast();
         assertThat(judicialNote2.getNote()).isEqualTo(oldNote);
+
+        assertThat(pcsCase.getJudicialNotesMarkdown()).isEqualTo("Render");
     }
 
 }

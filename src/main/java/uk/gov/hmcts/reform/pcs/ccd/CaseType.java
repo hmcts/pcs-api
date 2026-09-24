@@ -367,6 +367,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildJudicialNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("judicialNotes", "Judicial Notes")
             .forRoles(JUDICIAL_NOTE_TAB_ROLES)
-            .field(PCSCase::getJudicialNotes);
+            .field(PCSCase::getJudicialNotesMarkdown);
     }
 }

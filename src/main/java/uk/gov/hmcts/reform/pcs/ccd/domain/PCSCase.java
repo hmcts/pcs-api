@@ -791,12 +791,8 @@ public class PCSCase {
     )
     private String judicialNote;
 
-    @CCD (
-        label = "Note",
-        access = {InternalTabAccess.class},
-        typeOverride = Collection,
-        typeParameterOverride = "JudicialNote")
-    List<ListValue<JudicialNote>> judicialNotes;
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private String judicialNotesMarkdown;
 
     @CCD (
         label = "Review date",
