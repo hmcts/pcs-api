@@ -576,6 +576,24 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
+        @Test
+        void shouldReturnErrorWhenAtLeastOneLegalRepDocumentHasNoDocument() {
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            LegalRepDocument legalRepDocumentWithoutDocument = LegalRepDocument.builder().build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(
+                                                       legalRepDocumentWithoutDocument)))
+                                                   .build())
+                .build();
+
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
+        }
+
     }
 
 }
