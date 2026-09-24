@@ -1,32 +1,73 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.EventMetadata;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalEventId;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalStart;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmit;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Action;
-import uk.gov.hmcts.reform.pcs.ccd.service.order.MakeOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.CaseFacts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * A judge makes an order through pcs-frontend's make order journey. Starting the event sends them
+ * their working order and the facts of the case; each submission starts, saves or submits for
+ * review their draft. A judge has one working draft per case, and a change is made from the
+ * version they last saw.
+ */
 @Component
 @AllArgsConstructor
 public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
-    public static final String EVENT_ID = "ext:makeOrder";
+    public static final ExternalEventId<MakeOrderStart, MakeOrderRequest> MAKE_ORDER =
+        ExternalEventId.of("ext:makeOrder", MakeOrderStart.class, MakeOrderRequest.class);
 
-    private final MakeOrderService makeOrderService;
+    private final OrderRepository orderRepository;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final SecurityContextService securityContextService;
+    private final AddressMapper addressMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(EVENT_ID, MakeOrderEnvelope.class, this::submit, this::start)
+            .externalEvent(MAKE_ORDER, this::submit)
             .forStates(
                 State.CASE_ISSUED,
                 State.CASE_PROGRESSION,
@@ -40,34 +81,195 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 UserRole.JUDGE,
                 UserRole.FEE_PAID_JUDGE,
                 UserRole.CIRCUIT_JUDGE,
-                UserRole.LEADERSHIP_JUDGE);
+                UserRole.LEADERSHIP_JUDGE)
+            .onStart(this::start);
     }
 
-    private MakeOrderEnvelope start(EventPayload<PCSCase, State> event) {
-        return makeOrderService.start(event.caseReference(), event.caseData());
+    private ExternalStartResponse<MakeOrderStart> start(ExternalStart start) {
+        long caseReference = start.caseReference();
+        MakeOrderStart.Order workingOrder = findDraft(caseReference, securityContextService.getCurrentUserId())
+            .map(this::toOrder)
+            .orElseGet(() -> new MakeOrderStart.Order(null, OrderState.DRAFT, 0, objectMapper.createObjectNode()));
+        return ExternalStartResponse.started(new MakeOrderStart(workingOrder, caseContext(findCase(caseReference))));
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> event, MakeOrderEnvelope submitted) {
-        Action action = makeOrderService.submit(event.caseReference(), submitted);
-        return SubmitResponse.<State>builder()
-            .eventMetadata(eventMetadata(action))
-            .build();
+    private ExternalSubmitResponse<State> submit(ExternalSubmit<MakeOrderRequest> submit) {
+        MakeOrderRequest request = submit.payload();
+        if (request.action() == null) {
+            return ExternalSubmitResponse.rejected("The order action is missing");
+        }
+        if (request.order() == null) {
+            return ExternalSubmitResponse.rejected("The order is missing");
+        }
+        long caseReference = submit.caseReference();
+        UUID judge = securityContextService.getCurrentUserId();
+        try {
+            return switch (request.action()) {
+                case START_DRAFT -> startDraft(caseReference, judge, request.order());
+                case SAVE_DRAFT -> saveDraft(caseReference, judge, request.order());
+                case SUBMIT_FOR_REVIEW -> submitForReview(caseReference, judge, request.order());
+            };
+        } catch (Refused refused) {
+            return ExternalSubmitResponse.rejected(refused.getMessage());
+        }
     }
 
-    private EventMetadata eventMetadata(Action action) {
-        return switch (action) {
-            case START_DRAFT -> EventMetadata.builder()
-                .summary("Order draft started")
-                .description("Started drafting an order")
-                .build();
-            case SAVE_DRAFT -> EventMetadata.builder()
-                .summary("Order draft saved")
-                .description("Saved an order as a draft")
-                .build();
-            case SUBMIT_FOR_REVIEW -> EventMetadata.builder()
-                .summary("Order submitted for review")
-                .description("Submitted an order for caseworker review")
-                .build();
-        };
+    /** A change the judge cannot make, sent back to the frontend as the reason, with nothing changed. */
+    private static final class Refused extends RuntimeException {
+        Refused(String reason) {
+            super(reason, null, false, false);
+        }
+    }
+
+    private ExternalSubmitResponse<State> startDraft(long caseReference, UUID judge, OrderChange order) {
+        if (findDraft(caseReference, judge).isPresent()) {
+            throw new Refused("You already have an order draft for this case");
+        }
+        orderRepository.saveAndFlush(OrderEntity.builder()
+            .pcsCase(findCase(caseReference))
+            .idamUserId(judge)
+            .state(OrderState.DRAFT)
+            .draftPayload(writeJson(payloadOrEmpty(order.draftPayload())))
+            .build());
+        return ExternalSubmitResponse.accepted("Order draft started", "Started drafting an order");
+    }
+
+    private ExternalSubmitResponse<State> saveDraft(long caseReference, UUID judge, OrderChange order) {
+        OrderEntity draft = workingDraft(caseReference, judge, order);
+        draft.setDraftPayload(writeJson(payloadOrEmpty(order.draftPayload())));
+        orderRepository.saveAndFlush(draft);
+        return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
+    }
+
+    private ExternalSubmitResponse<State> submitForReview(long caseReference, UUID judge, OrderChange order) {
+        OrderEntity draft = workingDraft(caseReference, judge, order);
+        draft.setDraftPayload(writeJson(payloadOrEmpty(order.draftPayload())));
+        draft.setState(OrderState.SUBMITTED_FOR_REVIEW);
+        orderRepository.saveAndFlush(draft);
+        return ExternalSubmitResponse.accepted(
+            "Order submitted for review", "Submitted an order for caseworker review");
+    }
+
+    /** The judge's own draft this change is for, still a draft and at the version they last saw. */
+    private OrderEntity workingDraft(long caseReference, UUID judge, OrderChange order) {
+        if (order.id() == null) {
+            throw new Refused("The order draft identifier is missing");
+        }
+        OrderEntity draft = orderRepository
+            .findByIdAndPcsCaseCaseReferenceAndIdamUserId(order.id(), caseReference, judge)
+            .orElseThrow(() -> new Refused("The order draft does not exist for this case"));
+        if (draft.getVersion() != order.version()) {
+            throw new Refused("The order draft has been updated by another user. Reload it and try again");
+        }
+        if (draft.getState() != OrderState.DRAFT) {
+            throw new Refused("Only a draft order can be changed");
+        }
+        return draft;
+    }
+
+    private Optional<OrderEntity> findDraft(long caseReference, UUID judge) {
+        return orderRepository.findFirstByPcsCaseCaseReferenceAndIdamUserIdAndStateOrderByUpdatedAtDesc(
+            caseReference, judge, OrderState.DRAFT);
+    }
+
+    private PcsCaseEntity findCase(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    private MakeOrderStart.Order toOrder(OrderEntity order) {
+        return new MakeOrderStart.Order(
+            order.getId(), order.getState(), order.getVersion(), readJson(order.getDraftPayload()));
+    }
+
+    // The case a judge makes an order on, as the frontend shows it: its property and the parties
+    // and facts of its main claim.
+
+    private MakeOrderStart.CaseContext caseContext(PcsCaseEntity pcsCase) {
+        Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
+        return new MakeOrderStart.CaseContext(
+            pcsCase.getCaseReference(),
+            addressMapper.toAddressUK(pcsCase.getPropertyAddress()),
+            claim.map(c -> parties(c, PartyRole.CLAIMANT)).orElse(List.of()),
+            claim.map(c -> parties(c, PartyRole.DEFENDANT)).orElse(List.of()),
+            caseFacts(pcsCase.getTenancyLicence(), claim.orElse(null))
+        );
+    }
+
+    private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
+        NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
+        RentArrearsEntity arrears = claim == null ? null : claim.getRentArrears();
+        return new CaseFacts(
+            tenancy == null ? null : tenancy.getStartDate(),
+            tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
+            noticeDate(notice),
+            tenancy == null ? null : tenancy.getRentAmount(),
+            tenancy == null || tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().name(),
+            claim == null ? null : groundsPleaded(claim),
+            arrears == null ? null : arrears.getTotalRentArrears()
+        );
+    }
+
+    /** The day the notice was served, whether the claimant recorded a date or a moment. */
+    private static LocalDate noticeDate(NoticeOfPossessionEntity notice) {
+        if (notice == null) {
+            return null;
+        }
+        if (notice.getNoticeDate() != null) {
+            return notice.getNoticeDate();
+        }
+        return notice.getNoticeDateTime() == null ? null : notice.getNoticeDateTime().toLocalDate();
+    }
+
+    private static String groundsPleaded(ClaimEntity claim) {
+        String grounds = claim.getClaimGrounds().stream()
+            .map(ground -> ClaimGroundSummary.resolveGround(ground.getCategory(), ground.getCode()))
+            .filter(Objects::nonNull)
+            .map(PossessionGroundEnum::getLabel)
+            .filter(label -> label != null && !label.isBlank())
+            .distinct()
+            .sorted()
+            .collect(Collectors.joining(", "));
+        return grounds.isEmpty() ? null : grounds;
+    }
+
+    private static List<MakeOrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
+        return claim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == role)
+            .map(claimParty -> new MakeOrderStart.Party(
+                claimParty.getId().getPartyId().toString(), displayName(claimParty.getParty())))
+            .toList();
+    }
+
+    private static String displayName(PartyEntity party) {
+        if (party.getOrgName() != null && !party.getOrgName().isBlank()) {
+            return party.getOrgName();
+        }
+        return String.join(" ", Stream.of(party.getFirstName(), party.getLastName())
+            .filter(Objects::nonNull)
+            .filter(value -> !value.isBlank())
+            .toList());
+    }
+
+    private JsonNode payloadOrEmpty(JsonNode payload) {
+        return payload == null ? objectMapper.createObjectNode() : payload;
+    }
+
+    private JsonNode readJson(String payload) {
+        try {
+            return payload == null || payload.isBlank()
+                ? objectMapper.createObjectNode()
+                : objectMapper.readTree(payload);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("The stored order draft payload is not valid JSON", exception);
+        }
+    }
+
+    private String writeJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("The order draft payload could not be encoded", exception);
+        }
     }
 }

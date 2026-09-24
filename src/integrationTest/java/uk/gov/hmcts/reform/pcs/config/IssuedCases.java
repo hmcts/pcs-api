@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.service.BaseClaimPayloads;
  * after a claim is issued. The claim is stored by pcs-api's own claim and tenancy mapping; its
  * parties are one claimant organisation and one defendant.
  */
+@RequiredArgsConstructor
 public class IssuedCases {
 
     public static final String CLAIMANT = "Possession Claims Solicitor Org";
@@ -33,18 +35,6 @@ public class IssuedCases {
     private final AddressMapper addresses;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transaction;
-
-    IssuedCases(CcdEventTestSupport<PCSCase, State> events, PcsCaseRepository pcsCases, ClaimService claims,
-                TenancyLicenceService tenancies, AddressMapper addresses, ObjectMapper objectMapper,
-                TransactionTemplate transaction) {
-        this.events = events;
-        this.pcsCases = pcsCases;
-        this.claims = claims;
-        this.tenancies = tenancies;
-        this.addresses = addresses;
-        this.objectMapper = objectMapper;
-        this.transaction = transaction;
-    }
 
     /** The claim pcs-api's testing support submits, for a test to adjust before issuing it. */
     public PCSCase claim(LegislativeCountry country) {
