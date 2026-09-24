@@ -25,8 +25,7 @@ def secrets = [
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
     secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
     secret('definition-importer-username', 'DEFINITION_IMPORTER_USERNAME'),
-    secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
-    secret('session-keys', 'SESSION_KEYS')
+    secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD')
   ]
 ]
 
