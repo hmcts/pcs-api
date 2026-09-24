@@ -1,0 +1,147 @@
+{
+  "genApps": [],
+  "parties": [],
+  "regionId": 1,
+  "caseFlags": {},
+  "caseLinks": [],
+  "defendant1": {
+    "nameKnown": "YES",
+    "addressKnown": "NO",
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "allDocuments": [],
+  "claimantName": "Local test org",
+  "claimantType": {
+    "value": {
+      "code": "PROVIDER_OF_SOCIAL_HOUSING",
+      "label": "Registered provider of social housing or local authority"
+    },
+    "valueCode": "PROVIDER_OF_SOCIAL_HOUSING",
+    "list_items": [
+      {
+        "code": "PRIVATE_LANDLORD",
+        "label": "Private landlord"
+      },
+      {
+        "code": "PROVIDER_OF_SOCIAL_HOUSING",
+        "label": "Registered provider of social housing or local authority"
+      },
+      {
+        "code": "MORTGAGE_LENDER",
+        "label": "Mortgage lender"
+      },
+      {
+        "code": "OTHER",
+        "label": "Other"
+      }
+    ]
+  },
+  "languageUsed": "ENGLISH",
+  "noticeServed": "NO",
+  "orgNameFound": "YES",
+  "userPcqIdSet": "NO",
+  "SearchCriteria": {},
+  "caseNamePublic": "null vs persons unknown",
+  "endButtonLabel": "Submit claim",
+  "orgAddressFound": "YES",
+  "propertyAddress": {
+    "County": "",
+    "Country": "United Kingdom",
+    "PostCode": "SW11 1PD",
+    "PostTown": "London",
+    "AddressLine1": "1 Rse Way",
+    "AddressLine2": "",
+    "AddressLine3": ""
+  },
+  "statementOfTruth": {
+    "completedBy": "CLAIMANT",
+    "fullNameParty": "asdfasdf",
+    "positionParty": "asdfsadf",
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ]
+  },
+  "completionNextStep": "SUBMIT_AND_PAY_NOW",
+  "legislativeCountry": "England",
+  "mediationAttempted": "NO",
+  "addAnotherDefendant": "NO",
+  "organisationAddress": {
+    "County": "",
+    "Country": "",
+    "PostCode": "CF24 5JT",
+    "PostTown": "Cardiff",
+    "AddressLine1": "10 Org Street",
+    "AddressLine2": "",
+    "AddressLine3": ""
+  },
+  "settlementAttempted": "NO",
+  "showRentSectionPage": "NO",
+  "applicationWithClaim": "NO",
+  "claimantContactEmail": "pcs-solicitor1@test.com",
+  "caseNameHmctsInternal": "null vs persons unknown",
+  "isClaimantNameCorrect": "NO",
+  "wantToUploadDocuments": "NO",
+  "caseManagementCategory": {
+    "value": {
+      "code": "21b514a3-34ff-4fe7-b4db-940af38b47f2",
+      "label": "Property Possession Claims"
+    },
+    "valueCode": "21b514a3-34ff-4fe7-b4db-940af38b47f2",
+    "list_items": [
+      {
+        "code": "21b514a3-34ff-4fe7-b4db-940af38b47f2",
+        "label": "Property Possession Claims"
+      }
+    ],
+    "valueLabel": "Property Possession Claims"
+  },
+  "overriddenClaimantName": "TVR",
+  "suspensionOfRTB_Reason": "safgasfsdfgsg",
+  "caseNameHmctsRestricted": "null vs persons unknown",
+  "claimAgainstTrespassers": "NO",
+  "defendantTermPossessive": "defendant’s",
+  "alternativesToPossession": [
+    "SUSPENSION_OF_RIGHT_TO_BUY"
+  ],
+  "hasUnderlesseeOrMortgagee": "NO",
+  "showReasonsForGroundsPage": "YES",
+  "summaryTab_TenancyDetails": {},
+  "claimantNamePossessiveForm": "TVR’s",
+  "claimantProvidePhoneNumber": "NO",
+  "nuisanceOrImmoralUseGround": "asdfasdf",
+  "preActionProtocolCompleted": "NO",
+  "summaryTab_ClaimantDetails": {},
+  "suspensionOfRTB_HousingAct": "SECTION_6A_2",
+  "claimantCircumstancesSelect": "NO",
+  "summaryTab_DefendantDetails": {},
+  "caseManagementLocationNumber": 20264,
+  "rentArrearsOrBreachOfTenancy": [],
+  "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
+  "hasDefendantCircumstancesInfo": "NO",
+  "isCorrectClaimantContactEmail": "YES",
+  "showClaimTypeNotEligibleWales": "NO",
+  "additionalReasonsForPossession": {
+    "hasReasons": "NO"
+  },
+  "formattedClaimantContactAddress": "10 Org Street<br>Cardiff<br>CF24 5JT",
+  "isCorrectClaimantContactAddress": "YES",
+  "showClaimTypeNotEligibleEngland": "NO",
+  "summaryTab_GroundsForPossession": {},
+  "summaryTab_ReasonsForPossession": {},
+  "tenancy_HasCopyOfTenancyLicence": "NO",
+  "secureOrFlexibleMandatoryGrounds": [],
+  "showClaimantTypeNotEligibleWales": "NO",
+  "showClaimantTypeNotEligibleEngland": "NO",
+  "secureOrFlexibleMandatoryGroundsAlt": [],
+  "suspensionOfRTB_ShowHousingActsPage": "YES",
+  "secureOrFlexibleDiscretionaryGrounds": [
+    "NUISANCE_OR_IMMORAL_USE"
+  ],
+  "demotionOfTenancy_ShowHousingActsPage": "NO",
+  "summaryTab_RepossessedPropertyAddress": {},
+  "suspensionToBuyDemotionOfTenancyPages": "NO",
+  "preActionProtocolIncompleteExplanation": "asdfasdf",
+  "secureOrFlexibleDiscretionaryGroundsAlt": [],
+  "tenancy_ReasonsForNoTenancyLicenceDocuments": "asdfasdf"
+}
