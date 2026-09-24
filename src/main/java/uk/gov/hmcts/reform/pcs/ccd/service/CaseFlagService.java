@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
@@ -11,74 +12,153 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.BaseCaseFlag;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.FlagRefDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNullElse;
-
+import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVisibility;
 
 @Service
-@Slf4j
 @AllArgsConstructor
+@Slf4j
 public class CaseFlagService {
 
     private static final String WELSH_COMMUNICATIONS_FLAG_CODE = "PF0026";
     private static final String ACTIVE_STATUS = "Active";
+    private static final String REQUESTED_STATUS = "Requested";
     private static final String RA_FLAG_CODE_PREFIX = "RA";
+    // "Other" is a general purpose code used at several levels of the flag taxonomy; it only counts as a
+    // reasonable adjustment when it sits under the reasonable adjustment branch of the path
+    private static final String OTHER_FLAG_CODE = "OT0001";
+    private static final String REASONABLE_ADJUSTMENT_PATH = "Reasonable adjustment";
+    private static final String SUPPORT_NOT_REPRESENTED_MESSAGE =
+        "User cannot change support for this party on this case";
 
     private FlagRefDataRepository flagRefDataRepository;
     private CamundaService camundaService;
     private TaskDescriptionService taskDescriptionService;
+    private PartySupportOwnershipResolver partySupportOwnershipResolver;
+    private TranslationWAService translationWAService;
+
+    private static boolean isReasonableAdjustment(String flagCode, List<ListValue<String>> path) {
+        if (flagCode == null) {
+            return false;
+        }
+
+        if (flagCode.startsWith(RA_FLAG_CODE_PREFIX)) {
+            return true;
+        }
+
+        return OTHER_FLAG_CODE.equals(flagCode)
+            && path != null
+            && path.stream()
+            .map(ListValue::getValue)
+            .anyMatch(REASONABLE_ADJUSTMENT_PATH::equals);
+    }
+
+    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
+        return flag.getFlagRefData() != null
+            && isReasonableAdjustment(flag.getFlagRefData().getFlagCode(),
+                                      CaseFlagsView.parsePaths(flag.getPaths()));
+    }
+
+    private static @NonNull Map<String, CasePartyFlagEntity> getExistingExternalFlags(PartyEntity partyEntity) {
+        return partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> FlagVisibility.EXTERNAL == toFlagVisibility(existingFlag.getVisibility()))
+            .collect(Collectors.toMap(existingFlag -> existingFlag.getId().toString(), Function.identity()));
+    }
+
+    private static String existingFlagCode(CasePartyFlagEntity existingFlag) {
+        return existingFlag.getFlagRefData() == null ? null : existingFlag.getFlagRefData().getFlagCode();
+    }
+
+    private static boolean suppliedAndDiffers(String incomingValue, String existingValue) {
+        return incomingValue != null && !incomingValue.isBlank()
+            && !Objects.equals(incomingValue, existingValue);
+    }
 
     public List<CaseFlagEntity> mergeCaseFlags(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity) {
+        Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
 
-        return mergeFlagDetails(incomingCaseFlags, pcsCaseEntity,null,
-                        CaseFlagEntity::new, RefDataPolicy.UPDATE_FROM_PAYLOAD);
+        List<CaseFlagEntity> mergedFlagDetails = mergeFlagDetails(
+            incomingCaseFlags, FlagVisibility.INTERNAL, () -> newCaseFlag(pcsCaseEntity),
+            RefDataPolicy.UPDATE_FROM_PAYLOAD, pcsCaseEntity.getCaseFlags(), flagRefDataByCode
+        );
+        flagRefDataRepository.saveAll(flagRefDataByCode.values());
+
+        createReviewCaseFlagRequestTask(
+            pcsCaseEntity.getCaseReference(),
+            getRequestedFlagNames(incomingCaseFlags.getDetails())
+        );
+
+        return mergedFlagDetails;
     }
 
     /**
      * Applies the reasonable adjustment flags a defendant supplied via the cui-ra microsite to their
-     * party. Only RA flags are accepted and replaced. Caseworker flags arrive through
-     * {@link #mergePartyFlags(List, Set)} instead, which is not restricted in this way.
+     * party. Only RA flags, and the "Other" flag under the reasonable adjustment path, are accepted and
+     * replaced. Caseworker flags arrive through {@link #mergePartyFlags(List, Set)} instead, which is not
+     * restricted in this way.
      */
-    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags) {
+    public void saveReasonableAdjustmentFlags(PartyEntity partyEntity, Flags incomingFlags, long caseReference) {
         if (incomingFlags == null || CollectionUtils.isEmpty(incomingFlags.getDetails())) {
             return;
         }
 
         List<ListValue<FlagDetail>> reasonableAdjustmentDetails = incomingFlags.getDetails().stream()
-            .filter(detail -> isReasonableAdjustmentCode(detail.getValue().getFlagCode()))
+            .filter(detail
+                -> isReasonableAdjustment(detail.getValue().getFlagCode(), detail.getValue().getPath()))
             .toList();
 
         int ignored = incomingFlags.getDetails().size() - reasonableAdjustmentDetails.size();
         if (ignored > 0) {
-            log.warn("Ignoring {} supplied flag(s) for party {} that are not reasonable adjustments",
-                     ignored, partyEntity.getId());
+            log.warn(
+                "Ignoring {} supplied flag(s) for party {} that are not reasonable adjustments",
+                ignored, partyEntity.getId()
+            );
         }
 
         if (reasonableAdjustmentDetails.isEmpty()) {
             return;
+        }
+
+        createReviewCaseFlagRequestTask(caseReference, getRequestedFlagNames(reasonableAdjustmentDetails));
+
+        List<String> activeFlags = reasonableAdjustmentDetails.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagActive)
+            .map(FlagDetail::getName)
+            .toList();
+
+        if (!CollectionUtils.isEmpty(activeFlags)) {
+            String taskDescription = taskDescriptionService
+                .createReviewCaseFlagDescription(caseReference, activeFlags);
+            camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG, taskDescription);
         }
 
         Flags reasonableAdjustmentFlags = Flags.builder()
@@ -86,103 +166,220 @@ public class CaseFlagService {
             .details(reasonableAdjustmentDetails)
             .build();
 
+        Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
         List<CasePartyFlagEntity> casePartyFlags = mergeFlagDetails(
-            reasonableAdjustmentFlags, null, partyEntity, CasePartyFlagEntity::new,
-            RefDataPolicy.CREATE_IF_ABSENT);
+            reasonableAdjustmentFlags, FlagVisibility.EXTERNAL, () -> newPartyFlag(partyEntity),
+            RefDataPolicy.CREATE_IF_ABSENT, List.of(), flagRefDataByCode
+        );
+        flagRefDataRepository.saveAll(flagRefDataByCode.values());
 
         partyEntity.getDefendantFlags().removeIf(CaseFlagService::isReasonableAdjustmentFlag);
         partyEntity.getDefendantFlags().addAll(casePartyFlags);
     }
 
     public void mergePartyFlags(List<ListValue<Party>> incomingParties, Set<PartyEntity> existingParties) {
-        Map<UUID, PartyEntity> existingPartiesMap = existingParties.stream()
-            .collect(Collectors.toMap(
-                PartyEntity::getId,
-                Function.identity()
-            ));
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
 
         for (ListValue<Party> incomingPartyValue : incomingParties) {
             Party incomingParty = incomingPartyValue.getValue();
 
             PartyEntity partyEntity = existingPartiesMap.get(UUID.fromString(incomingPartyValue.getId()));
 
-            if (incomingParty.getDefendantFlags() != null
-                && !incomingParty.getDefendantFlags().getDetails().isEmpty()) {
-                boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
-
-                List<CasePartyFlagEntity> mergedCasePartyFlags = mergeFlagDetails(
-                    incomingParty.getDefendantFlags(), null, partyEntity, CasePartyFlagEntity::new,
-                    RefDataPolicy.UPDATE_FROM_PAYLOAD);
-
-                partyEntity.getDefendantFlags().clear();
-                partyEntity.getDefendantFlags().addAll(mergedCasePartyFlags);
-
-                // Only fire when the flag just became active, to avoid triggering duplicate tasks for the given party
-                if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedCasePartyFlags)) {
-                    long caseReference = partyEntity.getPcsCase().getCaseReference();
-                    ClaimEntity mainClaim = partyEntity.getPcsCase().getClaims().getFirst();
-                    List<DocumentEntity> documents = partyEntity.getPcsCase().getDocuments().stream()
-                        .filter(document -> !document.isRemoved()
-                            && document.getClaim() != null
-                            && document.getClaim().getId().equals(mainClaim.getId()))
-                        .toList();
-
-                    if (!documents.isEmpty()) {
-                        String description = taskDescriptionService.createTranslateClaimantDocumentDescription(
-                            caseReference, documents);
-                        camundaService.createTask(
-                            caseReference, TaskType.TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT, description);
-                    }
-                }
-            }
+            mergePartyFlagCollections(
+                incomingParty.getDefendantFlags(),
+                incomingParty.getPartyFlagsExternal(), partyEntity
+            );
         }
     }
 
-    private <T extends BaseCaseFlag> List<T>  mergeFlagDetails(Flags incomingCaseFlags, PcsCaseEntity pcsCaseEntity,
-                        PartyEntity partyEntity, Supplier<T> flagEntitySupplier, RefDataPolicy refDataPolicy) {
+    private void createReviewCaseFlagRequestTask(Long caseReference, List<String> requestedFlags) {
+        if (caseReference == null || CollectionUtils.isEmpty(requestedFlags)) {
+            return;
+        }
+
+        String taskDescription = taskDescriptionService
+            .createReviewCaseFlagRequestDescription(caseReference, requestedFlags);
+        camundaService.createTask(caseReference, TaskType.REVIEW_CASE_FLAG_REQUEST, taskDescription);
+    }
+
+    private static List<String> getRequestedFlagNames(List<ListValue<FlagDetail>> details) {
+        if (CollectionUtils.isEmpty(details)) {
+            return List.of();
+        }
+
+        return details.stream()
+            .map(ListValue::getValue)
+            .filter(CaseFlagService::isCaseFlagRequested)
+            .map(FlagDetail::getName)
+            .toList();
+    }
+
+    private void mergePartyFlagCollections(Flags incomingInternalFlags, Flags incomingExternalFlags,
+                                           PartyEntity partyEntity) {
+        if (hasNoFlagDetails(incomingInternalFlags) && hasNoFlagDetails(incomingExternalFlags)) {
+            return;
+        }
+
+        List<CasePartyFlagEntity> existingFlags = List.copyOf(partyEntity.getDefendantFlags());
+
+        // One reference data lookup shared across both visibilities, so a new code appearing in both lists
+        // resolves to a single row without depending on the first pass being flushed before the second
+        Map<String, FlagRefDataEntity> flagRefDataByCode = new HashMap<>();
+
+        List<CasePartyFlagEntity> mergedFlags = new ArrayList<>();
+        mergedFlags.addAll(mergeOrRetainPartyFlags(
+            incomingInternalFlags, FlagVisibility.INTERNAL, existingFlags, partyEntity, flagRefDataByCode));
+        mergedFlags.addAll(mergeOrRetainPartyFlags(
+            incomingExternalFlags, FlagVisibility.EXTERNAL, existingFlags, partyEntity, flagRefDataByCode));
+        flagRefDataRepository.saveAll(flagRefDataByCode.values());
+
+        boolean welshCommsAlreadyActive = hasActiveWelshCommunicationsFlag(partyEntity.getDefendantFlags());
+        partyEntity.getDefendantFlags().clear();
+        partyEntity.getDefendantFlags().addAll(mergedFlags);
+        fireOnActiveWelshFlags(partyEntity, mergedFlags, welshCommsAlreadyActive);
+    }
+
+    private void fireOnActiveWelshFlags(PartyEntity partyEntity, List<CasePartyFlagEntity> mergedFlags,
+                                        boolean welshCommsAlreadyActive) {
+        if (!welshCommsAlreadyActive && hasActiveWelshCommunicationsFlag(mergedFlags)) {
+            translationWAService.triggerTranslationTasksForFlaggingParty(partyEntity);
+        }
+    }
+
+    private List<CasePartyFlagEntity> mergeOrRetainPartyFlags(Flags incomingFlags, FlagVisibility visibility,
+                                                              List<CasePartyFlagEntity> existingFlags,
+                                                              PartyEntity partyEntity,
+                                                              Map<String, FlagRefDataEntity> flagRefDataByCode) {
+        List<CasePartyFlagEntity> existingFlagsForVisibility = existingFlags.stream()
+            .filter(existingFlag -> visibility == toFlagVisibility(existingFlag.getVisibility()))
+            .toList();
+
+        if (hasNoFlagDetails(incomingFlags)) {
+            return existingFlagsForVisibility;
+        }
+
+        return mergeFlagDetails(
+            incomingFlags, visibility, () -> newPartyFlag(partyEntity),
+            RefDataPolicy.UPDATE_FROM_PAYLOAD, existingFlagsForVisibility, flagRefDataByCode
+        );
+    }
+
+    private static CaseFlagEntity newCaseFlag(PcsCaseEntity pcsCaseEntity) {
+        CaseFlagEntity flagEntity = new CaseFlagEntity();
+        flagEntity.setParentEntity(pcsCaseEntity, null);
+        return flagEntity;
+    }
+
+    private static CasePartyFlagEntity newPartyFlag(PartyEntity partyEntity) {
+        CasePartyFlagEntity flagEntity = new CasePartyFlagEntity();
+        flagEntity.setParentEntity(null, partyEntity);
+        return flagEntity;
+    }
+
+    private boolean hasNoFlagDetails(Flags flags) {
+        return flags == null || flags.getDetails() == null || flags.getDetails().isEmpty();
+    }
+
+    /**
+     * Builds the flag entities for a payload, updating those in {@code existingFlags} that the payload echoes
+     * by id and creating the rest via {@code newFlagEntity}, which attaches the new flag to its parent.
+     * Reference data is resolved through {@code flagRefDataByCode} so a code repeated in the payload (e.g.
+     * "Other" chosen in several reasonable adjustment categories) shares one row rather than creating
+     * duplicates that breach the unique constraint on flag_code. The caller owns that map and saves it.
+     */
+    private <T extends BaseCaseFlag> List<T> mergeFlagDetails(Flags incomingCaseFlags, FlagVisibility visibility,
+                                                              Supplier<T> newFlagEntity,
+                                                              RefDataPolicy refDataPolicy,
+                                                              List<T> existingFlags,
+                                                              Map<String, FlagRefDataEntity> flagRefDataByCode) {
 
         List<T> mergedFlagDetails = new ArrayList<>();
-        Set<FlagRefDataEntity> flagRefDataEntities = new HashSet<>();
+        Map<UUID, T> unmatchedExistingFlags = indexFlagsById(existingFlags);
 
-        String flagVisibility = incomingCaseFlags.getVisibility() != null
-            ? incomingCaseFlags.getVisibility().getValue()
-            : FlagVisibility.INTERNAL.getValue();
+        // Caseworker events state the visibility explicitly; flags supplied from outside CCD carry it
+        // on the payload instead, and default to internal when absent.
+        FlagVisibility effectiveVisibility = visibility != null
+            ? visibility
+            : requireNonNullElse(incomingCaseFlags.getVisibility(), FlagVisibility.INTERNAL);
 
         for (ListValue<FlagDetail> incomingFlagDetailListValue : incomingCaseFlags.getDetails()) {
             FlagDetail incomingFlagDetail = incomingFlagDetailListValue.getValue();
 
-            FlagRefDataEntity flagRefDataEntity =
-                mergeFlagRefData(incomingFlagDetail, flagVisibility, refDataPolicy);
-            flagRefDataEntities.add(flagRefDataEntity);
+            final FlagRefDataEntity flagRefDataEntity = flagRefDataByCode.computeIfAbsent(
+                incomingFlagDetail.getFlagCode(),
+                flagCode -> mergeFlagRefData(incomingFlagDetail, effectiveVisibility.getValue(), refDataPolicy));
 
-            T flagEntity = flagEntitySupplier.get();
+            T flagEntity = findExistingFlag(incomingFlagDetailListValue, unmatchedExistingFlags)
+                .orElseGet(newFlagEntity);
 
-            flagEntity.setParentEntity(pcsCaseEntity, partyEntity);
+            applyEditedFlagFields(flagEntity, incomingFlagDetail);
+            applyCarriedThroughFlagFields(flagEntity, incomingFlagDetail);
 
-
-            flagEntity.setFlagComment(incomingFlagDetail.getFlagComment());
-            flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
-            flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
-
-            flagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
-            flagEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
-
-            flagEntity.setDefaultStatus(incomingFlagDetail.getStatus());
-            flagEntity.setSubTypeKey(incomingFlagDetail.getSubTypeKey());
-            flagEntity.setSubTypeValue(incomingFlagDetail.getSubTypeValue());
-            flagEntity.setSubTypeValueWelsh(incomingFlagDetail.getSubTypeValueCy());
             flagEntity.setFlagRefData(flagRefDataEntity);
-
-            flagEntity.setOtherDescription(incomingFlagDetail.getOtherDescription());
-            flagEntity.setOtherDescriptionWelsh(incomingFlagDetail.getOtherDescriptionCy());
-
-            setFlagPath(incomingFlagDetail, flagEntity);
+            flagEntity.setVisibility(effectiveVisibility.getValue());
 
             mergedFlagDetails.add(flagEntity);
         }
-        flagRefDataRepository.saveAll(flagRefDataEntities);
 
         return mergedFlagDetails;
+    }
+
+    private <T extends BaseCaseFlag> Map<UUID, T> indexFlagsById(List<T> existingFlags) {
+        Map<UUID, T> flagsById = new HashMap<>();
+        existingFlags.stream()
+            .filter(existingFlag -> existingFlag.getId() != null)
+            .forEach(existingFlag -> flagsById.put(existingFlag.getId(), existingFlag));
+
+        return flagsById;
+    }
+
+    private <T extends BaseCaseFlag> Optional<T> findExistingFlag(ListValue<FlagDetail> incomingFlagDetailListValue,
+                                                                  Map<UUID, T> unmatchedExistingFlags) {
+        String listValueId = incomingFlagDetailListValue.getId();
+        if (listValueId == null || listValueId.isBlank() || unmatchedExistingFlags.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.ofNullable(unmatchedExistingFlags.remove(UUID.fromString(listValueId)));
+        } catch (IllegalArgumentException e) {
+            log.debug("Flag list id {} is not a stored flag id", listValueId);
+            return Optional.empty();
+        }
+    }
+
+    private void applyEditedFlagFields(BaseCaseFlag flagEntity, FlagDetail incomingFlagDetail) {
+        flagEntity.setDefaultStatus(incomingFlagDetail.getStatus());
+        setIfPresent(incomingFlagDetail.getFlagComment(), flagEntity::setFlagComment);
+        flagEntity.setFlagCommentWelsh(incomingFlagDetail.getFlagCommentCy());
+        flagEntity.setFlagUpdateComment(incomingFlagDetail.getFlagUpdateComment());
+        flagEntity.setDateTimeModified(incomingFlagDetail.getDateTimeModified());
+    }
+
+    private void applyCarriedThroughFlagFields(BaseCaseFlag flagEntity, FlagDetail incomingFlagDetail) {
+        setIfSupplied(incomingFlagDetail.getOtherDescription(), flagEntity::setOtherDescription);
+        setIfSupplied(incomingFlagDetail.getOtherDescriptionCy(), flagEntity::setOtherDescriptionWelsh);
+        setIfSupplied(incomingFlagDetail.getSubTypeKey(), flagEntity::setSubTypeKey);
+        setIfSupplied(incomingFlagDetail.getSubTypeValue(), flagEntity::setSubTypeValue);
+        setIfSupplied(incomingFlagDetail.getSubTypeValueCy(), flagEntity::setSubTypeValueWelsh);
+
+        if (flagEntity.getDateTimeCreated() == null) {
+            flagEntity.setDateTimeCreated(incomingFlagDetail.getDateTimeCreated());
+        }
+
+        setFlagPath(incomingFlagDetail, flagEntity);
+    }
+
+    private void setIfSupplied(String incomingValue, Consumer<String> setter) {
+        if (incomingValue != null && !incomingValue.isBlank()) {
+            setter.accept(incomingValue);
+        }
+    }
+
+    private void setIfPresent(String incomingValue, Consumer<String> setter) {
+        if (incomingValue != null) {
+            setter.accept(incomingValue.isBlank() ? null : incomingValue);
+        }
     }
 
     private FlagRefDataEntity mergeFlagRefData(FlagDetail incomingFlagDetail,
@@ -211,19 +408,9 @@ public class CaseFlagService {
         return flagRefDataEntity;
     }
 
-    private static boolean isReasonableAdjustmentFlag(BaseCaseFlag flag) {
-        return flag.getFlagRefData() != null
-            && isReasonableAdjustmentCode(flag.getFlagRefData().getFlagCode());
-    }
-
-    private static boolean isReasonableAdjustmentCode(String flagCode) {
-        return flagCode != null && flagCode.startsWith(RA_FLAG_CODE_PREFIX);
-    }
-
     private void setFlagPath(FlagDetail incomingFlagDetail, BaseCaseFlag flagEntity) {
 
-        if (incomingFlagDetail.getPath() != null) {
-            // Flags raised outside CCD arrive with path values but no ids
+        if (!CollectionUtils.isEmpty(incomingFlagDetail.getPath())) {
             String paths = incomingFlagDetail.getPath().stream()
                 .map(pathListValue -> requireNonNullElse(pathListValue.getId(), "")
                     + CaseFlagsView.PATH_DELIMITER + pathListValue.getValue())
@@ -233,15 +420,164 @@ public class CaseFlagService {
         }
     }
 
-
     private boolean hasActiveWelshCommunicationsFlag(List<CasePartyFlagEntity> flags) {
-        return flags.stream().anyMatch(flag -> isWelshCommunicationsPreference(flag));
+        return flags.stream().anyMatch(this::isWelshCommunicationsPreference);
     }
 
-    private boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
+    public boolean isWelshCommunicationsPreference(BaseCaseFlag flagEntity) {
         return flagEntity.getFlagRefData() != null
             && WELSH_COMMUNICATIONS_FLAG_CODE.equals(flagEntity.getFlagRefData().getFlagCode())
             && ACTIVE_STATUS.equals(flagEntity.getDefaultStatus());
+    }
+
+    public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
+                                       Set<PartyEntity> existingParties,
+                                       UUID authenticatedUserId) {
+        mergePartySupportFlags(incomingPartySupport, existingParties, authenticatedUserId, null);
+    }
+
+    public void mergePartySupportFlags(List<ListValue<PartySupport>> incomingPartySupport,
+                                       Set<PartyEntity> existingParties,
+                                       UUID authenticatedUserId,
+                                       Set<UUID> eligiblePartyIds) {
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+
+        for (ListValue<PartySupport> incomingSupportValue : incomingPartySupport) {
+            Flags incomingSupportFlags = incomingSupportValue.getValue() == null
+                ? null
+                : incomingSupportValue.getValue().getSupportFlags();
+
+            PartyEntity partyEntity = resolveSupportParty(incomingSupportValue.getId(), existingPartiesMap);
+
+            if (!isSupportChangeAllowed(partyEntity, authenticatedUserId, eligiblePartyIds)) {
+                if (changesSupport(incomingSupportFlags, partyEntity)) {
+                    throw new CaseAccessException(SUPPORT_NOT_REPRESENTED_MESSAGE);
+                }
+
+                continue;
+            }
+
+            mergePartyFlagCollections(null, incomingSupportFlags, partyEntity);
+        }
+    }
+
+    public void applyReviewedSupportFlags(List<ListValue<PartySupport>> reviewedSupport,
+                                          Set<PartyEntity> existingParties) {
+        Map<UUID, PartyEntity> existingPartiesMap = mapPartiesById(existingParties);
+
+        for (ListValue<PartySupport> reviewedValue : reviewedSupport) {
+            Flags reviewedFlags = reviewedValue.getValue() == null
+                ? null
+                : reviewedValue.getValue().getSupportFlags();
+
+            if (hasNoFlagDetails(reviewedFlags)) {
+                continue;
+            }
+
+            PartyEntity partyEntity = resolveSupportParty(reviewedValue.getId(), existingPartiesMap);
+
+            for (ListValue<FlagDetail> reviewedDetail : reviewedFlags.getDetails()) {
+                applyReviewedStatus(reviewedDetail, partyEntity);
+            }
+        }
+    }
+
+    private void applyReviewedStatus(ListValue<FlagDetail> reviewedDetail, PartyEntity partyEntity) {
+        FlagDetail reviewedFlagDetail = reviewedDetail.getValue();
+        if (reviewedFlagDetail == null) {
+            return;
+        }
+
+        partyEntity.getDefendantFlags().stream()
+            .filter(existingFlag -> SupportReviewService.REQUESTED_STATUS
+                .equalsIgnoreCase(existingFlag.getDefaultStatus()))
+            .filter(existingFlag -> existingFlag.getId() != null
+                && existingFlag.getId().toString().equals(reviewedDetail.getId()))
+            .findFirst()
+            .ifPresent(existingFlag -> applyEditedFlagFields(existingFlag, reviewedFlagDetail));
+    }
+
+    private boolean isSupportChangeAllowed(PartyEntity partyEntity,
+                                           UUID authenticatedUserId,
+                                           Set<UUID> eligiblePartyIds) {
+        if (!partySupportOwnershipResolver.isOwnedByUser(partyEntity, authenticatedUserId)) {
+            return false;
+        }
+
+        return eligiblePartyIds == null || eligiblePartyIds.contains(partyEntity.getId());
+    }
+
+    private boolean changesSupport(Flags incomingSupportFlags, PartyEntity partyEntity) {
+        if (incomingSupportFlags == null || incomingSupportFlags.getDetails() == null) {
+            return false;
+        }
+
+        Map<String, CasePartyFlagEntity> existingExternalFlags = getExistingExternalFlags(partyEntity);
+        List<ListValue<FlagDetail>> incomingDetails = incomingSupportFlags.getDetails();
+
+        if (incomingDetails.size() != existingExternalFlags.size()) {
+            return true;
+        }
+
+        return incomingDetails.stream().anyMatch(incomingDetail -> {
+            CasePartyFlagEntity existingFlag = existingExternalFlags.get(incomingDetail.getId());
+            return existingFlag == null || differs(incomingDetail.getValue(), existingFlag);
+        });
+    }
+
+    private boolean differs(FlagDetail incomingFlagDetail, CasePartyFlagEntity existingFlag) {
+        if (incomingFlagDetail == null) {
+            return true;
+        }
+
+        boolean editedFieldsDiffer =
+            !Objects.equals(incomingFlagDetail.getStatus(), existingFlag.getDefaultStatus())
+                || !Objects.equals(incomingFlagDetail.getFlagComment(), existingFlag.getFlagComment())
+                || !Objects.equals(incomingFlagDetail.getFlagCommentCy(), existingFlag.getFlagCommentWelsh())
+                || !Objects.equals(incomingFlagDetail.getFlagUpdateComment(), existingFlag.getFlagUpdateComment());
+
+        return editedFieldsDiffer
+            || suppliedAndDiffers(incomingFlagDetail.getFlagCode(), existingFlagCode(existingFlag))
+            || suppliedAndDiffers(incomingFlagDetail.getOtherDescription(), existingFlag.getOtherDescription())
+            || suppliedAndDiffers(
+            incomingFlagDetail.getOtherDescriptionCy(),
+            existingFlag.getOtherDescriptionWelsh()
+        )
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeKey(), existingFlag.getSubTypeKey())
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeValue(), existingFlag.getSubTypeValue())
+            || suppliedAndDiffers(incomingFlagDetail.getSubTypeValueCy(), existingFlag.getSubTypeValueWelsh());
+    }
+
+    private PartyEntity resolveSupportParty(String incomingPartyId, Map<UUID, PartyEntity> existingPartiesMap) {
+        UUID partyId;
+        try {
+            partyId = UUID.fromString(incomingPartyId);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw new CaseAccessException("Support submitted for an invalid party reference");
+        }
+
+        PartyEntity partyEntity = existingPartiesMap.get(partyId);
+        if (partyEntity == null) {
+            throw new CaseAccessException("Support submitted for a party that is not on this case");
+        }
+
+        return partyEntity;
+    }
+
+    private Map<UUID, PartyEntity> mapPartiesById(Set<PartyEntity> existingParties) {
+        return existingParties.stream()
+            .collect(Collectors.toMap(
+                PartyEntity::getId,
+                Function.identity()
+            ));
+    }
+
+    private static boolean isCaseFlagRequested(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), REQUESTED_STATUS);
+    }
+
+    private static boolean isCaseFlagActive(FlagDetail flagDetail) {
+        return Objects.equals(flagDetail.getStatus(), ACTIVE_STATUS);
     }
 
     /**
@@ -254,4 +590,3 @@ public class CaseFlagService {
         CREATE_IF_ABSENT
     }
 }
-

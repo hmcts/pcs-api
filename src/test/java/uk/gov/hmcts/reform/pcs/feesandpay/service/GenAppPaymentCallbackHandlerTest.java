@@ -53,7 +53,7 @@ class GenAppPaymentCallbackHandlerTest {
     }
 
     @Test
-    void shouldIssueGenAppIfNotAlreadyIssued() {
+    void shouldIssueGenAppWhenNotAlreadyIssued() {
         // Given
         UUID genAppId = UUID.randomUUID();
 
@@ -74,8 +74,10 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+        verify(genAppEntity).setState(GenAppState.GEN_APP_ISSUED);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
+        verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
     }
 
     @Test
@@ -97,7 +99,7 @@ class GenAppPaymentCallbackHandlerTest {
 
         // Then
         verify(genAppDocumentGenerator, never()).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
-        verifyNoInteractions(notificationService);
+        verifyNoInteractions(notificationService, genAppWaTaskService);
     }
 
     @Test

@@ -10,6 +10,8 @@ serviceToken=$("${BASEDIR}/../s2s-token.sh" pcs_api)
 
 filepath="$(realpath "$workspace")/resources"
 
+failed=0
+
 for file in $(find "${filepath}" -name '*.bpmn')
 do
   uploadResponse=$(curl --insecure -v --silent -w "\n%{http_code}" --show-error -X POST \
@@ -28,7 +30,9 @@ if [[ "${upload_http_code}" == '200' ]]; then
 fi
 
 echo "$(basename "${file}") upload failed with http code ${upload_http_code} and response (${upload_response_content})"
-continue;
+failed=1
 
 done
-exit 0;
+
+# Attempt every file, then fail the build if any upload failed.
+exit "${failed}"

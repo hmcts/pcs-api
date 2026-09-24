@@ -53,7 +53,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
             .complex(PCSCase::getWalesNoticeDetails)
             .mandatory(WalesNoticeDetails::getNoticeServed)
             .mandatory(WalesNoticeDetails::getTypeOfNoticeServed,"walesNoticeServed=\"Yes\"")
-            .label("walesCheckingNotice-info",
+            .label("walesCheckingNotice-statement",
                    """
                    <section tabindex="0">
                    <p class="govuk-body">

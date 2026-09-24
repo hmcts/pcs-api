@@ -1,9 +1,10 @@
-export const reviewFlagDetails={
+export const reviewFlagDetails = {
     title: `Case Details - HM Courts & Tribunals Service - GOV.UK`,
     mainHeader: `Create case flags`,
     rowLabel: `Flag type`,
     changeLink: `Change`,
     saveAndContinueButton: `Save and continue`,
+    submitButton: `Submit`,
     previousButton: `Previous`,
     cancelButton: `Cancel`,
 };

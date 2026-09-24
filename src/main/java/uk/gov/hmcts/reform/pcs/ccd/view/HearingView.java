@@ -5,7 +5,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import java.util.List;
 
@@ -23,6 +23,7 @@ public class HearingView {
                 .otherHearingType(hearingEntity.getOtherHearingType())
                 .noticeWording(hearingEntity.getNoticeWording())
                 .date(hearingEntity.getHearingDate())
+                .durationDays(hearingEntity.getDurationDays())
                 .durationHours(hearingEntity.getDurationHours().floatValue())
                 .durationMinutes(hearingEntity.getDurationMinutes().floatValue())
                 .notes(hearingEntity.getNotes())

@@ -17,6 +17,8 @@ if [[ ! -d "${dmnFilepath}" ]]; then
   exit 0
 fi
 
+failed=0
+
 for file in $(find "${dmnFilepath}" -name '*.dmn')
 do
   uploadResponse=$(curl --insecure -v --silent -w "\n%{http_code}" --show-error -X POST \
@@ -38,6 +40,9 @@ if [[ "${upload_http_code}" == '200' ]]; then
 fi
 
 echo "$(basename "${file}") upload failed with http code ${upload_http_code} and response (${upload_response_content})"
-continue;
+failed=1
 
 done
+
+# Attempt every file, then fail the build if any upload failed.
+exit "${failed}"

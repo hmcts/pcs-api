@@ -5,23 +5,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplateIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.RelatedApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskGroupId;
 import uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.TaskStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ApplicationsTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ClaimTaskGroupEvaluator;
 import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.DocumentsTaskGroupEvaluator;
@@ -31,16 +32,24 @@ import uk.gov.hmcts.reform.pcs.ccd.service.dashboard.task.ResponseTaskGroupEvalu
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.OutstandingCounterClaimPayment;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.OutstandingCounterClaimPaymentService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.dashboard.DashboardJourneyService.COUNTER_CLAIM_FEE_UNPAID_TEMPLATE_ID;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardJourneyServiceTest {
@@ -56,25 +65,39 @@ class DashboardJourneyServiceTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
-    private SecurityContextService securityContextService;
+    private OutstandingCounterClaimPaymentService outstandingCounterClaimPaymentService;
 
     @Mock
-    private LegalRepresentativeRepository legalRepresentativeRepository;
+    private FeatureToggleService featureToggleService;
+
+    @Mock
+    private UserRoleService userRoleService;
+
+    @Mock
+    private OrganisationService organisationService;
+    @Mock
+    private OrganisationRepository organisationRepository;
 
     private GenAppVisibilityService genAppVisibilityService;
 
     @BeforeEach
     void setUp() {
-        genAppVisibilityService = new GenAppVisibilityService(legalRepresentativeRepository);
+        genAppVisibilityService = new GenAppVisibilityService(organisationRepository);
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_2)).thenReturn(true);
         underTest = new DashboardJourneyService(
-            draftCaseDataService, defendantResponseService, List.of(
+            draftCaseDataService,
+            defendantResponseService,
+            outstandingCounterClaimPaymentService,
+            featureToggleService,
+            List.of(
                 new ClaimTaskGroupEvaluator(),
                 new DocumentsTaskGroupEvaluator(),
                 new ResponseTaskGroupEvaluator(),
-                new ApplicationsTaskGroupEvaluator(securityContextService, genAppVisibilityService),
+                new ApplicationsTaskGroupEvaluator(userRoleService, genAppVisibilityService, organisationService),
                 new HearingsTaskGroupEvaluator(),
                 new NoticesTaskGroupEvaluator()
-        ));
+            )
+        );
     }
 
     @Test
@@ -166,11 +189,13 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldShowViewApplicationsTaskWhenAtLeastOneGeneralApplicationExists() {
         PCSCase submitted = PCSCase.builder().build();
+        UUID viewerId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .genApps(Set.of(GenAppEntity.builder().state(GenAppState.GEN_APP_ISSUED).build()))
             .build();
 
-        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
+        stubUserRoles(viewerId);
+        PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
@@ -189,6 +214,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldPopulateRelatedApplicationsFromGeneralApplications() {
         PCSCase submitted = PCSCase.builder().build();
+        UUID viewerId = UUID.randomUUID();
 
         GenAppEntity genApp = GenAppEntity.builder()
             .id(UUID.randomUUID())
@@ -200,7 +226,8 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(genApp))
             .build();
 
-        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
+        stubUserRoles(viewerId);
+        PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
@@ -222,6 +249,7 @@ class DashboardJourneyServiceTest {
     @Test
     void shouldOrderRelatedApplicationsBySubmittedDateNewestFirst() {
         PCSCase submitted = PCSCase.builder().build();
+        UUID viewerId = UUID.randomUUID();
 
         GenAppEntity olderGenApp = GenAppEntity.builder()
             .id(UUID.randomUUID())
@@ -239,7 +267,8 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(olderGenApp, newerGenApp))
             .build();
 
-        PartyEntity defendant = PartyEntity.builder().idamId(UUID.randomUUID()).build();
+        stubUserRoles(viewerId);
+        PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
             submitted,
@@ -274,6 +303,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(hiddenGenApp))
             .build();
 
+        stubUserRoles(viewerId);
         PartyEntity defendant = PartyEntity.builder().idamId(viewerId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -309,6 +339,7 @@ class DashboardJourneyServiceTest {
             .genApps(Set.of(ownGenApp))
             .build();
 
+        stubUserRoles(applicantId);
         PartyEntity defendant = PartyEntity.builder().idamId(applicantId).build();
         DashboardData result = underTest.computeDashboardData(
             CASE_REFERENCE,
@@ -366,6 +397,122 @@ class DashboardJourneyServiceTest {
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
                 tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
             );
+    }
+
+    @Test
+    void shouldReturnUnpaidCounterClaimNotificationWhenOutstandingPaymentExists() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+        when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
+            .thenReturn(Optional.of(OutstandingCounterClaimPayment.builder()
+                .serviceRequestReference("2026-1234567890123")
+                .feeAmount(new BigDecimal("404.00"))
+                .build()));
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                COUNTER_CLAIM_FEE_UNPAID_TEMPLATE_ID
+            );
+
+        assertThat(ListValueUtils.unwrapListItems(
+            ListValueUtils.unwrapListItems(result.getNotifications()).get(1).getTemplateValues()
+        ))
+            .extracting(tv -> tv.getKey(), tv -> tv.getValue())
+            .containsExactly(tuple("feeAmount", "404.00"));
+    }
+
+    @Test
+    void shouldReturnResponseSubmittedWhenRelease12DisabledEvenIfOutstandingPaymentExists() {
+        when(featureToggleService.isEnabled(RELEASE_1_DOT_2)).thenReturn(false);
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseSubmitted"
+            );
+        verifyNoInteractions(outstandingCounterClaimPaymentService);
+    }
+
+    @Test
+    void shouldReturnResponseSubmittedWhenNoOutstandingCounterClaimPayment() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(true);
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity defendant = PartyEntity.builder().id(partyId).idamId(UUID.randomUUID()).build();
+        when(outstandingCounterClaimPaymentService.findOutstandingPaymentForParty(CASE_REFERENCE, partyId))
+            .thenReturn(Optional.empty());
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseSubmitted"
+            );
+    }
+
+    @Test
+    void shouldNotLookupOutstandingPaymentWhenResponseNotSubmitted() {
+        when(draftCaseDataService.hasMeaningfulRespondDraft(CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true);
+        when(defendantResponseService.hasSubmittedResponse(CASE_REFERENCE)).thenReturn(false);
+
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).idamId(UUID.randomUUID()).build();
+
+        DashboardData result = underTest.computeDashboardData(
+            CASE_REFERENCE,
+            PCSCase.builder().build(),
+            PcsCaseEntity.builder().build(),
+            defendant
+        );
+
+        assertThat(ListValueUtils.unwrapListItems(result.getNotifications()))
+            .extracting(n -> n.getTemplateId())
+            .containsExactly(
+                "Defendant.NoHearingArranged",
+                "Defendant.ResponseInProgress"
+            );
+        verifyNoInteractions(outstandingCounterClaimPaymentService);
+    }
+
+    private void stubUserRoles(UUID userId) {
+        when(userRoleService.getCurrentUserCaseRoles(CASE_REFERENCE))
+            .thenReturn(new UserRoles(userId, List.of()));
     }
 
 }

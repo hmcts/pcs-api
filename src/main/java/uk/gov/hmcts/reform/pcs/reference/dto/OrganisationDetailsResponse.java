@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.reference.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,17 +9,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import org.springframework.util.CollectionUtils;
 
+// rd-professional adds fields over time (dxAddress and friends); parse only what we use.
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganisationDetailsResponse {
 
+    public static final String ORGANISATION_PROFILE = "ORGANISATION_PROFILE";
+
     private String name;
 
     @JsonProperty("organisationIdentifier")
     private String organisationIdentifier;
+
+    @JsonProperty("organisationProfileIds")
+    private List<String> organisationProfileIds;
 
     @JsonProperty("contactInformation")
     private List<ContactInformation> contactInformation;
@@ -45,10 +55,36 @@ public class OrganisationDetailsResponse {
     @JsonProperty("lastUpdated")
     private String lastUpdated;
 
+    @JsonIgnore
+    public String getOrgProfileId() {
+        if (CollectionUtils.isEmpty(getOrganisationProfileIds())) {
+            throw new IllegalArgumentException("No organisation profile id found for organisation "
+                    + getOrganisationIdentifier());
+        }
+
+        List<String> orgProfileIds = getOrganisationProfileIds()
+            .stream()
+            .filter(organisationProfileId -> !ORGANISATION_PROFILE.equals(organisationProfileId))
+            .distinct()
+            .toList();
+
+        if (orgProfileIds.isEmpty()) {
+            throw new IllegalArgumentException("No valid organisation profile id found for organisation "
+                                                   + getOrganisationIdentifier());
+        }
+        if (orgProfileIds.size() > 1) {
+            throw new IllegalArgumentException(
+                "Organisation " + getOrganisationIdentifier() + " carries more than one profile "
+                    + orgProfileIds + "; cannot determine which access type applies");
+        }
+        return orgProfileIds.getFirst();
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContactInformation {
         @JsonProperty("addressId")
         private String addressId;
@@ -75,9 +111,6 @@ public class OrganisationDetailsResponse {
 
         @JsonProperty("postCode")
         private String postCode;
-
-        @JsonProperty("dxAddress")
-        private List<String> dxAddress;
     }
 
     @Data

@@ -19,6 +19,8 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -59,9 +61,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_C
 @DisplayName("TestCaseGenerationIT Integration Tests")
 public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
-    private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
+    private static final String SYSTEM_USER_ID_STUB = "system-user-id-token";
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
     private static final long CASE_REFERENCE = 1234567890123456L;
+    private static final String ORGANISATION_ID = "TEST-123";
 
     @Autowired
     private TestCaseGeneration underTest;
@@ -75,6 +78,8 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     private OAuth2AuthorizedClientManager authorizedClientManager;
     @MockitoBean
     private IdamClient idamClient;
+    @MockitoBean
+    private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
@@ -82,6 +87,10 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
 
         FeeDetails feeDetails = FeeDetails.builder().code("FEE0001").feeAmount(new BigDecimal("123.45")).build();
         when(feeService.getFee(any(FeeType.class))).thenReturn(feeDetails);
+        OrganisationDetailsResponse orgDetails = new OrganisationDetailsResponse();
+        orgDetails.setOrganisationIdentifier(ORGANISATION_ID);
+        orgDetails.setOrganisationProfileIds(List.of("SOLICITOR_PROFILE"));
+        when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
     }
 
     @AfterEach
@@ -162,7 +171,7 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
     }
 
     private void setUpAuthenticatedUser() {
-        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(authorizedClientManager, SYSTEM_USER_ID_STUB);
         uk.gov.hmcts.reform.idam.client.models.UserInfo idamUserInfo =
             mock(uk.gov.hmcts.reform.idam.client.models.UserInfo.class);
         when(idamUserInfo.getUid()).thenReturn(USER_ID.toString());

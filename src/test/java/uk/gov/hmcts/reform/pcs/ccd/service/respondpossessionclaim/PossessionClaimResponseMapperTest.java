@@ -215,6 +215,7 @@ class PossessionClaimResponseMapperTest {
             .emailAddress("john.doe@example.com")
             .phoneNumber("07700900123")
             .phoneNumberProvided(VerticalYesNo.YES)
+            .pcqId("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70")
             .address(addressEntity)
             .addressKnown(VerticalYesNo.YES)
             .addressSameAsProperty(VerticalYesNo.NO)
@@ -244,6 +245,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(defendantParty.getEmailAddress()).isEqualTo("john.doe@example.com");
         assertThat(defendantParty.getPhoneNumber()).isEqualTo("07700900123");
         assertThat(defendantParty.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(defendantParty.getPcqId()).isEqualTo("f1d2c3b4-a596-4877-9d1e-2b3c4d5e6f70");
         assertThat(defendantParty.getAddress()).isEqualTo(expectedAddress);
         assertThat(defendantParty.getAddressKnown()).isNull();
         assertThat(defendantParty.getAddressSameAsProperty()).isNull();

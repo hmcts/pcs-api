@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.reference.service;
 
+import static java.util.Objects.nonNull;
+
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -28,12 +32,25 @@ public class OrganisationDetailsService {
         this.prdAdminTokenProvider = prdAdminTokenProvider;
     }
 
-    /**
-     * Retrieves organisation details for a given user ID.
-     * @param userId The user ID to get organisation details for
-     * @return OrganisationDetailsResponse containing organisation information
-     */
+    /** Retrieves organisation details for a given user ID. */
     public OrganisationDetailsResponse getOrganisationDetails(String userId) {
+        try {
+            return fetchOrganisationDetails(userId);
+        } catch (OrganisationDetailsException ex) {
+            return null;
+        }
+    }
+
+    /** The same lookup, but a failure is raised rather than reported as "no organisation". */
+    public String requireOrganisationIdentifier(String userId) {
+        OrganisationDetailsResponse details = fetchOrganisationDetails(userId);
+        if (nonNull(details)) {
+            return details.getOrganisationIdentifier();
+        }
+        return null;
+    }
+
+    private OrganisationDetailsResponse fetchOrganisationDetails(String userId) {
         try {
             String s2sToken = authTokenGenerator.generate();
             String prdAdminToken = prdAdminTokenProvider.getAuthToken();
@@ -43,30 +60,41 @@ public class OrganisationDetailsService {
             );
 
             if (details == null) {
-                log.warn("Organisation details response is null for userId: {}", userId);
+                log.warn("Organisation details response is null");
             }
 
             return details;
 
+        } catch (FeignException.NotFound ex) {
+            // Normal for citizens (no organisation), so not logged as an error.
+            log.debug("No organisation held in rd-professional");
+            return null;
         } catch (FeignException ex) {
-            log.error("Feign error retrieving organisation details for userId: {}. Status: {}, Message: {}",
-                userId, ex.status(), ex.getMessage(), ex);
+            log.error("Feign error retrieving organisation details. Status: {}", ex.status(), ex);
             throw new OrganisationDetailsException("Failed to retrieve organisation details", ex);
         } catch (Exception ex) {
-            log.error("Unexpected error retrieving organisation details for userId: {}. Error: {}",
-                userId, ex.getMessage(), ex);
+            log.error("Unexpected error retrieving organisation details", ex);
             throw new OrganisationDetailsException("Unexpected error retrieving organisation details", ex);
         }
     }
 
-    /**
-     * Gets the organisation name for a given user ID (for claimant name population).
-     * @param userId The user ID to get organisation name for
-     * @return Organisation name
-     */
+    /** Organisation name for a user (claimant name population). */
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getName();
+        if (nonNull(details)) {
+            return details.getName();
+        }
+        return null;
+    }
+
+    /**
+     * Gets the organisation payment accounts for a given user ID.
+     * @param userId The user ID to get organisation payment accounts for
+     * @return Organisation payment accounts
+     */
+    public List<String> getOrganisationPaymentAccount(String userId) {
+        OrganisationDetailsResponse details = getOrganisationDetails(userId);
+        return details.getPaymentAccount();
     }
 
     /**
@@ -81,11 +109,7 @@ public class OrganisationDetailsService {
         return getOrganisationAddress(organisationDetails);
     }
 
-    /**
-     * Gets the organisation address extracted from a given organisation details response.
-     * @param organisationDetails The organisation details response get organisation address from
-     * @return Organisation address or null if no address information is available
-     */
+    /** Organisation address from a details response, or null if none. */
     public AddressUK getOrganisationAddress(OrganisationDetailsResponse organisationDetails) {
         if (organisationDetails == null || organisationDetails.getContactInformation().isEmpty()) {
             return null;
@@ -105,13 +129,12 @@ public class OrganisationDetailsService {
             .build();
     }
 
-    /**
-     * Gets the organisation identifier for a given user ID.
-     * @param userId The user ID to get organisation identifier for
-     * @return Organisation identifier
-     */
+    /** Organisation identifier for a user. */
     public String getOrganisationIdentifier(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
-        return details.getOrganisationIdentifier();
+        if (nonNull(details)) {
+            return details.getOrganisationIdentifier();
+        }
+        return null;
     }
 }
