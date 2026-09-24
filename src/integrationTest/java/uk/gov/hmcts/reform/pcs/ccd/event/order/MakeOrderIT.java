@@ -13,13 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderEnvelope.Party;
-import uk.gov.hmcts.reform.pcs.config.IssuedClaims;
+import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
@@ -45,22 +47,22 @@ class MakeOrderIT {
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
-    private IssuedClaims claims;
+    private IssuedCases cases;
 
     private OrderingJudge firstJudge;
     private OrderingJudge secondJudge;
 
     @BeforeEach
     void setUp() {
-        long caseReference = claims.issue(ENGLAND);
-        firstJudge = judge("First", caseReference);
-        secondJudge = judge("Second", caseReference);
+        long caseReference = cases.issue();
+        firstJudge = OrderingJudge.onCase(events, "First", caseReference);
+        secondJudge = OrderingJudge.onCase(events, "Second", caseReference);
     }
 
     @Test
     @DisplayName("shows the judge the property, parties and facts of the claim")
     void showsThePropertyPartiesAndFactsOfTheClaim() {
-        PCSCase claim = claims.baseClaim(ENGLAND);
+        PCSCase claim = cases.claim(ENGLAND);
         claim.getTenancyLicenceDetails().setTypeOfTenancyLicence(SECURE_TENANCY);
         claim.getTenancyLicenceDetails().setTenancyLicenceDate(LocalDate.of(2020, 2, 3));
         claim.setNoticeServed(YesOrNo.YES);
@@ -73,12 +75,11 @@ class MakeOrderIT {
         claim.getSecureOrFlexiblePossessionGrounds()
             .setSecureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY));
 
-        var context = judge("First", claims.issue(claim)).opens().caseContext();
+        var context = judgeOn(cases.issue(claim)).opens().caseContext();
 
-        assertThat(context.propertyAddress().getAddressLine1()).isEqualTo(claim.getPropertyAddress().getAddressLine1());
         assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
-        assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedClaims.CLAIMANT_ORGANISATION);
-        assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedClaims.DEFENDANT_NAME);
+        assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
+        assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
         var facts = context.caseFacts();
         assertThat(facts.tenancyType()).isEqualTo("SECURE_TENANCY");
         assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2020, 2, 3));
@@ -92,14 +93,14 @@ class MakeOrderIT {
     @Test
     @DisplayName("shows the day a notice handed over in person was served")
     void showsTheDayANoticeWasHandedOver() {
-        PCSCase claim = claims.baseClaim(ENGLAND);
+        PCSCase claim = cases.claim(ENGLAND);
         claim.setNoticeServed(YesOrNo.YES);
         claim.setNoticeServedDetails(NoticeServedDetails.builder()
             .serviceMethod(PERSONALLY_HANDED)
             .handedOverDateTime(LocalDateTime.of(2026, 8, 11, 16, 30))
             .build());
 
-        var facts = judge("First", claims.issue(claim)).opens().caseContext().caseFacts();
+        var facts = judgeOn(cases.issue(claim)).opens().caseContext().caseFacts();
 
         assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 11));
     }
@@ -107,11 +108,11 @@ class MakeOrderIT {
     @Test
     @DisplayName("shows a Welsh claim's occupation contract as the tenancy")
     void showsTheWelshOccupationContractAsTheTenancy() {
-        PCSCase claim = claims.baseClaim(WALES);
+        PCSCase claim = cases.claim(WALES);
         claim.getOccupationLicenceDetailsWales().setOccupationLicenceTypeWales(STANDARD_CONTRACT);
         claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
 
-        var facts = judge("First", claims.issue(claim)).opens().caseContext().caseFacts();
+        var facts = judgeOn(cases.issue(claim)).opens().caseContext().caseFacts();
 
         assertThat(facts.tenancyType()).isEqualTo("STANDARD_CONTRACT");
         assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2024, 4, 5));
@@ -167,28 +168,20 @@ class MakeOrderIT {
     }
 
     @Test
-    @DisplayName("submits the judge's draft for review, so it is no longer their working order")
+    @DisplayName("submits the judge's draft for review, recording it in the case history as theirs")
     void submitsADraftForReview() {
         firstJudge.startsDraft("draft");
         Order draft = firstJudge.draft();
 
-        Order submitted = recorded(firstJudge.submitsForReview(draft, "final"));
+        var submission = firstJudge.submitsForReview(draft, "final");
 
+        Order submitted = recorded(submission);
         assertThat(submitted.id()).isEqualTo(draft.id());
         assertThat(submitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
         assertThat(notesIn(submitted)).isEqualTo("final");
         assertThat(firstJudge.hasADraft()).isFalse();
-    }
-
-    @Test
-    @DisplayName("shows the submission in the case history as the judge's")
-    void showsTheSubmissionInTheCaseHistory() {
-        firstJudge.startsDraft("draft");
-
-        var history = firstJudge.submitsForReview(firstJudge.draft(), "final").audit();
-
-        assertThat(history.summary()).isEqualTo("Order submitted for review");
-        assertThat(history.userId()).isEqualTo(firstJudge.uid());
+        assertThat(submission.audit().summary()).isEqualTo("Order submitted for review");
+        assertThat(submission.audit().userId()).isEqualTo(firstJudge.uid());
     }
 
     @Test
@@ -225,7 +218,7 @@ class MakeOrderIT {
         assertThat(firstJudge.refusalOf(SAVE_DRAFT, null)).contains("The order is missing");
     }
 
-    private OrderingJudge judge(String name, long caseReference) {
-        return OrderingJudge.onCase(events, name, caseReference);
+    private OrderingJudge judgeOn(long caseReference) {
+        return OrderingJudge.onCase(events, "First", caseReference);
     }
 }

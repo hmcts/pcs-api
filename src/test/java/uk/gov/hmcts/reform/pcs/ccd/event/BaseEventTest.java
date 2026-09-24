@@ -10,8 +10,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.Field.FieldBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
-import uk.gov.hmcts.ccd.sdk.api.callback.PayloadStart;
-import uk.gov.hmcts.ccd.sdk.api.callback.PayloadSubmit;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -72,18 +70,6 @@ public abstract class BaseEventTest {
         return getConfiguredEvent().getFields().getFields().stream()
             .map(FieldBuilder::build)
             .map(field -> (Field<?, ?, ?, ?>) field);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <P> P callPayloadStartHandler(PCSCase caseData) {
-        var startHandler = (PayloadStart<PCSCase, State, P>) getConfiguredEvent().getPayloadStartHandler();
-        return startHandler.start(new EventPayload<>(TEST_CASE_REFERENCE, caseData, null));
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <P> SubmitResponse<State> callPayloadSubmitHandler(PCSCase caseData, P payload) {
-        var submitHandler = (PayloadSubmit<PCSCase, State, P>) getConfiguredEvent().getPayloadSubmitHandler();
-        return submitHandler.submit(new EventPayload<>(TEST_CASE_REFERENCE, caseData, null), payload);
     }
 
     protected SubmitResponse<State> callSubmitHandler(PCSCase caseData) {

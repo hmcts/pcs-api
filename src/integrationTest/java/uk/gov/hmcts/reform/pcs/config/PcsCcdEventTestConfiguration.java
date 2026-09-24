@@ -1,30 +1,29 @@
 package uk.gov.hmcts.reform.pcs.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistrar;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.TestActors;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
-import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
-import java.time.Instant;
 import java.util.List;
 
 /** Fakes for the services pcs-api calls while handling a CCD event. */
@@ -49,8 +48,7 @@ public class PcsCcdEventTestConfiguration {
         return new BeanDefinitionRegistryPostProcessor() {
             @Override
             public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
-                List<Class<?>> clients =
-                    List.of(IdamUserInfoApi.class, RoleAssignmentApi.class, RdProfessionalApi.class);
+                List<Class<?>> clients = List.of(IdamUserInfoApi.class, RoleAssignmentApi.class);
                 for (Class<?> client : clients) {
                     if (registry.containsBeanDefinition(client.getName())) {
                         registry.getBeanDefinition(client.getName()).setPrimary(false);
@@ -82,35 +80,23 @@ public class PcsCcdEventTestConfiguration {
     }
 
     @Bean
-    IssuedClaims issuedClaims(CcdEventTestSupport<PCSCase, State> events, TestOrganisations organisations,
-                              ObjectMapper objectMapper, JdbcTemplate jdbc) {
-        return new IssuedClaims(events, organisations, objectMapper, jdbc);
+    IssuedCases issuedCases(CcdEventTestSupport<PCSCase, State> events, PcsCaseRepository pcsCases,
+                            ClaimService claims, TenancyLicenceService tenancies, AddressMapper addresses,
+                            ObjectMapper objectMapper, PlatformTransactionManager transactions) {
+        return new IssuedCases(events, pcsCases, claims, tenancies, addresses, objectMapper,
+            new TransactionTemplate(transactions));
     }
 
+    /** No one in these tests belongs to an organisation, so role assignment has nothing to say. */
     @Bean
     @Primary
-    TestOrganisations testOrganisations() {
-        return new TestOrganisations();
+    RoleAssignmentApi noOrganisationalRoles() {
+        return (serviceAuthorisation, authorisation, actorId) -> new RoleAssignmentResponse(List.of());
     }
 
     @Bean
     @Primary
     AuthTokenGenerator testServiceTokenGenerator() {
         return () -> "Bearer pcs-api-test-s2s";
-    }
-
-    /** Issues a fixed token for pcs-api's own service identities, such as the PRD admin user. */
-    @Bean
-    @Primary
-    OAuth2AuthorizedClientManager testAuthorizedClientManager() {
-        return request -> new OAuth2AuthorizedClient(
-            ClientRegistration.withRegistrationId(request.getClientRegistrationId())
-                .clientId("pcs-api-test")
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .tokenUri("https://idam.test/o/token")
-                .build(),
-            request.getPrincipal().getName(),
-            new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER,
-                "pcs-api-test-" + request.getClientRegistrationId(), Instant.now(), Instant.now().plusSeconds(3600)));
     }
 }
