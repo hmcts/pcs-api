@@ -64,6 +64,12 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
             return validationResult.get();
         }
 
+        Optional<SubmitResponse<State>> validationErrorResponse =
+            submitResponseFactory.validateDraftVersionNotChanged(eventPayload, responseDraftData);
+        if (validationErrorResponse.isPresent()) {
+            return validationErrorResponse.get();
+        }
+
         PartyEntity defendantParty = partyService.getPartyEntityByIdamId(currentUserIdamId, caseReference);
 
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
@@ -72,4 +78,5 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
         return counterClaimSubmitConfirmationService
             .buildSubmitResponse(caseReference, persistenceResult, defendantParty);
     }
+
 }
