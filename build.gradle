@@ -22,8 +22,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '6.37.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2367'
+  id 'hmcts.ccd.sdk' version '7.1.0'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2401'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -97,12 +97,8 @@ configurations {
   }
 }
 
-def runtimeIndexingEnabled = System.getenv('CCD_ENABLED') != 'false'
-
 ccd {
   configDir = file('build/definitions')
-  decentralised = true
-  runtimeIndexing = runtimeIndexingEnabled
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -299,8 +295,10 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-static def getCheckedOutGitCommitHash() {
-  'git rev-parse --verify --short HEAD'.execute().text.trim()
+def getCheckedOutGitCommitHash() {
+  providers.exec {
+    commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
+  }.standardOutput.asText.map { it.trim() }.get()
 }
 
 // integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
@@ -388,14 +386,14 @@ ext {
   lombokVersion = "1.18.48"
   springSecurityVersion = "6.5.11"
   pactVersion = "4.7.5"
-  tomcatEmbedVersion = "11.0.25"
+  tomcatEmbedVersion = "11.0.26"
   nettyVersion = "4.1.137.Final"
   httpClient5Version = "5.6.4"
   httpCore5Version = "5.4.3"
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
   jackson3Version = "3.1.6"
-  cucumberVersion = "7.34.8"
+  cucumberVersion = "7.34.9"
 }
 
 ext['snakeyaml.version'] = '2.7'
@@ -420,6 +418,9 @@ dependencies {
 }
 
 dependencies {
+  implementation 'com.github.hmcts:decentralised-runtime'
+  implementation 'com.github.hmcts:ccd-runtime-indexing'
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
@@ -435,7 +436,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.9.1'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '6.2.1-RELEASE'
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
   implementation group: 'org.apache.httpcomponents.client5', name: 'httpclient5', version: '5.6.4'
 
@@ -483,7 +484,7 @@ dependencies {
   testImplementation group: 'com.auth0', name: 'java-jwt', version: '4.6.1'
   testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.13.2'
 
-  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.10') {
+  implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.11') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
     exclude group: 'com.google.guava', module: 'guava'
     exclude group: 'org.apache.poi', module: 'poi-ooxml'
@@ -642,6 +643,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'IDAM_URL', 'http://localhost:5062'
   environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
   environment 'WA_SYSTEM_PASSWORD', 'password'
+  environment 'ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES', 'am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_task_monitor,wa_case_event_handler,pcs_api'
 }
 
 cftlibTest {
