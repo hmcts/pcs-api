@@ -5,14 +5,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { uploadTestDocuments } from '@utils/common/uploadDocument.utils';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
 /** Matches Jenkins nightly `E2E_TARGET_ENV` and full slug URL templates. */
 const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
 
-export function applyPlaywrightServiceUrls(): void {
+function applyPlaywrightServiceUrls(): void {
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
 
   if (NIGHTLY_ENV_SLUGS.has(e)) {
