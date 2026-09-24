@@ -2,11 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -41,31 +42,40 @@ class FileUploadValidationServiceTest {
         fileUploadValidationService = new FileUploadValidationService(featureToggleService);
     }
 
-    private static Stream<String> allowedExtensions() {
+    public static Stream<String> allowedExtensions() {
         return FileUploadValidationService.ALLOWED_FILE_EXTENSIONS.stream();
+    }
+
+    public static Stream<Arguments> disallowedFilenames() {
+        return Stream.of(
+            Arguments.of("recording.mp3"),
+            Arguments.of("audio.m4a"),
+            Arguments.of("video.mp4"),
+            Arguments.of("clip.mpeg"),
+            Arguments.of("clip.mpg"),
+            Arguments.of("RECORDING.MP3"),
+            Arguments.of("Video.Mp4"),
+            Arguments.of("clip.MPEG"),
+            Arguments.of(Named.of("null filename", null)),
+            Arguments.of(Named.of("blank filename", "")),
+            Arguments.of("noextension"),
+            Arguments.of("trailingdot."),
+            Arguments.of("archive.mp3.zip"),
+            Arguments.of("archive.zip"),
+            Arguments.of("installer.exe"),
+            Arguments.of("clip.mov"),
+            Arguments.of("page.html")
+        );
     }
 
     @Nested
     @DisplayName("validateDocuments Method Tests")
     class ValidateDocumentsTests {
 
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "recording.mp3", "audio.m4a", "video.mp4", "clip.mpeg", "clip.mpg"
-        })
-        @DisplayName("Should return error when a document has a blocked multimedia extension")
-        void shouldReturnErrorForBlockedExtension(String filename) {
-            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
-
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "RECORDING.MP3", "Video.Mp4", "clip.MPEG"
-        })
-        @DisplayName("Should treat blocked extensions case-insensitively")
-        void shouldTreatBlockedExtensionsCaseInsensitively(String filename) {
+        @ParameterizedTest(name = "{0}")
+        @MethodSource("uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationServiceTest#disallowedFilenames")
+        @DisplayName("Should return error when a document filename is not on the allowlist")
+        void shouldReturnErrorForDisallowedFilename(String filename) {
             List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
 
             assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
@@ -109,37 +119,6 @@ class FileUploadValidationServiceTest {
             documents.add(ListValue.<Document>builder().value(null).build());
 
             assertThat(fileUploadValidationService.validateDocuments(documents)).isEmpty();
-        }
-
-        @ParameterizedTest
-        @NullAndEmptySource
-        @DisplayName("Should return error when a document filename is null or blank")
-        void shouldReturnErrorForNullOrBlankFilename(String filename) {
-            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
-
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "noextension", "trailingdot.", "archive.mp3.zip"
-        })
-        @DisplayName("Should return error for a missing or non-allowlisted final extension")
-        void shouldReturnErrorForUnrecognisedOrMissingExtension(String filename) {
-            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
-
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "archive.zip", "installer.exe", "clip.mov", "page.html"
-        })
-        @DisplayName("Should return error for any file type outside the allowlist")
-        void shouldReturnErrorForNonAllowlistedTypes(String filename) {
-            List<String> errors = fileUploadValidationService.validateDocuments(documentsWithFilenames(filename));
-
-            assertThat(errors).containsExactly(DISALLOWED_FILE_TYPE_ERROR, ALLOWED_FILE_TYPE_GUIDANCE);
         }
 
         @ParameterizedTest
@@ -254,8 +233,9 @@ class FileUploadValidationServiceTest {
         void everyAllowedExtensionAppearsInGuidance() {
             String guidance = ALLOWED_FILE_TYPE_GUIDANCE.toLowerCase(Locale.UK);
 
-            assertThat(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS)
-                .allSatisfy(extension -> assertThat(guidance).contains(extension));
+            for (String extension : FileUploadValidationService.ALLOWED_FILE_EXTENSIONS) {
+                assertThat(extension).isSubstringOf(guidance);
+            }
         }
 
         @Test
@@ -267,7 +247,7 @@ class FileUploadValidationServiceTest {
 
             for (String token : extensionsPart.split("[,\\s/.]+")) {
                 if (!token.isEmpty()) {
-                    assertThat(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS).contains(token);
+                    assertThat(token).isIn(FileUploadValidationService.ALLOWED_FILE_EXTENSIONS);
                 }
             }
         }
