@@ -9,18 +9,28 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.BaseClaimPayloads;
 
-/** Issued possession claims, created through pcs-api's own claim events as a claimant would. */
+/**
+ * Issued possession claims, each created through pcs-api's own claim events by a claimant solicitor
+ * from {@link #CLAIMANT_ORGANISATION}, then issued as the payment flow would.
+ */
 public class IssuedClaims {
+
+    public static final String CLAIMANT_ORGANISATION = "Possession Claims Solicitor Org";
+    /** The defendant named in the base claim. */
+    public static final String DEFENDANT_NAME = "Jane Doe";
 
     private static final String CREATE_CLAIM = "createPossessionClaim";
     private static final String RESUME_CLAIM = "resumePossessionClaim";
 
     private final CcdEventTestSupport<PCSCase, State> events;
+    private final TestOrganisations organisations;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbc;
 
-    IssuedClaims(CcdEventTestSupport<PCSCase, State> events, ObjectMapper objectMapper, JdbcTemplate jdbc) {
+    IssuedClaims(CcdEventTestSupport<PCSCase, State> events, TestOrganisations organisations,
+                 ObjectMapper objectMapper, JdbcTemplate jdbc) {
         this.events = events;
+        this.organisations = organisations;
         this.objectMapper = objectMapper;
         this.jdbc = jdbc;
     }
@@ -33,12 +43,13 @@ public class IssuedClaims {
         return claim;
     }
 
-    public long issue(Actor claimant, LegislativeCountry country) {
-        return issue(claimant, baseClaim(country));
+    public long issue(LegislativeCountry country) {
+        return issue(baseClaim(country));
     }
 
-    /** Creates and completes the claim as the claimant, then issues it as the payment flow would. */
-    public long issue(Actor claimant, PCSCase claim) {
+    public long issue(PCSCase claim) {
+        Actor claimant = events.registerActor("Claimant", "Solicitor", "caseworker-pcs", "caseworker-pcs-solicitor");
+        organisations.register(claimant, CLAIMANT_ORGANISATION);
         var create = events.create(CREATE_CLAIM, State.AWAITING_SUBMISSION_TO_HMCTS, PCSCase.builder()
                 .propertyAddress(claim.getPropertyAddress())
                 .legislativeCountry(claim.getLegislativeCountry())

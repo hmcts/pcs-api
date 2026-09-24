@@ -82,9 +82,9 @@ public class PcsCcdEventTestConfiguration {
     }
 
     @Bean
-    IssuedClaims issuedClaims(CcdEventTestSupport<PCSCase, State> events, ObjectMapper objectMapper,
-                              JdbcTemplate jdbc) {
-        return new IssuedClaims(events, objectMapper, jdbc);
+    IssuedClaims issuedClaims(CcdEventTestSupport<PCSCase, State> events, TestOrganisations organisations,
+                              ObjectMapper objectMapper, JdbcTemplate jdbc) {
+        return new IssuedClaims(events, organisations, objectMapper, jdbc);
     }
 
     @Bean
