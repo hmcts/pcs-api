@@ -103,20 +103,6 @@ class AddressValidatorTest {
     }
 
     @Test
-    void shouldRequireCorrespondenceAddressWhenAddressIsNull() {
-        // Given
-        String sectionHint = "defendant 1";
-
-        // When
-        List<String> errorsWithoutHint = underTest.validateCorrespondenceAddress(null);
-        List<String> errorsWithHint = underTest.validateCorrespondenceAddress(null, sectionHint);
-
-        // Then
-        assertThat(errorsWithoutHint).containsExactly("Correspondence address is required");
-        assertThat(errorsWithHint).containsExactly("Correspondence address is required for defendant 1");
-    }
-
-    @Test
     void shouldUseUkAddressValidationWhenReleaseFlagIsDisabled() {
         // Given
         AddressUK address = AddressUK.builder()
@@ -135,22 +121,28 @@ class AddressValidatorTest {
     }
 
     @ParameterizedTest
-    @MethodSource("incompleteCorrespondenceAddressScenarios")
-    void shouldRequireManualCorrespondenceAddressFields(String addressLine1, String addressLine2,
-                                                        String postCode, List<String> expectedErrors) {
+    @MethodSource("correspondenceAddressScenarios")
+    void shouldRequireManualCorrespondenceAddressFields(String postTown,
+                                                        String postcode,
+                                                        List<String> expectedValidationErrors) {
         // Given
+        String sectionHint = "some section";
+
         AddressUK address = AddressUK.builder()
-            .addressLine1(addressLine1)
-            .addressLine2(addressLine2)
-            .postCode(postCode)
+            .postTown(postTown)
+            .postCode(postcode)
             .build();
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
 
         // When
-        List<String> errors = underTest.validateCorrespondenceAddress(address, "defendant 1");
+        List<String> actualValidationErrors = underTest.validateCorrespondenceAddress(address, sectionHint);
 
         // Then
-        assertThat(errors).isEqualTo(expectedErrors);
+        assertThat(actualValidationErrors).hasSameSizeAs(expectedValidationErrors);
+        for (int i = 0; i < actualValidationErrors.size(); i++) {
+            assertThat(actualValidationErrors.get(i))
+                .isEqualTo(expectedValidationErrors.get(i) + " for " + sectionHint);
+        }
     }
 
     private static Stream<Arguments> addressScenarios() {
@@ -171,17 +163,13 @@ class AddressValidatorTest {
         );
     }
 
-    private static Stream<Arguments> incompleteCorrespondenceAddressScenarios() {
+    private static Stream<Arguments> correspondenceAddressScenarios() {
         return Stream.of(
-            // Address line 1, address line 2, postcode, expected validation errors
-            arguments(null, "Flat 2", "1234567", List.of("Address line 1 is required for defendant 1")),
-            arguments("10 some street", null, "1234567", List.of("Address line 2 is required for defendant 1")),
-            arguments("10 some street", "Flat 2", null, List.of("Postcode is required for defendant 1")),
-            arguments(null, null, null, List.of(
-                "Address line 1 is required for defendant 1",
-                "Address line 2 is required for defendant 1",
-                "Postcode is required for defendant 1"
-            ))
+            // Town, postcode, expected validation errors
+            arguments("Paris", "1234567", List.of()),
+            arguments(null, "12345-6789", List.of("Town or City is required")),
+            arguments("Paris", null, List.of("Postcode is required")),
+            arguments(null, null, List.of("Town or City is required",  "Postcode is required"))
         );
     }
 

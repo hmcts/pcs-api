@@ -42,20 +42,13 @@ public class AddressValidator {
     }
 
     public List<String> validateCorrespondenceAddress(AddressUK address, String sectionHint) {
-        if (address == null) {
-            return List.of(withSectionHint("Correspondence address is required", sectionHint));
-        }
-
         if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
             return validateAddressFields(address, sectionHint);
         }
 
         List<String> validationErrors = new ArrayList<>();
-        if (StringUtils.isBlank(address.getAddressLine1())) {
-            validationErrors.add(withSectionHint("Address line 1 is required", sectionHint));
-        }
-        if (StringUtils.isBlank(address.getAddressLine2())) {
-            validationErrors.add(withSectionHint("Address line 2 is required", sectionHint));
+        if (StringUtils.isBlank(address.getPostTown())) {
+            validationErrors.add(withSectionHint("Town or City is required", sectionHint));
         }
         if (StringUtils.isBlank(address.getPostCode())) {
             validationErrors.add(withSectionHint("Postcode is required", sectionHint));
