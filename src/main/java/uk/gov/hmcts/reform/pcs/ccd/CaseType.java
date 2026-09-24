@@ -50,9 +50,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
         AccessProfile.JUDGE,
-        AccessProfile.FEE_PAID_JUDGE,
-        AccessProfile.CIRCUIT_JUDGE,
-        AccessProfile.LEADERSHIP_JUDGE,
         AccessProfile.HEARING_CENTRE_ADMIN,
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
