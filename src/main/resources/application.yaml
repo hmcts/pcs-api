@@ -155,23 +155,23 @@ notify:
     task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
   templates:
-    response-no-counterclaim: 8ecf44d2-860f-44e3-a891-c82745f79645
-    response-no-counterclaim-legal-rep: 0abc7358-20a7-4d96-b0ab-95c2e40879de
-    counterclaim-payment-required: 258081b1-786d-4c20-9793-b45c0a1b029b
-    counterclaim-payment-required-legal-rep: 996d9bd4-7000-4537-a2b4-925baf2e5d6f
-    counterclaim-payment-success: 8d726681-78a7-4ed5-9201-4354bb04f8ad
+    response-no-counterclaim: 5abcd184-3409-41de-b13c-83b5f1e2469d
+    response-no-counterclaim-legal-rep: ae3cb187-5862-4c07-a7c4-589bc3aab2d9
+    counterclaim-payment-required: b7c7e5b1-cd73-49cd-9c71-eb4fe16b0ddf
+    counterclaim-payment-required-legal-rep: eb29b8e7-5a17-445e-b2b6-f9d11cdc71ad
+    counterclaim-payment-success: 472e9d65-d496-4421-978e-2e7a733ce064
     counterclaim-payment-success-legal-rep: fee05cad-6832-41b7-94ce-b7cd89bcdaff
-    counterclaim-no-payment-required: a6a6e7ce-e47f-4a85-9d98-cc9c924bdb5e
-    make-a-claim-claim-saved-for-later: bf648abe-5a45-4cc2-8d5b-d1e817ace18b
-    make-a-claim-defendant-made-counterclaim: 6f583b02-6857-4207-a7ae-8c73d2310a80
-    make-a-claim-defendant-response-received: 64a6cfbd-9797-4110-9a44-b9b04f1e2c53
-    make-a-claim-claim-issued: 0ea3d807-8ebb-484e-8cd5-72364c9b527f
+    counterclaim-no-payment-required: cf320c6a-c797-4a9f-ace2-e93c8c795809
+    make-a-claim-claim-saved-for-later: 05b820d3-5887-4f4f-adf8-07e32d3a4caa
+    make-a-claim-defendant-made-counterclaim: 1b9a51dc-dabc-4cad-a9f2-76181266b9fd
+    make-a-claim-defendant-response-received: 33696528-2c19-462b-b879-b7546184953e
+    make-a-claim-claim-issued: 18835d17-afbe-409d-8f03-e89dfd51c7f9
     general-application-received: e5daba0d-5c66-4c76-9e0f-06646200dc89
-    counterclaim-not-submitted-yet: 1fb10077-f302-4159-abce-18a861518d24
-    notice-of-change-completed: fdc826c0-21e2-4039-a450-19ae3ffb93fa
-    notice-of-change-complete-legal-rep: bd3d224e-dfed-4df8-bf00-c192cf294235
-    notice-of-change-no-longer-representing: dd033fbc-e0a2-4d13-b591-33d71c66c868
-    notice-of-change-other-party-represented: 726a86a9-8f1d-4ca0-aaf9-846fd4d10342
+    counterclaim-not-submitted-yet: 6cef5d05-3ae3-4487-8eec-75029bc4bfe2
+    notice-of-change-completed: fc9416ba-9b8e-43ce-ab11-9e9a07946e61
+    notice-of-change-complete-legal-rep: b121bc29-d5f7-4ed4-9cbc-89fdc13c977c
+    notice-of-change-no-longer-representing: b5223559-6419-4849-a609-aac606b17a86
+    notice-of-change-other-party-represented: f7963e8e-c868-42fe-9367-0038552ca851
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
