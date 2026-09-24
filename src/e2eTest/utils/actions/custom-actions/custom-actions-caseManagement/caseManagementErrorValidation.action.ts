@@ -10,8 +10,6 @@ import {
   typeOfCounterClaim
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
-import { CaseManagementCommonUtils } from './caseManagementUtils.action';
-import { defendantUserDetails } from '../createCaseAPI.action';
 
 export class ErrorValidationAction implements IAction {
   async execute(page: Page, action: string, errorFlag: string | actionRecord, roles?: actionData): Promise<void> {
@@ -200,13 +198,14 @@ export class ErrorValidationAction implements IAction {
   }
 
   private async errorValidationUploadADocumentPage(validationReq: string) {
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    let party = allPartyDetails[0];
     if (validationReq === 'YES') {
       await performAction('inputErrorValidation', {
         validationType: uploadADocument.errorValidationType.eight,
         inputArray: uploadADocument.errorValidationField.errorUploadADocument,
         button: uploadADocument.continueButton
       });
+      await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: uploadADocument.uploadDocHiddenOption[0] })
       await performAction('inputErrorValidation', {
         validationType: uploadADocument.errorValidationType.two,
         inputArray: uploadADocument.errorValidationField.errorRadioOption1,
@@ -218,26 +217,26 @@ export class ErrorValidationAction implements IAction {
         validationType: uploadADocument.errorValidationType.four,
         inputArray: uploadADocument.errorValidationField.errorDropDown,
         dropQn: uploadADocument.whichTypeOfDocHiddenQuestion,
-        option: uploadADocument.whichTypeHiddenOption,
+        option: uploadADocument.whichTypeHiddenOption[0],
+        button: uploadADocument.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationType: uploadADocument.errorValidationType.two,
+        inputArray: uploadADocument.errorValidationField.errorRadioOption2,
+        question: uploadADocument.partyDocRelatedToQuestion,
+        option: party,
         button: uploadADocument.continueButton
       });
       await performAction('inputErrorValidation', {
         validationType: uploadADocument.errorValidationType.five,
         inputArray: uploadADocument.errorValidationField.errorDateField,
-        header: enterGenappApplication.eventCouldNotBeCreatedErrorMessageHeader,
+        header: uploadADocument.eventCouldNotBeCreatedErrorMessageHeader,
         header1: uploadADocument.thereIsProbErrorMessageHeader,
         question: uploadADocument.addIssueDateTextLabel,
         label1: enterGenappApplication.dayTextLabel,
         label2: enterGenappApplication.monthTextLabel,
         label3: enterGenappApplication.yearTextLabel,
         button: enterGenappApplication.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationType: uploadADocument.errorValidationType.two,
-        inputArray: uploadADocument.errorValidationField.errorRadioOption2,
-        question: uploadADocument.partyDocRelatedToQuestion,
-        option: appType,
-        button: uploadADocument.continueButton
       });
     }
   }

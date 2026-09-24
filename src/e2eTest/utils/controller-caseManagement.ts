@@ -11,11 +11,13 @@ import { axe_Exclusions } from '@config/axe_exclusions.config';
 let testExecutor: { page: Page };
 let previousUrl: string = '';
 let captureDataForCYAPage = false;
+let disableCYACapture = false;
 
 export function initializeCMExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
   captureDataForCYAPage = false;
+  disableCYACapture = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -92,6 +94,12 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 
   if (action.includes('errorValidation')) {
     captureDataForCYAPage = false;
+    disableCYACapture = true;
+    return
+  }
+  
+  if (disableCYACapture) {
+    return;
   }
 
   if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {

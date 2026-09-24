@@ -27,6 +27,7 @@ export const uploadADocument = {
     ],
     errorDateField: [
       { type: `invalid`, input: `invalid`, errMessage: `Add an issue date to the file name is not valid`, errInlineMessage: `The data entered is not valid for Add an issue date to the file name` },
+      { type: `future`, input: `future`, errMessage: `Issue date must be today or in the past`, errInlineMessage: `Issue date should be today or in the past` },
       { type: `past`, input: 'past', errMessage: ``, errInlineMessage: `` },
     ],
     errorUploadADocument: [
