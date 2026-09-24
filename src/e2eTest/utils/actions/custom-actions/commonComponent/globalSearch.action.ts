@@ -26,7 +26,6 @@ export class GlobalSearchCaseAction implements IAction {
       ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)],
       ['validateChallengedAccessLink', () => this.validateChallengedAccessLink(page)],
       ['requestChallengedAccess', () => this.requestChallengedAccess(page)],
-      ['findCaseReferenceRowAcrossPages', () => this.findCaseReferenceRowAcrossPages(page, fieldName as string)]
 
     ]);
 

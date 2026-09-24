@@ -195,7 +195,6 @@ export class ActionRegistry {
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
     ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
     ['requestChallengedAccess', new GlobalSearchCaseAction()],
-    ['findCaseReferenceRowAcrossPages', new GlobalSearchCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
