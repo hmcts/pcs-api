@@ -275,8 +275,6 @@ tasks.register('fortifyScan', JavaExec) {
 }
 
 project.ext {
-  pactVersion = getCheckedOutGitCommitHash()
-  pacticipantVersion = getCheckedOutGitCommitHash()
   pacticipant = 'pcs_api'
 }
 
@@ -287,7 +285,6 @@ pact {
   publish {
     pactDirectory = 'pacts'
     tags = [System.getenv("PACT_BRANCH_NAME") ?: 'Dev']
-    version = project.pactVersion
   }
 }
 
@@ -295,10 +292,12 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-def getCheckedOutGitCommitHash() {
-  providers.exec {
+// Lazy so git only runs when pacts are published: the prod DB migration agent
+// evaluates this build from a stash with an empty `git init` and no HEAD.
+tasks.named('pactPublish') {
+  projectVersion = providers.exec {
     commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
-  }.standardOutput.asText.map { it.trim() }.get()
+  }.standardOutput.asText.map { it.trim() }
 }
 
 // integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
