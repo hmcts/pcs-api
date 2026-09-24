@@ -12,7 +12,7 @@ const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 /** Matches Jenkins nightly `E2E_TARGET_ENV` and full slug URL templates. */
 const NIGHTLY_ENV_SLUGS = new Set(['aat', 'demo', 'perftest', 'ithc']);
 
-function applyPlaywrightServiceUrls(): void {
+export function applyPlaywrightServiceUrls(): void {
   const e = (process.env.ENVIRONMENT || '').toLowerCase();
 
   if (NIGHTLY_ENV_SLUGS.has(e)) {
@@ -39,7 +39,6 @@ async function globalSetupConfig(): Promise<void> {
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
-  await uploadTestDocuments()
 }
 
 async function authenticateAndSaveState(): Promise<string> {

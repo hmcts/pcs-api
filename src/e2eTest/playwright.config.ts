@@ -64,7 +64,12 @@ export default defineConfig({
   ],
   projects: [
     {
+      name: 'setup',
+      testMatch: /upload\.setup\.ts/,
+    },
+    {
       name: 'chrome',
+      dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
@@ -80,6 +85,7 @@ export default defineConfig({
       ? [
           {
             name: 'firefox',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Firefox'],
               channel: 'firefox',
@@ -93,6 +99,7 @@ export default defineConfig({
           },
           {
             name: 'webkit',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Safari'],
               screenshot: 'only-on-failure' as const,
@@ -105,6 +112,7 @@ export default defineConfig({
           },
           {
             name: 'edge',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Edge'],
               channel: 'msedge',
@@ -118,6 +126,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-android',
+            dependencies: ['setup'],
             use: {
               ...devices['Pixel 5'],
               screenshot: 'only-on-failure' as const,
@@ -129,6 +138,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-ios',
+            dependencies: ['setup'],
             use: {
               ...devices['iPhone 12'],
               screenshot: 'only-on-failure' as const,
@@ -140,6 +150,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-ipad',
+            dependencies: ['setup'],
             use: {
               ...devices['iPad Pro 11'],
               screenshot: 'only-on-failure' as const,
