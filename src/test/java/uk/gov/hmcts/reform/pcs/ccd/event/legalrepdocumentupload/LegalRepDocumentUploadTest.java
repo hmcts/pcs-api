@@ -223,8 +223,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             UUID defendant1Id = UUID.fromString("11111111-1111-1111-1111-111111111111");
             UUID defendant2Id = UUID.fromString("22222222-2222-2222-2222-222222222222");
             ClaimEntity mainClaim = mock(ClaimEntity.class);
-            UUID defendant1PcsDocumentId = UUID.fromString("77777777-7777-7777-7777-777777777777");
-            UUID defendant2PcsDocumentId = UUID.fromString("88888888-8888-8888-8888-888888888888");
             UUID defendant1DocumentId = UUID.fromString("55555555-5555-5555-5555-555555555555");
             UUID defendant2DocumentId = UUID.fromString("66666666-6666-6666-6666-666666666666");
 
@@ -238,8 +236,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .party(defendant1)
                 .applicationSubmittedDate(submittedDate)
                 .submissionDocument(DocumentEntity.builder()
-                                        .id(defendant1PcsDocumentId)
-                                        .pcsCase(pcsCaseEntity)
                                         .url("http://dm-store/documents/defendant-1-summary")
                                         .binaryUrl("http://dm-store/documents/defendant-1-summary/binary")
                                         .documentId(defendant1DocumentId)
@@ -253,8 +249,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .party(defendant2)
                 .applicationSubmittedDate(submittedDate)
                 .submissionDocument(DocumentEntity.builder()
-                                        .id(defendant2PcsDocumentId)
-                                        .pcsCase(pcsCaseEntity)
                                         .url("http://dm-store/documents/defendant-2-summary")
                                         .binaryUrl("http://dm-store/documents/defendant-2-summary/binary")
                                         .documentId(defendant2DocumentId)
@@ -262,7 +256,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .build();
 
             when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
-            when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
             when(partyService.getPartyLabel(mainClaim, defendant1Id)).thenReturn("Defendant 1");
             when(partyService.getPartyLabel(mainClaim, defendant2Id)).thenReturn("Defendant 2");
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
@@ -274,9 +267,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             String documentLinks = result.getLegalRepDocumentUploadDetails().getExistingApplicationDocumentLinks();
 
             assertThat(documentLinks).contains(
-                "href=\"/case/" + TEST_CASE_REFERENCE + "/view-documents/" + defendant1PcsDocumentId + "\"",
+                "href=\"/documents/55555555-5555-5555-5555-555555555555/binary\"",
                 "General app (GA1) - Defendant 1 (opens in new tab)",
-                "href=\"/case/" + TEST_CASE_REFERENCE + "/view-documents/" + defendant2PcsDocumentId + "\"",
+                "href=\"/documents/66666666-6666-6666-6666-666666666666/binary\"",
                 "General app (GA2) - Defendant 2 (opens in new tab)",
                 "target=\"_blank\"",
                 "rel=\"noopener noreferrer\"",

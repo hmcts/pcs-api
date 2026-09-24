@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -45,7 +46,7 @@ public class ExistingApplicationDocumentLinkBuilder {
     }
 
     private String buildLink(PcsCaseEntity pcsCaseEntity, GenAppEntity genApp) {
-        String documentLink = documentLink(pcsCaseEntity, genApp.getSubmissionDocument());
+        String documentLink = documentLink(genApp.getSubmissionDocument());
         if (documentLink == null) {
             return "";
         }
@@ -60,20 +61,40 @@ public class ExistingApplicationDocumentLinkBuilder {
             );
     }
 
-    private String documentLink(PcsCaseEntity pcsCaseEntity, DocumentEntity documentEntity) {
+    private String documentLink(DocumentEntity documentEntity) {
         if (documentEntity == null) {
             return null;
         }
-        if (documentEntity.getId() != null && pcsCaseEntity.getCaseReference() != null) {
-            return "/case/%s/view-documents/%s".formatted(
-                pcsCaseEntity.getCaseReference(),
-                documentEntity.getId()
-            );
+        UUID documentId = documentEntity.getDocumentId();
+        if (documentId == null) {
+            documentId = extractDocumentId(documentEntity.getUrl());
         }
-        if (documentEntity.getDocumentId() == null) {
+        if (documentId == null) {
+            documentId = extractDocumentId(documentEntity.getBinaryUrl());
+        }
+        if (documentId == null) {
             return null;
         }
-        return "/documents/%s/binary".formatted(documentEntity.getDocumentId());
+        return "/documents/%s/binary".formatted(documentId);
+    }
+
+    private UUID extractDocumentId(String documentUrl) {
+        if (documentUrl == null) {
+            return null;
+        }
+
+        int documentPathStart = documentUrl.indexOf("/documents/");
+        if (documentPathStart < 0) {
+            return null;
+        }
+
+        String documentPath = documentUrl.substring(documentPathStart + "/documents/".length());
+        String documentId = documentPath.split("/")[0];
+        try {
+            return UUID.fromString(documentId);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 
     private String genAppReference(GenAppEntity genApp) {
