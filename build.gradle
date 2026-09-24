@@ -292,8 +292,7 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-// Lazy so git only runs when pacts are published: the prod DB migration agent
-// evaluates this build from a stash with an empty `git init` and no HEAD.
+// Lazy: the prod DB migration agent has no git HEAD
 tasks.named('pactPublish') {
   projectVersion = providers.exec {
     commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
