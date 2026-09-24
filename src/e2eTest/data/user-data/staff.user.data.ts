@@ -20,7 +20,7 @@ export const staff = {
   pcs_hearing_centre_administrator_ts_ca_email: 'pcs-hearing-centre-administrator-ts-ca-01@justice.gov.uk',
 
   pcs_hearing_centre_team_leader_other_wales_email: 'pcs-hearing-centre-team-leader-other-wales@justice.gov.uk',
-  pcs_hearing_centre_team_leader_other_england_email: 'pcs-hearing-centre-team-leader-other@justice.gov.uk',
+  pcs_hearing_centre_administrator_other_wales_email: 'pcs-hearing-administrator-wales@justice.gov.uk',
 
   pcs_wlu_administrator_email: 'pcs-wlu-administrator-01@justice.gov.uk',
   pcs_wlu_administrator_ca_email: 'pcs-wlu-administrator-ca-01@justice.gov.uk',

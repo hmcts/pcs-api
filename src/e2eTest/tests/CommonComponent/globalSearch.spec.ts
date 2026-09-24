@@ -75,11 +75,37 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
-  test('should allow Wales Hearing Centre Team Leader to access a case with an England postcode after challenged access', async ({ page, context }) => {
+  test('Wales Hearing Centre Team Leader Access an England case', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
       staff.pcs_hearing_centre_team_leader_other_wales_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess');
+  });
+
+  test('Wales Judge user Access an England case', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      judicial.walesRegion_Judge_email
+    );
+
+    await performAction('accessingTheSearch');
+    await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
+    await performAction('searchByCaseReference', process.env.CASE_NUMBER);
+    await performAction('requestChallengedAccess');
+  });
+
+  test('Wales Hearing Centre Administrator Access an England case', async ({ page, context }) => {
+    await setupGlobalSearchUser(
+      page,
+      context,
+      staff.pcs_hearing_centre_administrator_other_wales_email
     );
 
     await performAction('accessingTheSearch');
