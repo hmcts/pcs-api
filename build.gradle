@@ -23,7 +23,7 @@ plugins {
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
   id 'hmcts.ccd.sdk' version '7.1.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2399'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2401'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
   id "com.avast.gradle.docker-compose" version "0.17.21"
@@ -295,8 +295,10 @@ runAndPublishConsumerPactTests.dependsOn contract
 
 runAndPublishConsumerPactTests.finalizedBy pactPublish
 
-static def getCheckedOutGitCommitHash() {
-  'git rev-parse --verify --short HEAD'.execute().text.trim()
+def getCheckedOutGitCommitHash() {
+  providers.exec {
+    commandLine 'git', 'rev-parse', '--verify', '--short', 'HEAD'
+  }.standardOutput.asText.map { it.trim() }.get()
 }
 
 // integration and cftlibTest run in GitHub Actions on CI (see .github/workflows/integration-tests.yml).
@@ -391,7 +393,7 @@ ext {
   jacksonVersion = "2.22.2"
   mockitoVersion = "5.23.0"
   jackson3Version = "3.1.6"
-  cucumberVersion = "7.34.8"
+  cucumberVersion = "7.34.9"
 }
 
 ext['snakeyaml.version'] = '2.7'
