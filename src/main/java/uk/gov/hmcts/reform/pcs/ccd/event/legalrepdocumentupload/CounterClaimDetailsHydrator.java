@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.legalrepdocumentupload;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.HtmlUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -13,18 +17,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Component
-public class CounterclaimDetailsSetupService {
+public class CounterClaimDetailsHydrator {
 
     private static final DateTimeFormatter CC_LABEL_DATE_FORMAT =
         DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
 
-    public void setupCounterclaimDetails(
+    public void hydrate(
         PcsCaseEntity pcsCaseEntity,
         LegalRepDocumentUploadDetails details,
         String currentUserOrganisationId
@@ -44,8 +49,9 @@ public class CounterclaimDetailsSetupService {
             CounterClaimEntity cc = counterClaims.get(i);
             int ccIndex = i + 1;
             String defName = getPartyDisplayName(cc.getParty(), ccIndex);
+            String escapedDefName = HtmlUtils.htmlEscape(defName);
 
-            String fileName = String.format("Counterclaim CC%d - %s.pdf", ccIndex, defName);
+            String fileName = String.format("Counterclaim CC%d - %s.pdf", ccIndex, escapedDefName);
             String docUrl = findCounterclaimDocumentUrl(pcsCaseEntity, cc);
 
             linksHtml.append(String.format(
@@ -53,8 +59,8 @@ public class CounterclaimDetailsSetupService {
                 docUrl, fileName
             ));
 
-            String dateStr = cc.getClaimSubmittedDate() != null
-                ? cc.getClaimSubmittedDate().format(CC_LABEL_DATE_FORMAT)
+            String formattedDate = cc.getClaimSubmittedDate() != null
+                ? " on " + cc.getClaimSubmittedDate().format(CC_LABEL_DATE_FORMAT)
                 : "";
 
             boolean isCurrentUsersCounterclaim = cc.getParty() != null
@@ -62,9 +68,9 @@ public class CounterclaimDetailsSetupService {
                 && currentUserOrganisationId.equals(cc.getParty().getOrganisationId());
 
             String radioLabel = isCurrentUsersCounterclaim
-                ? String.format("Yes, the documents I'm uploading relate to the counterclaim I made on %s", dateStr)
-                : String.format("Yes, the documents I'm uploading relate to the counterclaim made by %s on %s",
-                                defName, dateStr);
+                ? String.format("Yes, the documents I'm uploading relate to the counterclaim I made%s", formattedDate)
+                : String.format("Yes, the documents I'm uploading relate to the counterclaim made by %s%s",
+                                escapedDefName, formattedDate);
 
             ccRadioItems.add(
                 DynamicStringListElement.builder()
@@ -96,7 +102,7 @@ public class CounterclaimDetailsSetupService {
                 return party.getOrgName().trim();
             }
             String fullName = Stream.of(party.getFirstName(), party.getLastName())
-                .filter(org.apache.commons.lang3.StringUtils::isNotBlank)
+                .filter(StringUtils::isNotBlank)
                 .collect(joining(" "));
             if (isNotBlank(fullName)) {
                 return fullName;
@@ -109,12 +115,23 @@ public class CounterclaimDetailsSetupService {
         if (pcsCaseEntity.getDocuments() == null || cc.getId() == null) {
             return "#";
         }
-        return pcsCaseEntity.getDocuments().stream()
+
+        List<DocumentEntity> ccDocs = pcsCaseEntity.getDocuments().stream()
             .filter(doc -> doc.getCounterClaim() != null && cc.getId().equals(doc.getCounterClaim().getId()))
-            .findFirst()
-            .map(doc -> doc.getBinaryUrl() != null ? doc.getBinaryUrl() : doc.getUrl())
-            .map(this::formatDocumentUrl)
-            .orElse("#");
+            .toList();
+
+        if (ccDocs.isEmpty()) {
+            return "#";
+        }
+
+        Optional<DocumentEntity> primaryCcDoc = ccDocs.stream()
+            .filter(doc -> doc.getType() == DocumentType.COUNTERCLAIM)
+            .findFirst();
+
+        DocumentEntity targetDoc = primaryCcDoc.orElseGet(ccDocs::getFirst);
+
+        String rawUrl = targetDoc.getBinaryUrl() != null ? targetDoc.getBinaryUrl() : targetDoc.getUrl();
+        return formatDocumentUrl(rawUrl);
     }
 
     private String formatDocumentUrl(String url) {

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -22,13 +23,13 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class CounterclaimDetailsSetupServiceTest {
+class CounterClaimDetailsHydratorTest {
 
     private static final String CURRENT_ORG_ID = "currentOrgId";
     private static final String OTHER_ORG_ID = "otherOrgId";
 
     @InjectMocks
-    private CounterclaimDetailsSetupService underTest;
+    private CounterClaimDetailsHydrator underTest;
 
     private LegalRepDocumentUploadDetails details;
 
@@ -38,20 +39,17 @@ class CounterclaimDetailsSetupServiceTest {
     }
 
     @Nested
-    @DisplayName("setupCounterclaimDetails Tests")
-    class SetupCounterclaimDetailsTests {
+    @DisplayName("hydrate Tests")
+    class HydrateTests {
 
         @Test
         void shouldSetShowCounterclaimPageToNoWhenCounterclaimsNull() {
-            // Given
             PcsCaseEntity caseEntity = PcsCaseEntity.builder()
                 .counterClaims(null)
                 .build();
 
-            // When
-            underTest.setupCounterclaimDetails(caseEntity, details, CURRENT_ORG_ID);
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
 
-            // Then
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(details.getCounterclaimDocumentLinks()).isNull();
             assertThat(details.getValidCounterclaims()).isNull();
@@ -59,23 +57,19 @@ class CounterclaimDetailsSetupServiceTest {
 
         @Test
         void shouldSetShowCounterclaimPageToNoWhenCounterclaimsEmpty() {
-            // Given
             PcsCaseEntity caseEntity = PcsCaseEntity.builder()
                 .counterClaims(List.of())
                 .build();
 
-            // When
-            underTest.setupCounterclaimDetails(caseEntity, details, CURRENT_ORG_ID);
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
 
-            // Then
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(details.getCounterclaimDocumentLinks()).isNull();
             assertThat(details.getValidCounterclaims()).isNull();
         }
 
         @Test
-        void shouldSetupCounterclaimDetailsForOwnCounterclaim() {
-            // Given
+        void shouldHydrateDetailsForOwnCounterclaim() {
             UUID ccId = UUID.randomUUID();
             PartyEntity ownParty = PartyEntity.builder()
                 .organisationId(CURRENT_ORG_ID)
@@ -90,6 +84,7 @@ class CounterclaimDetailsSetupServiceTest {
 
             DocumentEntity document = DocumentEntity.builder()
                 .counterClaim(counterClaim)
+                .type(DocumentType.COUNTERCLAIM)
                 .binaryUrl("http://dm-store/documents/123/binary")
                 .build();
 
@@ -98,10 +93,8 @@ class CounterclaimDetailsSetupServiceTest {
                 .documents(List.of(document))
                 .build();
 
-            // When
-            underTest.setupCounterclaimDetails(caseEntity, details, CURRENT_ORG_ID);
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
 
-            // Then
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks())
                 .contains("govuk-inset-text")
@@ -119,13 +112,12 @@ class CounterclaimDetailsSetupServiceTest {
         }
 
         @Test
-        void shouldSetupCounterclaimDetailsForOtherDefendantCounterclaim() {
-            // Given
+        void shouldHydrateDetailsForOtherDefendantCounterclaimWithHtmlEscaping() {
             UUID ccId = UUID.randomUUID();
             PartyEntity otherParty = PartyEntity.builder()
                 .organisationId(OTHER_ORG_ID)
-                .firstName("John")
-                .lastName("Doe")
+                .firstName("John <Script>")
+                .lastName("Doe & Co")
                 .build();
 
             CounterClaimEntity counterClaim = CounterClaimEntity.builder()
@@ -136,6 +128,7 @@ class CounterclaimDetailsSetupServiceTest {
 
             DocumentEntity document = DocumentEntity.builder()
                 .counterClaim(counterClaim)
+                .type(DocumentType.COUNTERCLAIM)
                 .url("http://dm-store/documents/456")
                 .build();
 
@@ -144,19 +137,108 @@ class CounterclaimDetailsSetupServiceTest {
                 .documents(List.of(document))
                 .build();
 
-            // When
-            underTest.setupCounterclaimDetails(caseEntity, details, CURRENT_ORG_ID);
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
 
-            // Then
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks())
-                .contains("Counterclaim CC1 - John Doe.pdf")
+                .contains("Counterclaim CC1 - John &lt;Script&gt; Doe &amp; Co.pdf")
                 .contains("/documents/456");
 
             DynamicStringList validCCs = details.getValidCounterclaims();
             assertThat(validCCs.getListItems().get(0).getLabel())
-                .contains("Yes, the documents I'm uploading relate to the counterclaim made by John Doe on "
-                    + "Tuesday 22 September 2026");
+                .contains("Yes, the documents I'm uploading relate to the counterclaim made by "
+                    + "John &lt;Script&gt; Doe &amp; Co on Tuesday 22 September 2026");
+        }
+
+        @Test
+        void shouldHandleNullSubmittedDateWithoutTrailingOn() {
+            UUID ccId = UUID.randomUUID();
+            PartyEntity ownParty = PartyEntity.builder()
+                .organisationId(CURRENT_ORG_ID)
+                .orgName("My Firm")
+                .build();
+
+            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+                .id(ccId)
+                .party(ownParty)
+                .claimSubmittedDate(null)
+                .build();
+
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(counterClaim))
+                .documents(null)
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            DynamicStringList validCCs = details.getValidCounterclaims();
+            assertThat(validCCs.getListItems().get(0).getLabel())
+                .isEqualTo("Yes, the documents I'm uploading relate to the counterclaim I made");
+        }
+
+        @Test
+        void shouldPrioritizeCounterclaimDocumentType() {
+            UUID ccId = UUID.randomUUID();
+            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+                .id(ccId)
+                .build();
+
+            DocumentEntity supportingDoc = DocumentEntity.builder()
+                .counterClaim(counterClaim)
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .binaryUrl("http://dm-store/documents/supporting/binary")
+                .build();
+
+            DocumentEntity ccSummaryDoc = DocumentEntity.builder()
+                .counterClaim(counterClaim)
+                .type(DocumentType.COUNTERCLAIM)
+                .binaryUrl("http://dm-store/documents/summary/binary")
+                .build();
+
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(counterClaim))
+                .documents(List.of(supportingDoc, ccSummaryDoc))
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            assertThat(details.getCounterclaimDocumentLinks())
+                .contains("/documents/summary/binary");
+        }
+
+        @Test
+        void shouldReturnHashWhenDocumentsNullOrCcIdNull() {
+            CounterClaimEntity ccWithoutId = CounterClaimEntity.builder().id(null).build();
+            PcsCaseEntity caseNullDocs = PcsCaseEntity.builder()
+                .counterClaims(List.of(ccWithoutId))
+                .documents(null)
+                .build();
+
+            underTest.hydrate(caseNullDocs, details, CURRENT_ORG_ID);
+
+            assertThat(details.getCounterclaimDocumentLinks()).contains("href=\"#\"");
+        }
+
+        @Test
+        void shouldHandleUrlWithoutDocumentsPathInFormatDocumentUrl() {
+            UUID ccId = UUID.randomUUID();
+            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
+
+            DocumentEntity doc = DocumentEntity.builder()
+                .counterClaim(counterClaim)
+                .type(DocumentType.COUNTERCLAIM)
+                .url("http://other-service/custom/path")
+                .build();
+
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(counterClaim))
+                .documents(List.of(doc))
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            assertThat(details.getCounterclaimDocumentLinks())
+                .contains("href=\"http://other-service/custom/path\"");
         }
     }
 }

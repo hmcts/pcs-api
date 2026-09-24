@@ -113,7 +113,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             organisationService,
             legalRepPartySelectionService,
             partyService,
-            new CounterclaimDetailsSetupService());
+            new CounterClaimDetailsHydrator());
 
         setEventUnderTest(legalRepDocumentUpload);
     }
@@ -554,7 +554,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Then
             assertThat(submitResponse.getErrors()).isNullOrEmpty();
             verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
-                List.of(legalRepDocument), pcsCaseEntity, awaitingDefendant, null);
+                List.of(legalRepDocument), pcsCaseEntity, awaitingDefendant, null, null);
         }
 
         @Test
@@ -633,7 +633,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .createDocumentEntitiesFromLegalRepDocuments(legalRepDocList,
                                                              pcsCaseEntity,
                                                              expectedUploadingParty,
-                                                             expectedSelectedGenAppEntity);
+                                                             expectedSelectedGenAppEntity,
+                                                             null);
         }
 
         private static Stream<Arguments> documentUploadScenarios() {

@@ -4,10 +4,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
@@ -26,10 +28,15 @@ public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         String pageKey = getPageKey();
+        String showCondition = and(
+            fieldEquals("lrDocUpload_ShowCounterclaimPage", VerticalYesNo.YES),
+            fieldEquals("lrDocUpload_ValidCategories", DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
+        );
+
         pageBuilder
             .page(pageKey)
             .pageLabel("Confirm if these documents relate to a counterclaim")
-            .showCondition(fieldEquals("lrDocUpload_ShowCounterclaimPage", VerticalYesNo.YES))
+            .showCondition(showCondition)
             .complex(PCSCase::getLegalRepDocumentUploadDetails)
             .readonly(LegalRepDocumentUploadDetails::getShowCounterclaimPage, NEVER_SHOW)
             .readonly(LegalRepDocumentUploadDetails::getCounterclaimDocumentLinks, NEVER_SHOW)
