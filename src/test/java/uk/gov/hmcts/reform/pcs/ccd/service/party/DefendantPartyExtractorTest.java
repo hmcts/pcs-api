@@ -205,7 +205,7 @@ class DefendantPartyExtractorTest {
         PartyEntity representedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        when(claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+        when(claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
             CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of(representedDefendant));
 
@@ -221,7 +221,7 @@ class DefendantPartyExtractorTest {
         // Given
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        when(claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+        when(claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
             CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
             .thenReturn(List.of());
 

@@ -620,8 +620,8 @@ class DraftCaseDataServiceTest {
     void shouldReportNoMeaningfulRespondDraftForPartyWhenNoDraftExists() {
         // Given
         UUID partyId = UUID.randomUUID();
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
-            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(false);
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
+            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.empty());
 
         // When
         boolean hasMeaningfulRespondDraft =
@@ -629,8 +629,6 @@ class DraftCaseDataServiceTest {
 
         // Then
         assertThat(hasMeaningfulRespondDraft).isFalse();
-        verify(draftCaseDataRepository, never())
-            .findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(anyLong(), any(), any(), any());
     }
 
     @Test
@@ -642,8 +640,6 @@ class DraftCaseDataServiceTest {
         PCSCase draftCaseData = mock(PCSCase.class);
         PossessionClaimResponse possessionClaimResponse = mock(PossessionClaimResponse.class);
 
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
-            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(true);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(draftJson);
@@ -670,8 +666,6 @@ class DraftCaseDataServiceTest {
         PCSCase draftCaseData = mock(PCSCase.class);
         PossessionClaimResponse possessionClaimResponse = mock(PossessionClaimResponse.class);
 
-        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
-            CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(true);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
             CASE_REFERENCE, eventId, OWNER_ORGANISATION_ID, partyId)).thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(draftJson);

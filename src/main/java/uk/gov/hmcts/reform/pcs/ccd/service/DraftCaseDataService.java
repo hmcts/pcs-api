@@ -191,9 +191,6 @@ public class DraftCaseDataService {
                                              UUID partyId,
                                              String legalRepresentativeOrganisationId) {
 
-        if (!hasUnsubmittedCaseData(caseReference, eventId, partyId, legalRepresentativeOrganisationId)) {
-            return false;
-        }
         return getUnsubmittedCaseData(caseReference, eventId, partyId, legalRepresentativeOrganisationId)
             .map(PCSCase::getPossessionClaimResponse)
             .map(PossessionClaimResponse::getDefendantResponses)

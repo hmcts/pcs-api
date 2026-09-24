@@ -41,7 +41,7 @@ public interface ClaimPartyOrganisationRepository
         AND plro.organisation.organisationId = :organisationId
         AND plro.active = 'YES'
         """)
-    List<PartyEntity> findActiveDefendantsRepresentedByOrganisation(
+    List<PartyEntity> findActivePartiesRepresentedByOrganisation(
         @Param("caseReference") long caseReference,
         @Param("organisationId") String organisationId,
         @Param("role") PartyRole role

@@ -49,7 +49,7 @@ public class DefendantPartyExtractor {
     }
 
     public List<PartyEntity> extractDefendantsRepresentedBy(PcsCaseEntity caseEntity, String organisationId) {
-        return claimPartyOrganisationRepository.findActiveDefendantsRepresentedByOrganisation(
+        return claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
             caseEntity.getCaseReference(), organisationId, PartyRole.DEFENDANT);
     }
 
