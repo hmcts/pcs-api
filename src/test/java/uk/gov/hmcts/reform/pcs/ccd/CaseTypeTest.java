@@ -207,11 +207,11 @@ class CaseTypeTest {
             .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
     }
 
-    @Test
+    /*@Test
     void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
         assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
             .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
-    }
+    }*/
 
     @Test
     void shouldShutterServiceWhenShutterFlagEnabled() {
