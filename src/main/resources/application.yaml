@@ -177,7 +177,7 @@ testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
 
 access-code-form:
-  respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
+  respond-online-url: ${PCS_FRONTEND_URL:http://localhost:3209}/access-your-case
 
 access-code-test-table:
   enabled: ${ENABLE_ACCESS_CODE_TEST_TABLE:${testing-support.enabled:false}}
