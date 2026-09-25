@@ -156,9 +156,12 @@ export class GlobalSearchCaseAction implements IAction {
     if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
       await page.getByRole('group', {
         name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
-      }).getByRole('textbox').fill(accessReason.text);
+      }).getByRole('textbox').fill(accessReason.text?.toString() ?? '');
     }
     await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    await page.waitForURL(/\/challenged-access-request\/success(?:[?#].*)?$/, {
+      waitUntil: 'domcontentloaded'
+    });
     await expect(page.getByRole('heading', {
      name: new RegExp(challengedAccessSuccess.successMessage, 'i')
     })).toBeVisible();
