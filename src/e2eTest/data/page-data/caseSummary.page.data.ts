@@ -15,6 +15,7 @@ export const caseSummary = {
   go: "Go",
   HistoryTab: 'History',
   serviceRequestTab: 'Service Request',
+  summaryTab: 'Summary',
   requestSupport: 'Request support',
   manageSupport: 'Manage support',
   reviewSupport: 'Review support request',

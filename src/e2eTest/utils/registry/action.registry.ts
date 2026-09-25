@@ -182,7 +182,7 @@ export class ActionRegistry {
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
     ['createPartialClaimDetails', new CreateCaseAction()],
-    ['resumePartialClaim', new CreateCaseAction()],  
+    ['resumePartialClaim', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
@@ -193,6 +193,8 @@ export class ActionRegistry {
     ['readDocumentsSubmit', new DocumentsAction()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['submitPossessionClaimResponseLRAPI', new RespondToAClaimAction()],
+    ['midEventRespondPossessionClaimLRAPI', new RespondToAClaimAction()],
   ]);
 
   static getAction(actionName: string): IAction {
