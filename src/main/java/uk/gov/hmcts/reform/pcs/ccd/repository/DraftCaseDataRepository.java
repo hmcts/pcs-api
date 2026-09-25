@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,9 +33,6 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
 
-    boolean existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
-
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(
         long caseReference, EventId eventId, UUID idamUserId);
 
@@ -43,5 +44,13 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
 
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partId);
+
+    @Modifying
+    @Query("""
+        DELETE FROM DraftCaseDataEntity d
+        WHERE d.eventId = :eventId
+          AND d.createdAt < :cutoff
+        """)
+    int deleteByEventIdAndCutoff(@Param("eventId") EventId eventId, @Param("cutoff") Instant cutoff);
 
 }
