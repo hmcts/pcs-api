@@ -148,7 +148,6 @@ public class PCSCase {
     private VerticalYesNo multipleRepresentedParties;
 
     @CCD(
-        label = "Property address",
         access = {DefendantAccess.class}
     )
     @External
