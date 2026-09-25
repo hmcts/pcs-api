@@ -173,6 +173,7 @@ class GenAppsViewTest {
         currentParty.setOrganisationId(ORGANISATION_ID + 1);
         currentParty.setFirstName("Current party first name");
         currentParty.setLastName("Current party last name");
+        currentParty.setOrgName("Current party org name");
 
         PartyEntity otherParty = createPartyEntity();
         otherParty.setId(UUID.randomUUID());
@@ -180,6 +181,7 @@ class GenAppsViewTest {
         otherParty.setOrganisationId(null);
         otherParty.setFirstName("Other party first name");
         otherParty.setLastName("Other party last name");
+        otherParty.setOrgName(null);
 
         UUID genApp1Id = UUID.randomUUID();
         LocalDateTime genApp1SubmittedDate = LocalDateTime.parse("2026-05-02T15:00:00");
@@ -208,11 +210,13 @@ class GenAppsViewTest {
         assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId().toString());
         assertThat(genApp1Party.getFirstName()).isEqualTo("Current party first name");
         assertThat(genApp1Party.getLastName()).isEqualTo("Current party last name");
+        assertThat(genApp1Party.getOrgName()).isEqualTo("Current party org name");
 
         assertThat(genApp2Party.getId()).isEqualTo(otherParty.getId().toString());
         assertThat(genApp2Party.getIdamId()).isNull();
         assertThat(genApp2Party.getFirstName()).isEqualTo("Other party first name");
         assertThat(genApp2Party.getLastName()).isEqualTo("Other party last name");
+        assertThat(genApp2Party.getOrgName()).isNull();
     }
 
     @Test
