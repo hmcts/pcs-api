@@ -5,22 +5,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.LAST_PARTY_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 class ManagePartyOptionsPageTest extends BasePageTest {
@@ -36,10 +46,17 @@ class ManagePartyOptionsPageTest extends BasePageTest {
     private PartyService partyService;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private AddressFormatter addressFormatter;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private RemovePartyService removePartyService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ManagePartyOptionsPage(partyService, addressMapper));
+        setPageUnderTest(new ManagePartyOptionsPage(
+            partyService, addressMapper, addressFormatter, pcsCaseService, removePartyService));
     }
 
     @Test
@@ -160,6 +177,108 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         assertThat(updatePartyDetails.getEmail()).isEqualTo("caseworker-entered@test.com");
         verify(partyService, never()).getPartyRole(partyEntity);
         verifyNoInteractions(addressMapper);
+    }
+
+    @Test
+    void shouldPrepopulateRemovePartyDetails() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        AddressEntity addressEntity = AddressEntity.builder().addressLine1("1 Test Street").build();
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .dateOfBirth(LocalDate.of(1990, 1, 1))
+            .address(addressEntity)
+            .build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
+        partyEntity.setPcsCase(pcsCaseEntity);
+
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyService.getPartyRole(partyEntity)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.getPartyName(partyEntity)).thenReturn("Billy Wright");
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Defendant 1");
+        AddressUK mappedAddress = AddressUK.builder().addressLine1("1 Test Street").build();
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(mappedAddress);
+        when(addressFormatter.formatFullAddress(mappedAddress, "\n")).thenReturn("1 Test Street");
+
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder()
+            .partyToRemove(buildPartyRadioList(partyId))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .removePartyDetails(removePartyDetails)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(removePartyDetails.getSelectedPartyLabel()).isEqualTo("Billy Wright - Defendant 1");
+        assertThat(removePartyDetails.getPartyType()).isEqualTo(PartyType.DEFENDANT);
+        assertThat(removePartyDetails.getDateOfBirth()).isEqualTo("01/01/1990");
+        assertThat(removePartyDetails.getAddress()).isEqualTo("1 Test Street");
+    }
+
+    @Test
+    void shouldShowUnknownValuesWhenRemovePartyDetailsAreMissing() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        PartyEntity partyEntity = PartyEntity.builder().id(partyId).build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
+        partyEntity.setPcsCase(pcsCaseEntity);
+
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyService.getPartyRole(partyEntity)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.getPartyName(partyEntity)).thenReturn("Person unknown");
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Defendant 1");
+
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder()
+            .partyToRemove(buildPartyRadioList(partyId))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .removePartyDetails(removePartyDetails)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(removePartyDetails.getSelectedPartyLabel()).isEqualTo("Person unknown - Defendant 1");
+        assertThat(removePartyDetails.getDateOfBirth()).isEqualTo("Date of birth unknown");
+        assertThat(removePartyDetails.getAddress()).isEqualTo("Address unknown");
+    }
+
+    @Test
+    void shouldRejectRemoveWhenThereAreNoRemovableParties() {
+        // Given
+        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        mainClaim.addParty(claimant, PartyRole.CLAIMANT);
+        mainClaim.addParty(defendant, PartyRole.DEFENDANT);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().claims(List.of(mainClaim)).build();
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(removePartyService.hasAnyRemovableParty(mainClaim)).thenReturn(false);
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .removePartyDetails(RemovePartyDetails.builder().build())
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isEqualTo(LAST_PARTY_ERROR);
+        assertThat(response.getErrors()).isNullOrEmpty();
     }
 
     private DynamicList buildPartyRadioList(UUID partyId) {

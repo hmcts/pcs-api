@@ -85,6 +85,14 @@ class EnterGenAppTest extends BaseEventTest {
             .nameKnown(VerticalYesNo.NO)
             .build();
 
+        PartyEntity removedDefendant = PartyEntity.builder()
+            .id(UUID.randomUUID())
+            .firstName("Robert")
+            .lastName("Removed")
+            .nameKnown(VerticalYesNo.YES)
+            .removed(true)
+            .build();
+
         PartyEntity underlesseeOrMortgagee = PartyEntity.builder()
             .id(underlesseeId)
             .orgName("Bank Ltd")
@@ -96,6 +104,7 @@ class EnterGenAppTest extends BaseEventTest {
             ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
             ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
             ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build(),
+            ClaimPartyEntity.builder().party(removedDefendant).role(PartyRole.DEFENDANT).rank(3).build(),
             ClaimPartyEntity.builder().party(underlesseeOrMortgagee).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE)
                 .rank(1).build()
         ));

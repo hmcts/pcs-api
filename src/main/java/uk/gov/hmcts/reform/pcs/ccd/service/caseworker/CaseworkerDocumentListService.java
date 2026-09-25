@@ -106,6 +106,7 @@ public class CaseworkerDocumentListService {
 
         Map<PartyRole, List<ClaimPartyEntity>> partiesByRole = mainClaim.getClaimParties().stream()
             .filter(Objects::nonNull)
+            .filter(claimParty -> !claimParty.getParty().isRemoved())
             .collect(Collectors.groupingBy(ClaimPartyEntity::getRole));
 
         List<DynamicListElement> partyOptions = new ArrayList<>();
