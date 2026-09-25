@@ -1,8 +1,16 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller';
 import { actionRecord, IAction } from '@utils/interfaces';
-import { globalSearch, noResultFound, searchResults, workAccess } from '@data/page-data-figma';
-import { caseList, home } from '@data/page-data';
+import {
+  challengedAccessSuccess,
+  challengedCaseDetails,
+  globalSearch,
+  noResultFound,
+  searchResults,
+  whyDoYouNeedToAccessThisCase,
+  workAccess
+} from '@data/page-data-figma';
+import { home } from '@data/page-data';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, value?: string | actionRecord): Promise<void> {
@@ -15,7 +23,10 @@ export class GlobalSearchCaseAction implements IAction {
       ['submitGlobalSearch', () => this.submitGlobalSearch(page)],
       ['executeSearch', () => this.executeSearch(page)],
       ['validateResults', () => this.validateResults(page)],
-      ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)]
+      ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)],
+      ['validateChallengedAccessLink', () => this.validateChallengedAccessLink(page)],
+      ['requestChallengedAccess', () => this.requestChallengedAccess(page, fieldName as actionRecord)],
+
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -52,7 +63,6 @@ export class GlobalSearchCaseAction implements IAction {
     await page.getByRole('radio', { name: workAccess.viewTasksAndCasesOption, exact: true }).check();
     await performAction('clickButton', workAccess.continueButton);
     await performAction('clickButton', home.globalSearchTab);
-    //await performValidation('text', { elementType: 'subHeader', text: workAccess.nextmainHeader});
 }
 
   private async submitGlobalSearch(page: Page): Promise<void> {
@@ -108,6 +118,56 @@ export class GlobalSearchCaseAction implements IAction {
       }
     }
   }
+
+  private async validateChallengedAccessLink(page: Page): Promise<void> {
+    const caseReference = String(process.env.CASE_NUMBER ?? '');
+    const normalizedCaseReference = caseReference.replace(/\D/g, '');
+    await expect(page.getByRole('heading', { name: searchResults.mainHeader })).toBeVisible();
+    const resultRow = await this.findCaseReferenceRowAcrossPages(page, normalizedCaseReference);
+    const challengedAccessLink = resultRow.getByRole('link', { name: /challenged access/i });
+    await expect(challengedAccessLink).toBeVisible();
+    await expect(challengedAccessLink).toBeEnabled();
+  }
+
+  private async requestChallengedAccess(page: Page, accessReason: actionRecord): Promise<void> {
+    const caseReference = String(process.env.CASE_NUMBER ?? '');
+    const normalizedCaseReference = caseReference.replace(/\D/g, '');
+    await expect(page.getByRole('heading', { name: searchResults.mainHeader })).toBeVisible();
+
+    const resultRow = await this.findCaseReferenceRowAcrossPages(page, normalizedCaseReference);
+    const challengedAccessLink = resultRow.getByRole('link', { name: /challenged access/i });
+    await expect(challengedAccessLink).toBeVisible();
+    await expect(challengedAccessLink).toBeEnabled();
+    await challengedAccessLink.click();
+
+    await expect(page.getByRole('heading', {
+      name: challengedCaseDetails.caseDetailsSubHeader,
+      exact: true
+    })).toBeVisible();
+    await performAction('clickButton', challengedCaseDetails.requestAccessbutton);
+    await expect(page.getByText(
+      whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion,
+      { exact: true }
+    )).toBeVisible();
+    await performAction('clickRadioButton', {
+      question: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion,
+      option: accessReason.option
+    });
+    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
+      await page.getByRole('group', {
+        name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
+      }).getByRole('textbox').fill(accessReason.text?.toString() ?? '');
+    }
+    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    await page.waitForTimeout(5000);
+    await page.reload();
+    await expect(page.getByRole('heading', {
+     name: new RegExp(challengedAccessSuccess.successMessage, 'i')
+    })).toBeVisible();
+    await expect(page.getByRole('link', { name: challengedAccessSuccess.viewCaseFileLink })).toBeVisible();
+    await performAction('clickLink', challengedAccessSuccess.viewCaseFileLink);
+    await performValidation('mainHeader', home.caseSummary);
+   }
 
   private async findCaseReferenceRowAcrossPages(page: Page, normalizedCaseReference: string): Promise<Locator> {
     const maxPagesToScan = 50;
