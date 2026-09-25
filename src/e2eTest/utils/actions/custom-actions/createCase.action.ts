@@ -154,7 +154,9 @@ export class CreateCaseAction implements IAction {
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
-      ['resumePartialClaim', () => this.resumePartialClaim()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -182,9 +184,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
-    console.log ("get value:" );
-    console.log (createCase.caseType.civilPossessions);
-    console.log (" value printed" );
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
@@ -398,11 +397,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
@@ -756,6 +755,7 @@ export class CreateCaseAction implements IAction {
   private async uploadAdditionalDocs(documentsData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performAction('removeFile');
     if (Array.isArray(documentsData.documents)) {
       for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
         const document = documentsData.documents[fileIndex]; await performActions(
@@ -897,11 +897,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === underlesseeMortgageeDetails.yesRadioOption) {
           await performAction('inputText', {text: underlesseeMortgageeDetails.whatIsTheirNameHiddenTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
         }
@@ -1628,6 +1628,11 @@ export class CreateCaseAction implements IAction {
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let userInputFiles:string[]= [];
+    const file =
+      caseFile.caseWorkerUpload ??
+      caseFile.caseWorkerAmend ??
+      caseFile.genApp;    
+
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1642,6 +1647,12 @@ export class CreateCaseAction implements IAction {
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+         } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
         }
         break;
 
@@ -1651,11 +1662,15 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+        } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
         }
         break;
 
@@ -1665,20 +1680,16 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1691,9 +1702,31 @@ export class CreateCaseAction implements IAction {
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
-    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+    let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
-    if (fileCount === 0) {
+    if (caseFile.allowEmptyFolder) {
+      if (fileCount > 0) {
+        throw new Error(
+          `Expected folder "${folderName}" to be empty, but found ${fileCount} file(s)`
+        );
+      }
+      return;
+    }
+
+    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+      await expect(async () => {        
+        await performAction('clickTab', home.caseSummary);
+        await performAction('clickTab', home.caseFileView);        
+        await this.checkFolderCount(page);
+        const text = await folder.innerText();
+        fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+        expect(fileCount).toBeGreaterThan(0);
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
+    }
+
+    if (fileCount === 0) {      
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -2038,5 +2071,13 @@ export class CreateCaseAction implements IAction {
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
+  }
+  private async checkFolderCount(page:Page){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
   }
 }
