@@ -32,7 +32,7 @@ public class RespondToClaimDraftDeletionScheduledTask {
             @Value("${respond-to-claim-draft-deletion.schedule}") String schedule,
             @Value("${respond-to-claim-draft-deletion.discard-after-days}") int discardAfterDays,
             @Value("${respond-to-claim-draft-deletion.request.max-retries:3}") int maxRetries,
-            @Value("${respond-to-claim-draft-deletion.request.backoff-delay-seconds:10}") Duration backoffDelay,
+            @Value("${respond-to-claim-draft-deletion.request.backoff-delay-seconds:10s}") Duration backoffDelay,
             DraftResponseDeletionService draftResponseDeletionService,
             FeatureToggleService featureToggleService) {
         this.schedule = schedule;

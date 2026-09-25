@@ -60,7 +60,7 @@ spring:
       charSet: UTF-8
     hikari:
       minimumIdle: ${PCS_DB_POOL_MIN_IDLE:2}
-      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:15}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
       idleTimeout: 10000
       poolName: PCSHikariCP
       maxLifetime: 7200000
@@ -281,10 +281,11 @@ bulk-print:
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
 respond-to-claim-draft-deletion:
-  schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:FIXED_DELAY|180s}
-  discard-after-days: ${RESPOND_TO_CLAIM_DRAFT_DELETION_DISCARD_AFTER_DAYS:-1}
-  batch-size: ${RESPOND_TO_CLAIM_DRAFT_DELETION_BATCH_SIZE:10}
-  sql-limit: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SQL_LIMIT:200}
+  schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:DAILY|01:00}
+  discard-after-days: ${RESPOND_TO_CLAIM_DRAFT_DELETION_DISCARD_AFTER_DAYS:30}
+  request:
+    max-retries: ${RESPOND_TO_CLAIM_DRAFT_DELETION_REQUEST_MAX_RETRIES:3}
+    backoff-delay-seconds: ${RESPOND_TO_CLAIM_DRAFT_DELETION_REQUEST_BACKOFF_DELAY_SECONDS:10s}
 
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
