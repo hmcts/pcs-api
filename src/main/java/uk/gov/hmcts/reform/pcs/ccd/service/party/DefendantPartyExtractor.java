@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.Collections;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DefendantPartyExtractor {
 
-    private final ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
+    private final PartyRepository partyRepository;
 
     public List<PartyEntity> extractDefendants(PcsCaseEntity caseEntity, long caseReference) {
         ClaimEntity mainClaim = caseEntity.getClaims().stream()
@@ -49,8 +49,8 @@ public class DefendantPartyExtractor {
     }
 
     public List<PartyEntity> extractDefendantsRepresentedBy(PcsCaseEntity caseEntity, String organisationId) {
-        return claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
-            caseEntity.getCaseReference(), organisationId, PartyRole.DEFENDANT);
+        return partyRepository.findAllPartiesByOrganisationIdAndCaseReference(
+            organisationId, caseEntity.getCaseReference());
     }
 
     private List<PartyEntity> extractDefendantParties(ClaimEntity mainClaim) {

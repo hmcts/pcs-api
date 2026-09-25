@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyOrganisationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 
 import java.util.Collections;
@@ -28,13 +28,13 @@ class DefendantPartyExtractorTest {
     private static final String ORGANISATION_ID = "organisation-1";
 
     @Mock
-    private ClaimPartyOrganisationRepository claimPartyOrganisationRepository;
+    private PartyRepository partyRepository;
 
     private DefendantPartyExtractor underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DefendantPartyExtractor(claimPartyOrganisationRepository);
+        underTest = new DefendantPartyExtractor(partyRepository);
     }
 
     @Test
@@ -205,8 +205,7 @@ class DefendantPartyExtractorTest {
         PartyEntity representedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        when(claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
-            CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findAllPartiesByOrganisationIdAndCaseReference(ORGANISATION_ID, CASE_REFERENCE))
             .thenReturn(List.of(representedDefendant));
 
         // When
@@ -221,8 +220,7 @@ class DefendantPartyExtractorTest {
         // Given
         PcsCaseEntity caseEntity = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).build();
 
-        when(claimPartyOrganisationRepository.findActivePartiesRepresentedByOrganisation(
-            CASE_REFERENCE, ORGANISATION_ID, PartyRole.DEFENDANT))
+        when(partyRepository.findAllPartiesByOrganisationIdAndCaseReference(ORGANISATION_ID, CASE_REFERENCE))
             .thenReturn(List.of());
 
         // When
