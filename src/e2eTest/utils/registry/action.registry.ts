@@ -20,11 +20,13 @@ import {ExpandSummaryAction, InputDateAction} from '@utils/actions/element-actio
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
-import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
-import { RespondToAClaimAction } from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
+import {LinkSolicitorAPIAction} from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {RespondToAClaimAction} from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
-import { YourSupportAction } from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
+import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import {YourSupportAction} from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
+import {RemoveFileAction} from '@utils/actions/element-actions/removeFile.action';
 
 
 
@@ -187,12 +189,17 @@ export class ActionRegistry {
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['uploadAdditionalDocsLR', new DocumentsAction()],
+    ['selectDocumentRelatingTo', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['selectAnEvent', new CreateCaseAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['removeFile', new RemoveFileAction()],    
   ]);
 
   static getAction(actionName: string): IAction {
