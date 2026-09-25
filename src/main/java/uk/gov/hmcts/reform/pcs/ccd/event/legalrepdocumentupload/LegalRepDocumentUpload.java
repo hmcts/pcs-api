@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -39,11 +41,13 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
@@ -118,9 +122,36 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
+        PartyType partyType = isClaimantSolicitor(pcsCaseEntity, organisationId) ? PartyType.CLAIMANT :
+            PartyType.DEFENDANT;
+        legalRepDocumentUploadDetails.setPartyType(partyType);
 
-        legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
+        List<PartyEntity> defendantPartyEntities =
+            legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity, organisationId);
+
+        List<DynamicListElement> listItems = defendantPartyEntities.stream()
+            .map(partyEntity -> DynamicListElement.builder()
+                .code(partyEntity.getId())
+                .label(partyEntity.getFirstName() + " " + partyEntity.getLastName())
+                .build())
+            .toList();
+
+        DynamicList representedDefendantPartyNames = DynamicList.builder()
+            .listItems(listItems)
+            .value(DynamicListElement.EMPTY)
+            .build();
+
+        if (isEmpty(representedDefendantPartyNames)) {
+            caseData.setMultipleRepresentedParties(VerticalYesNo.NO);
+            caseData.setRepresentedPartyNames(DynamicList.builder()
+                                                  .listItems(Collections.emptyList())
+                                                  .build());
+
+        } else {
+            boolean representingMultipleParties = representedDefendantPartyNames.getListItems().size() > 1;
+            caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+            caseData.setRepresentedPartyNames(representedDefendantPartyNames);
+        }
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
         legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));

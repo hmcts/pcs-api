@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,7 +52,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,27 +65,29 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PcsCaseEntity pcsCaseEntity;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    private LegalRepresentativeService legalRepresentativeService;
 
     @Mock
     private SecurityContextService securityContextService;
 
     @Mock
     private OrganisationService organisationService;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private GenAppVisibilityService genAppVisibilityService;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private PartyService partyService;
     @Mock
     private PartyEntity primaryClaimantParty;
-    @Mock(strictness = LENIENT)
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private DefendantResponseRepository defendantResponseRepository;
 
     private LegalRepDocumentUpload legalRepDocumentUpload;
@@ -505,5 +507,4 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         }
 
     }
-
 }
