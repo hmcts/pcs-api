@@ -39,6 +39,21 @@ public class LegalRepDocumentUploadDetails {
     private List<ListValue<LegalRepDocument>> legalRepDocuments;
 
     @CCD(searchable = false)
+    @JsonProperty("lrDocUpload_CounterclaimDocumentLinks")
+    private String counterclaimDocumentLinks;
+
+    @CCD(
+        label = "Do these documents relate to a counterclaim?",
+        typeOverride = DynamicRadioList
+    )
+    @JsonProperty("lrDocUpload_ValidCounterclaims")
+    private DynamicStringList validCounterclaims;
+
+    @CCD(searchable = false)
+    @JsonProperty("lrDocUpload_ShowCounterclaimPage")
+    private VerticalYesNo showCounterclaimPage;
+
+    @CCD(searchable = false)
     @JsonProperty("lrDocUpload_ShowExistingApplicationPage")
     private VerticalYesNo showExistingApplicationPage;
 
@@ -51,3 +66,4 @@ public class LegalRepDocumentUploadDetails {
     private VerticalYesNo isWales;
 
 }
+
