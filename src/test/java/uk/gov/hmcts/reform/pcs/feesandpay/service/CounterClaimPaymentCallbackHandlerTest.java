@@ -22,8 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -69,6 +69,8 @@ class CounterClaimPaymentCallbackHandlerTest {
     private ObjectMapper objectMapper;
     @Captor
     private ArgumentCaptor<SchedulableInstance<CounterClaimTaskData>> taskInstanceCaptor;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
 
     @InjectMocks
     private CounterClaimPaymentCallbackHandler underTest;
@@ -265,7 +267,10 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, party, List.of(activeDocument));
+            eq(pcsCaseEntity), eq(party), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Counterclaim - Defendant 1.pdf", "counterclaim-evidence.pdf");
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(counterClaimId);
         verify(schedulerClient).scheduleIfNotExists(any());
     }
@@ -303,47 +308,6 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
         when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-
-        underTest.handle(callback, feePaymentEntity);
-
-        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, List.of());
-    }
-
-    @Test
-    void shouldNotCreateTranslateTaskWhenNoCounterClaimDocumentsUploaded() throws Exception {
-        UUID counterClaimId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PartyEntity party = PartyEntity.builder().id(partyId).build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234567890123456L)
-            .build();
-
-        DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
-            .id(1)
-            .party(party)
-            .languageUsed(LanguageUsed.WELSH)
-            .build();
-        pcsCaseEntity.setDefendantResponses(List.of(defendantResponse));
-
-        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .status(PENDING_COUNTER_CLAIM_ISSUED)
-            .party(party)
-            .pcsCase(pcsCaseEntity)
-            .build();
-
-        FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
-
-        when(counterClaimRepository.findById(counterClaimId)).thenReturn(Optional.of(counterClaimEntity));
-        when(objectMapper.readValue(anyString(), eq(FeesAndPayTaskData.class))).thenReturn(taskData);
-        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
-
-        FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
-            .paymentStatus(PaymentStatus.PAID)
-            .taskData("task-data")
-            .build();
-        PaymentStatusCallback callback = PaymentStatusCallback.builder().build();
 
         underTest.handle(callback, feePaymentEntity);
 
