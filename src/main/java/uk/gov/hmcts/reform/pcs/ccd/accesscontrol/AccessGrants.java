@@ -22,9 +22,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDG
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
-final class AccessGrants {
+public final class AccessGrants {
 
-    static final UserRole[] PARTY_VISIBLE_ROLES = {
+    public static final UserRole[] PARTY_VISIBLE_ROLES = {
         CITIZEN,
         DEFENDANT,
         GA_DEFENDANT_SOLICITOR,
