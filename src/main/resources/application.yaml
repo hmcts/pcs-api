@@ -346,6 +346,7 @@ caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
 camunda:
+  pcs-api-env: ${PCS_API_ENV:default}
   request:
     max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
     backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
