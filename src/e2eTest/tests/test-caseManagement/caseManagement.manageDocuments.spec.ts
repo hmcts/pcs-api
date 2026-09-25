@@ -19,31 +19,35 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
-  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+  await test.step('Create and submit case, update payment, submit defendant response, retrieve party details and create applications', async () => {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
+    await performAction('updatePaymentAPI');
+    await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+    await performAction('getAllPartyDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+    });
+
+    genAppPayload =
+      testInfo.title.includes('WithOut_Notice')
+        ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
+        : makeAnApplicationApiData.makeAnApplicationAdjournPayload
+
+    for (const defendant of defendantUserDetails) {
+      await performAction('makeAnApplicationAPI', {
+        data: genAppPayload(
+          defendant.id,
+          defendant.name
+        ),
+      });
+    };
   });
 
-  genAppPayload =
-    testInfo.title.includes('WithOut_Notice')
-      ? makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload
-      : makeAnApplicationApiData.makeAnApplicationAdjournPayload
 
-  for (const defendant of defendantUserDetails) {
-    await performAction('makeAnApplicationAPI', {
-      data: genAppPayload(
-        defendant.id,
-        defendant.name
-      ),
-    });
-  };
-  
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);

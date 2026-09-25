@@ -15,7 +15,9 @@ import {
   makeAnApplicationEventTokenApiData,
   makeAnApplicationApiData,
   paymentApiData,
-  manageHearingEventTokenApiData, manageHearingApiData
+  manageHearingEventTokenApiData, manageHearingApiData,
+  respondPossessionClaimSolicitorEventTokenApiData,
+  submitPossessionClaimResponseApiDataForLR
 } from '@data/api-data';
 import { user } from '@data/user-data';
 import { caseNumber } from './createCase.action';
@@ -46,6 +48,7 @@ export class CreateCaseAPIAction implements IAction {
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
       ['updatePaymentAPI', () => this.updatePaymentAPI()],
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord )],
+      ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord )],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -232,9 +235,6 @@ export class CreateCaseAPIAction implements IAction {
             id: defendant.id,
             name: defendantName,
           });
-
-
-
           await performAction('linkSolicitorAPI',user.defendantSolicitor.email as string);
         }
         console.log(`\n✅ GET DEFENDANT ID SUCCESSFUL : STATUS ${createResponse.status}`);
@@ -718,6 +718,44 @@ export class CreateCaseAPIAction implements IAction {
       throw new Error(`Make an application failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
+
+  private async submitPossessionClaimResponseLRAPI(rtac: actionRecord): Promise<void> {
+    const api = Axios.create(submitPossessionClaimResponseApiDataForLR.submitPossessionClaimResponseApiInstance());
+
+    const startEvent = (await api.get(respondPossessionClaimSolicitorEventTokenApiData.respondPossessionClaimSolicitorApiEndPoint())).data;
+
+    const eventToken = startEvent.token;
+    const draftVersion = startEvent.case_details?.case_data?.possessionClaimResponse?.draftVersion;
+    try {
+      await this.apiRetry(async () => {
+        const response = await api.post(submitPossessionClaimResponseApiDataForLR.submitPossessionClaimResponseApiEndPoint(),
+          submitPossessionClaimResponseApiDataForLR.submitPossessionClaimResponsePayload(eventToken, rtac.defendantID as string, draftVersion));
+
+        console.log(`\n✅ SUBMIT LEGAL REPRESENTATIVE RESPONSE SUCCESSFUL FOR CASE NUMBER ${process.env.CASE_NUMBER} : STATUS ${response.status}`);
+        return response;
+      });
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseBody = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
+      if (!status) {
+        throw new Error(`Submitting possession claim response failed: no response from server`);
+      }
+      throw new Error(`Submitting possession claim response failed ${status}.Response received is ${responseBody?.message}}`);
+
+    }
+
+  };
+
   private async apiRetry<T>(
     fn: () => Promise<T>,
     retries = actionRetries,
