@@ -188,6 +188,15 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
     <cve>CVE-2026-59276</cve>
   </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-41707: reported against Spring Security 6.5.11 artifacts pulled by the
+    Spring Boot 3.5.x BOM. No patched 6.5.x OSS release is available for PCS to consume;
+    remove this suppression once PCS can move to a patched Spring Security line.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
+    <cve>CVE-2026-41707</cve>
+  </suppress>
   <suppress until="2026-10-05">
     <notes><![CDATA[
     HDPI-8772: temporary. CVE-2026-47841/47842 against spring-security 6.5.11; no fixed
