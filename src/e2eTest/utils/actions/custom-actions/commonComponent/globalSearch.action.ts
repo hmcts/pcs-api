@@ -159,9 +159,7 @@ export class GlobalSearchCaseAction implements IAction {
       }).getByRole('textbox').fill(accessReason.text?.toString() ?? '');
     }
     await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
-    // await page.waitForURL(/\/challenged-access-request\/success(?:[?#].*)?$/, {
-    //   waitUntil: 'domcontentloaded'
-    // });
+    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
     // await expect(page.getByRole('heading', {
     //  name: new RegExp(challengedAccessSuccess.successMessage, 'i')
     // })).toBeVisible();

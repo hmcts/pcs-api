@@ -75,7 +75,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
-  test('Wales Hearing Centre Team Leader Access an England case', async ({ page, context }) => {
+  test('Wales Hearing Centre Team Leader Access an England case @rerun', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
@@ -105,7 +105,7 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     });
   });
 
-  test('Wales Hearing Centre Administrator Access an England case', async ({ page, context }) => {
+  test('Wales Hearing Centre Administrator Access an England case ', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
