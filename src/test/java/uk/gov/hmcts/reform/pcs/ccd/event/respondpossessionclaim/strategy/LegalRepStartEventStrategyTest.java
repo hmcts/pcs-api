@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
@@ -71,6 +72,9 @@ class LegalRepStartEventStrategyTest {
 
     @Mock
     private RentArrearsView rentArrearsView;
+
+    @Mock
+    private PartyRepository partyRepository;
 
     @InjectMocks
     private LegalRepStartEventStrategy underTest;
@@ -282,7 +286,7 @@ class LegalRepStartEventStrategyTest {
             .thenReturn(true);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -343,7 +347,7 @@ class LegalRepStartEventStrategyTest {
         when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, awaitingId2)).thenReturn(false);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,
@@ -402,7 +406,7 @@ class LegalRepStartEventStrategyTest {
         when(responseRepo.existsByClaimPcsCaseCaseReferenceAndPartyId(CASE_REFERENCE, respondedId2)).thenReturn(true);
 
         LegalRepForDefendantAccessValidator accessValidator =
-            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor());
+            new LegalRepForDefendantAccessValidator(new DefendantPartyExtractor(partyRepository));
 
         LegalRepStartEventStrategy strategy = new LegalRepStartEventStrategy(
             pcsCaseService,

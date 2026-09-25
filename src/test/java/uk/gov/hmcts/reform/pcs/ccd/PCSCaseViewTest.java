@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.DraftResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -134,6 +135,8 @@ class PCSCaseViewTest {
     @Mock
     private DefendantResponseView defendantResponseView;
     @Mock
+    private DraftResponseView draftResponseView;
+    @Mock
     private FeatureFlagView featureFlagView;
     @Mock
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
@@ -160,7 +163,8 @@ class PCSCaseViewTest {
                                     statementOfTruthView, caseFieldsView, searchCriteriaIndexer, caseListView,
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
-                                    defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
+                                    defendantResponseView, draftResponseView, featureFlagView,
+                                    caseFileDocumentDeduplicationService,
                                     hearingView, legalRepresentativeSummaryService, organisationService
         );
     }
@@ -396,6 +400,7 @@ class PCSCaseViewTest {
         verify(hearingView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(legalRepresentativeSummaryService)
             .handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
+        verify(draftResponseView).setCaseFields(pcsCase, pcsCaseEntity, DEFAULT_STATE, orgId);
     }
 
     @Test
