@@ -4,7 +4,6 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-  SESSION_KEYS: '${SESSION_KEYS}'
   keyVaults:
     pcs:
       secrets:
