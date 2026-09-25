@@ -39,6 +39,16 @@ public enum UserRole implements HasRole {
     HMCTS_JUDICIARY("hmcts-judiciary", Set.of(R), RAS, GS_PROFILE),
     HMCTS_CTSC("hmcts-ctsc", Set.of(R), RAS, GS_PROFILE),
     HMCTS_LEGAL_OPERATIONS("hmcts-legal-operations", Set.of(R), RAS, GS_PROFILE),
+
+    CHALLENGED_ACCESS_CTSC("challenged-access-ctsc", Set.of(R), RAS, AccessProfile.CTSC_ADMIN),
+    CHALLENGED_ACCESS_ADMIN("challenged-access-admin", Set.of(R), RAS, AccessProfile.HEARING_CENTRE_ADMIN),
+    CHALLENGED_ACCESS_JUDICIARY("challenged-access-judiciary", Set.of(R), RAS, AccessProfile.JUDGE),
+
+    SPECIFIC_ACCESS_ADMIN("specific-access-admin", Set.of(R), RAS, AccessProfile.HEARING_CENTRE_ADMIN),
+    SPECIFIC_ACCESS_LEGAL_OPS("specific-access-legal-ops", Set.of(R), RAS, AccessProfile.JUDGE),
+    SPECIFIC_ACCESS_CTSC("specific-access-ctsc", Set.of(R), RAS, AccessProfile.CTSC_ADMIN),
+    SPECIFIC_ACCESS_JUDICIARY("specific-access-judiciary", Set.of(R), RAS, AccessProfile.JUDGE),
+
     CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU, RAS, AccessProfile.CTSC_ADMIN),
     CTSC_ADMIN("ctsc", Permission.CRU, RAS),
     HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU, RAS,
