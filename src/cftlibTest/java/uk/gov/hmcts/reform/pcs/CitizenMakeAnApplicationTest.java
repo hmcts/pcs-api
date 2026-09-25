@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CitizenMakeAnApplicationTest extends CftlibTest {
 
     private static final String CITIZEN_EMAIL_ADDRESS = "test@test.com";
-    private static final String GEN_APP_NOTIFICATION_TEMPLATE_ID = "e5daba0d-5c66-4c76-9e0f-06646200dc89";
+    private static final String GEN_APP_NOTIFICATION_TEMPLATE_ID = "fa721ba0-18ab-4018-a2fa-e55056f2c847";
 
     @Autowired
     private CcdClient ccdClient;
