@@ -5,15 +5,18 @@ export type CookieBannerType = 'additional' | 'analytics' | 'hide-success';
 
 async function bannerPresent(page: Page): Promise<CookieBannerType | null> {
   const additional = page.locator('#accept-additional-cookies');
+  if (await additional.isVisible({timeout: 1000}).catch(() => false)) {
+    return 'additional';
+  }
   const analytics = page
     .getByRole('region', { name: /Cookies on this service/i })
     .getByRole('button', { name: /Accept analytics cookies/i });
-  return Promise.any([
-    additional.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
-      .then((): CookieBannerType => 'additional'),
-    analytics.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT })
-      .then((): CookieBannerType => 'analytics'),
-  ]).catch(() => null);
+
+  if (await analytics.isVisible({timeout: 1000}).catch(() => false)) {
+    return 'analytics';
+  }
+
+  return null;
 }
 
 export async function dismissCookieBanner(page: Page, type: CookieBannerType): Promise<void> {
