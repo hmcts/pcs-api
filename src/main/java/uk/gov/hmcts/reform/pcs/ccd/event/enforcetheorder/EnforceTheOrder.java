@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -33,14 +34,14 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Slf4j
 @Component
@@ -60,13 +61,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
-            log.info("Configuring non-production Enforcement event: {}", enforceTheOrder.name());
-            configure(configBuilder);
-        }
-    }
-
-    void configure(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
@@ -74,6 +68,9 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
+                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
