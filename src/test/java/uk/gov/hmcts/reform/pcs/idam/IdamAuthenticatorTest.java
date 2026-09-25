@@ -1,13 +1,15 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import feign.FeignException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
@@ -16,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -28,8 +31,15 @@ class IdamAuthenticatorTest {
     @Mock
     private IdamUserInfoApi idamUserInfoApi;
 
-    @InjectMocks
+    private Cache<String, UserInfo> userInfoCache;
+
     private IdamAuthenticator underTest;
+
+    @BeforeEach
+    void setUp() {
+        userInfoCache = Caffeine.newBuilder().maximumSize(100).build();
+        underTest = new IdamAuthenticator(idamUserInfoApi, userInfoCache);
+    }
 
     @ParameterizedTest
     @NullAndEmptySource
@@ -151,5 +161,54 @@ class IdamAuthenticatorTest {
 
         assertThat(user).isNotNull();
         assertThat(user.getAuthToken()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should call IDAM only once for repeated validations of the same token")
+    void shouldCacheUserInfoForRepeatedValidationsOfSameToken() {
+        String token = BEARER_PREFIX + "valid-token";
+        UserInfo userInfo = mock(UserInfo.class);
+        when(idamUserInfoApi.getUserInfo(token)).thenReturn(userInfo);
+
+        User firstUser = underTest.validateAuthToken(token);
+        User secondUser = underTest.validateAuthToken(token);
+
+        assertThat(firstUser.getUserDetails()).isEqualTo(userInfo);
+        assertThat(secondUser.getUserDetails()).isEqualTo(userInfo);
+        verify(idamUserInfoApi, times(1)).getUserInfo(token);
+    }
+
+    @Test
+    @DisplayName("Should call IDAM separately for different tokens")
+    void shouldNotShareCacheEntriesBetweenDifferentTokens() {
+        String tokenA = BEARER_PREFIX + "token-a";
+        String tokenB = BEARER_PREFIX + "token-b";
+        when(idamUserInfoApi.getUserInfo(tokenA)).thenReturn(mock(UserInfo.class));
+        when(idamUserInfoApi.getUserInfo(tokenB)).thenReturn(mock(UserInfo.class));
+
+        underTest.validateAuthToken(tokenA);
+        underTest.validateAuthToken(tokenB);
+
+        verify(idamUserInfoApi).getUserInfo(tokenA);
+        verify(idamUserInfoApi).getUserInfo(tokenB);
+    }
+
+    @Test
+    @DisplayName("Should not cache failures - a rejected token is re-validated on next use")
+    void shouldNotCacheFailedValidations() {
+        String token = BEARER_PREFIX + "flaky-token";
+        FeignException.Unauthorized unauthorizedException = mock(FeignException.Unauthorized.class);
+        UserInfo userInfo = mock(UserInfo.class);
+        when(idamUserInfoApi.getUserInfo(token))
+            .thenThrow(unauthorizedException)
+            .thenReturn(userInfo);
+
+        assertThatThrownBy(() -> underTest.validateAuthToken(token))
+            .isInstanceOf(InvalidAuthTokenException.class);
+
+        User user = underTest.validateAuthToken(token);
+
+        assertThat(user.getUserDetails()).isEqualTo(userInfo);
+        verify(idamUserInfoApi, times(2)).getUserInfo(token);
     }
 }
