@@ -25,7 +25,7 @@ export class GlobalSearchCaseAction implements IAction {
       ['validateResults', () => this.validateResults(page)],
       ['validateResultsWithRetry', () => this.validateResultsWithRetry(page)],
       ['validateChallengedAccessLink', () => this.validateChallengedAccessLink(page)],
-      ['requestChallengedAccess', () => this.requestChallengedAccess(page)],
+      ['requestChallengedAccess', () => this.requestChallengedAccess(page, fieldName as actionRecord)],
 
     ]);
 
@@ -129,7 +129,7 @@ export class GlobalSearchCaseAction implements IAction {
     await expect(challengedAccessLink).toBeEnabled();
   }
 
-  private async requestChallengedAccess(page: Page): Promise<void> {
+  private async requestChallengedAccess(page: Page, accessReason: actionRecord): Promise<void> {
     const caseReference = String(process.env.CASE_NUMBER ?? '');
     const normalizedCaseReference = caseReference.replace(/\D/g, '');
     await expect(page.getByRole('heading', { name: searchResults.mainHeader })).toBeVisible();
@@ -151,16 +151,21 @@ export class GlobalSearchCaseAction implements IAction {
     )).toBeVisible();
     await performAction('clickRadioButton', {
       question: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion,
-      option: whyDoYouNeedToAccessThisCase.otherReasonRadioOption
+      option: accessReason.option
     });
-    await page.getByRole('group', {
-      name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
-    }).getByRole('textbox').fill(whyDoYouNeedToAccessThisCase.otherReasonInputText);
+    if (accessReason.option === whyDoYouNeedToAccessThisCase.otherReasonRadioOption) {
+      await page.getByRole('group', {
+        name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
+      }).getByRole('textbox').fill(accessReason.text);
+    }
     await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
     await expect(page.getByRole('heading', {
-      name: new RegExp(challengedAccessSuccess.successMessage, 'i')
+     name: new RegExp(challengedAccessSuccess.successMessage, 'i')
     })).toBeVisible();
-  }
+    await expect(page.getByRole('link', { name: challengedAccessSuccess.viewCaseFileLink })).toBeVisible();
+    await performAction('clickLink', challengedAccessSuccess.viewCaseFileLink);
+    //await performValidation('mainHeader', home.caseSummary);
+   }
 
   private async findCaseReferenceRowAcrossPages(page: Page, normalizedCaseReference: string): Promise<Locator> {
     const maxPagesToScan = 50;

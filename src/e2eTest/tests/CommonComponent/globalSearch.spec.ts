@@ -1,7 +1,7 @@
 import { test } from '@utils/test-fixtures';
 import { Page, BrowserContext } from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { globalSearch} from '@data/page-data-figma';
+import { globalSearch, whyDoYouNeedToAccessThisCase } from '@data/page-data-figma';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -85,7 +85,9 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     await performAction('accessingTheSearch');
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('requestChallengedAccess');
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toDetermineIfTheCaseNeedsToBeConsolidated
+    });
   });
 
   test('Wales Judge user Access an England case', async ({ page, context }) => {
@@ -98,7 +100,9 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     await performAction('accessingTheSearch');
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('requestChallengedAccess');
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer
+    });
   });
 
   test('Wales Hearing Centre Administrator Access an England case', async ({ page, context }) => {
@@ -111,7 +115,10 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     await performAction('accessingTheSearch');
     await performAction('select', globalSearch.servicesLabel, globalSearch.servicesDropdownOption2);
     await performAction('searchByCaseReference', process.env.CASE_NUMBER);
-    await performAction('requestChallengedAccess');
+    await performAction('requestChallengedAccess', {
+      option: whyDoYouNeedToAccessThisCase.otherReasonRadioOption,
+      text: whyDoYouNeedToAccessThisCase.otherReasonInputText
+    });
   });
 });
 
