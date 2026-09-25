@@ -494,7 +494,10 @@ public class CaseFlagService {
             .filter(existingFlag -> existingFlag.getId() != null
                 && existingFlag.getId().toString().equals(reviewedDetail.getId()))
             .findFirst()
-            .ifPresent(existingFlag -> applyEditedFlagFields(existingFlag, reviewedFlagDetail));
+            .ifPresent(existingFlag -> {
+                applyEditedFlagFields(existingFlag, reviewedFlagDetail);
+                applyCarriedThroughFlagFields(existingFlag, reviewedFlagDetail);
+            });
     }
 
     private boolean isSupportChangeAllowed(PartyEntity partyEntity,
