@@ -188,6 +188,22 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
     <cve>CVE-2026-59276</cve>
   </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[
+    CVE-2026-41707: Spring Security 6.5.11 DPoPProofJwtDecoderFactory keeps a bounded jti
+    replay cache; flooding it evicts a legitimate jti so an intercepted DPoP proof can be
+    replayed. No bump possible: the 6.5.x fix is Enterprise Support Only and is not on
+    Maven Central; the OSS fixes require Spring Boot 4.x. Boot 3.5.16 pins 6.5.11 - the
+    same position as CVE-2026-59270 above.
+    Not reachable: DPoP proof validation is a resource-server feature. PCS uses Spring
+    Security OAuth2 only as a client (fetching IDAM tokens via spring.security.oauth2.client);
+    it configures no oauth2ResourceServer, no DPoP, and never instantiates
+    DPoPProofJwtDecoderFactory.
+    Remove once PCS moves onto a Spring Security 7.x line.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
+    <cve>CVE-2026-41707</cve>
+  </suppress>
   <suppress until="2026-10-05">
     <notes><![CDATA[
     HDPI-8772: temporary. CVE-2026-47841/47842 against spring-security 6.5.11; no fixed
