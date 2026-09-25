@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -112,7 +114,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             genAppVisibilityService,
             organisationService,
             legalRepPartySelectionService,
-            partyService);
+            partyService,
+            new ExistingApplicationDocumentLinkBuilder(partyService));
 
         setEventUnderTest(legalRepDocumentUpload);
     }
@@ -187,15 +190,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .filteredOn(item -> item.getLabel().contains("adjourn the hearing"))
                 .extracting(DynamicStringListElement::getLabel)
                 .containsExactlyInAnyOrder(
-                    "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    "Yes, the documents I’m uploading relate to General app (GA): the application to adjourn the "
                         + "hearing - submitted on Monday 20 April 2026",
-                    "Yes, the documents I’m uploading relate to the application to adjourn the "
+                    "Yes, the documents I’m uploading relate to General app (GA): the application to adjourn the "
                         + "hearing - submitted on Saturday 25 April 2026"
                 );
 
             assertThat(categories.getListItems())
                 .filteredOn(item -> item.getLabel().equals(
-                    "Yes, the documents I’m uploading relate to an application submitted on "
+                    "Yes, the documents I’m uploading relate to General app (GA): an application submitted on "
                         + "Saturday 25 April 2026"))
                 .extracting(DynamicStringListElement::getCode)
                 .containsExactly(generalId.toString());
@@ -212,6 +215,75 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(result.getLegalRepDocumentUploadDetails().getShowExistingApplicationPage())
                 .isEqualTo(VerticalYesNo.YES);
 
+        }
+
+        @Test
+        void shouldBuildApplicationDocumentLinksThatDistinguishGenAppsForMultipleDefendants() {
+            LocalDateTime submittedDate = LocalDateTime.of(2026, 2, 1, 10, 0);
+            UUID defendant1Id = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID defendant2Id = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            ClaimEntity mainClaim = mock(ClaimEntity.class);
+            UUID defendant1DocumentId = UUID.fromString("55555555-5555-5555-5555-555555555555");
+            UUID defendant2DocumentId = UUID.fromString("66666666-6666-6666-6666-666666666666");
+
+            PartyEntity defendant1 = PartyEntity.builder().id(defendant1Id).build();
+            PartyEntity defendant2 = PartyEntity.builder().id(defendant2Id).build();
+
+            GenAppEntity defendant1GenApp = GenAppEntity.builder()
+                .id(UUID.fromString("33333333-3333-3333-3333-333333333333"))
+                .rank(1)
+                .type(GenAppType.ADJOURN)
+                .party(defendant1)
+                .applicationSubmittedDate(submittedDate)
+                .submissionDocument(DocumentEntity.builder()
+                                        .url("http://dm-store/documents/defendant-1-summary")
+                                        .binaryUrl("http://dm-store/documents/defendant-1-summary/binary")
+                                        .documentId(defendant1DocumentId)
+                                        .build())
+                .build();
+
+            GenAppEntity defendant2GenApp = GenAppEntity.builder()
+                .id(UUID.fromString("44444444-4444-4444-4444-444444444444"))
+                .rank(2)
+                .type(GenAppType.ADJOURN)
+                .party(defendant2)
+                .applicationSubmittedDate(submittedDate)
+                .submissionDocument(DocumentEntity.builder()
+                                        .url("http://dm-store/documents/defendant-2-summary")
+                                        .binaryUrl("http://dm-store/documents/defendant-2-summary/binary")
+                                        .documentId(defendant2DocumentId)
+                                        .build())
+                .build();
+
+            when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
+            when(partyService.getPartyLabel(mainClaim, defendant1Id)).thenReturn("Defendant 1");
+            when(partyService.getPartyLabel(mainClaim, defendant2Id)).thenReturn("Defendant 2");
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(genAppVisibilityService.getVisibleGenAppsToUser(any(), any(), any()))
+                .thenReturn(List.of(defendant1GenApp, defendant2GenApp));
+
+            PCSCase result = callStartHandler(PCSCase.builder().build());
+
+            String documentLinks = result.getLegalRepDocumentUploadDetails().getExistingApplicationDocumentLinks();
+
+            assertThat(documentLinks).contains(
+                "href=\"/documents/55555555-5555-5555-5555-555555555555/binary\"",
+                "General app (GA1) - Defendant 1 (opens in new tab)",
+                "href=\"/documents/66666666-6666-6666-6666-666666666666/binary\"",
+                "General app (GA2) - Defendant 2 (opens in new tab)",
+                "target=\"_blank\"",
+                "rel=\"noopener noreferrer\"",
+                "class=\"govuk-link\""
+            );
+
+            assertThat(result.getLegalRepDocumentUploadDetails().getValidCategories().getListItems())
+                .extracting(DynamicStringListElement::getLabel)
+                .contains(
+                    "Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: "
+                        + "the application to adjourn the hearing - submitted on Sunday 1 February 2026",
+                    "Yes, the documents I’m uploading relate to General app (GA2) - Defendant 2: "
+                        + "the application to adjourn the hearing - submitted on Sunday 1 February 2026"
+                );
         }
 
         @Test
@@ -496,6 +568,24 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             PCSCase pcsCase = PCSCase.builder()
                 .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
                                                    .legalRepDocuments(wrapListItems(legalRepDocList))
+                                                   .build())
+                .build();
+
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
+        }
+
+        @Test
+        void shouldReturnErrorWhenAtLeastOneLegalRepDocumentHasNoDocument() {
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            LegalRepDocument legalRepDocumentWithoutDocument = LegalRepDocument.builder().build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(
+                                                       legalRepDocumentWithoutDocument)))
                                                    .build())
                 .build();
 
