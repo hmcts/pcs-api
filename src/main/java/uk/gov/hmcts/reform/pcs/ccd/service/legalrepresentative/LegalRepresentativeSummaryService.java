@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisa
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -50,6 +51,7 @@ public class LegalRepresentativeSummaryService {
     private final DefendantPartyExtractor defendantPartyExtractor;
     private final FeatureToggleService featureToggleService;
     private final ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
+    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -65,7 +67,7 @@ public class LegalRepresentativeSummaryService {
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
 
         if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
-            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());
+            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity);
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
         }
@@ -74,19 +76,26 @@ public class LegalRepresentativeSummaryService {
     private void setLegalRepresentativeFields(PCSCase pcsCase,
                                                              ClaimPartyOrganisationEntity
                                                                  partyLink,
-                                              long caseReference) {
+                                              PcsCaseEntity pcsCaseEntity) {
+        String organisationId = partyLink.getOrganisation().getOrganisationId();
 
         // Direct lookup: walking the organisation's contact details loads every case it has ever been
         // party to (one query per row), which is O(cases per organisation).
         YesOrNo hasAmendedContactDetails = claimPartyContactDetailsRepository
             .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(
-                partyLink.getOrganisation().getOrganisationId(), caseReference)
+                organisationId, pcsCaseEntity.getCaseReference())
             .map(ClaimPartyContactDetailsEntity::getContactDetailsCorrectConfirmation)
             .orElse(YesOrNo.NO);
 
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
+            // Only reached for an actively linked organisation, so the case has a claim and defendants
+            boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
+                .validateAndGetDefendants(pcsCaseEntity, organisationId).isEmpty();
+            pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
-            pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
+            pcsCase.setSummaryLegalRepresentativeMarkdown(hasUnsubmittedDefendantResponses
+                ? RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl)
+                : StringUtils.EMPTY);
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(UPDATE_DETAILS_MARKDOWN
                                                               .formatted(legalRepresentativeContactDetails));

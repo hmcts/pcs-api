@@ -26,6 +26,7 @@ public class ExtRespondPossessionClaim implements CCDConfig<PCSCase, State, User
             .forState(State.CASE_ISSUED)
             .showCondition(ShowConditions.and(
                 "legalRepUpdatedDetails=\"Yes\"",
+                "hasUnsubmittedDefendantResponses=\"Yes\"",
                 ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2)))
             .name("Respond to claim")
             .description("Respond to claim")
