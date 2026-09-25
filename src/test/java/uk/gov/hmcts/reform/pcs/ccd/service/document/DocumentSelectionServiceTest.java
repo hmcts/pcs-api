@@ -14,8 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
@@ -300,6 +302,30 @@ class DocumentSelectionServiceTest {
 
         assertThat(caseData.getEvidenceDocuments().getListItems()).isEmpty();
         assertThat(caseData.getDocumentAmendDetails().getEvidenceEmpty()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldExcludePendingCounterClaimDocumentsFromSelection() {
+        DocumentEntity pendingCounterClaimDocument = document("counterclaim evidence.pdf", EVIDENCE.getId());
+        pendingCounterClaimDocument.setCounterClaim(CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build());
+        DocumentEntity issuedCounterClaimDocument = document("issued counterclaim evidence.pdf", EVIDENCE.getId());
+        issuedCounterClaimDocument.setCounterClaim(CounterClaimEntity.builder()
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .build());
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(PcsCaseEntity.builder()
+            .documents(List.of(pendingCounterClaimDocument, issuedCounterClaimDocument))
+            .build());
+        PCSCase caseData = PCSCase.builder()
+            .documentAmendDetails(DocumentAmendDetails.builder().build())
+            .build();
+
+        underTest.initialise(CASE_REFERENCE, caseData, caseData.getDocumentAmendDetails());
+
+        assertThat(caseData.getEvidenceDocuments().getListItems())
+            .extracting(DynamicListElement::getLabel)
+            .containsExactly("issued counterclaim evidence.pdf");
     }
 
     private static DocumentEntity document(String fileName, String categoryId) {

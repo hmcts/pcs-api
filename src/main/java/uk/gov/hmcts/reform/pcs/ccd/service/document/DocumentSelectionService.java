@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentSelectionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -122,6 +123,8 @@ public class DocumentSelectionService {
                 .filter(document -> isInCategory(document, category))
                 .filter(document -> document.getType() != DocumentType.DEFENDANT_ACCESS_CODE)
                 .filter(document -> !document.isRemoved())
+                .filter(document -> document.getCounterClaim() == null
+                    || document.getCounterClaim().getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED)
                 .sorted(DOCUMENT_ORDER)
                 .map(document -> DynamicListElement.builder()
                     .code(document.getId())
