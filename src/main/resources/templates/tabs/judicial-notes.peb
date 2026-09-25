@@ -1,0 +1,48 @@
+{% if judicialNotes is not empty %}
+{% set noteNumber = judicialNotes.size + 1 %}
+<div class="govuk-width-container">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <br>
+      {% for judicialNote in judicialNotes %}
+      {% set noteNumber = noteNumber - 1 %}
+      <div class="govuk-summary-card">
+        <div class="govuk-summary-card__title-wrapper">
+          <h2 class="govuk-summary-card__title govuk-!-font-size-16 govuk-!-static-margin-0">
+            Note {{noteNumber}}
+          </h2>
+        </div>
+        <div class="govuk-summary-card__content">
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Notes
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{judicialNote.note}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Created by
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{judicialNote.createdBy}}
+              </dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key govuk-!-font-size-16">
+                Created on
+              </dt>
+              <dd class="govuk-summary-list__value govuk-!-font-size-16">
+                {{judicialNote.createdOn | date("d MMM yyyy, h:mm:ss a")}}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -100,6 +100,8 @@ class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseDetailsTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, AccessProfile> judicialNotesTabBuilder =
+            Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
             Search.SearchBuilder.builder(PCSCase.class, utils);
         final SearchCases.SearchCasesBuilder<PCSCase> searchCasesBuilder =
@@ -125,6 +127,7 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
         when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
+        when(builder.tab("judicialNotes", "Judicial Notes")).thenReturn(judicialNotesTabBuilder);
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
@@ -144,6 +147,7 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> judicialNotesTab = judicialNotesTabBuilder.build();
 
 
         // Then
@@ -168,6 +172,7 @@ class CaseTypeTest {
         assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(judicialNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.JUDICIAL_NOTE_TAB_ROLES);
         assertThat(supportTab.getForRoles())
             .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
@@ -265,6 +270,7 @@ class CaseTypeTest {
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("judicialNotes", "Judicial Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
             .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }
