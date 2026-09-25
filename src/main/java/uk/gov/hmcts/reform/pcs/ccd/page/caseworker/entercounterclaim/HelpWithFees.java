@@ -3,24 +3,28 @@ package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entercounterclaim;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Component
 public class HelpWithFees implements CcdPageConfiguration {
 
-    private static final String CLAIM_TYPE_FIELD = "enter_cc_ClaimTypeOption";
-
-    private static final String SOMETHING_ELSE_SELECTED =
-        fieldEquals(CLAIM_TYPE_FIELD, CounterClaimType.SOMETHING_ELSE);
+    private static final String APPLIED_FOR_HWF_FIELD = "enter_cc_AppliedForHwf";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("helpWithFees")
-            .pageLabel("Help with fees")
-            .showCondition(SOMETHING_ELSE_SELECTED)
-            .label("helpWithFees-placeholder", "Placeholder - to be implemented");
+            .pageLabel("Help with Fees")
+            .label("helpWithFees-lineSeparator", "---")
+            .complex(PCSCase::getEnterCounterClaim)
+                .mandatory(EnterCounterClaimDetails::getAppliedForHwf)
+                .mandatory(
+                    EnterCounterClaimDetails::getHwfReferenceNumber,
+                    fieldEquals(APPLIED_FOR_HWF_FIELD, VerticalYesNo.YES))
+            .done();
     }
 }
