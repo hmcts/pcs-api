@@ -37,7 +37,7 @@ class DefendantValidatorTest {
         DefendantDetails defendant1 = createDefendantWithAddress(defendant1Address);
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
-        when(addressValidator.validateAddressFields(defendant1Address, ""))
+        when(addressValidator.validateCorrespondenceAddress(defendant1Address, ""))
             .thenReturn(expectedValidationErrors);
 
         // When
@@ -54,7 +54,7 @@ class DefendantValidatorTest {
         DefendantDetails defendant1 = createDefendantWithAddress(defendant1Address);
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
-        when(addressValidator.validateAddressFields(defendant1Address, "defendant 1"))
+        when(addressValidator.validateCorrespondenceAddress(defendant1Address, "defendant 1"))
             .thenReturn(expectedValidationErrors);
 
         // When
@@ -82,10 +82,10 @@ class DefendantValidatorTest {
         String errorMessage2 = "error 2";
         String errorMessage3 = "error 3";
 
-        when(addressValidator.validateAddressFields(additionalDefendant1Address, "additional defendant 1"))
+        when(addressValidator.validateCorrespondenceAddress(additionalDefendant1Address, "additional defendant 1"))
             .thenReturn(List.of(errorMessage1));
 
-        when(addressValidator.validateAddressFields(additionalDefendant2Address, "additional defendant 2"))
+        when(addressValidator.validateCorrespondenceAddress(additionalDefendant2Address, "additional defendant 2"))
             .thenReturn(List.of(errorMessage2, errorMessage3));
 
         // When

@@ -24,15 +24,16 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -47,6 +48,7 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
+    private final FeatureToggleService featureToggleService;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
@@ -339,8 +341,13 @@ public class PartyService {
     }
 
     private AddressEntity mapAddress(AddressUK address) {
-        return address != null
-            ? addressMapper.toAddressEntityAndNormalise(address) : null;
+        if (address == null) {
+            return null;
+        }
+
+        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
+            ? addressMapper.toCorrespondenceAddressEntity(address)
+            : addressMapper.toAddressEntityAndNormalise(address);
     }
 
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
