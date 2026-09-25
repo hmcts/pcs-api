@@ -15,6 +15,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
@@ -580,6 +581,82 @@ class PartyServiceTest {
                 arguments(PartyRole.DEFENDANT, 8, "Defendant 8"),
                 arguments(PartyRole.UNDERLESSEE_OR_MORTGAGEE, 2, null)
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("Build Party Dynamic List")
+    class BuildPartyDynamicListTests {
+
+        @Test
+        void shouldBuildListOnlyFromRequestedRoles() {
+            // Given
+            UUID claimantId = UUID.randomUUID();
+            UUID defendant1Id = UUID.randomUUID();
+            UUID defendant2Id = UUID.randomUUID();
+            UUID underlesseeId = UUID.randomUUID();
+
+            PartyEntity claimant = PartyEntity.builder()
+                .id(claimantId)
+                .firstName("John")
+                .lastName("Smith")
+                .nameKnown(VerticalYesNo.YES)
+                .build();
+
+            PartyEntity defendant1 = PartyEntity.builder()
+                .id(defendant1Id)
+                .firstName("Jane")
+                .lastName("Doe")
+                .nameKnown(VerticalYesNo.YES)
+                .build();
+
+            PartyEntity defendant2 = PartyEntity.builder()
+                .id(defendant2Id)
+                .nameKnown(VerticalYesNo.NO)
+                .build();
+
+            PartyEntity underlesseeOrMortgagee = PartyEntity.builder()
+                .id(underlesseeId)
+                .orgName("Bank Ltd")
+                .build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
+                ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build(),
+                ClaimPartyEntity.builder().party(underlesseeOrMortgagee).role(PartyRole.UNDERLESSEE_OR_MORTGAGEE)
+                    .rank(1).build()
+            ));
+
+            // When
+            List<DynamicListElement> listItems = underTest
+                .buildPartyDynamicList(claimEntity, PartyRole.CLAIMANT, PartyRole.DEFENDANT)
+                .getListItems();
+
+            // Then
+            assertThat(listItems).containsExactly(
+                DynamicListElement.builder().code(claimantId).label("John Smith - Claimant 1").build(),
+                DynamicListElement.builder().code(defendant1Id).label("Jane Doe - Defendant 1").build(),
+                DynamicListElement.builder().code(defendant2Id).label("Person unknown - Defendant 2").build()
+            );
+        }
+
+        @Test
+        void shouldReturnEmptyListWhenNoPartiesMatchRequestedRoles() {
+            // Given
+            PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).build();
+
+            when(claimEntity.getClaimParties()).thenReturn(List.of(
+                ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build()
+            ));
+
+            // When
+            List<DynamicListElement> listItems = underTest
+                .buildPartyDynamicList(claimEntity, PartyRole.DEFENDANT)
+                .getListItems();
+
+            // Then
+            assertThat(listItems).isEmpty();
         }
     }
 
