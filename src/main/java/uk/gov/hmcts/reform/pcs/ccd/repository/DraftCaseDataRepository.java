@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, Integer> {
 
+    // PartyIdIsNull is load-bearing: LR drafts share case/event/org but carry a party;
+    // without it a firm's defendant draft matches here (and two defendants -> non-unique).
     Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 
