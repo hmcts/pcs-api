@@ -41,11 +41,13 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
@@ -136,11 +138,20 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         DynamicList representedDefendantPartyNames = DynamicList.builder()
             .listItems(listItems)
+            .value(DynamicListElement.EMPTY)
             .build();
 
-        boolean representingMultipleParties = representedDefendantPartyNames.getListItems().size() > 1;
-        caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
-        caseData.setRepresentedPartyNames(representedDefendantPartyNames);
+        if (isEmpty(representedDefendantPartyNames)) {
+            caseData.setMultipleRepresentedParties(VerticalYesNo.NO);
+            caseData.setRepresentedPartyNames(DynamicList.builder()
+                                                  .listItems(Collections.emptyList())
+                                                  .build());
+
+        } else {
+            boolean representingMultipleParties = representedDefendantPartyNames.getListItems().size() > 1;
+            caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+            caseData.setRepresentedPartyNames(representedDefendantPartyNames);
+        }
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
         legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));
