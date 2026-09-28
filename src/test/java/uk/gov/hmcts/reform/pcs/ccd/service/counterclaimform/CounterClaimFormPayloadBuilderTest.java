@@ -309,7 +309,7 @@ class CounterClaimFormPayloadBuilderTest {
     }
 
     @Test
-    void respondentNamesReturnsNullWhenEveryPartyYieldsBlankName() {
+    void respondentNamesReturnsPersonsUnknownWhenPartyHasBlankName() {
         PartyEntity blankParty = PartyEntity.builder().id(UUID.randomUUID()).firstName(" ").lastName("").build();
         CounterClaimEntity counterClaim = CounterClaimEntity.builder()
             .id(UUID.randomUUID())
@@ -321,7 +321,7 @@ class CounterClaimFormPayloadBuilderTest {
 
         CounterClaimFormPayload payload = builder.build(counterClaim);
 
-        assertThat(payload.getRespondentNames()).isNull();
+        assertThat(payload.getRespondentNames()).isEqualTo("Persons unknown");
     }
 
     @Test
@@ -375,6 +375,22 @@ class CounterClaimFormPayloadBuilderTest {
                 CounterClaimPartyEntity.builder().party(claimant).build(),
                 CounterClaimPartyEntity.builder().party(respondentOrg).build())))
             .build();
+    }
+
+    @Test
+    void formatsPersonsUnknownWhenRespondentNameIsBlank() {
+        PartyEntity unnamedDefendant = PartyEntity.builder().id(UUID.randomUUID()).build();
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .pcsCase(minimalCase(null))
+            .counterClaimParties(new ArrayList<>(List.of(
+                CounterClaimPartyEntity.builder().party(unnamedDefendant).build())))
+            .build();
+
+        CounterClaimFormPayload payload = builder.build(counterClaim);
+
+        assertThat(payload.getRespondentNames()).isEqualTo("Persons unknown");
+        assertThat(payload.getShowRespondentNames()).isTrue();
     }
 
     private PcsCaseEntity minimalCase(ClaimEntity claim) {
