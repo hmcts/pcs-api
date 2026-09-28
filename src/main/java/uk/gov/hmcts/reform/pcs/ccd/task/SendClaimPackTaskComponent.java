@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Slf4j
 @Component
