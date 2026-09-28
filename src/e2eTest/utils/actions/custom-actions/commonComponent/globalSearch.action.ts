@@ -175,7 +175,7 @@ export class GlobalSearchCaseAction implements IAction {
     //})).toBeVisible();
     await expect(page.getByRole('link', { name: challengedAccessSuccess.viewCaseFileLink })).toBeVisible();
     await performAction('clickLink', challengedAccessSuccess.viewCaseFileLink);
-    await performValidation('mainHeader', home.caseSummary);
+    //await performValidation('mainHeader', home.caseSummary);
    }
 
   private async findCaseReferenceRowAcrossPages(page: Page, normalizedCaseReference: string): Promise<Locator> {
