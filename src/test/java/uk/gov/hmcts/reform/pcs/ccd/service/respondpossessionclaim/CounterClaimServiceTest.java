@@ -33,6 +33,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,6 +104,23 @@ class CounterClaimServiceTest {
         assertThat(captured.getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(captured.getParty()).isEqualTo(partyEntity);
         assertThat(captured.getPcsCase()).isEqualTo(pcsCaseEntity);
+    }
+
+    @Test
+    void shouldSetStateWhenCounterClaimEnteredByCaseworker() {
+        // Given
+        stubClaimRepository();
+
+        CounterClaim counterClaim = mock(CounterClaim.class);
+
+        when(counterClaimRepository.save(any(CounterClaimEntity.class))).thenReturn(mock(CounterClaimEntity.class));
+
+        // When
+        underTest.saveCaseworkerEnteredCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
+
+        // Then
+        verify(counterClaimRepository).save(counterClaimCaptor.capture());
+        assertThat(counterClaimCaptor.getValue().getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
     }
 
     @Test

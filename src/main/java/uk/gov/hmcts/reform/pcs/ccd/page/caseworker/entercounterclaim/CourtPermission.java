@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -11,12 +13,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterCounterClaimDetails;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
@@ -38,9 +47,14 @@ public class CourtPermission implements CcdPageConfiguration {
     private static final String PARTY_LIST_LABEL = "Which party submitted the counterclaim?";
 
     private final Clock ukClock;
+    private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
 
-    public CourtPermission(@Qualifier("ukClock") Clock ukClock) {
+    public CourtPermission(@Qualifier("ukClock") Clock ukClock, PcsCaseService pcsCaseService,
+                           PartyService partyService) {
         this.ukClock = ukClock;
+        this.pcsCaseService = pcsCaseService;
+        this.partyService = partyService;
     }
 
     @Override
@@ -94,9 +108,35 @@ public class CourtPermission implements CcdPageConfiguration {
             }
         }
 
+        caseData.setPartyMultiSelectionList(buildAgainstPartyList(details.getId(), caseData));
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
+            .build();
+    }
+
+    private DynamicMultiSelectStringList buildAgainstPartyList(long caseReference, PCSCase caseData) {
+        ClaimEntity mainClaim = pcsCaseService.loadCase(caseReference).getClaims().getFirst();
+
+        DynamicList submittingPartyList = caseData.getPartyRadioList();
+        UUID submittingPartyId = submittingPartyList != null ? submittingPartyList.getValueCode() : null;
+
+        List<DynamicListElement> parties = new ArrayList<>();
+        parties.addAll(partyService.buildPartyDynamicList(mainClaim, PartyRole.CLAIMANT).getListItems());
+        parties.addAll(partyService.buildPartyDynamicList(mainClaim, PartyRole.DEFENDANT).getListItems());
+
+        List<DynamicStringListElement> listItems = parties.stream()
+            .filter(element -> !element.getCode().equals(submittingPartyId))
+            .map(element -> DynamicStringListElement.builder()
+                .code(element.getCode().toString())
+                .label(element.getLabel())
+                .build())
+            .toList();
+
+        return DynamicMultiSelectStringList.builder()
+            .value(new ArrayList<>())
+            .listItems(listItems)
             .build();
     }
 }
