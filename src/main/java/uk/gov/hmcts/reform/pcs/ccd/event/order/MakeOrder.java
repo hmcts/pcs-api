@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -198,15 +197,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
         NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
-        RentArrearsEntity arrears = claim == null ? null : claim.getRentArrears();
         return new CaseFacts(
             tenancy == null ? null : tenancy.getStartDate(),
             tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
             noticeDate(notice),
             tenancy == null ? null : tenancy.getRentAmount(),
             tenancy == null || tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().name(),
-            claim == null ? null : groundsPleaded(claim),
-            arrears == null ? null : arrears.getTotalRentArrears()
+            claim == null ? null : groundsPleaded(claim)
         );
     }
 

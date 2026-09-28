@@ -11,7 +11,6 @@ import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -88,7 +87,6 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
             .postedDate(LocalDate.of(2026, 8, 10))
             .build());
         claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
-        claim.setRentArrears(RentArrearsSection.builder().total(new BigDecimal("1500.00")).build());
         claim.getSecureOrFlexiblePossessionGrounds()
             .setSecureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY));
 
@@ -103,7 +101,6 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 10));
         assertThat(facts.currentRent()).isEqualByComparingTo("750.00");
         assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
-        assertThat(facts.arrearsOnIssue()).isEqualByComparingTo("1500.00");
         assertThat(facts.groundsPleaded()).contains("Rent arrears");
     }
 

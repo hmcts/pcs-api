@@ -35,8 +35,7 @@ public record MakeOrderStart(Order order, CaseContext caseContext) {
                             LocalDate noticeDate,
                             BigDecimal currentRent,
                             String rentFrequency,
-                            String groundsPleaded,
-                            BigDecimal arrearsOnIssue) {
+                            String groundsPleaded) {
     }
 
     public record Party(String id, String name) {
