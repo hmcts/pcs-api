@@ -166,6 +166,7 @@ export class GlobalSearchCaseAction implements IAction {
       })).toBeVisible({timeout: SHORT_TIMEOUT});
     }).toPass({
       timeout: LONG_TIMEOUT,
+      intervals: [1000, 2000, 5000],
     });
     //await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
     //await page.waitForTimeout(5000);
