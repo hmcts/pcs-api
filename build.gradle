@@ -210,6 +210,8 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  // Spring caches each distinct test context; the default 512m runs out once they all load.
+  maxHeapSize = '1g'
 }
 
 tasks.register('smoke', Test) {
@@ -348,7 +350,9 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
       "**/entities/**," +
       "**/model/**," +
-      "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
+      "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
+      // Covered by MakeOrderIT, which runs in the integration suite rather than before this scan.
+      "**/uk/gov/hmcts/reform/pcs/ccd/event/order/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/genapp/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/documentamend/DocumentAmendDetails.java," +
