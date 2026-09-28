@@ -83,7 +83,6 @@ public class CftlibConfig implements CFTLibConfigurer {
         roleNames.add("caseworker-wa-task-configuration");
         roleNames.add("pui-case-manager");
         roleNames.add("caseworker-caa");
-        roleNames.add("caseworker-civil-judge");
 
         lib.createRoles(roleNames.toArray(new String[0]));
     }
