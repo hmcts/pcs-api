@@ -207,14 +207,50 @@ class CounterClaimDetailsHydratorTest {
         }
 
         @Test
-        void shouldReturnHashWhenDocumentsNullOrCcIdNull() {
-            CounterClaimEntity ccWithoutId = CounterClaimEntity.builder().id(null).build();
+        void shouldReturnHashWhenDocumentsListIsNull() {
+            UUID ccId = UUID.randomUUID();
+            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
             PcsCaseEntity caseNullDocs = PcsCaseEntity.builder()
-                .counterClaims(List.of(ccWithoutId))
+                .counterClaims(List.of(counterClaim))
                 .documents(null)
                 .build();
 
             underTest.hydrate(caseNullDocs, details, CURRENT_ORG_ID);
+
+            assertThat(details.getCounterclaimDocumentLinks()).contains("href=\"#\"");
+        }
+
+        @Test
+        void shouldReturnHashWhenCounterClaimIdIsNull() {
+            CounterClaimEntity ccWithoutId = CounterClaimEntity.builder().id(null).build();
+            DocumentEntity doc = DocumentEntity.builder().build();
+            PcsCaseEntity caseWithDocs = PcsCaseEntity.builder()
+                .counterClaims(List.of(ccWithoutId))
+                .documents(List.of(doc))
+                .build();
+
+            underTest.hydrate(caseWithDocs, details, CURRENT_ORG_ID);
+
+            assertThat(details.getCounterclaimDocumentLinks()).contains("href=\"#\"");
+        }
+
+        @Test
+        void shouldReturnHashWhenNoMatchingDocumentsFoundForCounterclaim() {
+            UUID ccId = UUID.randomUUID();
+            UUID otherCcId = UUID.randomUUID();
+            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
+            CounterClaimEntity otherCc = CounterClaimEntity.builder().id(otherCcId).build();
+
+            DocumentEntity otherDoc = DocumentEntity.builder()
+                .counterClaim(otherCc)
+                .build();
+
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(counterClaim))
+                .documents(List.of(otherDoc))
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
 
             assertThat(details.getCounterclaimDocumentLinks()).contains("href=\"#\"");
         }
