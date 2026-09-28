@@ -14,12 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
@@ -103,6 +105,17 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
         assertThat(facts.arrearsOnIssue()).isEqualByComparingTo("1500.00");
         assertThat(facts.groundsPleaded()).contains("Rent arrears");
+    }
+
+    @Test
+    @DisplayName("names a defendant the claimant could not name as a person unknown")
+    void namesAnUnnamedDefendantAsAPersonUnknown() {
+        long caseReference = cases.issue(cases.claim(ENGLAND),
+            PartyEntity.builder().nameKnown(VerticalYesNo.NO).build());
+
+        var context = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().caseContext();
+
+        assertThat(context.defendants()).extracting(Party::name).containsExactly("Person unknown");
     }
 
     @Test

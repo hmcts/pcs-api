@@ -61,12 +61,16 @@ public class IssuedCases {
     }
 
     public long issue(PCSCase claim) {
+        return issue(claim, PartyEntity.builder().firstName("Jane").lastName("Doe").build());
+    }
+
+    public long issue(PCSCase claim, PartyEntity defendant) {
         long reference = events.seed(State.CASE_ISSUED, PCSCase.builder().build());
-        transaction.executeWithoutResult(status -> storeClaim(reference, claim));
+        transaction.executeWithoutResult(status -> storeClaim(reference, claim, defendant));
         return reference;
     }
 
-    private void storeClaim(long reference, PCSCase claim) {
+    private void storeClaim(long reference, PCSCase claim, PartyEntity defendant) {
         PcsCaseEntity pcsCase = new PcsCaseEntity();
         pcsCase.setCaseReference(reference);
         pcsCase.setLegislativeCountry(claim.getLegislativeCountry());
@@ -75,8 +79,7 @@ public class IssuedCases {
         ClaimEntity mainClaim = claims.createMainClaimEntity(claim);
         pcsCase.addClaim(mainClaim);
         addParty(pcsCase, mainClaim, PartyEntity.builder().orgName(CLAIMANT).build(), PartyRole.CLAIMANT);
-        addParty(pcsCase, mainClaim, PartyEntity.builder().firstName("Jane").lastName("Doe").build(),
-            PartyRole.DEFENDANT);
+        addParty(pcsCase, mainClaim, defendant, PartyRole.DEFENDANT);
         pcsCases.save(pcsCase);
     }
 

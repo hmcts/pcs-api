@@ -28,10 +28,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -44,7 +44,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A judge makes an order through pcs-frontend's make order journey. Starting the event sends them
@@ -63,6 +62,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseRepository pcsCaseRepository;
     private final AddressMapper addressMapper;
     private final FeatureToggleService featureToggleService;
+    private final PartyService partyService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -233,21 +233,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         return grounds.isEmpty() ? null : grounds;
     }
 
-    private static List<MakeOrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
+    private List<MakeOrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
         return claim.getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == role)
             .map(claimParty -> new MakeOrderStart.Party(
-                claimParty.getId().getPartyId().toString(), displayName(claimParty.getParty())))
+                claimParty.getId().getPartyId().toString(), partyService.getPartyName(claimParty.getParty())))
             .toList();
-    }
-
-    private static String displayName(PartyEntity party) {
-        if (party.getOrgName() != null && !party.getOrgName().isBlank()) {
-            return party.getOrgName();
-        }
-        return String.join(" ", Stream.of(party.getFirstName(), party.getLastName())
-            .filter(Objects::nonNull)
-            .filter(value -> !value.isBlank())
-            .toList());
     }
 }
