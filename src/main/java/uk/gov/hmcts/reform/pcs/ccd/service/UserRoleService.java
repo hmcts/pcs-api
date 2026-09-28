@@ -32,7 +32,8 @@ public class UserRoleService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseAssignmentApi caseAssignmentApi;
     private final RoleAssignmentApi roleAssignmentApi;
-    private final Cache<CacheKey, Set<String>> rasRoleCache;
+    private final Cache<CacheKey, Set<String>> caseRoleCache;
+    private final Cache<String, Set<String>> organisationalRoleCache;
 
     public UserRoleService(SecurityContextService securityContextService,
                            AuthTokenGenerator authTokenGenerator,
@@ -42,7 +43,10 @@ public class UserRoleService {
         this.authTokenGenerator = authTokenGenerator;
         this.caseAssignmentApi = caseAssignmentApi;
         this.roleAssignmentApi = roleAssignmentApi;
-        this.rasRoleCache = Caffeine.newBuilder()
+        this.caseRoleCache = Caffeine.newBuilder()
+            .expireAfterWrite(RAS_ROLE_CACHE_TTL)
+            .build();
+        this.organisationalRoleCache = Caffeine.newBuilder()
             .expireAfterWrite(RAS_ROLE_CACHE_TTL)
             .build();
     }
@@ -53,41 +57,47 @@ public class UserRoleService {
 
         Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
         if (!securityContextService.isSystemUser()) {
-            roles.addAll(rasRoleCache.get(
+            roles.addAll(caseRoleCache.get(
                 new CacheKey(caseReference, currentUserId),
-                this::getRasRoles
+                key -> getCaseRoles(key.caseReference(), key.userId())
             ));
+            roles.addAll(getOrganisationalRoles(currentUserId));
         }
 
         return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }
 
-    private Set<String> getRasRoles(CacheKey cacheKey) {
-        String authorisation = securityContextService.getCurrentUserAuthToken();
-        String serviceAuthorisation = authTokenGenerator.generate();
-        String userId = cacheKey.userId();
+    /**
+     * IDAM roles plus the current user's AM organisational role assignments, with no case in scope.
+     * Callers that need to know what kind of user this is - rather than what they can do on one case
+     * - can use this without paying for the per-case lookup.
+     */
+    public UserRoles getCurrentUserOrganisationalRoles() {
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        String currentUserId = currentUserDetails.getUid();
 
-        Set<String> roles = getCaseRoles(authorisation, serviceAuthorisation, cacheKey.caseReference(), userId);
-        getRoleAssignments(authorisation, serviceAuthorisation, userId, roles);
+        Set<String> roles = new LinkedHashSet<>(safeRoles(currentUserDetails.getRoles()));
+        if (!securityContextService.isSystemUser()) {
+            roles.addAll(getOrganisationalRoles(currentUserId));
+        }
 
-        return roles;
+        return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
     }
 
-    private Set<String> getCaseRoles(
-        String authorisation,
-        String serviceAuthorisation,
-        Long caseId,
-        String userId
-    ) {
+    private Set<String> getOrganisationalRoles(String userId) {
+        return organisationalRoleCache.get(userId, this::getRoleAssignments);
+    }
+
+    private Set<String> getCaseRoles(Long caseId, String userId) {
         CaseAssignmentUserRolesResource caseAssignedUserRoles = caseAssignmentApi.getUserRoles(
-            authorisation,
-            serviceAuthorisation,
+            securityContextService.getCurrentUserAuthToken(),
+            authTokenGenerator.generate(),
             List.of(String.valueOf(caseId)),
             List.of(userId)
         );
 
         if (caseAssignedUserRoles == null || caseAssignedUserRoles.getCaseAssignmentUserRoles() == null) {
-            return new LinkedHashSet<>();
+            return Set.of();
         }
 
         return caseAssignedUserRoles.getCaseAssignmentUserRoles().stream()
@@ -95,26 +105,21 @@ public class UserRoleService {
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private void getRoleAssignments(
-        String authorisation,
-        String serviceAuthorisation,
-        String userId,
-        Set<String> roles
-    ) {
+    private Set<String> getRoleAssignments(String userId) {
         RoleAssignmentResponse roleAssignmentResponse = roleAssignmentApi.getRoles(
-            serviceAuthorisation,
-            authorisation,
+            authTokenGenerator.generate(),
+            securityContextService.getCurrentUserAuthToken(),
             userId
         );
 
         if (roleAssignmentResponse == null || CollectionUtils.isEmpty(roleAssignmentResponse.getRoleAssignment())) {
-            return;
+            return Set.of();
         }
 
-        roleAssignmentResponse.getRoleAssignment().stream()
+        return roleAssignmentResponse.getRoleAssignment().stream()
             .filter(UserRoleService::isNotSpecificGrantType)
             .map(RoleAssignment::getRoleName)
-            .forEach(roles::add);
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static Collection<String> safeRoles(Collection<String> roles) {
