@@ -1,0 +1,266 @@
+package uk.gov.hmcts.reform.pcs.ccd.event.order;
+
+import com.fasterxml.jackson.databind.node.TextNode;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
+import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Party;
+import uk.gov.hmcts.reform.pcs.config.IssuedCases;
+import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.START_DRAFT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.SUBMITTED_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
+
+/**
+ * Judges make orders through the make order event as the frontend drives it: starting it sends them
+ * their working order and the case, and they act on that order by submitting a request. The form is
+ * opaque to pcs-api, so a single note stands in for it.
+ */
+@PcsCcdEventTest
+@DisplayName("Make an order")
+class MakeOrderIT {
+
+    private static final String OUTRIGHT_POSSESSION = "OUTRIGHT_POSSESSION";
+
+    @Autowired
+    private CcdEventTestSupport<PCSCase, State> events;
+    @Autowired
+    private IssuedCases cases;
+
+    private Actor firstJudge;
+    private ExternalEvent<MakeOrderStart, MakeOrderRequest> asFirstJudge;
+    private ExternalEvent<MakeOrderStart, MakeOrderRequest> asSecondJudge;
+
+    @BeforeEach
+    void setUp() {
+        long caseReference = cases.issue();
+        firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
+        asFirstJudge = events.external(caseReference, MAKE_ORDER).as(firstJudge);
+        asSecondJudge = events.external(caseReference, MAKE_ORDER)
+            .as(events.registerActor("Second", "Judge", "caseworker-pcs"));
+    }
+
+    @Test
+    @DisplayName("shows the judge the property, parties and facts of the claim")
+    void showsThePropertyPartiesAndFactsOfTheClaim() {
+        PCSCase claim = cases.claim(ENGLAND);
+        claim.getTenancyLicenceDetails().setTypeOfTenancyLicence(SECURE_TENANCY);
+        claim.getTenancyLicenceDetails().setTenancyLicenceDate(LocalDate.of(2020, 2, 3));
+        claim.setNoticeServed(YesOrNo.YES);
+        claim.setNoticeServedDetails(NoticeServedDetails.builder()
+            .serviceMethod(FIRST_CLASS_POST)
+            .postedDate(LocalDate.of(2026, 8, 10))
+            .build());
+        claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
+        claim.setRentArrears(RentArrearsSection.builder().total(new BigDecimal("1500.00")).build());
+        claim.getSecureOrFlexiblePossessionGrounds()
+            .setSecureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY));
+
+        var context = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext();
+
+        assertThat(context.propertyAddress().getPostCode()).isEqualTo(claim.getPropertyAddress().getPostCode());
+        assertThat(context.claimants()).extracting(Party::name).containsExactly(IssuedCases.CLAIMANT);
+        assertThat(context.defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
+        var facts = context.caseFacts();
+        assertThat(facts.tenancyType()).isEqualTo("SECURE_TENANCY");
+        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2020, 2, 3));
+        assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 10));
+        assertThat(facts.currentRent()).isEqualByComparingTo("750.00");
+        assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
+        assertThat(facts.arrearsOnIssue()).isEqualByComparingTo("1500.00");
+        assertThat(facts.groundsPleaded()).contains("Rent arrears");
+    }
+
+    @Test
+    @DisplayName("shows the day a notice handed over in person was served")
+    void showsTheDayANoticeWasHandedOver() {
+        PCSCase claim = cases.claim(ENGLAND);
+        claim.setNoticeServed(YesOrNo.YES);
+        claim.setNoticeServedDetails(NoticeServedDetails.builder()
+            .serviceMethod(PERSONALLY_HANDED)
+            .handedOverDateTime(LocalDateTime.of(2026, 8, 11, 16, 30))
+            .build());
+
+        var facts = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext().caseFacts();
+
+        assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 11));
+    }
+
+    @Test
+    @DisplayName("shows a Welsh claim's occupation contract as the tenancy")
+    void showsTheWelshOccupationContractAsTheTenancy() {
+        PCSCase claim = cases.claim(WALES);
+        claim.getOccupationLicenceDetailsWales().setOccupationLicenceTypeWales(STANDARD_CONTRACT);
+        claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
+
+        var facts = events.external(cases.issue(claim), MAKE_ORDER).as(firstJudge).start().caseContext().caseFacts();
+
+        assertThat(facts.tenancyType()).isEqualTo("STANDARD_CONTRACT");
+        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2024, 4, 5));
+    }
+
+    @Test
+    @DisplayName("gives each judge their own draft on the same case")
+    void eachJudgeKeepsTheirOwnDraft() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first judge's draft"));
+        asSecondJudge.submitExpectingSuccess(startDraft("second judge's draft"));
+
+        assertThat(workingDraft(asFirstJudge)).isEqualTo("first judge's draft");
+        assertThat(workingDraft(asSecondJudge)).isEqualTo("second judge's draft");
+    }
+
+    @Test
+    @DisplayName("does not let a judge change another judge's draft")
+    void rejectsAChangeToAnotherJudgesDraft() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first judge's draft"));
+        Order firstJudgesDraft = asFirstJudge.start().order();
+
+        assertThat(asSecondJudge.submitExpectingRejection(change(SAVE_DRAFT, firstJudgesDraft, "overwritten")).errors())
+            .containsExactly("The order draft does not exist for this case");
+        assertThat(workingDraft(asFirstJudge)).isEqualTo("first judge's draft");
+    }
+
+    @Test
+    @DisplayName("does not let a judge start a second draft on the same case")
+    void rejectsASecondDraftForTheSameJudge() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first draft"));
+
+        assertThat(asFirstJudge.submitExpectingRejection(startDraft("second draft")).errors())
+            .containsExactly("You already have an order draft for this case");
+        assertThat(workingDraft(asFirstJudge)).isEqualTo("first draft");
+    }
+
+    @Test
+    @DisplayName("asks the judge to choose an order type")
+    void rejectsADraftWithoutAnOrderType() {
+        var noOrderType = new MakeOrderRequest(START_DRAFT, new OrderChange(null, 0, null, Map.of(), null));
+
+        assertThat(asFirstJudge.submitExpectingRejection(noOrderType).errors())
+            .containsExactly("Choose an order type");
+        assertThat(asFirstJudge.start().order().id()).isNull();
+    }
+
+    @Test
+    @DisplayName("refuses a request from the frontend that does not say what to do with which order")
+    void rejectsAnIncompleteRequest() {
+        assertThat(asFirstJudge.submitExpectingRejection(new MakeOrderRequest(null, null)).errors())
+            .containsExactly("The request must say what to do with which order");
+    }
+
+    @Test
+    @DisplayName("keeps the order type, form and document a judge saves as their working order")
+    void savesADraft() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first version"));
+        Order draft = asFirstJudge.start().order();
+        var document = TextNode.valueOf("the order document");
+
+        asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(
+            draft.id(), draft.version(), "SUSPENDED_POSSESSION", Map.of("notes", "second version"), document)));
+
+        Order saved = asFirstJudge.start().order();
+        assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
+        assertThat(saved.formData()).containsEntry("notes", "second version");
+        assertThat(saved.docweaveSnapshot()).isEqualTo(document);
+    }
+
+    @Test
+    @DisplayName("does not let an out-of-date copy of a draft overwrite a newer save")
+    void rejectsAStaleChange() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first version"));
+        Order staleCopy = asFirstJudge.start().order();
+        asFirstJudge.submitExpectingSuccess(change(SAVE_DRAFT, staleCopy, "second version"));
+
+        assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, staleCopy, "stale version")).errors())
+            .containsExactly("The order draft has been updated by another user. Reload it and try again");
+        assertThat(workingDraft(asFirstJudge)).isEqualTo("second version");
+    }
+
+    @Test
+    @DisplayName("submits the judge's draft for review, recording it in the case history as theirs")
+    void submitsADraftForReview() {
+        asFirstJudge.submitExpectingSuccess(startDraft("draft"));
+        Order draft = asFirstJudge.start().order();
+
+        var submission = asFirstJudge.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, draft, "final"));
+
+        Order submitted = submission.changed("draft_orders", Order.class);
+        assertThat(submitted.id()).isEqualTo(draft.id());
+        assertThat(submitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
+        assertThat(submitted.formData()).containsEntry("notes", "final");
+        assertThat(asFirstJudge.start().order().id()).as("no working draft after submission").isNull();
+        assertThat(submission.audit().summary()).isEqualTo("Order submitted for review");
+        assertThat(submission.audit().userId()).isEqualTo(firstJudge.uid());
+    }
+
+    @Test
+    @DisplayName("does not let an order submitted for review be changed")
+    void rejectsAChangeToASubmittedOrder() {
+        asFirstJudge.submitExpectingSuccess(startDraft("draft"));
+        Order submitted = asFirstJudge
+            .submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, asFirstJudge.start().order(), "final"))
+            .changed("draft_orders", Order.class);
+
+        assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, submitted, "changed")).errors())
+            .containsExactly("The order draft does not exist for this case");
+    }
+
+    @Test
+    @DisplayName("lets a judge start a new draft once their order is submitted for review")
+    void startsANewDraftAfterSubmission() {
+        asFirstJudge.submitExpectingSuccess(startDraft("draft"));
+        asFirstJudge.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, asFirstJudge.start().order(), "final"));
+
+        asFirstJudge.submitExpectingSuccess(startDraft("next order"));
+
+        assertThat(workingDraft(asFirstJudge)).isEqualTo("next order");
+    }
+
+    private static MakeOrderRequest startDraft(String notes) {
+        return new MakeOrderRequest(START_DRAFT,
+            new OrderChange(null, 0, OUTRIGHT_POSSESSION, Map.of("notes", notes), null));
+    }
+
+    /** Acts on the order as the judge last saw it, with a new note. */
+    private static MakeOrderRequest change(Action action, Order order, String notes) {
+        return new MakeOrderRequest(action, new OrderChange(
+            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()));
+    }
+
+    /** The note on the judge's working draft. */
+    private static Object workingDraft(ExternalEvent<MakeOrderStart, MakeOrderRequest> judge) {
+        return judge.start().order().formData().get("notes");
+    }
+}
