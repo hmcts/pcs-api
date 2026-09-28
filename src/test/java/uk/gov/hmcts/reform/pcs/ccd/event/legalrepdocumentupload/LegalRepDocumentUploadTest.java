@@ -302,7 +302,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
 
-        assertThat(defendants.isEmpty());
+        assertThat(defendants.isEmpty()).isEqualTo(true);
         assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
     }
 
