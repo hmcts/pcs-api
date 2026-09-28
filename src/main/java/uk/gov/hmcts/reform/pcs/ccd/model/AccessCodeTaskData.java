@@ -11,5 +11,6 @@ public class AccessCodeTaskData {
 
     private final String caseReference;
     private final String defendantPartyId;
+    private final boolean sendClaimPack;
 
 }

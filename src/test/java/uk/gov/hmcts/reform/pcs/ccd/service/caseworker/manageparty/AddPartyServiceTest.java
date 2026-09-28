@@ -18,9 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
@@ -62,7 +62,7 @@ class AddPartyServiceTest {
     @Captor
     private ArgumentCaptor<PartyEntity> partyEntityCaptor;
     @Captor
-    private ArgumentCaptor<SchedulableInstance<SendClaimPackTaskData>> schedulableInstanceCaptor;
+    private ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> schedulableInstanceCaptor;
 
     private AddPartyService underTest;
 
@@ -103,10 +103,13 @@ class AddPartyServiceTest {
     @Test
     void shouldPersistDefendantPartyAndLinkToClaim() {
         // Given
-        UUID caseId = UUID.randomUUID();
-        when(pcsCaseEntity.getId()).thenReturn(caseId);
+        when(pcsCaseEntity.getCaseReference()).thenReturn(124L);
         when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
         when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+
+        UUID partyId = UUID.randomUUID();
+        PartyEntity savedEntity = PartyEntity.builder().id(partyId).build();
+        when(partyRepository.save(any(PartyEntity.class))).thenReturn(savedEntity);
 
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.DEFENDANT)
@@ -130,9 +133,10 @@ class AddPartyServiceTest {
         verify(partyRepository, never()).findById(any());
 
         verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-        SchedulableInstance<SendClaimPackTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
-        SendClaimPackTaskData taskData = schedulableInstance.getTaskInstance().getData();
-        assertThat(taskData.getCaseId()).isEqualTo(caseId);
+        SchedulableInstance<AccessCodeTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+        AccessCodeTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getCaseReference()).isEqualTo("124");
+        assertThat(taskData.getDefendantPartyId()).isEqualTo(partyId.toString());
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }

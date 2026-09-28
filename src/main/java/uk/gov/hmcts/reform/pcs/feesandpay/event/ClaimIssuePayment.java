@@ -84,6 +84,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
             AccessCodeTaskData taskData = AccessCodeTaskData.builder()
                 .caseReference(String.valueOf(caseReference))
                 .defendantPartyId(defendantPartyId.toString())
+                .sendClaimPack(false)
                 .build();
 
             schedulerClient.scheduleIfNotExists(

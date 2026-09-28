@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.task;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
@@ -7,14 +8,19 @@ import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskComponent.SEND_CLAIM_PACK_TASK_DESCRIPTOR;
 
 /**
  * db-scheduler {@code CustomTask} bean for defendant access-code letter generation. Mirrors
@@ -42,15 +48,21 @@ public class AccessCodeGenerationComponent {
     private final DefendantAccessCodeService defendantAccessCodeService;
     private final int maxRetries;
     private final Duration backoffDelay;
+    private final SchedulerClient schedulerClient;
+    private final Clock utcClock;
 
     public AccessCodeGenerationComponent(
         DefendantAccessCodeService defendantAccessCodeService,
         @Value("${access-code.request.max-retries}") int maxRetries,
-        @Value("${access-code.request.backoff-delay-seconds}") Duration backoffDelay
+        @Value("${access-code.request.backoff-delay-seconds}") Duration backoffDelay,
+        SchedulerClient schedulerClient,
+        @Qualifier("utcClock") Clock utcClock
     ) {
         this.defendantAccessCodeService = defendantAccessCodeService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
+        this.schedulerClient = schedulerClient;
+        this.utcClock = utcClock;
     }
 
     /**
@@ -85,6 +97,17 @@ public class AccessCodeGenerationComponent {
                     defendantAccessCodeService.generateForDefendant(caseReference, defendantPartyId,
                                                                     attempt == 1, finalAttempt);
                     log.info("Access code generated for case {} party {}", caseReference, defendantPartyId);
+                    if (taskData.isSendClaimPack()) {
+                        SendClaimPackTaskData sendClaimPackTaskData = SendClaimPackTaskData.builder()
+                            .caseReference(caseReference)
+                            .build();
+                        schedulerClient.scheduleIfNotExists(
+                            SEND_CLAIM_PACK_TASK_DESCRIPTOR
+                                .instance(UUID.randomUUID().toString())
+                                .data(sendClaimPackTaskData)
+                                .scheduledTo(Instant.now(utcClock))
+                        );
+                    }
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     // Only the final (terminal) attempt is logged - intermediate retries are tracked by

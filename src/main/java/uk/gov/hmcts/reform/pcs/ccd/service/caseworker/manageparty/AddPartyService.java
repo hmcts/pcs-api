@@ -12,9 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
@@ -23,7 +23,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskComponent.SEND_CLAIM_PACK_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 
 @Service
 @AllArgsConstructor
@@ -46,13 +46,13 @@ public class AddPartyService {
             : null;
 
         pcsCaseEntity.addParty(partyToAdd);
-        partyRepository.save(partyToAdd);
+        PartyEntity savedParty = partyRepository.save(partyToAdd);
 
         claimEntity.addParty(partyToAdd, toPartyRole(partyType), actingForParty);
         claimRepository.save(claimEntity);
 
         if (partyType == PartyType.DEFENDANT) {
-            scheduleSendClaimPackTask(pcsCaseEntity.getId());
+            generateDefendantAccessCode(pcsCaseEntity.getCaseReference(), savedParty.getId());
         }
     }
 
@@ -118,12 +118,17 @@ public class AddPartyService {
         partyEntity.setPhoneNumber(phoneNumber);
     }
 
-    private void scheduleSendClaimPackTask(UUID caseId) {
-        SendClaimPackTaskData sendClaimPackTaskData = SendClaimPackTaskData.builder().caseId(caseId).build();
+    private void generateDefendantAccessCode(Long caseRefence, UUID defendantId) {
+        AccessCodeTaskData accessCodeTaskData = AccessCodeTaskData.builder()
+            .caseReference(caseRefence.toString())
+            .defendantPartyId(defendantId.toString())
+            .sendClaimPack(true)
+            .build();
+
         schedulerClient.scheduleIfNotExists(
-            SEND_CLAIM_PACK_TASK_DESCRIPTOR
+            ACCESS_CODE_TASK_DESCRIPTOR
                 .instance(UUID.randomUUID().toString())
-                .data(sendClaimPackTaskData)
+                .data(accessCodeTaskData)
                 .scheduledTo(Instant.now(utcClock))
         );
     }

@@ -11,6 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SendClaimPackTaskData {
 
-    private UUID caseId;
+    private long caseReference;
 
 }

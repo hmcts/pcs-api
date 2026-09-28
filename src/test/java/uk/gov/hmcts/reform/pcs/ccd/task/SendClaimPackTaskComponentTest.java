@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 
 import java.util.UUID;
@@ -24,6 +26,9 @@ public class SendClaimPackTaskComponentTest {
     private ClaimPackSender claimPackSender;
 
     @Mock
+    private PcsCaseService pcsCaseService;
+
+    @Mock
     private TaskInstance<SendClaimPackTaskData> taskInstance;
 
     @Mock
@@ -31,18 +36,24 @@ public class SendClaimPackTaskComponentTest {
 
     private SendClaimPackTaskComponent underTest;
 
+    private static final long TEST_CASE_REFERENCE = 1234L;
+
     @BeforeEach
     void setUp() {
-        underTest = new SendClaimPackTaskComponent(claimPackSender);
+        underTest = new SendClaimPackTaskComponent(claimPackSender, pcsCaseService);
     }
 
     @Test
     void shouldCallClaimPackSender() {
         // Given
-        UUID uuid = UUID.randomUUID();
         SendClaimPackTaskData taskData = mock(SendClaimPackTaskData.class);
-        when(taskData.getCaseId()).thenReturn(uuid);
+        when(taskData.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
         when(taskInstance.getData()).thenReturn(taskData);
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        UUID uuid = UUID.randomUUID();
+        when(pcsCaseEntity.getId()).thenReturn(uuid);
 
         // When
         underTest.sendClaimPackTask().execute(taskInstance, executionContext);
@@ -54,10 +65,14 @@ public class SendClaimPackTaskComponentTest {
     @Test
     void shouldRemoveTaskAfterSuccessfulExecution() {
         // Given
-        UUID uuid = UUID.randomUUID();
         SendClaimPackTaskData taskData = mock(SendClaimPackTaskData.class);
-        when(taskData.getCaseId()).thenReturn(uuid);
+        when(taskData.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
         when(taskInstance.getData()).thenReturn(taskData);
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        UUID uuid = UUID.randomUUID();
+        when(pcsCaseEntity.getId()).thenReturn(uuid);
 
         // When
         CompletionHandler<SendClaimPackTaskData> completionHandler
