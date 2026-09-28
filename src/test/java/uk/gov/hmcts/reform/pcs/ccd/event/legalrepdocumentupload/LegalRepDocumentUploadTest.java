@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,9 +66,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private LegalRepDocumentUploadConfigurer legalRepDocumentUploadConfigurer;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
@@ -77,15 +78,15 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
     @Mock
     private OrganisationService organisationService;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private GenAppVisibilityService genAppVisibilityService;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private PartyService partyService;
     @Mock
     private PartyEntity primaryClaimantParty;
-    @Mock(strictness = Mock.Strictness.LENIENT)
+    @Mock(strictness = LENIENT)
     private DefendantResponseRepository defendantResponseRepository;
 
     private LegalRepDocumentUpload legalRepDocumentUpload;
