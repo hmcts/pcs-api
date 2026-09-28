@@ -1,7 +1,7 @@
 import { testDocument, testDocumentListValue } from '@utils/common/uploadDocument.utils';
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
-  submitCasePayload: {
+  submitCasePayload: ()=> ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -96,8 +96,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadNoDefendants: {
+  }),
+  submitCasePayloadNoDefendants: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -167,7 +167,7 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
+  }),
   submitCasePayloadOnlyMain: {
     regionId: '1',
     caseManagementLocationNumber: '20262',
@@ -259,7 +259,7 @@ export const submitCaseApiData = {
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
-  submitCasePayloadCaseTab: {
+  submitCasePayloadCaseTab: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -369,8 +369,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadCaseSummary: {
+  }),
+  submitCasePayloadCaseSummary: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -499,8 +499,8 @@ export const submitCaseApiData = {
       positionParty: 'fg',
       agreementClaimant: ['BELIEVE_TRUE'],
     },
-  },
-  submitCasePayloadCaseDetails: {
+  }),
+  submitCasePayloadCaseDetails: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -659,8 +659,8 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: [],
       agreementDefendantLegalRep: []
     },
-  },
-  submitCasePayloadCaseFileView: {
+  }),
+  submitCasePayloadCaseFileView: () =>({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -872,7 +872,7 @@ export const submitCaseApiData = {
             valueLabel: 'Legal aid certificate'
           },
           description: 'legal aid',
-           document: 
+          document: 
           testDocument(`legalAidCertificate.pdf`)
         },
       },
@@ -910,8 +910,8 @@ export const submitCaseApiData = {
       agreementDefendantLegalRep: []
     }
 
-  },
-  submitCasePayloadDefault: {
+  }),
+  submitCasePayloadDefault: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -1070,7 +1070,7 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: ['AGREED'],
       agreementDefendantLegalRep: []
     },
-  },
+  }),
 
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,
