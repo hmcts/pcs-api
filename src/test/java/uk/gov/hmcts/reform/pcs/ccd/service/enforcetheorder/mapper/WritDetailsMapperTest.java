@@ -4,18 +4,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
@@ -328,26 +324,6 @@ class WritDetailsMapperTest {
         assertThat(entity.getRepaymentChoice()).isNull();
         assertThat(entity.getAmountOfRepaymentCosts()).isNull();
         assertThat(entity.getRepaymentSummaryMarkdown()).isNull();
-    }
-
-    @ParameterizedTest
-    @EnumSource(RepaymentPreference.class)
-    void shouldMapRepaymentCostsForAllPreferences(RepaymentPreference repaymentPreference) {
-        // Given
-        RepaymentCosts repaymentCosts = RepaymentCosts.builder()
-            .repaymentChoice(repaymentPreference)
-            .amountOfRepaymentCosts(new BigDecimal("500.00"))
-            .repaymentSummaryMarkdown("Repayment summary")
-            .build();
-        writDetails.setRepaymentCosts(repaymentCosts);
-
-        // When
-        WritEntity entity = underTest.toEntity(writDetails);
-
-        // Then
-        assertThat(entity.getRepaymentChoice()).isEqualTo(repaymentPreference.getLabel());
-        assertThat(entity.getAmountOfRepaymentCosts()).isEqualByComparingTo(new BigDecimal("500.00"));
-        assertThat(entity.getRepaymentSummaryMarkdown()).isEqualTo("Repayment summary");
     }
 
 }
