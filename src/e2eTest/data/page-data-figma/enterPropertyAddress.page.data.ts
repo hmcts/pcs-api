@@ -1,7 +1,11 @@
 export const enterPropertyAddress = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `What is the address of the property you’re claiming possession of?`,
-  subHeader: `Property address`,
+  //sectionTitle: 'Property address',
+  youMustEnterParagraph : `You must enter the correct address.`,
+  weWillAskParagraph : `We will ask you to check it on the next page.`,
+  afterThatParagraph : `After that, you will not be able to change it again.`,
+  thePropertyParagraph : `The property must be located in England or Wales.`,
   enterAUKPostcodeTextLabel: `Enter a UK postcode`,
   findAddressDynamicButton: `Find address`,
   //As below text/link is controlled by exui, it still be using ' instead of ’ Ref: HDPI-3258
