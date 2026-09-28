@@ -6,19 +6,13 @@ import uk.gov.hmcts.ccd.sdk.api.HasAccessControl;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import java.util.Arrays;
-
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
-
-
-public class CaseworkerReadAccess implements HasAccessControl {
+public class SystemReadAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.put(PCS_CASE_WORKER, Permission.R);
-        Arrays.stream(CaseworkerRoles.CASEWORKER_ROLES)
-            .forEach(caseworkerRole -> grants.put(caseworkerRole, Permission.R));
+        grants.put(UserRole.SYSTEM_USER, Permission.R);
         return grants;
     }
+
 }

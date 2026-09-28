@@ -134,5 +134,66 @@
         }
       }
     ]
+  },
+  {
+    "email": "wlu-team-leader-01@localhost",
+    "id": "602398cc-2fa3-308b-8c9a-3879b3b5bb72",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "hmcts-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "wlu-team-leader",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "routine_work,applications,decision_making_work,error_management,appeals"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "wlu-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "Y",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1",
+          "workTypes": "routine_work,applications,decision_making_work,error_management,appeals"
+        }
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "task-supervisor",
+        "grantType": "STANDARD",
+        "roleCategory": "ADMIN",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "substantive": "N",
+          "primaryLocation": "20262",
+          "jurisdiction": "PCS",
+          "region": "1"
+        }
+      }
+    ]
   }
 ]

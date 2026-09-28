@@ -52,6 +52,7 @@ import static org.mockito.Mockito.withSettings;
 class TaskDescriptionServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final String FRONTEND_URL = "https://pcs-frontend";
 
     @Mock
     private PartyService partyService;
@@ -70,7 +71,7 @@ class TaskDescriptionServiceTest {
     void setUp() {
         when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(mainClaim));
 
-        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository);
+        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository, FRONTEND_URL);
     }
 
     @Nested

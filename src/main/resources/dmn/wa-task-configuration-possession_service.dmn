@@ -137,7 +137,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1o9uf1g">
-          <text>"ReviewAdjournGenApp","ReviewSetAsideGenApp","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument"</text>
+          <text>"ReviewAdjournGenApp","ReviewSetAsideGenApp","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument","TranslateClaimForm"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1vuc06b">
           <text>"majorPriority"</text>
@@ -337,7 +337,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0t4gfyx">
-          <text>"ReviewDefendantResponseAndCounterclaim","ReviewAdditionalDocumentsClaim","ReviewAdditionalDocumentsGenApp","ReviewAdditionalDocumentsCounterclaim","ReviewDateDue","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument"</text>
+          <text>"ReviewDefendantResponseAndCounterclaim","ReviewAdditionalDocumentsClaim","ReviewAdditionalDocumentsGenApp","ReviewAdditionalDocumentsCounterclaim","ReviewDateDue","TranslateDefendantSubmittedDocument","TranslateClaimantSubmittedDocument","TranslateCaseworkerUploadedDocument","TranslateClaimForm"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_15pmpia">
           <text>"workType"</text>
@@ -477,7 +477,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1tvak6q">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument","TranslateClaimForm"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_14ewc8f">
           <text>"dueDateIntervalDays"</text>

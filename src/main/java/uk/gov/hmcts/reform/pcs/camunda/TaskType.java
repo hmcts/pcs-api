@@ -13,6 +13,10 @@ public enum TaskType {
             List the case on List Assist, create and serve the Notice of Hearing on all parties, and upload a copy of
             the notice to the digital case file. Only mark the task as complete once all of these steps
             have been completed.
+
+            Upload translations
+        <a href="http://localhost:3209/cases/${[CASE_REFERENCE]}/event/ext%3AuploadTranslatedClaimForm?expected_sub=${[EXPECTED_SUB]}&foo=1">
+        here</a>
             """
     ),
     REVIEW_CASE_FLAG(
@@ -75,6 +79,14 @@ public enum TaskType {
             Review the general application, decide what action is needed, and take the appropriate action.
             Only mark the task as complete once the application has been reviewed and any required action
             has been completed.
+            """
+    ),
+    TRANSLATE_CLAIM_FORM(
+        "TranslateClaimForm",
+        "Translate Claim Form",
+        """
+            Review the claim form in Case File View and arrange translation. Email the translated
+            document to the court. Only mark the task as complete once the translation has been completed.
             """
     ),
     TRANSLATE_CLAIMANT_SUBMITTED_DOCUMENT(

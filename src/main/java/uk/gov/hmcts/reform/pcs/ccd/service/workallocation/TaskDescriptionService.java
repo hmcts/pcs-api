@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.workallocation;
 
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -27,12 +27,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class TaskDescriptionService {
 
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
     private final ClaimRepository claimRepository;
+    private final String frontEndUrl;
+
+    public TaskDescriptionService(PartyService partyService,
+                                  PebbleEngine pebbleEngine,
+                                  ClaimRepository claimRepository,
+                                  @Value("${frontend.url}") String frontEndUrl) {
+        this.partyService = partyService;
+        this.pebbleEngine = pebbleEngine;
+        this.claimRepository = claimRepository;
+        this.frontEndUrl = frontEndUrl;
+    }
 
     public String createReviewGenAppDescription(long caseReference,
                                                 GenAppEntity genAppEntity) {
@@ -108,6 +118,22 @@ public class TaskDescriptionService {
         );
 
         String templateName = "translate-claimant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
+    // TODO: Test
+    public String createTranslateClaimFormDescription(long caseReference) {
+        // TODO: Build this properly, with URL escaping
+        String eventId = "ext%3AuploadTranslatedClaimForm";
+        String uploadTranslatedClaimFormEventUrl = "%s/cases/%d/event/%s?expected_sub=${[EXPECTED_SUB]}"
+            .formatted(frontEndUrl, caseReference, eventId);
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "uploadTranslatedClaimFormEventUrl", uploadTranslatedClaimFormEventUrl
+        );
+
+        String templateName = "translate-claim-form";
         return renderTemplate(templateName, context);
     }
 
