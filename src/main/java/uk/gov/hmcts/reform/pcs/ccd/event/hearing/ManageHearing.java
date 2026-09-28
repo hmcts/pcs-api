@@ -67,6 +67,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder.decentralisedEvent(manageHearing.name(), this::submit, this::start)
                 .forStates(State.AWAITING_SUBMISSION_TO_HMCTS, State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
+                .nonConcurrent()
                 .name("Manage hearing")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
                 .grant(Permission.CRUD, CASEWORKER_ROLES)
