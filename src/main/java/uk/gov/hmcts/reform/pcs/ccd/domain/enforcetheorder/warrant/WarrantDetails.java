@@ -113,6 +113,7 @@ public class WarrantDetails {
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
                     + "return to the case summary page, and then check the tab named 'Case File View'"
     )
+    @Deprecated
     private VerticalYesNo isSuspendedOrder;
 
     @JsonUnwrapped

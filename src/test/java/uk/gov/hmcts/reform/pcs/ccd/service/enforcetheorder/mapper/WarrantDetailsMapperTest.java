@@ -100,19 +100,6 @@ class WarrantDetailsMapperTest {
     }
 
     @Test
-    void shouldMapSuspendTheOrder() {
-        // Given
-        WarrantDetails warrantDetails = WarrantDetails.builder().isSuspendedOrder(VerticalYesNo.YES).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
     void shouldMapAdditionalInformation() {
         // Given
         AdditionalInformation additionalInfo = AdditionalInformation.builder()
@@ -460,7 +447,6 @@ class WarrantDetailsMapperTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-        assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getAmountOfLegalCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
     }
@@ -496,7 +482,6 @@ class WarrantDetailsMapperTest {
 
         WarrantDetails warrantDetails = WarrantDetails.builder()
             .showChangeNameAddressPage(YesOrNo.YES)
-            .isSuspendedOrder(VerticalYesNo.NO)
             .additionalInformation(AdditionalInformation.builder()
                                        .additionalInformationSelect(VerticalYesNo.YES)
                                        .additionalInformationDetails("Details")

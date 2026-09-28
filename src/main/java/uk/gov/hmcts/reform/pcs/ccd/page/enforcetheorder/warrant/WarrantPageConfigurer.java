@@ -10,16 +10,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 public class WarrantPageConfigurer implements PageConfigurer {
 
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
-    private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
-    private final ProtestorGroupRiskPage protestorGroupRiskPage;
-    private final PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
-    private final FirearmsPossessionRiskPage firearmsPossessionRiskPage;
     private final CriminalAntisocialRiskPage criminalAntisocialRiskPage;
     private final AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
     private final PropertyAccessDetailsPage propertyAccessDetailsPage;
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
-    private final LandRegistryFeesPage landRegistryFeesPage;
     private final DefendantsDOBPage defendantsDOBPage;
 
     @Override
@@ -29,27 +24,16 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
             .add(defendantsDOBPage)
-            .add(new PeopleWhoWillBeEvictedPage())
-            .add(new PeopleYouWantToEvictPage())
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
             .add(violentAggressiveRiskPage)
-            .add(firearmsPossessionRiskPage)
             .add(criminalAntisocialRiskPage)
-            .add(verbalOrWrittenThreatsRiskPage)
-            .add(protestorGroupRiskPage)
-            .add(policeOrSocialServicesRiskPage)
             .add(aggressiveAnimalsRiskPage)
             .add(vulnerableAdultsChildrenPage)
             .add(propertyAccessDetailsPage)
             .add(additionalInformationPage)
-            .add(new MoneyOwedPage())
-            .add(new LegalCostsPage())
-            .add(landRegistryFeesPage)
-            .add(new RepaymentsPage())
             .add(new LanguageUsedPage())
-            .add(new SuspendedOrderPage())
             .add(new StatementOfTruthPage());
     }
 }
