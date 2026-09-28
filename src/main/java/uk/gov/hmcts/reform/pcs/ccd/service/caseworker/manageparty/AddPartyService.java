@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +14,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskComponent.SEND_CLAIM_PACK_TASK_DESCRIPTOR;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +32,8 @@ public class AddPartyService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final AddressMapper addressMapper;
+    private final SchedulerClient schedulerClient;
+    private final Clock utcClock;
 
     @Transactional
     public void addParty(AddPartyDetails addPartyDetails, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity,
@@ -42,6 +50,10 @@ public class AddPartyService {
 
         claimEntity.addParty(partyToAdd, toPartyRole(partyType), actingForParty);
         claimRepository.save(claimEntity);
+
+        if (partyType == PartyType.DEFENDANT) {
+            scheduleSendClaimPackTask(pcsCaseEntity.getId());
+        }
     }
 
     private PartyRole toPartyRole(PartyType partyType) {
@@ -104,5 +116,15 @@ public class AddPartyService {
         partyEntity.setEmailAddress(email);
         partyEntity.setPhoneNumberProvided(VerticalYesNo.from(phoneNumber != null));
         partyEntity.setPhoneNumber(phoneNumber);
+    }
+
+    private void scheduleSendClaimPackTask(UUID caseId) {
+        SendClaimPackTaskData sendClaimPackTaskData = SendClaimPackTaskData.builder().caseId(caseId).build();
+        schedulerClient.scheduleIfNotExists(
+            SEND_CLAIM_PACK_TASK_DESCRIPTOR
+                .instance(UUID.randomUUID().toString())
+                .data(sendClaimPackTaskData)
+                .scheduledTo(Instant.now(utcClock))
+        );
     }
 }

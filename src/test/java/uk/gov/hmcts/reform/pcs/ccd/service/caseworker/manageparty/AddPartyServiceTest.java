@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,15 +20,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.task.SendClaimPackTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -43,17 +52,26 @@ class AddPartyServiceTest {
     @Mock
     private AddressMapper addressMapper;
     @Mock
+    private SchedulerClient schedulerClient;
+    @Mock(strictness = LENIENT)
+    private Clock utcClock;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private ClaimEntity claimEntity;
     @Captor
     private ArgumentCaptor<PartyEntity> partyEntityCaptor;
+    @Captor
+    private ArgumentCaptor<SchedulableInstance<SendClaimPackTaskData>> schedulableInstanceCaptor;
 
     private AddPartyService underTest;
 
+    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
+        .atTime(12, 51, 19);
+
     @BeforeEach
     void setUp() {
-        underTest = new AddPartyService(partyRepository, claimRepository, addressMapper);
+        underTest = new AddPartyService(partyRepository, claimRepository, addressMapper, schedulerClient, utcClock);
     }
 
     @Test
@@ -79,6 +97,7 @@ class AddPartyServiceTest {
         verify(claimEntity).addParty(createdParty, PartyRole.CLAIMANT, null);
         verify(claimRepository).save(claimEntity);
         verify(partyRepository, never()).findById(any());
+        verifyNoInteractions(schedulerClient);
     }
 
     @Test
@@ -89,6 +108,11 @@ class AddPartyServiceTest {
             .firstName("John")
             .lastName("Smith")
             .build();
+
+        UUID caseId = UUID.randomUUID();
+        when(pcsCaseEntity.getId()).thenReturn(caseId);
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         // When
         underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, null);
@@ -104,6 +128,13 @@ class AddPartyServiceTest {
         verify(claimEntity).addParty(createdParty, PartyRole.DEFENDANT, null);
         verify(claimRepository).save(claimEntity);
         verify(partyRepository, never()).findById(any());
+
+        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+        SchedulableInstance<SendClaimPackTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
+        SendClaimPackTaskData taskData = schedulableInstance.getTaskInstance().getData();
+        assertThat(taskData.getCaseId()).isEqualTo(caseId);
+        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
+            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
 
     @Test
@@ -133,6 +164,7 @@ class AddPartyServiceTest {
         verify(claimEntity).addParty(createdParty, PartyRole.LITIGATION_FRIEND, actingForParty);
         verify(claimRepository).save(claimEntity);
         verify(partyRepository).findById(actingForPartyId);
+        verifyNoInteractions(schedulerClient);
     }
 
     @Test
@@ -152,6 +184,7 @@ class AddPartyServiceTest {
             .isInstanceOf(PartyNotFoundException.class);
         // Then
         verify(claimRepository, never()).save(any());
+        verifyNoInteractions(schedulerClient);
     }
 
     @Test
@@ -170,6 +203,7 @@ class AddPartyServiceTest {
         // Then
         verify(partyRepository, never()).findById(any());
         verify(claimRepository, never()).save(any());
+        verifyNoInteractions(schedulerClient);
     }
 
     @Test
