@@ -23,14 +23,19 @@ export const submitPossessionClaimResponseApiDataForLR = {
       data: {
         currentRepresentedPartyId: defendantID,
         possessionClaimResponse: {
-          ...(draftVersion !== undefined && draftVersion !== null && { draftVersion }),
-          defendantResponses: {
-            dateOfBirth: '1974-02-28',
-          },
-          claimantOrganisations: [{}],
-          defendantContactDetails: {
-            party: {},
-          },
+          //...(draftVersion !== undefined && draftVersion !== null && { draftVersion }),
+          draftVersion: draftVersion,
+          // defendantResponses: {
+          //   //dateOfBirth: '',
+          // },
+          // claimantOrganisations: [{}],
+          // defendantContactDetails: {
+          //   party: {},
+          // },
+          statementOfTruthBelief: 'yes',
+          fullName : 'Peter Parker',
+          nameOfFirm: 'GD',
+          positionHeld: 'Officer'
         },
       },
       event: {

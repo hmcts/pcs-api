@@ -25,6 +25,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
     await performAction('updatePaymentAPI');
     await performAction('getCaseAPI', 'Link Solicitor');
+    await performAction('midEventRespondPossessionClaimLRAPI', { defendantID: defendantUserDetails[0].id })
     await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
     await performAction('getAllPartyDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,

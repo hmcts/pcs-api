@@ -37,6 +37,7 @@ export class ActionCMRegistry {
     ['manageHearingAPI', new CreateCaseAPIAction()],
     ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateDefendantDetails', new CaseManagementAction()],
