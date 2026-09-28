@@ -11,7 +11,7 @@ import {
   workAccess
 } from '@data/page-data-figma';
 import { home } from '@data/page-data';
-import { LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT } from 'playwright.config';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, value?: string | actionRecord): Promise<void> {
@@ -163,7 +163,7 @@ export class GlobalSearchCaseAction implements IAction {
       await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);;
       await expect(page.getByRole('heading', {
         name: new RegExp(challengedAccessSuccess.successMessage, 'i')
-      })).toBeVisible();
+      })).toBeVisible({timeout: SHORT_TIMEOUT});
     }).toPass({
       timeout: LONG_TIMEOUT,
     });
