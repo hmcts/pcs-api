@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.io.InputStream;
 import java.util.Map;
 
 @Slf4j
@@ -126,7 +127,17 @@ public class CcdTestCaseOrchestrator {
     }
 
     private ObjectNode getBasePayload(LegislativeCountry legislativeCountry) {
-        return BaseClaimPayloads.read(objectMapper, legislativeCountry);
+        String path = "testing-support/Create-Case-" + legislativeCountry + "-Base.json";
+
+        try (InputStream basePayload = getClass()
+            .getClassLoader()
+            .getResourceAsStream(path)) {
+
+            return (ObjectNode) objectMapper.readTree(basePayload);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read base payload JSON", e);
+        }
     }
 
     // Lets a test override the property address via payloadMerge ("propertyAddress"); the property
@@ -139,6 +150,25 @@ public class CcdTestCaseOrchestrator {
     }
 
     private AddressUK addressFor(LegislativeCountry legislativeCountry) {
-        return BaseClaimPayloads.propertyAddress(legislativeCountry);
+        return switch (legislativeCountry) {
+            case ENGLAND -> AddressUK.builder()
+                .addressLine1("1 Second Avenue")
+                .postTown("London")
+                .county("Greater London")
+                .postCode("W3 7RX")
+                .country("United Kingdom")
+                .build();
+
+            case WALES -> AddressUK.builder()
+                .addressLine1("2 Pentre Street")
+                .postTown("Caerdydd")
+                .postCode("CF11 6QX")
+                .country("Deyrnas Unedig")
+                .build();
+
+            default -> throw new IllegalArgumentException(
+                "Unsupported legislative country: " + legislativeCountry
+            );
+        };
     }
 }

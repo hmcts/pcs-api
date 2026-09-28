@@ -2,8 +2,10 @@ package uk.gov.hmcts.reform.pcs.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -15,7 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.testingsupport.service.BaseClaimPayloads;
+
+import java.io.InputStream;
 
 /**
  * Issued possession cases, seeded straight into CCD and pcs-api's tables for tests of what happens
@@ -36,11 +39,20 @@ public class IssuedCases {
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transaction;
 
-    /** The claim pcs-api's testing support submits, for a test to adjust before issuing it. */
+    /** The claim pcs-api's testing support creates cases with, for a test to adjust before issuing it. */
+    @SneakyThrows
     public PCSCase claim(LegislativeCountry country) {
-        PCSCase claim = objectMapper.convertValue(BaseClaimPayloads.read(objectMapper, country), PCSCase.class);
+        String path = "/testing-support/Create-Case-" + country + "-Base.json";
+        PCSCase claim;
+        try (InputStream payload = IssuedCases.class.getResourceAsStream(path)) {
+            claim = objectMapper.readValue(payload, PCSCase.class);
+        }
         claim.setLegislativeCountry(country);
-        claim.setPropertyAddress(BaseClaimPayloads.propertyAddress(country));
+        claim.setPropertyAddress(AddressUK.builder()
+            .addressLine1("1 Test Street")
+            .postTown(country == LegislativeCountry.WALES ? "Cardiff" : "London")
+            .postCode(country == LegislativeCountry.WALES ? "CF11 6QX" : "W3 7RX")
+            .build());
         return claim;
     }
 
