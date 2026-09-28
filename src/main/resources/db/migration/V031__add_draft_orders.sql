@@ -5,7 +5,7 @@ CREATE TABLE draft_orders (
     id UUID PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
     author_idam_user_id UUID NOT NULL,
-    state TEXT NOT NULL CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW')),
+    state TEXT NOT NULL CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE')),
     version BIGINT NOT NULL DEFAULT 0,
     order_type TEXT NOT NULL,
     form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
