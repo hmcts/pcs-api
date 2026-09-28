@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
@@ -75,6 +76,8 @@ class PartyServiceTest {
     private OrganisationService organisationService;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private PostcodeValidator postcodeValidator;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -96,7 +99,8 @@ class PartyServiceTest {
             .build();
         lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
         lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
-        underTest = new PartyService(partyRepository, addressMapper, organisationService, featureToggleService);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService,
+                                     featureToggleService, postcodeValidator);
     }
 
     @Nested
@@ -960,6 +964,41 @@ class PartyServiceTest {
             assertThat(createdClaimant.getPhoneNumber()).isNull();
             assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
             verify(pcsCaseEntity).addParty(createdClaimant);
+        }
+
+        @Test
+        void shouldUseNormalisedAddressWhenReleaseIsDisabled() {
+            // Given
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+            AddressUK address = mock(AddressUK.class);
+            AddressEntity mappedNormalisedAddress = mock(AddressEntity.class);
+            when(addressMapper.toAddressEntityAndNormalise(address)).thenReturn(mappedNormalisedAddress);
+
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .organisationAddress(address)
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+
+            ClaimantInformation claimantInformation = ClaimantInformation.builder()
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .claimantName("Claimant name")
+                .build();
+
+            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
+            PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedNormalisedAddress);
+            verify(addressMapper).toAddressEntityAndNormalise(address);
+            verify(addressMapper, never()).toCorrespondenceAddressEntity(any());
         }
     }
 

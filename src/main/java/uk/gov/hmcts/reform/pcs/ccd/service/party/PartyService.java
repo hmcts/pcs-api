@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class PartyService {
     private final AddressMapper addressMapper;
     private final OrganisationService organisationService;
     private final FeatureToggleService featureToggleService;
+    private final PostcodeValidator postcodeValidator;
 
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         var orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
@@ -345,9 +347,14 @@ public class PartyService {
             return null;
         }
 
-        return featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? addressMapper.toCorrespondenceAddressEntity(address)
-            : addressMapper.toAddressEntityAndNormalise(address);
+        if (featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            if (postcodeValidator.isValidPostcode(address.getPostCode())) {
+                return addressMapper.toAddressEntityAndNormalise(address);
+            }
+            return addressMapper.toCorrespondenceAddressEntity(address);
+        }
+
+        return addressMapper.toAddressEntityAndNormalise(address);
     }
 
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
