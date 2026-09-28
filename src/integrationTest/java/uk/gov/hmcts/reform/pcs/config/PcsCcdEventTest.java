@@ -17,7 +17,11 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest
+// LaunchDarkly reads the flags these tests need from a file rather than the service.
+@SpringBootTest(properties = {
+    "launchdarkly.offline-mode=true",
+    "launchdarkly.files=src/integrationTest/resources/launchdarkly/pcs-ccd-event-test-flags.json"
+})
 @ActiveProfiles("integration")
 @EnableCcdEventTesting
 @Import(IssuedCases.class)

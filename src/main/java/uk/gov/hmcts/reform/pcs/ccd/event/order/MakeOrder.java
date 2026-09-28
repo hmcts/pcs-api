@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
@@ -33,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -59,6 +62,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DraftOrderRepository draftOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final AddressMapper addressMapper;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -73,6 +77,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 State.DECISION_OUTCOME
             )
             .name("Make an order")
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .grant(Permission.CRUD,
                 UserRole.JUDGE,
                 UserRole.FEE_PAID_JUDGE,
@@ -82,6 +87,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
+        requireEnabled();
         long caseReference = start.caseReference();
         MakeOrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
             .map(MakeOrder::toOrder)
@@ -90,6 +96,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
+        requireEnabled();
         MakeOrderRequest request = submit.payload();
         if (request.action() == null || request.order() == null) {
             return ExternalSubmitResponse.rejected("The request must say what to do with which order");
@@ -101,6 +108,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             case SAVE_DRAFT -> saveDraft(caseReference, judge, request.order());
             case SUBMIT_FOR_REVIEW -> submitForReview(caseReference, judge, request.order());
         };
+    }
+
+    /** The show condition only hides the event in XUI; the flag also closes it to its frontend. */
+    private void requireEnabled() {
+        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
+            throw ExternalRejection.because("Making an order is not available");
+        }
     }
 
     /** A judge has one draft per case, which the database also enforces. */
