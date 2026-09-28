@@ -38,7 +38,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
 
@@ -60,10 +59,10 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
-            log.info("Configuring non-production Enforcement event: {}", enforceTheOrder.name());
-            configure(configBuilder);
-        }
+        //   if (isDev() && Boolean.parseBoolean(System.getenv().get("ENABLE_ENFORCEMENT"))) {
+        log.info("Configuring non-production Enforcement event: {}", enforceTheOrder.name());
+        configure(configBuilder);
+        // }
     }
 
     void configure(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -86,7 +85,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
-                .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
+                                                .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
 
         populateDefendantSelectionList(pcsCase);
         applyWarrantFeeAmount(pcsCase);
@@ -112,13 +111,16 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(pcsCase,
+        feeApplier.applyFeeAmount(
+            pcsCase,
             FeeType.ENFORCEMENT_WARRANT_FEE,
-            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee));
+            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee)
+        );
     }
 
     private void applyWritFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(pcsCase,
+        feeApplier.applyFeeAmount(
+            pcsCase,
             FeeType.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
         );
@@ -128,7 +130,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         List<SelectEnforcementType> enforcementTypes = new ArrayList<>(List.of(WARRANT, WRIT));
 
         EnforcementOrder retrievedWarrantOrder =
-                enforcementOrderService.retrieveEnforcementOrder(caseReference, WARRANT);
+            enforcementOrderService.retrieveEnforcementOrder(caseReference, WARRANT);
         if (retrievedWarrantOrder != null) {
             enforcementTypes.add(WARRANT_OF_RESTITUTION);
             setWarrantRestInfoText(enforcementOrder, CommonPageContent.WARRANT_OF_RESTITUTION_INFO_TEXT);
@@ -149,8 +151,10 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     public SubmitResponse<State> submitOrder(long caseReference, PCSCase pcsCase) {
         enforcementOrderService.saveAndClearDraftData(caseReference, pcsCase.getEnforcementOrder());
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}",
-                  caseReference);
+        log.debug(
+            "Saved submitted enforcement order data and deleted draft data for case reference {}",
+            caseReference
+        );
         return SubmitResponse.defaultResponse();
     }
 
