@@ -383,6 +383,7 @@ ext {
   springFrameworkBootVersion = "3.5.16"
   lombokVersion = "1.18.48"
   springSecurityVersion = "6.5.12"
+  springRetryVersion = "2.0.13"
   pactVersion = "4.7.5"
   tomcatEmbedVersion = "11.0.25"
   nettyVersion = "4.1.137.Final"
@@ -400,7 +401,22 @@ ext['httpcore5.version'] = httpCore5Version
 ext['tomcat.version'] = tomcatEmbedVersion
 ext['jackson-bom.version'] = jacksonVersion
 ext['spring-security.version'] = springSecurityVersion
+ext['spring-retry.version'] = springRetryVersion
 ext['mockito.version'] = mockitoVersion
+
+// Force CVE fixes across ALL configurations (including cftlib which bypasses Spring BOM)
+configurations.all {
+  resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+    if (details.requested.group == 'org.springframework.security') {
+      details.useVersion springSecurityVersion
+      details.because 'CVE-2026-41707: DPoP proof replay vulnerability fixed in 6.5.12'
+    }
+    if (details.requested.group == 'org.springframework.retry') {
+      details.useVersion springRetryVersion
+      details.because 'CVE-2026-41710: stateful retry cache exhaustion fixed in 2.0.13'
+    }
+  }
+}
 
 dependencies {
   constraints {
