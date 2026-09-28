@@ -72,7 +72,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
@@ -93,7 +93,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
@@ -130,7 +130,7 @@ public class RespondPossessionClaimEventCallbackTests extends BaseApi {
         );
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "respondPossessionClaim");
         apiSteps.theRequestContainsBody(respondClaimRequestBody);

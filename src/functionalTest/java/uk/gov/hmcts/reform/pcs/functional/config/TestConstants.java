@@ -5,6 +5,7 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 public class TestConstants {
     public static final String PCS_API = "pcs_api";
     public static final String PCS_FRONTEND = "pcs_frontend";
+    public static final String CCD_DATA = "ccd_data";
     public static final String CIVIL_SERVICE = "civil_service";
     public static final String AUTHORIZATION = "Authorization";
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";

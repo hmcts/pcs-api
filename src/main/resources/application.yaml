@@ -119,6 +119,8 @@ idam:
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,xui_webapp,ccd_data,payment_app}
+    # Callers allowed on the SDK's /ccd-persistence and /callbacks endpoints (see SecurityConfiguration)
+    ccd-data-store-only-services: ${S2S_CCD_DATA_STORE_ONLY_NAMES_WHITELIST:ccd_data}
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}

@@ -40,7 +40,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "createPossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
@@ -60,7 +60,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "createPossessionClaim");
@@ -81,7 +81,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "resumePossessionClaim");
         apiSteps.theRequestContainsBody(requestBody);
@@ -101,7 +101,7 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
         );
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "resumePossessionClaim");
@@ -110,5 +110,24 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
             "/responses/resumePossessionClaim-submitEventCallbackResponse.json");
+    }
+
+    @Title("submit event callback rejects services other than CCD data store - returns 403")
+    @Order(5)
+    @Test
+    void submitEventCallbackForbiddenForOtherServicesTest() {
+        String requestBody = PayloadLoader.load(
+            "/payloads/resumePossessionClaim-submitEventCallbackRequest.json",
+            Map.of("caseTypeId", caseType, "caseId", caseId)
+        );
+
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.solicitorUser);
+        apiSteps.theRequestContainsIdempotencyKeyHeader();
+        apiSteps.theRequestContainsTheQueryParameter("eventId", "resumePossessionClaim");
+        apiSteps.theRequestContainsBody(requestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("SubmitEventCallback", "POST");
+        apiSteps.checkStatusCode(403);
     }
 }

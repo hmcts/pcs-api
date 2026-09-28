@@ -35,6 +35,7 @@ public class ApiSteps {
     private static final String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
     public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
+    private static String ccdDataS2sToken;
     private static String unauthorisedS2sToken;
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
@@ -45,6 +46,7 @@ public class ApiSteps {
         ServiceAuthenticationGenerator serviceAuthenticationGenerator = new ServiceAuthenticationGenerator();
         pcsApiS2sToken = serviceAuthenticationGenerator.generate();
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
+        ccdDataS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CCD_DATA);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
 
         systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
@@ -65,7 +67,8 @@ public class ApiSteps {
     public void theRequestContainsValidServiceToken(String microservice) {
         final Map<String, String> serviceTokens = Map.of(
             TestConstants.PCS_API, pcsApiS2sToken,
-            TestConstants.PCS_FRONTEND, pcsFrontendS2sToken
+            TestConstants.PCS_FRONTEND, pcsFrontendS2sToken,
+            TestConstants.CCD_DATA, ccdDataS2sToken
         );
 
         if (!serviceTokens.containsKey(microservice.toLowerCase())) {

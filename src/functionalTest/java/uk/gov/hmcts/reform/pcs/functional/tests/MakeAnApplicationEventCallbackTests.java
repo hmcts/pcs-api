@@ -60,7 +60,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(makeApplicationRequestBody);
         apiSteps.callIsSubmittedToTheEndpoint("StartEventCallback", "POST");
@@ -87,7 +87,7 @@ public class MakeAnApplicationEventCallbackTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.CCD_DATA);
         apiSteps.theRequestContainsIdempotencyKeyHeader();
         apiSteps.theRequestContainsTheQueryParameter("eventId", "makeAnApplication");
         apiSteps.theRequestContainsBody(submitApplicationRequestBody);
