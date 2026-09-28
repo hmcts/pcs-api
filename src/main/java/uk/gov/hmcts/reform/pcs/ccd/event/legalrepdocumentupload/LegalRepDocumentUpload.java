@@ -126,8 +126,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             PartyType.DEFENDANT;
         legalRepDocumentUploadDetails.setPartyType(partyType);
 
-        List<PartyEntity> defendantPartyEntities =
-            legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity, organisationId);
+        List<PartyEntity> defendantPartyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
 
         List<DynamicListElement> listItems = defendantPartyEntities.stream()
             .map(partyEntity -> DynamicListElement.builder()
@@ -141,7 +140,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .value(DynamicListElement.EMPTY)
             .build();
 
-        if (isEmpty(representedDefendantPartyNames)) {
+        if (isEmpty(representedDefendantPartyNames.getListItems())) {
             caseData.setMultipleRepresentedParties(VerticalYesNo.NO);
             caseData.setRepresentedPartyNames(DynamicList.builder()
                                                   .listItems(Collections.emptyList())

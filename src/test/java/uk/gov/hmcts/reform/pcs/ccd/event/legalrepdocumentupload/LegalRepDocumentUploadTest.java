@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -42,7 +43,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,8 +71,6 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private DocumentService documentService;
-    @Mock(strictness = Mock.Strictness.LENIENT)
-    private LegalRepresentativeService legalRepresentativeService;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -292,6 +290,67 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             ORGANISATION_ID,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
+    }
+
+    @Test
+    void noDefendantParty_nothingToAddToCaseData() {
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of());
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants.isEmpty());
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void oneDefendantParty_addToCaseData() {
+        UUID id = UUID.randomUUID();
+        PartyEntity partyEntity = PartyEntity.builder().id(id).firstName("Sam").lastName("Vimes").build();
+
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of(partyEntity));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, id)).thenReturn(true);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants).hasSize(1);
+        assertThat(defendants.getFirst().getLabel()).isEqualTo("Sam Vimes");
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void twoDefendantParties_addToCaseData() {
+        UUID firstId = UUID.randomUUID();
+        UUID secondId = UUID.randomUUID();
+        PartyEntity firstPartyEntity = PartyEntity.builder()
+            .id(firstId).firstName("Sam").lastName("Vimes").build();
+        PartyEntity secondPartyEntity = PartyEntity.builder()
+            .id(secondId).firstName("Granny").lastName("Weatherwax").build();
+
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+            .thenReturn(List.of(firstPartyEntity, secondPartyEntity));
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, firstId)).thenReturn(true);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+            TEST_CASE_REFERENCE, secondId)).thenReturn(true);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        List<DynamicListElement> defendants = result.getRepresentedPartyNames().getListItems();
+
+        assertThat(defendants).hasSize(2);
+        assertThat(defendants.get(0).getLabel()).isEqualTo("Sam Vimes");
+        assertThat(defendants.get(1).getLabel()).isEqualTo("Granny Weatherwax");
+        assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Nested
