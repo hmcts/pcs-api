@@ -35,5 +35,6 @@ public enum EventId {
     defendantPaperResponse,
     legalRepresentativeContactDetails,
     markCaseForDeletion,
-    confirmCaseDisposal
+    confirmCaseDisposal,
+    deleteThisCase
 }
