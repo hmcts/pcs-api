@@ -254,8 +254,9 @@ public class NotificationService {
         PartyEntity representedDefendant
     ) {
         PcsCaseEntity pcsCase = representedDefendant.getPcsCase();
-        String outgoingEmail = outgoingRepresentative.getClaimPartyContactDetails().isEmpty()
-            ? null : outgoingRepresentative.getClaimPartyContactDetails().getFirst().getEmailAddress();
+        ClaimPartyContactDetailsEntity contactDetails =
+            this.getClaimPartyContactDetailsForCase(outgoingRepresentative, pcsCase);
+        String outgoingEmail = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
         return sendEmail(
             legalRepresentativeRecipient(representedDefendant, outgoingEmail),
@@ -678,11 +679,8 @@ public class NotificationService {
             throw new IllegalStateException("No legal representative found for response: " + defendantResponse.getId());
         }
 
-        ClaimPartyContactDetailsEntity contactDetails = organisation.getClaimPartyContactDetails().stream()
-            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
-                && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCaseEntity.getId())).findFirst()
-            .orElse(null);
-
+        ClaimPartyContactDetailsEntity contactDetails =
+            this.getClaimPartyContactDetailsForCase(organisation, pcsCaseEntity);
         String emailAddress = contactDetails != null ? contactDetails.getEmailAddress() : null;
 
         return new OrganisationNotificationRecipient(
@@ -691,5 +689,14 @@ public class NotificationService {
             pcsCaseEntity,
             defendantResponse.getClaim()
         );
+    }
+
+    private ClaimPartyContactDetailsEntity getClaimPartyContactDetailsForCase(
+        OrganisationEntity organisation, PcsCaseEntity pcsCase) {
+        return organisation.getClaimPartyContactDetails().stream()
+            .filter(contactDetailsEntity -> contactDetailsEntity.getPcsCase() != null
+                && Objects.equals(contactDetailsEntity.getPcsCase().getId(), pcsCase.getId()))
+            .findFirst()
+            .orElse(null);
     }
 }

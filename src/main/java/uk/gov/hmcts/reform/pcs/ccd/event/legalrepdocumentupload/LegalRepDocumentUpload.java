@@ -23,11 +23,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -59,7 +59,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final OrganisationService organisationService;
-    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final LegalRepPartySelectionService legalRepPartySelectionService;
     private final PartyService partyService;
 
     @Override
@@ -201,8 +201,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
-                                                                            organisationId);
+        return legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
+                                                                           organisationId);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

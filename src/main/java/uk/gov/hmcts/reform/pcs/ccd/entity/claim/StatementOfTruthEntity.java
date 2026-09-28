@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -64,5 +65,10 @@ public class StatementOfTruthEntity {
     private String positionHeld;
 
     private LocalDateTime completedDate;
+
+    @JsonIgnore
+    public boolean isCompletedByLegalRepresentative() {
+        return completedBy == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
+    }
 
 }

@@ -90,6 +90,12 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             return validationResult.get();
         }
 
+        Optional<SubmitResponse<State>> validationErrorResponse =
+            submitResponseFactory.validateDraftVersionNotChanged(eventPayload, responseDraftData);
+        if (validationErrorResponse.isPresent()) {
+            return validationErrorResponse.get();
+        }
+
         PartyEntity defendantParty = partyService.getPartyEntityById(representedPartyId, caseReference);
 
         RespondPossessionClaimSubmitPersistenceResult persistenceResult = respondPossessionClaimSubmitService
@@ -189,4 +195,5 @@ public class LegalRepSubmissionEventStrategy implements RespondPossessionClaimSu
             }
         }
     }
+
 }

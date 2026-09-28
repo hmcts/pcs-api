@@ -32,6 +32,7 @@ public class ManageSupport implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                 .decentralisedEvent(EventId.manageSupport.name(), this::submit, this::start)
                 .forStates(CASE_FLAG_STATES)
+                .nonConcurrent()
                 .name("Manage support")
                 .description("To manage support")
                 .showSummary()

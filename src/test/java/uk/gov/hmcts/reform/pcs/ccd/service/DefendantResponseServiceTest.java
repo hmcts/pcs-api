@@ -988,7 +988,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourney() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -999,7 +999,6 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1007,7 +1006,7 @@ class DefendantResponseServiceTest {
             .defendantResponses(responses)
             .build();
 
-        // When — legal rep path (passes party ID explicitly)
+        // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
                                         JourneyType.LEGAL_REPRESENTATIVE);
 
@@ -1026,7 +1025,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
+    void shouldNotSetCompletedByOnCitizenJourneyEvenWhenPayloadClaimsLegalRepresentation() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1037,7 +1036,7 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                // hasLegalRepresentation intentionally omitted
+                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1054,6 +1053,55 @@ class DefendantResponseServiceTest {
 
         assertThat(saved.getStatementOfTruth()).isNotNull();
         assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
+    }
+
+    @Test
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourneyWithoutSignedStatementOfTruth() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        when(partyEntity.getFirstName()).thenReturn("Test");
+        when(partyEntity.getLastName()).thenReturn("Defendant");
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthCompletedBy("DEFENDANT")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
+                                        JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy())
+            .isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+    }
+
+    @Test
+    void shouldNotSetCompletedByForCaseworkerPaperResponse() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .build())
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy()).isNull();
     }
 
     @Test
@@ -1159,11 +1207,35 @@ class DefendantResponseServiceTest {
 
         // Then - the persisted response id and party id are carried to the scheduler.
         verify(defenceFormScheduler)
-            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
     }
 
     @Test
-    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+    void shouldScheduleDefenceFormGenerationOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        Integer responseId = 7;
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then - the LR response generates the defence form just like a citizen one.
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
+    }
+
+    @Test
+    void shouldNotScheduleDefenceFormGenerationForCaseworkerPaperResponse() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1174,9 +1246,9 @@ class DefendantResponseServiceTest {
 
         // When
         underTest.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
 
-        // Then
+        // Then - the paper form is uploaded by the caseworker, nothing is generated.
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 
