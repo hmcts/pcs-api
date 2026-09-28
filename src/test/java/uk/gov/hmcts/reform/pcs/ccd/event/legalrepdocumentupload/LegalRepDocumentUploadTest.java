@@ -9,7 +9,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
@@ -26,12 +25,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -80,14 +85,34 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     private PartyService partyService;
     @Mock
     private PartyEntity primaryClaimantParty;
+    @Mock(strictness = LENIENT)
+    private DefendantResponseRepository defendantResponseRepository;
 
-    @InjectMocks
     private LegalRepDocumentUpload legalRepDocumentUpload;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)).thenReturn(primaryClaimantParty);
+
+        LegalRepPartySelectionService legalRepPartySelectionService = new LegalRepPartySelectionService(
+            mock(SelectedPartyRetriever.class),
+            defendantResponseRepository,
+            mock(DraftCaseDataService.class),
+            mock(PossessionClaimResponseMapper.class),
+            mock(PossessionClaimMerger.class),
+            legalRepForDefendantAccessValidator,
+            pcsCaseService);
+
+        legalRepDocumentUpload = new LegalRepDocumentUpload(
+            legalRepDocumentUploadConfigurer,
+            pcsCaseService,
+            documentService,
+            securityContextService,
+            genAppVisibilityService,
+            organisationService,
+            legalRepPartySelectionService,
+            partyService);
 
         setEventUnderTest(legalRepDocumentUpload);
     }
@@ -294,6 +319,42 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getErrors()).contains("No represented party found");
+        }
+
+        @Test
+        void shouldResolveDefendantAwaitingResponseWhenAnotherRepresentedDefendantHasSubmitted() {
+            // Given
+            UUID respondedPartyId = UUID.randomUUID();
+            UUID awaitingPartyId = UUID.randomUUID();
+            PartyEntity respondedDefendant = PartyEntity.builder().id(respondedPartyId).build();
+            PartyEntity awaitingDefendant = PartyEntity.builder().id(awaitingPartyId).build();
+
+            when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(respondedDefendant, awaitingDefendant));
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                TEST_CASE_REFERENCE, respondedPartyId)).thenReturn(true);
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                TEST_CASE_REFERENCE, awaitingPartyId)).thenReturn(false);
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(mock(Document.class))
+                .build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+                                                   .build())
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors()).isNullOrEmpty();
+            verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
+                List.of(legalRepDocument), pcsCaseEntity, awaitingDefendant, null);
         }
 
         @Test
