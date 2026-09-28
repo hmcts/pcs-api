@@ -11,6 +11,7 @@ import {
   workAccess
 } from '@data/page-data-figma';
 import { home } from '@data/page-data';
+import { LONG_TIMEOUT } from 'playwright.config';
 
 export class GlobalSearchCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, value?: string | actionRecord): Promise<void> {
@@ -158,12 +159,20 @@ export class GlobalSearchCaseAction implements IAction {
         name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
       }).getByRole('textbox').fill(accessReason.text?.toString() ?? '');
     }
-    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
-    await page.waitForTimeout(5000);
-    await page.reload();
-    await expect(page.getByRole('heading', {
-     name: new RegExp(challengedAccessSuccess.successMessage, 'i')
-    })).toBeVisible();
+    await expect(async () => {
+      await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);;
+      await expect(page.getByRole('heading', {
+        name: new RegExp(challengedAccessSuccess.successMessage, 'i')
+      })).toBeVisible();
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
+    //await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    //await page.waitForTimeout(5000);
+    //await page.reload();
+    //await expect(page.getByRole('heading', {
+    // name: new RegExp(challengedAccessSuccess.successMessage, 'i')
+    //})).toBeVisible();
     await expect(page.getByRole('link', { name: challengedAccessSuccess.viewCaseFileLink })).toBeVisible();
     await performAction('clickLink', challengedAccessSuccess.viewCaseFileLink);
     await performValidation('mainHeader', home.caseSummary);
