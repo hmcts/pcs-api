@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,25 +17,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 
-import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+/** A judge's draft of an order, until it is issued; its history is in the case event audit, not timestamps. */
 @Entity
-@Table(name = "orders")
+@Table(name = "draft_orders")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderEntity {
+public class DraftOrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -45,22 +45,24 @@ public class OrderEntity {
     private PcsCaseEntity pcsCase;
 
     @Column(nullable = false, updatable = false)
-    private UUID idamUserId;
+    private UUID authorIdamUserId;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
-    private OrderState state;
+    private DraftOrderState state;
 
     @Version
     private long version;
 
+    @Column(nullable = false)
+    private String orderType;
+
+    /** The make order form as the judge last submitted it. */
     @JdbcTypeCode(SqlTypes.JSON)
-    private String draftPayload;
+    @Column(nullable = false)
+    private Map<String, Object> formData;
 
-    @CreationTimestamp
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    private Instant updatedAt;
+    /** The order document as the judge last edited it in the frontend's docweave editor. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    private JsonNode docweaveSnapshot;
 }
