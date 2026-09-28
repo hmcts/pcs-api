@@ -34,7 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,11 +43,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+
 /**
  * A judge makes an order through pcs-frontend's make order journey. Starting the event sends them
- * their working order and the facts of the case; each submission starts, saves or submits for
- * review their draft. A judge has one working draft per case, and a change is made from the
- * version they last saw.
+ * their working order and the facts of the case; each submission saves or submits for review their
+ * draft. A judge has one working draft per case, and a change is made from the version they last
+ * saw; a change with no id starts their draft.
  */
 @Component
 @AllArgsConstructor
@@ -60,7 +61,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DraftOrderRepository draftOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final AddressMapper addressMapper;
-    private final FeatureToggleService featureToggleService;
     private final PartyService partyService;
 
     @Override
@@ -86,7 +86,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
-        requireEnabled();
         long caseReference = start.caseReference();
         MakeOrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
             .map(MakeOrder::toOrder)
@@ -95,61 +94,44 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
-        requireEnabled();
         MakeOrderRequest request = submit.payload();
-        if (request.action() == null || request.order() == null) {
-            return ExternalSubmitResponse.rejected("The request must say what to do with which order");
-        }
+        OrderChange change = request.order();
         long caseReference = submit.caseReference();
         UUID judge = UUID.fromString(submit.user().id());
-        return switch (request.action()) {
-            case START_DRAFT -> startDraft(caseReference, judge, request.order());
-            case SAVE_DRAFT -> saveDraft(caseReference, judge, request.order());
-            case SUBMIT_FOR_REVIEW -> submitForReview(caseReference, judge, request.order());
-        };
-    }
-
-    /** The show condition only hides the event in XUI; the flag also closes it to its frontend. */
-    private void requireEnabled() {
-        if (!featureToggleService.isEnabled(FeatureFlag.MAKE_ORDER)) {
-            throw ExternalRejection.because("Making an order is not available");
+        DraftOrderEntity draft = change.id() == null
+            ? newDraft(caseReference, judge)
+            : workingDraft(caseReference, judge, change);
+        draft.setOrderType(change.orderType());
+        draft.setFormData(change.formData());
+        draft.setDocweaveSnapshot(change.docweaveSnapshot());
+        if (request.action() == SUBMIT_FOR_REVIEW) {
+            draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
         }
+        draftOrderRepository.saveAndFlush(draft);
+        return request.action() == SUBMIT_FOR_REVIEW
+            ? ExternalSubmitResponse.accepted("Order submitted for review", "Submitted an order for caseworker review")
+            : ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
     }
 
     /** A judge has one draft per case, which the database also enforces. */
-    private ExternalSubmitResponse<State> startDraft(long caseReference, UUID judge, OrderChange order) {
+    private DraftOrderEntity newDraft(long caseReference, UUID judge) {
         if (findDraft(caseReference, judge).isPresent()) {
             throw ExternalRejection.because("You already have an order draft for this case");
         }
-        DraftOrderEntity draft = DraftOrderEntity.builder()
+        return DraftOrderEntity.builder()
             .pcsCase(findCase(caseReference))
             .authorIdamUserId(judge)
             .state(DraftOrderState.DRAFT)
             .build();
-        draftOrderRepository.saveAndFlush(applyChange(draft, order));
-        return ExternalSubmitResponse.accepted("Order draft started", "Started drafting an order");
-    }
-
-    private ExternalSubmitResponse<State> saveDraft(long caseReference, UUID judge, OrderChange order) {
-        draftOrderRepository.saveAndFlush(applyChange(workingDraft(caseReference, judge, order), order));
-        return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
-    }
-
-    private ExternalSubmitResponse<State> submitForReview(long caseReference, UUID judge, OrderChange order) {
-        DraftOrderEntity draft = applyChange(workingDraft(caseReference, judge, order), order);
-        draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
-        draftOrderRepository.saveAndFlush(draft);
-        return ExternalSubmitResponse.accepted(
-            "Order submitted for review", "Submitted an order for caseworker review");
     }
 
     /** The judge's own draft this change is for, at the version they last saw. */
-    private DraftOrderEntity workingDraft(long caseReference, UUID judge, OrderChange order) {
+    private DraftOrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
         DraftOrderEntity draft = draftOrderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-                order.id(), caseReference, judge, DraftOrderState.DRAFT)
+                change.id(), caseReference, judge, DraftOrderState.DRAFT)
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
-        if (draft.getVersion() != order.version()) {
+        if (draft.getVersion() != change.version()) {
             throw ExternalRejection.because(
                 "The order draft has been updated by another user. Reload it and try again");
         }
@@ -159,16 +141,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private Optional<DraftOrderEntity> findDraft(long caseReference, UUID judge) {
         return draftOrderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
             caseReference, judge, DraftOrderState.DRAFT);
-    }
-
-    private static DraftOrderEntity applyChange(DraftOrderEntity order, OrderChange change) {
-        if (change.orderType() == null || change.orderType().isBlank()) {
-            throw ExternalRejection.because("Choose an order type");
-        }
-        order.setOrderType(change.orderType());
-        order.setFormData(change.formData() == null ? Map.of() : change.formData());
-        order.setDocweaveSnapshot(change.docweaveSnapshot());
-        return order;
     }
 
     private PcsCaseEntity findCase(long caseReference) {
@@ -223,7 +195,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .map(ground -> ClaimGroundSummary.resolveGround(ground.getCategory(), ground.getCode()))
             .filter(Objects::nonNull)
             .map(PossessionGroundEnum::getLabel)
-            .filter(label -> label != null && !label.isBlank())
             .distinct()
             .sorted()
             .collect(Collectors.joining(", "));

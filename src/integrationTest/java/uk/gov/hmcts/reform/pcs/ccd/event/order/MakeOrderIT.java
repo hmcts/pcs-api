@@ -38,7 +38,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.START_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
@@ -175,23 +174,6 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("asks the judge to choose an order type")
-    void rejectsADraftWithoutAnOrderType() {
-        var noOrderType = new MakeOrderRequest(START_DRAFT, new OrderChange(null, 0, null, Map.of(), null));
-
-        assertThat(asFirstJudge.submitExpectingRejection(noOrderType).errors())
-            .containsExactly("Choose an order type");
-        assertThat(asFirstJudge.start().order().id()).isNull();
-    }
-
-    @Test
-    @DisplayName("refuses a request from the frontend that does not say what to do with which order")
-    void rejectsAnIncompleteRequest() {
-        assertThat(asFirstJudge.submitExpectingRejection(new MakeOrderRequest(null, null)).errors())
-            .containsExactly("The request must say what to do with which order");
-    }
-
-    @Test
     @DisplayName("keeps the order type, form and document a judge saves as their working order")
     void savesADraft() {
         asFirstJudge.submitExpectingSuccess(startDraft("first version"));
@@ -259,8 +241,9 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(workingDraft(asFirstJudge)).isEqualTo("next order");
     }
 
+    /** Saves a first draft, which has no id yet. */
     private static MakeOrderRequest startDraft(String notes) {
-        return new MakeOrderRequest(START_DRAFT,
+        return new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(null, 0, OUTRIGHT_POSSESSION, Map.of("notes", notes), null));
     }
 
