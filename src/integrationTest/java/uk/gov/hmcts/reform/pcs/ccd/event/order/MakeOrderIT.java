@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Party;
+import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 
@@ -51,7 +52,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
  */
 @PcsCcdEventTest
 @DisplayName("Make an order")
-class MakeOrderIT {
+class MakeOrderIT extends AbstractPostgresContainerIT {
 
     private static final String OUTRIGHT_POSSESSION = "OUTRIGHT_POSSESSION";
 

@@ -11,15 +11,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Runs CCD events against the whole pcs-api application and a PostgreSQL Testcontainer. The SDK
- * test support answers IDAM, S2S and role assignment, so a test registers actors rather than
- * stubbing clients.
+ * Runs CCD events against the whole pcs-api application. Put it on a test that extends
+ * {@link AbstractPostgresContainerIT}, for the database. The SDK test support answers IDAM, S2S and
+ * role assignment, so a test registers actors rather than stubbing clients.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest
 @ActiveProfiles("integration")
 @EnableCcdEventTesting
-@Import({PcsCcdEventTestConfiguration.class, IssuedCases.class})
+@Import(IssuedCases.class)
 public @interface PcsCcdEventTest {
 }
