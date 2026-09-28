@@ -10,7 +10,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
   askTheCourtToSetAsideTheOrder, checkYourAnswersGenApps, chooseAnApplication,
@@ -22,6 +22,7 @@ import {
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
 import { home } from '@data/page-data';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 test.use({ storageState: undefined });
 
@@ -41,15 +42,6 @@ test.beforeEach(async ({ page, context }) => {
     payLoad: submitCaseApiData.submitCasePayload
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await page.evaluate(() => {
-  //   try {
-  //     localStorage.clear();
-  //     sessionStorage.clear();
-  //   } catch (e) {
-  //     // Ignore if storage is not accessible
-  //   }
-  // });
-
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
   await dismissCookieBanner(page, 'analytics');
@@ -74,6 +66,7 @@ test.afterEach(async () => {
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
   test('Select an Application - Ask to Set aside', async () => {
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
@@ -144,6 +137,13 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       button: serviceRequestGenApps.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
-
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      submitPayload: submitCaseApiData.submitCasePayload,
+      genApp: CaseManagementCommonUtils.renameDocument('genApps.docx', '', appType),
+      defendantIndex: 1
+    });
   });
 });
