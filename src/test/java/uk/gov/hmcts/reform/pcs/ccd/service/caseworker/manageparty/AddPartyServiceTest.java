@@ -103,16 +103,16 @@ class AddPartyServiceTest {
     @Test
     void shouldPersistDefendantPartyAndLinkToClaim() {
         // Given
+        UUID caseId = UUID.randomUUID();
+        when(pcsCaseEntity.getId()).thenReturn(caseId);
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+
         AddPartyDetails addPartyDetails = AddPartyDetails.builder()
             .addPartyType(PartyType.DEFENDANT)
             .firstName("John")
             .lastName("Smith")
             .build();
-
-        UUID caseId = UUID.randomUUID();
-        when(pcsCaseEntity.getId()).thenReturn(caseId);
-        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
-        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
 
         // When
         underTest.addParty(addPartyDetails, pcsCaseEntity, claimEntity, null);
