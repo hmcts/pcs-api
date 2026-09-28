@@ -11,9 +11,9 @@ public class LegalRepDocumentUploadConfigurer implements PageConfigurer {
 
     private final UploadAdditionalDocumentsPage uploadAdditionalDocumentsPage;
 
-    @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new LegalRepSelectDefendant())
             .add(new UploadAdditionalDocumentsInformationPage())
             .add(new ExistingApplicationPage())
             .add(uploadAdditionalDocumentsPage);
