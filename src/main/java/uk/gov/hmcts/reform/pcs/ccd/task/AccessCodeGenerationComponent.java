@@ -108,8 +108,6 @@ public class AccessCodeGenerationComponent {
                                 .data(sendClaimPackTaskData)
                                 .scheduledTo(Instant.now(utcClock))
                         );
-                    } else {
-                        log.info("Skip sending claim pack for case {} party {}", caseReference, defendantPartyId);
                     }
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
