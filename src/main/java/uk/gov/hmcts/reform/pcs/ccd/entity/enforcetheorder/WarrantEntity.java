@@ -54,7 +54,7 @@ public class WarrantEntity {
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
     // Language & Status
-    @Deprecated
+    @Deprecated(forRemoval = true)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo isSuspendedOrder;
