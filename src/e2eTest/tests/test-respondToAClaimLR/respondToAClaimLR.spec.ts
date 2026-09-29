@@ -10,15 +10,20 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {contactDetailsLR} from '@data/page-data-figma';
 import {startNow} from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   const manageCaseBaseUrl = process.env.MANAGE_CASE_BASE_URL;
   if (!manageCaseBaseUrl) {
     throw new Error('MANAGE_CASE_BASE_URL is not set.');
   }
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  if (testInfo.title.includes('verifyLink')) {
+    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCaseDefendantAddressKnown});
+  } else {
+    await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  }
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
 
@@ -74,7 +79,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
   });
 
-  test('Respond to a claim - Verify respond to claim link', async () => {
+  test('Respond to a claim - Verify respond to claim link @verifyLink', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
