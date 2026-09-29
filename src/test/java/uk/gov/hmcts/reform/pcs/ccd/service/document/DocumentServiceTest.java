@@ -219,11 +219,6 @@ class DocumentServiceTest {
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.ENGLAND);
         when(pcsCase.getAdditionalDocumentsEngland()).thenReturn(List.of(lv1, lv2));
 
-        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.WITNESS_STATEMENT))
-            .thenReturn(DocumentType.WITNESS_STATEMENT);
-        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.RENT_STATEMENT))
-            .thenReturn(DocumentType.RENT_STATEMENT);
-
         // When
         underTest.createAllDocuments(pcsCase);
 
@@ -753,14 +748,13 @@ class DocumentServiceTest {
     void shouldReturnEmptyListIfNoDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(documentRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         List<DocumentEntity> entities = underTest.createAllDocuments(pcsCase);
 
         // Then
         assertThat(entities).isEmpty();
-        verify(documentRepository).saveAll(List.of());
+        verify(documentRepository, never()).saveAll(anyList());
     }
 
     @Test
@@ -908,9 +902,6 @@ class DocumentServiceTest {
     @Test
     void shouldSaveDescriptionForAdditionalDocumentsForEngland() {
         PCSCase pcsCase = mock(PCSCase.class);
-
-        AdditionalDocumentType additionalDocumentType = AdditionalDocumentType.WITNESS_STATEMENT;
-        when(documentTypeMapper.mapToDocumentType(additionalDocumentType)).thenReturn(DocumentType.WITNESS_STATEMENT);
 
         String description = "A short description";
 
@@ -1671,18 +1662,6 @@ class DocumentServiceTest {
 
         // Then
         assertThat(actualDocumentType).isNull();
-    }
-
-
-    @ParameterizedTest
-    @MethodSource("additionalDocumentTypeScenarios")
-    void shouldMapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalDocumentType,
-                                                               DocumentType expectedDocumentType) {
-        // When
-        DocumentType actualDocumentType = underTest.mapAdditionalDocumentTypeToDocumentType(additionalDocumentType);
-
-        // Then
-        assertThat(actualDocumentType).isEqualTo(expectedDocumentType);
     }
 
     private static Stream<Arguments> documentCategoryScenarios() {
