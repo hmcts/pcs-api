@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentamend;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
