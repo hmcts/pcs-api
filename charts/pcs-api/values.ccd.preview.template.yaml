@@ -86,7 +86,8 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS: 1
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
-        DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api"
+        # TODO HDPI-8939: REMOVE BEFORE MERGE - xui_mo_webapp added only for the preview manage-org below
+        DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,pcs_api,xui_mo_webapp"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -274,6 +275,27 @@ xui-webapp:
           - mc-session-secret
           - appinsights-connection-string-mc
 
+
+# TODO HDPI-8939: REMOVE BEFORE MERGE - preview-only manage-org so the PR's access types can be
+# checked in the UI. Reads access types from this preview's definition store; everything else is AAT.
+xui-mo-webapp:
+  enabled: true
+  nodejs:
+    imagePullPolicy: Always
+    releaseNameOverride: ${SERVICE_NAME}-xui-mo-webapp
+    image: hmctsprod.azurecr.io/xui/mo-webapp:latest
+    ingressHost: xui-mo-${SERVICE_FQDN}
+    environment:
+      MANAGE_CASE_LINK: https://xui-${SERVICE_FQDN}/cases
+      MANAGE_ORG_LINK: https://xui-mo-${SERVICE_FQDN}
+      SERVICES_CCD_DEFINITION_STORE_API: http://${SERVICE_NAME}-ccd-definition-store
+      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      RD_PROFESSIONAL_API_SERVICE: http://rd-professional-api-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_API: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
+      SERVICES_MCA_PROXY_API: http://aac-manage-case-assignment-aat.service.core-compute-aat.internal
+      FEATURE_OGD_UPDATE_REFRESH_USER_ENABLED: true
+      CASE_TYPES: PCS
 
 ccd-case-document-am-api:
   enabled: true
