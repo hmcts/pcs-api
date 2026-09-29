@@ -39,10 +39,9 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
 
   const isMultiDef = title.toLowerCase().includes('multi def');
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-
   await performAction('submitCaseAPI', { data: submitPayload });
 
   await performAction('updatePaymentAPI');
@@ -63,6 +62,23 @@ test.beforeEach(async ({ page, context }, testInfo) => {
       data: genAppPayload(defendantUserDetails[0].id, defendantUserDetails[0].name),
     });
   }
+
+  if (title.includes('MULTI_APP')) {
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationstartSetAsidePayload(
+      defendantUserDetails[0].id,defendantUserDetails[0].name),
+  });
+
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+      defendantUserDetails[0].id, defendantUserDetails[0].name),
+  });
+
+  await performAction('makeAnApplicationAPI', {
+    data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
+      defendantUserDetails[0].id, defendantUserDetails[0].name),
+  });
+}
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
