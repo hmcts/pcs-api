@@ -159,14 +159,29 @@ export class GlobalSearchCaseAction implements IAction {
         name: whyDoYouNeedToAccessThisCase.whyDoYouNeedToAccessThisCaseQuestion
       }).getByRole('textbox').fill(accessReason.text?.toString() ?? '');
     }
+  await page.waitForTimeout(1000);
+    await expect(async () => {
+      await Promise.all([
+        page.waitForResponse(
+          response =>
+            response.url().includes('/api/challenged-access-request') &&
+            response.status() === 201
+        ),
+        performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton),
+      ]);
+      await expect(page.getByRole('heading', {name: new RegExp(challengedAccessSuccess.successMessage,'i'),})).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
+
     // Submit and wait for the success page
-    await performAction('clickButton', whyDoYouNeedToAccessThisCase.submitButton);
+    
 await page.waitForURL(/challenged-access-request\/success/, { timeout: LONG_TIMEOUT });
 
 // Validate the success page
-await expect(
-  page.getByRole('heading', { name: new RegExp(challengedAccessSuccess.successMessage, 'i') })
-).toBeVisible({ timeout: SHORT_TIMEOUT });
+// await expect(
+//   page.getByRole('heading', { name: new RegExp(challengedAccessSuccess.successMessage, 'i') })
+// ).toBeVisible({ timeout: SHORT_TIMEOUT });
   await expect(page.getByText(normalizedCaseReference)).toBeVisible();
   await expect(page.getByText(/you can access this case file until midnight tonight/i)).toBeVisible();
  await expect(page.getByText(/your request will be logged for auditing purposes/i)).toBeVisible();
