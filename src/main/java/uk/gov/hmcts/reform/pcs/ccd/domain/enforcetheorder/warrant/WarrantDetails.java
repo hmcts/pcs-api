@@ -108,6 +108,8 @@ public class WarrantDetails {
     private RepaymentCosts repaymentCosts;
 
     /**
+     * Indicates whether the order is suspended.
+     *
      * @deprecated As of release 1.4
      */
     @CCD(
