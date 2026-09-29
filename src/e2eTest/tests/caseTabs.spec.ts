@@ -277,7 +277,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
       defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseDetails().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayloadCaseDetails().addAnotherDefendant,
       createPayload: createCaseApiData.createCasePayload,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseDetails(),
       section: 'Rent arrears Case details',
       table: 'Details of rent arrears'
     });
@@ -379,7 +379,7 @@ test.describe('[Case tabs - England Journey] @nightly', async () => {
     await performAction('filterCaseFromCaseList', formatCaseStateText(caseInfo.state));
     await performAction('validateCaseListTable', {
       createPayload: createCaseApiData.createCasePayload,
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload(),
     })
   });
 });
