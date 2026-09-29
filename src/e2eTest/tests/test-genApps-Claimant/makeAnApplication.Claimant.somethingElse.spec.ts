@@ -2,12 +2,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor } from '@utils/controller';
 import test, { expect } from '@playwright/test';
 import { initializeGenAppsExecutor, performAction, performValidation } from '@utils/controller-genApps';
-import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
-import { getCaseTypeId } from '@utils/common/caseType.utils';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
-import { user } from '@data/user-data';
-import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
@@ -17,35 +12,17 @@ import {
   doYouWantToUploadDocumentsToSupportYourApplication,
   uploadDocumentsToSupportYourApplication,
   whichLanguageDidYouUseToCompleteThisService, checkYourAnswersClaimantGenApps, statementOfTruthClaimant,
-  serviceRequestGenApps, askTheCourtToMakeAnOrder, areThereAnyReasonsThatThisApplicationShouldNotBeShared,
+  serviceRequestGenApps, askTheCourtToMakeAnOrder
 } from "@data/page-data-figma/page-data-genApps-claimant-figma";
-import {home} from "@data/page-data";
 
-
-
-
-test.use({ storageState: undefined })
-
-test.beforeEach(async ({ page, context }) => {
-  await context.clearCookies();
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeGenAppsExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
   await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.claimantSolicitor);
-  await dismissCookieBanner(page, 'analytics');
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  await expect(async () => {
-    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
-  }).toPass({
-    timeout: VERY_LONG_TIMEOUT,
-  });
-  await page.waitForLoadState();
-  await page.locator('.spinner-container').waitFor({ state: 'detached' });
-  await performValidation('mainHeader', home.caseSummary);
+  await performAction('navigateToSummaryPage');
 });
 
 test.afterEach(async () => {

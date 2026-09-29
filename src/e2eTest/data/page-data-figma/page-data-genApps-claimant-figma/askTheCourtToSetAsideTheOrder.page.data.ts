@@ -8,7 +8,7 @@ export const askTheCourtToSetAsideTheOrder = {
   whatYouNeedToApplyHeader: `What you’ll need to apply`,
   youNeedToKnowParagraph: `You’ll need to know:`,
   whyTheYourAskingTheCourtList: `why you are asking the court to set aside the original decision`,
-  theyMayNeedToProvideParagraph: `They may need to provide some evidence for the court.`,
+  youMayNeedToProvideParagraph: `You may need to provide some evidence for the court.`,
   beforeYouStartHeader: `Before you start`,
   makeSureParagraph: `Make sure that you have all of the evidence you need to apply.`,
   onceYouStartTheApplicationParagraph: `Once you start the application, you cannot save your progress as a draft.`,

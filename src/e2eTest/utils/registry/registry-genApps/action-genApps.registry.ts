@@ -56,7 +56,8 @@ export class ActionGenAppsRegistry {
     ['inputPaymentDetails', new GenAppsAction()],
     ['selectPaymentOptions', new GenAppsAction()],
     ['confirmPaymentGenApps', new GenAppsAction()],
-    ['selectGenAppsClaimantStatementOfTruth', new GenAppsAction()]
+    ['selectGenAppsClaimantStatementOfTruth', new GenAppsAction()],
+    ['navigateToSummaryPage', new GenAppsAction()],
   ]);
 
   static getAction(actionName: string): IAction {

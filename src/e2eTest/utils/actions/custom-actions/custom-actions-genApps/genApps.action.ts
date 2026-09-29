@@ -24,6 +24,8 @@ import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
 import {caseSummary, home} from "@data/page-data";
+import {getCaseTypeId} from "@utils/common/caseType.utils";
+import {VERY_LONG_TIMEOUT} from "../../../../playwright.config";
 
 
 export const addressInfo = {
@@ -65,6 +67,7 @@ export class GenAppsAction implements IAction {
       ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
       ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
       ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()],
+      ['navigateToSummaryPage',() => this.navigateToSummaryPage(page)],
       ['selectGenAppsClaimantStatementOfTruth', () => this.selectGenAppsClaimantStatementOfTruth(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -104,6 +107,17 @@ export class GenAppsAction implements IAction {
     ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
 
+  }
+  private async navigateToSummaryPage(page: Page) {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await performValidation('mainHeader', home.caseSummary);
   }
 
   private async selectApplicant(applicant: actionRecord) {

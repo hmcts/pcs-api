@@ -1,7 +1,7 @@
 export const askTheCourtToMakeAnOrder = {
   mainHeader: `Ask the court to make an order`,
   youCanAskTheCourtParagraph: `You can ask the court to make a decision at any point during your case. This is called an application.`,
-  forExampleParagraph: `For example, they can use this to:`,
+  forExampleParagraph: `For example, you can use this to:`,
   addSomeoneList: `add someone as an extra party to your claim`,
   askTheCourtList: `ask the court not to punish you for breaching an order (relief from sanctions)`,
   serveAClaimCourtList: `serve a claim outside England & Wales`,
