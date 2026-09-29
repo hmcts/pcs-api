@@ -11,6 +11,7 @@ export const manageParty = {
   defendantHiddenRadioOption: `Defendant`,
   litigationFriendHiddenRadioOption: `Litigation friend`,
   whichPartyContactInformationHiddenQuestion: `Which party's contact information needs to be updated?`,
+  whichPartyYouRemovingHiddenQuestion: `Which party are you removing?`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,

@@ -1,5 +1,5 @@
 
-import { expect, Page } from '@playwright/test';
+import test, { expect, Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
@@ -82,6 +82,7 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
+      ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -630,7 +631,7 @@ export class CaseManagementAction implements IAction {
       option: partyData.option1
     });
 
-    if (partyData.option1 === manageParty.updatePartyRadioOption) {
+    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 ) {
       await performAction('clickRadioButton', {
         question: partyData.question2,
         option: partyData.option2
@@ -1111,4 +1112,21 @@ export class CaseManagementAction implements IAction {
     caseTabMap.clear();
 
   }
+
+  private async validateFullPartyDetails(page: Page, partyDetails: actionRecord) {
+    await test.step(`Full Party Details Page Validation`, async () => {
+      expect(await this.getCaseFieldValue(page, 'Name')).toEqual('John Doe – Defendant 1');
+      expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual('John Doe – Defendant 1');
+      expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual('John Doe – Defendant 1');
+    });
+    
+
+
+  }
+
+  private async getCaseFieldValue(page: Page, label: string): Promise<string> {
+  return page
+    .locator(`dt.case-field__label:text-is("${label}") + dd.case-field__value`)
+    .innerText();
+}
 }

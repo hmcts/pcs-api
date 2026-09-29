@@ -11,22 +11,27 @@ import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 
 test.use({ storageState: undefined })
+let submitPayload: Record<string, any>;
 
-test.beforeEach(async ({ page, context }) => {
+test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
+  const submitPayload = testInfo.title.toLowerCase().includes('single defendant')
+  ? submitCaseApiData.submitCasePayloadDefault
+  : submitCaseApiData.submitCasePayloadCaseFileView;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitPayload});
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+    defendant1NameKnown: submitPayload.defendant1.nameKnown,
+    additionalDefendants: submitPayload.addAnotherDefendant,
+    payLoad: submitPayload
   });
 
+  if (testInfo.title.includes('GENAPP')){
   for (const defendant of defendantUserDetails) {
     await performAction('makeAnApplicationAPI', {
       data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
@@ -35,6 +40,7 @@ test.beforeEach(async ({ page, context }) => {
       ),
     });
   };
+}
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -247,6 +253,44 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
     await performAction('confirmPartyDetailsUpdated', {
       userType: `Claimant's details`,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+    });
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
+  });
+
+  test('Case management - Remove party from the case - Defendants details @CM @regression', async () => {
+    let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
+    let party = allPartyDetails[1];
+    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+      await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+      await performValidation('mainHeader', manageParty.mainHeader);
+    });    
+    await test.step(`Select the party to be removed`, async () => {
+      await performAction('selectParty', {
+        question1: manageParty.whatChangeQuestion,
+        option1: manageParty.removePartyRadioOption,
+        question2: manageParty.whichPartyYouRemovingHiddenQuestion,
+        option2: party,
+        nextPage: updatePartyDetails.mainHeader
+      });
+    });
+
+    await test.step(`Full Party Details Page Validation`, async () => {
+      await performAction('validateFullPartyDetails')
+    });
+    await performAction('updatePartyDetails', {
+      DOBLabel: updatePartyDetails.dateOfBirthHiddenLabel,
+      date: date,
+      enterUKPostcodeTextLabel: updatePartyDetails.enterUKPostcodeTextLabel,
+      postcode: updatePartyDetails.englandPostCodeTextInput,
+      button: updatePartyDetails.findAddressButton,
+      addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
+      addressIndex: updatePartyDetails.defendantAddressIndex,
+      nextPage: checkYourAnswersManageParties.mainHeader
+    });
+    await performAction('clickButton', checkYourAnswersManageParties.submitButton);
+    await performAction('confirmPartyDetailsUpdated', {
+      userType: `Defendant's details`,
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
