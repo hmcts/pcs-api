@@ -30,12 +30,28 @@ class WarrantPageConfigurerTest extends BasePageTest {
 
     @Mock
     private ViolentAggressiveRiskPage violentAggressiveRiskPage;
+
+    @Mock
+    private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+
+    @Mock
+    private ProtestorGroupRiskPage protestorGroupRiskPage;
+
+    @Mock
+    private PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+
+    @Mock
+    private FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+
     @Mock
     private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+
     @Mock
     private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+
     @Mock
     private PropertyAccessDetailsPage propertyAccessDetailsPage;
+
     @Mock
     private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     @Mock
@@ -67,7 +83,11 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, violentAggressiveRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, firearmsPossessionRiskPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, criminalAntisocialRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, verbalOrWrittenThreatsRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, protestorGroupRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, policeOrSocialServicesRiskPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, aggressiveAnimalsRiskPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, propertyAccessDetailsPage, verificationCount);

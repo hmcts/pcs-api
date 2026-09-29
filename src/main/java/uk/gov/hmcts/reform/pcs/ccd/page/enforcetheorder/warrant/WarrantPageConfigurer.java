@@ -10,6 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 public class WarrantPageConfigurer implements PageConfigurer {
 
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    private final ProtestorGroupRiskPage protestorGroupRiskPage;
+    private final PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    private final FirearmsPossessionRiskPage firearmsPossessionRiskPage;
     private final CriminalAntisocialRiskPage criminalAntisocialRiskPage;
     private final AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
     private final PropertyAccessDetailsPage propertyAccessDetailsPage;
@@ -28,7 +32,11 @@ public class WarrantPageConfigurer implements PageConfigurer {
             .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
             .add(violentAggressiveRiskPage)
+            .add(firearmsPossessionRiskPage)
             .add(criminalAntisocialRiskPage)
+            .add(verbalOrWrittenThreatsRiskPage)
+            .add(protestorGroupRiskPage)
+            .add(policeOrSocialServicesRiskPage)
             .add(aggressiveAnimalsRiskPage)
             .add(vulnerableAdultsChildrenPage)
             .add(propertyAccessDetailsPage)
