@@ -53,6 +53,9 @@ public class WarrantEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
+    /**
+     * @deprecated As of release 1.4
+     */
     // Language & Status
     @Deprecated(forRemoval = true)
     @Enumerated(EnumType.STRING)

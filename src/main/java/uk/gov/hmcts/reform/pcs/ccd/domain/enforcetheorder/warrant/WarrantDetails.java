@@ -107,6 +107,9 @@ public class WarrantDetails {
     @CCD
     private RepaymentCosts repaymentCosts;
 
+    /**
+     * @deprecated As of release 1.4
+     */
     @CCD(
             label = "Is your order a suspended order?",
             hint = "If your order is suspended, you will see a different version of the statement of truth on the "
