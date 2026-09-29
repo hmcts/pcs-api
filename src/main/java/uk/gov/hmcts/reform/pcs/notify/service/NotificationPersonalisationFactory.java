@@ -60,11 +60,9 @@ public class NotificationPersonalisationFactory {
     public DefendantBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
-        String nextStepUrl = String.format("%s/claims", frontendUrl);
-
         return DefendantBasePersonalisation.builder()
             .base(buildPersonalisation(defendant, defendantResponse.getPcsCase()))
-            .nextStepUrl(nextStepUrl)
+            .nextStepUrl(frontendUrl + "/claims")
             .build();
     }
 
@@ -141,7 +139,7 @@ public class NotificationPersonalisationFactory {
         DefendantResponseEntity defendantResponse
     ) {
         String paymentUrl = release14Enabled()
-            ? String.format("%s/claims", frontendUrl)
+            ? (frontendUrl + "/claims")
             : String.format("%s/case/%s/respond-to-claim/counter-claim-application-fee-amount",
                             frontendUrl, defendantResponse.getPcsCase().getCaseReference().toString());
 
@@ -297,7 +295,7 @@ public class NotificationPersonalisationFactory {
     }
 
     private static String formatNameUpperForNotification(String firstName, String lastName) {
-        return String.format("%s %s", firstName, lastName).toUpperCase(Locale.ROOT);
+        return (firstName + " " + lastName).toUpperCase(Locale.ROOT);
     }
 
     public static String formatCaseReference(String caseReference) {
