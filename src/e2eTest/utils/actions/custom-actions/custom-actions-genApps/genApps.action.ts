@@ -11,6 +11,7 @@ import {
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from '@data/page-data-figma/page-data-genApps-figma';
+import { statementOfTruthClaimant } from "@data/page-data-figma/page-data-genApps-claimant-figma";
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import { performAction, performValidation } from '@utils/controller-genApps';
@@ -63,7 +64,8 @@ export class GenAppsAction implements IAction {
       ['clickPayNowLinkGenApps', () => this.clickPayNowLinkGenApps(page)],
       ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
       ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
-      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()]
+      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()],
+      ['selectGenAppsClaimantStatementOfTruth', () => this.selectGenAppsClaimantStatementOfTruth(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -260,6 +262,29 @@ export class GenAppsAction implements IAction {
     await performAction('inputText', sot.label2, sot.input2);
     await performAction('inputText', sot.label3, sot.input3);
     FieldsStore.delete(sot.question as string);
+    await performAction('clickButton', statementOfTruth.continueButton);
+  }
+
+  private async selectGenAppsClaimantStatementOfTruth(claimantDetails: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', claimantDetails);
+    await performAction('clickRadioButton', {
+      question: statementOfTruthClaimant.completedByParagraph,
+      option: claimantDetails.completedBy
+    });
+    if(claimantDetails.completedBy == statementOfTruthClaimant.claimantRadioOption){
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthClaimant.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthClaimant.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if(claimantDetails.completedBy == statementOfTruthClaimant.claimantLegalRepresentativeRadioOption){
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthClaimant.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthClaimant.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthClaimant.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    FieldsStore.delete(claimantDetails.question as string);
     await performAction('clickButton', statementOfTruth.continueButton);
   }
 
