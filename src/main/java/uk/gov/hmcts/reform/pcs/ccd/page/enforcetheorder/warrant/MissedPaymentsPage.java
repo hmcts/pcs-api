@@ -22,6 +22,7 @@ public class MissedPaymentsPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getDefendantMissedPayments)
             .done()
+            .done()
             .label("missedPayments-save-and-return", SAVE_AND_RETURN);
     }
 
