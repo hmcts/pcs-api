@@ -1000,6 +1000,44 @@ class PartyServiceTest {
             verify(addressMapper).toAddressEntityAndNormalise(address);
             verify(addressMapper, never()).toCorrespondenceAddressEntity(any());
         }
+
+        @Test
+        void shouldUseNormalisedAddressForValidUkPostcodeWhenReleaseIsEnabled() {
+            // Given
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+            AddressUK address = mock(AddressUK.class);
+            AddressEntity mappedNormalisedAddress = mock(AddressEntity.class);
+            when(address.getPostCode()).thenReturn("SW1A 1AA");
+            when(postcodeValidator.isValidPostcode("SW1A 1AA")).thenReturn(true);
+            when(addressMapper.toAddressEntityAndNormalise(address)).thenReturn(mappedNormalisedAddress);
+
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .organisationAddress(address)
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+
+            ClaimantInformation claimantInformation = ClaimantInformation.builder()
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .claimantName("Claimant name")
+                .build();
+
+            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
+            PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedNormalisedAddress);
+            verify(postcodeValidator).isValidPostcode("SW1A 1AA");
+            verify(addressMapper).toAddressEntityAndNormalise(address);
+            verify(addressMapper, never()).toCorrespondenceAddressEntity(any());
+        }
     }
 
     @Nested
