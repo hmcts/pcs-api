@@ -39,10 +39,9 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   const isGenAppsSubmitted = /gen\s*apps\s+submitted/.test(title);
 
   const isMultiDef = title.toLowerCase().includes('multi def');
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+
   submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-
   await performAction('submitCaseAPI', { data: submitPayload });
 
   await performAction('updatePaymentAPI');
