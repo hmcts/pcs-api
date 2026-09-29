@@ -25,44 +25,32 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     LOCAL_AUTHORITY_CLAIMANT_ACCESS(
         LOCALAUTH_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         1, false, false, true, true
     ),
     REAL_ESTATE_ORG_CLAIMANT_ACCESS(
         OTHER_REALT_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         2, false, false, true, true
     ),
     PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS(
         OTHER_PROP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         3, false, false, true, true
     ),
     NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS(
         OTHER_NFP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         4, false, false, true, true
     ),
     CHARITY_ORG_CLAIMANT_ACCESS(
         OTHER_CHARITY_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         5, false, false, true, true
     ),
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
-        "Claimant access",
-        "Grants users access to all possession cases in which this organisation is the claimant or acts "
-            + "for the claimant",
+        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
         6, false, false, true, true
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
@@ -81,6 +69,14 @@ public enum GroupAccessType implements CCDAccessGroup {
     );
 
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
+
+    /** Holder so the enum constants above can use these without an illegal forward reference. */
+    private static final class Text {
+        static final String CLAIMANT_ACCESS = "Claimant access";
+        static final String CLAIMANT_ACCESS_HINT =
+            "Grants users access to all possession cases in which this organisation is the claimant or acts "
+                + "for the claimant";
+    }
 
     private static final Map<Key, GroupAccessType> CASE_ACCESS_GROUP_MAP = buildIndex();
 
