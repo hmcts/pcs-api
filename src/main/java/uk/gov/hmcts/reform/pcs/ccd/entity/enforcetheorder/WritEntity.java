@@ -28,7 +28,6 @@ import java.time.Instant;
 @Table(name = "enf_writ")
 @Getter
 @Setter
-@SuppressWarnings("DuplicatedCode")
 public class WritEntity {
 
     @Id
