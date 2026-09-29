@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import java.time.LocalDate;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.reform.pcs.ccd.model.AcceptedFileTypes.NON_MULTIMEDIA_FILE_TYPES;
 
 @Data
 @Builder
@@ -25,7 +26,10 @@ public class CaseworkerDocument {
     @CCD(ignore = true)
     private static final String PREFIX = "cwDoc";
 
-    @CCD(label = "Upload a document")
+    @CCD(
+        label = "Upload a document",
+        regex = NON_MULTIMEDIA_FILE_TYPES
+    )
     @JsonProperty(PREFIX + "_Document")
     private Document document;
 

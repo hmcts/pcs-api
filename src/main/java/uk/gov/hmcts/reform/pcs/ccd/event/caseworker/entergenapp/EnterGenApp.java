@@ -46,6 +46,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
     private final GenAppService genAppService;
     private final ApplicationDetails applicationDetails;
     private final AddressFormatter addressFormatter;
+    private final UploadRelatedEvidence uploadRelatedEvidence;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -65,7 +66,7 @@ public class EnterGenApp implements CCDConfig<PCSCase, State, UserRole> {
             .add(new ApplicationFee())
             .add(new ConsentAndNotice())
             .add(new UploadGeneralApplication())
-            .add(new UploadRelatedEvidence())
+            .add(uploadRelatedEvidence)
             .add(new ReferApplicationToJudge());
     }
 
