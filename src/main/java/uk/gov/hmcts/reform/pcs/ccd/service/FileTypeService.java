@@ -13,6 +13,7 @@ import java.util.List;
 @Service
 public class FileTypeService {
 
+    private static final String DISALLOWED_FILE_TYPE_ERROR_MESSAGE = "Your upload contains a disallowed file type";
     private static final String INVALID_FILE_TYPE_ERROR_MESSAGE = "The selected file must be a DOC/DOT/DOCX/DOTX, "
         + "XLS/XLT/XLA/XLSX/XLTX/XLSB, PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.";
 
@@ -25,7 +26,7 @@ public class FileTypeService {
             .anyMatch(documentListValue -> isNonMultiMediaFile(documentListValue.getValue().getFilename()));
 
         if (hasInvalidFile) {
-            errors.add(INVALID_FILE_TYPE_ERROR_MESSAGE);
+            errors.addAll(List.of(DISALLOWED_FILE_TYPE_ERROR_MESSAGE, INVALID_FILE_TYPE_ERROR_MESSAGE));
         }
     }
 

@@ -37,8 +37,10 @@ public class FileTypeServiceTest {
         fileTypeService.validateNonMultiMediaFiles(List.of(documentListValue), errors);
 
         // Then
-        assertThat(errors).hasSize(1);
+        assertThat(errors).hasSize(2);
         assertThat(errors.getFirst())
+            .isEqualTo("Your upload contains a disallowed file type");
+        assertThat(errors.getLast())
             .isEqualTo(
                 "The selected file must be a DOC/DOT/DOCX/DOTX, XLS/XLT/XLA/XLSX/XLTX/XLSB, "
                     + "PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF."
