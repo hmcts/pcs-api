@@ -417,6 +417,8 @@ class DocumentServiceTest {
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
             ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.TENANCY_AGREEMENT))
+            .thenReturn(DocumentType.TENANCY_AGREEMENT);
 
         underTest.createAllDocuments(pcsCase);
 
@@ -452,6 +454,8 @@ class DocumentServiceTest {
         when(pcsCase.getAdditionalDocuments()).thenReturn(List.of(
             ListValue.<AdditionalDocument>builder().value(additionalDocument).build()
         ));
+        when(documentTypeMapper.mapToDocumentType(AdditionalDocumentType.OCCUPATION_LICENCE))
+            .thenReturn(DocumentType.OCCUPATION_LICENCE);
 
         underTest.createAllDocuments(pcsCase);
 

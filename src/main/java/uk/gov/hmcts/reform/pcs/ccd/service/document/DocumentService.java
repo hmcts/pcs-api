@@ -87,7 +87,13 @@ public class DocumentService {
      * remains for tests and callers that need persisted entities in one step.
      */
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
-        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
+        List<DocumentEntity> documents = buildDocumentEntitiesForCase(pcsCase);
+
+        if (documents.isEmpty()) {
+            return List.of();
+        }
+
+        return documentRepository.saveAll(documents);
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
