@@ -110,7 +110,7 @@ test.describe('Claimant - Make an Application - e2e Journey @nightly', async () 
     await performValidation('mainHeader', serviceRequestGenApps.paymentSuccessMainHeader);
   });
 
-  test('Claimant- Select an Application - Ask to Adjourn journey - Court hearing in 14 days[No]', async () => {
+  test('Claimant- Select an Application - Ask to Adjourn journey - Court hearing in 14 days[No] @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);

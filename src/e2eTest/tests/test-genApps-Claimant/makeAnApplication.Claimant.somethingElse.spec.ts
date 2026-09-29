@@ -34,7 +34,7 @@ test.afterEach(async () => {
 });
 
 
-test.describe('Claimant - Make an Application - e2e Journey @nightly', async () => {
+test.describe('Claimant - Make an Application - e2e Journey @nightly @regression', async () => {
   test('Claimant - Select an Application - Something Else', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
