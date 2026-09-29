@@ -34,6 +34,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "enf_warrant")
+@SuppressWarnings("DuplicatedCode")
 public class WarrantEntity {
 
     @Id
