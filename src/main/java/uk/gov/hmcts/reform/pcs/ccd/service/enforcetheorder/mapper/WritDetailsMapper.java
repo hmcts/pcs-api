@@ -36,7 +36,8 @@ public class WritDetailsMapper {
         mapLegalCosts(writDetails.getLegalCosts(), entity);
         mapMoneyOwedByDefendants(writDetails.getMoneyOwedByDefendants(), entity);
         mapRepaymentCosts(writDetails.getRepaymentCosts(), entity);
-
+        breathingSpace(entity, writDetails);
+        missedPayments(entity, writDetails);
         return entity;
     }
 
@@ -75,6 +76,14 @@ public class WritDetailsMapper {
         if (moneyOwedByDefendants != null) {
             entity.setAmountOwed(moneyOwedByDefendants.getAmountOwed());
         }
+    }
+
+    private void breathingSpace(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantInBreathingSpace(writDetails.getDefendantInBreathingSpace());
+    }
+
+    private void missedPayments(WritEntity writEntity, WritDetails writDetails) {
+        writEntity.setDefendantMissedPayments(writDetails.getDefendantMissedPayments());
     }
 
     private YesOrNo convertYesOrNo(YesOrNo yesOrNo) {

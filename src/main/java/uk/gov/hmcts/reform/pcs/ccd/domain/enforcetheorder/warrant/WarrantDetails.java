@@ -42,6 +42,16 @@ public class WarrantDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
+    @CCD
+    private YesNoNotSure defendantInBreathingSpace;
+
+    @CCD(
+        label = "Have the defendants missed any payments?",
+        hint = "These are payments outlined in the suspended order for possession.  "
+              + "They were ordered to make these payments by the judge."
+    )
+    private VerticalYesNo defendantMissedPayments;
+
     @JsonUnwrapped
     @CCD
     private PeopleToEvict peopleToEvict;
