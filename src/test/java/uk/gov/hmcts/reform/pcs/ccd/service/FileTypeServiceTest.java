@@ -38,7 +38,11 @@ public class FileTypeServiceTest {
 
         // Then
         assertThat(errors).hasSize(1);
-        assertThat(errors.getFirst()).isEqualTo(fileName + " contains a disallowed file type");
+        assertThat(errors.getFirst())
+            .isEqualTo(
+                "The selected file must be a DOC/DOT/DOCX/DOTX, XLS/XLT/XLA/XLSX/XLTX/XLSB, "
+                    + "PPT/POT/PPS/PPA/PPTX/POTX/PPSX, PDF, TXT/RTF/CSV, JPG/JPEG, PNG, BMP, TIF/TIFF."
+            );
     }
 
     @ParameterizedTest
