@@ -60,6 +60,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBaseP
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -134,6 +135,7 @@ class NotificationServiceTest {
             notificationPersonalisationFactory,
             pcsCaseService
         );
+        lenient().when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
     }
 
     @Nested
@@ -1488,7 +1490,8 @@ class NotificationServiceTest {
     class TemplatePersonalisationMethodTests {
         private final NotificationPersonalisationFactory factory =
             new NotificationPersonalisationFactory(
-                partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter());
+                partyService, new AddressFormatter(), addressMapper,
+                new CaseNameFormatter(), mock(FeatureToggleService.class));
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")
@@ -1667,6 +1670,44 @@ class NotificationServiceTest {
             );
 
             assertThat(response).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Release 1.4 personalisation")
+    class Release14PersonalisationTests {
+
+        @Test
+        @DisplayName("Should include new fields when flag is enabled")
+        void shouldIncludeNewFieldsWhenFlagIsEnabled() {
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
+            TemplatePersonalisation personalisation = () -> Map.of(
+                "caseNumber", "1234567890", "caseName", "Jane vs John", "nextStepUrl", "https://example.test/claims",
+                "paymentUrl", "https://example.test/payment"
+            );
+
+            EmailNotificationRequest request = notificationService.buildRequest(
+                TEMPLATE_ID, TEST_EMAIL, NotificationClaimType.POSSESSION_CLAIM, personalisation);
+
+            assertThat(request.getPersonalisation()).containsKeys("caseName", "nextStepUrl", "paymentUrl");
+        }
+
+        @Test
+        @DisplayName("Should only include legacy fields when flag is disabled")
+        void shouldOnlyIncludeLegacyFieldsWhenFlagIsDisabled() {
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(false);
+            TemplatePersonalisation personalisation = () -> Map.of(
+                "caseNumber", "1234567890", "caseName", "Jane vs John", "nextStepUrl", "https://example.test/claims",
+                "paymentUrl", "https://example.test/payment"
+            );
+
+            EmailNotificationRequest request = notificationService.buildRequest(
+                TEMPLATE_ID, TEST_EMAIL, NotificationClaimType.POSSESSION_CLAIM, personalisation);
+
+            assertThat(request.getPersonalisation())
+                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("paymentUrl", "https://example.test/payment")
+                .doesNotContainKeys("caseName", "nextStepUrl");
         }
     }
 

@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +58,8 @@ class NotificationPersonalisationFactoryTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock(strictness = LENIENT)
     private AddressMapper addressMapper;
+    @Mock(strictness = LENIENT)
+    private FeatureToggleService featureToggleService;
 
     private NotificationPersonalisationFactory factory;
 
@@ -67,8 +71,9 @@ class NotificationPersonalisationFactoryTest {
         claim.addParty(createParty("John", "Doe"), PartyRole.DEFENDANT);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claim));
 
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         factory = new NotificationPersonalisationFactory(
-            partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter());
+            partyService, new AddressFormatter(), addressMapper, new CaseNameFormatter(), featureToggleService);
         ReflectionTestUtils.setField(factory, "frontendUrl", "frontEndUrl");
         ReflectionTestUtils.setField(factory, "manageCaseUrl", "manageCaseUrl");
     }
@@ -691,6 +696,55 @@ class NotificationPersonalisationFactoryTest {
 
             assertThat(factory.getFormattedCaseName(pcsCaseEntity))
                 .isEqualTo("Claimant Corp vs Persons unknown");
+        }
+    }
+
+    @Nested
+    @DisplayName("Release 1.4 feature flag")
+    class Release14FeatureFlagTests {
+
+        @Test
+        @DisplayName("Should not format a case name when flag is disabled")
+        void shouldNotFormatCaseNameWhenFlagIsDisabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+            when(pcsCaseEntity.getClaims()).thenReturn(List.of());
+            PartyEntity claimant = stubClaimantParty();
+            stubDefendantParty();
+
+            assertThat(factory.forParty(claimant, pcsCaseEntity).toMap()).containsEntry("caseName", "");
+        }
+
+        @Test
+        @DisplayName("Should not format draft case name when flag is disabled")
+        void shouldNotFormatDraftCaseNameWhenFlagIsDisabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+            assertThat(factory.forClaimant(CASE_REFERENCE, createPcsCase(VerticalYesNo.YES,
+                                                                         "Jane Smith", null)).toMap())
+                .containsEntry("caseName", "");
+        }
+
+        @Test
+        @DisplayName("Should retain the previous defendant payment link when flag is disabled")
+        void shouldUsePreviousDefendantPaymentLinkWhenFlagIsDisabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+            DefendantResponseEntity response = createDefendantResponse(stubClaimantParty(), stubDefendantParty());
+
+            assertThat(factory.counterclaimPaymentRequired(response).toMap())
+                .containsEntry("paymentUrl",
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
+        }
+
+        @Test
+        @DisplayName("Should retain the previous legal rep payment link when flag is disabled")
+        void shouldUsePreviousLegalRepPaymentLinkWhenFlagIsDisabled() {
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+            stubClaimantParty();
+            stubDefendantParty();
+
+            assertThat(factory.counterclaimPaymentRequired(createOrganisation("Solicitors Org"), pcsCaseEntity).toMap())
+                .containsEntry("paymentUrl",
+                               "frontEndUrl/case/1234567890/respond-to-claim/counter-claim-application-fee-amount");
         }
     }
 

@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -589,16 +591,23 @@ public class NotificationService {
         );
     }
 
-    protected static EmailNotificationRequest buildRequest(
+    protected EmailNotificationRequest buildRequest(
         String templateId,
         String email,
         NotificationClaimType claimType,
         TemplatePersonalisation personalisation
     ) {
+        Map<String, Object> fields = personalisation.toMap();
+        if (!templateConfiguration.isRelease14Enabled()) {
+            fields = new HashMap<>(fields);
+            fields.remove("caseName");
+            fields.remove("nextStepUrl");
+        }
+
         return EmailNotificationRequest.builder()
             .templateId(templateId)
             .emailAddress(email)
-            .personalisation(personalisation.toMap())
+            .personalisation(fields)
             .claimType(claimType)
             .build();
     }
