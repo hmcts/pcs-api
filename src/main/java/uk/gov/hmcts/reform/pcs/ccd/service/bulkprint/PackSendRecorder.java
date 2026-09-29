@@ -107,14 +107,18 @@ public class PackSendRecorder {
     }
 
     // The party a document belongs to: on the document directly (access code, counter-claim), via the
-    // defence response (the defence form carries no direct party_id), or the main claimant for the claim
-    // form (stored case-level, but it is the claimant's own filing — so their pack gets self=true).
+    // defence response (the defence form carries no direct party_id), via the general application
+    // (the applicant), or the main claimant for the claim form (stored case-level, but it is the
+    // claimant's own filing — so their pack gets self=true).
     private PartyEntity owningParty(PcsCaseEntity pcsCase, DocumentEntity document) {
         if (document.getParty() != null) {
             return document.getParty();
         }
         if (document.getDefendantResponse() != null) {
             return document.getDefendantResponse().getParty();
+        }
+        if (document.getGeneralApplication() != null) {
+            return document.getGeneralApplication().getParty();
         }
         if (document.getType() == DocumentType.CLAIM) {
             return claimantParty(pcsCase);

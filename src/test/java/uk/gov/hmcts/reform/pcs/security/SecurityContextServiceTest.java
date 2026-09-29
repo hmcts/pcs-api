@@ -35,6 +35,8 @@ class SecurityContextServiceTest {
 
     private MockedStatic<SecurityContextHolder> securityContextHolder;
 
+    private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
+
     private SecurityContextService underTest;
 
     @BeforeEach
@@ -42,12 +44,46 @@ class SecurityContextServiceTest {
         securityContextHolder = mockStatic(SecurityContextHolder.class);
         securityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
 
-        underTest = new SecurityContextService();
+        underTest = new SecurityContextService(SYSTEM_USER_ID);
     }
 
     @AfterEach
     void tearDown() {
         securityContextHolder.close();
+    }
+
+    @Test
+    @DisplayName("Should report the system user when the principal carries the configured system uid")
+    void isSystemUserForConfiguredUid() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(SYSTEM_USER_ID);
+
+        assertThat(underTest.isSystemUser()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should not report the system user for a real user's uid")
+    void isSystemUserForOtherUid() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
+
+        assertThat(underTest.isSystemUser()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should not report the system user when there is no authentication")
+    void isSystemUserWithNoAuthentication() {
+        when(securityContext.getAuthentication()).thenReturn(null);
+
+        assertThat(underTest.isSystemUser()).isFalse();
     }
 
     @Test
@@ -62,6 +98,20 @@ class SecurityContextServiceTest {
         UserInfo actualUserDetails = underTest.getCurrentUserDetails();
 
         assertThat(actualUserDetails).isEqualTo(expectedUserDetails);
+    }
+
+    @Test
+    @DisplayName("Should get the user auth token from the security context")
+    void getCurrentUserAuthToken() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        String expectedAuthHeader = "Bearer user-token";
+        when(user.getAuthToken()).thenReturn(expectedAuthHeader);
+
+        String actualAuthToken = underTest.getCurrentUserAuthToken();
+
+        assertThat(actualAuthToken).isEqualTo(expectedAuthHeader);
     }
 
     @Test

@@ -53,7 +53,7 @@ public class EligibilityService {
             List<LegislativeCountry> legislativeCountries = getDistinctLegislativeCountries(mostSpecificMappings);
 
             if (legislativeCountries.size() > 1) {
-                log.debug("Multiple legislative countries match {}: {}", postcode, legislativeCountries);
+                log.debug("Multiple legislative countries match postcode: {}", legislativeCountries);
 
                 return EligibilityResult.builder()
                     .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
@@ -64,7 +64,7 @@ public class EligibilityService {
 
         List<PostcodeCourtMapping> activeMappings = getActiveMappings(postcodeMappings);
         if (activeMappings.isEmpty()) {
-            log.error("No active e-PIMS ID found for postcode: {}", postcode);
+            log.error("No active e-PIMS ID found for postcode");
             return EligibilityResult.builder()
                 .status(EligibilityStatus.NO_MATCH_FOUND)
                 .build();
@@ -72,10 +72,7 @@ public class EligibilityService {
 
         List<PostcodeCourtMapping> filteredResults = getMostSpecificMappings(activeMappings);
         if (filteredResults.size() > 1) {
-            log.error("Multiple active e-PIMS IDs found for postcode: {} count: {}",
-                postcode,
-                filteredResults.size()
-            );
+            log.error("Multiple active e-PIMS IDs found for postcode. Count: {}", filteredResults.size());
             return EligibilityResult.builder()
                 .status(EligibilityStatus.MULTIPLE_MATCHES_FOUND)
                 .build();
@@ -84,8 +81,7 @@ public class EligibilityService {
         PostcodeCourtMapping matchedMapping = filteredResults.getFirst();
         EligibilityStatus eligibilityStatus = getCourtEligibility(matchedMapping);
 
-        log.debug("Postcode {} was matched against {} with eligibility status: {}",
-                  postcode, matchedMapping.getPostcode(), eligibilityStatus);
+        log.debug("Postcode matched with eligibility status: {}", eligibilityStatus);
 
         return EligibilityResult.builder()
             .status(eligibilityStatus)

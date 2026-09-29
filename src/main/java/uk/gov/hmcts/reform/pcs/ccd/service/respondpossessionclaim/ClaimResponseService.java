@@ -13,12 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseFlagService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.Optional;
 
 /**
- * Service for managing defendant contact preferences.
- * Handles saving contact preferences and updating party contact details.
+ * Applies a submitted defendant response to their party record: contact preferences, contact
+ * details, date of birth, and the reasonable adjustment flags supplied through the cui-ra microsite.
  */
 @Service
 @Slf4j
@@ -26,26 +28,50 @@ import java.util.Optional;
 public class ClaimResponseService {
 
     private final ModelMapper modelMapper;
+    private final CaseFlagService caseFlagService;
 
     /**
-     * Saves defendant's contact preferences and contact details for the given defendant party.
+     * Saves the defendant's contact preferences, contact details and reasonable adjustment flags
+     * against the given defendant party.
      *
      * @throws IllegalStateException if no party is found
      */
-    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty) {
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty,
+                                      long caseReference) {
+        saveDraftDataForParty(dataFromDraftTable, defendantParty, caseReference, JourneyType.CASEWORKER);
+    }
+
+    public void saveDraftDataForParty(PossessionClaimResponse dataFromDraftTable, PartyEntity defendantParty,
+                                      long caseReference, JourneyType journeyType) {
 
         if (defendantParty == null) {
             throw new IllegalStateException("defendant party is null");
         }
 
-        saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses());
+        saveContactPreferences(defendantParty, dataFromDraftTable.getDefendantResponses(), journeyType);
         updatePartyContactDetails(defendantParty, dataFromDraftTable.getDefendantContactDetails(), dataFromDraftTable
             .getDefendantResponses());
+        updatePcqId(defendantParty, dataFromDraftTable.getDefendantContactDetails());
+
+        caseFlagService
+            .saveReasonableAdjustmentFlags(defendantParty, dataFromDraftTable.getDefendantFlags(), caseReference);
 
         if (dataFromDraftTable.getDefendantResponses() != null
             && dataFromDraftTable.getDefendantResponses().getDateOfBirth() != null) {
             defendantParty.setDateOfBirth(dataFromDraftTable.getDefendantResponses().getDateOfBirth());
             log.debug("Updated date of birth from defendantResponses for party ID: {}", defendantParty.getId());
+        }
+    }
+
+    /**
+     * Stores the PCQ ID captured during the defendant's response journey.
+     * Only set when supplied, so an existing ID is never cleared by a response that omits it.
+     */
+    private void updatePcqId(PartyEntity party, DefendantContactDetails defendantContactDetails) {
+        String pcqId = defendantContactDetails.getParty().getPcqId();
+
+        if (StringUtils.isNotBlank(pcqId)) {
+            party.setPcqId(pcqId);
         }
     }
 
@@ -86,6 +112,13 @@ public class ClaimResponseService {
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
+        if (isContactByPhoneSelected(defendantResponses.getContactByPhone())
+            && isContactByTextSelected(defendantResponses.getContactByText())
+            && StringUtils.isNotBlank(defendantContactDetails.getParty().getTextMessageNumber())) {
+            party.setTextMessageNumber(defendantContactDetails.getParty().getTextMessageNumber());
+            log.debug("Updated text message number for party ID: {}", party.getId());
+        }
+
         if (StringUtils.isNotBlank(defendantContactDetails.getParty().getEmailAddress())) {
             party.setEmailAddress(defendantContactDetails.getParty().getEmailAddress());
             log.debug("Updated email address for party ID: {}", party.getId());
@@ -123,7 +156,8 @@ public class ClaimResponseService {
      * Creates and saves contact preferences entity with null-safe conversion.
      * Defaults null preferences to false (no contact).
      */
-    private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
+    private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse,
+                                        JourneyType journeyType) {
         ContactPreferencesEntity contactPrefs = party.getContactPreferences();
 
         if (contactPrefs == null) {
@@ -132,6 +166,12 @@ public class ClaimResponseService {
         }
 
         contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
+
+        // The legal rep journey only asks about email, so keep any existing post, phone and text answers.
+        if (journeyType == JourneyType.LEGAL_REPRESENTATIVE) {
+            return;
+        }
+
         contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
@@ -139,11 +179,26 @@ public class ClaimResponseService {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
         }
 
+        // Clear any stored mobile number when the defendant is no longer opted in to text
+        // messages (text answered No, or telephone later changed to No which also disables
+        // text), so a stale number is not left behind on the party.
+        boolean optedInToText = isContactByPhoneSelected(defendantResponse.getContactByPhone())
+            && isContactByTextSelected(defendantResponse.getContactByText());
+        if (!optedInToText) {
+            party.setTextMessageNumber(null);
+        }
+
         log.debug("Saved contact preferences for party ID: {}", party.getId());
     }
 
     private boolean isContactByPhoneSelected(VerticalYesNo contactByPhone) {
         return Optional.ofNullable(contactByPhone)
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
+    }
+
+    private boolean isContactByTextSelected(VerticalYesNo contactByText) {
+        return Optional.ofNullable(contactByText)
             .map(VerticalYesNo::toBoolean)
             .orElse(false);
     }

@@ -11,6 +11,7 @@
     "jsonBody": {
       "name": "Local test org",
       "organisationIdentifier": "TEST-123",
+      "organisationProfileIds": ["SOLICITOR_PROFILE", "ORGANISATION_PROFILE"],
       "contactInformation": [
         {
           "addressLine1": "10 Org Street",
@@ -21,6 +22,10 @@
           "country": "",
           "postCode": "CF24 5JT"
         }
+      ],
+      "paymentAccount": [
+        "pba123",
+        "pba456"
       ]
     }
   }

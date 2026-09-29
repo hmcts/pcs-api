@@ -61,6 +61,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.DocumentsYouveUploadedChecklistPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
@@ -162,6 +163,8 @@ class ResumePossessionClaimConfigurerTest {
     private WantToUploadDocuments wantToUploadDocuments;
     @Mock
     private UploadRequiredDocumentsWales uploadRequiredDocumentsWales;
+    @Mock
+    private DocumentsYouveUploadedChecklistPage documentsYouveUploadedChecklistPage;
 
     @Test
     @SuppressWarnings("squid:S5961")
@@ -232,6 +235,7 @@ class ResumePossessionClaimConfigurerTest {
         verifyAndCount(inOrder, pageBuilder, uploadRequiredDocumentsWales, verificationCount);
         verifyAndCount(inOrder, pageBuilder, wantToUploadDocuments, verificationCount);
         verifyAndCount(inOrder, pageBuilder, uploadAdditionalDocumentsDetails, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, documentsYouveUploadedChecklistPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, GeneralApplication.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsed.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, CompletingYourClaim.class, verificationCount);

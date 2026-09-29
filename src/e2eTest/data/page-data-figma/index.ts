@@ -2,6 +2,7 @@ export * from '@data/page-data-figma/claimantType.page.data';
 export * from '@data/page-data-figma/claimType.page.data';
 export * from '@data/page-data-figma/claimantInformation.page.data';
 export * from '@data/page-data-figma/contactPreferences.page.data';
+export * from '@data/page-data-figma/contactDetailsLR.page.data';
 export * from '@data/page-data-figma/defendantDetails.page.data';
 export * from '@data/page-data-figma/tenancyLicenceDetails.page.data';
 export * from '@data/page-data-figma/groundsForPossession.page.data';
@@ -30,6 +31,7 @@ export * from '@data/page-data-figma/claimLanguageUsed.page.data';
 export * from '@data/page-data-figma/confirm.page.data';
 export * from '@data/page-data-figma/underlesseeMortgageeEntitledToClaimRelief.page.data';
 export * from '@data/page-data-figma/wantToUploadDocuments.page.data';
+export * from '@data/page-data-figma/uploadRequiredDocumentsWales.page.data';
 export * from '@data/page-data-figma/statementOfTruth.page.data';
 export * from '@data/page-data-figma/uploadAdditionalDocuments.page.data';
 export * from '@data/page-data-figma/statementOfExpressTerms.page.data';
@@ -44,10 +46,11 @@ export * from '@data/page-data-figma/rentArrearsOrBreachOfTenancyGround.page.dat
 export * from '@data/page-data-figma/demotionOfTenancyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionOfRightToBuyHousingActOptions.page.data';
 export * from '@data/page-data-figma/suspensionToBuyDemotionOfTenancyActs.page.data';
-export * from '@data/page-data-figma/uploadRequiredDocumentsWales.page.data'
+export * from '@data/page-data-figma/documentsYouVeUploadedCheckListWales.page.data'
 export * from '@data/page-data-figma/page-data-common-component/whereShouldThisFlagBeAdded.page.data';
 export * from '@data/page-data-figma/page-data-common-component/selectFlagType.page.data';
 export * from '@data/page-data-figma/page-data-common-component/addCommentsForFlag.page.data';
+export * from '@data/page-data-figma/page-data-common-component/confirmStatusForFlag.page.data';
 export * from '@data/page-data-figma/page-data-common-component/reviewFlagDetails.page.data';
 export * from '@data/page-data-figma/page-data-common-component/specialMeasureForFlag.page.data';
 export * from '@data/page-data-figma/page-data-common-component/updateFlagComment.page.data';

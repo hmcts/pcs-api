@@ -5,8 +5,10 @@
   "caseFlags": {},
   "caseLinks": [],
   "defendant1": {
-    "nameKnown": "NO",
-    "addressKnown": "NO"
+    "nameKnown": "YES",
+    "addressKnown": "NO",
+    "firstName": "John",
+    "lastName": "Doe"
   },
   "allDocuments": [],
   "claimantName": "Local test org",

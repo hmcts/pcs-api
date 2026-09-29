@@ -10,5 +10,8 @@ public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCode
 
     List<PartyAccessCodeEntity> findAllByPcsCase_Id(UUID pcsCaseId);
 
+    void deleteByPcsCase_IdAndPartyId(UUID pcsCaseId, UUID partyId);
+
     boolean existsByPcsCase_IdAndPartyId(UUID pcsCaseId, UUID partyId);
+
 }

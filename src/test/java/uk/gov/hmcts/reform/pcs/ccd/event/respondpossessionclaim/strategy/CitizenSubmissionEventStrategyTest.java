@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -85,7 +86,7 @@ class CitizenSubmissionEventStrategyTest {
         PCSCase caseData = createDraftSaveCaseData(responses);
         final RespondPossessionClaimSubmitPersistenceResult persistenceResult =
             new RespondPossessionClaimSubmitPersistenceResult(
-                caseData.getPossessionClaimResponse(), null, false);
+                caseData.getPossessionClaimResponse(), null, null, false);
 
         stubDraft(caseData);
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
@@ -200,5 +201,53 @@ class CitizenSubmissionEventStrategyTest {
     @Test
     void supports_WithNonCitizenUser_ReturnsFalse() {
         assertThat(underTest.supports(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()))).isFalse();
+    }
+
+    // ----- HDPI-8866 W05: the declaration must be bound to the reviewed draft -----
+
+    @Test
+    void shouldRejectSubmitWhenDraftChangedSinceReview() {
+        PCSCase storedDraft = createDraftSaveCaseData(null);
+        storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
+        stubDraft(storedDraft);
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        SubmitResponse<State> rejected = SubmitResponse.<State>builder()
+            .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
+            .build();
+        when(submitResponseFactory
+                 .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse()))
+            .thenReturn(Optional.of(rejected));
+
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        assertThat(result.getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
+    }
+
+    @Test
+    void shouldSubmitWhenReviewedDraftVersionMatchesStoredDraft() {
+        PCSCase storedDraft = createDraftSaveCaseData(null);
+        storedDraft.getPossessionClaimResponse().setDraftVersion(5L);
+        stubDraft(storedDraft);
+        RespondPossessionClaimSubmitPersistenceResult persistenceResult =
+            new RespondPossessionClaimSubmitPersistenceResult(
+                storedDraft.getPossessionClaimResponse(), null, null, false);
+        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(partyService.getPartyEntityByIdamId(TEST_IDAM_ID, CASE_REFERENCE)).thenReturn(defendantParty);
+        when(respondPossessionClaimSubmitService.persistFinalSubmit(
+            CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE))
+            .thenReturn(persistenceResult);
+        when(counterClaimSubmitConfirmationService
+                 .buildSubmitResponse(CASE_REFERENCE, persistenceResult, defendantParty))
+            .thenReturn(SubmitResponse.defaultResponse());
+
+        underTest.process(eventPayload);
+
+        verify(submitResponseFactory)
+            .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse());
+        verify(respondPossessionClaimSubmitService).persistFinalSubmit(
+            CASE_REFERENCE, storedDraft.getPossessionClaimResponse(), defendantParty, JOURNEY_TYPE);
     }
 }

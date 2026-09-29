@@ -1,12 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.LegalRepresentative;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -20,13 +21,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.ClaimantTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.DefendantTabDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.LitigationFriendTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.OrganisationTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.RepresentativeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimGroundSummaryBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession.DEMOTION_OF_TENANCY;
@@ -178,11 +182,22 @@ public class CaseTabView {
     private CasePartiesTab buildCasePartiesTab(PCSCase pcsCase) {
         CasePartiesTab tab = CasePartiesTab.builder().build();
 
-        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
-        if (!CollectionUtils.isEmpty(allClaimants)) {
-            Party claimant = allClaimants.getFirst().getValue();
-            ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
-            tab.setClaimantDetails(claimantTabDetails);
+        if (!CollectionUtils.isEmpty(pcsCase.getAllClaimants())) {
+            List<ListValue<Party>> allClaimants = new ArrayList<>(pcsCase.getAllClaimants());
+            Party claimant1 = allClaimants.removeFirst().getValue();
+            ClaimantTabDetails claimant1TabDetails = createClaimantTabDetails(claimant1);
+            tab.setClaimantDetails(claimant1TabDetails);
+
+            if (!allClaimants.isEmpty()) {
+                List<ListValue<ClaimantTabDetails>> additionalClaimants = allClaimants
+                    .stream().map(partyListValue -> {
+                        Party claimant = partyListValue.getValue();
+                        ClaimantTabDetails claimantTabDetails = createClaimantTabDetails(claimant);
+                        return ListValue.<ClaimantTabDetails>builder().value(claimantTabDetails).build();
+                    }).toList();
+
+                tab.setClaimantsDetails(additionalClaimants);
+            }
         }
 
         if (!CollectionUtils.isEmpty(pcsCase.getAllDefendants())) {
@@ -203,12 +218,49 @@ public class CaseTabView {
             }
         }
 
+        if (!CollectionUtils.isEmpty(pcsCase.getAllLitigationFriends())) {
+            Map<String, Party> partiesById = new HashMap<>();
+            addPartiesById(partiesById, pcsCase.getAllClaimants());
+            addPartiesById(partiesById, pcsCase.getAllDefendants());
+
+            List<ListValue<Party>> allLitigationFriends = new ArrayList<>(pcsCase.getAllLitigationFriends());
+            Party litigationFriend1 = allLitigationFriends.removeFirst().getValue();
+            LitigationFriendTabDetails litigationFriend1TabDetails =
+                createLitigationFriendTabDetails(litigationFriend1, partiesById);
+            tab.setLfDetails(litigationFriend1TabDetails);
+
+            if (!allLitigationFriends.isEmpty()) {
+                List<ListValue<LitigationFriendTabDetails>> additionalLitigationFriends = allLitigationFriends
+                    .stream().map(partyListValue -> {
+                        Party litigationFriend = partyListValue.getValue();
+                        LitigationFriendTabDetails litigationFriendTabDetails =
+                            createLitigationFriendTabDetails(litigationFriend, partiesById);
+                        return ListValue.<LitigationFriendTabDetails>builder()
+                            .value(litigationFriendTabDetails).build();
+                    }).toList();
+
+                tab.setLfsDetails(additionalLitigationFriends);
+            }
+        }
+
         return tab;
+    }
+
+    private LitigationFriendTabDetails createLitigationFriendTabDetails(Party litigationFriend,
+                                                                        Map<String, Party> partiesById) {
+        Party actingForParty = partiesById.get(litigationFriend.getActingForPartyId());
+        return LitigationFriendTabDetails.builder()
+            .name(litigationFriend.getFirstName() + " " + litigationFriend.getLastName())
+            .actingFor(actingForParty != null ? resolvePartyName(actingForParty) : null)
+            .emailAddress(litigationFriend.getEmailAddress())
+            .serviceAddress(litigationFriend.getAddress())
+            .telephoneNumber(litigationFriend.getPhoneNumber())
+            .build();
     }
 
     private ClaimantTabDetails createClaimantTabDetails(Party claimant) {
         return ClaimantTabDetails.builder()
-            .name(claimant.getOrgName())
+            .name(resolvePartyName(claimant))
             .emailAddress(claimant.getEmailAddress())
             .serviceAddress(claimant.getAddress())
             .telephoneNumber(claimant.getPhoneNumber())
@@ -252,11 +304,26 @@ public class CaseTabView {
         }
 
         return RepresentativeTabDetails.builder()
-            .firstName(legalRepresentative.getFirstName())
-            .lastName(legalRepresentative.getLastName())
             .telephoneNumber(legalRepresentative.getTelephoneNumber())
             .emailAddress(legalRepresentative.getEmailAddress())
             .organisation(organisationTabDetails)
             .build();
+    }
+
+    private void addPartiesById(Map<String, Party> partiesById, List<ListValue<Party>> parties) {
+        if (CollectionUtils.isEmpty(parties)) {
+            return;
+        }
+        parties.forEach(listValue -> partiesById.put(listValue.getId(), listValue.getValue()));
+    }
+
+    private String resolvePartyName(Party party) {
+        if (StringUtils.isNotBlank(party.getOrgName())) {
+            return party.getOrgName();
+        }
+        if (StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName())) {
+            return NAME_UNKNOWN;
+        }
+        return party.getFirstName() + " " + party.getLastName();
     }
 }

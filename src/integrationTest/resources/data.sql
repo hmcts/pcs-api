@@ -27,12 +27,13 @@ VALUES ('W3 7RX', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
        ('SY10', 28837, 'Wales', '2025-01-01', '2025-06-01', '{}'::jsonb),
        ('SY10', 46246, 'England', '2025-01-01', '2025-06-01', '{}'::jsonb),
        ('LD7', 28837, 'Wales', '2035-01-01', '2035-06-01', '{}'::jsonb),
-       ('LD7', 46246, 'England', '2025-01-01', '2025-06-01', '{}'::jsonb);
-;
+       ('LD7', 46246, 'England', '2025-01-01', '2025-06-01', '{}'::jsonb)
+ON CONFLICT (postcode, epims_id) DO NOTHING;
 
 
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit) VALUES
     (20262, '2025-07-14', '{}'::jsonb),
     (36791, '2025-07-14', '{}'::jsonb),
     (28837, '2025-07-14', '{}'::jsonb),
-    (425094, '2025-07-14', '{}'::jsonb);
+    (425094, '2025-07-14', '{}'::jsonb)
+ON CONFLICT (epims_id) DO NOTHING;

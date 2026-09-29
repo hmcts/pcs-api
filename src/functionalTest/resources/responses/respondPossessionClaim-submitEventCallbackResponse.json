@@ -1,29 +1,73 @@
 {
-  "data": {
-    "propertyAddress": {
-      "AddressLine1": "1",
-      "AddressLine2": "Exton Gardens",
-      "AddressLine3": "70 Knyveton Road",
-      "PostTown": "Bournemouth",
-      "PostCode": "BH1 3BP",
-      "Country": "United Kingdom"
-    },
-    "legislativeCountry": "England",
-    "possessionClaimResponse": {
-      "defendantResponses": {
-        "tenancyTypeConfirmation": "YES",
-        "tenancyType": "Assured Shorthold Tenancy",
-        "tenancyStartDate": "2020-01-01",
+  "case_details": {
+    "jurisdiction": "PCS",
+    "state": "CASE_ISSUED",
+    "version": 3,
+    "case_type_id": "[[IGNORE_VALUE]]",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "possessionClaimResponse": {
+        "claimantOrganisations": [
+          {
+            "value": "Possession Claims Solicitor Org"
+          }
+        ],
+        "claimantServiceAddress": {
+          "AddressLine1": "Ministry Of Justice",
+          "AddressLine2": "Seventh Floor 102 Petty France",
+          "PostTown": "London",
+          "PostCode": "SW1H 9AJ",
+          "Country": "United Kingdom"
+        },
         "defendantContactDetails": {
           "party": {
-            "address": {},
+            "firstName": "Jane",
             "lastName": "Doe",
-            "firstName": "Jane"
+            "address": {
+
+            }
           }
+        },
+        "defendantResponses": {
+          "tenancyTypeConfirmation": "YES",
+          "rentArrearsAmountConfirmation": "YES",
+          "contactByPhone": "NO",
+          "contactByEmail": "YES",
+          "contactByPost": "NO",
+          "freeLegalAdvice": "NO",
+          "defendantNameConfirmation": "YES",
+          "correspondenceAddressConfirmation": "YES",
+          "householdCircumstances": {
+            "dependantChildren": "No",
+            "shareAdditionalCircumstances": "No",
+            "exceptionalHardship": "No",
+            "otherDependants": "No",
+            "otherTenants": "No",
+            "alternativeAccommodation": "NO",
+            "shareIncomeExpenseDetails": "No"
+          },
+          "paymentAgreement": {
+            "anyPaymentsMade": "NO",
+            "repaymentPlanAgreed": "NO",
+            "repayArrearsInstalments": "NO"
+          },
+          "languageUsed": "ENGLISH",
+          "otherConsiderations": "NO",
+          "makeCounterClaim": "NO"
         }
       }
+    },
+    "data_classification": {
 
-    }
-  }
+    },
+    "supplementary_data": {
+      "HMCTSServiceId": "AAA3"
+    },
+    "after_submit_callback_response": {
+
+    },
+    "callback_response_status_code": 200,
+    "callback_response_status": "CALLBACK_COMPLETED"
+  },
+  "revision": 3
 }
-

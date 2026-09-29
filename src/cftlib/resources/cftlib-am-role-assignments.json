@@ -13,6 +13,36 @@
         "attributes": {
         },
         "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "idam:caseworker-pcs-solicitor",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "PCS" },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "claimant-solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS",
+          "caseType": "PCS",
+          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:TEST-123"
+        },
+        "authorisations": []
       }
     ]
   },
@@ -23,6 +53,17 @@
       {
         "roleType": "ORGANISATION",
         "roleName": "hearing-centre-admin",
+        "grantType": "STANDARD",
+        "roleCategory": "LEGAL_OPERATIONS",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+        },
+        "authorisations": []
+      },
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "ctsc-team-leader",
         "grantType": "STANDARD",
         "roleCategory": "LEGAL_OPERATIONS",
         "classification": "PUBLIC",

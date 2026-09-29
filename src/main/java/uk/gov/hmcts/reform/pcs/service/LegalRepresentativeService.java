@@ -6,41 +6,34 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.LegalRepresentativeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class LegalRepresentativeService {
 
-    private final LegalRepresentativeRepository legalRepresentativeRepository;
+    private final PartyRepository partyRepository;
 
     /**
      * Gets a {@link uk.gov.hmcts.ccd.sdk.type.DynamicList} with the entity IDs
-     * and party names for parties represented by a legal representative.
-     * @param legalRepIdamId The IDAM ID of the legal representative
+     * and party names for parties represented by an organisation.
+     * @param orgId The organisation ID of the legal representative
      * @param caseReference The current case reference
-     * @return An {@link Optional} containing a {@link DynamicList} of zero of more
-     *     represented parties, or {@link Optional#empty()} if the IDAM ID does not
-     *     correspond to a known legal rep in the PCS database
+     * @return A {@link DynamicList} of zero of more
+     *     represented parties if the organisation ID does not
+     *     correspond to a known organisation in the PCS database
      */
-    public Optional<DynamicList> getRepresentedPartiesDynamicList(UUID legalRepIdamId, long caseReference) {
-        return legalRepresentativeRepository.findByIdamId(legalRepIdamId, caseReference)
-            .map(
-                legalRepresentativeEntity -> {
-                    List<PartyEntity> partyEntities = legalRepresentativeEntity.getClaimPartyLegalRepresentativeList()
-                        .stream()
-                        .map(ClaimPartyLegalRepresentativeEntity::getParty)
-                        .toList();
-                    return createPartyNamesDynamicList(partyEntities);
-                }
-            );
+    public DynamicList getRepresentedPartiesDynamicList(String orgId, long caseReference) {
+        List<PartyEntity> parties = partyRepository.findAllPartiesByOrganisationIdAndCaseReference(
+            orgId,
+            caseReference
+        );
+
+        return createPartyNamesDynamicList(parties);
     }
 
     private DynamicList createPartyNamesDynamicList(List<PartyEntity> partyEntities) {

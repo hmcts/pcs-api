@@ -103,4 +103,7 @@ public class CaseDetailsTab {
 
     @CCD(label = "Required documents")
     private RequiredDocumentsTabDetails requiredDocumentsDetails;
+
+    @CCD(label = "Documents you've uploaded")
+    private UploadedDocumentsChecklistTabDetails uploadedDocumentsChecklistDetails;
 }
