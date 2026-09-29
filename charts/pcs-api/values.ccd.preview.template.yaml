@@ -160,13 +160,12 @@ ccd:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
         ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
         ALLOW_CONFIG_MUTATIONS: true
-        SESSION_KEYS: '${SESSION_KEYS}'
+        SESSION_KEYS: '["secret1", "secret2"]'
       keyVaults:
         ccd:
           secrets:
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
-            - ccd-session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"
