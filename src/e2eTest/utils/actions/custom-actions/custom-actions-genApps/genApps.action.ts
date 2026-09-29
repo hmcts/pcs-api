@@ -284,7 +284,6 @@ export class GenAppsAction implements IAction {
       await performAction('inputText', statementOfTruthClaimant.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
       await performAction('inputText', statementOfTruthClaimant.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
-    FieldsStore.delete(claimantDetails.question as string);
     await performAction('clickButton', statementOfTruth.continueButton);
   }
 
@@ -313,7 +312,7 @@ export class GenAppsAction implements IAction {
     const maxRetries = 10;
     const amount = String(confirmGenApps.PayAmount);
     const payNowText = String(confirmGenApps.payNowLink);
-    const partyName= String(confirmGenApps.partyName);
+    const partyName = "Solicitor"
 
     for (
       let retryCount = 0;
