@@ -115,11 +115,12 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 .toList();
 
         LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = caseData.getLegalRepDocumentUploadDetails();
-        legalRepDocumentUploadDetails.setValidCategories(
-            DynamicStringList.builder()
-                .listItems(validCategoryItems)
-                .build()
-        );
+        DynamicStringList.DynamicStringListBuilder categoriesBuilder = DynamicStringList.builder()
+            .listItems(validCategoryItems);
+        if (validCategoryItems.size() == 1) {
+            categoriesBuilder.value(validCategoryItems.getFirst());
+        }
+        legalRepDocumentUploadDetails.setValidCategories(categoriesBuilder.build());
 
         // By default, Main claim is always added
         legalRepDocumentUploadDetails

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CcdPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
@@ -30,7 +31,10 @@ public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
         String pageKey = getPageKey();
         String showCondition = and(
             fieldEquals("lrDocUpload_ShowCounterclaimPage", VerticalYesNo.YES),
-            fieldEquals("lrDocUpload_ValidCategories", DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
+            or(
+                fieldEquals("lrDocUpload_ShowExistingApplicationPage", VerticalYesNo.NO),
+                fieldEquals("lrDocUpload_ValidCategories", DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
+            )
         );
 
         pageBuilder
