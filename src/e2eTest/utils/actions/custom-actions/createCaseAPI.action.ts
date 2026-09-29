@@ -47,7 +47,7 @@ export class CreateCaseAPIAction implements IAction {
       ['submitCaseAPIDynamicUsers', () => this.submitCaseAPIDynamicUsers(fieldName as actionRecord)],
       ['makeAnApplicationAPI', () => this.makeAnApplicationAPI(fieldName)],
       ['makeAnApplicationAPIForLR', () => this.makeAnApplicationAPIForLR(fieldName)],
-      ['updatePaymentAPI', () => this.updatePaymentAPI()],
+      ['updatePaymentAPI', () => this.updatePaymentAPI(fieldName as actionRecord)],
       ['manageHearingAPI', () => this.manageHearingAPI(fieldName as actionRecord)],
       ['submitPossessionClaimResponseLRAPI', () => this.submitPossessionClaimResponseLRAPI(fieldName as actionRecord)],
       ['midEventRespondPossessionClaimLRAPI', () => this.midEventRespondPossessionClaimLRAPI(fieldName as actionRecord)],
@@ -537,7 +537,7 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async updatePaymentAPI(): Promise<void> {
+  private async updatePaymentAPI(payType?: actionRecord): Promise<void> {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
     const maxRetries = actionRetries + actionRetries;
     const delayMs = VERY_SHORT_TIMEOUT;
@@ -551,7 +551,7 @@ export class CreateCaseAPIAction implements IAction {
         const requestReference = paymentInfo[0].serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
-          paymentApiData.paymentUpdatePayload(requestReference)
+          paymentApiData.paymentUpdatePayload(requestReference, payType?.amt as number)
         );
         if (updateResponse.status === 200 || updateResponse.status === 204) {
           console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`)
@@ -729,7 +729,7 @@ export class CreateCaseAPIAction implements IAction {
 
     await validateApi.get(`/cases/${process.env.CASE_NUMBER}/event-triggers/respondPossessionClaim`);
 
-    const midEventPayload = midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPayload();
+    const midEventPayload = midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload();
     try {
       const response = await this.apiRetry(() =>
         validateApi.post(

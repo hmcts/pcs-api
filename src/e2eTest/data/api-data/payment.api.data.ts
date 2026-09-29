@@ -15,10 +15,10 @@ export const paymentApiData = {
 
   updatePaymentApiEndPoint: '/payment-update',
 
-  paymentUpdatePayload: (requestReference: string) => ({
+  paymentUpdatePayload: (requestReference: string, amt?: number) => ({
     service_request_reference: requestReference,
     ccd_case_number: process.env.CASE_NUMBER,
-    service_request_amount: 41500,
+    service_request_amount: amt ?? 41500,
     service_request_status: 'Paid',
     payments: {
       payment_amount: 2500,
