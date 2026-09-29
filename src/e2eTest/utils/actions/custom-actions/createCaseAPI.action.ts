@@ -541,6 +541,7 @@ export class CreateCaseAPIAction implements IAction {
     const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
     const maxRetries = actionRetries + actionRetries;
     const delayMs = VERY_SHORT_TIMEOUT;
+    const payLoad = payType?.app ? paymentApiData.paymentUpdateCCPayload : paymentApiData.paymentUpdatePayload
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
@@ -551,7 +552,7 @@ export class CreateCaseAPIAction implements IAction {
         const requestReference = paymentInfo[0].serviceRequestReference;
         const updateResponse = await paymentApi.put(
           paymentApiData.updatePaymentApiEndPoint,
-          paymentApiData.paymentUpdatePayload(requestReference, payType?.amt as number)
+          payLoad(requestReference, payType?.amt as number | undefined)
         );
         if (updateResponse.status === 200 || updateResponse.status === 204) {
           console.log(`\n✅ PAYMENT SUCCESSFUL AND THE RESPONSE IS : ${updateResponse.status}\n`)
