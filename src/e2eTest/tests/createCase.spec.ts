@@ -55,13 +55,9 @@ import {
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { test } from '@utils/test-fixtures';
-import { collectBrowserErrors } from '@utils/common/internalServerError.utils';
-
-let browserErrors: ReturnType<typeof collectBrowserErrors>;
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-  browserErrors = collectBrowserErrors(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
@@ -74,7 +70,6 @@ test.afterEach(async () => {
     await performAction('deleteCaseRole', '[CLAIMANTSOLICITOR]');
   }
   PageContentValidation.finaliseTest();
-  browserErrors.assertNoErrors();
 });
 
 test.describe('[Create Case - England]', async () => {

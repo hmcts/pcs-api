@@ -146,7 +146,7 @@ export const midEventLRRespondPossessionClaimApiData = {
           dateOfBirth: '1998-02-02',
           counterClaim: {
             claimType: 'PAYMENT_OR_COMPENSATION',
-            claimAmount: '1200',
+            claimAmount: '12000',
             counterClaimFor: 'Test user',
             needHelpWithFees: 'NO',
             isClaimAmountKnown: 'YES',
