@@ -222,5 +222,7 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring\-data\-jpa@.*$</packageUrl>
     <cve>CVE-2026-47834</cve>
+    <cve>CVE-2026-59313</cve>
+    <cve>CVE-2026-59314</cve>
   </suppress>
 </suppressions>
