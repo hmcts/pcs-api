@@ -187,14 +187,25 @@
         </outputEntry>
       </rule>
       <rule id="DecisionRule_1cnhqw0">
-        <description>No associated task</description>
+        <description></description>
         <inputEntry id="UnaryTests_1qriv88">
-          <text></text>
+          <text>"manually verified event"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1gq3ces">
-          <text></text>
+          <text>"TranslateGenAppForm"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_19z38uy">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0ul8ewd">
+        <inputEntry id="UnaryTests_08ayx4y">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1w9ouui">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_03cttpd">
           <text></text>
         </outputEntry>
       </rule>

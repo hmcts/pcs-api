@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -37,21 +36,26 @@ public class GenAppWaTaskService {
         camundaService.createTask(caseReference, taskType, description);
     }
 
-    public void createTranslationTaskForGenApp(GenAppEntity genAppEntity) {
-        PartyEntity party = genAppEntity.getParty();
-        if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
-            return;
-        }
+    public void createTranslationTasksForGenApp(GenAppEntity genAppEntity) {
 
+        PartyEntity party = genAppEntity.getParty();
+        // TODO: Why is this restriction here?
+        // if (partyService.getPartyRole(party) != PartyRole.DEFENDANT) {
+        //     return;
+        // }
+
+        // TODO: This should take account of defendant language preferences too
         if (!translationWAService.isTranslationRequired(genAppEntity.getLanguageUsed())) {
             return;
         }
+
+        PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
+        translationWAService.createTranslateGenAppFormTask(pcsCaseEntity, genAppEntity);
 
         List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
             .filter(document -> !document.isRemoved())
             .toList();
 
-        PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
     }
 

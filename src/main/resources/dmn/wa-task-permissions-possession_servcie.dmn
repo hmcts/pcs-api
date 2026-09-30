@@ -84,7 +84,7 @@
       </rule>
       <rule id="DecisionRule_1wt3p0o">
         <inputEntry id="UnaryTests_0dx0tat">
-          <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument","TranslateClaimForm"</text>
+          <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument","TranslateClaimForm","TranslateGenAppForm"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_0wy7as6">
           <text></text>
@@ -113,7 +113,7 @@
       </rule>
       <rule id="DecisionRule_04dj5hc">
         <inputEntry id="UnaryTests_1pjz9br">
-          <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument","TranslateClaimForm"</text>
+          <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument","TranslateClaimForm","TranslateGenAppForm"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1vdiphm">
           <text></text>

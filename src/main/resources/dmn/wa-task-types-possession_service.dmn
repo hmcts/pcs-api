@@ -190,10 +190,10 @@
           <text></text>
         </inputEntry>
         <outputEntry id="LiteralExpression_01il25t">
-          <text></text>
+          <text>"TranslateGenAppForm"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_1rbx9wv">
-          <text></text>
+          <text>"Translate Gen App Form"</text>
         </outputEntry>
       </rule>
     </decisionTable>

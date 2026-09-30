@@ -77,7 +77,7 @@ class GenAppPaymentCallbackHandlerTest {
         verify(genAppEntity).setState(GenAppState.GEN_APP_ISSUED);
         verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
         verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
-        verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+        verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
     }
 
     @Test

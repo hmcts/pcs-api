@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -61,6 +62,8 @@ class TaskDescriptionServiceTest {
     @Mock(strictness = LENIENT)
     private ClaimRepository claimRepository;
     @Mock
+    private DocumentNameService documentNameService;
+    @Mock
     private ClaimEntity mainClaim;
     @Captor
     private ArgumentCaptor<Map<String, Object>> contextMapCaptor;
@@ -71,7 +74,8 @@ class TaskDescriptionServiceTest {
     void setUp() {
         when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(mainClaim));
 
-        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository, FRONTEND_URL);
+        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository,
+                                               documentNameService, FRONTEND_URL);
     }
 
     @Nested
