@@ -736,9 +736,18 @@ export const submitCaseApiData = {
           firstName: 'Peter',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
       {
         value: {
@@ -746,9 +755,18 @@ export const submitCaseApiData = {
           firstName: 'Jen',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
     ],
     tenancy_TypeOfTenancyLicence: 'ASSURED_TENANCY',
@@ -775,12 +793,13 @@ export const submitCaseApiData = {
     noticeServed: 'Yes',
     notice_ServiceMethod: 'FIRST_CLASS_POST',
     notice_PostedDate: '2015-12-01',
+    notice_AbleToUploadDocument: 'Yes',    
     notice_Documents: [
       {
-        id: '2fbd79a1-19dc-46fb-9baf-83534187f37f',
+        //id: '83193877-14e5-4955-b589-c80fbe0edb53',
         value: {
-          document_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac`,
-          document_binary_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac/binary`,
+          document_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e`,
+          document_binary_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e/binary`,
           document_filename: 'NoticeDetails.pdf',
         }
       }
@@ -790,7 +809,7 @@ export const submitCaseApiData = {
     rentDetails_CalculatedDailyCharge: '171',
     rentArrears_StatementDocuments: [
       {
-        id: '468ec779-350f-4484-9694-ea6b3285d86e',
+        //id: '468ec779-350f-4484-9694-ea6b3285d86e',
         value: {
           document_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
           document_binary_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
@@ -908,7 +927,7 @@ export const submitCaseApiData = {
             document_filename: 'inspectionOrReport.pdf',
           }
         },
-        id: '87b02265-f876-43da-bcd4-2cbb998cb948'
+        //id: '87b02265-f876-43da-bcd4-2cbb998cb948'
       },
       {
         value: {
@@ -981,7 +1000,7 @@ export const submitCaseApiData = {
             document_filename: 'otherDocument.pdf',
           }
         },
-        id: '66246982-90b5-407d-8b5b-59565a0cb091'
+        //id: '66246982-90b5-407d-8b5b-59565a0cb091'
       },
       {
         value: {
@@ -1054,7 +1073,7 @@ export const submitCaseApiData = {
             document_filename: 'legalAidCertificate.pdf',
           }
         },
-        id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
+       // id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
       },
       {
         value: {
@@ -1127,10 +1146,10 @@ export const submitCaseApiData = {
             document_filename: 'noticeForService.pdf',
           }
         },
-        id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
+        //id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
       }
     ],
-    applicationWithClaim: 'YES',
+    applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW',
     endButtonLabel: 'Submit claim',
