@@ -14,34 +14,21 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.CaseFacts;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 
@@ -60,8 +47,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private final DraftOrderRepository draftOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
-    private final AddressMapper addressMapper;
-    private final PartyService partyService;
+    private final OrderCaseContext orderCaseContext;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -90,7 +76,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         MakeOrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
             .map(MakeOrder::toOrder)
             .orElseGet(() -> new MakeOrderStart.Order(null, DraftOrderState.DRAFT, 0, null, Map.of(), null));
-        return ExternalStartResponse.started(new MakeOrderStart(workingOrder, caseContext(findCase(caseReference))));
+        return ExternalStartResponse.started(
+            new MakeOrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
@@ -151,61 +138,5 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private static MakeOrderStart.Order toOrder(DraftOrderEntity order) {
         return new MakeOrderStart.Order(order.getId(), order.getState(), order.getVersion(),
             order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
-    }
-
-    // The case a judge makes an order on, as the frontend shows it: its property and the parties
-    // and facts of its main claim.
-
-    private MakeOrderStart.CaseContext caseContext(PcsCaseEntity pcsCase) {
-        Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
-        return new MakeOrderStart.CaseContext(
-            pcsCase.getCaseReference(),
-            addressMapper.toAddressUK(pcsCase.getPropertyAddress()),
-            claim.map(c -> parties(c, PartyRole.CLAIMANT)).orElse(List.of()),
-            claim.map(c -> parties(c, PartyRole.DEFENDANT)).orElse(List.of()),
-            caseFacts(pcsCase.getTenancyLicence(), claim.orElse(null))
-        );
-    }
-
-    private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
-        NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
-        return new CaseFacts(
-            tenancy == null ? null : tenancy.getStartDate(),
-            tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
-            noticeDate(notice),
-            tenancy == null ? null : tenancy.getRentAmount(),
-            tenancy == null || tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().name(),
-            claim == null ? null : groundsPleaded(claim)
-        );
-    }
-
-    /** The day the notice was served, whether the claimant recorded a date or a moment. */
-    private static LocalDate noticeDate(NoticeOfPossessionEntity notice) {
-        if (notice == null) {
-            return null;
-        }
-        if (notice.getNoticeDate() != null) {
-            return notice.getNoticeDate();
-        }
-        return notice.getNoticeDateTime() == null ? null : notice.getNoticeDateTime().toLocalDate();
-    }
-
-    private static String groundsPleaded(ClaimEntity claim) {
-        String grounds = claim.getClaimGrounds().stream()
-            .map(ground -> ClaimGroundSummary.resolveGround(ground.getCategory(), ground.getCode()))
-            .filter(Objects::nonNull)
-            .map(PossessionGroundEnum::getLabel)
-            .distinct()
-            .sorted()
-            .collect(Collectors.joining(", "));
-        return grounds.isEmpty() ? null : grounds;
-    }
-
-    private List<MakeOrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
-        return claim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == role)
-            .map(claimParty -> new MakeOrderStart.Party(
-                claimParty.getId().getPartyId().toString(), partyService.getPartyName(claimParty.getParty())))
-            .toList();
     }
 }
