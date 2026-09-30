@@ -1627,6 +1627,7 @@ export class CreateCaseAction implements IAction {
 
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
     const file =
       caseFile.caseWorkerUpload ??
@@ -1680,6 +1681,9 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if (ccPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        }
         if (file) {
           userInputFiles.push(file as string);
         }
@@ -1759,15 +1763,19 @@ export class CreateCaseAction implements IAction {
       subArray.forEach(doc => {
         if (multiDocsLabel && multiDocsLabel !== 'All Files') {
           const valueLabel = doc.value?.documentType?.valueLabel;
-          const filename = doc.value?.document?.document_filename;
+          const filename = doc.value?.document?.document_filename ?? doc.value?.document_filename;
+
           if (multiDocsLabel === valueLabel && filename) {
             mainArray.push(filename);
           }
-        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
-          mainArray.push(doc.value.document.document_filename)
-        }
-        else if (doc.value?.document_filename) {
-          mainArray.push(doc.value.document_filename);
+        } else {
+          const filename =
+            doc.value?.document?.document_filename ??
+            doc.value?.document_filename;
+
+          if (filename) {
+            mainArray.push(filename);
+          }
         }
       });
     }

@@ -730,7 +730,8 @@ export class CreateCaseAPIAction implements IAction {
 
     await validateApi.get(`/cases/${process.env.CASE_NUMBER}/event-triggers/respondPossessionClaim`);
 
-    const midEventPayload = midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload();
+    const midEventPayload = typeof midEvent === "object" && "data" in midEvent ? midEvent.data : midEvent;
+    
     try {
       const response = await this.apiRetry(() =>
         validateApi.post(
