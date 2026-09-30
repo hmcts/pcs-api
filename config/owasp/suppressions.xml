@@ -53,7 +53,7 @@
     <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlin/kotlin-stdlib(-common|-jdk7|-jdk8)?@.*$</packageUrl>
     <cve>CVE-2026-53914</cve>
   </suppress>
-  <suppress until="2026-09-30">
+  <suppress until="2026-10-30">
     <notes><![CDATA[
     CVE-2026-59313/59314: fix is Enterprise-only on Spring 6.2.x (6.2.20) / OSS in 7.x; PCS uses
     neither SSE functional endpoints nor Content-Disposition built from input. Re-review by the until date.
@@ -222,7 +222,5 @@
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring\-data\-jpa@.*$</packageUrl>
     <cve>CVE-2026-47834</cve>
-    <cve>CVE-2026-59313</cve>
-    <cve>CVE-2026-59314</cve>
   </suppress>
 </suppressions>
