@@ -20,7 +20,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.math.BigDecimal;
+
 import java.time.Instant;
 
 @Entity
@@ -43,12 +43,6 @@ public class WritEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
-    // LandRegistryFees
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo haveLandRegistryFeesBeenPaid;
-
-    private BigDecimal amountOfLandRegistryFees;
 
     // Direct fields
     @Enumerated(EnumType.STRING)
@@ -57,15 +51,7 @@ public class WritEntity {
 
     private String hceoDetails;
 
-    // LegalCosts
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo areLegalCostsToBeClaimed;
 
-    private BigDecimal amountOfLegalCosts;
-
-    // MoneyOwedByDefendants
-    private BigDecimal amountOwed;
 
     // Direct fields
     @Enumerated(EnumType.STRING)
@@ -78,11 +64,5 @@ public class WritEntity {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private Instant created;
-
-    private String repaymentChoice;
-
-    private BigDecimal amountOfRepaymentCosts;
-
-    private String repaymentSummaryMarkdown;
 
 }
