@@ -18,11 +18,7 @@ public class ConfirmCounterclaimPage implements CcdPageConfiguration, CcdPage {
     private static final String GUIDANCE_CONTENT = """
                     <p class="govuk-body">
                         We usually share anything you upload with the other parties, for example
-                        a tenant, landlord, housing association, or mortgage lender.
-                    </p>
-                    <p class="govuk-body">
-                        If your application is ‘without notice’ (where you have asked us to consider your application
-                        without telling the other party) we will not share anything with them.
+                        other defendants, the defendant’s landlord, housing association or mortgage provider.
                     </p>
                     """;
 
