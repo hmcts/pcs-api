@@ -59,7 +59,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
 
-    /** Temp change to allow testing. */
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
