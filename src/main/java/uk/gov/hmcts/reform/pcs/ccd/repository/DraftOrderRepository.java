@@ -17,8 +17,8 @@ public interface DraftOrderRepository extends JpaRepository<DraftOrderEntity, UU
     Optional<DraftOrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
         UUID id, long caseReference, UUID authorIdamUserId, DraftOrderState state);
 
-    /** The orders on a case in a state, whoever wrote them, such as those awaiting a caseworker's review. */
-    List<DraftOrderEntity> findByPcsCaseCaseReferenceAndState(long caseReference, DraftOrderState state);
+    /** Every order on a case, whoever wrote it. */
+    List<DraftOrderEntity> findByPcsCaseId(UUID caseId);
 
     Optional<DraftOrderEntity> findByIdAndPcsCaseCaseReferenceAndState(
         UUID id, long caseReference, DraftOrderState state);
