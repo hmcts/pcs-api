@@ -88,7 +88,166 @@ class DefendantResponseReadMapperTest {
 
         assertThat(response.getResponseDocumentId()).isEqualTo(documentId.toString());
     }
-    
+
+    @Test
+    void shouldMapCounterclaimDocumentIdWhenDocumentIsLinkedToPartyCounterclaim() {
+        UUID partyId = UUID.randomUUID();
+        UUID counterClaimId = UUID.randomUUID();
+        UUID documentId = UUID.randomUUID();
+
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(counterClaimId)
+            .party(party)
+            .build();
+        DocumentEntity linkedDocument = DocumentEntity.builder()
+            .id(documentId)
+            .counterClaim(counterClaim)
+            .build();
+        DocumentEntity unrelatedDocument = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
+            .build();
+        DocumentEntity documentWithoutCounterclaim = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(unrelatedDocument, documentWithoutCounterclaim, linkedDocument))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isEqualTo(documentId.toString());
+    }
+
+    @Test
+    void shouldMapCounterclaimDocumentIdForCurrentPartyWhenMultipleCounterclaimsExist() {
+        UUID currentPartyId = UUID.randomUUID();
+        UUID otherPartyId = UUID.randomUUID();
+        UUID currentCounterClaimId = UUID.randomUUID();
+        UUID otherCounterClaimId = UUID.randomUUID();
+        UUID currentDocumentId = UUID.randomUUID();
+
+        PartyEntity currentParty = partyWithId(currentPartyId);
+        PartyEntity otherParty = partyWithId(otherPartyId);
+
+        CounterClaimEntity otherCounterClaim = CounterClaimEntity.builder()
+            .id(otherCounterClaimId)
+            .party(otherParty)
+            .build();
+        CounterClaimEntity currentCounterClaim = CounterClaimEntity.builder()
+            .id(currentCounterClaimId)
+            .party(currentParty)
+            .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(otherCounterClaim, currentCounterClaim))
+            .documents(List.of(
+                DocumentEntity.builder()
+                    .id(UUID.randomUUID())
+                    .counterClaim(otherCounterClaim)
+                    .build(),
+                DocumentEntity.builder()
+                    .id(currentDocumentId)
+                    .counterClaim(currentCounterClaim)
+                    .build()
+            ))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(currentParty, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isEqualTo(currentDocumentId.toString());
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenCounterClaimsAreMissing() {
+        PartyEntity party = partyWithId(UUID.randomUUID());
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(null)
+            .documents(List.of(DocumentEntity.builder().id(UUID.randomUUID()).build()))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenPartyHasNoCounterclaim() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity otherPartyCounterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(partyWithId(UUID.randomUUID()))
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(
+                CounterClaimEntity.builder().id(UUID.randomUUID()).party(null).build(),
+                otherPartyCounterClaim
+            ))
+            .documents(List.of(
+                DocumentEntity.builder()
+                    .id(UUID.randomUUID())
+                    .counterClaim(otherPartyCounterClaim)
+                    .build()
+            ))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenDocumentsListIsNull() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(party)
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(null)
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenNoDocumentIsLinkedToCounterclaim() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(party)
+            .build();
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(
+                DocumentEntity.builder().id(UUID.randomUUID()).build(),
+                DocumentEntity.builder()
+                    .id(UUID.randomUUID())
+                    .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
+                    .build()
+            ))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
     @Test
     void shouldMapHouseholdIncomeExpensesPaymentAgreementAddressAndCounterClaim() {
         final AddressMapper addressMapper = mock(AddressMapper.class);
@@ -374,6 +533,23 @@ class DefendantResponseReadMapperTest {
             .isEqualTo("Emma");
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getValue().getLastName())
             .isEqualTo("Willis");
+    }
+
+    private static PartyEntity partyWithId(UUID partyId) {
+        PartyEntity party = mock(PartyEntity.class);
+        when(party.getId()).thenReturn(partyId);
+        when(party.getAddressSameAsProperty()).thenReturn(null);
+        when(party.getAddress()).thenReturn(null);
+        when(party.getDateOfBirth()).thenReturn(null);
+        when(party.getContactPreferences()).thenReturn(null);
+        return party;
+    }
+
+    private static DefendantResponseEntity responseEntity(PartyEntity party, PcsCaseEntity pcsCase) {
+        return DefendantResponseEntity.builder()
+            .party(party)
+            .pcsCase(pcsCase)
+            .build();
     }
 }
 
