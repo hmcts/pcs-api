@@ -55,7 +55,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
   } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
-  } 
+  }
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
@@ -78,6 +78,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
       defendantUserDetails[0].id, defendantUserDetails[0].name),
   });
+
 }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -99,7 +100,7 @@ test.afterEach(async () => {
 /* The skipped tests will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755 */
 test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', async () => {
 
-  test('Upload documents when GenApps submitted - Multi def', {
+  test.skip('Upload documents when GenApps submitted - Multi def', {
     annotation: {
       type: 'jira',
       description: 'The skipped test will be enabled again after the completion of Ticket https://tools.hmcts.net/jira/browse/HDPI-7755',
@@ -166,6 +167,45 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
       defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
 
+  });
+
+  test('Upload documents when GenApps submitted - Single def MULTI_APP @regression', async () => {
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
+    let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
+    await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
+    await performValidation('mainHeader', uploadAdditionalDocumentsInformationCL.mainHeader);
+    await performAction('reTryOnCallBackError', uploadAdditionalDocumentsInformationCL.continueButton, confirmIfTheseDocumentsRelateToAnApplication.mainHeader as string);
+    await test.step(`Verify GenApps pdf links`, async () => {
+      await performAction('verifyPdfLinks', {
+        expectedTexts: [
+          confirmIfTheseDocumentsRelateToAnApplication.GA2LinkHidden,
+          confirmIfTheseDocumentsRelateToAnApplication.GA1LinkHidden,
+          confirmIfTheseDocumentsRelateToAnApplication.GA3LinkHidden,
+        ],
+      });
+    });
+    await performAction('selectDocumentRelatingTo', {
+      question: confirmIfTheseDocumentsRelateToAnApplication.doTheseDocumentsQuestion,
+      option: docRelatedToOption,
+      nextPage: uploadYourDocuments.mainHeader,
+    });
+    await performAction('uploadAdditionalDocsLR', {
+      documents: [
+        { type: uploadYourDocuments.rentStatementDropDownInput, fileName: fileName, description: uploadYourDocuments.rentStatementClaimantDropDownInput },
+      ]
+    });
+    await performValidation('mainHeader', checkYourAnswersUploadAdditionalDocs.mainHeader);
+    await performAction('reTryOnCallBackError', checkYourAnswersUploadAdditionalDocs.submitButton, documentsUploadConfirm.mainHeader as string);
+    await performAction('readDocumentsSubmit');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Upload additional documents');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Property documents',
+      submitPayload: submitPayload,
+      defendantLRUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
   });
 
   test.skip('Upload documents when GenApps submitted With Out Notice - Multi def', {

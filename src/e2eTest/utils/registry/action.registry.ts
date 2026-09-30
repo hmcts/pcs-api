@@ -184,13 +184,14 @@ export class ActionRegistry {
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
     ['createPartialClaimDetails', new CreateCaseAction()],
-    ['resumePartialClaim', new CreateCaseAction()],  
+    ['resumePartialClaim', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
     ['uploadAdditionalDocsLR', new DocumentsAction()],
     ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
@@ -199,7 +200,7 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
-    ['removeFile', new RemoveFileAction()],    
+    ['removeFile', new RemoveFileAction()],
   ]);
 
   static getAction(actionName: string): IAction {
