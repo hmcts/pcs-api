@@ -66,12 +66,39 @@ public class DefendantResponseReadMapper {
             .defendantResponses(toDefendantResponses(entity, party, assertions))
             .currentDefendantPartyId(party.getId() != null ? party.getId().toString() : null)
             .responseDocumentId(toResponseDocumentId(entity))
+            .counterclaimDocumentId(toCounterclaimDocumentId(pcsCase, party.getId()))
             .claimIssuedDate(toClaimIssuedDate(entity.getClaim()))
             .build();
     }
 
     private static String toResponseDocumentId(DefendantResponseEntity entity) {
         return Optional.ofNullable(entity.getSubmissionDocument())
+            .map(document -> document.getId().toString())
+            .orElse(null);
+    }
+
+    private static String toCounterclaimDocumentId(PcsCaseEntity pcsCase, UUID partyId) {
+        if (pcsCase == null || pcsCase.getCounterClaims() == null || partyId == null) {
+            return null;
+        }
+
+        Optional<CounterClaimEntity> counterClaim = pcsCase.getCounterClaims().stream()
+            .filter(cc -> cc.getParty() != null && partyId.equals(cc.getParty().getId()))
+            .findFirst();
+        
+        if (counterClaim.isEmpty()) {
+            return null;
+        }
+        
+        UUID counterClaimId = counterClaim.get().getId();
+        if (pcsCase.getDocuments() == null) {
+            return null;
+        }
+        
+        return pcsCase.getDocuments().stream()
+            .filter(doc -> doc.getCounterClaim() != null 
+                && counterClaimId.equals(doc.getCounterClaim().getId()))
+            .findFirst()
             .map(document -> document.getId().toString())
             .orElse(null);
     }
