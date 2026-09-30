@@ -548,6 +548,16 @@ public class DocumentService {
         PartyEntity party,
         GenAppEntity selectedGenApp
     ) {
+        createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments, pcsCaseEntity, party, selectedGenApp, null);
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        GenAppEntity selectedGenApp,
+        CounterClaimEntity selectedCounterClaim
+    ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> {
 
@@ -571,6 +581,7 @@ public class DocumentService {
                 .url(documentUrl)
                 .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .generalApplication(selectedGenApp)
+                .counterClaim(selectedCounterClaim)
                 .fileName(renamed)
                 .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
@@ -588,7 +599,7 @@ public class DocumentService {
         createAdditionalDocsWATask(
             party,
             selectedGenApp,
-            null,
+            selectedCounterClaim,
             pcsCaseEntity.getCaseReference(),
             pcsCaseEntity.getMainClaim(),
             documentEntities
