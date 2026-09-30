@@ -65,7 +65,7 @@ ccd:
     apiGatewayWeb:
       enabled: true
     ras:
-      enabled: false
+      enabled: true
     elastic:
       enabled: true
   ccd-definition-store-api:
