@@ -22,6 +22,7 @@ public class MissedPaymentsWritPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(WritDetails::getDefendantMissedPayments)
             .done()
+            .done()
             .label("missedPaymentsWrit-save-and-return", SAVE_AND_RETURN);
     }
 

@@ -15,9 +15,9 @@ public class WritPageConfigurer implements PageConfigurer {
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
             .add(new CannotApplyForWritInfoPage())
+            .add(new NameAndAddressForEvictionWritPage())
             .add(new BreathingSpaceWritPage())
             .add(new MissedPaymentsWritPage())
-            .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
             .add(new ConfirmHCEOfficerPage())
             .add(new HCEOfficerDetailsPage())
