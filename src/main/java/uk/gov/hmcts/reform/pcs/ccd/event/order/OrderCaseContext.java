@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.CaseFacts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -31,9 +31,9 @@ class OrderCaseContext {
     private final AddressMapper addressMapper;
     private final PartyService partyService;
 
-    public MakeOrderStart.CaseContext of(PcsCaseEntity pcsCase) {
+    public OrderStart.CaseContext of(PcsCaseEntity pcsCase) {
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
-        return new MakeOrderStart.CaseContext(
+        return new OrderStart.CaseContext(
             pcsCase.getCaseReference(),
             addressMapper.toAddressUK(pcsCase.getPropertyAddress()),
             claim.map(c -> parties(c, PartyRole.CLAIMANT)).orElse(List.of()),
@@ -76,10 +76,10 @@ class OrderCaseContext {
         return grounds.isEmpty() ? null : grounds;
     }
 
-    private List<MakeOrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
+    private List<OrderStart.Party> parties(ClaimEntity claim, PartyRole role) {
         return claim.getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == role)
-            .map(claimParty -> new MakeOrderStart.Party(
+            .map(claimParty -> new OrderStart.Party(
                 claimParty.getId().getPartyId().toString(), partyService.getPartyName(claimParty.getParty())))
             .toList();
     }

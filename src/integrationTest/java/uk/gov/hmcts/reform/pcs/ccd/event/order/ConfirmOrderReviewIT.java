@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Order;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
@@ -58,8 +58,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
 
     private long caseReference;
     private Actor caseworker;
-    private ExternalEvent<MakeOrderStart, MakeOrderRequest> asJudge;
-    private ExternalEvent<MakeOrderStart, ConfirmOrderReviewRequest> asCaseworker;
+    private ExternalEvent<OrderStart, MakeOrderRequest> asJudge;
+    private ExternalEvent<OrderStart, ConfirmOrderReviewRequest> asCaseworker;
 
     @BeforeEach
     void setUp() {
@@ -75,7 +75,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     void showsTheSubmittedOrderAndTheCase() {
         Order submitted = judgeSubmitsOrder("the judge's order");
 
-        MakeOrderStart start = asCaseworker.start();
+        OrderStart start = asCaseworker.start();
 
         assertThat(start.order().id()).isEqualTo(submitted.id());
         assertThat(start.order().formData()).containsEntry("notes", "the judge's order");
@@ -166,6 +166,17 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null, new Issue(List.of(), true, false, false, List.of(), null))).errors())
             .containsExactly("Select who to serve the order on", "Select which seal the order should have");
+    }
+
+    @Test
+    @DisplayName("does not serve the order on anyone who is not a party to the case")
+    void rejectsServingSomeoneWhoIsNotAParty() {
+        Order order = judgeSubmitsOrder("the judge's order");
+
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
+            .errors())
+            .containsExactly("The order can only be served on parties to the case");
     }
 
     @Test

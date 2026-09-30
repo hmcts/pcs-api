@@ -31,6 +31,11 @@ public record ConfirmOrderReviewRequest(Action action,
                         boolean serveAllParties,
                         List<String> partiesToServe,
                         OrderSeal seal) {
+
+        public Issue {
+            reviewDates = reviewDates == null ? List.of() : reviewDates;
+            partiesToServe = partiesToServe == null ? List.of() : partiesToServe;
+        }
     }
 
     public record ReviewDateEntry(LocalDate date, ReviewReason reason, String description) {

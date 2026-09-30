@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ import java.util.UUID;
  * event sends the judge their working order; the confirm order review event sends the caseworker the order awaiting
  * review.
  */
-public record MakeOrderStart(Order order, CaseContext caseContext) {
+public record OrderStart(Order order, CaseContext caseContext) {
 
     /** The order; for a judge's working order, no id means they have no draft on the case yet. */
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -25,6 +26,11 @@ public record MakeOrderStart(Order order, CaseContext caseContext) {
                         String orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot) {
+
+        public static Order of(DraftOrderEntity order) {
+            return new Order(order.getId(), order.getState(), order.getVersion(),
+                order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
+        }
     }
 
     public record CaseContext(long caseReference,
