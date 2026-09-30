@@ -22,6 +22,7 @@ public class BreathingSpaceWritPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(WritDetails::getDefendantInBreathingSpace)
             .done()
+            .done()
             .label("defendantInBreathingSpaceWrit-save-and-return", SAVE_AND_RETURN);
     }
 
