@@ -8,4 +8,7 @@ import lombok.NoArgsConstructor;
 public class ClientContext {
 
     private String selectedPartyId;
+
+    /** The order a caseworker chose to review, from the case's draft orders tab. */
+    private String orderId;
 }

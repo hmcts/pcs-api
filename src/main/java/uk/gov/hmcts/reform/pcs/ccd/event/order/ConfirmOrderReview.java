@@ -26,10 +26,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderReviewEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderReviewRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.util.ClientContext;
+import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,7 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 
 /**
  * A caseworker reviews an order a judge submitted, through pcs-frontend's confirm order review
- * journey. Starting the event sends them the order awaiting review and the case; submitting either
+ * journey. Starting the event sends them the order they chose and the case; submitting either
  * returns the order to the judge with a query, or records how it is to be issued and adds any review
  * dates to the case. Generating, sealing and serving the issued order are not built yet.
  */
@@ -59,6 +62,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderReviewRepository orderReviewRepository;
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
+    private final ClientContextRetriever clientContextRetriever;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -78,19 +82,28 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .onStart(this::start);
     }
 
-    /**
-     * Until the caseworker's work allocation task names the order it is for, the caseworker reviews
-     * the first order awaiting review on the case.
-     */
+    /** Starts the review of the order the caseworker chose on the case's draft orders tab. */
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
-        long caseReference = start.caseReference();
-        return draftOrderRepository
-            .findByPcsCaseCaseReferenceAndState(caseReference, DraftOrderState.SUBMITTED_FOR_REVIEW)
-            .stream()
-            .findFirst()
-            .map(order -> ExternalStartResponse.started(new OrderStart(
-                OrderStart.Order.of(order), orderCaseContext.of(order.getPcsCase()))))
-            .orElseThrow(() -> ExternalRejection.because("There is no order waiting for review on this case"));
+        DraftOrderEntity order = draftOrderRepository
+            .findByIdAndPcsCaseCaseReferenceAndState(chosenOrderId(), start.caseReference(),
+                DraftOrderState.SUBMITTED_FOR_REVIEW)
+            .orElseThrow(() -> ExternalRejection.because("The order is no longer waiting for review"));
+        return ExternalStartResponse.started(new OrderStart(OrderStart.Order.of(order),
+            orderCaseContext.of(order.getPcsCase())));
+    }
+
+    /**
+     * The order the caseworker chose, which the frontend sends in the Client-Context header since
+     * CCD passes no parameters to the start of an event.
+     */
+    private UUID chosenOrderId() {
+        ClientContext clientContext = clientContextRetriever.getClientContext();
+        String orderId = clientContext == null ? null : clientContext.getOrderId();
+        try {
+            return UUID.fromString(Objects.requireNonNull(orderId));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw ExternalRejection.because("Choose an order to review from the case's Draft orders tab");
+        }
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
