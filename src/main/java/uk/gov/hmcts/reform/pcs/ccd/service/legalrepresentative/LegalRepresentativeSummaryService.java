@@ -7,10 +7,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -65,15 +68,14 @@ public class LegalRepresentativeSummaryService {
             isActivelyLinkedToAnyDefendant(pcsCaseEntity, organisationId);
 
         if (displaySummaryLegalRepresentativeMarkdown(partyLink.isPresent(), state)) {
-            setLegalRepresentativeFields(pcsCase, partyLink.get(), pcsCaseEntity.getCaseReference());
+            setLegalRepresentativeFields(pcsCase, pcsCaseEntity, partyLink.get(), pcsCaseEntity.getCaseReference());
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
         }
     }
 
-    private void setLegalRepresentativeFields(PCSCase pcsCase,
-                                                             ClaimPartyOrganisationEntity
-                                                                 partyLink,
+    private void setLegalRepresentativeFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity,
+                                              ClaimPartyOrganisationEntity partyLink,
                                               long caseReference) {
 
         // Direct lookup: walking the organisation's contact details loads every case it has ever been
@@ -84,17 +86,32 @@ public class LegalRepresentativeSummaryService {
             .map(ClaimPartyContactDetailsEntity::getContactDetailsCorrectConfirmation)
             .orElse(YesOrNo.NO);
 
-        if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
+        boolean hasResponded = isResponseSubmitted(pcsCaseEntity);
+
+        if (YesOrNo.YES.equals(hasAmendedContactDetails) && !hasResponded) {
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
             pcsCase.setSummaryLegalRepresentativeMarkdown(RESPOND_TO_CLAIM_MARKDOWN.formatted(frontendUrl));
+        } else if (hasResponded) {
+            pcsCase.setLegalRepUpdatedDetails(YesOrNo.NO);
+            pcsCase.setSummaryLegalRepresentativeMarkdown(StringUtils.EMPTY);
         } else {
             pcsCase.setSummaryLegalRepresentativeMarkdown(UPDATE_DETAILS_MARKDOWN
                                                               .formatted(legalRepresentativeContactDetails));
         }
     }
 
-    private Optional<ClaimPartyOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
-                                                                                                    pcsCaseEntity,
+    private boolean isResponseSubmitted(PcsCaseEntity pcsCaseEntity) {
+        return Optional.ofNullable(pcsCaseEntity)
+            .map(PcsCaseEntity::getDefendantResponses)
+            .flatMap(responses -> responses.stream().findFirst())
+            .map(DefendantResponseEntity::getStatementOfTruth)
+            .map(StatementOfTruthEntity::getCompletedBy)
+            .map(completedBy -> completedBy
+                == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
+            .orElse(false);
+    }
+
+    private Optional<ClaimPartyOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity pcsCaseEntity,
                                                                                   String orgId) {
         List<PartyEntity> defendants = defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity);
         return defendants.stream()
