@@ -38,7 +38,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment.isDev;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
 
@@ -58,7 +57,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
 
-    /** Temp change to allow testing */
+    /** Temp change to allow testing. */
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         log.info("Configuring non-production Enforcement event: {}", enforceTheOrder.name());
