@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
@@ -42,8 +42,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
 @AllArgsConstructor
 public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
-    public static final ExternalEventId<MakeOrderStart, MakeOrderRequest> MAKE_ORDER =
-        ExternalEventId.of("ext:makeOrder", MakeOrderStart.class, MakeOrderRequest.class);
+    public static final ExternalEventId<OrderStart, MakeOrderRequest> MAKE_ORDER =
+        ExternalEventId.of("ext:makeOrder", OrderStart.class, MakeOrderRequest.class);
 
     private final DraftOrderRepository draftOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
@@ -71,13 +71,13 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .onStart(this::start);
     }
 
-    private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
+    private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
-        MakeOrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
-            .map(MakeOrder::toOrder)
-            .orElseGet(() -> new MakeOrderStart.Order(null, DraftOrderState.DRAFT, 0, null, Map.of(), null));
+        OrderStart.Order workingOrder = findDraft(caseReference, UUID.fromString(start.user().id()))
+            .map(OrderStart.Order::of)
+            .orElseGet(() -> new OrderStart.Order(null, DraftOrderState.DRAFT, 0, null, Map.of(), null));
         return ExternalStartResponse.started(
-            new MakeOrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
+            new OrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
@@ -133,10 +133,5 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private PcsCaseEntity findCase(long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
-    }
-
-    static MakeOrderStart.Order toOrder(DraftOrderEntity order) {
-        return new MakeOrderStart.Order(order.getId(), order.getState(), order.getVersion(),
-            order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
     }
 }

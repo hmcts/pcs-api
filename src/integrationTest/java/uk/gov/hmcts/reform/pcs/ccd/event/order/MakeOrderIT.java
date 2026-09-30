@@ -17,9 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Order;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
@@ -62,8 +62,8 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     private IssuedCases cases;
 
     private Actor firstJudge;
-    private ExternalEvent<MakeOrderStart, MakeOrderRequest> asFirstJudge;
-    private ExternalEvent<MakeOrderStart, MakeOrderRequest> asSecondJudge;
+    private ExternalEvent<OrderStart, MakeOrderRequest> asFirstJudge;
+    private ExternalEvent<OrderStart, MakeOrderRequest> asSecondJudge;
 
     @BeforeEach
     void setUp() {
@@ -254,7 +254,7 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     }
 
     /** The note on the judge's working draft. */
-    private static Object workingDraft(ExternalEvent<MakeOrderStart, MakeOrderRequest> judge) {
+    private static Object workingDraft(ExternalEvent<OrderStart, MakeOrderRequest> judge) {
         return judge.start().order().formData().get("notes");
     }
 }

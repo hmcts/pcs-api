@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderReviewEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
@@ -30,7 +30,10 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
@@ -45,8 +48,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 @AllArgsConstructor
 public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
-    public static final ExternalEventId<MakeOrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
-        ExternalEventId.of("ext:confirmOrderReview", MakeOrderStart.class, ConfirmOrderReviewRequest.class);
+    public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
+        ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
 
     static final int MAX_QUERY_LENGTH = 30_000;
     static final int MAX_REVIEW_DATES = 10;
@@ -79,14 +82,14 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
      * Until the caseworker's work allocation task names the order it is for, the caseworker reviews
      * the first order awaiting review on the case.
      */
-    private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
+    private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
         return draftOrderRepository
             .findByPcsCaseCaseReferenceAndState(caseReference, DraftOrderState.SUBMITTED_FOR_REVIEW)
             .stream()
             .findFirst()
-            .map(order -> ExternalStartResponse.started(new MakeOrderStart(
-                MakeOrder.toOrder(order), orderCaseContext.of(order.getPcsCase()))))
+            .map(order -> ExternalStartResponse.started(new OrderStart(
+                OrderStart.Order.of(order), orderCaseContext.of(order.getPcsCase()))))
             .orElseThrow(() -> ExternalRejection.because("There is no order waiting for review on this case"));
     }
 
@@ -106,7 +109,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
         }
 
-        Issue issue = validIssue(request.issue());
+        Issue issue = request.issue();
+        validateIssue(issue, partyIds(order));
         order.setState(DraftOrderState.ISSUED);
         review.outcome(DraftOrderState.ISSUED)
             .nextStepsComplete(issue.nextStepsComplete())
@@ -153,16 +157,15 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return query;
     }
 
-    private static Issue validIssue(Issue issue) {
+    private static void validateIssue(Issue issue, Set<String> partyIds) {
         if (issue == null) {
             throw ExternalRejection.because("Answer how the order is to be issued");
         }
         List<String> errors = new ArrayList<>();
-        List<ReviewDateEntry> reviewDates = issue.reviewDates() == null ? List.of() : issue.reviewDates();
-        if (reviewDates.size() > MAX_REVIEW_DATES) {
+        if (issue.reviewDates().size() > MAX_REVIEW_DATES) {
             errors.add("You can add up to 10 review dates");
         }
-        for (ReviewDateEntry reviewDate : reviewDates) {
+        for (ReviewDateEntry reviewDate : issue.reviewDates()) {
             if (reviewDate.date() == null || reviewDate.reason() == null
                 || reviewDate.description() == null || reviewDate.description().isBlank()) {
                 errors.add("Each review date needs a date, a reason and a description");
@@ -173,8 +176,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 break;
             }
         }
-        if (!issue.serveAllParties() && (issue.partiesToServe() == null || issue.partiesToServe().isEmpty())) {
+        if (!issue.serveAllParties() && issue.partiesToServe().isEmpty()) {
             errors.add("Select who to serve the order on");
+        } else if (!partyIds.containsAll(issue.partiesToServe())) {
+            errors.add("The order can only be served on parties to the case");
         }
         if (issue.seal() == null) {
             errors.add("Select which seal the order should have");
@@ -182,8 +187,14 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         if (!errors.isEmpty()) {
             throw ExternalRejection.because(errors.toArray(String[]::new));
         }
-        return new Issue(reviewDates, issue.nextStepsComplete(), issue.finalOrder(), issue.serveAllParties(),
-            issue.partiesToServe(), issue.seal());
+    }
+
+    /** The ids of the parties the caseworker was shown, whom the order may be served on. */
+    private Set<String> partyIds(DraftOrderEntity order) {
+        OrderStart.CaseContext caseContext = orderCaseContext.of(order.getPcsCase());
+        return Stream.concat(caseContext.claimants().stream(), caseContext.defendants().stream())
+            .map(OrderStart.Party::id)
+            .collect(Collectors.toSet());
     }
 
     private static ReviewDate toReviewDate(ReviewDateEntry entry) {
