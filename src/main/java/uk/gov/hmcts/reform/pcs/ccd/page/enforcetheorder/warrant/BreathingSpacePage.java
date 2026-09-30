@@ -22,6 +22,7 @@ public class BreathingSpacePage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getDefendantInBreathingSpace)
             .done()
+            .done()
             .label("defendantInBreathingSpace-save-and-return", SAVE_AND_RETURN);
     }
 
