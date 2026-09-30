@@ -34,8 +34,8 @@ test.afterEach(async () => {
 });
 
 
-test.describe('Claimant - Make an Application - e2e Journey @nightly @regression', async () => {
-  test('Claimant - Select an Application - Ask to Set aside', async () => {
+test.describe('Claimant - Make an Application - e2e Journey @nightly', async () => {
+  test('Claimant - Select an Application - Ask to Set aside @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', chooseAnApplication.mainHeader);
