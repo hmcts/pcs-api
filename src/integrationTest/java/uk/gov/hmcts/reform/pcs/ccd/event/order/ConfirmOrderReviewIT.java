@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
@@ -20,10 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContext;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
-import uk.gov.hmcts.reform.pcs.ccd.view.DraftOrdersView;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
@@ -34,7 +29,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
@@ -51,8 +45,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
  * Caseworkers review an order a judge submitted through the confirm order review event as the
  * frontend drives it: they choose the order on the case's draft orders tab, starting the event sends
  * them that order and the case, and they either return it to the judge with a query or say how it is
- * to be issued. The frontend names the chosen order in the Client-Context header, which the SDK's
- * test support cannot send, so the test stands in for the header's reader.
+ * to be issued. The frontend names the chosen order in the client context.
  */
 @PcsCcdEventTest
 @DisplayName("Confirm order review")
@@ -64,12 +57,6 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private IssuedCases cases;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    @Autowired
-    private DraftOrdersView draftOrdersView;
-    @Autowired
-    private PcsCaseRepository pcsCaseRepository;
-    @MockitoBean
-    private ClientContextRetriever clientContextRetriever;
 
     private long caseReference;
     private Actor caseworker;
@@ -114,11 +101,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     @DisplayName("links to the review of each order waiting for one on the draft orders tab")
     void linksToTheReviewOfEachOrderWaitingForOne() {
         Order order = judgeSubmitsOrder("the judge's order");
-        PCSCase pcsCase = PCSCase.builder().build();
 
-        draftOrdersView.setCaseFields(pcsCase, pcsCaseRepository.findByCaseReference(caseReference).orElseThrow());
-
-        assertThat(pcsCase.getDraftOrdersMarkdown())
+        assertThat(events.view(caseReference, caseworker).getDraftOrdersMarkdown())
             .contains("Outright possession", "Waiting for review")
             .contains("/case/${[CASE_REFERENCE]}/confirm-order-review?orderId=" + order.id());
     }
@@ -217,11 +201,9 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         return submitted;
     }
 
-    /** The caseworker chooses an order to review, which the frontend names in the Client-Context header. */
+    /** The caseworker chooses an order to review, which the frontend names in the client context. */
     private void choose(UUID orderId) {
-        ClientContext clientContext = new ClientContext();
-        clientContext.setOrderId(orderId.toString());
-        when(clientContextRetriever.getClientContext()).thenReturn(clientContext);
+        asCaseworker = asCaseworker.withClientContext(Map.of("orderId", orderId.toString()));
     }
 
     private static MakeOrderRequest startDraft(String notes) {
