@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
@@ -60,7 +59,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private long caseReference;
     private Actor caseworker;
     private ExternalEvent<MakeOrderStart, MakeOrderRequest> asJudge;
-    private ExternalEvent<ConfirmOrderReviewStart, ConfirmOrderReviewRequest> asCaseworker;
+    private ExternalEvent<MakeOrderStart, ConfirmOrderReviewRequest> asCaseworker;
 
     @BeforeEach
     void setUp() {
@@ -76,7 +75,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     void showsTheSubmittedOrderAndTheCase() {
         Order submitted = judgeSubmitsOrder("the judge's order");
 
-        ConfirmOrderReviewStart start = asCaseworker.start();
+        MakeOrderStart start = asCaseworker.start();
 
         assertThat(start.order().id()).isEqualTo(submitted.id());
         assertThat(start.order().formData()).containsEntry("notes", "the judge's order");

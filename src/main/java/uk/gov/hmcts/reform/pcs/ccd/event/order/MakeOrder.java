@@ -135,7 +135,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
-    private static MakeOrderStart.Order toOrder(DraftOrderEntity order) {
+    static MakeOrderStart.Order toOrder(DraftOrderEntity order) {
         return new MakeOrderStart.Order(order.getId(), order.getState(), order.getVersion(),
             order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
     }

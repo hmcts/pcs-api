@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
@@ -46,8 +45,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 @AllArgsConstructor
 public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
-    public static final ExternalEventId<ConfirmOrderReviewStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
-        ExternalEventId.of("ext:confirmOrderReview", ConfirmOrderReviewStart.class, ConfirmOrderReviewRequest.class);
+    public static final ExternalEventId<MakeOrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
+        ExternalEventId.of("ext:confirmOrderReview", MakeOrderStart.class, ConfirmOrderReviewRequest.class);
 
     static final int MAX_QUERY_LENGTH = 30_000;
     static final int MAX_REVIEW_DATES = 10;
@@ -80,14 +79,14 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
      * Until the caseworker's work allocation task names the order it is for, the caseworker reviews
      * the first order awaiting review on the case.
      */
-    private ExternalStartResponse<ConfirmOrderReviewStart> start(ExternalStartRequest start) {
+    private ExternalStartResponse<MakeOrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
         return draftOrderRepository
             .findByPcsCaseCaseReferenceAndState(caseReference, DraftOrderState.SUBMITTED_FOR_REVIEW)
             .stream()
             .findFirst()
-            .map(order -> ExternalStartResponse.started(new ConfirmOrderReviewStart(
-                toOrder(order), orderCaseContext.of(order.getPcsCase()))))
+            .map(order -> ExternalStartResponse.started(new MakeOrderStart(
+                MakeOrder.toOrder(order), orderCaseContext.of(order.getPcsCase()))))
             .orElseThrow(() -> ExternalRejection.because("There is no order waiting for review on this case"));
     }
 
@@ -193,10 +192,5 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .reason(entry.reason())
             .description(entry.description())
             .build();
-    }
-
-    private static MakeOrderStart.Order toOrder(DraftOrderEntity order) {
-        return new MakeOrderStart.Order(order.getId(), order.getState(), order.getVersion(),
-            order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
     }
 }
