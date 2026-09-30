@@ -111,13 +111,20 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("does not return an order to the judge without a query")
-    void rejectsAReturnWithoutAQuery() {
+    @DisplayName("does not act on an incomplete review")
+    void rejectsAnIncompleteReview() {
         Order order = judgeSubmitsOrder("the judge's order");
 
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
             RETURN_TO_JUDGE, order.id(), order.version(), " ", null)).errors())
             .containsExactly("Enter a query for the judge");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(List.of(), true, false, false, List.of(), null))).errors())
+            .containsExactly("Select who to serve the order on", "Select which seal the order should have");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
+            .errors())
+            .containsExactly("The order can only be served on parties to the case");
     }
 
     @Test
@@ -156,27 +163,6 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
                 "date", java.sql.Date.valueOf(reviewDate.date()),
                 "reason", "GENERAL_ORDER",
                 "description", "Check the rent is paid"));
-    }
-
-    @Test
-    @DisplayName("does not issue an order without a seal or anyone to serve it on")
-    void rejectsAnIncompleteIssue() {
-        Order order = judgeSubmitsOrder("the judge's order");
-
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, new Issue(List.of(), true, false, false, List.of(), null))).errors())
-            .containsExactly("Select who to serve the order on", "Select which seal the order should have");
-    }
-
-    @Test
-    @DisplayName("does not serve the order on anyone who is not a party to the case")
-    void rejectsServingSomeoneWhoIsNotAParty() {
-        Order order = judgeSubmitsOrder("the judge's order");
-
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, new Issue(List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
-            .errors())
-            .containsExactly("The order can only be served on parties to the case");
     }
 
     @Test
