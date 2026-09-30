@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 /**
  * Domain model for the "people who will be evicted" page.
  * Contains the selection for whether to evict everyone or specific people.
+ *
+ * @deprecated This model is retained only for backwards compatibility.
  */
 @Builder
 @Data
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@Deprecated
 public class PeopleToEvict {
 
     @CCD(

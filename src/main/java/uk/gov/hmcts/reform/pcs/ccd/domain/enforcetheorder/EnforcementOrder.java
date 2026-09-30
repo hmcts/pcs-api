@@ -49,6 +49,12 @@ public class EnforcementOrder {
     @CCD
     private WritDetails writDetails;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
@@ -61,6 +67,12 @@ public class EnforcementOrder {
     @CCD
     private RawWarrantRestDetails rawWarrantRestDetails;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @CCD(searchable = false)
     @External
     private String warrantFeeAmount;

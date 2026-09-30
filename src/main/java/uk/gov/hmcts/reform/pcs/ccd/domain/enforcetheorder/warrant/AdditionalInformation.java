@@ -21,7 +21,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class AdditionalInformation {
 
     public static final String ADDITIONAL_INFORMATION_DETAILS_LABEL
-        = "Tell us anything else that could help with the eviction";
+        = "Enter details about anything else that could help with the eviction";
 
     @CCD
     private VerticalYesNo additionalInformationSelect;
