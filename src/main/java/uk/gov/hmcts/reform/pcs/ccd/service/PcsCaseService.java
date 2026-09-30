@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -185,12 +186,24 @@ public class PcsCaseService {
         if (pcsCase.getCaseManagementLocationNumber() != null) {
             log.debug("Calling locationReferenceService.getCourtVenues(...) with {}",
                      pcsCase.getCaseManagementLocationNumber());
-            List<CourtVenue> courtVenues = locationReferenceService
-                .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
+            List<CourtVenue> courtVenues;
+            try {
+                courtVenues = locationReferenceService
+                    .getCourtVenues(List.of(pcsCase.getCaseManagementLocationNumber()));
+            } catch (FeignException.NotFound e) {
+                log.warn("No court venue found in LRD for epimsId {}; region not set",
+                         pcsCase.getCaseManagementLocationNumber());
+                return;
+            }
             log.debug("Court venues are : {}", courtVenues);
             if (!CollectionUtils.isEmpty(courtVenues)) {
-                Integer regionId = Integer.valueOf(courtVenues.getFirst().regionId());
-                pcsCase.setRegionId(regionId);
+                String regionId = courtVenues.getFirst().regionId();
+                if (regionId == null || regionId.isBlank()) {
+                    log.warn("Court venue for epimsId {} has no region in LRD; region not set",
+                             pcsCase.getCaseManagementLocationNumber());
+                    return;
+                }
+                pcsCase.setRegionId(Integer.valueOf(regionId.trim()));
             }
         }
     }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -492,6 +493,44 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldNotAllocateRegionId_WhenLocationReferenceReturnsNotFound() {
+        // Given
+        Integer caseManagementLocation = 123;
+        String postCode = "MK10 8RD";
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
+        when(locationReferenceService.getCourtVenues(any())).thenThrow(mock(FeignException.NotFound.class));
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND).build();
+
+        // When
+        underTest.allocateRegionId(caseData);
+
+        // Then
+        assertThat(caseData.getRegionId()).isNull();
+        assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
+    void shouldNotAllocateRegionId_WhenCourtVenueHasNoRegion() {
+        // Given
+        Integer caseManagementLocation = 123;
+        String postCode = "MK10 8RD";
+        when(postCodeCourtService.getCourtManagementLocation(postCode, ENGLAND)).thenReturn(caseManagementLocation);
+        when(locationReferenceService.getCourtVenues(any())).thenReturn(List.of(newCourtVenue("")));
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postCode).build())
+            .legislativeCountry(ENGLAND).build();
+
+        // When
+        underTest.allocateRegionId(caseData);
+
+        // Then
+        assertThat(caseData.getRegionId()).isNull();
+        assertThat(caseData.getCaseManagementLocationNumber()).isEqualTo(caseManagementLocation);
+    }
+
+    @Test
     void shouldNotAllocateRegionId_WhenAnEmptyListIsReturned() {
         // Given
         Integer caseManagementLocation = 123;
@@ -785,12 +824,16 @@ class PcsCaseServiceTest {
     }
 
     CourtVenue newCourtVenue() {
+        return newCourtVenue("1");
+    }
+
+    CourtVenue newCourtVenue(String regionId) {
         String siteName = "ABERDEEN TRIBUNAL HEARING CENTRE 1";
         return new CourtVenue(
             "1",
             "123",
             siteName,
-            "1",
+            regionId,
             "London",
             "Central London County Court",
             "7",
