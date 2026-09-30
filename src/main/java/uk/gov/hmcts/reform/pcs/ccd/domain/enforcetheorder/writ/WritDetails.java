@@ -32,7 +32,9 @@ public class WritDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @CCD
+    @CCD (
+        label = "Is the defendant currently in a breathing space?"
+    )
     private YesNoNotSure defendantInBreathingSpace;
 
     @CCD(
