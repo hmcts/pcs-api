@@ -10,10 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** What the frontend shows a judge when they open the make order event: their working order and the case. */
+/**
+ * What the frontend is sent when an order event starts: the order, and the case it is made on. The make order
+ * event sends the judge their working order; the confirm order review event sends the caseworker the order awaiting
+ * review.
+ */
 public record MakeOrderStart(Order order, CaseContext caseContext) {
 
-    /** The judge's working order; with no id, they have no draft on the case yet. */
+    /** The order; for a judge's working order, no id means they have no draft on the case yet. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
                         DraftOrderState state,
