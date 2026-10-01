@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
@@ -52,6 +53,7 @@ public class LegalRepresentativeSummaryService {
     private final FeatureToggleService featureToggleService;
     private final ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
     private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final DefendantResponseRepository defendantResponseRepository;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -88,9 +90,8 @@ public class LegalRepresentativeSummaryService {
             .orElse(YesOrNo.NO);
 
         if (YesOrNo.YES.equals(hasAmendedContactDetails)) {
+            boolean hasUnsubmittedDefendantResponses = hasUnsubmittedDefendantResponses(pcsCaseEntity, organisationId);
             // Only reached for an actively linked organisation, so the case has a claim and defendants
-            boolean hasUnsubmittedDefendantResponses = !legalRepForDefendantAccessValidator
-                .validateAndGetDefendants(pcsCaseEntity, organisationId).isEmpty();
             pcsCase.setHasUnsubmittedDefendantResponses(hasUnsubmittedDefendantResponses ? YesOrNo.YES : YesOrNo.NO);
             pcsCase.setLegalRepUpdatedDetails(YesOrNo.YES);
             pcsCase.setSummaryLegalRepresentativeMarkdown(hasUnsubmittedDefendantResponses
@@ -100,6 +101,12 @@ public class LegalRepresentativeSummaryService {
             pcsCase.setSummaryLegalRepresentativeMarkdown(UPDATE_DETAILS_MARKDOWN
                                                               .formatted(legalRepresentativeContactDetails));
         }
+    }
+
+    private boolean hasUnsubmittedDefendantResponses(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, organisationId).stream()
+            .anyMatch(defendant -> !defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                pcsCaseEntity.getCaseReference(), defendant.getId()));
     }
 
     private Optional<ClaimPartyOrganisationEntity> isActivelyLinkedToAnyDefendant(PcsCaseEntity
