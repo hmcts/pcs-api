@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrderReviewAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -73,7 +75,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         caseReference = cases.issue();
         judge = events.registerActor("A", "Judge", "caseworker-pcs");
         asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
-        caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs", "hearing-centre-admin");
+        caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
         asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker);
     }
 
@@ -103,17 +105,21 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("links a caseworker shown the draft orders tab, and no one else, to the review of each order waiting")
+    @DisplayName("links to the review of each order waiting for one in a field CCD shows only to caseworkers")
     void linksToTheReviewOfEachOrderWaitingForOne() {
         Order order = judgeSubmitsOrder("the judge's order");
 
-        assertThat(events.view(caseReference, caseworker).getDraftOrdersMarkdown())
-            .contains("Outright possession", "Waiting for review")
+        PCSCase tab = events.view(caseReference, caseworker);
+        assertThat(tab.getDraftOrdersReviewMarkdown())
+            .contains("Review order: Outright possession")
             .contains("/cases/${[CASE_REFERENCE]}/event/ext:confirmOrderReview?expected_sub=" + caseworker.uid()
                 + "&amp;orderId=" + order.id());
-        assertThat(events.view(caseReference, judge).getDraftOrdersMarkdown())
-            .contains("Waiting for review")
+        // The orders everyone with the tab sees say where each is, without a link to review it.
+        assertThat(tab.getDraftOrdersMarkdown())
+            .contains("Outright possession", "Waiting for review")
             .doesNotContain("Review order");
+        assertThat(new OrderReviewAccess().getGrants().keySet())
+            .containsExactlyInAnyOrder(UserRole.HEARING_CENTRE_ADMIN, UserRole.HEARING_CENTRE_TEAM_LEADER);
     }
 
     @Test

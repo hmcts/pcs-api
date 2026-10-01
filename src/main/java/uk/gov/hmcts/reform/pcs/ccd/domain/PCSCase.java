@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrderReviewAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
@@ -390,6 +391,10 @@ public class PCSCase {
 
     @CCD(searchable = false, access = InternalTabAccess.class)
     private String draftOrdersMarkdown;
+
+    /** Links to review the orders waiting for it, on a tab CCD shows only to the caseworkers who can. */
+    @CCD(searchable = false, access = OrderReviewAccess.class)
+    private String draftOrdersReviewMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
