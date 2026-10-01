@@ -50,6 +50,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -60,6 +61,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     private BigDecimal amountOfLandRegistryFees;
 
@@ -77,6 +79,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -105,6 +108,7 @@ public class WritEntity {
      *
      * @deprecated These fields are retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     private String repaymentChoice;
     /**
@@ -112,6 +116,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     private BigDecimal amountOfRepaymentCosts;
     /**
@@ -119,6 +124,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
+    @SuppressWarnings("java:S1133")
     @Deprecated
     private String repaymentSummaryMarkdown;
 
