@@ -12,6 +12,8 @@ export const manageParty = {
   litigationFriendHiddenRadioOption: `Litigation friend`,
   whichPartyContactInformationHiddenQuestion: `Which party's contact information needs to be updated?`,
   whichPartyYouRemovingHiddenQuestion: `Which party are you removing?`,
+  errorMessageHiddenHeader: `The event could not be created`,
+  errorHiddenMessage: `You cannot remove a claimant or defendant if only one of these parties exist on the case.`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,

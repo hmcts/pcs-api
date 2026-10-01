@@ -6,46 +6,58 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails, checkFullPartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
+import { getDefendantAddressByName } from '@utils/common/userData.utils';
 
 test.use({ storageState: undefined })
+let createPayload: Record<string, any>;
 let submitPayload: Record<string, any>;
 
 test.beforeEach(async ({ page, context }, testInfo) => {
-  await context.clearCookies();
-  initializeExecutor(page);
-  initializeCMExecutor(page);
-  const submitPayload = testInfo.title.toLowerCase().includes('single defendant')
-  ? submitCaseApiData.submitCasePayloadDefault
-  : submitCaseApiData.submitCasePayloadCaseFileView;
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitPayload});
-  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
-  await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitPayload.defendant1.nameKnown,
-    additionalDefendants: submitPayload.addAnotherDefendant,
-    payLoad: submitPayload
+  await test.step(`Clear all cookies and initialize the test executors`, async () => {
+    await context.clearCookies();
+    initializeExecutor(page);
+    initializeCMExecutor(page);
   });
 
-  if (testInfo.title.includes('GENAPP')){
-  for (const defendant of defendantUserDetails) {
-    await performAction('makeAnApplicationAPI', {
-      data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
-        defendant.id,
-        defendant.name
-      ),
+  createPayload = createCaseApiData.createCasePayload
+  submitPayload = testInfo.title.toLowerCase().includes('single defendant')
+    ? submitCaseApiData.submitCasePayloadDefault
+    : submitCaseApiData.submitCasePayloadCaseFileView;
+
+  await test.step('Create and submit case, update payment and retrieve party details', async () => {
+    await performAction('createCaseAPI', { data: createPayload });
+    await performAction('submitCaseAPI', { data: submitPayload });
+    await performAction('getAddressInfo', { data: createPayload });
+    await performAction('updatePaymentAPI');
+    await performAction('getAllPartyDetails', {
+      defendant1NameKnown: submitPayload.defendant1.nameKnown,
+      additionalDefendants: submitPayload.addAnotherDefendant,
+      payLoad: submitPayload
     });
+  });
+
+  if (testInfo.title.includes('GENAPP')) {
+    await performAction('getCaseAPI', 'Link Solicitor');
+    for (const defendant of defendantUserDetails) {
+      await performAction('makeAnApplicationAPI', {
+        data: makeAnApplicationApiData.makeAnApplicationAdjournPayload(
+          defendant.id,
+          defendant.name
+        ),
+      });
+    };
   };
-}
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.hearingCenterAdmin);
-  await dismissCookieBanner(page, 'analytics');
-  await performAction('navigateToSummaryPage');
+
+  await test.step(`Login as Hearing Center Admin - ${user.hearingCenterAdmin.email} and navigate to Case Summary page`, async () => {
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await dismissCookieBanner(page, 'additional');
+    await performAction('login', user.hearingCenterAdmin);
+    await dismissCookieBanner(page, 'analytics');
+    await performAction('navigateToSummaryPage');
+  });
 
 });
 
@@ -107,7 +119,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -155,7 +167,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
     let party = allPartyDetails[1];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -164,7 +176,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       option1: manageParty.litigationFriendHiddenRadioOption,
       nextPage: addParty.mainHeader,
     });
-    await performAction('clickRadioButton', {question: addParty.litigationFriendQuestion, option: party});
+    await performAction('clickRadioButton', { question: addParty.litigationFriendQuestion, option: party });
     await performAction('reTryOnCallBackError', addParty.continueButton, partyDetails.mainHeader as string);
     await performAction('addNewParty', {
       orgLabel: partyDetails.orgNameHiddenTextLabel,
@@ -202,8 +214,11 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
 
   test('Case management - update party to the case - Defendants details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    let party= allPartyDetails[1];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    let party = allPartyDetails[1];
+    let name = party.split(' - ')[0];
+    let partyAddress = getDefendantAddressByName(submitPayload, createPayload, name);
+    let removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party}?`;
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
       question1: manageParty.whatChangeQuestion,
@@ -228,12 +243,35 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
+     await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+      await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+      await performValidation('mainHeader', manageParty.mainHeader);
+    });
+    await test.step(`Select the party to be removed`, async () => {
+      await performAction('selectParty', {
+        question1: manageParty.whatChangeQuestion,
+        option1: manageParty.removePartyRadioOption,
+        question2: manageParty.whichPartyYouRemovingHiddenQuestion,
+        option2: party,
+        nextPage: checkFullPartyDetails.mainHeader
+      });
+    });
+    await test.step(`Full Party Details Page Validation`, async () => {
+      await performAction('validateFullPartyDetails', {
+        defName: party,
+        defDOB: date,
+        defAddress: partyAddress,
+        question: removeParty,
+        option: checkFullPartyDetails.yesRadioOption,
+        nextPage: checkYourAnswersManageParties.mainHeader
+      });
+    });
   });
 
   test('Case management - update party to the case- Claimant details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
       question1: manageParty.whatChangeQuestion,
@@ -258,41 +296,91 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
 
-  test('Case management - Remove party from the case - Defendants details @CM @regression', async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    let party = allPartyDetails[1];
+  test('Case management - Remove party from the case - No to remove  @CM @regression', async () => {
+    let party = allPartyDetails[0];
+    let name = party.split(' - ')[0];
+    let partyAddress = getDefendantAddressByName(submitPayload, createPayload, name);
+    let removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party}?`;
+
     await test.step(`Select event "Manage Parties" from event drop down`, async () => {
       await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
       await performValidation('mainHeader', manageParty.mainHeader);
-    });    
+    });
     await test.step(`Select the party to be removed`, async () => {
       await performAction('selectParty', {
         question1: manageParty.whatChangeQuestion,
         option1: manageParty.removePartyRadioOption,
         question2: manageParty.whichPartyYouRemovingHiddenQuestion,
         option2: party,
-        nextPage: updatePartyDetails.mainHeader
+        nextPage: checkFullPartyDetails.mainHeader
       });
     });
-
-    await test.step(`Full Party Details Page Validation`, async () => {
-      await performAction('validateFullPartyDetails')
+    await test.step(`Full Party Details Page Validation when user selects No to remove party`, async () => {
+      await performAction('validateFullPartyDetails', {
+        defName: party,
+        defDOB: 'Date of birth unknown',
+        defAddress: partyAddress,
+        question: removeParty,
+        option: checkFullPartyDetails.noRadioOption,
+        hiddenMessage: checkFullPartyDetails.noRemoveHiddenParagraph,
+        errorHeader: checkFullPartyDetails.errorMessageHiddenHeader,
+        errorMessage: checkFullPartyDetails.errorHiddenMessage,
+      });
     });
-    await performAction('updatePartyDetails', {
-      DOBLabel: updatePartyDetails.dateOfBirthHiddenLabel,
-      date: date,
-      enterUKPostcodeTextLabel: updatePartyDetails.enterUKPostcodeTextLabel,
-      postcode: updatePartyDetails.englandPostCodeTextInput,
-      button: updatePartyDetails.findAddressButton,
-      addressSelectLabel: updatePartyDetails.addressSelectHiddenLabel,
-      addressIndex: updatePartyDetails.defendantAddressIndex,
-      nextPage: checkYourAnswersManageParties.mainHeader
+  });
+
+  test('Case management - Remove party from the case - Defendants details @CM @regression', async () => {
+    let party = allPartyDetails[1];
+    let name = party.split(' - ')[0];
+    let partyAddress = getDefendantAddressByName(submitPayload, createPayload, name);
+    let removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party}?`;
+
+    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+      await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+      await performValidation('mainHeader', manageParty.mainHeader);
+    });
+    await test.step(`Select the party to be removed`, async () => {
+      await performAction('selectParty', {
+        question1: manageParty.whatChangeQuestion,
+        option1: manageParty.removePartyRadioOption,
+        question2: manageParty.whichPartyYouRemovingHiddenQuestion,
+        option2: party,
+        nextPage: checkFullPartyDetails.mainHeader
+      });
+    });
+    await test.step(`Full Party Details Page Validation`, async () => {
+      await performAction('validateFullPartyDetails', {
+        defName: party,
+        defDOB: 'Date of birth unknown',
+        defAddress: partyAddress,
+        question: removeParty,
+        option: checkFullPartyDetails.yesRadioOption,
+        nextPage: checkYourAnswersManageParties.mainHeader
+      });
     });
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
     await performAction('confirmPartyDetailsUpdated', {
-      userType: `Defendant's details`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      userType: `Defendant`,
+      name: name,
+      submitPayload: submitPayload
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
+  });
+
+  test('Case management - Remove party from the case - Single Defendant @CM @regression', async () => {
+    await test.step(`Select event "Manage Parties" from event drop down`, async () => {
+      await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+      await performValidation('mainHeader', manageParty.mainHeader);
+    });
+    await test.step(`Validate that user cannot remove a claimant or defendant if only one of these parties exist on the case.`, async () => {
+      await performAction('selectParty', {
+        question1: manageParty.whatChangeQuestion,
+        option1: manageParty.removePartyRadioOption,
+        singleDefendant: true,
+        errorHeader: manageParty.errorMessageHiddenHeader,
+        errorMessage: manageParty.errorHiddenMessage,
+      });
+    });
+
   });
 });

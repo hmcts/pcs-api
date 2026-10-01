@@ -30,7 +30,8 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing
+  confirmCancelHearing,
+  checkFullPartyDetails
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -631,7 +632,13 @@ export class CaseManagementAction implements IAction {
       option: partyData.option1
     });
 
-    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 ) {
+    if (partyData.singleDefendant) {
+      await performAction('clickButton', manageParty.continueButton);
+      await performValidation('errorMessage', { header: partyData.errorHeader, message: partyData.errorMessage });
+      return;
+    }
+
+    if (partyData.option1 === manageParty.updatePartyRadioOption || partyData.option1 === manageParty.removePartyRadioOption ) {
       await performAction('clickRadioButton', {
         question: partyData.question2,
         option: partyData.option2
@@ -758,6 +765,25 @@ export class CaseManagementAction implements IAction {
       text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performValidation('text', { elementType: 'inlineText', text: `${newUser} added` });
+    await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+    await performValidation('mainHeader', confirmManageParties.mainHeader);
+    await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
+  }
+
+  private async confirmRemoveParty(confirmAdd: actionRecord): Promise<void> {
+    let submitPayLoad = confirmAdd.submitPayload as Record<string, any>;
+    const newUser = `${confirmAdd.userType} ${confirmAdd.name}`
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'inlineText',
+      text: `${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('text', { elementType: 'inlineText', text: `${newUser} removed` });
     await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
     await performValidation('mainHeader', confirmManageParties.mainHeader);
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
@@ -1114,13 +1140,22 @@ export class CaseManagementAction implements IAction {
   }
 
   private async validateFullPartyDetails(page: Page, partyDetails: actionRecord) {
-    await test.step(`Full Party Details Page Validation`, async () => {
-      expect(await this.getCaseFieldValue(page, 'Name')).toEqual('John Doe – Defendant 1');
-      expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual('John Doe – Defendant 1');
-      expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual('John Doe – Defendant 1');
-    });
-    
 
+    expect(await this.getCaseFieldValue(page, 'Name')).toEqual(partyDetails.defName);
+    expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual(partyDetails.defDOB);
+    expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual(partyDetails.defAddress);
+
+    await performAction('clickRadioButton', {
+      question: partyDetails.question,
+      option: partyDetails.option,
+    });
+    if(partyDetails.option === 'No'){
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performAction('clickButton', checkFullPartyDetails.continueButton);
+      await performValidation('errorMessage', { header: partyDetails.errorHeader, message: partyDetails.errorMessage });
+      return;
+    }
+    await performAction('reTryOnCallBackError', checkFullPartyDetails.continueButton, partyDetails.nextPage as string);
 
   }
 
