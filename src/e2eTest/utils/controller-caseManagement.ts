@@ -56,8 +56,8 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       try {
         await test.step("Running Accessibility Scan", async () => {
           await new AxeUtils(executor.page).audit({
-                      exclude: axe_Exclusions,
-                    });
+            exclude: axe_Exclusions,
+          });
         });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
@@ -82,13 +82,14 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'selectManageHearing'
     || action === 'editHearing'
     || action === 'cancelHearing'
-    || action === 'selectParty' 
+    || action === 'selectParty'
     || action === 'updatePartyDetails'
-    || action === 'selectManageHearing') {
+    || action === 'selectManageHearing'
+    || action === 'addReviewDates') {
     captureDataForCYAPage = true;
   }
 
-  if(action.includes('errorValidation')){
+  if (action.includes('errorValidation')) {
     captureDataForCYAPage = false;
   }
 
@@ -111,6 +112,16 @@ export async function performAction(action: string, fieldName?: actionData | act
   } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
     const obj = fieldName as Record<string, any>;
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = Object.fromEntries(
+      Object.entries(obj).map(([key, value]) =>
+        key.includes('Payload')
+          ? [key, 'Payload is Input']
+          : [key, value]
+      )
+    );
     displayFieldName = displayValue;
   }
   let errorValidationRequired = false;
