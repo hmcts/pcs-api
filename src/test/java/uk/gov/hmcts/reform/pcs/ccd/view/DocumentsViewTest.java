@@ -149,6 +149,27 @@ class DocumentsViewTest {
     }
 
     @Test
+    void shouldIncludePossessionNoticeInCaseDocuments() {
+        DocumentEntity possessionNotice = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("possession-notice.pdf")
+            .url("possession-notice-url")
+            .type(DocumentType.POSSESSION_NOTICE)
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(possessionNotice));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> {
+                assertThat(document.getId()).isEqualTo(possessionNotice.getId().toString());
+                assertThat(document.getValue().getFilename()).isEqualTo("possession-notice.pdf");
+                assertThat(document.getValue().getUrl()).isEqualTo("possession-notice-url");
+            });
+    }
+
+    @Test
     void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
