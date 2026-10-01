@@ -45,7 +45,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
  * Caseworkers review an order a judge submitted through the confirm order review event as the
- * frontend drives it: they choose the order on the case's draft orders tab, starting the event sends
+ * frontend drives it: they choose the order on the case's orders tab, starting the event sends
  * them that order and the case, and they either return it to the judge with a query or issue it,
  * with any changes they made to it, saying how it is to be issued. The frontend names the chosen
  * order in the client context. The judge who wrote a returned order chooses it on the same tab, to
@@ -96,7 +96,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         asJudge.submitExpectingSuccess(startDraft("still a draft"));
 
         assertThat(asCaseworker.startExpectingRejection())
-            .containsExactly("Choose an order to review from the case's Draft orders tab");
+            .containsExactly("Choose an order to review from the case's Orders tab");
         choose(asJudge.start().order().id());
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");

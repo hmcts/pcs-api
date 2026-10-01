@@ -217,18 +217,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private void buildDraftOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-        // One Draft orders tab to look at, in two renderings: judges get the one with the links to
+        // One Orders tab to look at, in two renderings: judges get the one with the links to
         // resume or change their own orders, and court staff the one with the links to review an order.
         // They are two tabs to CCD, which shows a user the one their roles have, so no one's roles are
         // looked up as the case loads.
         List<AccessProfile> judges = List.of(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE,
             AccessProfile.CIRCUIT_JUDGE, AccessProfile.LEADERSHIP_JUDGE);
-        builder.tab("draftOrders", "Draft orders")
+        builder.tab("draftOrders", "Orders")
             .forRoles(judges.toArray(AccessProfile[]::new))
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .label("draftOrdersMarkdownLabel", null, "${draftOrdersMarkdown}")
             .field("draftOrdersMarkdown", NEVER_SHOW);
-        builder.tab("draftOrdersReview", "Draft orders")
+        builder.tab("draftOrdersReview", "Orders")
             .forRoles(Arrays.stream(INTERNAL_TAB_ROLES)
                 .filter(role -> !judges.contains(role))
                 .toArray(AccessProfile[]::new))

@@ -392,7 +392,7 @@ public class PCSCase {
     @CCD(searchable = false, access = InternalTabAccess.class)
     private String draftOrdersMarkdown;
 
-    /** The draft orders tab as court staff see it, with links to review the orders waiting for it. */
+    /** The orders tab as court staff see it, with links to review the orders waiting for it. */
     @CCD(searchable = false, access = OrderReviewAccess.class)
     private String draftOrdersReviewMarkdown;
 

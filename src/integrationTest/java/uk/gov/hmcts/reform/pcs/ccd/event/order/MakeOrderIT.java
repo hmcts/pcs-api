@@ -192,7 +192,7 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("links the judge who wrote a draft, and no one else, to resume it from the draft orders tab")
+    @DisplayName("links the judge who wrote a draft, and no one else, to resume it from the orders tab")
     void linksTheJudgeToResumeTheirDraft() {
         asFirstJudge.submitExpectingSuccess(startDraft("first version"));
         Order draft = asFirstJudge.start().order();

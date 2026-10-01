@@ -87,7 +87,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .onStart(this::start);
     }
 
-    /** Starts the review of the order the caseworker chose on the case's draft orders tab. */
+    /** Starts the review of the order the caseworker chose on the case's orders tab. */
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         DraftOrderEntity order = draftOrderRepository
             .findByIdAndPcsCaseCaseReferenceAndState(chosenOrderId(), start.caseReference(),
@@ -107,7 +107,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         try {
             return UUID.fromString(Objects.requireNonNull(orderId));
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw ExternalRejection.because("Choose an order to review from the case's Draft orders tab");
+            throw ExternalRejection.because("Choose an order to review from the case's Orders tab");
         }
     }
 

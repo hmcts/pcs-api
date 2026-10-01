@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * The case's orders as the draft orders tab shows them: each order's type and where it is, with a
+ * The case's orders as the orders tab shows them: each order's type and where it is, with a
  * link for the judge who wrote it to resume their draft, or to change an order a caseworker returned
  * to them. The tab is rendered a second time for court staff, with a link to review each order
  * awaiting review in pcs-frontend's confirm order review journey. CCD shows a user the rendering
