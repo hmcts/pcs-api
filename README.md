@@ -9,7 +9,7 @@ The project uses [Gradle](https://gradle.org) as a build tool. It already contai
 
 To build the project execute the following command:
 
-```bash
+```bash 
   ./gradlew build
 ```
 
