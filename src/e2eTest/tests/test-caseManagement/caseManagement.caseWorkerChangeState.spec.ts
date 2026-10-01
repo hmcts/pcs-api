@@ -1,6 +1,6 @@
 import { createCaseApiData, makeAnApplicationApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor, performValidation } from '@utils/controller';
-import test from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseSummary, user } from '@data/page-data';

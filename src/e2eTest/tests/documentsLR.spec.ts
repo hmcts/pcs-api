@@ -1,6 +1,6 @@
 import {createCaseApiData,submitCaseApiData} from '@data/api-data';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import test, {expect} from '@playwright/test';
+import { test, expect } from '@utils/test-fixtures';
 import { caseSummary } from '@data/page-data/caseSummary.page.data';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';

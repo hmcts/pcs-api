@@ -3,7 +3,7 @@ import {chromium, expect} from '@playwright/test';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
-import {LONG_TIMEOUT} from "../playwright.config";
+import {HEADLESS, LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
@@ -55,7 +55,7 @@ async function authenticateAndSaveState(): Promise<string> {
   const authDir = path.dirname(STORAGE_STATE_PATH);
   fs.mkdirSync(authDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: !!process.env.CI });
+  const browser = await chromium.launch({ headless: HEADLESS });
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   const page = await context.newPage();
 

@@ -21,7 +21,9 @@
     "test:mobile-ios": "yarn playwright install && yarn playwright test --project mobile-ios; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:mobile-ipad": "yarn playwright install && yarn playwright test --project mobile-ipad; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:openAllureReport": "yarn allure open ../../e2e-output",
-    "allure-slack-notify": "tsx ./scripts/allure-slack-notifier.ts"
+    "allure-slack-notify": "tsx ./scripts/allure-slack-notifier.ts",
+    "test:welshCapture": "rm -rf welsh-capture && yarn playwright install && WELSH_CAPTURE=1 yarn playwright test --project ${E2E_PROJECT:-chrome}; EXIT_CODE=$?; tsx ./scripts/welsh-capture-report.ts; exit $EXIT_CODE",
+    "welsh:report": "tsx ./scripts/welsh-capture-report.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

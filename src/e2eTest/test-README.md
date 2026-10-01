@@ -226,3 +226,33 @@ Pages passed: 2
 Pages failed: 1
 Missing elements: Submit button, Continue link
 ```
+
+## 8. Welsh translation capture
+
+`WELSH_CAPTURE=1` runs any test in Welsh mode without changing what it asserts. The `_welshCapture`
+auto fixture (`utils/test-fixtures.ts` → `utils/welsh-capture.ts`) sets the ExUI language cookie
+(`exui-preferred-language=cy`) on the browser context, so the `rpx-xui-translation` client asks the
+translation service for every phrase it renders. The fixture intercepts `POST /api/translation/cy`,
+answers the browser immediately with the English phrases echoed back (the UI stays English, so the
+suite's text assertions still pass), and in the background replays the request to the environment to
+learn whether each phrase has a Welsh translation. Every phrase is appended to
+`welsh-capture/worker-<n>.jsonl` with the spec, page URL, translated flag and a best-effort visibility
+check for the untranslated ones.
+
+```bash
+cd src/e2eTest
+export ENVIRONMENT=aat IDAM_PCS_USER_PASSWORD=...   # as for any other run
+yarn test:welshCapture                              # whole suite, then prints the summary
+yarn welsh:report                                   # re-generate welsh-capture/report.csv + untranslated.csv
+```
+
+Scope the run like any other (`--grep '@nightly'`, `E2E_SPEC=...`). On a machine without a display add
+`HEADLESS=1` (headless without the CI retries). Where Google Chrome is unavailable (Linux arm64) add
+`E2E_PROJECT=chromium` to use Playwright's bundled browser. Notes:
+
+- Each test gets a fresh browser context, so the client's 24h IndexedDB cache never hides a phrase.
+- Phrases are recorded as sent, after the client's whitespace normalisation (trim, collapse spaces).
+- Hidden fields, every list option and aria-only text ("Sort …", "Change …") are requested too; the
+  `visible` and `kind` columns in `report.csv` help triage, the capture itself is not proof a user saw it.
+- A failed test still contributes the phrases it rendered before failing.
+- Phrases with `translated` empty mean the background lookup failed (see `[welsh-capture]` warnings).

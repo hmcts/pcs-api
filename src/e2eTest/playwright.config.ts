@@ -12,6 +12,8 @@ export const LONG_TIMEOUT = 30000;
 export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
+// Headless in CI, or on demand (HEADLESS=1) for boxes without a display — without inheriting CI retries.
+export const HEADLESS = !!process.env.CI || ['1', 'true'].includes((process.env.HEADLESS ?? '').toLowerCase());
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
@@ -78,7 +80,20 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: !!process.env.CI,
+        headless: HEADLESS,
+      },
+    },
+    {
+      // Playwright's bundled Chromium — for hosts where Google Chrome is unavailable (e.g. Linux arm64).
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: HEADLESS,
       },
     },
     ...(process.env.CI
@@ -94,7 +109,7 @@ export default defineConfig({
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
               viewport: DEFAULT_VIEWPORT,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
           {
@@ -107,7 +122,7 @@ export default defineConfig({
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
               viewport: DEFAULT_VIEWPORT,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
           {
@@ -121,7 +136,7 @@ export default defineConfig({
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
               viewport: DEFAULT_VIEWPORT,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
           {
@@ -133,7 +148,7 @@ export default defineConfig({
               video: 'retain-on-failure' as const,
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
           {
@@ -145,7 +160,7 @@ export default defineConfig({
               video: 'retain-on-failure' as const,
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
           {
@@ -157,7 +172,7 @@ export default defineConfig({
               video: 'retain-on-failure' as const,
               trace: 'on-first-retry' as const,
               javaScriptEnabled: true,
-              headless: !!process.env.CI,
+              headless: HEADLESS,
             },
           },
         ]

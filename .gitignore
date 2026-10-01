@@ -58,4 +58,5 @@ node_modules
 
 # Playwright authentication state
 /src/e2eTest/.auth/
+/src/e2eTest/welsh-capture/
 /report-for-smoke-tests/

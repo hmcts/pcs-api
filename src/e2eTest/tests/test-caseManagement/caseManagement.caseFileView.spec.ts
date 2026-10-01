@@ -1,6 +1,6 @@
 import { createCaseApiData, makeAnApplicationApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import test, { expect } from '@playwright/test';
+import { test, expect } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';

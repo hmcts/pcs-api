@@ -2,7 +2,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 
 import {initializeExecutor, performAction, performValidation,} from '@utils/controller';
-import test from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import { FieldsStore } from '@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action';
 import { user } from '@data/user-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
