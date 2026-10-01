@@ -73,7 +73,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         caseReference = cases.issue();
         judge = events.registerActor("A", "Judge", "caseworker-pcs");
         asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
-        caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
+        caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs", "hearing-centre-admin");
         asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker);
     }
 
@@ -103,7 +103,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("links the caseworker shown the draft orders tab to the review of each order waiting for one")
+    @DisplayName("links a caseworker shown the draft orders tab, and no one else, to the review of each order waiting")
     void linksToTheReviewOfEachOrderWaitingForOne() {
         Order order = judgeSubmitsOrder("the judge's order");
 
@@ -111,6 +111,9 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
             .contains("Outright possession", "Waiting for review")
             .contains("/cases/${[CASE_REFERENCE]}/event/ext:confirmOrderReview?expected_sub=" + caseworker.uid()
                 + "&amp;orderId=" + order.id());
+        assertThat(events.view(caseReference, judge).getDraftOrdersMarkdown())
+            .contains("Waiting for review")
+            .doesNotContain("Review order");
     }
 
     @Test
