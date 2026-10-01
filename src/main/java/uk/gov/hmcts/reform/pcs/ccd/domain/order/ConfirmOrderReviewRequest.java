@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * What the frontend sends when a caseworker finishes reviewing an order, naming the order and the
- * version they reviewed: either a query returning it to the judge, or how it is to be issued.
+ * version they reviewed: either a query returning it to the judge, or the order as they issue it and
+ * how it is to be issued.
  */
 public record ConfirmOrderReviewRequest(Action action,
                                         UUID orderId,
@@ -22,10 +25,12 @@ public record ConfirmOrderReviewRequest(Action action,
     }
 
     /**
-     * The caseworker's answers for issuing the order: any review dates to add to the case, and how
-     * the order is served and sealed. Parties are named by the ids the case context gave them.
+     * The caseworker's answers for issuing the order: the order as they issue it, any review dates
+     * to add to the case, and how the order is served and sealed. Parties are named by the ids the
+     * case context gave them.
      */
-    public record Issue(List<ReviewDateEntry> reviewDates,
+    public record Issue(IssuedOrder order,
+                        List<ReviewDateEntry> reviewDates,
                         boolean nextStepsComplete,
                         boolean finalOrder,
                         boolean serveAllParties,
@@ -36,6 +41,13 @@ public record ConfirmOrderReviewRequest(Action action,
             reviewDates = reviewDates == null ? List.of() : reviewDates;
             partiesToServe = partiesToServe == null ? List.of() : partiesToServe;
         }
+    }
+
+    /**
+     * The order as the caseworker issues it: the judge's make order form and order document, with
+     * any changes the caseworker made to either.
+     */
+    public record IssuedOrder(String orderType, Map<String, Object> formData, JsonNode docweaveSnapshot) {
     }
 
     public record ReviewDateEntry(LocalDate date, ReviewReason reason, String description) {

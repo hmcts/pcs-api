@@ -13,8 +13,8 @@ import java.util.UUID;
 
 /**
  * What the frontend is sent when an order event starts: the order, and the case it is made on. The make order
- * event sends the judge their working order; the confirm order review event sends the caseworker the order awaiting
- * review.
+ * event sends the judge their working order, or the order a caseworker returned to them with its query; the
+ * confirm order review event sends the caseworker the order awaiting review.
  */
 public record OrderStart(Order order, CaseContext caseContext) {
 
@@ -25,11 +25,17 @@ public record OrderStart(Order order, CaseContext caseContext) {
                         long version,
                         String orderType,
                         Map<String, Object> formData,
-                        JsonNode docweaveSnapshot) {
+                        JsonNode docweaveSnapshot,
+                        String queryFromCaseworker) {
 
         public static Order of(DraftOrderEntity order) {
+            return of(order, null);
+        }
+
+        /** An order a caseworker returned to the judge, with the query they returned it with. */
+        public static Order of(DraftOrderEntity order, String queryFromCaseworker) {
             return new Order(order.getId(), order.getState(), order.getVersion(),
-                order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot());
+                order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
 

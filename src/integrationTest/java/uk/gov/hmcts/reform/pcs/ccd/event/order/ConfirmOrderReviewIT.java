@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.RETURNED_TO_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.COUNTY_COURT;
@@ -44,8 +46,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 /**
  * Caseworkers review an order a judge submitted through the confirm order review event as the
  * frontend drives it: they choose the order on the case's draft orders tab, starting the event sends
- * them that order and the case, and they either return it to the judge with a query or say how it is
- * to be issued. The frontend names the chosen order in the client context.
+ * them that order and the case, and they either return it to the judge with a query or issue it,
+ * with any changes they made to it, saying how it is to be issued. The frontend names the chosen
+ * order in the client context. The judge who wrote a returned order chooses it on the same tab, to
+ * change it and submit it for review again.
  */
 @PcsCcdEventTest
 @DisplayName("Confirm order review")
@@ -59,6 +63,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private JdbcTemplate jdbcTemplate;
 
     private long caseReference;
+    private Actor judge;
     private Actor caseworker;
     private ExternalEvent<OrderStart, MakeOrderRequest> asJudge;
     private ExternalEvent<OrderStart, ConfirmOrderReviewRequest> asCaseworker;
@@ -66,8 +71,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     @BeforeEach
     void setUp() {
         caseReference = cases.issue();
-        asJudge = events.external(caseReference, MAKE_ORDER)
-            .as(events.registerActor("A", "Judge", "caseworker-pcs"));
+        judge = events.registerActor("A", "Judge", "caseworker-pcs");
+        asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
         asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker);
     }
@@ -98,13 +103,14 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("links to the review of each order waiting for one on the draft orders tab")
+    @DisplayName("links the caseworker shown the draft orders tab to the review of each order waiting for one")
     void linksToTheReviewOfEachOrderWaitingForOne() {
         Order order = judgeSubmitsOrder("the judge's order");
 
         assertThat(events.view(caseReference, caseworker).getDraftOrdersMarkdown())
             .contains("Outright possession", "Waiting for review")
-            .contains("/case/${[CASE_REFERENCE]}/confirm-order-review?orderId=" + order.id());
+            .contains("/cases/${[CASE_REFERENCE]}/event/ext:confirmOrderReview?expected_sub=" + caseworker.uid()
+                + "&amp;orderId=" + order.id());
     }
 
     @Test
@@ -126,6 +132,36 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("lets the judge change an order returned to them, showing the query, and submit it for review again")
+    void letsTheJudgeChangeAReturnedOrder() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "Which defendant does paragraph 2 mean?", null));
+
+        assertThat(events.view(caseReference, judge).getDraftOrdersMarkdown())
+            .contains("Returned to judge")
+            .contains("/cases/${[CASE_REFERENCE]}/event/ext:makeOrder?expected_sub=" + judge.uid()
+                + "&amp;orderId=" + order.id());
+        assertThat(events.view(caseReference, caseworker).getDraftOrdersMarkdown()).doesNotContain("Change order");
+
+        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
+        Order returned = asAuthor.start().order();
+        assertThat(returned.state()).isEqualTo(RETURNED_TO_JUDGE);
+        assertThat(returned.queryFromCaseworker()).isEqualTo("Which defendant does paragraph 2 mean?");
+        assertThat(returned.formData()).containsEntry("notes", "the judge's order");
+
+        Order resubmitted = asAuthor.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
+                returned.id(), returned.version(), returned.orderType(), Map.of("notes", "the defendant named"),
+                returned.docweaveSnapshot())))
+            .changed("draft_orders", Order.class);
+        assertThat(resubmitted.id()).isEqualTo(order.id());
+        assertThat(resubmitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
+        assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
+        assertThat(asAuthor.startExpectingRejection())
+            .containsExactly("The order is no longer waiting for you to change it");
+    }
+
+    @Test
     @DisplayName("does not act on an incomplete review")
     void rejectsAnIncompleteReview() {
         Order order = judgeSubmitsOrder("the judge's order");
@@ -134,10 +170,15 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
             RETURN_TO_JUDGE, order.id(), order.version(), " ", null)).errors())
             .containsExactly("Enter a query for the judge");
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, new Issue(List.of(), true, false, false, List.of(), null))).errors())
+            order.version(), null, new Issue(null, List.of(), true, true, true, List.of(), COUNTY_COURT))).errors())
+            .containsExactly("Send the order as it is to be issued");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(asSubmitted(order), List.of(), true, false, false, List.of(), null)))
+            .errors())
             .containsExactly("Select who to serve the order on", "Select which seal the order should have");
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, new Issue(List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
+            order.version(), null,
+            new Issue(asSubmitted(order), List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
             .errors())
             .containsExactly("The order can only be served on parties to the case");
     }
@@ -149,7 +190,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         String defendant = asCaseworker.start().caseContext().defendants().getFirst().id();
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), null, new Issue(List.of(), true, false, false, List.of(defendant), HIGH_COURT)));
+            order.version(), null,
+            new Issue(asSubmitted(order), List.of(), true, false, false, List.of(defendant), HIGH_COURT)));
 
         assertThat(outcome.changed("draft_orders", Order.class).state()).isEqualTo(ISSUED);
         Review review = outcome.changed("order_reviews", Review.class);
@@ -163,13 +205,30 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("issues the order as the caseworker changed it, keeping the judge's as they submitted it")
+    void issuesTheOrderAsTheCaseworkerChangedIt() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        var changed = new IssuedOrder("SUSPENDED_POSSESSION", Map.of("notes", "the caseworker's order"), null);
+
+        var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(changed, List.of(), true, true, true, List.of(), COUNTY_COURT)));
+
+        Order judges = outcome.changed("draft_orders", Order.class);
+        assertThat(judges.orderType()).isEqualTo("OUTRIGHT_POSSESSION");
+        assertThat(judges.formData()).containsEntry("notes", "the judge's order");
+        Review review = outcome.changed("order_reviews", Review.class);
+        assertThat(review.orderType()).isEqualTo("SUSPENDED_POSSESSION");
+        assertThat(review.formData()).containsEntry("notes", "the caseworker's order");
+    }
+
+    @Test
     @DisplayName("adds the caseworker's review dates to the case when the order is issued")
     void addsReviewDatesToTheCase() {
         Order order = judgeSubmitsOrder("the judge's order");
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
 
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(), order.version(),
-            null, new Issue(List.of(reviewDate), true, true, true, List.of(), COUNTY_COURT)));
+            null, new Issue(asSubmitted(order), List.of(reviewDate), true, true, true, List.of(), COUNTY_COURT)));
 
         assertThat(jdbcTemplate.queryForList("""
             SELECT r.date, r.reason, r.description FROM case_review_date r
@@ -201,6 +260,11 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         return submitted;
     }
 
+    /** The judge's order as a caseworker who changed nothing issues it. */
+    private static IssuedOrder asSubmitted(Order order) {
+        return new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot());
+    }
+
     /** The caseworker chooses an order to review, which the frontend names in the client context. */
     private void choose(UUID orderId) {
         asCaseworker = asCaseworker.withClientContext(Map.of("orderId", orderId.toString()));
@@ -215,6 +279,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     record Review(String outcome,
                   String reviewerIdamUserId,
                   String queryToJudge,
+                  String orderType,
+                  Map<String, Object> formData,
                   Boolean nextStepsComplete,
                   Boolean finalOrder,
                   Boolean serveAllParties,
