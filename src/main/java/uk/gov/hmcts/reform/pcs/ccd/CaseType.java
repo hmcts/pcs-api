@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.EnumSet;
 
 import static java.lang.System.getenv;
@@ -216,17 +217,22 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     }
 
     private void buildDraftOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        // One Draft orders tab to look at, in two renderings: judges get the one with the links to
+        // resume or change their own orders, and court staff the one with the links to review an order.
+        // They are two tabs to CCD, which shows a user the one their roles have, so no one's roles are
+        // looked up as the case loads.
+        List<AccessProfile> judges = List.of(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE,
+            AccessProfile.CIRCUIT_JUDGE, AccessProfile.LEADERSHIP_JUDGE);
         builder.tab("draftOrders", "Draft orders")
-            .forRoles(INTERNAL_TAB_ROLES)
+            .forRoles(judges.toArray(AccessProfile[]::new))
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .label("draftOrdersMarkdownLabel", null, "${draftOrdersMarkdown}")
             .field("draftOrdersMarkdown", NEVER_SHOW);
-        // A tab's roles can read its fields, so the links to review an order have a tab of their own,
-        // for the caseworkers who can, shown while an order is waiting.
-        builder.tab("ordersToReview", "Orders to review")
-            .forRoles(AccessProfile.HEARING_CENTRE_ADMIN)
-            .showCondition(ShowConditions.and(
-                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER), "draftOrdersReviewMarkdown=\"*\""))
+        builder.tab("draftOrdersReview", "Draft orders")
+            .forRoles(Arrays.stream(INTERNAL_TAB_ROLES)
+                .filter(role -> !judges.contains(role))
+                .toArray(AccessProfile[]::new))
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .label("draftOrdersReviewMarkdownLabel", null, "${draftOrdersReviewMarkdown}")
             .field("draftOrdersReviewMarkdown", NEVER_SHOW);
     }

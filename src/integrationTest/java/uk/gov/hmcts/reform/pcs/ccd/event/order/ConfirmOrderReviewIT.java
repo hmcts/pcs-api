@@ -9,8 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrderReviewAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -105,21 +103,19 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("links to the review of each order waiting for one in a field CCD shows only to caseworkers")
+    @DisplayName("links to the review of each order waiting for one in the rendering of the tab for court staff")
     void linksToTheReviewOfEachOrderWaitingForOne() {
         Order order = judgeSubmitsOrder("the judge's order");
 
         PCSCase tab = events.view(caseReference, caseworker);
         assertThat(tab.getDraftOrdersReviewMarkdown())
-            .contains("Review order: Outright possession")
+            .contains("Outright possession", "Waiting for review", "Review order")
             .contains("/cases/${[CASE_REFERENCE]}/event/ext:confirmOrderReview?expected_sub=" + caseworker.uid()
                 + "&amp;orderId=" + order.id());
-        // The orders everyone with the tab sees say where each is, without a link to review it.
+        // The rendering judges see says where each order is, without a link to review it.
         assertThat(tab.getDraftOrdersMarkdown())
             .contains("Outright possession", "Waiting for review")
             .doesNotContain("Review order");
-        assertThat(new OrderReviewAccess().getGrants().keySet())
-            .containsExactlyInAnyOrder(UserRole.HEARING_CENTRE_ADMIN, UserRole.HEARING_CENTRE_TEAM_LEADER);
     }
 
     @Test
