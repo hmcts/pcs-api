@@ -164,8 +164,11 @@ public class NotificationPersonalisationFactory {
         PartyEntity emailRecipient,
         PcsCaseEntity pcsCaseEntity
     ) {
+        String recipientFirstName = emailRecipient.getFirstName() != null
+            ? emailRecipient.getFirstName() : emailRecipient.getOrgName();
+
         return buildPersonalisation(
-            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
+            Objects.toString(recipientFirstName, ""),
             Objects.toString(emailRecipient.getLastName(), ""),
             pcsCaseEntity
         );
