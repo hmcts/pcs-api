@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
@@ -72,7 +73,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
                 .mandatoryWithoutDefaultValue(
                     RemovePartyDetails::getPartyToRemove,
                     CAN_SELECT_PARTY_CONDITION,
-                    "Select an option below")
+                    "Which party are you removing?")
                 .readonly(RemovePartyDetails::getLastPartyMessage, CANNOT_SELECT_PARTY_CONDITION, true)
             .done()
             .complex(PCSCase::getUpdatePartyDetails)
@@ -180,10 +181,20 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         removePartyDetails.setDateOfBirth(partyEntity.getDateOfBirth() != null
             ? partyEntity.getDateOfBirth().format(DATE_FORMATTER)
             : DATE_OF_BIRTH_UNKNOWN);
-        removePartyDetails.setAddress(formatAddress(partyEntity.getAddress()));
+        removePartyDetails.setAddress(formatAddress(addressForRemovePartyDetails(partyEntity)));
         removePartyDetails.setRemoveSelectedParty(null);
 
         return Optional.empty();
+    }
+
+    private AddressEntity addressForRemovePartyDetails(PartyEntity partyEntity) {
+        if (partyEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
+            return Optional.ofNullable(partyEntity.getPcsCase())
+                .map(pcsCase -> pcsCase.getPropertyAddress())
+                .orElse(null);
+        }
+
+        return partyEntity.getAddress();
     }
 
     private boolean hasAnyRemovableParty(long caseReference) {

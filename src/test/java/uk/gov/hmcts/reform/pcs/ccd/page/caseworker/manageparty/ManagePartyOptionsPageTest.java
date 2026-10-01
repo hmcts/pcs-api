@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Field;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
@@ -223,6 +225,18 @@ class ManagePartyOptionsPageTest extends BasePageTest {
     }
 
     @Test
+    void shouldUseRemovePartyQuestionAsEventAndSummaryLabel() {
+        Field<?, ?, ?, ?> partyToRemoveField = event.getFields().getFields().stream()
+            .map(fieldBuilder -> (Field<?, ?, ?, ?>) fieldBuilder.build())
+            .filter(field -> "removeParty_PartyToRemove".equals(field.getId()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("removeParty_PartyToRemove field was not configured"));
+
+        assertThat(partyToRemoveField.getLabel()).isEqualTo("Which party are you removing?");
+        assertThat(partyToRemoveField.getCaseEventFieldLabel()).isEqualTo("Which party are you removing?");
+    }
+
+    @Test
     void shouldShowUnknownValuesWhenRemovePartyDetailsAreMissing() {
         // Given
         UUID partyId = UUID.randomUUID();
@@ -253,6 +267,52 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         assertThat(removePartyDetails.getSelectedPartyLabel()).isEqualTo("Person unknown - Defendant 1");
         assertThat(removePartyDetails.getDateOfBirth()).isEqualTo("Date of birth unknown");
         assertThat(removePartyDetails.getAddress()).isEqualTo("Address unknown");
+    }
+
+    @Test
+    void shouldShowPropertyAddressWhenRemovePartyAddressIsSameAsProperty() {
+        // Given
+        UUID partyId = UUID.randomUUID();
+        AddressEntity propertyAddress = AddressEntity.builder().addressLine1("2 Second Avenue").build();
+
+        PartyEntity partyEntity = PartyEntity.builder()
+            .id(partyId)
+            .addressSameAsProperty(VerticalYesNo.YES)
+            .build();
+        ClaimEntity mainClaim = ClaimEntity.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .claims(List.of(mainClaim))
+            .propertyAddress(propertyAddress)
+            .build();
+        partyEntity.setPcsCase(pcsCaseEntity);
+
+        when(partyService.getPartyEntityById(partyId, TEST_CASE_REFERENCE)).thenReturn(partyEntity);
+        when(partyService.getPartyRole(partyEntity)).thenReturn(PartyRole.DEFENDANT);
+        when(partyService.getPartyName(partyEntity)).thenReturn("Olivia Johnson");
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Defendant 2");
+        AddressUK mappedAddress = AddressUK.builder()
+            .addressLine1("2 Second Avenue")
+            .postTown("London")
+            .postCode("W3 7RX")
+            .build();
+        when(addressMapper.toAddressUK(propertyAddress)).thenReturn(mappedAddress);
+        when(addressFormatter.formatFullAddress(mappedAddress, "\n")).thenReturn("2 Second Avenue\nLondon\nW3 7RX");
+
+        RemovePartyDetails removePartyDetails = RemovePartyDetails.builder()
+            .partyToRemove(buildPartyRadioList(partyId))
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .removePartyDetails(removePartyDetails)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(removePartyDetails.getAddress()).isEqualTo("2 Second Avenue\nLondon\nW3 7RX");
     }
 
     @Test

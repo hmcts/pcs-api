@@ -20,7 +20,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
 public class RemovePartyDetails {
 
     @JsonProperty("removeParty_PartyToRemove")
-    @CCD(label = "Select an option below",
+    @CCD(label = "Which party are you removing?",
         searchable = false,
         typeOverride = DynamicRadioList
     )
