@@ -260,7 +260,7 @@ public class PaymentService {
 
     private Optional<FeePaymentEntity> getFeePaymentEntity(String serviceRequestReference) {
         Optional<FeePaymentEntity> optionalFeePaymentEntity = feePaymentRepository
-            .findByServiceRequestReference(serviceRequestReference);
+            .findByServiceRequestReferenceForUpdate(serviceRequestReference);
 
         if (optionalFeePaymentEntity.isEmpty()) {
             log.error("Unable to find a payment with the service request reference : {}", serviceRequestReference);

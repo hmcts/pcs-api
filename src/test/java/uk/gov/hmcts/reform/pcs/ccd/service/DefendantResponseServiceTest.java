@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -113,6 +114,8 @@ class DefendantResponseServiceTest {
 
     @Captor
     private ArgumentCaptor<DefendantResponseEntity> responseCaptor;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
     private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
         Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
 
@@ -772,28 +775,6 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotSaveDocumentsWhenUploadedDocumentsIsNull() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
-            .thenAnswer(inv -> inv.getArgument(0));
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then
-        verify(documentService, never()).createDefendantUploadedDocuments(any(), any(), any(), any());
-    }
-
-    @Test
     void shouldNotPersistCounterClaimWhenSavingDefendantResponse() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1252,8 +1233,9 @@ class DefendantResponseServiceTest {
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 
-    @Test
-    void shouldCreateTranslateTaskWhenLanguageIsEnglishAndWelsh() {
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    void shouldCreateTranslateTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1270,7 +1252,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .defendantDocuments(uploadedDocs)
-            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
+            .languageUsed(languageUsed)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -1282,14 +1264,60 @@ class DefendantResponseServiceTest {
         when(documentService.createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
             .thenReturn(List.of(activeDocument, removedDocument));
-        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
+        when(translationWAService.isTranslationRequired(languageUsed)).thenReturn(true);
 
         // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, partyEntity, List.of(activeDocument));
+            eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWithGeneratedDefenceDocumentOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                          .url("url1").filename("evidence.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .defendantDocuments(uploadedDocs)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+        when(documentService.createDefendantUploadedDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
+            .thenReturn(List.of(activeDocument));
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
     }
 
     @Test

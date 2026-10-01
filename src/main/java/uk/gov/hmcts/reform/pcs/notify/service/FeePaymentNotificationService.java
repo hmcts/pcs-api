@@ -11,12 +11,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormDocumentGenerator.expectedClaimFormFilename;
+import static uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService.GENERATED_DOC_EXTENSION;
 
 @Slf4j
 @Service
@@ -49,18 +55,29 @@ public class FeePaymentNotificationService {
                     camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
                 }
             }
-            case WELSH, ENGLISH_AND_WELSH -> createTranslationTaskForClaim(
-                pcsCaseEntity.getCaseReference(), claimEntity);
+            case WELSH, ENGLISH_AND_WELSH -> createTranslationTaskForClaim(pcsCaseEntity, claimEntity);
         }
     }
 
-    private void createTranslationTaskForClaim(long caseReference, ClaimEntity claimEntity) {
-        List<DocumentEntity> documents = claimEntity.getPcsCase().getDocuments().stream()
+    private void createTranslationTaskForClaim(PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
+        PartyEntity claimant = pcsCaseEntity.getParties().stream()
+            .filter(PartyEntity::isClaimCreator)
+            .findFirst()
+            .orElseThrow(() -> new PartyNotFoundException(
+                "No claim creator found for case " + pcsCaseEntity.getCaseReference()));
+
+        // The claim form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
+        documents.add(DocumentEntity.builder()
+            .fileName(expectedClaimFormFilename() + GENERATED_DOC_EXTENSION)
+            .build());
+
+        documents.addAll(pcsCaseEntity.getDocuments().stream()
             .filter(document -> !document.isRemoved()
                 && document.getClaim() != null
                 && document.getClaim().getId().equals(claimEntity.getId()))
-            .toList();
+            .toList());
 
-        translationWAService.createTranslateClaimantSubmittedDocumentTask(caseReference, documents);
+        translationWAService.createTranslateClaimantSubmittedDocumentTask(pcsCaseEntity, claimant, documents);
     }
 }
