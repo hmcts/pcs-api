@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
 
 /**
@@ -81,6 +82,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .name("Confirm order review")
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .grant(Permission.CRUD, CASEWORKER_ROLES)
+            // Judges see in the case history when their orders were returned or issued.
+            .grant(Set.of(Permission.R), JUDICIAL_HISTORY_ROLES)
             .onStart(this::start);
     }
 
