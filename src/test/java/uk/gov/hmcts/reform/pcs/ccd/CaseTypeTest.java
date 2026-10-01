@@ -94,7 +94,7 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> serviceRequestTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> draftOrdersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
-        final TabBuilder<PCSCase, AccessProfile> ordersToReviewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> draftOrdersReviewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
@@ -122,7 +122,7 @@ class CaseTypeTest {
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
         when(builder.tab("draftOrders", "Draft orders")).thenReturn(draftOrdersTabBuilder);
-        when(builder.tab("ordersToReview", "Orders to review")).thenReturn(ordersToReviewTabBuilder);
+        when(builder.tab("draftOrdersReview", "Draft orders")).thenReturn(draftOrdersReviewTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
@@ -156,10 +156,15 @@ class CaseTypeTest {
         assertThat(draftOrdersTab.getFields()).extracting(TabField::getId)
             .contains("draftOrdersMarkdown")
             .doesNotContain("draftOrdersReviewMarkdown");
-        // Only the caseworkers who can review an order have the tab with the links to do so.
-        final Tab<PCSCase, AccessProfile> ordersToReviewTab = ordersToReviewTabBuilder.build();
-        assertThat(ordersToReviewTab.getForRolesAsString()).containsExactly("hearing-centre-admin");
-        assertThat(ordersToReviewTab.getFields()).extracting(TabField::getId).contains("draftOrdersReviewMarkdown");
+        // Judges have one rendering of the tab, and court staff the other, with the links to review an order.
+        assertThat(draftOrdersTab.getForRolesAsString())
+            .contains("judge", "fee-paid-judge")
+            .doesNotContain("hearing-centre-admin", "ctsc");
+        final Tab<PCSCase, AccessProfile> draftOrdersReviewTab = draftOrdersReviewTabBuilder.build();
+        assertThat(draftOrdersReviewTab.getForRolesAsString())
+            .contains("hearing-centre-admin", "ctsc")
+            .doesNotContain("judge", "fee-paid-judge");
+        assertThat(draftOrdersReviewTab.getFields()).extracting(TabField::getId).contains("draftOrdersReviewMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
         assertThat(hiddenTab.getFields()).hasSize(4);
@@ -272,7 +277,7 @@ class CaseTypeTest {
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("draftOrders", "Draft orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("ordersToReview", "Orders to review"))
+        when(builder.tab("draftOrdersReview", "Draft orders"))
             .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

@@ -14,14 +14,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * The case's orders as the draft orders tab shows them: each order's type and where it is, with a
  * link for the judge who wrote it to resume their draft, or to change an order a caseworker returned
- * to them. Links to review
- * each order awaiting review, in pcs-frontend's confirm order review journey, go in a field of their
- * own, on a tab CCD shows only to caseworkers, so no one's roles are looked up as the case loads.
+ * to them. The tab is rendered a second time for court staff, with a link to review each order
+ * awaiting review in pcs-frontend's confirm order review journey. CCD shows a user the rendering
+ * their roles have, so no one's roles are looked up as the case loads.
  * A link names the user the tab is shown to, as XUI does when it hands an event over to pcs-frontend,
  * so the event runs as them and not as whoever pcs-frontend last had signed in.
  */
@@ -50,19 +51,8 @@ public class DraftOrdersView {
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<DraftOrderEntity> orders = draftOrderRepository.findByPcsCaseId(pcsCaseEntity.getId());
         UUID viewer = viewer();
-        pcsCase.setDraftOrdersMarkdown(orders.isEmpty() ? "There are no orders on this case." : table(orders, viewer));
-        pcsCase.setDraftOrdersReviewMarkdown(reviewLinks(orders, viewer));
-    }
-
-    /** A link to the review of each order waiting for one, or nothing when none is. */
-    private String reviewLinks(List<DraftOrderEntity> orders, UUID viewer) {
-        String links = orders.stream()
-            .filter(order -> order.getState() == DraftOrderState.SUBMITTED_FOR_REVIEW && viewer != null)
-            .map(order -> "<li>%s</li>".formatted(link("ext:confirmOrderReview",
-                "Review order: " + orderType(order.getOrderType()), order, viewer)))
-            .collect(Collectors.joining());
-        return links.isEmpty() ? null
-            : "<ul class=\"govuk-list\">%s</ul>".formatted(links);
+        pcsCase.setDraftOrdersMarkdown(table(orders, order -> authorAction(order, viewer)));
+        pcsCase.setDraftOrdersReviewMarkdown(table(orders, order -> reviewAction(order, viewer)));
     }
 
     /** The user the tab is shown to; the system user is shown no links. */
@@ -70,11 +60,14 @@ public class DraftOrdersView {
         return securityContextService.isSystemUser() ? null : securityContextService.getCurrentUserId();
     }
 
-    private String table(List<DraftOrderEntity> orders, UUID viewer) {
+    private String table(List<DraftOrderEntity> orders, Function<DraftOrderEntity, String> action) {
+        if (orders.isEmpty()) {
+            return "There are no orders on this case.";
+        }
         String rows = orders.stream()
             // Orders waiting for review first, as the tab is where caseworkers pick one up.
             .sorted(Comparator.comparing(order -> order.getState() != DraftOrderState.SUBMITTED_FOR_REVIEW))
-            .map(order -> row(order, viewer))
+            .map(order -> row(order, action.apply(order)))
             .collect(Collectors.joining());
         return """
             <table class="govuk-table">
@@ -88,16 +81,26 @@ public class DraftOrdersView {
             """.formatted(rows);
     }
 
-    private String row(DraftOrderEntity order, UUID viewer) {
-        // Only the judge who wrote an order can go on with their draft, or change it once it is returned.
-        String action = "";
-        if (order.getAuthorIdamUserId().equals(viewer)) {
-            action = switch (order.getState()) {
-                case DRAFT -> link("ext:makeOrder", "Resume draft", order, viewer);
-                case RETURNED_TO_JUDGE -> link("ext:makeOrder", "Change order", order, viewer);
-                default -> "";
-            };
+    /** Only the judge who wrote an order can go on with their draft, or change it once it is returned. */
+    private String authorAction(DraftOrderEntity order, UUID viewer) {
+        if (!order.getAuthorIdamUserId().equals(viewer)) {
+            return "";
         }
+        return switch (order.getState()) {
+            case DRAFT -> link("ext:makeOrder", "Resume draft", order, viewer);
+            case RETURNED_TO_JUDGE -> link("ext:makeOrder", "Change order", order, viewer);
+            default -> "";
+        };
+    }
+
+    /** Court staff review an order that is waiting for it. */
+    private String reviewAction(DraftOrderEntity order, UUID viewer) {
+        return order.getState() == DraftOrderState.SUBMITTED_FOR_REVIEW && viewer != null
+            ? link("ext:confirmOrderReview", "Review order", order, viewer)
+            : "";
+    }
+
+    private String row(DraftOrderEntity order, String action) {
         return """
             <tr class="govuk-table__row">
             <td class="govuk-table__cell">%s</td>
