@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -43,6 +44,20 @@ public class WritEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo correctNameAndAddress;
 
+    // Land Registry fees
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated (since = "R1.4")
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo haveLandRegistryFeesBeenPaid;
+
+    @Deprecated (since = "R1.4")
+    private BigDecimal amountOfLandRegistryFees;
+
 
     // Direct fields
     @Enumerated(EnumType.STRING)
@@ -51,7 +66,21 @@ public class WritEntity {
 
     private String hceoDetails;
 
+    // LegalCosts
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated (since = "R1.4")
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo areLegalCostsToBeClaimed;
 
+    private BigDecimal amountOfLegalCosts;
+
+    // MoneyOwedByDefendants
+    private BigDecimal amountOwed;
 
     // Direct fields
     @Enumerated(EnumType.STRING)
@@ -64,5 +93,18 @@ public class WritEntity {
     @CreationTimestamp
     @Column(updatable = false, nullable = false)
     private Instant created;
+
+    //Payment fields
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated These fields are retained only for backwards compatibility.
+     */
+    @Deprecated (since = "R1.4")
+    private String repaymentChoice;
+    @Deprecated (since = "R1.4")
+    private BigDecimal amountOfRepaymentCosts;
+    @Deprecated (since = "R1.4")
+    private String repaymentSummaryMarkdown;
 
 }
