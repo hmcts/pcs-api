@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentStatus;
@@ -43,13 +44,16 @@ class GenAppPaymentCallbackHandlerTest {
     private NotificationService notificationService;
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
 
     private GenAppPaymentCallbackHandler underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new GenAppPaymentCallbackHandler(genAppRepository, genAppDocumentGenerator,
-                                                     notificationService, genAppWaTaskService);
+                                                     notificationService, genAppWaTaskService,
+                                                     bulkPrintQueueService);
     }
 
     @Test

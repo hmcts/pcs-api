@@ -37,9 +37,12 @@ public class PackSendRecorder {
     private static final String MDC_FAILURE_REASON = "failureReason";
 
     private final AccessCodeActivityLogService accessCodeActivityLogService;
+    private final BulkPrintQueueService bulkPrintQueueService;
 
-    public PackSendRecorder(AccessCodeActivityLogService accessCodeActivityLogService) {
+    public PackSendRecorder(AccessCodeActivityLogService accessCodeActivityLogService,
+                            BulkPrintQueueService bulkPrintQueueService) {
         this.accessCodeActivityLogService = accessCodeActivityLogService;
+        this.bulkPrintQueueService = bulkPrintQueueService;
     }
 
     public void sendAndRecord(PcsCaseEntity pcsCase, PartyEntity recipient, LetterType letterType,
@@ -56,6 +59,7 @@ public class PackSendRecorder {
                 pcsCase.getCaseReference(), recipient.getId(), letterType.getCode(), letterId,
                 documentSummary(documents));
             documents.forEach(document -> logDocumentSent(pcsCase, recipient, document, letterType, letterId));
+            bulkPrintQueueService.registerSentClaimPack(pcsCase);
         } catch (MissingPostalAddressException e) {
             recordFailure(pcsCase, recipient, letterType, documents, e, true);
         } catch (Exception e) {

@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -100,6 +101,8 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
     @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
+    @Mock
     private ObjectMapper objectMapper;
     @Mock
     private OrganisationService organisationService;
@@ -116,7 +119,8 @@ class SubmitEventHandlerTest {
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper, organisationService
+                                           genAppWaTaskService, objectMapper, organisationService,
+                                           bulkPrintQueueService
         );
     }
 
