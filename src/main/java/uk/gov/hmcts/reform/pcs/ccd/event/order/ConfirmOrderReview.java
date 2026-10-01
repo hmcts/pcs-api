@@ -44,8 +44,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 /**
  * A caseworker reviews an order a judge submitted, through pcs-frontend's confirm order review
  * journey. Starting the event sends them the order they chose and the case; submitting either
- * returns the order to the judge with a query, or records how it is to be issued and adds any review
- * dates to the case. Generating, sealing and serving the issued order are not built yet.
+ * returns the order to the judge with a query, or records the order as the caseworker issues it and
+ * how it is to be issued, and adds any review dates to the case. The caseworker may change the
+ * judge's form and wording; the judge's order is kept as they submitted it. Generating, sealing and
+ * serving the issued order are not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -112,6 +114,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         DraftOrderEntity order = orderAwaitingReview(caseReference, request);
         OrderReviewEntity.OrderReviewEntityBuilder review = OrderReviewEntity.builder()
             .draftOrder(order)
+            .reviewedVersion(order.getVersion())
             .reviewerIdamUserId(UUID.fromString(submit.user().id()));
 
         if (request.action() == RETURN_TO_JUDGE) {
@@ -126,6 +129,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         validateIssue(issue, partyIds(order));
         order.setState(DraftOrderState.ISSUED);
         review.outcome(DraftOrderState.ISSUED)
+            .orderType(issue.order().orderType())
+            .formData(issue.order().formData())
+            .docweaveSnapshot(issue.order().docweaveSnapshot())
             .nextStepsComplete(issue.nextStepsComplete())
             .finalOrder(issue.finalOrder())
             .serveAllParties(issue.serveAllParties())
@@ -173,6 +179,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private static void validateIssue(Issue issue, Set<String> partyIds) {
         if (issue == null) {
             throw ExternalRejection.because("Answer how the order is to be issued");
+        }
+        if (issue.order() == null || issue.order().orderType() == null || issue.order().formData() == null) {
+            throw ExternalRejection.because("Send the order as it is to be issued");
         }
         List<String> errors = new ArrayList<>();
         if (issue.reviewDates().size() > MAX_REVIEW_DATES) {
