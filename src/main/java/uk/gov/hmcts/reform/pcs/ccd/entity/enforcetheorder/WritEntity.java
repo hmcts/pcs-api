@@ -50,7 +50,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
@@ -60,7 +60,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     private BigDecimal amountOfLandRegistryFees;
 
 
@@ -77,7 +77,7 @@ public class WritEntity {
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo areLegalCostsToBeClaimed;
@@ -105,21 +105,21 @@ public class WritEntity {
      *
      * @deprecated These fields are retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     private String repaymentChoice;
     /**
      * Not needed in R1.4
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     private BigDecimal amountOfRepaymentCosts;
     /**
      * Not needed in R1.4
      *
      * @deprecated This field is retained only for backwards compatibility.
      */
-    @Deprecated(since = "R1.4")
+    @Deprecated
     private String repaymentSummaryMarkdown;
 
 }
