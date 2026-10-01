@@ -221,6 +221,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
             .label("draftOrdersMarkdownLabel", null, "${draftOrdersMarkdown}")
             .field("draftOrdersMarkdown", NEVER_SHOW);
+        // A tab's roles can read its fields, so the links to review an order have a tab of their own,
+        // for the caseworkers who can, shown while an order is waiting.
+        builder.tab("ordersToReview", "Orders to review")
+            .forRoles(AccessProfile.HEARING_CENTRE_ADMIN)
+            .showCondition(ShowConditions.and(
+                ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER), "draftOrdersReviewMarkdown=\"*\""))
+            .label("draftOrdersReviewMarkdownLabel", null, "${draftOrdersReviewMarkdown}")
+            .field("draftOrdersReviewMarkdown", NEVER_SHOW);
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

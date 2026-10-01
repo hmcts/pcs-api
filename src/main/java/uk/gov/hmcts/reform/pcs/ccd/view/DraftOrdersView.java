@@ -3,30 +3,26 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
-
 /**
- * The case's orders as the draft orders tab shows them: each order's type and where it is, with a link
- * for a caseworker to review each order awaiting review in pcs-frontend's confirm order review journey,
- * and for the judge who wrote it to change an order a caseworker returned to them. Anyone else sees
- * where each order is, without a link.
- * The link names the user the tab is shown to, as XUI does when it hands an event over to pcs-frontend,
- * so the review is made by them and not by whoever pcs-frontend last had signed in.
+ * The case's orders as the draft orders tab shows them: each order's type and where it is, with a
+ * link for the judge who wrote it to change an order a caseworker returned to them. Links to review
+ * each order awaiting review, in pcs-frontend's confirm order review journey, go in a field of their
+ * own, on a tab CCD shows only to caseworkers, so no one's roles are looked up as the case loads.
+ * A link names the user the tab is shown to, as XUI does when it hands an event over to pcs-frontend,
+ * so the event runs as them and not as whoever pcs-frontend last had signed in.
  */
 @Component
 public class DraftOrdersView {
@@ -39,30 +35,41 @@ public class DraftOrdersView {
     );
 
     private final DraftOrderRepository draftOrderRepository;
-    private final UserRoleService userRoleService;
+    private final SecurityContextService securityContextService;
     private final String frontendUrl;
 
     public DraftOrdersView(DraftOrderRepository draftOrderRepository,
-                           UserRoleService userRoleService,
+                           SecurityContextService securityContextService,
                            @Value("${frontend.url}") String frontendUrl) {
         this.draftOrderRepository = draftOrderRepository;
-        this.userRoleService = userRoleService;
+        this.securityContextService = securityContextService;
         this.frontendUrl = frontendUrl;
     }
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         List<DraftOrderEntity> orders = draftOrderRepository.findByPcsCaseId(pcsCaseEntity.getId());
-        pcsCase.setDraftOrdersMarkdown(orders.isEmpty()
-            ? "There are no orders on this case."
-            : table(orders, userRoleService.getCurrentUserOrganisationalRoles()));
+        UUID viewer = viewer();
+        pcsCase.setDraftOrdersMarkdown(orders.isEmpty() ? "There are no orders on this case." : table(orders, viewer));
+        pcsCase.setDraftOrdersReviewMarkdown(reviewLinks(orders, viewer));
     }
 
-    /** Whether the tab is shown to a caseworker, who are the users the confirm order review event is granted to. */
-    private static boolean mayReview(UserRoles viewer) {
-        return Stream.of(CASEWORKER_ROLES).map(UserRole::getRole).anyMatch(viewer.roles()::contains);
+    /** A link to the review of each order waiting for one, or nothing when none is. */
+    private String reviewLinks(List<DraftOrderEntity> orders, UUID viewer) {
+        String links = orders.stream()
+            .filter(order -> order.getState() == DraftOrderState.SUBMITTED_FOR_REVIEW && viewer != null)
+            .map(order -> "<li>%s</li>".formatted(link("ext:confirmOrderReview",
+                "Review order: " + orderType(order.getOrderType()), order, viewer)))
+            .collect(Collectors.joining());
+        return links.isEmpty() ? null
+            : "<ul class=\"govuk-list\">%s</ul>".formatted(links);
     }
 
-    private String table(List<DraftOrderEntity> orders, UserRoles viewer) {
+    /** The user the tab is shown to; the system user is shown no links. */
+    private UUID viewer() {
+        return securityContextService.isSystemUser() ? null : securityContextService.getCurrentUserId();
+    }
+
+    private String table(List<DraftOrderEntity> orders, UUID viewer) {
         String rows = orders.stream()
             // Orders waiting for review first, as the tab is where caseworkers pick one up.
             .sorted(Comparator.comparing(order -> order.getState() != DraftOrderState.SUBMITTED_FOR_REVIEW))
@@ -80,15 +87,12 @@ public class DraftOrdersView {
             """.formatted(rows);
     }
 
-    private String row(DraftOrderEntity order, UserRoles viewer) {
-        String action = "";
-        if (order.getState() == DraftOrderState.SUBMITTED_FOR_REVIEW && mayReview(viewer)) {
-            action = link("ext:confirmOrderReview", "Review order", order, viewer);
-        } else if (order.getState() == DraftOrderState.RETURNED_TO_JUDGE
-            && order.getAuthorIdamUserId().equals(viewer.userId())) {
-            // Only the judge who wrote a returned order can change it.
-            action = link("ext:makeOrder", "Change order", order, viewer);
-        }
+    private String row(DraftOrderEntity order, UUID viewer) {
+        // Only the judge who wrote a returned order can change it.
+        String action = order.getState() == DraftOrderState.RETURNED_TO_JUDGE
+            && order.getAuthorIdamUserId().equals(viewer)
+            ? link("ext:makeOrder", "Change order", order, viewer)
+            : "";
         return """
             <tr class="govuk-table__row">
             <td class="govuk-table__cell">%s</td>
@@ -101,10 +105,9 @@ public class DraftOrdersView {
      * A link to one of pcs-frontend's order events for this order. Its event handover signs the viewer
      * in if it has someone else signed in, then starts the event on the order.
      */
-    private String link(String event, String text, DraftOrderEntity order, UserRoles viewer) {
+    private String link(String event, String text, DraftOrderEntity order, UUID viewer) {
         return ("<a class=\"govuk-link\" href=\"%s/cases/${[CASE_REFERENCE]}/event/%s"
-            + "?expected_sub=%s&amp;orderId=%s\">%s</a>")
-            .formatted(frontendUrl, event, viewer.userId(), order.getId(), text);
+            + "?expected_sub=%s&amp;orderId=%s\">%s</a>").formatted(frontendUrl, event, viewer, order.getId(), text);
     }
 
     /** The order type as the frontend named it, such as OUTRIGHT_POSSESSION, in words. */
