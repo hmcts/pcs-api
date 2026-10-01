@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -90,6 +91,8 @@ class GenAppServiceTest {
     private DocumentRepository documentRepository;
     @Mock
     private ClaimActivityLogService claimActivityLogService;
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
     @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
@@ -113,7 +116,7 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
-                                      documentRepository, claimActivityLogService, utcClock
+                                      documentRepository, claimActivityLogService, documentIdExtractor, utcClock
         );
     }
 
@@ -361,6 +364,8 @@ class GenAppServiceTest {
                 .url("test url")
                 .binaryUrl("test binary url")
                 .build();
+            UUID documentId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            when(documentIdExtractor.extractDocumentId("test url")).thenReturn(documentId);
 
             UUID applicantPartyId = UUID.randomUUID();
             when(applicantParty.getId()).thenReturn(applicantPartyId);
@@ -402,6 +407,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
             assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("test url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
             assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
@@ -1005,6 +1011,8 @@ class GenAppServiceTest {
                 .url("test url")
                 .binaryUrl("test binary url")
                 .build();
+            UUID documentId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            when(documentIdExtractor.extractDocumentId("test url")).thenReturn(documentId);
 
             // When
             underTest.createGenAppEntity(
@@ -1019,6 +1027,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityCaptor.getValue();
             assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("test url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
             assertThat(documentEntity.getType()).isEqualTo(DocumentType.GENERAL_APPLICATION);
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
@@ -1061,6 +1070,8 @@ class GenAppServiceTest {
                                                          eq(mainClaim), eq(applicantPartyId)
             ))
                 .thenReturn(renamedFilename);
+            UUID documentId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            when(documentIdExtractor.extractDocumentId("evidence url")).thenReturn(documentId);
 
             List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
             when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
@@ -1084,6 +1095,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
             assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
             assertThat(documentEntity.getType()).isNull();
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
