@@ -14,9 +14,12 @@ import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseFlagEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 
@@ -135,6 +138,128 @@ class FlagRefDataCodeConstraintIT extends AbstractPostgresContainerIT {
             .setParameter("ref", caseReference)
             .getSingleResult();
         assertThat(rowsForCase).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("stores the other descriptions a reviewer adds to a requested support flag")
+    void storesOtherDescriptionsAddedWhileReviewingSupport() {
+        long caseReference = 1781000000009366L;
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(caseReference);
+
+        PartyEntity partyEntity = new PartyEntity();
+        partyEntity.setFirstName("Defendant");
+        partyEntity.setLastName("Two");
+        caseEntity.addParty(partyEntity);
+
+        CasePartyFlagEntity requestedFlag = new CasePartyFlagEntity();
+        requestedFlag.setFlagRefData(flagRefDataRepository.saveAndFlush(flagRefData("RA0034", "In person hearing")));
+        requestedFlag.setVisibility(FlagVisibility.EXTERNAL.getValue());
+        requestedFlag.setDefaultStatus("Requested");
+        requestedFlag.setFlagComment("Original support comment");
+        requestedFlag.setPaths(":Party");
+        requestedFlag.setDateTimeCreated(FLAG_CREATED);
+        requestedFlag.setParentEntity(null, partyEntity);
+        partyEntity.getDefendantFlags().add(requestedFlag);
+
+        pcsCaseRepository.saveAndFlush(caseEntity);
+        UUID partyId = partyEntity.getId();
+        UUID requestedFlagId = requestedFlag.getId();
+
+        // The reviewer approves the request and adds a translation, which carries the other descriptions.
+        pcsCaseService.patchReviewedSupportFlags(caseReference, List.of(
+            ListValue.<PartySupport>builder()
+                .id(partyId.toString())
+                .value(PartySupport.builder()
+                           .supportFlags(Flags.builder()
+                                             .visibility(FlagVisibility.INTERNAL)
+                                             .groupId(partyId)
+                                             .details(List.of(ListValue.<FlagDetail>builder()
+                                                 .id(requestedFlagId.toString())
+                                                 .value(FlagDetail.builder()
+                                                     .flagCode("RA0034")
+                                                     .name("In person hearing")
+                                                     .status("Active")
+                                                     .flagComment("Reviewed support comment")
+                                                     .flagCommentCy("Sylw cymorth wedi ei adolygu")
+                                                     .otherDescription("Hearing room on the ground floor")
+                                                     .otherDescriptionCy("Ystafell wrandawiad ar y llawr gwaelod")
+                                                     .flagUpdateComment("Approved")
+                                                     .build())
+                                                 .build()))
+                                             .build())
+                           .build())
+                .build()));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        List<CasePartyFlagEntity> reloadedFlags = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow().getParties().iterator().next().getDefendantFlags();
+        assertThat(reloadedFlags).hasSize(1);
+
+        CasePartyFlagEntity reloadedFlag = reloadedFlags.getFirst();
+        assertThat(reloadedFlag.getId()).isEqualTo(requestedFlagId);
+        assertThat(reloadedFlag.getOtherDescription()).isEqualTo("Hearing room on the ground floor");
+        assertThat(reloadedFlag.getOtherDescriptionWelsh()).isEqualTo("Ystafell wrandawiad ar y llawr gwaelod");
+        assertThat(reloadedFlag.getFlagComment()).isEqualTo("Reviewed support comment");
+        assertThat(reloadedFlag.getFlagCommentWelsh()).isEqualTo("Sylw cymorth wedi ei adolygu");
+        assertThat(reloadedFlag.getDefaultStatus()).isEqualTo("Active");
+        assertThat(reloadedFlag.getVisibility()).isEqualTo(FlagVisibility.EXTERNAL.getValue());
+        assertThat(reloadedFlag.getDateTimeCreated()).isEqualTo(FLAG_CREATED);
+    }
+
+    @Test
+    @DisplayName("stores the other descriptions a caseworker adds through manage case flags")
+    void storesOtherDescriptionsAddedWhileManagingCaseFlags() {
+        long caseReference = 1781000000009367L;
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(caseReference);
+
+        CaseFlagEntity storedFlag = new CaseFlagEntity();
+        storedFlag.setFlagRefData(flagRefDataRepository.saveAndFlush(flagRefData("CF0004", "Gender recognition")));
+        storedFlag.setVisibility(FlagVisibility.INTERNAL.getValue());
+        storedFlag.setDefaultStatus("Active");
+        storedFlag.setPaths(":Case");
+        storedFlag.setDateTimeCreated(FLAG_CREATED);
+        storedFlag.setParentEntity(caseEntity, null);
+        caseEntity.getCaseFlags().add(storedFlag);
+
+        pcsCaseRepository.saveAndFlush(caseEntity);
+        UUID storedFlagId = storedFlag.getId();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .caseFlags(Flags.builder()
+                           .visibility(FlagVisibility.INTERNAL)
+                           .details(List.of(ListValue.<FlagDetail>builder()
+                               .id(storedFlagId.toString())
+                               .value(FlagDetail.builder()
+                                   .flagCode("CF0004")
+                                   .name("Gender recognition")
+                                   .status("Active")
+                                   .flagComment("Managed comment")
+                                   .flagCommentCy("Sylw wedi ei reoli")
+                                   .otherDescription("Preferred title and pronouns")
+                                   .otherDescriptionCy("Teitl a rhagenwau dewisol")
+                                   .hearingRelevant(YesOrNo.YES)
+                                   .availableExternally(YesOrNo.NO)
+                                   .build())
+                               .build()))
+                           .build())
+            .build();
+
+        pcsCaseService.patchCaseFlags(caseReference, pcsCase);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        CaseFlagEntity reloadedFlag = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow().getCaseFlags().getFirst();
+        assertThat(reloadedFlag.getId()).isEqualTo(storedFlagId);
+        assertThat(reloadedFlag.getOtherDescription()).isEqualTo("Preferred title and pronouns");
+        assertThat(reloadedFlag.getOtherDescriptionWelsh()).isEqualTo("Teitl a rhagenwau dewisol");
+        assertThat(reloadedFlag.getFlagComment()).isEqualTo("Managed comment");
+        assertThat(reloadedFlag.getFlagCommentWelsh()).isEqualTo("Sylw wedi ei reoli");
     }
 
     private FlagRefDataEntity flagRefData(String flagCode, String flagName) {
