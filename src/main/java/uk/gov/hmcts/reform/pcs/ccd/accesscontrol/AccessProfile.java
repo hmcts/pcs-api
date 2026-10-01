@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 import static java.util.Arrays.stream;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.CRU;
 import static uk.gov.hmcts.ccd.sdk.api.Permission.R;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.ACCOMMODATION_ORG_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.CHARITY_ORG_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.DUTY_ADVISOR_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.LOCAL_AUTHORITY_CLAIMANT_ACCESS;
@@ -38,7 +39,8 @@ public enum AccessProfile implements HasRole {
              REAL_ESTATE_ORG_CLAIMANT_ACCESS,
              PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS,
              NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS,
-             CHARITY_ORG_CLAIMANT_ACCESS),
+             CHARITY_ORG_CLAIMANT_ACCESS,
+             ACCOMMODATION_ORG_CLAIMANT_ACCESS),
     GA_CLAIMANT_SOLICITOR("claimant-solicitor", CRU, SOLICITOR_ORG_CLAIMANT_ACCESS),
     GA_DEFENDANT_SOLICITOR("defendant-solicitor", CRU, SOLICITOR_ORG_DEFENDANT_ACCESS),
     DUTY_ADVISOR_REQUEST("duty-advisor-request", Set.of(R), DUTY_ADVISOR_ACCESS),

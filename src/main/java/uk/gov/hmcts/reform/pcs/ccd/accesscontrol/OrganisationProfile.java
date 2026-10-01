@@ -11,7 +11,8 @@ public enum OrganisationProfile {
     OTHER_REALT_PROFILE,
     OTHER_PROP_PROFILE,
     OTHER_NFP_PROFILE,
-    OTHER_CHARITY_PROFILE;
+    OTHER_CHARITY_PROFILE,
+    OTHER_ACCOM_PROFILE;
 
     public String getId() {
         return name();

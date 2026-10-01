@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,12 @@ class GroupAccessTypeTest {
             .forEach(accessType -> assertThat(GroupAccessType.caseAccessGroupIdFor(
                 accessType.getOrganisationProfileId(), accessType.getPartyRole(), "$ORGID$"))
                 .contains(accessType.getCaseAccessGroupIdTemplate()));
+    }
+
+    @Test
+    void shouldResolveTheClaimantGroupForAccommodationOrganisations() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_ACCOM_PROFILE", PartyRole.CLAIMANT, "1234"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:1234");
     }
 
     @Test

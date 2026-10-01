@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.LOCALAUTH_PROFILE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_ACCOM_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_CHARITY_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_NFP_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_PROP_PROFILE;
@@ -42,6 +43,10 @@ public enum GroupAccessType implements CCDAccessGroup {
     CHARITY_ORG_CLAIMANT_ACCESS(
         OTHER_CHARITY_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
         "Grants claimant access on all cases associated with this organisation", 5
+    ),
+    ACCOMMODATION_ORG_CLAIMANT_ACCESS(
+        OTHER_ACCOM_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
+        "Grants claimant access on all cases associated with this organisation", 9
     ),
     SOLICITOR_ORG_CLAIMANT_ACCESS(
         SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
