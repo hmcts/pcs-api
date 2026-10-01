@@ -3,7 +3,7 @@ export const confirmIfTheseDocumentsRelateToAnApplication = {
   weUsuallyParagraph: `We usually share anything you upload with the other parties, for example a tenant, landlord, housing association, or mortgage lender.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,
   doTheseDocumentsQuestion: `Do these documents relate to an existing application?`,
-  relatedToAdjournRadioOptionHidden: `Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: an application to adjourn the hearing - submitted on`,
+  relatedToAdjournRadioOptionHidden: `Yes, the documents I’m uploading relate to General app (GA1) - Defendant 1: the application to adjourn the hearing - submitted on`,
   relatedToSetAsideRadioOptionHidden: `Yes, the documents I’m uploading relate to an application to set aside the order - submitted on`,
   relatedToApplicationRadioOptionHidden: `Yes, the documents I’m uploading relate to an application submitted on `,
   relatedToGAAdjournHidden : `Yes, the documents I’m uploading relate to General app (GA2) - Defendant 1: the application to adjourn the hearing - submitted on`,
