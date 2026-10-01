@@ -35,6 +35,7 @@ export class ActionCMRegistry {
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateDefendantDetails', new CaseManagementAction()],
@@ -84,12 +85,17 @@ export class ActionCMRegistry {
     ['errorValidationCancelHearing', new ErrorValidationAction()],
     ['errorValidationUploadGenAppsFile', new ErrorValidationAction()],
     ['errorValidationEnterAddAHearingPage', new ErrorValidationAction()],
+    ['errorValidationCourtPermissionPage', new ErrorValidationAction()],
+    ['errorValidationTypeOfCounterClaimPage', new ErrorValidationAction()],
     ['inputErrorValidation', new CaseManagementAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['getAddressInfo', new CaseManagementAction()],
     ['selectParty', new CaseManagementAction()],
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
+    ['validateCaseNotesDetails', new CaseManagementAction()],
+    ['addCourtPermissionDetails', new CaseManagementAction()],
+    ['selectCounterClaimType', new CaseManagementAction()],
 
   ]);
 
