@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 
 /**
@@ -81,6 +82,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
                 UserRole.FEE_PAID_JUDGE,
                 UserRole.CIRCUIT_JUDGE,
                 UserRole.LEADERSHIP_JUDGE)
+            // Caseworkers review the orders judges submit, so they see them in the case history.
+            .grant(Set.of(Permission.R), CASEWORKER_ROLES)
             .onStart(this::start);
     }
 
