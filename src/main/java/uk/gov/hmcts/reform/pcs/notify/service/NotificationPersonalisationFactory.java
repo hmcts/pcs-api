@@ -30,8 +30,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -57,23 +56,23 @@ public class NotificationPersonalisationFactory {
     @Value("${manage_case.url}")
     private String manageCaseUrl;
 
-    public DefendantBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
+    public ClaimBasePersonalisation forDefendant(DefendantResponseEntity defendantResponse) {
         PartyEntity defendant = defendantResponse.getParty();
 
-        return DefendantBasePersonalisation.builder()
+        return ClaimBasePersonalisation.builder()
             .base(buildPersonalisation(defendant, defendantResponse.getPcsCase()))
-            .nextStepUrl(frontendUrl + "/claims")
+            .nextStepUrl(release14Enabled() ? frontendUrl + "/claims" : "")
             .build();
     }
 
-    public MakeAClaimBasePersonalisation forClaimant(ClaimEntity claim) {
+    public ClaimBasePersonalisation forClaimant(ClaimEntity claim) {
         String nextStepUrl = manageCaseTabUrl(claim.getPcsCase().getCaseReference().toString(), "Case%20Parties");
 
-        return MakeAClaimBasePersonalisation.builder()
+        return ClaimBasePersonalisation.builder()
             .base(buildPersonalisation(
                     partyService.getPrimaryClaimantPartyEntity(claim.getPcsCase()),
                     claim.getPcsCase()))
-            .nextStepUrl(nextStepUrl)
+            .nextStepUrl(release14Enabled() ? nextStepUrl : "")
             .build();
     }
 
@@ -99,7 +98,7 @@ public class NotificationPersonalisationFactory {
             .caseName(release14Enabled() ? getFormattedDraftCaseName(pcsCase, toLineClaimantName) : "")
             .claimantName(claimantNameUpper)
             .primaryDefendantName(primaryDefendantName)
-            .nextStepUrl(nextStepUrl)
+            .nextStepUrl(release14Enabled() ? nextStepUrl : "")
             .build();
     }
 

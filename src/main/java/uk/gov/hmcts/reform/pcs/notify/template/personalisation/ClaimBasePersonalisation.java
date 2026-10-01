@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Builder
-public class DefendantBasePersonalisation implements TemplatePersonalisation {
+public class ClaimBasePersonalisation implements TemplatePersonalisation {
     private final BasePersonalisation base;
     private final String nextStepUrl;
 

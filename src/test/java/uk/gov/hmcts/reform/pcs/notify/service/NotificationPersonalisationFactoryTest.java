@@ -32,8 +32,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPayme
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -88,7 +87,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty();
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            DefendantBasePersonalisation result = factory.forDefendant(response);
+            ClaimBasePersonalisation result = factory.forDefendant(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -112,7 +111,7 @@ class NotificationPersonalisationFactoryTest {
             claimantParty.setLastName(null);
             claimantParty.setOrgName("Claimant Corp");
 
-            DefendantBasePersonalisation result = factory.forDefendant(response);
+            ClaimBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("claimantName", "CLAIMANT CORP");
         }
@@ -127,7 +126,7 @@ class NotificationPersonalisationFactoryTest {
             defendantParty.setOrgName("Defendant Corp");
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            DefendantBasePersonalisation result = factory.forDefendant(response);
+            ClaimBasePersonalisation result = factory.forDefendant(response);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -142,7 +141,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            DefendantBasePersonalisation result = factory.forDefendant(response);
+            ClaimBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
@@ -155,7 +154,7 @@ class NotificationPersonalisationFactoryTest {
             defendantParty.setNameKnown(null);
             DefendantResponseEntity response = createDefendantResponse(claimantParty, defendantParty);
 
-            DefendantBasePersonalisation result = factory.forDefendant(response);
+            ClaimBasePersonalisation result = factory.forDefendant(response);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }
@@ -170,7 +169,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity claimantParty = stubClaimantParty();
             ClaimEntity claim = createClaim(claimantParty);
 
-            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
+            ClaimBasePersonalisation result = factory.forClaimant(claim);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -192,7 +191,7 @@ class NotificationPersonalisationFactoryTest {
             claimantParty.setOrgName("Claimant Corp");
             ClaimEntity claim = createClaim(claimantParty);
 
-            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
+            ClaimBasePersonalisation result = factory.forClaimant(claim);
 
             Map<String, Object> map = result.toMap();
             assertThat(map)
@@ -207,7 +206,7 @@ class NotificationPersonalisationFactoryTest {
             PartyEntity defendantParty = stubDefendantParty(VerticalYesNo.NO);
             ClaimEntity claim = createClaim(claimantParty, defendantParty);
 
-            MakeAClaimBasePersonalisation result = factory.forClaimant(claim);
+            ClaimBasePersonalisation result = factory.forClaimant(claim);
 
             assertThat(result.toMap()).containsEntry("primaryDefendantName", "PERSONS UNKNOWN");
         }

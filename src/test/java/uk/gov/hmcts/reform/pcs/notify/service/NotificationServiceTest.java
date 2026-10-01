@@ -58,8 +58,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.MakeAClaimBasePersonalisation;
-import uk.gov.hmcts.reform.pcs.notify.template.personalisation.DefendantBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
@@ -509,7 +508,7 @@ class NotificationServiceTest {
             defendantResponse.setClaim(claim);
 
             lenient().when(notificationPersonalisationFactory.forDefendant(any()))
-                .thenReturn(DefendantBasePersonalisation.builder()
+                .thenReturn(ClaimBasePersonalisation.builder()
                     .base(BasePersonalisation.builder()
                               .firstName("John")
                               .lastName("Doe")
@@ -545,7 +544,7 @@ class NotificationServiceTest {
                     .paymentReferenceNumber("PAY-123")
                     .build());
             lenient().when(notificationPersonalisationFactory.forClaimant(any(ClaimEntity.class)))
-                .thenReturn(MakeAClaimBasePersonalisation.builder()
+                .thenReturn(ClaimBasePersonalisation.builder()
                     .base(BasePersonalisation.builder()
                               .firstName("Jane")
                               .lastName("Smith")
