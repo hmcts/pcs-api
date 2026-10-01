@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +101,14 @@ public class CounterClaimEntity {
     private VerticalYesNo appliedForHwf;
 
     private String hwfReferenceNumber;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo courtPermissionGranted;
+
+    private LocalDate permissionOrderDate;
+
+    private LocalDate claimReceivedDate;
 
     @Enumerated(EnumType.STRING)
     private CounterClaimState status;
