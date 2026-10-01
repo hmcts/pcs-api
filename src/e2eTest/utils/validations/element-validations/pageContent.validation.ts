@@ -182,6 +182,9 @@ export class PageContentValidation implements IValidation {
       else if(page.url().includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
       }
+      else if(page.url().includes("claimantMakeAnApplication")){
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
+      }
       else if(page.url().includes("legalRepDocumentUpload")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative/urlToFileMappingLegalRep.ts');
       }
@@ -249,6 +252,8 @@ export class PageContentValidation implements IValidation {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma', `${fileName}.page.data.ts`);
     } else if (page.url().includes("makeAnApplication")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma', `${fileName}.page.data.ts`);
+    }else if (page.url().includes("claimantMakeAnApplication")) {
+        filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma', `${fileName}.page.data.ts`);
     } else if (page.url().includes("legalRepDocumentUpload")) {
       filePath = path.join(__dirname, '../../../data/page-data-figma/page-data-legalRepresentative', `${fileName}.page.data.ts`);
     }
@@ -397,6 +402,8 @@ export class PageContentValidation implements IValidation {
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       } else if(url.includes("makeAnApplication")){
         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-figma/urlToFileMappingGenApps.ts');
+      } else if(url.includes("claimantMakeAnApplication")) {
+        mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-genApps-claimant-figma/urlToFileMappingGenAppsClaimant.ts');
       } else if (
         ["amendDocuments", "changeCaseState", "addCaseReviewDate", "enterGenApp", "caseworkerUploadDocuments", "manageHearing", "manageParties"].some(str =>
           url.includes(str)
