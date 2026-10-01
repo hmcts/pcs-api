@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 
 /**
  * The case's orders as the draft orders tab shows them: each order's type and where it is, with a
- * link for the judge who wrote it to change an order a caseworker returned to them. Links to review
+ * link for the judge who wrote it to resume their draft, or to change an order a caseworker returned
+ * to them. Links to review
  * each order awaiting review, in pcs-frontend's confirm order review journey, go in a field of their
  * own, on a tab CCD shows only to caseworkers, so no one's roles are looked up as the case loads.
  * A link names the user the tab is shown to, as XUI does when it hands an event over to pcs-frontend,
@@ -88,11 +89,15 @@ public class DraftOrdersView {
     }
 
     private String row(DraftOrderEntity order, UUID viewer) {
-        // Only the judge who wrote a returned order can change it.
-        String action = order.getState() == DraftOrderState.RETURNED_TO_JUDGE
-            && order.getAuthorIdamUserId().equals(viewer)
-            ? link("ext:makeOrder", "Change order", order, viewer)
-            : "";
+        // Only the judge who wrote an order can go on with their draft, or change it once it is returned.
+        String action = "";
+        if (order.getAuthorIdamUserId().equals(viewer)) {
+            action = switch (order.getState()) {
+                case DRAFT -> link("ext:makeOrder", "Resume draft", order, viewer);
+                case RETURNED_TO_JUDGE -> link("ext:makeOrder", "Change order", order, viewer);
+                default -> "";
+            };
+        }
         return """
             <tr class="govuk-table__row">
             <td class="govuk-table__cell">%s</td>

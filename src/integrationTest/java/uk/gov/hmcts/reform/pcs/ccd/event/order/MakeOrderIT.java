@@ -61,17 +61,19 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     @Autowired
     private IssuedCases cases;
 
+    private long caseReference;
     private Actor firstJudge;
+    private Actor secondJudge;
     private ExternalEvent<OrderStart, MakeOrderRequest> asFirstJudge;
     private ExternalEvent<OrderStart, MakeOrderRequest> asSecondJudge;
 
     @BeforeEach
     void setUp() {
-        long caseReference = cases.issue();
+        caseReference = cases.issue();
         firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
         asFirstJudge = events.external(caseReference, MAKE_ORDER).as(firstJudge);
-        asSecondJudge = events.external(caseReference, MAKE_ORDER)
-            .as(events.registerActor("Second", "Judge", "caseworker-pcs"));
+        secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
+        asSecondJudge = events.external(caseReference, MAKE_ORDER).as(secondJudge);
     }
 
     @Test
@@ -187,6 +189,23 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
         assertThat(saved.formData()).containsEntry("notes", "second version");
         assertThat(saved.docweaveSnapshot()).isEqualTo(document);
+    }
+
+    @Test
+    @DisplayName("links the judge who wrote a draft, and no one else, to resume it from the draft orders tab")
+    void linksTheJudgeToResumeTheirDraft() {
+        asFirstJudge.submitExpectingSuccess(startDraft("first version"));
+        Order draft = asFirstJudge.start().order();
+
+        assertThat(events.view(caseReference, firstJudge).getDraftOrdersMarkdown())
+            .contains("Draft", "Resume draft")
+            .contains("/cases/${[CASE_REFERENCE]}/event/ext:makeOrder?expected_sub=" + firstJudge.uid()
+                + "&amp;orderId=" + draft.id());
+        assertThat(events.view(caseReference, secondJudge).getDraftOrdersMarkdown())
+            .contains("Draft")
+            .doesNotContain("Resume draft");
+        assertThat(asFirstJudge.withClientContext(Map.of("orderId", draft.id().toString())).start().order().formData())
+            .containsEntry("notes", "first version");
     }
 
     @Test
