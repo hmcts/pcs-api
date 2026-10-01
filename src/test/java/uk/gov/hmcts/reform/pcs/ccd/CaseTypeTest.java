@@ -121,8 +121,8 @@ class CaseTypeTest {
         when(builder.tab("hidden", "HiddenFields")).thenReturn(hiddenTabBuilder);
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
-        when(builder.tab("draftOrders", "Draft orders")).thenReturn(draftOrdersTabBuilder);
-        when(builder.tab("draftOrdersReview", "Draft orders")).thenReturn(draftOrdersReviewTabBuilder);
+        when(builder.tab("draftOrders", "Orders")).thenReturn(draftOrdersTabBuilder);
+        when(builder.tab("draftOrdersReview", "Orders")).thenReturn(draftOrdersReviewTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
@@ -276,8 +276,8 @@ class CaseTypeTest {
         when(builder.tab("hidden", "HiddenFields")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("draftOrders", "Draft orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.tab("draftOrdersReview", "Draft orders"))
+        when(builder.tab("draftOrders", "Orders")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("draftOrdersReview", "Orders"))
             .thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));

@@ -10,7 +10,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORK
 
 /**
  * Read access for the caseworkers the confirm order review event is granted to. The court staff
- * rendering of the draft orders tab, which the field is on, lets the rest of the court staff read it too.
+ * rendering of the orders tab, which the field is on, lets the rest of the court staff read it too.
  */
 public class OrderReviewAccess implements HasAccessControl {
 

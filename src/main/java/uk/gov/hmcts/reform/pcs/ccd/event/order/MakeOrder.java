@@ -43,7 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
  * their working order and the facts of the case; each submission saves or submits for review their
  * draft. A judge has one working draft per case, and a change is made from the version they last
  * saw; a change with no id starts their draft. An order a caseworker returned to the judge is theirs
- * to change again: they choose it on the case's draft orders tab, see the caseworker's query, and
+ * to change again: they choose it on the case's orders tab, see the caseworker's query, and
  * submit it for review again.
  */
 @Component
@@ -100,7 +100,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /**
-     * The order the judge chose on the case's draft orders tab, which the frontend names in the
+     * The order the judge chose on the case's orders tab, which the frontend names in the
      * Client-Context header: one a caseworker returned to them, with the query it came back with.
      */
     private OrderStart.Order chosenOrder(UUID orderId, long caseReference, UUID judge) {
