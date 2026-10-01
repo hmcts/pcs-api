@@ -140,7 +140,11 @@ public class CounterClaimFormPayloadBuilder {
         if (StringUtils.hasText(party.getOrgName())) {
             return party.getOrgName();
         }
-        return PartyDisplayMapper.joinName(party.getFirstName(), party.getLastName());
+        String fullName = PartyDisplayMapper.joinName(party.getFirstName(), party.getLastName());
+        if (StringUtils.hasText(fullName)) {
+            return fullName;
+        }
+        return "Persons unknown";
     }
 
     private static List<uk.gov.hmcts.reform.pcs.ccd.domain.Party> toDomainParties(List<PartyEntity> parties) {

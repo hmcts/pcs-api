@@ -213,6 +213,16 @@
     <cve>CVE-2026-47841</cve>
     <cve>CVE-2026-47842</cve>
   </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[ HDPI-8832: Temporary suppression for CVE-2026-41707 pending Artifactory mirror update. ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
+    <cve>CVE-2026-41707</cve>
+  </suppress>
+  <suppress until="2026-10-15">
+    <notes><![CDATA[ HDPI-8832: Temporary suppression for CVE-2026-41710 pending Artifactory mirror update. ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.retry/spring-retry@.*$</packageUrl>
+    <cve>CVE-2026-41710</cve>
+  </suppress>
   <suppress until="2026-10-05">
     <notes><![CDATA[
     HDPI-8772: temporary. CVE-2026-47834 against spring-data-jpa 3.5.13; no fixed 3.5.x

@@ -403,7 +403,9 @@ ext['netty.version'] = nettyVersion
 ext['httpcore5.version'] = httpCore5Version
 ext['tomcat.version'] = tomcatEmbedVersion
 ext['jackson-bom.version'] = jacksonVersion
+ext['spring-security.version'] = springSecurityVersion
 ext['mockito.version'] = mockitoVersion
+
 
 dependencies {
   constraints {
