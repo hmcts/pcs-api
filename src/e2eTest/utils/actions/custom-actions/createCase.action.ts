@@ -750,7 +750,14 @@ export class CreateCaseAction implements IAction {
       question: documentsData.question,
       option: documentsData.option
     });
-    await performAction('clickButton', uploadAdditionalDocuments.continueButton);
+    const nextPageHeader = documentsData.option === wantToUploadDocuments.yesRadioOption
+      ? uploadAdditionalDocuments.mainHeader
+      : generalApplication.mainHeader;
+    await performAction(
+      'clickButtonAndVerifyPageNavigation',
+      uploadAdditionalDocuments.continueButton,
+      nextPageHeader
+    );
   }
 
   private async uploadAdditionalDocs(documentsData: actionRecord) {
