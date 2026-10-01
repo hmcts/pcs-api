@@ -214,23 +214,10 @@
     <cve>CVE-2026-47842</cve>
   </suppress>
   <suppress until="2026-10-15">
-    <notes><![CDATA[
-    HDPI-8832: temporary. CVE-2026-41707 against spring-security 6.5.11; the OSS fix (6.5.12)
-    is not yet available in the HMCTS Artifactory mirror. The vulnerability is a DPoP proof
-    replay attack via cache eviction in DPoPProofJwtDecoderFactory. PCS does not use DPoP
-    (all authentication uses standard Bearer JWT via spring-security-oauth2-jose with IDAM);
-    DPoPProofJwtDecoderFactory is never instantiated. Remove once 6.5.12 is in Artifactory.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-.*@6\.5\..*$</packageUrl>
     <cve>CVE-2026-41707</cve>
   </suppress>
   <suppress until="2026-10-15">
-    <notes><![CDATA[
-    HDPI-8832: temporary. CVE-2026-41710 against spring-retry 2.0.12; the OSS fix (2.0.13)
-    is not yet available in the HMCTS Artifactory mirror. The vulnerability is a DoS via
-    stateful retry cache exhaustion. PCS does not use @Retryable(stateful=true); all retry
-    annotations in the codebase (if any) are stateless. Remove once 2.0.13 is in Artifactory.
-    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.retry/spring-retry@.*$</packageUrl>
     <cve>CVE-2026-41710</cve>
   </suppress>
