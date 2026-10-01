@@ -12,7 +12,7 @@ export const uploadAdditionalDocumentsInformation = {
   emailsOrLettersList: `emails or letters from the claimant (the defendant’s landlord, housing association, or mortgage lender)`,
   youCanUploadFollowingParagraph: `You can upload the following file types:`,
   docWordList: `DOC/DOCX(Word)`,
-  xlsExcelList: `XLS/XLSM(Excel)`,
+  xlsExcelList: `XLS/XLSX(Excel)`,
   pptPowerPointList: `PPT/PPTX(PowerPoint)`,
   pdfList: `PDF`,
   rtfList: `RTF`,
