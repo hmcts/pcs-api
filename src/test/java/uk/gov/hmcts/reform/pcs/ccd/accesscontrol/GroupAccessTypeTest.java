@@ -37,4 +37,10 @@ class GroupAccessTypeTest {
     void shouldReturnEmptyWhenOrganisationProfileIdIsNull() {
         assertThat(GroupAccessType.caseAccessGroupIdFor(null, null, "ORG123")).isEmpty();
     }
+
+    @Test
+    void shouldBuildCaseAccessGroupIdTemplateInJurisdictionCaseTypeAccessTypeRoleOrgidFormat() {
+        assertThat(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS.getCaseAccessGroupIdTemplate())
+            .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$");
+    }
 }
