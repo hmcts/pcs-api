@@ -736,9 +736,18 @@ export const submitCaseApiData = {
           firstName: 'Peter',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
       {
         value: {
@@ -746,9 +755,18 @@ export const submitCaseApiData = {
           firstName: 'Jen',
           lastName: 'Parker',
           addressKnown: 'YES',
-          addressSameAsPossession: 'YES'
+          addressSameAsPossession: 'YES',
+          correspondenceAddress: {
+            AddressLine1: null,
+            AddressLine2: null,
+            AddressLine3: null,
+            PostTown: null,
+            County: null,
+            Country: null,
+            PostCode: null
+          }
         },
-        id: null
+        id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
     ],
     tenancy_TypeOfTenancyLicence: 'ASSURED_TENANCY',
@@ -775,12 +793,13 @@ export const submitCaseApiData = {
     noticeServed: 'Yes',
     notice_ServiceMethod: 'FIRST_CLASS_POST',
     notice_PostedDate: '2015-12-01',
+    notice_AbleToUploadDocument: 'Yes',    
     notice_Documents: [
       {
-        id: '2fbd79a1-19dc-46fb-9baf-83534187f37f',
+        id: '83193877-14e5-4955-b589-c80fbe0edb53',
         value: {
-          document_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac`,
-          document_binary_url: `${process.env.DM_STORE}/documents/f42251d3-70ac-4a60-914d-c1af51f0a5ac/binary`,
+          document_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e`,
+          document_binary_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e/binary`,
           document_filename: 'NoticeDetails.pdf',
         }
       }
@@ -1130,7 +1149,7 @@ export const submitCaseApiData = {
         id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
       }
     ],
-    applicationWithClaim: 'YES',
+    applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW',
     endButtonLabel: 'Submit claim',
