@@ -13,12 +13,20 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
+import uk.gov.hmcts.reform.pcs.ccd.task.FeePaymentPaidNotificationTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.Optional;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -66,14 +74,59 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
-            log.info("Payment confirmed for case {} - issuing case and scheduling claim-form and "
-                     + "access-code letter generation", caseReference);
+            log.info("Payment confirmed for case {} - issuing case and scheduling claim-form, "
+                     + "access-code letter generation and claim-issued notification", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
             claimFormScheduler.scheduleClaimFormGeneration(caseReference);
             // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
             scheduleAccessCodeFormGeneration(caseReference);
+            scheduleClaimIssuedNotification(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
+    }
+
+    private void scheduleClaimIssuedNotification(long caseReference) {
+        Optional<Integer> feePaymentId = findClaimIssueFeePaymentId(caseReference);
+        if (feePaymentId.isEmpty()) {
+            log.warn(
+                "No CLAIM fee payment found for case {}; skipping claim-issued email scheduling",
+                caseReference
+            );
+            return;
+        }
+
+        String taskId = UUID.randomUUID().toString();
+        log.info(
+            "Scheduling fee payment paid notification for: {}, with task id: {}",
+            feePaymentId.get(),
+            taskId
+        );
+
+        schedulerClient.scheduleIfNotExists(
+            FeePaymentPaidNotificationTaskComponent.FEE_PAYMENT_PAID_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(FeePaymentStatusChangeTaskData.builder()
+                          .feePaymentId(feePaymentId.get())
+                          .build())
+                .scheduledTo(Instant.now())
+        );
+    }
+
+    private Optional<Integer> findClaimIssueFeePaymentId(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        if (pcsCaseEntity.getClaims() == null || pcsCaseEntity.getClaims().isEmpty()) {
+            return Optional.empty();
+        }
+
+        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
+        if (claimEntity.getFeePayments() == null || claimEntity.getFeePayments().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return claimEntity.getFeePayments().stream()
+            .filter(feePayment -> feePayment.getPaymentCallbackHandlerType() == PaymentCallbackHandlerType.CLAIM)
+            .max(Comparator.comparing(FeePaymentEntity::getId, Comparator.nullsLast(Integer::compareTo)))
+            .map(FeePaymentEntity::getId);
     }
 
     // One task per defendant (instance = caseRef:partyId), so each defendant generates and retries
