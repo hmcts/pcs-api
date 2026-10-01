@@ -5,11 +5,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -84,19 +86,22 @@ public class DefendantResponseReadMapper {
 
         Optional<CounterClaimEntity> counterClaim = pcsCase.getCounterClaims().stream()
             .filter(cc -> cc.getParty() != null && partyId.equals(cc.getParty().getId()))
+            .filter(cc -> cc.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED)
             .findFirst();
-        
+
         if (counterClaim.isEmpty()) {
             return null;
         }
-        
+
         UUID counterClaimId = counterClaim.get().getId();
         if (pcsCase.getDocuments() == null) {
             return null;
         }
-        
+
         return pcsCase.getDocuments().stream()
-            .filter(doc -> doc.getCounterClaim() != null 
+            .filter(doc -> !doc.isRemoved())
+            .filter(doc -> doc.getType() == DocumentType.COUNTERCLAIM)
+            .filter(doc -> doc.getCounterClaim() != null
                 && counterClaimId.equals(doc.getCounterClaim().getId()))
             .findFirst()
             .map(document -> document.getId().toString())

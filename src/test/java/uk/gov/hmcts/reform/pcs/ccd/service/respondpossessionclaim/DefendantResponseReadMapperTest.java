@@ -1,8 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -96,18 +98,12 @@ class DefendantResponseReadMapperTest {
         UUID documentId = UUID.randomUUID();
 
         PartyEntity party = partyWithId(partyId);
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .id(counterClaimId)
-            .party(party)
-            .build();
-        DocumentEntity linkedDocument = DocumentEntity.builder()
-            .id(documentId)
-            .counterClaim(counterClaim)
-            .build();
-        DocumentEntity unrelatedDocument = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
-            .build();
+        CounterClaimEntity counterClaim = issuedCounterClaim(counterClaimId, party);
+        DocumentEntity linkedDocument = counterclaimForm(documentId, counterClaim);
+        DocumentEntity unrelatedDocument = counterclaimForm(
+            UUID.randomUUID(),
+            issuedCounterClaim(UUID.randomUUID(), partyWithId(UUID.randomUUID()))
+        );
         DocumentEntity documentWithoutCounterclaim = DocumentEntity.builder()
             .id(UUID.randomUUID())
             .build();
@@ -134,26 +130,14 @@ class DefendantResponseReadMapperTest {
         PartyEntity currentParty = partyWithId(currentPartyId);
         PartyEntity otherParty = partyWithId(otherPartyId);
 
-        CounterClaimEntity otherCounterClaim = CounterClaimEntity.builder()
-            .id(otherCounterClaimId)
-            .party(otherParty)
-            .build();
-        CounterClaimEntity currentCounterClaim = CounterClaimEntity.builder()
-            .id(currentCounterClaimId)
-            .party(currentParty)
-            .build();
+        CounterClaimEntity otherCounterClaim = issuedCounterClaim(otherCounterClaimId, otherParty);
+        CounterClaimEntity currentCounterClaim = issuedCounterClaim(currentCounterClaimId, currentParty);
 
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
             .counterClaims(List.of(otherCounterClaim, currentCounterClaim))
             .documents(List.of(
-                DocumentEntity.builder()
-                    .id(UUID.randomUUID())
-                    .counterClaim(otherCounterClaim)
-                    .build(),
-                DocumentEntity.builder()
-                    .id(currentDocumentId)
-                    .counterClaim(currentCounterClaim)
-                    .build()
+                counterclaimForm(UUID.randomUUID(), otherCounterClaim),
+                counterclaimForm(currentDocumentId, currentCounterClaim)
             ))
             .build();
 
@@ -208,10 +192,7 @@ class DefendantResponseReadMapperTest {
     void shouldNotMapCounterclaimDocumentIdWhenDocumentsListIsNull() {
         UUID partyId = UUID.randomUUID();
         PartyEntity party = partyWithId(partyId);
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .party(party)
-            .build();
+        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
             .counterClaims(List.of(counterClaim))
             .documents(null)
@@ -227,10 +208,7 @@ class DefendantResponseReadMapperTest {
     void shouldNotMapCounterclaimDocumentIdWhenNoDocumentIsLinkedToCounterclaim() {
         UUID partyId = UUID.randomUUID();
         PartyEntity party = partyWithId(partyId);
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .party(party)
-            .build();
+        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
         PcsCaseEntity pcsCase = PcsCaseEntity.builder()
             .counterClaims(List.of(counterClaim))
             .documents(List.of(
@@ -240,6 +218,75 @@ class DefendantResponseReadMapperTest {
                     .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
                     .build()
             ))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldMapCounterclaimFormDocumentWhenSupportingDocumentsAreAlsoLinked() {
+        UUID partyId = UUID.randomUUID();
+        UUID formDocumentId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(
+                DocumentEntity.builder()
+                    .id(UUID.randomUUID())
+                    .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                    .counterClaim(counterClaim)
+                    .build(),
+                counterclaimForm(formDocumentId, counterClaim)
+            ))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isEqualTo(formDocumentId.toString());
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenCounterclaimIsNotIssued() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(UUID.randomUUID())
+            .party(party)
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(counterclaimForm(UUID.randomUUID(), counterClaim)))
+            .build();
+
+        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenFormDocumentIsRemoved() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
+        DocumentEntity removedForm = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .counterClaim(counterClaim)
+            .removed(true)
+            .build();
+
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(removedForm))
             .build();
 
         PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
@@ -549,6 +596,22 @@ class DefendantResponseReadMapperTest {
         return DefendantResponseEntity.builder()
             .party(party)
             .pcsCase(pcsCase)
+            .build();
+    }
+
+    private static CounterClaimEntity issuedCounterClaim(UUID counterClaimId, PartyEntity party) {
+        return CounterClaimEntity.builder()
+            .id(counterClaimId)
+            .party(party)
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .build();
+    }
+
+    private static DocumentEntity counterclaimForm(UUID documentId, CounterClaimEntity counterClaim) {
+        return DocumentEntity.builder()
+            .id(documentId)
+            .type(DocumentType.COUNTERCLAIM)
+            .counterClaim(counterClaim)
             .build();
     }
 }
