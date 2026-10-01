@@ -2,8 +2,7 @@ package uk.gov.hmcts.reform.pcs.noc;
 
 import static java.util.Optional.of;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.valueOf;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
@@ -73,7 +72,6 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     static final String ORG_ALREADY_REPRESENTS_PARTY_CODE = "organisationAlreadyRepresents";
     static final String ORG_NOT_FOUND_CODE = "organisationNotFound";
     static final String ORG_NOT_FOUND_MESSAGE = "No organisation was found for the current user.";
-
     static final String INVALID_ORG_TYPE_CODE = "invalidOrganisationType";
     static final String INVALID_ORG_TYPE_MESSAGE =
         "Only a Solicitor Organisation can become a legal representative for a party in a case";
@@ -271,7 +269,7 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
 
     private Optional<NocAnswersResponse> checkConflictOfInterest(PcsCaseEntity caseEntity,
                                                                  OrganisationDetailsResponse orgDetails) {
-        if (!SOLICITOR_PROFILE.equals(valueOf(orgDetails.getOrgProfileId()))) {
+        if (!SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId().equals(orgDetails.getOrgProfileId())) {
             return of(NocAnswersResponse.invalid(INVALID_ORG_TYPE_CODE, INVALID_ORG_TYPE_MESSAGE));
         }
         PartyEntity claimant = caseEntity.getParties().stream()

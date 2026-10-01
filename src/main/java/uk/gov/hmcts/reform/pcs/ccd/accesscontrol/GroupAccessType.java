@@ -1,11 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.LOCALAUTH_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_CHARITY_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_NFP_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_PROP_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.OTHER_REALT_PROFILE;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile.SOLICITOR_PROFILE;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
@@ -23,57 +17,64 @@ import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 @Getter
 public enum GroupAccessType implements CCDAccessGroup {
 
-    LOCAL_AUTHORITY_CLAIMANT_ACCESS(
-        LOCALAUTH_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        1, false, false, true, true
-    ),
-    REAL_ESTATE_ORG_CLAIMANT_ACCESS(
-        OTHER_REALT_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        2, false, false, true, true
-    ),
-    PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS(
-        OTHER_PROP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        3, false, false, true, true
-    ),
-    NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS(
-        OTHER_NFP_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        4, false, false, true, true
-    ),
-    CHARITY_ORG_CLAIMANT_ACCESS(
-        OTHER_CHARITY_PROFILE, CLAIMANT, "prof-org-claimant-access", "claimant",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        5, false, false, true, true
-    ),
+    LOCAL_AUTHORITY_CLAIMANT_ACCESS("LOCALAUTH_PROFILE", Claimant.DESC, Claimant.HINT, 1),
+    REAL_ESTATE_ORG_CLAIMANT_ACCESS("OTHER_REALT_PROFILE", Claimant.DESC, Claimant.HINT, 2),
+    PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS("OTHER_PROP_PROFILE", Claimant.DESC, Claimant.HINT, 3),
+    NOT_FOR_PROFIT_ORG_CLAIMANT_ACCESS("OTHER_NFP_PROFILE", Claimant.DESC, Claimant.HINT, 4),
+    CHARITY_ORG_CLAIMANT_ACCESS("OTHER_CHARITY_PROFILE", Claimant.DESC, Claimant.HINT, 5),
+    ACCOMMODATION_FOOD_ORG_CLAIMANT_ACCESS("OTHER_ACCOM_PROFILE", Claimant.DESC, Claimant.HINT, 6),
+    ACCOUNTANCY_BANKING_FINANCE_ORG_CLAIMANT_ACCESS("OTHER_ACCOUNT_PROFILE", Claimant.DESC, Claimant.HINT, 7),
+    ADMIN_SUPPORT_ORG_CLAIMANT_ACCESS("OTHER_ADMIN_PROFILE", Claimant.DESC, Claimant.HINT, 8),
+    BUSINESS_CONSULTING_MANAGEMENT_ORG_CLAIMANT_ACCESS("OTHER_BUSI_PROFILE", Claimant.DESC, Claimant.HINT, 9),
+    CREATIVE_ARTS_DESIGN_ORG_CLAIMANT_ACCESS("OTHER_CREATI_PROFILE", Claimant.DESC, Claimant.HINT, 10),
+    EDUCATION_ORG_CLAIMANT_ACCESS("OTHER_EDU_PROFILE", Claimant.DESC, Claimant.HINT, 11),
+    ENERGY_UTILITIES_ORG_CLAIMANT_ACCESS("OTHER_ENERGY_PROFILE", Claimant.DESC, Claimant.HINT, 12),
+    ENGINEERING_MANUFACTURING_ORG_CLAIMANT_ACCESS("OTHER_ENGG_PROFILE", Claimant.DESC, Claimant.HINT, 13),
+    ENVIRONMENT_AGRICULTURE_ORG_CLAIMANT_ACCESS("OTHER_ENV_PROFILE", Claimant.DESC, Claimant.HINT, 14),
+    FINANCIAL_SERVICES_ORG_CLAIMANT_ACCESS("OTHER_FIN_PROFILE", Claimant.DESC, Claimant.HINT, 15),
+    HEALTHCARE_ORG_CLAIMANT_ACCESS("OTHER_HEALTH_PROFILE", Claimant.DESC, Claimant.HINT, 16),
+    HOSPITALITY_EVENTS_ORG_CLAIMANT_ACCESS("OTHER_HOSP_PROFILE", Claimant.DESC, Claimant.HINT, 17),
+    IT_COMMUNICATIONS_ORG_CLAIMANT_ACCESS("OTHER_ITCOMM_PROFILE", Claimant.DESC, Claimant.HINT, 18),
+    LAW_ENFORCEMENT_SECURITY_ORG_CLAIMANT_ACCESS("OTHER_LAW_PROFILE", Claimant.DESC, Claimant.HINT, 19),
+    LEISURE_SPORT_TOURISM_ORG_CLAIMANT_ACCESS("OTHER_LEISURE_PROFILE", Claimant.DESC, Claimant.HINT, 20),
+    MARKETING_ADVERTISING_PR_ORG_CLAIMANT_ACCESS("OTHER_MARK_PROFILE", Claimant.DESC, Claimant.HINT, 21),
+    MEDIA_INTERNET_ORG_CLAIMANT_ACCESS("OTHER_MEDIA_PROFILE", Claimant.DESC, Claimant.HINT, 22),
+    MINING_QUARRYING_ORG_CLAIMANT_ACCESS("OTHER_MINING_PROFILE", Claimant.DESC, Claimant.HINT, 23),
+    PUBLIC_SECTOR_DEFENCE_ORG_CLAIMANT_ACCESS("OTHER_PUBDEF_PROFILE", Claimant.DESC, Claimant.HINT, 24),
+    PUBLIC_SERVICES_ADMINISTRATION_ORG_CLAIMANT_ACCESS("OTHER_PUBADM_PROFILE", Claimant.DESC, Claimant.HINT, 25),
+    RECRUITMENT_HR_ORG_CLAIMANT_ACCESS("OTHER_REC_PROFILE", Claimant.DESC, Claimant.HINT, 26),
+    RETAIL_WHOLESALE_ORG_CLAIMANT_ACCESS("OTHER_RETAIL_PROFILE", Claimant.DESC, Claimant.HINT, 27),
+    SALES_ORG_CLAIMANT_ACCESS("OTHER_SALES_PROFILE", Claimant.DESC, Claimant.HINT, 28),
+    SCIENCE_PHARMACEUTICALS_ORG_CLAIMANT_ACCESS("OTHER_SCIENCE_PROFILE", Claimant.DESC, Claimant.HINT, 29),
+    SOCIAL_CARE_ORG_CLAIMANT_ACCESS("OTHER_SOCIAL_PROFILE", Claimant.DESC, Claimant.HINT, 30),
+    TRANSPORT_LOGISTICS_ORG_CLAIMANT_ACCESS("OTHER_TRANSP_PROFILE", Claimant.DESC, Claimant.HINT, 31),
+
     SOLICITOR_ORG_CLAIMANT_ACCESS(
-        SOLICITOR_PROFILE, CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
-        Text.CLAIMANT_ACCESS, Text.CLAIMANT_ACCESS_HINT,
-        6, false, false, true, true
+        "SOLICITOR_PROFILE", CLAIMANT, "solicitor-org-claimant-access", "claimant-solicitor",
+        Claimant.DESC, Claimant.HINT, 32, false, false, true, true
     ),
     SOLICITOR_ORG_DEFENDANT_ACCESS(
-        SOLICITOR_PROFILE, DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
+        "SOLICITOR_PROFILE", DEFENDANT, "solicitor-org-defendant-access", "defendant-solicitor",
         "Defendant access",
         "Grants users access to all possession cases in which this organisation is the defendant or acts "
             + "for the defendant",
-        7, false, false, true, true
+        33, false, false, true, true
     ),
+
     DUTY_ADVISOR_ACCESS(
-        SOLICITOR_PROFILE, null, "duty-advisor-access", "duty-advisor-request",
+        "SOLICITOR_PROFILE", null, "duty-advisor-access", "duty-advisor-request",
         "In court duty advisor access",
         "Where the organisation is the provider of the Housing Loss Prevention Advice Service (HLPAS) "
-            + "In Court Duty Scheme, this grants users temporary access to possession cases.", 8,
-        false, false, false, true
+            + "In Court Duty Scheme, this grants users temporary access to possession cases.",
+        34, false, false, false, true
     );
 
     private static final String ORG_IDENTIFIER_TEMPLATE = "$ORGID$";
 
     /** Holder so the enum constants above can use these without an illegal forward reference. */
-    private static final class Text {
-        static final String CLAIMANT_ACCESS = "Claimant access";
-        static final String CLAIMANT_ACCESS_HINT =
+    private static final class Claimant {
+        static final String DESC = "Claimant access";
+        static final String HINT =
             "Grants users access to all possession cases in which this organisation is the claimant or acts "
                 + "for the claimant";
     }
@@ -93,11 +94,11 @@ public enum GroupAccessType implements CCDAccessGroup {
 
     private final String caseAssignedRoleField;
 
-    GroupAccessType(OrganisationProfile orgProfileId, PartyRole partyRole, String accessTypeId,
+    GroupAccessType(String orgProfileId, PartyRole partyRole, String accessTypeId,
                     String caseAssignedRoleField, String description, String hintText, int displayOrder,
                     boolean accessMandatory, boolean accessDefault, boolean display, boolean groupAccessEnabled) {
         this.partyRole = partyRole;
-        this.organisationProfileId = orgProfileId.getId();
+        this.organisationProfileId = orgProfileId;
         this.accessTypeId = accessTypeId;
         this.accessMandatory = accessMandatory;
         this.accessDefault = accessDefault;
@@ -107,6 +108,11 @@ public enum GroupAccessType implements CCDAccessGroup {
         this.displayOrder = displayOrder;
         this.groupAccessEnabled = groupAccessEnabled;
         this.caseAssignedRoleField = caseAssignedRoleField;
+    }
+
+    GroupAccessType(String orgProfileId, String description, String hintText, int displayOrder) {
+        this(orgProfileId, CLAIMANT, "prof-org-claimant-access", "claimant", description, hintText, displayOrder,
+            false, false, true, true);
     }
 
     private record Key(String organisationProfileId, PartyRole partyRole) { }

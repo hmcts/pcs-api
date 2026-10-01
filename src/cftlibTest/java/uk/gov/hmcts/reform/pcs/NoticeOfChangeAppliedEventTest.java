@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.client.RestClient;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationProfile;
 import uk.gov.hmcts.reform.pcs.ccd.model.NocAccessChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.NocAccessChangeTaskComponent;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -178,7 +178,7 @@ class NoticeOfChangeAppliedEventTest extends CftlibTest {
         return OrganisationDetailsResponse.builder()
             .name("Test Organisation")
             .organisationIdentifier(ORGANISATION_ID)
-            .organisationProfileIds(List.of(OrganisationProfile.SOLICITOR_PROFILE.getId()))
+            .organisationProfileIds(List.of(SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId()))
             .contactInformation(List.of(OrganisationDetailsResponse.ContactInformation.builder()
                 .addressLine1("1 Test Street")
                 .townCity("London")
