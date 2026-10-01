@@ -37,12 +37,19 @@ public class CaseReviewDateService {
     public void addCaseReviewDates(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         List<ListValue<ReviewDate>> reviewDates = pcsCase.getReviewDates();
-        String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescription(caseReference);
+        if (reviewDates == null) {
+            return;
+        }
+
         for (ListValue<ReviewDate> listValue : reviewDates) {
             ReviewDate reviewDate = listValue.getValue();
             CaseReviewDateEntity caseReviewDateEntity = createCaseReviewDateEntity(reviewDate);
             pcsCaseEntity.addCaseReviewDate(caseReviewDateEntity);
 
+            String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescription(
+                caseReference,
+                caseReviewDateEntity.getReviewDateNumber()
+            );
             Instant waTaskCreationDate = reviewDate.getDate().atStartOfDay().atZone(UK_ZONE_ID).toInstant();
             camundaService.createTask(
                 caseReference,
