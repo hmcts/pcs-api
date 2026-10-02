@@ -407,6 +407,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+
     }
 
     @Test
@@ -468,7 +469,7 @@ class LegalRepresentativeSummaryServiceTest {
         // then
         assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.NO);
         assertThat(pcsCase.getLegalRepUpdatedDetails()).isEqualTo(YesOrNo.YES);
-        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown().isEmpty());
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
     @Test
@@ -498,7 +499,7 @@ class LegalRepresentativeSummaryServiceTest {
         // then
         assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getLegalRepUpdatedDetails()).isEqualTo(YesOrNo.YES);
-        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown().isEmpty());
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
     }
 
     @Test
