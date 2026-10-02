@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -27,10 +29,14 @@ public class ApplicationDetails implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
+    private final FeatureToggleService featureToggleService;
+
     public ApplicationDetails(@Qualifier("ukClock") Clock ukClock,
-                                     TextAreaValidationService textAreaValidationService) {
+                              TextAreaValidationService textAreaValidationService,
+                              FeatureToggleService featureToggleService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
+        this.featureToggleService = featureToggleService;
     }
 
     @Override
@@ -62,9 +68,21 @@ public class ApplicationDetails implements CcdPageConfiguration {
                 .build();
         }
 
+        if (isSuspendApplication(caseData) && !featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errorMessageOverride("Suspend applications are not available")
+                .build();
+        }
+
         List<String> validationErrors = validateSomethingElseDetails(caseData);
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private boolean isSuspendApplication(PCSCase caseData) {
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
+        return enterGenAppRequest != null
+            && enterGenAppRequest.getApplicationTypeOption() == EnterGenAppType.SUSPEND;
     }
 
     private List<String> validateSomethingElseDetails(PCSCase caseData) {

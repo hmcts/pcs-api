@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -35,13 +37,16 @@ class ApplicationDetailsTest extends BasePageTest {
     @Mock
     private Clock ukClock;
 
+    @Mock
+    private FeatureToggleService featureToggleService;
+
     @BeforeEach
     void setUp() {
         when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new ApplicationDetails(ukClock, textAreaValidationService));
+        setPageUnderTest(new ApplicationDetails(ukClock, textAreaValidationService, featureToggleService));
     }
 
     @ParameterizedTest
@@ -74,6 +79,42 @@ class ApplicationDetailsTest extends BasePageTest {
             arguments(FIXED_CURRENT_DATE.minusDays(1), true),
             arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );
+    }
+
+    @Test
+    void shouldAcceptSuspendApplicationWhenRelease1bIsEnabled() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SUSPEND)
+                .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
+                .build())
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    @Test
+    void shouldRejectSuspendApplicationWhenRelease1bIsDisabled() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enterGenAppRequest(EnterGenAppRequest.builder()
+                .applicationTypeOption(EnterGenAppType.SUSPEND)
+                .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
+                .build())
+            .build();
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isEqualTo("Suspend applications are not available");
     }
 
     @Test

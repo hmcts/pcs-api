@@ -56,6 +56,7 @@ public class ShowConditions {
         return switch (featureFlag) {
             case RELEASE_1_DOT_2 -> "release1dot2Enabled";
             case RELEASE_1_DOT_3 -> "release1dot3Enabled";
+            case RELEASE_1B -> "release1bEnabled";
             case CASEWORKER_EVENTS -> "caseWorkerEventsEnabled";
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";
             case CUI_RESPOND_TO_CLAIM_LR -> "cuiRespondToClaimLrEnabled";
