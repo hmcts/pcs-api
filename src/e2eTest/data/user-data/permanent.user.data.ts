@@ -1,11 +1,11 @@
 export const user = {
-  claimantSolicitor:  { 
+  claimantSolicitor:  {
     email: 'pcs-solicitor-user01@test.com',
    password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
   defendantSolicitor:  {
-    email: 'pcs-org1-solicitor2@test.com', 
+    email: 'pcs-org1-solicitor2@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD,
     orgName: `Possession Claim Service Org1`
   },
@@ -29,19 +29,19 @@ export const user = {
     email: 'pcs-hearing-centre-wales1@hmcts.net',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
-  claimantSolicitorForGATest:  { 
-    email: 'pcs.solicitor.orguser3@test.com', 
+  claimantSolicitorForGATest:  {
+    email: 'pcs.solicitor.orguser3@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
 
-  claimantSolicitor1ForGATest:  { 
+  claimantSolicitor1ForGATest:  {
     email: 'pcs.solicitor.orguser4@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
-  }, 
+  },
   claimantSolicitorOrg2ForGATest:  {
-    email: 'pcs.solicitor.org2user3@test.com', 
+    email: 'pcs.solicitor.org2user3@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD,
     uid: process.env.PCS_SOLICITOR_AUTOMATION_UID
   },
@@ -54,7 +54,7 @@ export const user = {
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   localAuthorityOrg2Usr1:  {
-    email: 'pcs.local.authuser3@test.com',  
+    email: 'pcs.local.authuser3@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   otherRealEstateActivitiesOrg1Usr1: {
@@ -89,8 +89,9 @@ export const user = {
     email: 'pcs.other.charity.orguser3@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
-  otherCharityAndVoluntaryWorkOrg1Usr2: {
-    email: 'pcs.other.charity.orguser4@test.com',
+  judicialJudgeUser: {
+    email: 'chieficcjudge.nichols@ejudiciary.net',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
+
 };
