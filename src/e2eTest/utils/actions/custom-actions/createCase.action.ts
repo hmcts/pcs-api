@@ -67,7 +67,7 @@ import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatU
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
-import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
@@ -153,7 +153,7 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
-      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
 
@@ -167,7 +167,7 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
-  
+
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);
@@ -397,11 +397,6 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        // await performAction('clickRadioButton', {
-        //   question: nameQuestion,
-        //   option: nameOption,
-        //   index,
-        // });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
@@ -1631,7 +1626,7 @@ export class CreateCaseAction implements IAction {
     const file =
       caseFile.caseWorkerUpload ??
       caseFile.caseWorkerAmend ??
-      caseFile.genApp;    
+      caseFile.genApp;
 
     switch (folderName) {
       case 'Property documents':
@@ -1714,9 +1709,9 @@ export class CreateCaseAction implements IAction {
     }
 
     if (!caseFile.allowEmptyFolder && fileCount === 0) {
-      await expect(async () => {        
+      await expect(async () => {
         await performAction('clickTab', home.caseSummary);
-        await performAction('clickTab', home.caseFileView);        
+        await performAction('clickTab', home.caseFileView);
         await this.checkFolderCount(page);
         const text = await folder.innerText();
         fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
@@ -1726,7 +1721,7 @@ export class CreateCaseAction implements IAction {
       });
     }
 
-    if (fileCount === 0) {      
+    if (fileCount === 0) {
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
