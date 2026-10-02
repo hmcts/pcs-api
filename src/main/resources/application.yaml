@@ -59,11 +59,11 @@ spring:
     properties:
       charSet: UTF-8
     hikari:
-      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:0}
-      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:15}
-      idleTimeout: 30000
+      minimumIdle: ${PCS_DB_POOL_MIN_IDLE:2}
+      maximumPoolSize: ${PCS_DB_POOL_MAX_SIZE:10}
+      idleTimeout: 10000
       poolName: PCSHikariCP
-      maxLifetime: 1800000
+      maxLifetime: 7200000
       connectionTimeout: 30000
   jpa:
     properties:
