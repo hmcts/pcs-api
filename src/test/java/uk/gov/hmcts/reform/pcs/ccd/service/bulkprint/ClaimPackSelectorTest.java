@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +59,7 @@ class ClaimPackSelectorTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         underTest = new ClaimPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
@@ -261,6 +264,23 @@ class ClaimPackSelectorTest {
         pcsCase.getClaims().getFirst().setLanguageUsed(LanguageUsed.ENGLISH);
 
         assertThat(underTest.findClaimPackCandidates(pcsCase)).isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false, false", "false, true", "true, false", "true, true"})
+    @DisplayName("Release 1.4 excludes claimant from receiving claim pack without changing defendant receiving pack")
+    void shouldExcludeClaimantFromReceivingClaimPack(boolean release14Enabled, boolean release13Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(release13Enabled);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = readyClaimCase();
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result).extracting(ClaimPackCandidate::party)
+            .containsExactlyElementsOf(release14Enabled ? List.of(defendantA) : List.of(claimant, defendantA));
+        assertThat(result.getLast().recipientType()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(result.getLast().documents()).containsExactly(claimForm, pcsCase.getDocuments().getFirst());
     }
 
     private PcsCaseEntity readyClaimCase() {
