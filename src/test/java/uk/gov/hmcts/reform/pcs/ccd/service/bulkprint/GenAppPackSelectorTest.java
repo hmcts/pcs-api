@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -43,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,6 +66,7 @@ class GenAppPackSelectorTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
         underTest = new GenAppPackSelector(
             claimActivityLogRepository,
             sentPackDocuments,
@@ -416,6 +419,30 @@ class GenAppPackSelectorTest {
         noApplicant.setParty(null);
 
         assertThat(underTest.findGenAppPackCandidates(caseWith(List.of(noApplicant), claimant, defendant))).isEmpty();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false, false", "false, true", "true, false", "true, true"})
+    @DisplayName("Release 1.4 excludes claimant from receiving GenApp pack without changing defendant receiving pack")
+    void shouldExcludeClaimantFromReceivingGenAppPack(boolean release14Enabled, boolean release13Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(release13Enabled);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        claimant.setContactPreferences(ContactPreferencesEntity.builder()
+                                           .contactByPost(VerticalYesNo.YES)
+                                           .build());
+
+        PcsCaseEntity pcsCase = caseWith(
+            List.of(defendantCuiWithNoticeGa(withNoticePdf, defendant)), claimant, defendant, coDefendant);
+
+        List<GenAppPackCandidate> result = underTest.findGenAppPackCandidates(pcsCase);
+
+        assertThat(result).extracting(GenAppPackCandidate::recipient)
+            .containsExactlyElementsOf(release14Enabled
+                   ? List.of(defendant, coDefendant) : List.of(claimant, defendant, coDefendant));
+        assertThat(candidateFor(result, defendant).role()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(candidateFor(result, defendant).documents()).containsExactly(withNoticePdf);
+        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(withNoticePdf);
     }
 
     private GenAppPackCandidate candidateFor(List<GenAppPackCandidate> result, PartyEntity recipient) {
