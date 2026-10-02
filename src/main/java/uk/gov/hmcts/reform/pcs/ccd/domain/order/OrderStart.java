@@ -39,11 +39,14 @@ public record OrderStart(Order order, CaseContext caseContext) {
         }
     }
 
+    /** Open means issued: nothing yet closes a counterclaim or an application. */
     public record CaseContext(long caseReference,
                               AddressUK propertyAddress,
                               List<Party> claimants,
                               List<Party> defendants,
-                              CaseFacts caseFacts) {
+                              CaseFacts caseFacts,
+                              boolean openCounterclaim,
+                              boolean openApplication) {
     }
 
     public record CaseFacts(LocalDate tenancyStartDate,

@@ -7,10 +7,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
@@ -19,6 +21,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
 /**
  * The case an order is made on, as the frontend shows it to the judge making it and the caseworker
@@ -38,7 +43,10 @@ class OrderCaseContext {
             addressMapper.toAddressUK(pcsCase.getPropertyAddress()),
             claim.map(c -> parties(c, PartyRole.CLAIMANT)).orElse(List.of()),
             claim.map(c -> parties(c, PartyRole.DEFENDANT)).orElse(List.of()),
-            caseFacts(pcsCase.getTenancyLicence(), claim.orElse(null))
+            caseFacts(pcsCase.getTenancyLicence(), claim.orElse(null)),
+            pcsCase.getCounterClaims().stream()
+                .map(CounterClaimEntity::getStatus).anyMatch(COUNTER_CLAIM_ISSUED::equals),
+            pcsCase.getGenApps().stream().map(GenAppEntity::getState).anyMatch(GEN_APP_ISSUED::equals)
         );
     }
 

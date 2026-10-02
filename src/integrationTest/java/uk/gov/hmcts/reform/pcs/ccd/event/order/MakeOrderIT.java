@@ -18,9 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseContext;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
@@ -36,10 +39,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType.ADJOURN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState.SUBMITTED_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.PENDING_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -103,6 +110,28 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(facts.currentRent()).isEqualByComparingTo("750.00");
         assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
         assertThat(facts.groundsPleaded()).contains("Rent arrears");
+    }
+
+    @Test
+    @DisplayName("says whether the case has an issued counterclaim or application")
+    void saysWhetherTheCaseHasAnIssuedCounterclaimOrApplication() {
+        assertThat(asFirstJudge.start().caseContext())
+            .extracting(CaseContext::openCounterclaim, CaseContext::openApplication)
+            .containsExactly(false, false);
+
+        cases.update(caseReference, pcsCase -> {
+            PartyEntity defendant = pcsCase.getParties().stream()
+                .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
+            pcsCase.addCounterClaim(CounterClaimEntity.builder().party(defendant).status(PENDING_REVIEW).build());
+            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
+                .applicationSubmittedDate(LocalDateTime.now()).build());
+        });
+        assertThat(asFirstJudge.start().caseContext())
+            .extracting(CaseContext::openCounterclaim, CaseContext::openApplication)
+            .containsExactly(false, true);
+
+        cases.update(caseReference, pcsCase -> pcsCase.getCounterClaims().getFirst().setStatus(COUNTER_CLAIM_ISSUED));
+        assertThat(asFirstJudge.start().caseContext().openCounterclaim()).isTrue();
     }
 
     @Test
