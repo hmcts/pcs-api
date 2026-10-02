@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CaseDeletionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.casedeletion.CcdCaseDataDeletionService;
@@ -78,7 +80,8 @@ public class CaseDeletionScheduledTask {
         MDC.put(MDC_TASK_NAME, CASE_DELETION_TASK_NAME);
         log.info("runSweep starting up ...");
         try {
-            List<Long> cases = ccdCaseDataDeletionService.findExpiredDraftCasesBatch(discardAfterDays, sqlLimit);
+            List<DeletionCaseData> cases =
+                    ccdCaseDataDeletionService.findExpiredDraftCasesBatch(discardAfterDays, sqlLimit);
             if (CollectionUtils.isEmpty(cases)) {
                 log.debug("No cases to delete within this sweep.");
                 return;
@@ -86,7 +89,7 @@ public class CaseDeletionScheduledTask {
             int totalCases = cases.size();
             log.info("Processing {} cases for deletion (page size is {})", totalCases, batchSize);
             int processed = 0;
-            List<Long> failed = new ArrayList<>();
+            List<DeletionCaseData> failed = new ArrayList<>();
             while (processed < totalCases) {
                 failed.addAll(processCases(cases.subList(processed, min(processed + batchSize, totalCases))));
                 processed += batchSize;
@@ -101,20 +104,20 @@ public class CaseDeletionScheduledTask {
         log.info("--- runSweep closing down");
     }
 
-    private List<Long> processCases(List<Long> cases) {
+    private List<DeletionCaseData> processCases(List<DeletionCaseData> cases) {
         Map<String, String> ctx = MDC.getCopyOfContextMap();
-        ConcurrentLinkedQueue<Long> failed = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<DeletionCaseData> failed = new ConcurrentLinkedQueue<>();
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            for (Long caseRef : cases) {
+            for (DeletionCaseData caseToDelete : cases) {
                 executor.submit(() -> withMdc(ctx, () -> {
                     try {
-                        completeCaseDeletion(caseRef);
+                        completeCaseDeletion(caseToDelete);
                     } catch (Exception e) {
                         if (e instanceof InterruptedException) {
                             Thread.currentThread().interrupt();
                         }
-                        log.error("Deletion failed for case: {}", caseRef, e);
-                        failed.add(caseRef);
+                        log.error("Deletion failed for case: {}", caseToDelete.getCaseRef(), e);
+                        failed.add(caseToDelete);
                     }
                 }));
             }
@@ -122,21 +125,23 @@ public class CaseDeletionScheduledTask {
         return new ArrayList<>(failed);
     }
 
-    private void completeCaseDeletion(long caseRef) throws InterruptedException {
-        log.debug("Performing case deletion tasks for case: {}", caseRef);
+    private void completeCaseDeletion(DeletionCaseData caseToDelete) throws InterruptedException {
+        log.debug("Performing case deletion tasks for case: {}", caseToDelete.getCaseRef());
 
-        ccdCallThrottle.acquire();
-        try {
-            ccdCaseDataDeletionService.markCaseForDeletion(caseRef);
-            ccdCaseDataDeletionService.confirmCaseDisposal(caseRef);
-        } catch (CcdCaseNotFoundException e) {
-            log.warn("Case not found in main ccd datastore for reference: {}. ", caseRef);
-        } finally {
-            ccdCallThrottle.release();
+        if (!caseToDelete.getState().equals(State.DRAFT_DISCARDED)) {
+            ccdCallThrottle.acquire();
+            try {
+                ccdCaseDataDeletionService.markCaseForDeletion(caseToDelete.getCaseRef());
+                ccdCaseDataDeletionService.confirmCaseDisposal(caseToDelete.getCaseRef());
+            } catch (CcdCaseNotFoundException e) {
+                log.warn("Case not found in main ccd datastore for reference: {}. ", caseToDelete.getCaseRef());
+            } finally {
+                ccdCallThrottle.release();
+            }
         }
-        List<String> documentUrls = pcsCaseService.getDocumentUrls(caseRef);
-        deleteDocuments(documentUrls, caseRef);
-        caseDeletionService.deleteCaseData(caseRef);
+        List<String> documentUrls = pcsCaseService.getDocumentUrls(caseToDelete.getCaseRef());
+        deleteDocuments(documentUrls, caseToDelete.getCaseRef());
+        caseDeletionService.deleteCaseData(caseToDelete.getCaseRef());
     }
 
     private void deleteDocuments(List<String> documentUrls, long caseRef) throws InterruptedException {

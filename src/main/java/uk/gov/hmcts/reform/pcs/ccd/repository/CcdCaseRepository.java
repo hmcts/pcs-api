@@ -6,6 +6,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.model.DeletionCaseData;
 
 import java.util.List;
 
@@ -16,21 +18,24 @@ public class CcdCaseRepository {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public List<Long> findExpiredDraftCases(int discardAfterDays, int limit) {
+    public List<DeletionCaseData> findExpiredDraftCases(int discardAfterDays, int limit) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
             .addValue("discardDaysAfter", discardAfterDays)
             .addValue("limit", limit);
         return namedParameterJdbcTemplate.query(
             """
-                SELECT cd.reference
+                SELECT cd.reference, cd.state
                 FROM ccd.case_data cd
                 WHERE cd.last_state_modified_date < now()::date - :discardDaysAfter
-                AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED')
+                AND cd.state in ('AWAITING_SUBMISSION_TO_HMCTS', 'PENDING_CASE_ISSUED', 'DRAFT_DISCARDED')
                 ORDER BY cd.created_date ASC
                 LIMIT :limit
             """,
             namedParameters,
-            (rs, rowNum) -> rs.getLong("reference")
+                (rs, rowNum) -> DeletionCaseData.builder()
+                        .caseRef(rs.getLong("reference"))
+                        .state(State.valueOf(rs.getString("state")))
+                        .build()
         );
     }
 
