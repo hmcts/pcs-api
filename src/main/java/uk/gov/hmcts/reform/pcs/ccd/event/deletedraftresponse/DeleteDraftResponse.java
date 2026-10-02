@@ -96,10 +96,10 @@ public class DeleteDraftResponse implements CCDConfig<PCSCase, State, UserRole> 
 
     private static String getDraftDeletedConfirmationMarkdown() {
         return """
-        ---
-        <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
-        <span class="govuk-panel__title govuk-!-font-size-36">Your draft response has been deleted</span>
-        </div>
-        """;
+             ---
+             <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+             <span class="govuk-panel__title govuk-!-font-size-36">Your draft response has been deleted</span>
+             </div>
+            """;
     }
 }
