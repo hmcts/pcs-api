@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNameFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -57,6 +58,8 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.OrganisationBasePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.TemplatePersonalisation;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimBasePersonalisation;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -131,6 +134,7 @@ class NotificationServiceTest {
             notificationPersonalisationFactory,
             pcsCaseService
         );
+        lenient().when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
     }
 
     @Nested
@@ -504,12 +508,16 @@ class NotificationServiceTest {
             defendantResponse.setClaim(claim);
 
             lenient().when(notificationPersonalisationFactory.forDefendant(any()))
-                .thenReturn(BasePersonalisation.builder()
-                    .firstName("John")
-                    .lastName("Doe")
-                    .caseNumber("1234567890")
-                    .claimantName("JANE SMITH")
-                    .primaryDefendantName("JOHN DOE")
+                .thenReturn(ClaimBasePersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                              .firstName("John")
+                              .lastName("Doe")
+                              .caseNumber("1234567890")
+                              .caseName("Jane Smith vs John Doe")
+                              .claimantName("JANE SMITH")
+                              .primaryDefendantName("JOHN DOE")
+                              .build())
+                    .nextStepUrl("frontEndUrl/claims")
                     .build());
             lenient().when(notificationPersonalisationFactory.counterclaimPaymentRequired(any()))
                 .thenReturn(CounterclaimPaymentRequiredPersonalisation.builder()
@@ -517,12 +525,11 @@ class NotificationServiceTest {
                               .firstName("John")
                               .lastName("Doe")
                               .caseNumber("1234567890")
+                              .caseName("Jane Smith vs John Doe")
                               .claimantName("JANE SMITH")
                               .primaryDefendantName("JOHN DOE")
                               .build())
-                    .paymentUrl(
-                        "http://localhost:3209/case/1234567890/respond-to-claim/counter-claim-application-fee-amount"
-                    )
+                    .paymentUrl("frontEndUrl/claims")
                     .build());
             lenient().when(notificationPersonalisationFactory.counterclaimSuccess(any(), any()))
                 .thenReturn(CounterclaimPaymentSuccessPersonalisation.builder()
@@ -530,27 +537,33 @@ class NotificationServiceTest {
                         .firstName("John")
                         .lastName("Doe")
                         .caseNumber("1234567890")
+                        .caseName("Jane Smith vs John Doe")
                         .claimantName("JANE SMITH")
                         .primaryDefendantName("JOHN DOE")
                         .build())
                     .paymentReferenceNumber("PAY-123")
                     .build());
-            lenient().when(notificationPersonalisationFactory
-                               .forClaimant(any()))
-                .thenReturn(BasePersonalisation.builder()
-                    .firstName("Jane")
-                    .lastName("Smith")
-                    .caseNumber("1234567890")
-                    .claimantName("JANE SMITH")
-                    .primaryDefendantName("JOHN DOE")
+            lenient().when(notificationPersonalisationFactory.forClaimant(any(ClaimEntity.class)))
+                .thenReturn(ClaimBasePersonalisation.builder()
+                    .base(BasePersonalisation.builder()
+                              .firstName("Jane")
+                              .lastName("Smith")
+                              .caseNumber("1234567890")
+                              .caseName("Jane Smith vs John Doe")
+                              .claimantName("JANE SMITH")
+                              .primaryDefendantName("JOHN DOE")
+                              .build())
+                    .nextStepUrl("manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Case%20Parties")
                     .build());
             lenient().when(notificationPersonalisationFactory
                                .forClaimant(anyLong(), any(PCSCase.class)))
                 .thenReturn(ClaimantBasePersonalisation.builder()
                     .toLineClaimantName("Jane Smith")
                     .caseNumber("1234567890")
+                    .caseName("Jane Smith vs John Doe")
                     .claimantName("JANE SMITH")
                     .primaryDefendantName("JOHN DOE")
+                    .nextStepUrl("manageCaseUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps")
                     .build());
         }
 
@@ -783,7 +796,12 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
 
             OrganisationBasePersonalisation organisationBasePersonalisation = OrganisationBasePersonalisation.builder()
-                .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build();
+                .organisationName("org")
+                .caseNumber("123")
+                .caseName("org vs Jane Smith")
+                .claimantName("John Doe")
+                .primaryDefendantName("Jane Smith")
+                .build();
 
             when(notificationPersonalisationFactory.counterclaimSuccessOrganisation(defendantResponseEntity,
                                                                                     paymentReference,
@@ -971,7 +989,12 @@ class NotificationServiceTest {
 
             when(notificationPersonalisationFactory.forOrganisation(organisationEntity, pcsCaseEntity)).thenReturn(
                 OrganisationBasePersonalisation.builder()
-                    .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
+                    .organisationName("org")
+                    .caseNumber("123")
+                    .caseName("Org vs Jane Smith")
+                    .claimantName("John Doe")
+                    .primaryDefendantName("Jane Smith")
+                    .build()
             );
 
             EmailNotificationResponse response = notificationService
@@ -999,7 +1022,12 @@ class NotificationServiceTest {
             when(notificationRepository.save(any())).thenReturn(savedNotification);
 
             OrganisationBasePersonalisation organisationBasePersonalisation = OrganisationBasePersonalisation.builder()
-                .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build();
+                .organisationName("org")
+                .caseNumber("123")
+                .caseName("Org vs Jane Smith")
+                .claimantName("John Doe")
+                .primaryDefendantName("Jane Smith")
+                .build();
 
             when(notificationPersonalisationFactory.counterclaimPaymentRequired(organisationEntity, pcsCaseEntity))
                 .thenReturn(
@@ -1034,7 +1062,12 @@ class NotificationServiceTest {
 
             when(notificationPersonalisationFactory.forOrganisation(organisationEntity, pcsCaseEntity)).thenReturn(
                 OrganisationBasePersonalisation.builder()
-                    .organisationName("org").caseNumber("123").claimantName("John").primaryDefendantName("Jane").build()
+                    .organisationName("org")
+                    .caseNumber("123")
+                    .caseName("Org vs Jane Smith")
+                    .claimantName("John Doe")
+                    .primaryDefendantName("Jane Smith")
+                    .build()
             );
 
             EmailNotificationResponse response = notificationService
@@ -1275,8 +1308,10 @@ class NotificationServiceTest {
                 .thenReturn(ClaimantBasePersonalisation.builder()
                     .toLineClaimantName("Jane Smith")
                     .caseNumber("1234567890")
+                    .caseName("Jane Smith vs John Doe")
                     .claimantName("JANE SMITH")
                     .primaryDefendantName("JOHN DOE")
+                    .nextStepUrl("frontEndUrl/cases/case-details/PCS/PCS/1234567890#Next%20steps")
                     .build());
         }
 
@@ -1453,7 +1488,9 @@ class NotificationServiceTest {
     @DisplayName("TemplatePersonalisation Method Tests")
     class TemplatePersonalisationMethodTests {
         private final NotificationPersonalisationFactory factory =
-            new NotificationPersonalisationFactory(partyService, new AddressFormatter(), addressMapper);
+            new NotificationPersonalisationFactory(
+                partyService, new AddressFormatter(), addressMapper,
+                new CaseNameFormatter(), mock(FeatureToggleService.class));
 
         @Test
         @DisplayName("Should use overridden claimant name when name flag is NO")
@@ -1632,6 +1669,44 @@ class NotificationServiceTest {
             );
 
             assertThat(response).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Release 1.4 personalisation")
+    class Release14PersonalisationTests {
+
+        @Test
+        @DisplayName("Should include new fields when flag is enabled")
+        void shouldIncludeNewFieldsWhenFlagIsEnabled() {
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(true);
+            TemplatePersonalisation personalisation = () -> Map.of(
+                "caseNumber", "1234567890", "caseName", "Jane vs John", "nextStepUrl", "https://example.test/claims",
+                "paymentUrl", "https://example.test/payment"
+            );
+
+            EmailNotificationRequest request = notificationService.buildRequest(
+                TEMPLATE_ID, TEST_EMAIL, NotificationClaimType.POSSESSION_CLAIM, personalisation);
+
+            assertThat(request.getPersonalisation()).containsKeys("caseName", "nextStepUrl", "paymentUrl");
+        }
+
+        @Test
+        @DisplayName("Should only include legacy fields when flag is disabled")
+        void shouldOnlyIncludeLegacyFieldsWhenFlagIsDisabled() {
+            when(templateConfiguration.isRelease14Enabled()).thenReturn(false);
+            TemplatePersonalisation personalisation = () -> Map.of(
+                "caseNumber", "1234567890", "caseName", "Jane vs John", "nextStepUrl", "https://example.test/claims",
+                "paymentUrl", "https://example.test/payment"
+            );
+
+            EmailNotificationRequest request = notificationService.buildRequest(
+                TEMPLATE_ID, TEST_EMAIL, NotificationClaimType.POSSESSION_CLAIM, personalisation);
+
+            assertThat(request.getPersonalisation())
+                .containsEntry("caseNumber", "1234567890")
+                .containsEntry("paymentUrl", "https://example.test/payment")
+                .doesNotContainKeys("caseName", "nextStepUrl");
         }
     }
 
