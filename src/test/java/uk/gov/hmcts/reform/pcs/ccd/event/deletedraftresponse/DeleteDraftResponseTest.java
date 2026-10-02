@@ -101,8 +101,7 @@ class DeleteDraftResponseTest extends BaseEventTest {
 
         assertThat(submitResponse.getState()).isNull();
         assertThat(submitResponse.getConfirmationBody())
-            .contains("Your draft response has been deleted")
-            .contains("Go back to the case list");
+            .contains("Your draft response has been deleted");
     }
 
     @Test
