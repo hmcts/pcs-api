@@ -499,7 +499,7 @@ class LegalRepresentativeSummaryServiceTest {
         // then
         assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.YES);
         assertThat(pcsCase.getLegalRepUpdatedDetails()).isEqualTo(YesOrNo.YES);
-        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
     }
 
     @Test
