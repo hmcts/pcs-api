@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing
+  confirmCancelHearing, addJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -81,6 +81,8 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
+      ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
+      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -769,6 +771,33 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
+  private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('inputText', judicialNotes.label, CaseManagementCommonUtils.generateRandomString(judicialNotes.input as number));
+    await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
+  }
+
+  private async confirmAddJudicialNotes(confirmAddNotes: actionRecord): Promise<void> {
+      let submitPayLoad = confirmAddNotes.submitPayload as Record<string, any>;
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      });
+      await performValidation('text', { elementType: 'inlineText', text: confirmHearing.addHearingText });
+      await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
+      await performValidation('text', {
+        elementType: 'inlineText',
+        text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      });
+      await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
+      await performValidation('mainHeader', confirmHearing.mainHeader);
+      await performAction('clickButton', confirmHearing.closeAndReturnToCaseOverviewButton);
+    }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
@@ -946,7 +975,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -989,7 +1018,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);

@@ -90,6 +90,8 @@ export class ActionCMRegistry {
     ['selectParty', new CaseManagementAction()],
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
+    ['addJudicialNotes', new CaseManagementAction()],
+    ['confirmAddJudicialNotes', new CaseManagementAction()],
 
   ]);
 
