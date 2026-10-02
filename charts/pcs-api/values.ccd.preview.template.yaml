@@ -163,7 +163,7 @@ ccd:
       keyVaults:
         ccd:
           secrets:
-            - session-key
+            - session-keys
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
   elasticsearch:
