@@ -280,6 +280,13 @@ bulk-print:
   # BULK_PRINT_LOOKBACK_HOURS (lower envs only): sweep ignores packs whose documents are older than N hours,
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
+respond-to-claim-draft-deletion:
+  schedule: ${RESPOND_TO_CLAIM_DRAFT_DELETION_SCHEDULE:DAILY|01:00}
+  discard-after-days: ${RESPOND_TO_CLAIM_DRAFT_DELETION_DISCARD_AFTER_DAYS:30}
+  request:
+    max-retries: ${RESPOND_TO_CLAIM_DRAFT_DELETION_REQUEST_MAX_RETRIES:3}
+    backoff-delay-seconds: ${RESPOND_TO_CLAIM_DRAFT_DELETION_REQUEST_BACKOFF_DELAY_SECONDS:10s}
+
 send-letter:
   # Default to localhost so a higher environment fails loudly if SEND_LETTER_URL is not set, rather than
   # silently posting to AAT.
