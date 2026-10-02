@@ -924,4 +924,11 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @CCD(label = "Are you sure you want to permanently delete this draft application? "
+        + "You will no longer be able to view the details in the future.")
+    private YesOrNo deleteDraftApplication;
+
+    @CCD(searchable = false)
+    private YesOrNo hasUnsubmittedEnforcementData;
 }
