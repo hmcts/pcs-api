@@ -5,7 +5,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { generateRandomString } from "@utils/common/string.utils";
+import {formatDateTimeBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -36,6 +36,7 @@ import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import {manageHearingApiData} from "@data/api-data";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -425,11 +426,49 @@ export class CaseManagementAction implements IAction {
   }
 
   private async cancelHearing(cancelHearingData: actionRecord) {
+    const hearingInfo = manageHearingApiData.AddHearingPayload;
+    const formattedHearingDate = formatDateTimeBST(hearingInfo.hearing_Date)
+      .replace(':00:00AM', ':00am')
+      .replace(':00:00PM', ':00pm');
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    const validations = [
+      {
+        heading: cancelHearing.hearingLocationHeader,
+        value: `${hearingInfo.hearingLocation}`,
+      },
+      {
+        heading: cancelHearing.hearingTypeHeader,
+        value: 'Application hearing',
+      },
+      {
+        heading: cancelHearing.hearingDateHeader,
+        value: formattedHearingDate,
+      },
+      {
+        heading: cancelHearing.hearingDurationHeader,
+        value: `${hearingInfo.hearing_DurationDays} days ${hearingInfo.hearing_DurationHours} hour ${hearingInfo.hearing_DurationMinutes} minutes`,
+      },
+      {
+        heading: cancelHearing.hearingNotesHeader,
+        value: hearingInfo.hearing_Notes,
+      },
+    ];
+
+    for (const validation of validations) {
+      await performValidation('text', {
+        elementType: 'subHeader',
+        text: validation.heading,
+      });
+
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: validation.value,
+      });
+    }
     await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
@@ -946,7 +985,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -989,7 +1028,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);
