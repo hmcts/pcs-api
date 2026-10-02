@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -55,7 +57,7 @@ class ApplicationDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.ADJOURN)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.ADJOURN))
                 .dateReceived(dateReceived)
                 .build())
             .build();
@@ -86,7 +88,7 @@ class ApplicationDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SUSPEND)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SUSPEND))
                 .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
                 .build())
             .build();
@@ -104,7 +106,7 @@ class ApplicationDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SUSPEND)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SUSPEND))
                 .dateReceived(FIXED_CURRENT_DATE.minusDays(1))
                 .build())
             .build();
@@ -123,7 +125,7 @@ class ApplicationDetailsTest extends BasePageTest {
         String details = "some categories";
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SOMETHING_ELSE))
                 .somethingElseDetails(details)
                 .build())
             .build();
@@ -141,7 +143,7 @@ class ApplicationDetailsTest extends BasePageTest {
         String longText = "a".repeat(MEDIUM_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.SOMETHING_ELSE)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.SOMETHING_ELSE))
                 .somethingElseDetails(longText)
                 .build())
             .build();
@@ -164,7 +166,7 @@ class ApplicationDetailsTest extends BasePageTest {
         String longText = "a".repeat(MEDIUM_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder()
-                .applicationTypeOption(EnterGenAppType.ADJOURN)
+                .applicationTypeOptionList(applicationTypeOptionList(EnterGenAppType.ADJOURN))
                 .somethingElseDetails(longText)
                 .build())
             .build();
@@ -174,6 +176,15 @@ class ApplicationDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrorMessageOverride()).isNull();
+    }
+
+    private DynamicStringList applicationTypeOptionList(EnterGenAppType applicationType) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                       .code(applicationType.name())
+                       .label(applicationType.getLabel())
+                       .build())
+            .build();
     }
 
 }
