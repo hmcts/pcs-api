@@ -27,7 +27,6 @@ public class ConfirmCaseDisposal implements CCDConfig<PCSCase, State, UserRole> 
                 .decentralisedEvent(confirmCaseDisposal.name(), this::submit)
                 .forStates(State.DRAFT_DISCARDED)
                 .name("Discard unissued cases")
-                .ttlIncrement(-1)
                 .showCondition(NEVER_SHOW)
                 .grant(Permission.CRU, SYSTEM_USER);
     }
