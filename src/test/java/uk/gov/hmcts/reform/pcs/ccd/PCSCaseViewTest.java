@@ -521,7 +521,7 @@ class PCSCaseViewTest {
         } else {
             verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         }
-        assertThat(pcsCase.getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
+        assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
     }
 
     private static Stream<Arguments> unsubmittedEnforcementDataScenarios() {

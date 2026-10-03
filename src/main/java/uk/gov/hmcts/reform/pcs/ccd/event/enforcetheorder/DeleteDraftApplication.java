@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.deleteDraftApplication;
@@ -42,7 +43,7 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 configBuilder
                         .decentralisedEvent(deleteDraftApplication.name(), this::submit)
                         .forState(State.CASE_ISSUED)
-                        .name("Delete draft application")
+                        .name("Delete this draft application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.CLAIMANT)
@@ -53,11 +54,12 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 .page("deleteDraftApplication")
                 .pageLabel("Delete this draft application")
                 .label("deleteDraftApplication-separator", "---")
-                .mandatory(PCSCase::getDeleteDraftApplication);
+                .complex(PCSCase::getEnforcementOrder)
+                .mandatory(EnforcementOrder::getDeleteDraftApplication);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        if (eventPayload.caseData().getDeleteDraftApplication() != YesOrNo.YES) {
+        if (eventPayload.caseData().getEnforcementOrder().getDeleteDraftApplication() != YesOrNo.YES) {
             return SubmitResponse.defaultResponse();
         }
 

@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
@@ -56,7 +57,9 @@ class DeleteDraftApplicationTest extends BaseEventTest {
     void shouldDeleteDraftApplicationWhenAnswerIsYes() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .deleteDraftApplication(YesOrNo.YES)
+                .enforcementOrder(EnforcementOrder.builder()
+                    .deleteDraftApplication(YesOrNo.YES)
+                    .build())
                 .build();
 
         // When
@@ -75,7 +78,9 @@ class DeleteDraftApplicationTest extends BaseEventTest {
     void shouldNotDeleteDraftApplicationWhenAnswerIsNo() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .deleteDraftApplication(YesOrNo.NO)
+                .enforcementOrder(EnforcementOrder.builder()
+                    .deleteDraftApplication(YesOrNo.NO)
+                    .build())
                 .build();
 
         // When
