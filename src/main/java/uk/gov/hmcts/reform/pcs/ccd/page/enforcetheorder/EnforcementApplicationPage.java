@@ -110,6 +110,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
+            .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)

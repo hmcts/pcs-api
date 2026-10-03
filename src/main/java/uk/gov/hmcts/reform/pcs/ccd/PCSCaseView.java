@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.enforcementorder.EnforcementOrderMediator;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -56,6 +57,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
@@ -116,9 +118,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
-                    draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
-                        },
+                    draft -> caseTabView.setDraftCaseTabFields(pcsCase, draft),
                     () -> caseTabView.setCaseTabFields(pcsCase)
                 );
         } else {
@@ -128,6 +128,11 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
+        if (pcsCase.getEnforcementOrder() == null) {
+            pcsCase.setEnforcementOrder(new EnforcementOrder());
+        }
+        pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(
+                hasEnforcementDraftData(caseReference, state) ? YesOrNo.YES : YesOrNo.NO);
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -147,6 +152,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
         }
 
+        return false;
+    }
+
+    private boolean hasEnforcementDraftData(long caseReference, State state) {
+        if (State.CASE_ISSUED == state) {
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, enforceTheOrder);
+        }
         return false;
     }
 
