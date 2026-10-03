@@ -2,15 +2,18 @@ package uk.gov.hmcts.reform.pcs.ccd.service.workallocation;
 
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
@@ -27,12 +30,25 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 public class TaskDescriptionService {
 
     private final PartyService partyService;
     private final PebbleEngine pebbleEngine;
     private final ClaimRepository claimRepository;
+    private final DocumentNameService documentNameService;
+    private final String frontEndUrl;
+
+    public TaskDescriptionService(PartyService partyService,
+                                  PebbleEngine pebbleEngine,
+                                  ClaimRepository claimRepository,
+                                  DocumentNameService documentNameService,
+                                  @Value("${frontend.url}") String frontEndUrl) {
+        this.partyService = partyService;
+        this.pebbleEngine = pebbleEngine;
+        this.claimRepository = claimRepository;
+        this.documentNameService = documentNameService;
+        this.frontEndUrl = frontEndUrl;
+    }
 
     public String createReviewGenAppDescription(long caseReference,
                                                 GenAppEntity genAppEntity) {
@@ -108,6 +124,53 @@ public class TaskDescriptionService {
         );
 
         String templateName = "translate-claimant-submitted-document";
+        return renderTemplate(templateName, context);
+    }
+
+    // TODO: Test
+    public String createTranslateClaimFormDescription(long caseReference) {
+        // TODO: Build this properly, with URL escaping
+        String eventId = "ext%3AuploadTranslatedClaimForm";
+        String uploadTranslatedClaimFormEventUrl = "%s/cases/%d/event/%s?expected_sub=${[EXPECTED_SUB]}"
+            .formatted(frontEndUrl, caseReference, eventId);
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "uploadTranslatedClaimFormEventUrl", uploadTranslatedClaimFormEventUrl
+        );
+
+        String templateName = "translate-claim-form";
+        return renderTemplate(templateName, context);
+    }
+
+    // TODO: Test
+    public String createTranslateGenAppFormDescription(PcsCaseEntity pcsCaseEntity, GenAppEntity genAppEntity) {
+        long caseReference = pcsCaseEntity.getCaseReference();
+        String partyLabel = getPartyLabel(genAppEntity.getParty(), caseReference);
+
+        // TODO: Build this properly, with URL escaping
+        String eventId = "ext%3AuploadTranslatedGenAppForm";
+        String uploadTranslatedGenAppFormEventUrl = "%s/cases/%d/event/%s?expected_sub=${[EXPECTED_SUB]}&genAppId=%s"
+            .formatted(frontEndUrl, caseReference, eventId, genAppEntity.getId());
+
+        List<String> filenames = new ArrayList<>();
+        String documentFilename = documentNameService.appendGenAppPostfix(
+            GenAppDocumentGenerator.OUTPUT_FILENAME_PREFIX,
+            genAppEntity,
+            pcsCaseEntity.getMainClaim(),
+            genAppEntity.getParty().getId()
+        );
+
+        filenames.add(documentFilename);
+
+        Map<String, Object> context = Map.of(
+            "caseReference", caseReference,
+            "partyLabel", partyLabel,
+            "uploadTranslatedGenAppFormEventUrl", uploadTranslatedGenAppFormEventUrl,
+            "filenames", filenames
+        );
+
+        String templateName = "translate-genapp-form";
         return renderTemplate(templateName, context);
     }
 

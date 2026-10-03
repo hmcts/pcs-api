@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormScheduler;
 
 import java.time.LocalDateTime;
@@ -55,6 +56,8 @@ class ClaimIssuePaymentTest extends BaseEventTest {
 
     @Mock
     private DefendantAccessCodeService defendantAccessCodeService;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
 
     @InjectMocks
     private ClaimIssuePayment paymentEvent;

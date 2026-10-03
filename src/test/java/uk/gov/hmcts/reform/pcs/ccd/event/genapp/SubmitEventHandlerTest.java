@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.OrganisationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
@@ -100,6 +101,8 @@ class SubmitEventHandlerTest {
     @Mock
     private GenAppWaTaskService genAppWaTaskService;
     @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
+    @Mock
     private ObjectMapper objectMapper;
     @Mock
     private OrganisationService organisationService;
@@ -116,7 +119,8 @@ class SubmitEventHandlerTest {
                                            genAppRepository, genAppDocumentGenerator, genAppFeeCalculator,
                                            organisationRepository, confirmationScreenFactory,
                                            paymentService, schedulerClient, notificationService,
-                                           genAppWaTaskService, objectMapper, organisationService
+                                           genAppWaTaskService, objectMapper, organisationService,
+                                           bulkPrintQueueService
         );
     }
 
@@ -245,11 +249,11 @@ class SubmitEventHandlerTest {
                 assertThat(feesAndPayTaskData.getPaymentCallbackHandlerType()).isEqualTo(GEN_APP_ISSUE);
                 assertThat(feesAndPayTaskData.getRelatedEntityId()).isEqualTo(expectedGenAppEntityId);
                 verify(genAppWaTaskService, never()).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-                verify(genAppWaTaskService, never()).createTranslationTaskForGenApp(genAppEntity);
+                verify(genAppWaTaskService, never()).createTranslationTasksForGenApp(genAppEntity);
             } else {
                 verifyNoInteractions(schedulerClient);
                 verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-                verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+                verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
             }
         }
 
@@ -379,7 +383,7 @@ class SubmitEventHandlerTest {
                 .createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, GEN_APP_ISSUED);
             verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
             verify(genAppWaTaskService).createReviewGenAppTask(TEST_CASE_REFERENCE, genAppEntity);
-            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+            verify(genAppWaTaskService).createTranslationTasksForGenApp(genAppEntity);
         }
 
         @Test

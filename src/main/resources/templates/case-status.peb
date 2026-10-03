@@ -1,0 +1,88 @@
+## Case bulk print status
+
+
+
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-summary-card">
+          <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">
+              Main Claim
+            </h2>
+          </div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Gen App
+                </dt>
+                <dd class="govuk-summary-list__value">
+                {% if claimStatus.genAppExpected %}
+                  {% if claimStatus.inClaimGenAppWaitingPeriod %}
+                  <strong class="govuk-tag govuk-tag--yellow">
+                    IN 24 HOUR WINDOW
+                  </strong>
+                  {% else %}
+                  <strong class="govuk-tag">
+                    NOT PROVIDED
+                  </strong>
+                  {% endif %}
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">
+                    NOT EXPECTED
+                  </strong>
+                {% endif %}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Translation
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  {% if claimStatus.translationRequired %}
+                  {% if claimStatus.translationCompleted %}
+                  <strong class="govuk-tag govuk-tag--green">
+                    COMPLETED
+                  </strong>
+                  {% else %}
+                  <strong class="govuk-tag govuk-tag--yellow">
+                    WAITING
+                  </strong>
+                  {% endif %}
+                  {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">
+                    NOT REQUIRED
+                  </strong>
+                  {% endif %}
+                </dd>
+              </div>
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  Claim pack
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  {% if claimStatus.packSent %}
+                  <strong class="govuk-tag govuk-tag--green">
+                    SENT
+                  </strong>
+                  {% elseif claimStatus.packSent %}
+                  <strong class="govuk-tag govuk-tag--red">
+                    HELD
+                  </strong>
+                  {% else %}
+                  <strong class="govuk-tag govuk-tag--yellow">
+                    PENDING
+                  </strong>
+                  {% endif %}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+

@@ -102,7 +102,7 @@ class GenAppWaTaskServiceTest {
         when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
@@ -118,7 +118,7 @@ class GenAppWaTaskServiceTest {
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verifyNoInteractions(translationWAService);
@@ -136,7 +136,7 @@ class GenAppWaTaskServiceTest {
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService, never()).createTranslateDefendantSubmittedDocumentTask(any(), any(), any());
@@ -158,7 +158,7 @@ class GenAppWaTaskServiceTest {
         when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
 
         // When
-        underTest.createTranslationTaskForGenApp(genAppEntity);
+        underTest.createTranslationTasksForGenApp(genAppEntity);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(genAppPcsCase, party, List.of());

@@ -1,0 +1,15 @@
+### Translate Claim Form
+
+The claim form for this case requires translation.
+
+Review the claim form in
+<a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20File%20View">Case File View</a> and arrange
+translation.
+
+<a href="{{uploadTranslatedClaimFormEventUrl}}">Upload the translated claim form</a> to the case and then
+email it to the court. Only mark the task as complete once the translation has been completed.
+
+Documents:
+<ul class="govuk-list govuk-list--bullet">
+  <li class="govuk-!-font-size-19">Claim - Claimant 1.pdf</li>
+</ul>

@@ -188,11 +188,23 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         buildSupportTab(builder);
 
+        buildCaseStatusTab(builder);
+
         if (shutterService) {
             builder.shutterService();
         }
 
         configureCaseFileCategories(builder);
+    }
+
+    private void buildCaseStatusTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("caseStatus", "Case Status")
+            .forRoles(AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+                      AccessProfile.HEARING_CENTRE_ADMIN,
+                      AccessProfile.WLU_TEAM_LEADER,
+                      AccessProfile.WLU_ADMIN)
+            .label("caseStatusMarkdownLabel", null, "${caseStatusMarkdown}")
+            .field("caseStatusMarkdown", NEVER_SHOW);
     }
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
