@@ -103,7 +103,7 @@ public class BulkPrintScheduledTask {
     }
 
     private List<UUID> discoverCandidateCases() {
-        // TODO: Add cut off?
+        // TODO: Add cut off? Also add logging?
         return bulkPrintQueueService.getCaseIdsPendingPacks();
 
         /*
