@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_NO_DATES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.MarkupContent.CONFIRM_EVICTION_SUMMARY_WITH_DATES;
 
@@ -25,15 +28,34 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.M
 public class EnforcementOrderMediator {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
+    private final DraftCaseDataService draftCaseDataService;
 
-    public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
+    public void handleEnforcementRequirements(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase, long caseReference,
+                                              State state) {
         if (pcsCaseEntity != null && pcsCase != null) {
+            hasEnforcementDraftData(caseReference, state, pcsCase);
             getEnforcementOrder(pcsCaseEntity).ifPresent(enforcementOrderEntity ->
                 Optional.ofNullable(enforcementOrderEntity.getBailiffDate())
                     .ifPresentOrElse(
                         date -> prepareEvictionWithDates(pcsCase, date),
                         () -> prepareEvictionWithNoDates(pcsCase)
                     ));
+        }
+    }
+
+    private void hasEnforcementDraftData(long caseReference, State state, PCSCase pcsCase) {
+        if (State.CASE_ISSUED == state) {
+            boolean hasUnsubmittedCaseData = draftCaseDataService
+                .hasUnsubmittedCaseData(caseReference, enforceTheOrder);
+            if (hasUnsubmittedCaseData) {
+                pcsCase.setHasUnsubmittedEnforcementData(YesOrNo.YES);
+                Optional<PCSCase> unsubmittedCaseData = draftCaseDataService.getUnsubmittedCaseData(caseReference,
+                    enforceTheOrder);
+                unsubmittedCaseData.ifPresent(inflated ->
+                                                  pcsCase.setEnforcementOrder(inflated.getEnforcementOrder()));
+            } else {
+                pcsCase.setHasUnsubmittedEnforcementData(YesOrNo.NO);
+            }
         }
     }
 

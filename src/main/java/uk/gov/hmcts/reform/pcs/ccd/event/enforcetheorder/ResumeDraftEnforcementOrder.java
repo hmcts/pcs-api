@@ -22,14 +22,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.War
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
-
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Slf4j
@@ -50,14 +45,15 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(resumeEnforcementOrder.name(), this::submit, this::start)
+                .decentralisedEvent(resumeEnforcementOrder.name(), this::submit)
                 .forState(State.CASE_ISSUED)
                 .name("Resume Draft Application")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
+                .showCondition(ShowConditions.and(
+                   ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4), "hasUnsubmittedEnforcementData=\"Yes\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, resumeEnforcementOrder);
@@ -65,21 +61,6 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase pcsCase = eventPayload.caseData();
-        long caseReference = eventPayload.caseReference();
-        draftCaseDataService.getUnsubmittedCaseData(
-            caseReference,
-            enforceTheOrder
-        ).ifPresentOrElse(
-                unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, pcsCase),
-                () -> {
-                    throw new UnsubmittedDataException("No unsubmitted case data found for case " + caseReference);
-                }
-            );
-        return pcsCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

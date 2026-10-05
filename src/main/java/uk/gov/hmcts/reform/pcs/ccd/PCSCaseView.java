@@ -127,7 +127,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
-        enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
+        enforcementOrderMediator
+            .handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase, caseReference, state);
 
         caseFieldsView.setCaseFields(pcsCase);
 

@@ -485,7 +485,8 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE,
+                                                                       DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
