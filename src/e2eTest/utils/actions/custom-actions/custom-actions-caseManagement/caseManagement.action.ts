@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, addJudicialNotes, confirmAddJudicialNotes
+  confirmCancelHearing, addJudicialNotes, confirmJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -788,10 +788,10 @@ export class CaseManagementAction implements IAction {
         elementType: 'paragraph',
         text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
       });
-      await performValidation('mainHeader', confirmAddJudicialNotes.mainHeader);
-      await performValidation('text', { elementType: 'inlineText', text: confirmAddJudicialNotes.judicialNotesAddedText});
-      await performValidation('text', { elementType: 'inlineText', text: confirmAddJudicialNotes.youDoNotNeedText});
-      await performAction('clickButton', confirmAddJudicialNotes.closeAndReturnToCaseOverviewButton);
+      await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedText});
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedText});
+      await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
     }
 
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
@@ -807,22 +807,15 @@ export class CaseManagementAction implements IAction {
     judicialNote.set('Created on', normalizedExpectedCreatedOn);
 
     const noteCard = page.locator('.govuk-summary-card').filter({
-      has: page.locator('.govuk-summary-card__title', {
-        hasText: judicialNotes.table as string,
-      }),
+      has: page.locator('.govuk-summary-card__title', {hasText: judicialNotes.table as string,}),
     });
     await expect(noteCard).toBeVisible();
-    const rows = noteCard.locator(
-      '.govuk-summary-list__row'
-    );
+    const rows = noteCard.locator('.govuk-summary-list__row');
     const caseTabMap = new Map<string, string>();
     for (let i = 0; i < await rows.count(); i++) {
       const row = rows.nth(i);
       const key = (
-        await row
-          .locator('.govuk-summary-list__key')
-          .textContent()
-      )?.trim();
+        await row.locator('.govuk-summary-list__key').textContent())?.trim();
       let value = (await row.locator('.govuk-summary-list__value').textContent())?.trim();
 
       if (key === 'Created by') {
@@ -868,10 +861,7 @@ export class CaseManagementAction implements IAction {
         '\n********** END OF FAILURE LIST. ***************'
       );
 
-      throw new Error(
-        `Judicial Notes validations failed for ${
-          misMatchMap.size
-        } ${
+      throw new Error(`Judicial Notes validations failed for ${misMatchMap.size} ${
           misMatchMap.size === 1 ? 'item' : 'items'
         }`
       );

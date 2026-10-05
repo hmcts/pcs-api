@@ -36,5 +36,5 @@ export default {
   'managePartiesaddLitigationParty': 'addAParty',
   'addJudicialNoteaddJudicialNote': 'addJudicialNotes',
   'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
-  'addJudicialNote/confirm': 'confirmAddJudicialNotes',
+  'addJudicialNote/confirm': 'confirmJudicialNotes',
 };

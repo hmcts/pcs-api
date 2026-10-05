@@ -1,4 +1,4 @@
-export const confirmAddJudicialNotes = {
+export const confirmJudicialNotes = {
   mainHeader: `Add a judicial note`,
   judicialNotesAddedText: `Judicial note added`,
   youDoNotNeedText: `You do not need to do anything else`,
