@@ -242,11 +242,7 @@ public class OrganisationService {
         if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
             return null;
         }
-        UUID userId = securityContextService.getCurrentUserId();
-        if (userId == null) {
-            log.warn("User ID is null from security context, cannot fetch organisation details");
-        }
-        return userId;
+        return securityContextService.getCurrentUserId();
     }
 
     private boolean currentUserIsCitizen() {
