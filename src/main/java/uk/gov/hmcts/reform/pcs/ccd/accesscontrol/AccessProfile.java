@@ -55,6 +55,7 @@ public enum AccessProfile implements HasRole {
     WLU_ADMIN("wlu-admin", CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU),
+    SUPERUSER("caseworker-pcs-superuser", CRU),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU),
     ORGANISATION_CASE_ACCESS_ADMINISTRATOR("caseworker-caa", CRU);
 
