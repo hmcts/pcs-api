@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -168,8 +167,8 @@ public class NotificationPersonalisationFactory {
             ? emailRecipient.getFirstName() : emailRecipient.getOrgName();
 
         return buildPersonalisation(
-            Objects.toString(recipientFirstName, ""),
-            Objects.toString(emailRecipient.getLastName(), ""),
+            recipientFirstName,
+            emailRecipient.getLastName(),
             pcsCaseEntity
         );
     }

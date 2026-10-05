@@ -2,9 +2,7 @@ package uk.gov.hmcts.reform.pcs.notify.template.personalisation;
 
 import lombok.Builder;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Builder
 public class DefendantBasePersonalisation implements TemplatePersonalisation {
@@ -16,12 +14,6 @@ public class DefendantBasePersonalisation implements TemplatePersonalisation {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> personalisation = new HashMap<>();
-        personalisation.put("firstName", Objects.toString(firstName, ""));
-        personalisation.put("lastName", Objects.toString(lastName, ""));
-        personalisation.put("caseNumber", Objects.toString(caseNumber, ""));
-        personalisation.put("claimantName", Objects.toString(claimantName, ""));
-        personalisation.put("primaryDefendantName", Objects.toString(primaryDefendantName, ""));
-        return personalisation;
+        return BasePersonalisation.buildBaseMap(firstName, lastName, caseNumber, claimantName, primaryDefendantName);
     }
 }
