@@ -47,6 +47,7 @@ public class DefendantPartyExtractor {
         return mainClaim.getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
+            .filter(party -> !party.isRemoved())
             .toList();
     }
 }
