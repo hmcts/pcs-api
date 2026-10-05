@@ -87,6 +87,30 @@ public class HearingEntity {
 
     private String cancellationReason;
 
+    private String hearingTypeKey;
+
+    private String hearingCaseTypeKey;
+
+    private String hearingCaseSubtypeKey;
+
+    private String hearingPriorityKey;
+
+    private String hearingChannelKey;
+
+    private String hearingSubchannelKey;
+
+    private String listingStatusKey;
+
+    private String changeReasonKey;
+
+    private String autoListChangeReasonsKey;
+
+    private String caseManagementCancellationReasonKey;
+
+    private String actualCancellationReasonKey;
+
+    private String actualPartHeardReasonKey;
+
     public void addParty(PartyEntity party) {
         HearingNoticePartyEntity hearingNoticePartyEntity = HearingNoticePartyEntity.builder()
             .hearing(this)
