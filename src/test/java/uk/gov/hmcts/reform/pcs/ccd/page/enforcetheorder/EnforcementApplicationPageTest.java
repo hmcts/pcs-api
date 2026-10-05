@@ -96,6 +96,18 @@ class EnforcementApplicationPageTest extends BasePageTest {
     }
 
     @Test
+    void shouldSetUnsubmittedEnforcementDataFlagDuringMidEvent() {
+        // Given
+        PCSCase caseData = createCaseWithEnforcementType(null, SelectEnforcementType.WARRANT);
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
     void shouldNotAddErrorWhenWarrantSelected() {
         // Given
         PCSCase caseData = createCaseWithEnforcementType(null, SelectEnforcementType.WARRANT);

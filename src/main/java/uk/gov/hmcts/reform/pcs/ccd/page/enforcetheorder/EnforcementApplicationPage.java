@@ -136,6 +136,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
+        enforcementOrder.setHasUnsubmittedEnforcementData(YesOrNo.YES);
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
                 .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
             populateWarrantRestDetails(enforcementOrder, details.getId());
