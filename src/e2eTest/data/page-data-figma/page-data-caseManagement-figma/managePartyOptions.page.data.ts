@@ -14,6 +14,7 @@ export const manageParty = {
   whichPartyYouRemovingHiddenQuestion: `Which party are you removing?`,
   errorMessageHiddenHeader: `The event could not be created`,
   errorHiddenMessage: `You cannot remove a claimant or defendant if only one of these parties exist on the case.`,
+  errorAppHiddenMessage: `You cannot remove this party while they have an open general application or counterclaim`,
   continueButton: `Continue`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,

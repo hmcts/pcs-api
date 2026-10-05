@@ -17,24 +17,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -112,24 +94,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -183,24 +147,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -275,24 +221,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -386,24 +314,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -516,24 +426,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -685,24 +577,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
@@ -744,15 +618,6 @@ export const submitCaseApiData = {
           lastName: names.lastNames[1],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
-        //   correspondenceAddress: {
-        //     AddressLine1: null,
-        //     AddressLine2: null,
-        //     AddressLine3: null,
-        //     PostTown: null,
-        //     County: null,
-        //     Country: null,
-        //     PostCode: null
-        //   }
          },
         id: '61cd2875-03af-45c7-a1e4-db5583a1eb11'
       },
@@ -763,15 +628,6 @@ export const submitCaseApiData = {
           lastName: names.lastNames[2],
           addressKnown: 'YES',
           addressSameAsPossession: 'YES',
-          // correspondenceAddress: {
-          //   AddressLine1: null,
-          //   AddressLine2: null,
-          //   AddressLine3: null,
-          //   PostTown: null,
-          //   County: null,
-          //   Country: null,
-          //   PostCode: null
-          // }
         },
         id: '52834083-6f14-4fa9-8f2c-ebb628380530'
       },
@@ -870,60 +726,6 @@ export const submitCaseApiData = {
               code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
               label: 'Inspection or report'
             },
-            // list_items: [
-            //   {
-            //     code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-            //     label: 'Witness statement'
-            //   },
-            //   {
-            //     code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-            //     label: 'Rent statement'
-            //   },
-            //   {
-            //     code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-            //     label: 'Tenancy agreement'
-            //   },
-            //   {
-            //     code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-            //     label: 'Certificate of service'
-            //   },
-            //   {
-            //     code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-            //     label: 'Correspondence from defendant'
-            //   },
-            //   {
-            //     code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-            //     label: 'Correspondence from claimant'
-            //   },
-            //   {
-            //     code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-            //     label: 'Possession notice'
-            //   },
-            //   {
-            //     code: 'a9012afc-83de-4678-912b-6a523c496073',
-            //     label: 'Notice for service out of the jurisdiction'
-            //   },
-            //   {
-            //     code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-            //     label: 'Photographic evidence'
-            //   },
-            //   {
-            //     code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-            //     label: 'Inspection or report'
-            //   },
-            //   {
-            //     code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-            //     label: 'Certificate of suitability as litigation friend'
-            //   },
-            //   {
-            //     code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-            //     label: 'Legal aid certificate'
-            //   },
-            //   {
-            //     code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-            //     label: 'Other document'
-            //   }
-            // ],
             valueCode: '69972f35-1f66-45be-9ea8-c57e0ca03501',
             valueLabel: 'Inspection or report'
           },
@@ -943,60 +745,6 @@ export const submitCaseApiData = {
               code: '64af55f3-bb64-403b-832d-01df63bb47b9',
               label: 'Other document'
             },
-            // list_items: [
-            //   {
-            //     code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-            //     label: 'Witness statement'
-            //   },
-            //   {
-            //     code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-            //     label: 'Rent statement'
-            //   },
-            //   {
-            //     code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-            //     label: 'Tenancy agreement'
-            //   },
-            //   {
-            //     code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-            //     label: 'Certificate of service'
-            //   },
-            //   {
-            //     code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-            //     label: 'Correspondence from defendant'
-            //   },
-            //   {
-            //     code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-            //     label: 'Correspondence from claimant'
-            //   },
-            //   {
-            //     code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-            //     label: 'Possession notice'
-            //   },
-            //   {
-            //     code: 'a9012afc-83de-4678-912b-6a523c496073',
-            //     label: 'Notice for service out of the jurisdiction'
-            //   },
-            //   {
-            //     code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-            //     label: 'Photographic evidence'
-            //   },
-            //   {
-            //     code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-            //     label: 'Inspection or report'
-            //   },
-            //   {
-            //     code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-            //     label: 'Certificate of suitability as litigation friend'
-            //   },
-            //   {
-            //     code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-            //     label: 'Legal aid certificate'
-            //   },
-            //   {
-            //     code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-            //     label: 'Other document'
-            //   }
-            // ],
             valueCode: '64af55f3-bb64-403b-832d-01df63bb47b9',
             valueLabel: 'Other document'
           },
@@ -1016,60 +764,6 @@ export const submitCaseApiData = {
               code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
               label: 'Legal aid certificate'
             },
-            // list_items: [
-            //   {
-            //     code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-            //     label: 'Witness statement'
-            //   },
-            //   {
-            //     code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-            //     label: 'Rent statement'
-            //   },
-            //   {
-            //     code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-            //     label: 'Tenancy agreement'
-            //   },
-            //   {
-            //     code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-            //     label: 'Certificate of service'
-            //   },
-            //   {
-            //     code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-            //     label: 'Correspondence from defendant'
-            //   },
-            //   {
-            //     code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-            //     label: 'Correspondence from claimant'
-            //   },
-            //   {
-            //     code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-            //     label: 'Possession notice'
-            //   },
-            //   {
-            //     code: 'a9012afc-83de-4678-912b-6a523c496073',
-            //     label: 'Notice for service out of the jurisdiction'
-            //   },
-            //   {
-            //     code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-            //     label: 'Photographic evidence'
-            //   },
-            //   {
-            //     code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-            //     label: 'Inspection or report'
-            //   },
-            //   {
-            //     code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-            //     label: 'Certificate of suitability as litigation friend'
-            //   },
-            //   {
-            //     code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-            //     label: 'Legal aid certificate'
-            //   },
-            //   {
-            //     code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-            //     label: 'Other document'
-            //   }
-            // ],
             valueCode: '61a87c03-9159-4c13-af31-1c3b90de42cb',
             valueLabel: 'Legal aid certificate'
           },
@@ -1089,60 +783,6 @@ export const submitCaseApiData = {
               code: 'a9012afc-83de-4678-912b-6a523c496073',
               label: 'Notice for service out of the jurisdiction'
             },
-            // list_items: [
-            //   {
-            //     code: 'dbbc5f29-36fb-44e0-aa72-6eebfc64075d',
-            //     label: 'Witness statement'
-            //   },
-            //   {
-            //     code: 'fa18426e-8767-4065-9c54-9ea91833012e',
-            //     label: 'Rent statement'
-            //   },
-            //   {
-            //     code: '4c3fb18f-fd10-49d7-882b-36b99d0aff6b',
-            //     label: 'Tenancy agreement'
-            //   },
-            //   {
-            //     code: '33119aa7-ed71-4891-a456-cdf01f967f2f',
-            //     label: 'Certificate of service'
-            //   },
-            //   {
-            //     code: 'b04103e9-f493-47ae-9501-ebf52d8accb9',
-            //     label: 'Correspondence from defendant'
-            //   },
-            //   {
-            //     code: '3075ee0a-c18f-4141-992c-57ed08bac9cb',
-            //     label: 'Correspondence from claimant'
-            //   },
-            //   {
-            //     code: '8a3e2cd9-ee77-4227-b7b5-c76f58986d4e',
-            //     label: 'Possession notice'
-            //   },
-            //   {
-            //     code: 'a9012afc-83de-4678-912b-6a523c496073',
-            //     label: 'Notice for service out of the jurisdiction'
-            //   },
-            //   {
-            //     code: '4a3d9d04-c6e6-4630-9c8b-fd4241180c71',
-            //     label: 'Photographic evidence'
-            //   },
-            //   {
-            //     code: '69972f35-1f66-45be-9ea8-c57e0ca03501',
-            //     label: 'Inspection or report'
-            //   },
-            //   {
-            //     code: '68a4e3ec-139d-484a-85a9-5cb750c1e937',
-            //     label: 'Certificate of suitability as litigation friend'
-            //   },
-            //   {
-            //     code: '61a87c03-9159-4c13-af31-1c3b90de42cb',
-            //     label: 'Legal aid certificate'
-            //   },
-            //   {
-            //     code: '64af55f3-bb64-403b-832d-01df63bb47b9',
-            //     label: 'Other document'
-            //   }
-            // ],
             valueCode: 'a9012afc-83de-4678-912b-6a523c496073',
             valueLabel: 'Notice for service out of the jurisdiction'
           },
@@ -1185,24 +825,6 @@ export const submitCaseApiData = {
         code: 'PROVIDER_OF_SOCIAL_HOUSING',
         label: 'Registered provider of social housing or local authority'
       },
-      // list_items: [
-      //   {
-      //     code: 'PRIVATE_LANDLORD',
-      //     label: 'Private landlord'
-      //   },
-      //   {
-      //     code: 'PROVIDER_OF_SOCIAL_HOUSING',
-      //     label: 'Registered provider of social housing or local authority'
-      //   },
-      //   {
-      //     code: 'MORTGAGE_LENDER',
-      //     label: 'Mortgage lender'
-      //   },
-      //   {
-      //     code: 'OTHER',
-      //     label: 'Other'
-      //   }
-      // ],
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',

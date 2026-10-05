@@ -28,6 +28,30 @@ export function getDefendantAddressByName(submitPayload: any, createPayload: any
     .join('\n');
 }
 
+export function getDefendantAddress(
+  submitPayload: any,
+  createPayload: any,
+  fullName: string,
+) {
+  const defendant = [
+    submitPayload.defendant1,
+    ...(submitPayload.additionalDefendants ?? []).map((d: any) => d.value),
+  ].find(d => `${d.firstName} ${d.lastName}` === fullName);
+
+  if (!defendant) {
+    return createPayload.propertyAddress;
+  }
+
+  const address =
+    defendant?.addressKnown === 'YES'
+      ? defendant.addressSameAsPossession === 'YES'
+        ? createPayload.propertyAddress
+        : defendant.correspondenceAddress
+      : null;
+
+  return address?.AddressLine1 ? address : 'Address unknown';
+}
+
 export function generateRandomFirstAndLastNames(options: {
   countOfFirstNamesToGenerate?: number;
   countOfLastNamesToGenerate?: number;

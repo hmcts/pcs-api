@@ -84,6 +84,7 @@ export class CaseManagementAction implements IAction {
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['validateFullPartyDetails', () => this.validateFullPartyDetails(page, fieldName as actionRecord)],
+      ['confirmRemoveParty', () => this.confirmRemoveParty(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -644,6 +645,12 @@ export class CaseManagementAction implements IAction {
         option: partyData.option2
       });
     }
+
+    if (partyData.activeApp) {
+      await performAction('clickButton', manageParty.continueButton);
+      await performValidation('errorMessage', { header: partyData.errorHeader, message: partyData.errorMessage });
+      return;
+    }
     await performAction('reTryOnCallBackError', manageParty.continueButton, partyData.nextPage as string);
   }
 
@@ -955,32 +962,29 @@ export class CaseManagementAction implements IAction {
 
     const defendant = new Map<string, string>();
     let section = String(`${defendantsDetails.mainTable}-${defendantsDetails.subTable}`);
+    let index = section.split('-')[0] !== 'Defendant' ? 'last' : ''
+    let defAddress = defendantsDetails.defAddress as any;
 
-    switch (section) {
-      case 'Additional defendant 3-Service address':
-        defendant.set(`Building and Street`, addressInfo.buildingStreet);
-        defendant.set(`Address Line 2`, addressInfo.addressLine2);
-        defendant.set(`Town or City`, addressInfo.townCity);
-        defendant.set(`Postcode/Zipcode`, addressInfo.engOrWalPostcode);
-        defendant.set('Country', addressInfo.country);
-        expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
-        expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
-        break;
-      
-      case 'Litigation friend-Service address':
-        defendant.set(`Building and Street`, addressInfo.buildingStreet);
-        defendant.set(`Address Line 2`, addressInfo.addressLine2);
-        defendant.set(`Town or City`, addressInfo.townCity);
-        defendant.set(`Postcode/Zipcode`, addressInfo.engOrWalPostcode);
-        defendant.set('Country', addressInfo.country);
+    await test.step(`Service address verification for ${defendantsDetails.firstName} `, async () => {
+      if (defAddress) {
+        defendant.set(`Building and Street`, defAddress.AddressLine1 ?? '');
+        defendant.set(`Address Line 2`, defAddress.AddressLine2 ?? '');
+        defendant.set(`Town or City`, defAddress.PostTown ?? '');
+        defendant.set(`Postcode/Zipcode`, defAddress.PostCode ?? '');
+        defendant.set('Country', defAddress.Country ?? '');
+      }
+    });
+
+    await test.step(`User Name verification for ${defendantsDetails.firstName}`, async () => {
+      if (section.split('-')[0] === 'Litigation friend') {
         let actingFor = (defendantsDetails.actingFor as string).split('-')[0].trim()
         expect(await this.getTableDataValue(page, `Name`, 'last')).toEqual(`${defendantsDetails.firstName} ${defendantsDetails.lastName}`);
         expect(await this.getTableDataValue(page, `Acting for`, 'last')).toEqual(actingFor);
-        break;
-
-      default:
-        break;
-    };
+      } else {
+        expect(await this.getTableDataValue(page, `Defendant’s first name`, index)).toEqual(`${defendantsDetails.firstName}`);
+        expect(await this.getTableDataValue(page, `Defendant’s last name`, index)).toEqual(`${defendantsDetails.lastName}`);
+      }
+    });    
 
     await this.caseTabTableData(page, defendantsDetails.mainTable as string, defendantsDetails.subTable as string);
 
@@ -1144,11 +1148,14 @@ export class CaseManagementAction implements IAction {
     expect(await this.getCaseFieldValue(page, 'Name')).toEqual(partyDetails.defName);
     expect(await this.getCaseFieldValue(page, 'Date of birth')).toEqual(partyDetails.defDOB);
     expect(await this.getCaseFieldValue(page, 'Address for service')).toEqual(partyDetails.defAddress);
+    
+    if (partyDetails.dobVal) return;    
 
     await performAction('clickRadioButton', {
       question: partyDetails.question,
       option: partyDetails.option,
     });
+
     if(partyDetails.option === 'No'){
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
       await performAction('clickButton', checkFullPartyDetails.continueButton);
@@ -1160,8 +1167,8 @@ export class CaseManagementAction implements IAction {
   }
 
   private async getCaseFieldValue(page: Page, label: string): Promise<string> {
-  return page
-    .locator(`dt.case-field__label:text-is("${label}") + dd.case-field__value`)
-    .innerText();
-}
+    return page
+      .locator(`dt.case-field__label:text-is("${label}") + dd.case-field__value`)
+      .innerText();
+  }
 }
