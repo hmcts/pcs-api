@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails, checkFullPartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, updatePartyDetails, checkFullPartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 import { getDefendantAddress, getDefendantAddressByName } from '@utils/common/userData.utils';
@@ -279,15 +279,15 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
   });
 
   test(`Case management - As a Case Worker Update Claimant details on the case  @CM @regression`, async () => {
-    let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
+    let party = `${submitPayLoad.claimantName} - Claimant 1`;
     await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
       question1: manageParty.whatChangeQuestion,
       option1: manageParty.updatePartyRadioOption,
       question2: manageParty.whichPartyContactInformationHiddenQuestion,
-      option2: submitPayLoad.claimantName,
+      option2: party,
       nextPage: updatePartyDetails.mainHeader
     });
     await performAction('updatePartyDetails', {
@@ -308,14 +308,9 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
 
   test(`Case management - As a Case Worker Successfully Remove a 'Defendant' from the case - @CM @regression`, async () => {
     const [party, party1, party2] = allPartyDetails;
-    const [name, name1, name2] = [party, party1, party2].map(
-      p => p.split(' - ')[0]
-    );
-
+    const [name, name1, name2] = [party, party1, party2].map( p => p.split(' - ')[0]);
     const partyAddress = getDefendantAddressByName(submitPayload, createPayload, name1);
-
-    const removeParty =
-      `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party1}?`;
+    const removeParty = `${checkFullPartyDetails.doYouWantToRemoveHiddenQuestion} ${party1}?`;
 
     await test.step(`Select event "Manage Parties" from event drop down`, async () => {
       await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
