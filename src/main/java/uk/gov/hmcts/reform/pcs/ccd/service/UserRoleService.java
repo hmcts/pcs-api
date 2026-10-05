@@ -20,7 +20,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,7 +63,7 @@ public class UserRoleService {
             roles.addAll(getOrganisationalRoles(currentUserId));
         }
 
-        return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
+        return new UserRoles(SecurityContextService.toUserId(currentUserId), List.copyOf(roles));
     }
 
     /**
@@ -81,7 +80,7 @@ public class UserRoleService {
             roles.addAll(getOrganisationalRoles(currentUserId));
         }
 
-        return new UserRoles(UUID.fromString(currentUserId), List.copyOf(roles));
+        return new UserRoles(SecurityContextService.toUserId(currentUserId), List.copyOf(roles));
     }
 
     private Set<String> getOrganisationalRoles(String userId) {

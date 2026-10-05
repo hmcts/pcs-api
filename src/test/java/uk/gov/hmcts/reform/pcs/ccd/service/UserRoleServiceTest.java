@@ -30,6 +30,7 @@ class UserRoleServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
     private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String LEGACY_UID = "7667";
     private static final String USER_AUTH_HEADER = "Bearer user-token";
     private static final String S2S_AUTH_HEADER = "Bearer s2s-token";
 
@@ -190,6 +191,46 @@ class UserRoleServiceTest {
         assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
         assertThat(userRoles.roles()).containsExactly("system");
         verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @Test
+    void shouldReturnNullUserIdForNonUuidIdamUidOnCaseRoles() {
+        stubAuth();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker-pcs"))
+            .build());
+        when(caseAssignmentApi.getUserRoles(
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
+            List.of(String.valueOf(CASE_REFERENCE)),
+            List.of(LEGACY_UID)
+        )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder()
+                .roleAssignment(List.of(RoleAssignment.builder().roleName("hearing-centre-admin").build()))
+                .build());
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isNull();
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldReturnNullUserIdForNonUuidIdamUidOnOrganisationalRoles() {
+        stubAuth();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker"))
+            .build());
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder().build());
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.userId()).isNull();
+        assertThat(userRoles.roles()).containsExactly("caseworker");
     }
 
     private void stubCurrentUserDetails(List<String> roles) {
