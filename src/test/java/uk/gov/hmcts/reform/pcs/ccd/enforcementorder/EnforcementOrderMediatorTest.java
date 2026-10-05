@@ -274,11 +274,10 @@ class EnforcementOrderMediatorTest {
     void shouldSetHasUnsubmittedEnforcementDataToYesAndKeepEnforcementOrderWhenDraftDataIsEmpty() {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
-
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
         when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
             .thenReturn(Optional.empty());
+        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
@@ -293,8 +292,8 @@ class EnforcementOrderMediatorTest {
     void shouldSetHasUnsubmittedEnforcementDataToNoWhenNoDraftExists() {
         // Given
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(false);
+        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
 
         // When
         underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
