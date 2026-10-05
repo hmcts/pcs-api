@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class SecurityContextService {
 
@@ -40,7 +42,16 @@ public class SecurityContextService {
      */
     public UUID getCurrentUserId() {
         UserInfo userDetails = getCurrentUserDetails();
-        return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
+        return userDetails != null ? toUserId(userDetails.getUid()) : null;
+    }
+
+    public static UUID toUserId(String uid) {
+        try {
+            return UUID.fromString(uid);
+        } catch (IllegalArgumentException ex) {
+            log.warn("IDAM uid {} is not a UUID, treating the user as having no PCS user id", uid);
+            return null;
+        }
     }
 
     public String getCurrentUserAuthToken() {

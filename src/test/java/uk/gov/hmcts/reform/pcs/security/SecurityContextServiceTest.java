@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -166,6 +168,22 @@ class SecurityContextServiceTest {
         UUID actualUserId = underTest.getCurrentUserId();
 
         assertThat(actualUserId).isEqualTo(expectedUserId);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"7667", "not-a-uuid"})
+    @DisplayName("Should return null user ID for an IDAM uid that is not a UUID")
+    void getUserIdWhenUidIsNotUuid(String uid) {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(uid);
+
+        UUID actualUserId = underTest.getCurrentUserId();
+
+        assertThat(actualUserId).isNull();
     }
 
     @Test

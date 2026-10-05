@@ -146,6 +146,21 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldReportNoUnsubmittedCaseDataForNonUuidIdamUid() {
+        // Given
+        UserInfo userInfo = UserInfo.builder()
+            .uid("7667")
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
+        // When
+        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId);
+
+        // Then
+        assertThat(hasUnsubmittedCaseData).isFalse();
+    }
+
+    @Test
     void shouldSaveNewUnsubmittedCaseData() throws JsonProcessingException {
         // Given
         String caseDataJson = "case data json";

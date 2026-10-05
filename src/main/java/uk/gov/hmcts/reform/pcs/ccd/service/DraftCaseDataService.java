@@ -60,7 +60,7 @@ public class DraftCaseDataService {
     }
 
     private UUID getCurrentUserId() {
-        return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+        return SecurityContextService.toUserId(securityContextService.getCurrentUserDetails().getUid());
     }
 
     /**
