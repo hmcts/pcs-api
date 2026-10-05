@@ -1,0 +1,8 @@
+export const confirmAddJudicialNotes = {
+  mainHeader: `Add a judicial note`,
+  judicialNotesAddedText: `Judicial note added`,
+  youDoNotNeedText: `You do not need to do anything else`,
+  whatHappensNextHeader: `What happens next`,
+  theJudicialNotesParagraph: `The judicial note has been added. It can be viewed in the 'Judicial notes' tab on the case summary page.`,
+  closeAndReturnToCaseOverviewButton: `Close and Return to case details`,
+};

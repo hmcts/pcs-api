@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing, addJudicialNotes
+  confirmCancelHearing, addJudicialNotes, confirmAddJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -82,7 +82,8 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
-      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes(fieldName as actionRecord)],
+      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
+      ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -777,27 +778,109 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    await performAction('inputText', judicialNotes.label, CaseManagementCommonUtils.generateRandomString(judicialNotes.input as number));
+    await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
     await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
   }
 
-  private async confirmAddJudicialNotes(confirmAddNotes: actionRecord): Promise<void> {
-      let submitPayLoad = confirmAddNotes.submitPayload as Record<string, any>;
+  private async confirmAddJudicialNotes(): Promise<void> {
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
       await performValidation('text', {
         elementType: 'paragraph',
         text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
       });
-      await performValidation('text', { elementType: 'inlineText', text: confirmHearing.addHearingText });
-      await performValidation('text', { elementType: 'inlineText', text: 'Case number #' + caseInfo.fid });
-      await performValidation('text', {
-        elementType: 'inlineText',
-        text: `${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
-      });
-      await performValidation('text', { elementType: 'inlineText', text: `${submitPayLoad.claimantName} vs ${await this.getDefendantClaimDetails(submitPayLoad)}` });
-      await performValidation('mainHeader', confirmHearing.mainHeader);
-      await performAction('clickButton', confirmHearing.closeAndReturnToCaseOverviewButton);
+      await performValidation('mainHeader', confirmAddJudicialNotes.mainHeader);
+      await performValidation('text', { elementType: 'inlineText', text: confirmAddJudicialNotes.judicialNotesAddedText});
+      await performValidation('text', { elementType: 'inlineText', text: confirmAddJudicialNotes.youDoNotNeedText});
+      await performAction('clickButton', confirmAddJudicialNotes.closeAndReturnToCaseOverviewButton);
     }
+
+  private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
+    const judicialNote = new Map<string, string>();
+
+    judicialNote.set('Note', judicialNotes.userInput as string);
+
+    const expectedCreatedOn = judicialNotes.createdOn as string;
+    const normalizedExpectedCreatedOn = expectedCreatedOn.replace(
+      /:\d{2}(?=\s(?:AM|PM)$)/,
+      ''
+    );
+    judicialNote.set('Created on', normalizedExpectedCreatedOn);
+
+    const noteCard = page.locator('.govuk-summary-card').filter({
+      has: page.locator('.govuk-summary-card__title', {
+        hasText: judicialNotes.table as string,
+      }),
+    });
+    await expect(noteCard).toBeVisible();
+    const rows = noteCard.locator(
+      '.govuk-summary-list__row'
+    );
+    const caseTabMap = new Map<string, string>();
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const key = (
+        await row
+          .locator('.govuk-summary-list__key')
+          .textContent()
+      )?.trim();
+      let value = (await row.locator('.govuk-summary-list__value').textContent())?.trim();
+
+      if (key === 'Created by') {
+        continue;
+      }
+
+      if (key === 'Created on' && value) {
+        value = value.replace(/:\d{2}(?=\s(?:AM|PM)$)/, '');
+      }
+
+      if (key) {
+        caseTabMap.set(key, value ?? '');
+      }
+    }
+    const misMatchMap = compareMaps(
+      judicialNote,
+      caseTabMap,
+      {
+        name1: 'JudicialNote',
+        name2: 'CaseNotesTab',
+      }
+    );
+
+    if (misMatchMap.size > 0) {
+      console.log(
+        `\n❌ Differences found: ${misMatchMap.size}`
+      );
+
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+
+        console.log(
+          '============================================================'
+        );
+
+        console.log(
+          `• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`
+        );
+      }
+      console.log(
+        '\n********** END OF FAILURE LIST. ***************'
+      );
+
+      throw new Error(
+        `Judicial Notes validations failed for ${
+          misMatchMap.size
+        } ${
+          misMatchMap.size === 1 ? 'item' : 'items'
+        }`
+      );
+    }
+    console.log(
+      '\n✅ Judicial Notes VALIDATION PASSED!\n'
+    );
+    caseTabMap.clear();
+  }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {

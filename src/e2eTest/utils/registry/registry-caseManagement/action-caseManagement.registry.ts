@@ -92,7 +92,8 @@ export class ActionCMRegistry {
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
     ['addJudicialNotes', new CaseManagementAction()],
     ['confirmAddJudicialNotes', new CaseManagementAction()],
-
+    ['validateJudgeNotesTab', new CaseManagementAction()],
+    ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {

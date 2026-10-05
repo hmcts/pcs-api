@@ -1,3 +1,7 @@
+import {
+  checkYourAnswersJudicialNotes
+} from "@data/page-data-figma/page-data-caseManagement-figma/checkYourAnswersJudicialNotes.page.data";
+
 export default {
   'amendDocumentsselectDocument': 'selectDocument',
   'addCaseReviewDateaddCaseReviewDate': 'addReviewDates',
@@ -31,4 +35,6 @@ export default {
   'manageParties/confirm': 'confirmManageParties',
   'managePartiesaddLitigationParty': 'addAParty',
   'addJudicialNoteaddJudicialNote': 'addJudicialNotes',
+  'addJudicialNote/submit': 'checkYourAnswersJudicialNotes',
+  'addJudicialNote/confirm': 'confirmAddJudicialNotes',
 };

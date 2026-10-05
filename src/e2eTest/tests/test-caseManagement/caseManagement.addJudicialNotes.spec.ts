@@ -10,6 +10,10 @@ import {
   addJudicialNotes,
   checkYourAnswersJudicialNotes
 } from "@data/page-data-figma/page-data-caseManagement-figma";
+import {getCurrentBSTTime} from "@utils/common/string.utils";
+import {
+  CaseManagementCommonUtils
+} from "@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action";
 
 
 test.use({ storageState: undefined })
@@ -40,12 +44,24 @@ test.afterEach(async () => {
 
 test.describe('Case management - Add Judicial Notes @nightly', async () => {
   test('Case management - Add Judicial Notes @CM @regression', async () => {
+    const currentTime = getCurrentBSTTime();
+    const judicialNoteText = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText);
     await performAction('selectAnEvent', { eventType: caseSummary.addJudicialNote });
     await performValidation('mainHeader', addJudicialNotes.mainHeader);
-    await performAction('addJudicialNotes');
+    await performAction('errorValidationAddJudicialNotes', addJudicialNotes.errorValidation);
+    await performAction('addJudicialNotes',{
+      label: addJudicialNotes.notesAboutThisCaseTextLabel,
+      noteTextInput: judicialNoteText,
+      nextPage: checkYourAnswersJudicialNotes.mainHeader
+    });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
     await performAction('confirmAddJudicialNotes');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Add Judicial Notes');
-    await performAction('clickTab', home.caseFileView);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
+    await performAction('clickTab', home.judicialNotes);
+    await performAction('validateJudgeNotesTab',{
+      table: 'Note',
+      userInput: judicialNoteText,
+      createdOn: currentTime
+    });
   });
 });
