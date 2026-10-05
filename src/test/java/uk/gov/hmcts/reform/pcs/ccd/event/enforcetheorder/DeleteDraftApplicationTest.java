@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @ExtendWith(MockitoExtension.class)
 class DeleteDraftApplicationTest extends BaseEventTest {
@@ -38,7 +40,9 @@ class DeleteDraftApplicationTest extends BaseEventTest {
 
     @Test
     void shouldBeConfiguredAsShowForDraftResponseAndFeatureFlag() {
-        assertConfiguredShowConditions("hasUnsubmittedEnforcementData=\"Yes\"");
+        assertConfiguredShowConditions(ShowConditions.and(
+                "hasUnsubmittedEnforcementData=\"Yes\"",
+                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4)));
     }
 
     @Test
