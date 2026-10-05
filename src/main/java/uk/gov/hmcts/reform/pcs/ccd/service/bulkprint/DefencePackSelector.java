@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Selects defence-phase envelopes per recipient. Release 1.3 limits delivery to eligible postal defendants;
- * while off, all parties are eligible. Release 1.4 additionally excludes claimants from receiving a defence pack.
- * Only documents not covered by a {@code PACK_SENT} success row are included, so late counter-claims
- * follow without re-sending.
+ * Selects defence-phase envelopes per recipient. Defence packs go to defendants who opted into postal contact;
+ * claimants are not included. The current rollout flag gates that rule and, while off, keeps the previous
+ * all-party fan-out. Only documents not covered by a {@code PACK_SENT} success row are included, so late
+ * counter-claims follow without re-sending.
  */
 @Service
 public class DefencePackSelector {
