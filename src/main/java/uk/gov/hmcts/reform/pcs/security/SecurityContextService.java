@@ -46,7 +46,7 @@ public class SecurityContextService {
     public static UUID toUserId(String uid) {
         try {
             return UUID.fromString(uid);
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException exception) {
             return null;
         }
     }
