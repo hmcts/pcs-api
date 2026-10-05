@@ -28,7 +28,7 @@ def secrets = [
     secret('definition-importer-password', 'DEFINITION_IMPORTER_PASSWORD'),
   ],
   'ccd-${env}': [
-    secret('session-keys', 'SESSION_KEYS')Collapse comment
+    secret('session-keys', 'SESSION_KEYS')
   ]
 ]
 
