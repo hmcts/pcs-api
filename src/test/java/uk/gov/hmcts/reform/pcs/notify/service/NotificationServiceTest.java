@@ -1684,7 +1684,7 @@ class NotificationServiceTest {
             assertThat(response).isNull();
         }
     }
-
+    // Helper methods for creating test data
     private EmailNotificationRequest createValidEmailRequest() {
         Map<String, Object> personalisation = new HashMap<>();
         personalisation.put("name", "Test User");
