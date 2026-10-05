@@ -113,7 +113,7 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-        String paymentUrl = Optional.ofNullable(defendantResponse)
+        String paymentUrl = Optional.of(defendantResponse)
             .map(DefendantResponseEntity::getPcsCase)
             .map(PcsCaseEntity::getCaseReference)
             .map(Object::toString)
