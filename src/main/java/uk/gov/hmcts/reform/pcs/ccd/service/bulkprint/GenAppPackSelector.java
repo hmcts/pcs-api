@@ -50,12 +50,14 @@ public class GenAppPackSelector {
             return List.of();
         }
         ClaimEntity claim = pcsCase.getClaims().getFirst();
-        List<PartyEntity> claimants = packSkipRules.shouldExcludeClaimant()
-            ? List.of() : partiesByRole(claim, PartyRole.CLAIMANT);
+        List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        List<PartyEntity> allParties = new ArrayList<>(claimants);
-        allParties.addAll(defendants);
-        if (allParties.isEmpty()) {
+        List<PartyEntity> candidateParties = new ArrayList<>();
+        if (!packSkipRules.shouldExcludeClaimant()) {
+            candidateParties.addAll(claimants);
+        }
+        candidateParties.addAll(defendants);
+        if (candidateParties.isEmpty()) {
             return List.of();
         }
 
@@ -75,7 +77,7 @@ public class GenAppPackSelector {
                 continue;
             }
             DocumentEntity document = genApp.getSubmissionDocument();
-            for (PartyEntity party : allParties) {
+            for (PartyEntity party : candidateParties) {
                 if (!wantsPost(party) || sent.contains(key(party, document))) {
                     continue;
                 }

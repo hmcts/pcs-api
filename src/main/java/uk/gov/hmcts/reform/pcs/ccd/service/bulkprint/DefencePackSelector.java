@@ -62,8 +62,7 @@ public class DefencePackSelector {
 
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
-        List<PartyEntity> eligibleRecipients = eligibleRecipients(
-            packSkipRules.shouldExcludeClaimant() ? List.of() : claimants, defendants);
+        List<PartyEntity> eligibleRecipients = eligibleRecipients(claimants, defendants);
         Set<UUID> claimantIds = claimants.stream().map(PartyEntity::getId).collect(Collectors.toSet());
 
         Map<UUID, PartyEntity> recipients = new LinkedHashMap<>();

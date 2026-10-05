@@ -7,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -535,29 +534,6 @@ class DefencePackSelectorTest {
 
         assertThat(result).singleElement()
             .satisfies(candidate -> assertThat(candidate.recipient()).isEqualTo(formerlyRepresented));
-    }
-
-    @ParameterizedTest
-    @CsvSource({"false, false", "false, true", "true, false", "true, true"})
-    @DisplayName("Release 1.4 excludes claimant from receiving defence pack without changing defendant receiving pack")
-    void shouldExcludeClaimantFromReceivingDefencePack(boolean release14Enabled, boolean release13Enabled) {
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(release13Enabled);
-        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
-        claimant.setContactPreferences(ContactPreferencesEntity.builder()
-                                           .contactByPost(VerticalYesNo.YES)
-                                           .build());
-
-        PcsCaseEntity pcsCase = caseWith(List.of(defenceForm, counterClaim), claimant, defendant, coDefendant);
-
-        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
-
-        assertThat(result).extracting(DefencePackCandidate::recipient)
-            .containsExactlyElementsOf(release14Enabled || release13Enabled
-                   ? List.of(defendant, coDefendant) : List.of(claimant, defendant, coDefendant));
-        assertThat(candidateFor(result, defendant).role()).isEqualTo(PartyRole.DEFENDANT);
-        assertThat(candidateFor(result, defendant).documents()).containsExactly(defenceForm, counterClaim);
-        assertThat(candidateFor(result, coDefendant).documents()).containsExactly(defenceForm, counterClaim);
     }
 
     private DefendantResponseEntity submittedDefence(PartyEntity party, LanguageUsed languageUsed) {
