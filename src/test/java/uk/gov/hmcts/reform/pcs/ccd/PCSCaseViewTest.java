@@ -518,10 +518,10 @@ class PCSCaseViewTest {
         // Then
         if (state == State.CASE_ISSUED) {
             verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
+            assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
         } else {
             verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
         }
-        assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
     }
 
     private static Stream<Arguments> unsubmittedEnforcementDataScenarios() {

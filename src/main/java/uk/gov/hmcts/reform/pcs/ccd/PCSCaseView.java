@@ -128,11 +128,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
         enforcementOrderMediator.handleEnforcementRequirements(submittedCase.pcsCaseEntity(), pcsCase);
-        if (pcsCase.getEnforcementOrder() == null) {
+
+        if (pcsCase.getEnforcementOrder() == null && State.CASE_ISSUED == state) {
             pcsCase.setEnforcementOrder(new EnforcementOrder());
+            pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(
+                    hasEnforcementDraftData(caseReference) ? YesOrNo.YES : YesOrNo.NO);
         }
-        pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(
-                hasEnforcementDraftData(caseReference, state) ? YesOrNo.YES : YesOrNo.NO);
+
 
         caseFieldsView.setCaseFields(pcsCase);
 
@@ -155,11 +157,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return false;
     }
 
-    private boolean hasEnforcementDraftData(long caseReference, State state) {
-        if (State.CASE_ISSUED == state) {
-            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, enforceTheOrder);
-        }
-        return false;
+    private boolean hasEnforcementDraftData(long caseReference) {
+        return draftCaseDataService.hasUnsubmittedCaseData(caseReference, enforceTheOrder);
     }
 
     private SubmittedCase getSubmittedCase(long caseReference, State state) {
