@@ -200,6 +200,7 @@ class UserRoleServiceTest {
             .uid(LEGACY_UID)
             .roles(List.of("caseworker-pcs"))
             .build());
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(null);
         when(caseAssignmentApi.getUserRoles(
             USER_AUTH_HEADER,
             S2S_AUTH_HEADER,
@@ -224,6 +225,7 @@ class UserRoleServiceTest {
             .uid(LEGACY_UID)
             .roles(List.of("caseworker"))
             .build());
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(null);
         when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
             .thenReturn(RoleAssignmentResponse.builder().build());
 
@@ -238,6 +240,7 @@ class UserRoleServiceTest {
             .uid(CURRENT_USER_ID.toString())
             .roles(roles)
             .build());
+        when(securityContextService.toUserId(CURRENT_USER_ID.toString())).thenReturn(CURRENT_USER_ID);
     }
 
     private void stubAuth() {

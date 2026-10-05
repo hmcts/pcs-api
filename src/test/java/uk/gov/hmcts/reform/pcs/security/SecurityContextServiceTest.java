@@ -170,8 +170,24 @@ class SecurityContextServiceTest {
         assertThat(actualUserId).isEqualTo(expectedUserId);
     }
 
+    @Test
+    @DisplayName("Should get the user ID from an upper-case UUID uid")
+    void getUserIdWhenUidIsUpperCaseUuid() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        UUID expectedUserId = UUID.randomUUID();
+        when(userDetails.getUid()).thenReturn(expectedUserId.toString().toUpperCase());
+
+        UUID actualUserId = underTest.getCurrentUserId();
+
+        assertThat(actualUserId).isEqualTo(expectedUserId);
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = {"7667", "not-a-uuid"})
+    @ValueSource(strings = {"7667", "not-a-uuid", "1-2-3-4-5"})
     @DisplayName("Should return null user ID for an IDAM uid that is not a UUID")
     void getUserIdWhenUidIsNotUuid(String uid) {
         when(securityContext.getAuthentication()).thenReturn(authentication);

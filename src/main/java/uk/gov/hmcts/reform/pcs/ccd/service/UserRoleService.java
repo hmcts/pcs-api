@@ -63,7 +63,7 @@ public class UserRoleService {
             roles.addAll(getOrganisationalRoles(currentUserId));
         }
 
-        return new UserRoles(SecurityContextService.toUserId(currentUserId), List.copyOf(roles));
+        return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
     }
 
     /**
@@ -80,7 +80,7 @@ public class UserRoleService {
             roles.addAll(getOrganisationalRoles(currentUserId));
         }
 
-        return new UserRoles(SecurityContextService.toUserId(currentUserId), List.copyOf(roles));
+        return new UserRoles(securityContextService.toUserId(currentUserId), List.copyOf(roles));
     }
 
     private Set<String> getOrganisationalRoles(String userId) {

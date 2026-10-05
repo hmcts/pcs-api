@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -10,9 +11,14 @@ import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class SecurityContextService {
+
+    private static final Pattern UUID_PATTERN = Pattern.compile(
+        "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", Pattern.CASE_INSENSITIVE);
 
     private final String systemUserId;
 
@@ -43,12 +49,12 @@ public class SecurityContextService {
         return userDetails != null ? toUserId(userDetails.getUid()) : null;
     }
 
-    public static UUID toUserId(String uid) {
-        try {
-            return UUID.fromString(uid);
-        } catch (IllegalArgumentException exception) {
+    public UUID toUserId(String uid) {
+        if (!UUID_PATTERN.matcher(uid).matches()) {
+            log.debug("IDAM uid is not a UUID, treating the user as having no PCS user id");
             return null;
         }
+        return UUID.fromString(uid);
     }
 
     public String getCurrentUserAuthToken() {
