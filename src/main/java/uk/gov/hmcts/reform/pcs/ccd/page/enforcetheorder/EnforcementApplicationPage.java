@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantOfRestitutionMapper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -148,11 +150,16 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
             pcsCase.setFormattedDefendantNames(defendants.stream()
-                .map(defendant ->
-                    defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
-                    + "<br>")
-                .collect(Collectors.joining("\n")));
+                                                   .map(defendant -> resolvePartyName(defendant.getValue()) + "<br>")
+                                                   .collect(Collectors.joining("\n")));
         }
+    }
+
+    private String resolvePartyName(Party party) {
+        if (StringUtils.isBlank(party.getFirstName()) && StringUtils.isBlank(party.getLastName())) {
+            return CaseTabView.NAME_UNKNOWN;
+        }
+        return party.getFirstName() + " " + party.getLastName();
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {

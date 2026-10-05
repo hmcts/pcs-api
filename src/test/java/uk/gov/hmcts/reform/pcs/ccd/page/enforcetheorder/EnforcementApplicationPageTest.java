@@ -62,6 +62,20 @@ class EnforcementApplicationPageTest extends BasePageTest {
     }
 
     @Test
+    void shouldSetFormattedDefendantNames_SingleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, null));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("Person unknown<br>");
+    }
+
+    @Test
     void shouldSetFormattedDefendantNames_MultipleDefendant() {
         // Given
         PCSCase caseData = createCaseWithDefendants(
@@ -79,6 +93,26 @@ class EnforcementApplicationPageTest extends BasePageTest {
                 .isEqualTo("John Doe<br>\n"
                         + "Test Testing<br>\n"
                         + "Third Def<br>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant("John", "Doe"),
+            createDefendant(null, null),
+            createDefendant("Third", "Def")
+        );
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("John Doe<br>\n"
+                           + "Person unknown<br>\n"
+                           + "Third Def<br>");
     }
 
     @Test
