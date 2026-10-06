@@ -21,6 +21,7 @@ public class FeatureFlagView {
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
                                     .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
+                                    .welshLanguageUsedEnabled(getFlag(FeatureFlag.WELSH_LANGUAGE_USED))
                                     .build());
     }
 
