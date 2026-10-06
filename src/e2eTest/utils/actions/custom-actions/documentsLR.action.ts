@@ -208,7 +208,7 @@ export class DocumentsAction implements IAction {
   private cyaChangeLinksMap: Map<string, { text: string; href: string; locator: Locator } | null> = new Map();
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
-    const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    const tables = page.locator(`//table[@aria-label="${table.name}"]`);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
