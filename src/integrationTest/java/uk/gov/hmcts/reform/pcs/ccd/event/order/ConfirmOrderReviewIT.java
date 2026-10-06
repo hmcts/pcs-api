@@ -226,11 +226,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
-        Issued issued = outcome.changed("issued_orders", Issued.class);
-        assertThat(issued.orderType()).isEqualTo("OUTRIGHT_POSSESSION");
-        assertThat(issued.orderHtml()).isEqualTo(WORDING);
-        assertThat(issued.seal()).isEqualTo("HIGH_COURT");
-        assertThat(issued.finalOrder()).isFalse();
+        assertThat(issuedOrder(order)).containsExactly(
+            "OUTRIGHT_POSSESSION", WORDING, "HIGH_COURT", false);
     }
 
     @Test
@@ -242,10 +239,10 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
                 + "<script>x()</script><ol><li><p><strong>1</strong> <em>2</em></p><ol><li><p>i</p></li></ol></li></ol>"
                 + "<p>Recital</p><ol><li><p>2</p></li></ol>");
 
-        var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null, new Issue(linked, List.of(), true, true, true, List.of(), COUNTY_COURT)));
 
-        assertThat(outcome.changed("issued_orders", Issued.class).orderHtml())
+        assertThat(issuedOrder(order).get(1))
             .isEqualTo("<p>Possession here</p><ol><li><p><strong>1</strong> <em>2</em></p>"
                 + "<ol type=\"i\"><li><p>i</p></li></ol></li></ol>"
                 + "<p>Recital</p><ol start=\"2\"><li><p>2</p></li></ol>");
@@ -308,6 +305,14 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         return submitted;
     }
 
+    /** The order as issued: its type, wording, seal and whether it is final. */
+    private List<Object> issuedOrder(Order order) {
+        return jdbcTemplate.queryForObject(
+            "SELECT order_type, order_html, seal, final_order FROM issued_orders WHERE draft_order_id = ?",
+            (row, n) -> List.of(row.getString(1), row.getString(2), row.getString(3), row.getBoolean(4)),
+            order.id());
+    }
+
     /** The judge's order as a caseworker who changed nothing issues it. */
     private static IssuedOrder asSubmitted(Order order) {
         return new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot(), WORDING);
@@ -321,10 +326,6 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of("notes", notes), null));
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record Issued(String orderType, String orderHtml, String seal, Boolean finalOrder) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

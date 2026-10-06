@@ -1,7 +1,8 @@
 -- An order as the court issued it: the review that issued it, its wording as HTML exported from the
 -- order document the caseworker issued, and the sealed document generated from that wording once
 -- Docmosis has rendered it. An order is issued once, so a draft order has at most one issued order.
--- Audited in ccd.audit_log like draft_orders.
+-- Unlike draft_orders it is not audited in ccd.audit_log, which allows writes only in a case event: a
+-- background task attaches the document. The issuing event's review in order_reviews is audited.
 CREATE TABLE issued_orders (
     id UUID PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
@@ -17,5 +18,3 @@ CREATE TABLE issued_orders (
 );
 
 CREATE INDEX issued_orders_case_id_idx ON issued_orders(case_id);
-
-CALL ccd.attach_case_event_auditing_v1('public.issued_orders'::regclass);

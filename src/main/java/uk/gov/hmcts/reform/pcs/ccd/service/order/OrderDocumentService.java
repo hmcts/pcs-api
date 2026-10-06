@@ -193,9 +193,10 @@ public class OrderDocumentService {
      */
     private Optional<String> judgeName(long caseReference, UUID judge) {
         List<?> names = entityManager.createNativeQuery("""
-                SELECT concat_ws(' ', user_first_name, user_last_name) FROM ccd.case_event
-                WHERE case_reference = :caseReference AND user_id = :judge AND event_id = 'ext:makeOrder'
-                ORDER BY id DESC LIMIT 1""")
+                SELECT concat_ws(' ', e.user_first_name, e.user_last_name) FROM ccd.case_event e
+                JOIN ccd.case_data c ON c.id = e.case_data_id
+                WHERE c.reference = :caseReference AND e.user_id = :judge AND e.event_id = 'ext:makeOrder'
+                ORDER BY e.id DESC LIMIT 1""")
             .setParameter("caseReference", caseReference)
             .setParameter("judge", judge.toString())
             .getResultList();
