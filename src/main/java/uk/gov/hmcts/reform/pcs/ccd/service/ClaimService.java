@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -132,7 +134,7 @@ public class ClaimService {
             .additionalUnderlesseesOrMortgagees(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
             .additionalDocsProvided(pcsCase.getWantToUploadDocuments())
             .genAppExpected(pcsCase.getApplicationWithClaim())
-            .languageUsed(pcsCase.getLanguageUsed())
+            .languageUsed(Objects.requireNonNullElse(pcsCase.getLanguageUsed(), LanguageUsed.ENGLISH))
             .isExemptLandlord(pcsCase.getIsExemptLandlord())
             .build();
     }

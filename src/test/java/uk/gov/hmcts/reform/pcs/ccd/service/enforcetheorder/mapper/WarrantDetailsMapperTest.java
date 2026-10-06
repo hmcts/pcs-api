@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -60,6 +61,33 @@ class WarrantDetailsMapperTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
+    }
+
+    @ParameterizedTest
+    @EnumSource(LanguageUsed.class)
+    void shouldMapLanguageUsed(LanguageUsed languageUsed) {
+        // Given
+        WarrantDetails warrantDetails = WarrantDetails.builder().languageUsed(languageUsed).build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+
+        // When
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getLanguageUsed()).isEqualTo(languageUsed);
+    }
+
+    @Test
+    void shouldDefaultLanguageUsedToEnglishWhenNotSet() {
+        // Given
+        WarrantDetails warrantDetails = WarrantDetails.builder().languageUsed(null).build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+
+        // When
+        WarrantEntity result = underTest.toEntity(enforcementOrder, enforcementOrderEntity);
+
+        // Then
+        assertThat(result.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
     }
 
     @Test

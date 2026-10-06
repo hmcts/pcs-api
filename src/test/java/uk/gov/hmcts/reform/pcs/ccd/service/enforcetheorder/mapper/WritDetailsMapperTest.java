@@ -317,6 +317,18 @@ class WritDetailsMapperTest {
     }
 
     @Test
+    void shouldDefaultLanguageUsedToEnglishWhenNotSet() {
+        // Given
+        writDetails.setLanguageUsed(null);
+
+        // When
+        WritEntity entity = underTest.toEntity(writDetails);
+
+        // Then
+        assertThat(entity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+    }
+
+    @Test
     void shouldMapRepaymentCostsAllNull() {
         // Given
         writDetails.setRepaymentCosts(null);

@@ -128,6 +128,18 @@ class ClaimServiceTest {
     }
 
     @Test
+    void shouldDefaultLanguageUsedToEnglishWhenNotSet() {
+        // Given
+        when(pcsCase.getLanguageUsed()).thenReturn(null);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+    }
+
+    @Test
     void shouldReturnSavedClaimEntity() {
         // Given
         ClaimEntity savedClaimEntity = mock(ClaimEntity.class);

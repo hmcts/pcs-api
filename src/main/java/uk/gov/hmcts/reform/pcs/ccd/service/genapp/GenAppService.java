@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -32,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
@@ -114,7 +116,7 @@ public class GenAppService {
             genAppEntity.setDocuments(documentEntities);
         }
 
-        genAppEntity.setLanguageUsed(genAppRequest.getLanguageUsed());
+        genAppEntity.setLanguageUsed(Objects.requireNonNullElse(genAppRequest.getLanguageUsed(), LanguageUsed.ENGLISH));
         genAppEntity.setApplicationSubmittedDate(LocalDateTime.now(utcClock));
 
         if (genAppRequest.getSotAccepted() != VerticalYesNo.YES) {
