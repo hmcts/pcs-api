@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -172,6 +173,11 @@ public class ClaimEntity {
     @Builder.Default
     @JsonManagedReference
     private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private List<CaseNotification> caseNotifications = new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default

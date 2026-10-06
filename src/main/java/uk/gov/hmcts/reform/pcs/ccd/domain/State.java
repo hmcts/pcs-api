@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ExternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.GlobalSearchAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemUserAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
@@ -115,6 +116,12 @@ public enum State {
         hint = "${caseTitleMarkdown}"
     )
     BREATHING_SPACE,
+
+    @CCD(
+            label = "Draft Discarded",
+            access = {SystemUserAccess.class}
+    )
+    DRAFT_DISCARDED,
 
     @CCD(
         label = "Closed",
