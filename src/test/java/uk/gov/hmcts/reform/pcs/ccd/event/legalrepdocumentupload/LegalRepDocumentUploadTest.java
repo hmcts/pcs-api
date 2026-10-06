@@ -574,5 +574,61 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(submitResponse.getErrors()).contains("Your files were not submitted. Try again.");
         }
 
+        @Test
+        void shouldResolveUploadingPartyFromCurrentRepresentedPartyIdWhenPresent() {
+            // Given
+            UUID targetPartyId = UUID.randomUUID();
+            PartyEntity expectedParty = PartyEntity.builder()
+                .id(targetPartyId)
+                .firstName("Selected")
+                .lastName("Defendant")
+                .build();
+
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(expectedParty));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(mock(Document.class))
+                .build();
+
+            PCSCase pcsCase = PCSCase.builder()
+                .currentRepresentedPartyId(targetPartyId.toString())
+                .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
+                                                   .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
+                                                   .build())
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors()).isNullOrEmpty();
+            verify(documentService).createDocumentEntitiesFromLegalRepDocuments(
+                List.of(legalRepDocument), pcsCaseEntity, expectedParty, null);
+        }
+
+        @Test
+        void shouldReturnErrorWhenCurrentRepresentedPartyIdDoesNotExistInCaseParties() {
+            // Given
+            UUID unknownPartyId = UUID.randomUUID();
+            PartyEntity otherParty = PartyEntity.builder()
+                .id(UUID.randomUUID())
+                .build();
+
+            when(pcsCaseEntity.getParties()).thenReturn(Set.of(otherParty));
+            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+
+            PCSCase pcsCase = PCSCase.builder()
+                .currentRepresentedPartyId(unknownPartyId.toString())
+                .build();
+
+            // When
+            SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
+
+            // Then
+            assertThat(submitResponse.getErrors())
+                .contains("No represented party found for ID: " + unknownPartyId);
+        }
+
     }
 }
