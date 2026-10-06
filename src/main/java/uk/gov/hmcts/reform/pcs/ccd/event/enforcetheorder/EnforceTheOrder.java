@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DefendantService defendantService;
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final FeatureFlagView featureFlagView;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -92,6 +94,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
         setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
+        featureFlagView.setCaseFields(pcsCase);
 
         return pcsCase;
     }

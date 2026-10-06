@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -21,6 +22,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final OrganisationService organisationService;
     private final LegalRepresentativeService legalRepresentativeService;
     private final FeeApplier feeApplier;
+    private final FeatureFlagView featureFlagView;
 
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
@@ -31,6 +33,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
         applyApplicationFeeAmounts(caseData);
 
         caseData.getXuiGenAppRequest().setShowHwfScreens(VerticalYesNo.YES);
+
+        featureFlagView.setCaseFields(caseData);
 
         return caseData;
     }

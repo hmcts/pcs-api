@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.service.LegalRepresentativeService;
@@ -45,6 +46,8 @@ class StartEventHandlerTest {
     private LegalRepresentativeService legalRepresentativeService;
     @Mock
     private FeeApplier feeApplier;
+    @Mock
+    private FeatureFlagView featureFlagView;
     @Captor
     private ArgumentCaptor<BiConsumer<PCSCase, String>> feeSetterCaptor;
 
@@ -52,7 +55,8 @@ class StartEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier);
+        underTest = new StartEventHandler(organisationService, legalRepresentativeService, feeApplier,
+                                           featureFlagView);
     }
 
     @Test
@@ -83,6 +87,25 @@ class StartEventHandlerTest {
         assertThat(caseData.getRepresentedPartyNames()).isEqualTo(expectedPartyNameList);
         assertThat(caseData.getCurrentRepresentedPartyId()).isEqualTo(expectedPartyId.toString());
         assertThat(caseData.getCurrentRepresentedPartyName()).isEqualTo(expectedPartyName);
+    }
+
+    @Test
+    void shouldSetFeatureFlags() {
+        // Given
+        String orgId = UUID.randomUUID().toString();
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(orgId, TEST_CASE_REFERENCE))
+            .thenReturn(DynamicList.builder().listItems(List.of()).build());
+
+        PCSCase caseData = PCSCase.builder()
+            .xuiGenAppRequest(XuiGenAppRequest.builder().build())
+            .build();
+
+        // When
+        underTest.start(eventPayload(caseData));
+
+        // Then
+        verify(featureFlagView).setCaseFields(caseData);
     }
 
     @ParameterizedTest
