@@ -22,7 +22,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Claimant access",
         "Grants users access to all possession cases in which this organisation is the claimant or acts "
             + "for the claimant",
-        1, false, false, true, true
+        1, true, true, true, true
     ),
 
     SOLICITOR_ORG_CLAIMANT_ACCESS(
@@ -30,7 +30,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Claimant access",
         "Grants users access to all possession cases in which this organisation is the claimant or acts "
             + "for the claimant",
-        2, false, false, true, true
+        2, true, true, true, true
     ),
 
     SOLICITOR_ORG_DEFENDANT_ACCESS(
@@ -38,7 +38,7 @@ public enum GroupAccessType implements CCDAccessGroup {
         "Defendant access",
         "Grants users access to all possession cases in which this organisation is the defendant or acts "
             + "for the defendant",
-        3, false, false, true, true
+        3, true, true, true, true
     ),
 
     DUTY_ADVISOR_ACCESS(
