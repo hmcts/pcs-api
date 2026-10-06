@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -31,12 +32,15 @@ class IdamTokenProviderTest {
 
     @Mock
     private OAuth2AuthorizedClientManager authorizedClientManager;
+    @Mock
+    private OAuth2AuthorizedClientService authorizedClientService;
 
     private IdamTokenProvider underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
+        underTest = new IdamTokenProvider(authorizedClientManager, authorizedClientService, "system-user",
+                                          SYSTEM_USERNAME, SYSTEM_PASSWORD);
     }
 
     @Test
@@ -103,6 +107,8 @@ class IdamTokenProviderTest {
         OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
         given(authorizedClient.getAccessToken()).willReturn(accessToken);
         given(accessToken.getTokenValue()).willReturn("fresh token");
+        given(authorizedClientService.loadAuthorizedClient("system-user", SYSTEM_USERNAME))
+            .willReturn(mock(OAuth2AuthorizedClient.class));
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class)))
             .willThrow(refreshFailed)
             .willReturn(authorizedClient);
@@ -115,8 +121,9 @@ class IdamTokenProviderTest {
     @Test
     @DisplayName("Should not retry a failed password login")
     void shouldNotRetryFailedPasswordLogin() {
-        OAuth2AuthorizationException loginFailed =
-            new OAuth2AuthorizationException(new OAuth2Error("invalid_grant", null, null));
+        // Spring's password grant reports a failed login as a ClientAuthorizationException too.
+        ClientAuthorizationException loginFailed =
+            new ClientAuthorizationException(new OAuth2Error("invalid_grant", null, null), "system-user");
         given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(loginFailed);
 
         Throwable throwable = catchThrowable(() -> underTest.getAuthToken());

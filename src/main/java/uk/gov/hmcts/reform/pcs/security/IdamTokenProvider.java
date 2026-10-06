@@ -5,6 +5,7 @@ import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
@@ -21,15 +22,18 @@ public class IdamTokenProvider {
     public static final String BEARER_PREFIX = "Bearer ";
 
     private final OAuth2AuthorizedClientManager authorizedClientManager;
+    private final OAuth2AuthorizedClientService authorizedClientService;
     private final String clientRegistrationId;
     private final String username;
     private final String password;
 
     public IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
-                                              String clientRegistrationId,
-                                              String username,
-                                              String password) {
+                             OAuth2AuthorizedClientService authorizedClientService,
+                             String clientRegistrationId,
+                             String username,
+                             String password) {
         this.authorizedClientManager = authorizedClientManager;
+        this.authorizedClientService = authorizedClientService;
         this.clientRegistrationId = clientRegistrationId;
         this.username = username;
         this.password = password;
@@ -69,9 +73,14 @@ public class IdamTokenProvider {
      * failed password login is not retried, so bad credentials cost one attempt, not two.
      */
     private OAuth2AuthorizedClient authorize(OAuth2AuthorizeRequest authorizeRequest) {
+        // A cached client means this attempt refreshes it; without one it is the password login.
+        boolean refreshing = authorizedClientService.loadAuthorizedClient(clientRegistrationId, username) != null;
         try {
             return authorizedClientManager.authorize(authorizeRequest);
         } catch (ClientAuthorizationException ex) {
+            if (!refreshing) {
+                throw ex;
+            }
             log.warn("Authorizing {} failed ({}); retrying with a fresh login", clientRegistrationId,
                      ex.getError().getErrorCode());
             return authorizedClientManager.authorize(authorizeRequest);

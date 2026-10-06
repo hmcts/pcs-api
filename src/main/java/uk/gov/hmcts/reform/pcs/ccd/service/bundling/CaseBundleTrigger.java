@@ -5,10 +5,10 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
-import org.hibernate.engine.spi.TransactionCompletionCallbacks.AfterCompletionCallback;
-import org.hibernate.engine.spi.TransactionCompletionCallbacks.BeforeCompletionCallback;
+import org.hibernate.action.spi.AfterTransactionCompletionProcess;
+import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
 import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventSource;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.event.spi.PostInsertEvent;
 import org.hibernate.event.spi.PostInsertEventListener;
@@ -65,7 +65,7 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
     private final EntityManagerFactory entityManagerFactory;
     private final ObjectProvider<OutboxBundleJobService> bundleJobs;
     // Cases touched per session, flushed into the outbox once per transaction.
-    private final Map<SharedSessionContractImplementor, Map<UUID, Long>> pendingBySession =
+    private final Map<EventSource, Map<UUID, Long>> pendingBySession =
         Collections.synchronizedMap(new WeakHashMap<>());
 
     public CaseBundleTrigger(EntityManagerFactory entityManagerFactory,
@@ -121,7 +121,7 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
         return Arrays.stream(dirty).anyMatch(index -> properties.contains(names[index]));
     }
 
-    private void queue(SharedSessionContractImplementor session, PcsCaseEntity pcsCase) {
+    private void queue(EventSource session, PcsCaseEntity pcsCase) {
         if (pcsCase == null) {
             return;
         }
@@ -129,10 +129,10 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
         // Read the reference only if the case is already loaded: never trigger a load mid-flush.
         Long caseReference = Hibernate.isInitialized(pcsCase) ? pcsCase.getCaseReference() : null;
         Map<UUID, Long> pending = pendingBySession.computeIfAbsent(session, s -> {
-            var callbacks = session.getTransactionCompletionCallbacks();
-            callbacks.registerCallback((BeforeCompletionCallback) completing -> submit(session));
-            // A rolled-back transaction never reaches the before-completion callback.
-            callbacks.registerCallback((AfterCompletionCallback) (success, completed) ->
+            var actions = session.getActionQueue();
+            actions.registerProcess((BeforeTransactionCompletionProcess) completing -> submit(session));
+            // A rolled-back transaction never reaches the before-completion process.
+            actions.registerProcess((AfterTransactionCompletionProcess) (success, completed) ->
                 pendingBySession.remove(session));
             return new LinkedHashMap<>();
         });
@@ -140,7 +140,7 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
             (existing, latest) -> existing > 0 ? existing : latest);
     }
 
-    private void submit(SharedSessionContractImplementor session) {
+    private void submit(EventSource session) {
         Map<UUID, Long> pending = pendingBySession.remove(session);
         if (pending == null) {
             return;

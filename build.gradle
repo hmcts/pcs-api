@@ -209,6 +209,8 @@ tasks.register('integration', Test) {
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
+  // Each distinct test configuration keeps a cached Spring context; the default heap runs out.
+  maxHeapSize = '1g'
   failFast = true
 }
 
