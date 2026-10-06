@@ -153,6 +153,8 @@ public class OrderDocumentService {
             .orderDate(ORDER_DATE.format(issued.getIssuedOn()))
             .orderHtml(issued.getOrderHtml())
             .sealName(issued.getSeal() == OrderSeal.HIGH_COURT ? "High Court" : countyCourt(court))
+            .countyCourtSeal(issued.getSeal() == OrderSeal.COUNTY_COURT)
+            .highCourtSeal(issued.getSeal() == OrderSeal.HIGH_COURT)
             .build();
     }
 

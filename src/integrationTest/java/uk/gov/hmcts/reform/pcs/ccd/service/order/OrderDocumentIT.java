@@ -109,6 +109,8 @@ class OrderDocumentIT extends AbstractPostgresContainerIT {
             eq("CV-PCS-ORD-ENG-Order.docx"), eq(OutputType.PDF), eq("Order for possession"));
         OrderDocumentPayload rendered = (OrderDocumentPayload) payload.getValue();
         assertThat(rendered.getJudgeName()).isEqualTo("Sarah Hughes");
+        assertThat(rendered.isCountyCourtSeal()).isTrue();
+        assertThat(rendered.isHighCourtSeal()).isFalse();
         assertThat(rendered.getOrderHtml()).isEqualTo(WORDING);
         assertThat(rendered.getParties()).contains(new OrderParty(IssuedCases.DEFENDANT, "Defendant"));
         assertThat(rendered.getCaseNumber()).isEqualTo(String.valueOf(caseReference)

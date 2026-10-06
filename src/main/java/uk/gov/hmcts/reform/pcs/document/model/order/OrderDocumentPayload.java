@@ -25,6 +25,9 @@ public class OrderDocumentPayload implements FormPayload {
     private String orderDate;
     private String orderHtml;
     private String sealName;
+    // The seal the template shows; Docmosis can't negate a condition, so each has its own.
+    private boolean countyCourtSeal;
+    private boolean highCourtSeal;
 
     /** A party named on the order, with their role, such as "Claimant" or "Defendant 2". */
     public record OrderParty(String name, String role) {
