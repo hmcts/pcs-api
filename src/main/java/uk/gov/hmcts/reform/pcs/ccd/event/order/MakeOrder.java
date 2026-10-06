@@ -44,7 +44,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
  * draft. A judge has one working draft per case, and a change is made from the version they last
  * saw; a change with no id starts their draft. An order a caseworker returned to the judge is theirs
  * to change again: they choose it on the case's orders tab, see the caseworker's query, and
- * submit it for review again.
+ * submit it for review again. Submitting an order asks court staff to review it, with a Work
+ * Allocation task.
  */
 @Component
 @AllArgsConstructor
@@ -62,6 +63,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseRepository pcsCaseRepository;
     private final OrderCaseContext orderCaseContext;
     private final ClientContextRetriever clientContextRetriever;
+    private final ConfirmOrderReviewTask confirmOrderReviewTask;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -136,13 +138,16 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         draft.setOrderType(change.orderType());
         draft.setFormData(change.formData());
         draft.setDocweaveSnapshot(change.docweaveSnapshot());
-        if (request.action() == SUBMIT_FOR_REVIEW) {
-            draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
+        if (request.action() != SUBMIT_FOR_REVIEW) {
+            draftOrderRepository.saveAndFlush(draft);
+            return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
+        boolean resubmitted = draft.getState() == DraftOrderState.RETURNED_TO_JUDGE;
+        draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
         draftOrderRepository.saveAndFlush(draft);
-        return request.action() == SUBMIT_FOR_REVIEW
-            ? ExternalSubmitResponse.accepted("Order submitted for review", "Submitted an order for caseworker review")
-            : ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
+        confirmOrderReviewTask.create(caseReference, draft, resubmitted);
+        return ExternalSubmitResponse.accepted(
+            "Order submitted for review", "Submitted an order for caseworker review");
     }
 
     /** A judge has one draft per case, which the database also enforces. */

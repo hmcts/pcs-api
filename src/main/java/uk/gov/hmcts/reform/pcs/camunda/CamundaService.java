@@ -46,6 +46,7 @@ public class CamundaService {
     private static final String EMPTY_WARNINGS_LIST = "[]";
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
+    private static final String ORDER_ID = "orderId";
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
@@ -61,22 +62,41 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
+        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+    }
+
+    /**
+     * Creates a task about one order on the case, which {@link #cancelTask(long, TaskType, UUID)} cancels.
+     */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, UUID orderId) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId);
+    }
+
+    private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
+                            UUID orderId) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
+            .orderId(orderId)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
+        cancelTask(caseId, taskType, null);
+    }
+
+    /** Cancels the tasks of a type about one order on the case, leaving those about its other orders. */
+    public void cancelTask(long caseId, TaskType taskType, UUID orderId) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CANCEL)
             .caseReference(caseId)
             .taskType(taskType)
+            .orderId(orderId)
             .build();
         scheduleCamundaRequest(taskData, Instant.now(utcClock));
     }
@@ -88,12 +108,14 @@ public class CamundaService {
                     taskData.getCaseReference(),
                     taskData.getTaskType(),
                     taskData.getTaskDescription(),
-                    taskData.getIdempotencyKey()
+                    taskData.getIdempotencyKey(),
+                    taskData.getOrderId()
                 );
             case CANCEL ->
                 requestTaskCancellation(
                     taskData.getCaseReference(),
-                    taskData.getTaskType()
+                    taskData.getTaskType(),
+                    taskData.getOrderId()
                 );
         }
     }
@@ -111,7 +133,8 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
+    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
+                                     UUID orderId) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -144,6 +167,9 @@ public class CamundaService {
         } else {
             log.warn("No idempotency key provided for task of type {}", taskType);
         }
+        if (orderId != null) {
+            processVariables.put(ORDER_ID, dmnStringValue(orderId.toString()));
+        }
 
         // Default values - WA task due date is configured in configuration dmn
         LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
@@ -161,7 +187,7 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, TaskType taskType) {
+    private void requestTaskCancellation(Long caseId, TaskType taskType, UUID orderId) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -170,6 +196,9 @@ public class CamundaService {
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
         correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        if (orderId != null) {
+            correlationKeys.put(ORDER_ID, dmnStringValue(orderId.toString()));
+        }
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();
         processVariables.put("cancellationProcess", dmnStringValue(CANCELLATION_PROCESS));

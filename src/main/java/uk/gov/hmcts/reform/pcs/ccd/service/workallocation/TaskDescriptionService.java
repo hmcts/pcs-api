@@ -205,6 +205,21 @@ public class TaskDescriptionService {
         return renderTemplate(templateName, context);
     }
 
+    public String createConfirmOrderReviewDescription(String judgeName,
+                                                      String orderType,
+                                                      String reviewUrl,
+                                                      boolean resubmitted) {
+        Map<String, Object> context = Map.of(
+            "judgeName", judgeName,
+            "orderType", orderType,
+            "reviewUrl", reviewUrl,
+            "resubmitted", resubmitted
+        );
+
+        String templateName = "confirm-order-review";
+        return renderTemplate(templateName, context);
+    }
+
     private String renderTemplate(String templateName, Map<String, Object> context) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("workallocation/" + templateName);
         Writer writer = new StringWriter();

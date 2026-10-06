@@ -26,4 +26,7 @@ public class CamundaRequestTaskData {
 
     private final UUID idempotencyKey;
 
+    /** The order a task is about, for a task there can be one of per order on a case. */
+    private final UUID orderId;
+
 }

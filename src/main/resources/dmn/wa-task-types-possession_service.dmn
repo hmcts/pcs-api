@@ -174,6 +174,17 @@
           <text>"Translate Caseworker Uploaded Document"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_uz3772y">
+        <inputEntry id="UnaryTests_w5hrdv4">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_aiy5f6b">
+          <text>"ConfirmOrderReview"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_mfm8hin">
+          <text>"Confirm order review"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1rb7ro7">
         <inputEntry id="UnaryTests_1pdvjve">
           <text></text>

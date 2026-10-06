@@ -5,10 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
@@ -35,6 +38,10 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
@@ -67,6 +74,8 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
     private IssuedCases cases;
+    @MockitoBean
+    private CamundaService camundaService;
 
     private long caseReference;
     private Actor firstJudge;
@@ -218,6 +227,7 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
         assertThat(saved.formData()).containsEntry("notes", "second version");
         assertThat(saved.docweaveSnapshot()).isEqualTo(document);
+        verifyNoInteractions(camundaService);
     }
 
     @Test
@@ -264,6 +274,8 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         assertThat(asFirstJudge.start().order().id()).as("no working draft after submission").isNull();
         assertThat(submission.audit().summary()).isEqualTo("Order submitted for review");
         assertThat(submission.audit().userId()).isEqualTo(firstJudge.uid());
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
+            contains("has submitted an order for review"), eq(draft.id()));
     }
 
     @Test

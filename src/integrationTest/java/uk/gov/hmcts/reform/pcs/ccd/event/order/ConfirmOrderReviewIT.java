@@ -6,9 +6,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -30,6 +33,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
@@ -61,6 +67,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private IssuedCases cases;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @MockitoBean
+    private CamundaService camundaService;
 
     private long caseReference;
     private Actor judge;
@@ -132,6 +140,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.queryToJudge()).isEqualTo("Which defendant does paragraph 2 mean?");
         assertThat(review.reviewerIdamUserId()).isEqualTo(caseworker.uid());
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
+        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
     }
@@ -164,6 +173,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
         assertThat(asAuthor.startExpectingRejection())
             .containsExactly("The order is no longer waiting for you to change it");
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
+            contains("has changed an order that was returned to them"), eq(order.id()));
     }
 
     @Test
@@ -207,6 +218,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.partiesServed()).containsExactly(defendant);
         assertThat(review.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
+        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
     }
 
     @Test

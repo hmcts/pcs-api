@@ -1124,6 +1124,50 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_9hu3b8d">
+        <inputEntry id="UnaryTests_0q52q9n">
+          <text>"ext:makeOrder"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_nk4nnor">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_od3fp5e">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_fag6ei2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_b98qjl0">
+          <text>Judge sends the order for caseworker review</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_7vh5ew8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_s4y5lvp">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_xk6vq1y">
+          <text>"ConfirmOrderReview"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_o6l6lil">
+          <text>"Confirm order review"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_rtl99cl">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_sfhwj9a">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_npg7giq">
+          <text>"ConfirmOrderReview"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_wskz48z">
+          <text>"routine_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_ns3pggc">
+          <text>"ADMIN"</text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>

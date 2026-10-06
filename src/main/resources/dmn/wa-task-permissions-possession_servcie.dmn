@@ -26,7 +26,7 @@
       <rule id="DecisionRule_17sqvb4">
         <description></description>
         <inputEntry id="UnaryTests_0kkhvpk">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_1hbvv3u">
           <text></text>
@@ -55,7 +55,7 @@
       </rule>
       <rule id="DecisionRule_1qs3glb">
         <inputEntry id="UnaryTests_0l9ifw6">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdjournGenApp", "ReviewSetAsideGenApp", "ReviewGenApp", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "ConfirmOrderReview"</text>
         </inputEntry>
         <inputEntry id="UnaryTests_175p0w3">
           <text></text>

@@ -47,8 +47,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
  * journey. Starting the event sends them the order they chose and the case; submitting either
  * returns the order to the judge with a query, or records the order as the caseworker issues it and
  * how it is to be issued, and adds any review dates to the case. The caseworker may change the
- * judge's form and wording; the judge's order is kept as they submitted it. Generating, sealing and
- * serving the issued order are not built yet.
+ * judge's form and wording; the judge's order is kept as they submitted it. Either closes the
+ * order's Work Allocation task. Generating, sealing and serving the issued order are not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -66,6 +66,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
     private final ClientContextRetriever clientContextRetriever;
+    private final ConfirmOrderReviewTask confirmOrderReviewTask;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -164,9 +165,11 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return order;
     }
 
+    /** Records the review, which closes the order's task. */
     private void save(DraftOrderEntity order, OrderReviewEntity review) {
         draftOrderRepository.saveAndFlush(order);
         orderReviewRepository.saveAndFlush(review);
+        confirmOrderReviewTask.close(order.getPcsCase().getCaseReference(), order);
     }
 
     private static String validQuery(String query) {
