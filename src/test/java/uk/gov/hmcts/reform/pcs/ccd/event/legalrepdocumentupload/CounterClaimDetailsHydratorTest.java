@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -36,6 +37,10 @@ class CounterClaimDetailsHydratorTest {
     @BeforeEach
     void setUp() {
         details = new LegalRepDocumentUploadDetails();
+    }
+
+    private static CounterClaimEntity.CounterClaimEntityBuilder issuedCounterClaim() {
+        return CounterClaimEntity.builder().status(CounterClaimState.COUNTER_CLAIM_ISSUED);
     }
 
     @Nested
@@ -69,6 +74,52 @@ class CounterClaimDetailsHydratorTest {
         }
 
         @Test
+        void shouldSetShowCounterclaimPageToNoWhenCounterclaimNotIssued() {
+            CounterClaimEntity pending = CounterClaimEntity.builder()
+                .id(UUID.randomUUID())
+                .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+                .build();
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(pending))
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.NO);
+            assertThat(details.getCounterclaimDocumentLinks()).isNull();
+            assertThat(details.getValidCounterclaims()).isNull();
+        }
+
+        @Test
+        void shouldExcludeNotIssuedCounterclaimsWhenAnotherIsIssued() {
+            UUID issuedId = UUID.randomUUID();
+            PartyEntity issuedParty = PartyEntity.builder().organisationId(OTHER_ORG_ID).orgName("Issued Co").build();
+            PartyEntity pendingParty = PartyEntity.builder()
+                .organisationId(CURRENT_ORG_ID)
+                .orgName("Pending Co")
+                .build();
+            CounterClaimEntity issued = issuedCounterClaim().id(issuedId).party(issuedParty).build();
+            CounterClaimEntity pending = CounterClaimEntity.builder()
+                .id(UUID.randomUUID())
+                .party(pendingParty)
+                .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+                .build();
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .counterClaims(List.of(pending, issued))
+                .build();
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
+            assertThat(details.getCounterclaimDocumentLinks())
+                .contains("Issued Co")
+                .doesNotContain("Pending Co");
+            assertThat(details.getValidCounterclaims().getListItems()).hasSize(2);
+            assertThat(details.getValidCounterclaims().getListItems().get(0).getCode())
+                .isEqualTo(issuedId.toString());
+        }
+
+        @Test
         void shouldHydrateDetailsForOwnCounterclaim() {
             UUID ccId = UUID.randomUUID();
             PartyEntity ownParty = PartyEntity.builder()
@@ -76,7 +127,7 @@ class CounterClaimDetailsHydratorTest {
                 .orgName("My Firm")
                 .build();
 
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            CounterClaimEntity counterClaim = issuedCounterClaim()
                 .id(ccId)
                 .party(ownParty)
                 .claimSubmittedDate(LocalDateTime.of(2026, 9, 22, 10, 0))
@@ -120,7 +171,7 @@ class CounterClaimDetailsHydratorTest {
                 .lastName("Doe & Co")
                 .build();
 
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            CounterClaimEntity counterClaim = issuedCounterClaim()
                 .id(ccId)
                 .party(otherParty)
                 .claimSubmittedDate(LocalDateTime.of(2026, 9, 22, 10, 0))
@@ -158,7 +209,7 @@ class CounterClaimDetailsHydratorTest {
                 .orgName("My Firm")
                 .build();
 
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            CounterClaimEntity counterClaim = issuedCounterClaim()
                 .id(ccId)
                 .party(ownParty)
                 .claimSubmittedDate(null)
@@ -179,7 +230,7 @@ class CounterClaimDetailsHydratorTest {
         @Test
         void shouldPrioritizeCounterclaimDocumentType() {
             UUID ccId = UUID.randomUUID();
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            CounterClaimEntity counterClaim = issuedCounterClaim()
                 .id(ccId)
                 .build();
 
@@ -209,7 +260,7 @@ class CounterClaimDetailsHydratorTest {
         @Test
         void shouldReturnHashWhenDocumentsListIsNull() {
             UUID ccId = UUID.randomUUID();
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
+            CounterClaimEntity counterClaim = issuedCounterClaim().id(ccId).build();
             PcsCaseEntity caseNullDocs = PcsCaseEntity.builder()
                 .counterClaims(List.of(counterClaim))
                 .documents(null)
@@ -222,7 +273,7 @@ class CounterClaimDetailsHydratorTest {
 
         @Test
         void shouldReturnHashWhenCounterClaimIdIsNull() {
-            CounterClaimEntity ccWithoutId = CounterClaimEntity.builder().id(null).build();
+            CounterClaimEntity ccWithoutId = issuedCounterClaim().id(null).build();
             DocumentEntity doc = DocumentEntity.builder().build();
             PcsCaseEntity caseWithDocs = PcsCaseEntity.builder()
                 .counterClaims(List.of(ccWithoutId))
@@ -238,8 +289,8 @@ class CounterClaimDetailsHydratorTest {
         void shouldReturnHashWhenNoMatchingDocumentsFoundForCounterclaim() {
             UUID ccId = UUID.randomUUID();
             UUID otherCcId = UUID.randomUUID();
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
-            CounterClaimEntity otherCc = CounterClaimEntity.builder().id(otherCcId).build();
+            CounterClaimEntity counterClaim = issuedCounterClaim().id(ccId).build();
+            CounterClaimEntity otherCc = issuedCounterClaim().id(otherCcId).build();
 
             DocumentEntity otherDoc = DocumentEntity.builder()
                 .counterClaim(otherCc)
@@ -258,7 +309,7 @@ class CounterClaimDetailsHydratorTest {
         @Test
         void shouldHandleUrlWithoutDocumentsPathInFormatDocumentUrl() {
             UUID ccId = UUID.randomUUID();
-            CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(ccId).build();
+            CounterClaimEntity counterClaim = issuedCounterClaim().id(ccId).build();
 
             DocumentEntity doc = DocumentEntity.builder()
                 .counterClaim(counterClaim)

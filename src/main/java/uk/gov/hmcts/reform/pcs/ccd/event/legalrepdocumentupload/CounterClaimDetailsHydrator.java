@@ -6,6 +6,7 @@ import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -34,8 +35,12 @@ public class CounterClaimDetailsHydrator {
         LegalRepDocumentUploadDetails details,
         String currentUserOrganisationId
     ) {
-        List<CounterClaimEntity> counterClaims = pcsCaseEntity.getCounterClaims();
-        if (counterClaims == null || counterClaims.isEmpty()) {
+        List<CounterClaimEntity> counterClaims = pcsCaseEntity.getCounterClaims() == null
+            ? List.of()
+            : pcsCaseEntity.getCounterClaims().stream()
+                .filter(cc -> cc != null && cc.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED)
+                .toList();
+        if (counterClaims.isEmpty()) {
             details.setShowCounterclaimPage(VerticalYesNo.NO);
             return;
         }

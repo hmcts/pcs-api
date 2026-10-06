@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -272,6 +273,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             PartyEntity org = PartyEntity.builder().orgName("Acme Corp").build();
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(org)
                     .build();
@@ -292,6 +294,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             PartyEntity person = PartyEntity.builder().firstName("Jane").lastName("Smith").build();
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(person)
                     .build();
@@ -310,6 +313,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             // Given
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(UUID.randomUUID())
                     .party(null)
                     .build();
@@ -329,6 +333,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             UUID ccId = UUID.randomUUID();
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(null)
                     .build();
@@ -357,6 +362,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             UUID ccId = UUID.randomUUID();
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(null)
                     .build();
@@ -386,12 +392,14 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             UUID otherId = UUID.randomUUID();
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(null)
                     .build();
 
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity otherCc =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(otherId)
                     .build();
 
@@ -423,6 +431,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity counterClaim =
                 uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity.builder()
+                    .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
                     .id(ccId)
                     .party(defendant)
                     .claimSubmittedDate(LocalDateTime.of(2026, 4, 2, 12, 0))
