@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.confirmeviction.ConfirmE
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.confirmEviction;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Component
 @AllArgsConstructor
@@ -37,7 +37,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
+                .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         confirmEvictionConfigurer.configurePages(new PageBuilder(eventBuilder));

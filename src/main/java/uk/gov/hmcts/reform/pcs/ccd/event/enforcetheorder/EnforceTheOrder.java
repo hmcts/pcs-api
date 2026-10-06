@@ -41,7 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforceme
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.util.EnforcementTypeUtil.createDynamicStringList;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
 @Component
@@ -69,7 +69,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
+                .showCondition(ShowConditions.featureFlagsEnabled(ENFORCEMENT))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("Submit application");
