@@ -12,6 +12,7 @@ public final class DashboardTaskTemplateIds {
     public static final String VIEW_ALL_APPLICATIONS = "ViewAllApplications";
     public static final String RESPOND_TO_CLAIM = "RespondToClaim";
     public static final String VIEW_RESPONSE = "ViewResponse";
+    public static final String YOUR_SUPPORT = "YourSupport";
     public static final String VIEW_HEARING_DOCUMENTS = "ViewHearingDocuments";
     public static final String VIEW_ORDERS_AND_NOTICES = "ViewOrdersAndNotices";
 }

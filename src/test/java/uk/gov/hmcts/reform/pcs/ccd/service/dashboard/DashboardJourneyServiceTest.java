@@ -140,7 +140,7 @@ class DashboardJourneyServiceTest {
             .containsExactly(
                 tuple(TaskGroupId.CLAIM, 1),
                 tuple(TaskGroupId.DOCUMENTS, 2),
-                tuple(TaskGroupId.RESPONSE, 2),
+                tuple(TaskGroupId.RESPONSE, 3),
                 tuple(TaskGroupId.HEARING, 1),
                 tuple(TaskGroupId.NOTICE, 1),
                 tuple(TaskGroupId.APPLICATIONS, 2)
@@ -163,7 +163,8 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.NOT_STARTED),
-                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.NOT_AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.NOT_AVAILABLE),
+                tuple(DashboardTaskTemplateIds.YOUR_SUPPORT, TaskStatus.NOT_AVAILABLE)
             );
 
         assertThat(ListValueUtils.unwrapListItems(result.getTaskGroups()).get(3).getTasks())
@@ -395,7 +396,8 @@ class DashboardJourneyServiceTest {
             .extracting(lv -> lv.getValue().getTemplateId(), lv -> lv.getValue().getStatus())
             .containsExactly(
                 tuple(DashboardTaskTemplateIds.RESPOND_TO_CLAIM, TaskStatus.COMPLETED),
-                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE)
+                tuple(DashboardTaskTemplateIds.VIEW_RESPONSE, TaskStatus.AVAILABLE),
+                tuple(DashboardTaskTemplateIds.YOUR_SUPPORT, TaskStatus.AVAILABLE)
             );
     }
 
