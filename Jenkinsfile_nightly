@@ -9,7 +9,7 @@ properties([
   pipelineTriggers([
     cron('H 07 * * 1-5'),
     parameterizedCron('''
-H 9 1 * * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
+H 9 1/28 * * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
     ''')
   ]),
   parameters([
