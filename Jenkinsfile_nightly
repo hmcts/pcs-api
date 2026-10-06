@@ -9,7 +9,7 @@ properties([
   pipelineTriggers([
     cron('H 07 * * 1-5'),
     parameterizedCron('''
-20 15 6 10 * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
+H 9 1 * * %E2E_TARGET_ENV=perftest;PLAYWRIGHT_GREP_TAG=@perfUserRefresh;PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList
     ''')
   ]),
   parameters([
@@ -66,7 +66,7 @@ properties([
     choice(
       name: 'PLAYWRIGHT_GREP_TAG',
       choices: ['@nightly', '@smoke', '@regression', '@release', '@perfUserRefresh'],
-      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release. @perfUserRefresh runs the 28-day Manage Case login refresh (use with PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList).'
+      description: 'Title grep (E2E_TEST_SCOPE). First option is the scheduled default. @release option will run all tests tagged @nightly and also @release. @perfUserRefresh runs the monthly (~every 28–31 days) Manage Case login / user refresh (use with PLAYWRIGHT_SPEC=perfUserRefreshLoginCaseList).'
 
     ),
   ])
