@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -71,6 +72,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private JdbcTemplate jdbcTemplate;
     @MockitoBean
     private CamundaService camundaService;
+    @MockitoBean
+    private TaskCompletionService taskCompletionService;
 
     private long caseReference;
     private Actor judge;
@@ -142,7 +145,9 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.queryToJudge()).isEqualTo("Which defendant does paragraph 2 mean?");
         assertThat(review.reviewerIdamUserId()).isEqualTo(caseworker.uid());
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
-        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
+        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id(),
+            OrderTasks.FALLBACK_DELAY);
+        verify(taskCompletionService).completeOrderTasks(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
             contains("Which defendant does paragraph 2 mean?"), eq(order.id()), eq(UUID.fromString(judge.uid())));
         assertThat(asCaseworker.startExpectingRejection())
@@ -177,7 +182,9 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
         assertThat(asAuthor.startExpectingRejection())
             .containsExactly("The order is no longer waiting for you to change it");
-        verify(camundaService).cancelTask(caseReference, TaskType.REVIEW_ORDER_QUERY, order.id());
+        verify(camundaService).cancelTask(caseReference, TaskType.REVIEW_ORDER_QUERY, order.id(),
+            OrderTasks.FALLBACK_DELAY);
+        verify(taskCompletionService).completeOrderTasks(caseReference, TaskType.REVIEW_ORDER_QUERY, order.id());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has changed an order that was returned to them"), eq(order.id()));
     }
@@ -228,7 +235,9 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.partiesServed()).containsExactly(defendant);
         assertThat(review.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
-        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
+        verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id(),
+            OrderTasks.FALLBACK_DELAY);
+        verify(taskCompletionService).completeOrderTasks(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
         assertThat(issuedOrder(order)).containsExactly(
             "OUTRIGHT_POSSESSION", WORDING, "HIGH_COURT", false);
     }

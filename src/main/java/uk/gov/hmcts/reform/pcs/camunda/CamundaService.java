@@ -101,13 +101,18 @@ public class CamundaService {
 
     /** Cancels the tasks of a type about one order on the case, leaving those about its other orders. */
     public void cancelTask(long caseId, TaskType taskType, UUID orderId) {
+        cancelTask(caseId, taskType, orderId, Duration.ZERO);
+    }
+
+    /** Cancels the tasks of a type about one order on the case, after a delay. */
+    public void cancelTask(long caseId, TaskType taskType, UUID orderId, Duration delay) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CANCEL)
             .caseReference(caseId)
             .taskType(taskType)
             .orderId(orderId)
             .build();
-        scheduleCamundaRequest(taskData, Instant.now(utcClock));
+        scheduleCamundaRequest(taskData, Instant.now(utcClock).plus(delay));
     }
 
     void handleRequest(CamundaRequestTaskData taskData) {

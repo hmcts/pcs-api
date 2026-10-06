@@ -7,7 +7,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
@@ -22,6 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +37,8 @@ class OrderTasksTest {
 
     @Mock
     private CamundaService camundaService;
+    @Mock
+    private TaskCompletionService taskCompletionService;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
@@ -49,7 +55,8 @@ class OrderTasksTest {
     void setUp() {
         TaskDescriptionService taskDescriptionService = new TaskDescriptionService(
             partyService, new PebbleConfiguration().pebbleEngine(), claimRepository);
-        underTest = new OrderTasks(camundaService, taskDescriptionService, securityContextService, "https://pcs.example");
+        underTest = new OrderTasks(camundaService, taskCompletionService, taskDescriptionService,
+                                   securityContextService, "https://pcs.example");
         order = DraftOrderEntity.builder().id(ORDER_ID).orderType("OUTRIGHT_POSSESSION").authorIdamUserId(JUDGE_ID)
             .build();
     }
@@ -94,10 +101,30 @@ class OrderTasksTest {
     }
 
     @Test
-    void closesTheStaffTaskForTheReviewedOrderOnly() {
+    void completesTheStaffTaskForTheReviewedOrderOnlyFallingBackToCancellingIt() {
         underTest.closeStaffReview(CASE_REFERENCE, order);
 
-        verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, ORDER_ID);
+        verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, ORDER_ID,
+                                          OrderTasks.FALLBACK_DELAY);
+        verify(taskCompletionService).completeOrderTasks(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, ORDER_ID);
+    }
+
+    @Test
+    void completesTheTaskOnlyOnceTheEventIsSaved() {
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            underTest.closeStaffReview(CASE_REFERENCE, order);
+
+            verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, ORDER_ID,
+                                              OrderTasks.FALLBACK_DELAY);
+            verifyNoInteractions(taskCompletionService);
+
+            TransactionSynchronizationManager.getSynchronizations().forEach(TransactionSynchronization::afterCommit);
+            verify(taskCompletionService).completeOrderTasks(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW,
+                                                             ORDER_ID);
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test
@@ -127,10 +154,12 @@ class OrderTasksTest {
     }
 
     @Test
-    void closesTheJudgesQueryTaskForTheOrderOnly() {
+    void completesTheJudgesQueryTaskForTheOrderOnlyFallingBackToCancellingIt() {
         underTest.closeJudgeQuery(CASE_REFERENCE, order);
 
-        verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.REVIEW_ORDER_QUERY, ORDER_ID);
+        verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.REVIEW_ORDER_QUERY, ORDER_ID,
+                                          OrderTasks.FALLBACK_DELAY);
+        verify(taskCompletionService).completeOrderTasks(CASE_REFERENCE, TaskType.REVIEW_ORDER_QUERY, ORDER_ID);
     }
 
     private void signedIn(String name) {
