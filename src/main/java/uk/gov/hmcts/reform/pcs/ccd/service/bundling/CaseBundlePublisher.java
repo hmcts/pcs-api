@@ -116,8 +116,8 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
         attach(caseReference, uploaded, result);
         Instant selectedAt = job.claimedAt().orElse(job.submittedAt());
 
-        CaseBundleEntity bundle = transaction.execute(status -> record(caseId, job, request, result,
-                                                                        uploaded, selectedAt));
+        CaseBundleEntity bundle = transaction.execute(status -> store(caseId, job, request, result,
+                                                                       uploaded, selectedAt));
         log.info("Case bundle {} stored for case {}: {} pages, latest={}", bundle.getId(), caseReference,
                  result.pageCount(), bundle.isLatest());
         return summary(bundle);
@@ -167,7 +167,7 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
             .getDocuments().getFirst();
     }
 
-    private CaseBundleEntity record(UUID caseId, BundleJob job, BundleRequest request, BundleResult result,
+    private CaseBundleEntity store(UUID caseId, BundleJob job, BundleRequest request, BundleResult result,
                                     Document uploaded, Instant selectedAt) {
         // Serialises bundle stores per case, so deciding which bundle is latest cannot race. A plain
         // row lock: Hibernate's entity locking cannot follow pcs_case's secondary mappings.

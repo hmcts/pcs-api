@@ -117,18 +117,25 @@ class CaseBundlePublisherTest {
     }
 
     @Test
-    void shouldUploadAttachAndRecordTheBundle() throws IOException {
+    void shouldUploadTheBundleToCdamAsTheSystemUser() throws IOException {
         givenANewBundleIsStored(Optional.empty());
 
-        Object summary = underTest.onCompleted(job(Optional.of(CLAIMED_AT)), jobContext(), request(), result());
+        publish(job(Optional.of(CLAIMED_AT)));
 
         ArgumentCaptor<DocumentUploadRequest> upload = ArgumentCaptor.forClass(DocumentUploadRequest.class);
-        verify(caseDocumentClientApi).uploadDocuments(anyString(), anyString(), upload.capture());
+        verify(caseDocumentClientApi).uploadDocuments(eq(AUTH), eq(S2S), upload.capture());
         assertThat(upload.getValue().getClassification()).isEqualTo(CaseBundlePublisher.CLASSIFICATION);
         assertThat(upload.getValue().getCaseTypeId()).isEqualTo(CaseType.getCaseType());
         assertThat(upload.getValue().getJurisdictionId()).isEqualTo(CaseType.getJurisdictionId());
         assertThat(upload.getValue().getFiles().getFirst().getOriginalFilename()).isEqualTo(FILE_NAME);
         assertThat(upload.getValue().getFiles().getFirst().getBytes()).isEqualTo(PDF);
+    }
+
+    @Test
+    void shouldAttachTheUploadToTheCaseThroughTheAttachEvent() throws IOException {
+        givenANewBundleIsStored(Optional.empty());
+
+        publish(job(Optional.of(CLAIMED_AT)));
 
         ArgumentCaptor<CaseDataContent> event = ArgumentCaptor.forClass(CaseDataContent.class);
         verify(coreCaseDataApi).createEvent(eq(AUTH), eq(S2S), eq(String.valueOf(CASE_REFERENCE)), event.capture());
@@ -139,21 +146,38 @@ class CaseBundlePublisherTest {
             "document_binary_url", SELF_URL + "/binary",
             "document_filename", FILE_NAME,
             "document_hash", "hash-token")));
+    }
 
-        verify(lockQuery).setParameter("caseId", CASE_ID);
-        ArgumentCaptor<DocumentEntity> stitched = ArgumentCaptor.forClass(DocumentEntity.class);
-        verify(documentRepository).save(stitched.capture());
-        assertThat(stitched.getValue().getType()).isEqualTo(DocumentType.CASE_BUNDLE);
-        assertThat(stitched.getValue().getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
-        assertThat(stitched.getValue().getDocumentId()).isEqualTo(CDAM_ID);
-        assertThat(stitched.getValue().getUrl()).isEqualTo(SELF_URL);
-        assertThat(stitched.getValue().getBinaryUrl()).isEqualTo(SELF_URL + "/binary");
-        assertThat(stitched.getValue().getSize()).isEqualTo(PDF.length);
+    @Test
+    void shouldFileTheBundleAsACaseDocumentUnderTheCaseLock() throws IOException {
+        givenANewBundleIsStored(Optional.empty());
+
+        publish(job(Optional.of(CLAIMED_AT)));
+
+        InOrder order = inOrder(lockQuery, documentRepository);
+        order.verify(lockQuery).getSingleResult();
+        order.verify(documentRepository).save(any());
+        DocumentEntity stitched = stitchedDocument();
+        assertThat(stitched.getPcsCase()).isSameAs(pcsCase);
+        assertThat(stitched.getType()).isEqualTo(DocumentType.CASE_BUNDLE);
+        assertThat(stitched.getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
+        assertThat(stitched.getDocumentId()).isEqualTo(CDAM_ID);
+        assertThat(stitched.getUrl()).isEqualTo(SELF_URL);
+        assertThat(stitched.getBinaryUrl()).isEqualTo(SELF_URL + "/binary");
+        assertThat(stitched.getFileName()).isEqualTo(FILE_NAME);
+        assertThat(stitched.getSize()).isEqualTo(PDF.length);
         // Selected just after midnight, UK time.
-        assertThat(stitched.getValue().getIssueDate()).isEqualTo(LocalDate.of(2026, 10, 6));
+        assertThat(stitched.getIssueDate()).isEqualTo(LocalDate.of(2026, 10, 6));
+    }
+
+    @Test
+    void shouldRecordHowTheBundleWasBuilt() throws IOException {
+        givenANewBundleIsStored(Optional.empty());
+
+        Object summary = publish(job(Optional.of(CLAIMED_AT)));
 
         CaseBundleEntity bundle = savedBundle();
-        assertThat(bundle.getDocument()).isSameAs(stitched.getValue());
+        assertThat(bundle.getDocument()).isSameAs(stitchedDocument());
         assertThat(bundle.getJobId()).isEqualTo(JOB_ID);
         assertThat(bundle.getBundleTitle()).isEqualTo("Case bundle");
         assertThat(bundle.getStitchStatus()).isEqualTo("COMPLETED_WITH_WARNINGS");
@@ -168,7 +192,7 @@ class CaseBundlePublisherTest {
         assertThat(bundle.isLatest()).isTrue();
         assertThat(summary).isEqualTo(Map.of(
             "caseBundleId", bundle.getId().toString(),
-            "documentId", stitched.getValue().getId().toString(),
+            "documentId", bundle.getDocument().getId().toString(),
             "pageCount", 12,
             "latest", true));
     }
@@ -177,7 +201,7 @@ class CaseBundlePublisherTest {
     void shouldRecordWhereEachDocumentLandedInItsFolder() throws IOException {
         givenANewBundleIsStored(Optional.empty());
 
-        underTest.onCompleted(job(Optional.of(CLAIMED_AT)), jobContext(), request(), result());
+        publish(job(Optional.of(CLAIMED_AT)));
 
         assertThat(savedBundle().getFolders()).containsExactly(
             new CaseBundleFolder("Evidence", CaseFileCategory.EVIDENCE.getId(), 0, List.of(
@@ -194,7 +218,7 @@ class CaseBundlePublisherTest {
         CaseBundleEntity previous = previousBundle(CLAIMED_AT.minusSeconds(60));
         givenANewBundleIsStored(Optional.of(previous));
 
-        underTest.onCompleted(job(Optional.of(CLAIMED_AT)), jobContext(), request(), result());
+        publish(job(Optional.of(CLAIMED_AT)));
 
         assertThat(previous.isLatest()).isFalse();
         InOrder order = inOrder(entityManager, caseBundleRepository);
@@ -208,7 +232,7 @@ class CaseBundlePublisherTest {
         CaseBundleEntity newer = previousBundle(CLAIMED_AT.plusSeconds(60));
         givenANewBundleIsStored(Optional.of(newer));
 
-        underTest.onCompleted(job(Optional.of(CLAIMED_AT)), jobContext(), request(), result());
+        publish(job(Optional.of(CLAIMED_AT)));
 
         assertThat(newer.isLatest()).isTrue();
         assertThat(savedBundle().isLatest()).isFalse();
@@ -220,7 +244,7 @@ class CaseBundlePublisherTest {
         givenANewBundleIsStored(Optional.empty());
         BundleJob neverClaimed = job(Optional.empty());
 
-        underTest.onCompleted(neverClaimed, jobContext(), request(), result());
+        publish(neverClaimed);
 
         assertThat(savedBundle().getDocumentsSelectedAt()).isEqualTo(neverClaimed.submittedAt());
     }
@@ -230,7 +254,7 @@ class CaseBundlePublisherTest {
         CaseBundleEntity stored = previousBundle(CLAIMED_AT);
         when(caseBundleRepository.findByJobId(JOB_ID)).thenReturn(Optional.of(stored));
 
-        Object summary = underTest.onCompleted(job(Optional.of(CLAIMED_AT)), jobContext(), request(), result());
+        Object summary = publish(job(Optional.of(CLAIMED_AT)));
 
         assertThat(summary).isEqualTo(Map.of(
             "caseBundleId", stored.getId().toString(),
@@ -261,6 +285,16 @@ class CaseBundlePublisherTest {
         when(documentRepository.findAllById(any())).thenReturn(List.of(evidence));
         when(caseBundleRepository.findByPcsCase_IdAndLatestTrue(CASE_ID)).thenReturn(currentLatest);
         when(caseBundleRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    private Object publish(BundleJob job) throws IOException {
+        return underTest.onCompleted(job, jobContext(), request(), result());
+    }
+
+    private DocumentEntity stitchedDocument() {
+        ArgumentCaptor<DocumentEntity> stitched = ArgumentCaptor.forClass(DocumentEntity.class);
+        verify(documentRepository).save(stitched.capture());
+        return stitched.getValue();
     }
 
     private CaseBundleEntity savedBundle() {

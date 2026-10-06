@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AttachCaseBundleTest extends BaseEventTest {
@@ -26,12 +28,11 @@ class AttachCaseBundleTest extends BaseEventTest {
     @Test
     void shouldOnlyLetTheSystemUserSubmitIt() {
         assertGrants(UserRole.SYSTEM_USER, Permission.CRU);
-        assertThat(configuredEvent.getGrants().asMap())
-            .allSatisfy((role, permissions) -> {
-                if (role != UserRole.SYSTEM_USER) {
-                    assertThat(permissions).doesNotContain(Permission.C, Permission.U);
-                }
-            });
+        // Caseworker and judicial roles see it in the case history, but cannot submit it.
+        assertThat(configuredEvent.getGrants().entries())
+            .filteredOn(grant -> grant.getValue() == Permission.C || grant.getValue() == Permission.U)
+            .extracting(Map.Entry::getKey)
+            .containsOnly(UserRole.SYSTEM_USER);
     }
 
     @Test
