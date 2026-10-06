@@ -48,7 +48,7 @@ async function authenticateAndSaveState(): Promise<string> {
       'MANAGE_CASE_BASE_URL is not set (export it, or set ENVIRONMENT to aat|demo|perftest|ithc for default manage-case URL).'
     );
   }
-  if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
+  if (!user.localAuthorityOrg1Usr1.email || !user.localAuthorityOrg1Usr1.password) {
     throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
   }
 
@@ -65,11 +65,11 @@ async function authenticateAndSaveState(): Promise<string> {
     await dismissCookieBanner(page, 'additional');
 
     await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
-    await page.locator('#email').fill(user.claimantSolicitor.email);
+    await page.locator('#email').fill(user.localAuthorityOrg1Usr1.email);
     await page.getByRole('button', { name: 'Continue' }).click(); 
     const pwdHeader = page.getByLabel('Enter your password', { exact: true });
     await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
-    await page.locator('#password').fill(user.claimantSolicitor.password);
+    await page.locator('#password').fill(user.localAuthorityOrg1Usr1.password);
     await page.getByRole('button', { name: 'Continue' }).click(); 
 
     await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
@@ -126,8 +126,8 @@ export const getAccessToken = async (): Promise<void> => {
     );
   }
   process.env.BEARER_TOKEN = await new IdamUtils().generateIdamToken({
-    username: user.claimantSolicitor.email,
-    password: user.claimantSolicitor.password,
+    username: user.localAuthorityOrg1Usr1.email,
+    password: user.localAuthorityOrg1Usr1.password,
     grantType: 'password',
     clientId: 'pcs-api',
     clientSecret: process.env.PCS_API_IDAM_SECRET as string,
