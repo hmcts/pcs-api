@@ -314,10 +314,11 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         UUID id = UUID.randomUUID();
         PartyEntity partyEntity = PartyEntity.builder().id(id).firstName("Sam").lastName("Vimes").build();
 
+        when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
             .thenReturn(List.of(partyEntity));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, id)).thenReturn(true);
+            TEST_CASE_REFERENCE, id)).thenReturn(false);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -340,12 +341,13 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         PartyEntity secondPartyEntity = PartyEntity.builder()
             .id(secondId).firstName("Granny").lastName("Weatherwax").build();
 
+        when(pcsCaseEntity.getCaseReference()).thenReturn(TEST_CASE_REFERENCE);
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
             .thenReturn(List.of(firstPartyEntity, secondPartyEntity));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, firstId)).thenReturn(true);
+            TEST_CASE_REFERENCE, firstId)).thenReturn(false);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, secondId)).thenReturn(true);
+            TEST_CASE_REFERENCE, secondId)).thenReturn(false);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
