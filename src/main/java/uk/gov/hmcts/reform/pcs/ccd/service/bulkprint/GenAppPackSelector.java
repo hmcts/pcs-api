@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 
 /**
  * Selects gen-app envelopes per recipient. Issued with-notice defendant CUI GAs with a submission PDF go to
- * every claim party whose contact preferences include post (or are unset), excluding claimants when release 1.4
+ * every claim party whose contact preferences include post (or are unset), excluding claimants when release 1.4 flag
  * is enabled. Without-notice GAs, non-defendant-applicant GAs, ExUI/caseworker GAs produce no candidates.
  */
 @Service
