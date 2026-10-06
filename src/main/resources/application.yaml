@@ -372,6 +372,16 @@ ccd:
       username: pcs-system-event
       first-name: PCS
       last-name: System
+  bundling:
+    job:
+      # Regenerates the case bundle whenever a document that belongs in it is added, removed or
+      # restored (CaseBundleTrigger). Off until the document-bundling module is published.
+      enabled: ${CASE_BUNDLE_ENABLED:false}
+    docmosis:
+      # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with
+      # no endpoint configured, a case holding one fails to bundle with UNSUPPORTED_MEDIA_TYPE.
+      convert-endpoint: ${DOCMOSIS_CONVERT_ENDPOINT:}
+      access-key: ${DOCMOSIS_ACCESS_KEY:}
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}

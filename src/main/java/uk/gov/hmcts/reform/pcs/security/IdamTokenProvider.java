@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.security;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -45,7 +46,7 @@ public class IdamTokenProvider {
                 .attribute(OAuth2ParameterNames.PASSWORD, password)
                 .build();
 
-            OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
+            OAuth2AuthorizedClient authorizedClient = authorize(authorizeRequest);
 
             if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
                 log.error("Failed to authorize OAuth2 client for {} - client or token is null",
@@ -59,6 +60,21 @@ public class IdamTokenProvider {
             log.error("OAuth2 authorization error retrieving {} token. Error: {}",
                 clientRegistrationId, ex.getError().getErrorCode(), ex);
             throw new IdamException("Unable to get access token response", ex);
+        }
+    }
+
+    /**
+     * Authorizes, retrying once if refreshing the cached token failed: that evicts the cached
+     * client (see OAuth2ClientConfig), so the retry logs in afresh with the password grant. A
+     * failed password login is not retried, so bad credentials cost one attempt, not two.
+     */
+    private OAuth2AuthorizedClient authorize(OAuth2AuthorizeRequest authorizeRequest) {
+        try {
+            return authorizedClientManager.authorize(authorizeRequest);
+        } catch (ClientAuthorizationException ex) {
+            log.warn("Authorizing {} failed ({}); retrying with a fresh login", clientRegistrationId,
+                     ex.getError().getErrorCode());
+            return authorizedClientManager.authorize(authorizeRequest);
         }
     }
 }

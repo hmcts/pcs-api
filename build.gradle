@@ -421,6 +421,7 @@ dependencies {
 
 dependencies {
   implementation 'com.github.hmcts:decentralised-runtime'
+  implementation 'com.github.hmcts:document-bundling'
   implementation 'com.github.hmcts:ccd-runtime-indexing'
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
@@ -588,6 +589,10 @@ tasks.named('integration') {
   }
 }
 
+// LOCAL_DOCUMENT_STORE=true runs a real dm-store locally so documents can be uploaded and opened
+// in XUI against cftlib (bootWithCCD); otherwise XUI's document API points at AAT.
+def localDocumentStore = System.getenv('LOCAL_DOCUMENT_STORE') == 'true'
+
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
@@ -615,12 +620,22 @@ tasks.withType(CftlibExec).configureEach {
   environment 'ENABLE_TESTING_SUPPORT', 'true'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
-  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment'
+  // ccd_case_document_am_api: CDAM asks the data store whether the caller can see a document's case
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment,ccd_case_document_am_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 
   // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
-  environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  if (localDocumentStore) {
+    // AAT's CDAM rejects tokens from the local IDAM simulator, so documents go through cftlib's
+    // own CDAM (4455) backed by the dm-store in docker-compose-dm-store.yml (5005)
+    environment 'XUI_DOCUMENTS_API', 'http://host.docker.internal:5005'
+    environment 'XUI_DOCUMENTS_API_V2', 'http://host.docker.internal:4455'
+    environment 'DM_STORE_BASE_URL', 'http://localhost:5005'
+    environment 'CCD_DOCUMENT_URL_PATTERN', '.*'
+  } else {
+    environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  }
   // Point XUI's common data (case-linking reason codes) at the local wiremock stub
   environment 'SERVICES_PRD_COMMONDATA_API', 'http://host.docker.internal:8083'
   environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'
@@ -690,7 +705,9 @@ dockerCompose.isRequiredBy cftlibTest
 def cleanUpContainers = System.getenv("CI") != null
 
 dockerCompose {
-  useComposeFiles = ['docker-compose-wiremock.yml']
+  useComposeFiles = localDocumentStore
+    ? ['docker-compose-wiremock.yml', 'docker-compose-dm-store.yml']
+    : ['docker-compose-wiremock.yml']
   stopContainers = cleanUpContainers
   removeContainers = cleanUpContainers
   forceRecreate = true

@@ -7,21 +7,17 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PartyVisibleTabAccessTest {
+class CaseDetailsTabAccessTest {
 
-    private final PartyVisibleTabAccess underTest = new PartyVisibleTabAccess();
+    private final CaseDetailsTabAccess underTest = new CaseDetailsTabAccess();
 
     @Test
-    void shouldGrantReadAccessToPartyVisibleTabRoles() {
+    void shouldGrantPartyVisibleRolesAndTheSystemUserRead() {
         SetMultimap<HasRole, Permission> grants = underTest.getGrants();
 
         for (UserRole role : AccessGrants.PARTY_VISIBLE_ROLES) {
             assertThat(grants.get(role)).contains(Permission.R);
         }
-    }
-
-    @Test
-    void shouldNotGrantTheSystemUser() {
-        assertThat(underTest.getGrants().get(UserRole.SYSTEM_USER)).isEmpty();
+        assertThat(grants.get(UserRole.SYSTEM_USER)).containsExactly(Permission.R);
     }
 }

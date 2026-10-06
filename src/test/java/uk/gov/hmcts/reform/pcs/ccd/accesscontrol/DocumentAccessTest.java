@@ -34,6 +34,7 @@ class DocumentAccessTest {
 
         assertAllHavePermissions(grants, CREATE_READ_ROLES, Permission.CR);
         assertAllHavePermission(grants, AccessGrants.INTERNAL_READ_ROLES, Permission.R);
+        assertThat(grants.get(UserRole.SYSTEM_USER)).contains(Permission.R);
     }
 
     private void assertAllHavePermissions(SetMultimap<HasRole, Permission> grants,

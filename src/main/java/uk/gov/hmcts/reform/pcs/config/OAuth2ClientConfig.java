@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
@@ -36,6 +37,17 @@ public class OAuth2ClientConfig {
                 authorizedClientService);
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        // A refresh can be rejected with a bare 400 rather than invalid_grant (the local IDAM
+        // simulator does this once its tokens expire). Spring's default handler keeps the client
+        // for anything else, so every later call would retry the same dead refresh. Drop it, so
+        // the next authorize() logs in again with the password grant.
+        authorizedClientManager.setAuthorizationFailureHandler((exception, principal, attributes) -> {
+            if (exception instanceof ClientAuthorizationException clientException) {
+                authorizedClientService.removeAuthorizedClient(
+                    clientException.getClientRegistrationId(), principal.getName());
+            }
+        });
 
         // Without this mapper the password provider sees no credentials and authorize() returns null.
         authorizedClientManager.setContextAttributesMapper(authorizeRequest -> {
