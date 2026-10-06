@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseDocumentService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,11 +44,13 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     static final String EVENT_NAME = "Test Support Case Creation";
     static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Case";
     static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement";
+    static final String POSSESSION_ORDER_CASE_GENERATOR = "Create Case With Possession Order";
 
     private final ResumePossessionClaim resumePossessionClaim;
     private final EnforceTheOrder enforceTheOrder;
 
     private final TestCaseSupportHelper testCaseSupportHelper;
+    private final TestCaseDocumentService testCaseDocumentService;
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
@@ -103,9 +106,13 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
-            loadedCase.getLegislativeCountry());
+            loadedCase.getLegislativeCountry()
+        );
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
+        if (POSSESSION_ORDER_CASE_GENERATOR.equals(label)) {
+            testCaseDocumentService.addPossessionOrderPlaceholder(caseReference);
+        }
     }
 
     PCSCase loadTestPcsCase(String label) {
