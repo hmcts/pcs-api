@@ -3,9 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -15,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -40,6 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
 import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.EnforcementOrderView;
 import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
@@ -61,7 +58,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -73,7 +69,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
@@ -145,6 +140,8 @@ class PCSCaseViewTest {
     private CaseFileDocumentDeduplicationService caseFileDocumentDeduplicationService;
     @Mock
     private HearingView hearingView;
+    @Mock
+    private EnforcementOrderView enforcementOrderView;
 
     @Mock
     private LegalRepresentativeSummaryService legalRepresentativeSummaryService;
@@ -167,7 +164,8 @@ class PCSCaseViewTest {
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, legalRepresentativeSummaryService, organisationService
+                                    hearingView, enforcementOrderView, legalRepresentativeSummaryService,
+                                    organisationService
         );
     }
 
@@ -486,50 +484,12 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldNotLoadUnsubmittedEnforcementDataWhenCaseNotIssued() {
-        // When
-        underTest.getCase(request(CASE_REFERENCE, State.PENDING_CASE_ISSUED));
-
-        // Then
-        verify(draftCaseDataService, never()).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-    }
-
-    @Test
     void shouldCallEnforcementOrderMediator() {
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
-    }
-
-    @ParameterizedTest
-    @MethodSource("unsubmittedEnforcementDataScenarios")
-    void shouldSetUnsubmittedEnforcementDataFlag(State state, boolean hasDraftData, YesOrNo expectedFlag) {
-        // Given
-        if (state == State.CASE_ISSUED) {
-            when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
-                    .thenReturn(hasDraftData);
-        }
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, state));
-
-        // Then
-        if (state == State.CASE_ISSUED) {
-            verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-            assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
-        } else {
-            verify(draftCaseDataService, never()).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-        }
-    }
-
-    private static Stream<Arguments> unsubmittedEnforcementDataScenarios() {
-        return Stream.of(
-                Arguments.of(State.CASE_ISSUED, true, YesOrNo.YES),
-                Arguments.of(State.CASE_ISSUED, false, YesOrNo.NO),
-                Arguments.of(State.PENDING_CASE_ISSUED, false, YesOrNo.NO)
-        );
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
