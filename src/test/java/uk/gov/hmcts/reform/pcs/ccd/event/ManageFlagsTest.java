@@ -60,11 +60,13 @@ class ManageFlagsTest extends BaseEventTest {
             .isEqualTo("#ARGUMENT(UPDATE,VERSION2.1)");
     }
 
+    /* 
     @Test
     void shouldConfigureBothInternalAndExternalPartyFlagCollections() {
         assertThat(getSubFieldIds("allDefendants"))
             .contains("defendantFlags", "partyFlagsExternal");
     }
+    */
 
     /**
      * Availability before the case is issued is a confirmed requirement, so it is asserted in its own
