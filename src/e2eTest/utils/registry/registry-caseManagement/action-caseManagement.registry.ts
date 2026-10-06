@@ -93,6 +93,7 @@ export class ActionCMRegistry {
     ['addJudicialNotes', new CaseManagementAction()],
     ['confirmAddJudicialNotes', new CaseManagementAction()],
     ['validateJudgeNotesTab', new CaseManagementAction()],
+    ['selectEventDropdown', new CaseManagementAction()],
     ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
   ]);
 

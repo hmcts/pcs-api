@@ -84,6 +84,7 @@ export class CaseManagementAction implements IAction {
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
       ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
       ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
+      ['selectEventDropdown',() => this.selectEventDropdown(page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -794,22 +795,27 @@ export class CaseManagementAction implements IAction {
       await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
     }
 
+  private async selectEventDropdown(page: Page): Promise<void> {
+  const eventDropdown = page.locator('#next-step');
+  await expect(eventDropdown).toBeVisible();
+  await eventDropdown.click();
+}
+
+
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
     const judicialNote = new Map<string, string>();
 
     judicialNote.set('Note', judicialNotes.userInput as string);
-
     const expectedCreatedOn = judicialNotes.createdOn as string;
-    const normalizedExpectedCreatedOn = expectedCreatedOn.replace(
-      /:\d{2}(?=\s(?:AM|PM)$)/,
-      ''
-    );
-    judicialNote.set('Created on', normalizedExpectedCreatedOn);
+    judicialNote.set('Created on', expectedCreatedOn.replace(/:\d{2}(?=\s(?:AM|PM)$)/, ''));
 
-    const noteCard = page.locator('.govuk-summary-card').filter({
-      has: page.locator('.govuk-summary-card__title', {hasText: judicialNotes.table as string,}),
-    });
+    const noteCards = page.locator('.govuk-summary-card');
+    const index = judicialNotes.index !== undefined ? Number(judicialNotes.index) : 0;
+    const noteCard = noteCards.nth(index);
+
     await expect(noteCard).toBeVisible();
+    const cardTitle = (await noteCard.locator('.govuk-summary-card__title').textContent())?.trim();
+    expect(cardTitle).toBe(judicialNotes.table as string);
     const rows = noteCard.locator('.govuk-summary-list__row');
     const caseTabMap = new Map<string, string>();
     for (let i = 0; i < await rows.count(); i++) {
@@ -821,11 +827,9 @@ export class CaseManagementAction implements IAction {
       if (key === 'Created by') {
         continue;
       }
-
       if (key === 'Created on' && value) {
         value = value.replace(/:\d{2}(?=\s(?:AM|PM)$)/, '');
       }
-
       if (key) {
         caseTabMap.set(key, value ?? '');
       }
@@ -857,19 +861,15 @@ export class CaseManagementAction implements IAction {
           `• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`
         );
       }
-      console.log(
-        '\n********** END OF FAILURE LIST. ***************'
-      );
 
-      throw new Error(`Judicial Notes validations failed for ${misMatchMap.size} ${
-          misMatchMap.size === 1 ? 'item' : 'items'
-        }`
+      throw new Error(
+        `Judicial Notes validations failed for ${misMatchMap.size} ${
+          misMatchMap.size === 1 ? 'item' : 'items'}`
       );
     }
     console.log(
-      '\n✅ Judicial Notes VALIDATION PASSED!\n'
+      `✅ ${judicialNotes.table} validation passed`
     );
-    caseTabMap.clear();
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
