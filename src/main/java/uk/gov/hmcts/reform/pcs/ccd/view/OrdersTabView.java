@@ -23,16 +23,14 @@ public class OrdersTabView {
             .filter(DocumentsView::isNotRemoved)
             .filter(this::isPossessionOrder)
             .findFirst()
-            .ifPresent(documentEntity ->
-                           pcsCase.setOrdersTab(
-                               OrdersTab.builder()
-                                   .possessionOrder(toDocument(documentEntity))
-                                   .possessionOrderUploadedDate(
-                                       uploadTimestampProvider.uploadTimestamp(documentEntity)
-                                   )
-                                   .build()
-                           )
-            );
+            .ifPresent(documentEntity -> pcsCase.setOrdersTab(
+                OrdersTab.builder()
+                    .possessionOrder(toDocument(documentEntity))
+                    .possessionOrderUploadedDate(
+                        uploadTimestampProvider.uploadTimestamp(documentEntity)
+                    )
+                    .build()
+            ));
     }
 
     private boolean isPossessionOrder(DocumentEntity document) {
