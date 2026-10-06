@@ -305,6 +305,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         assertThat(defendants).isEmpty();
         assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getCurrentRepresentedPartyId()).isBlank();
+        assertThat(result.getCurrentRepresentedPartyName()).isBlank();
     }
 
     @Test
@@ -325,6 +327,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         assertThat(defendants).hasSize(1);
         assertThat(defendants.getFirst().getLabel()).isEqualTo("Sam Vimes");
         assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getCurrentRepresentedPartyId()).isEqualTo(String.valueOf(id));
+        assertThat(result.getCurrentRepresentedPartyName()).isEqualTo("Sam Vimes");
     }
 
     @Test
@@ -352,6 +356,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         assertThat(defendants.get(0).getLabel()).isEqualTo("Sam Vimes");
         assertThat(defendants.get(1).getLabel()).isEqualTo("Granny Weatherwax");
         assertThat(result.getMultipleRepresentedParties()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getCurrentRepresentedPartyId()).isBlank();
+        assertThat(result.getCurrentRepresentedPartyName()).isBlank();
     }
 
     @Nested

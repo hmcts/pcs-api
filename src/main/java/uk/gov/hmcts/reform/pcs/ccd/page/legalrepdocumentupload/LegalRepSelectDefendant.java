@@ -24,9 +24,10 @@ public class LegalRepSelectDefendant implements CcdPageConfiguration {
             .readonly(PCSCase::getMultipleRepresentedParties, NEVER_SHOW)
             .showCondition(fieldEquals("multipleRepresentedParties", VerticalYesNo.YES))
             .label("legalRepDocUpload-selectDef-lineSeparator", "---")
-            .label("legalRepDocUpload-selectDef-question",
-                   "### Which defendant are you uploading additional documents for?")
-            .mandatoryWithLabel(PCSCase::getRepresentedPartyNames, "")
+            .mandatoryWithLabel(
+                PCSCase::getRepresentedPartyNames,
+                "Which defendant are you uploading additional documents for?"
+            )
             .label("legalRepDocUpload-selectDef-lineSeparator-bottom", "---");
     }
 
