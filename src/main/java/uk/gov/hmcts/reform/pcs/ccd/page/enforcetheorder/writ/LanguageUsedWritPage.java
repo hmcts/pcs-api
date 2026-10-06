@@ -7,6 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WELSH_LANGUAGE_USED;
 
 /**
  * CCD page configuration for the writ journey Language used screen.
@@ -19,7 +22,8 @@ public class LanguageUsedWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsedWrit")
             .pageLabel("Language used")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
+            // featureFlags is already on the warrant languageUsed page; a second copy is dropped with this condition
+            .showCondition(and(ShowConditionsEnforcementType.WRIT_FLOW, featureFlagsEnabled(WELSH_LANGUAGE_USED)))
             .label("languageUsedWrit-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

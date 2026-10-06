@@ -7,6 +7,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WELSH_LANGUAGE_USED;
+
 @Slf4j
 @AllArgsConstructor
 public class WhichLanguage implements CcdPageConfiguration {
@@ -16,6 +20,8 @@ public class WhichLanguage implements CcdPageConfiguration {
         pageBuilder
             .page("whichLanguage")
             .pageLabel("Which language did you use to complete this service?")
+            .showCondition(featureFlagsEnabled(WELSH_LANGUAGE_USED))
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label("cma-whichLanguage-lineSeparator", "---")
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getLanguageUsed)
