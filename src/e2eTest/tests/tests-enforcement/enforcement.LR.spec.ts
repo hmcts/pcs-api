@@ -77,7 +77,7 @@ test.afterEach(async () => {
 });
 
 test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] - BreathingSpace - Yes',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] - BreathingSpace - Yes @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -263,7 +263,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] - BreathingSpace - No @enforcement',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] - BreathingSpace - No @regression',
       async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
