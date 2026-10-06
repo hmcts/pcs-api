@@ -1560,7 +1560,7 @@ export class CreateCaseAction implements IAction {
         /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
         /ancestor::div[1]
-        //table[@aria-describedby="complex field table"]`;
+        //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1610,7 +1610,7 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
@@ -1698,7 +1698,7 @@ export class CreateCaseAction implements IAction {
     }
 
     const folder = page
-      .locator('button[role="treeitem"]')
+      .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();

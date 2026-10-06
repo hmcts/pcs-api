@@ -351,7 +351,7 @@ export class CYAPageValidation {
 
       for (let j = 0; j < fieldCount; j++) {
         const field = panelRows.nth(j);
-        const questionCell = field.locator('th[id="complex-panel-simple-field-label"]').first();
+        const questionCell = field.locator('th').first();
         const answerCell = field.locator('td').first();
 
         if (await questionCell.isVisible() && await answerCell.isVisible()) {
