@@ -63,7 +63,7 @@ test.afterEach(async () => {
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
   test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput, 'dateTime');
-    await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('selectManageHearing', {
       question: manageHearing.doYouWantToAddQuestion,
@@ -96,7 +96,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
   })
 
   test('Case management - Case Worker Cancel a hearing @CM @regression', async () => {
-    await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
     await performAction('selectManageHearing', {
@@ -118,7 +118,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
   test('Case management - Case Worker Add a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
     let typeOfHearing = addHearing.typeOfHearingOption[0]
-    await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
     await performAction('errorValidationEnterAddAHearingPage', addHearing.errorValidation);
     await performAction('addAHearing', {
@@ -146,7 +146,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
     let party = allPartyDetails[0];
     let typeOfHearing = addHearing.typeOfHearingOption[1];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', addHearing.mainHeader);
     await performAction('addAHearing', {
       hearingQuestion: addHearing.typeOfHearingQuestion, option: typeOfHearing,

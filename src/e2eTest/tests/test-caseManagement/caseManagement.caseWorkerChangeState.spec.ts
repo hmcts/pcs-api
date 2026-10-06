@@ -45,7 +45,7 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker change case state @nightly', async () => {
   test('Case management - Case Worker change case state @CM @regression', async () => {
-    await performAction('selectAnEvent', { eventType: caseSummary.changeCaseState });
+    await performAction('When the user selects an event', { eventType: caseSummary.changeCaseState });
     await performValidation('mainHeader', changeCaseState.mainHeader);
     await performAction('errorValidationChangeCaseStatePage', changeCaseState.errorValidation);
     await performAction('changeCaseState', {

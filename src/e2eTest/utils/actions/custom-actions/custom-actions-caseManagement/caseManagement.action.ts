@@ -46,7 +46,7 @@ export class CaseManagementAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['When the user selects an event', () => this.selectAnEvent(fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
       ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
@@ -81,9 +81,9 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
-      ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
-      ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
-      ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
+      ['When the user adds a Judicial Note', () => this.addJudicialNotes(fieldName as actionRecord)],
+      ['confirmWhen the user adds a Judicial Note', () => this.confirmAddJudicialNotes()],
+      ['Then the user validates the Judge Notes tab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);

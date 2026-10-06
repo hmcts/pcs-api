@@ -37,7 +37,7 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker Add Review date @nightly', async () => {
   test('Case management - Case Worker Add Review Date @CM @regression', async () => {
-    await performAction('selectAnEvent', { eventType: caseSummary.addReviewDates });
+    await performAction('When the user selects an event', { eventType: caseSummary.addReviewDates });
     await performValidation('mainHeader', addReviewDates.mainHeader);
     await performAction('clickButton', addReviewDates.addNewButton);
     await performAction('errorValidationAddReviewDatesPage', addReviewDates.errorValidation);

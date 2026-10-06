@@ -57,7 +57,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].split('-')[0].trim();
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
     await performAction('selectDocumentToAmend', {
@@ -92,7 +92,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].split('-')[0].trim();
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[2],
@@ -128,7 +128,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[0];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].split('-')[0].trim();
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.amend });
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[1],
@@ -164,7 +164,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0]
     let fileName = uploadADocument.uploadDocHiddenOption[0];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('errorValidationUploadADocumentPage', uploadADocument.errorValidation);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
@@ -194,7 +194,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = uploadADocument.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
     let fileName = uploadADocument.uploadDocHiddenOption[1];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
@@ -225,7 +225,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     let appType = uploadADocument.notRelatedToAppRadioOption;
     let party = allPartyDetails[2];
     let fileName = uploadADocument.uploadDocHiddenOption[1];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageDocuments.upload });
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {

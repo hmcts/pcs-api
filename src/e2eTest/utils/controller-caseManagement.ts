@@ -85,7 +85,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'selectParty'
     || action === 'updatePartyDetails'
     || action === 'selectManageHearing'
-    || action == 'addJudicialNotes') {
+    || action == 'When the user adds a Judicial Note') {
     captureDataForCYAPage = true;
   }
 
@@ -155,7 +155,7 @@ export async function performValidation(validation: string, inputFieldName?: val
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed action group: ${groupName}`, async () => {
+  await test.step(`${groupName}`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
       await performAction(actionName, fieldName, value);

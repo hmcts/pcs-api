@@ -67,7 +67,7 @@ import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatU
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
-import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
@@ -135,7 +135,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['When the user selects an event', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -153,8 +153,8 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
-      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
-      ['resumePartialClaim', () => this.resumePartialClaim()],   
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],
+      ['resumePartialClaim', () => this.resumePartialClaim()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -165,7 +165,7 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
-  
+
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);

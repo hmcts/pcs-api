@@ -41,7 +41,7 @@ export class ActionCMRegistry {
     ['validateClaimantDetails', new CaseManagementAction()],
     ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
-    ['selectAnEvent', new CaseManagementAction()],
+    ['When the user selects an event', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
     ['changeCaseState', new CaseManagementAction()],
     ['confirmCaseStateChange', new CaseManagementAction()],
@@ -90,10 +90,10 @@ export class ActionCMRegistry {
     ['selectParty', new CaseManagementAction()],
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
-    ['addJudicialNotes', new CaseManagementAction()],
-    ['confirmAddJudicialNotes', new CaseManagementAction()],
-    ['validateJudgeNotesTab', new CaseManagementAction()],
-    ['errorValidationAddJudicialNotes', new ErrorValidationAction()],
+    ['When the user adds a Judicial Note', new CaseManagementAction()],
+    ['confirmWhen the user adds a Judicial Note', new CaseManagementAction()],
+    ['Then the user validates the Judge Notes tab', new CaseManagementAction()],
+    ['When the user performs error validation for Add Judicial Notes', new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {
