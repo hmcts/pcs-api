@@ -53,10 +53,6 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     @Mock
     private EnforcementOrderService enforcementOrderService;
     @Mock
-    private DraftCaseDataService draftCaseDataService;
-    @Mock
-    private ModelMapper modelMapper;
-    @Mock
     private SavingPageBuilder savingPageBuilder;
 
     @InjectMocks
