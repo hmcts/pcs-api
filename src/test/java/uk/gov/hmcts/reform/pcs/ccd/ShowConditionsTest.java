@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_L
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WELSH_LANGUAGE_USED;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.XUI_WELSH_LANGUAGE_USED;
 
 class ShowConditionsTest {
 
@@ -110,7 +110,7 @@ class ShowConditionsTest {
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
         names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
-            "CUI_RESPOND_TO_CLAIM_LR", "WELSH_LANGUAGE_USED"},
+            "CUI_RESPOND_TO_CLAIM_LR", "XUI_WELSH_LANGUAGE_USED"},
         mode = INCLUDE)
     void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
         // When / Then
@@ -121,7 +121,7 @@ class ShowConditionsTest {
     @EnumSource(
         value = FeatureFlag.class,
         names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
-            "CUI_RESPOND_TO_CLAIM_LR", "WELSH_LANGUAGE_USED"},
+            "CUI_RESPOND_TO_CLAIM_LR", "XUI_WELSH_LANGUAGE_USED"},
         mode = EXCLUDE
     )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
@@ -149,8 +149,8 @@ class ShowConditionsTest {
                       "featureFlags.walesMakeAClaimEnabled=\"YES\""),
             arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
                       "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
-            arguments(List.of(WELSH_LANGUAGE_USED),
-                      "featureFlags.welshLanguageUsedEnabled=\"YES\""),
+            arguments(List.of(XUI_WELSH_LANGUAGE_USED),
+                      "featureFlags.xuiWelshLanguageUsedEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
                       "featureFlags.release1dot3Enabled=\"YES\" "
                           + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
@@ -169,8 +169,8 @@ class ShowConditionsTest {
                       "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.walesMakeAClaimEnabled=\"YES\""),
             arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
                       "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
-            arguments(List.of(WELSH_LANGUAGE_USED),
-                      "featureFlags.welshLanguageUsedEnabled=\"YES\""),
+            arguments(List.of(XUI_WELSH_LANGUAGE_USED),
+                      "featureFlags.xuiWelshLanguageUsedEnabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
                       "featureFlags.release1dot3Enabled=\"YES\" "
                           + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\"")

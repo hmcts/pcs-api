@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WELSH_LANGUAGE_USED;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.XUI_WELSH_LANGUAGE_USED;
 
 /**
  * CCD page configuration for the Language used screen.
@@ -20,7 +20,7 @@ public class LanguageUsed implements CcdPageConfiguration {
             .page("languageUsed")
             .pageLabel("Language used")
             // featureFlags is already on documentsYouveUploadedChecklist; a second copy is dropped with this condition
-            .showCondition(featureFlagsEnabled(WELSH_LANGUAGE_USED))
+            .showCondition(featureFlagsEnabled(XUI_WELSH_LANGUAGE_USED))
             .label("languageUsed-separator", "---")
             .mandatory(PCSCase::getLanguageUsed)
             .label("languageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
