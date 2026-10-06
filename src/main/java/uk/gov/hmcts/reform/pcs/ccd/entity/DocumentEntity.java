@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -44,6 +45,9 @@ import static jakarta.persistence.FetchType.LAZY;
 @AllArgsConstructor
 @Entity
 @Table(name = "document")
+// Removing a document sets removed = true, and Hibernate leaves such rows out of every load: by id,
+// by query and through the collections that hold them. The row stays for removal_reason and removed_at.
+@SoftDelete(columnName = "removed")
 public class DocumentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -108,8 +112,6 @@ public class DocumentEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
-
-    private boolean removed;
 
     private String removalReason;
 

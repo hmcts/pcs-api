@@ -88,17 +88,12 @@ public class DocumentsView {
     }
 
     private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            || documentEntity.isRemoved();
+        return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE;
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
         return ObjectUtils.isEmpty(documentEntity.getDescription())
                 || documentEntity.getDescription().trim().isEmpty();
-    }
-
-    public static boolean isNotRemoved(DocumentEntity documentEntity) {
-        return !documentEntity.isRemoved();
     }
 
     public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
