@@ -36,8 +36,7 @@ public class ConfirmEviction implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Confirm the eviction details")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
