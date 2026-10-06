@@ -62,6 +62,24 @@ class FeePaymentNotificationServiceTest {
         verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
     }
 
+    @Test
+    void shouldCreateHearingTaskWhenLanguageIsNotSet() {
+        Integer feePaymentId = 1;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
+        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(null).build();
+        FeePaymentEntity feePayment = FeePaymentEntity.builder()
+            .id(feePaymentId)
+            .claim(claim)
+            .build();
+        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
+
+        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
+
+        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
+        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
+        verifyNoInteractions(translationWAService);
+    }
+
     @ParameterizedTest
     @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
     void shouldNotCreateHearingTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {

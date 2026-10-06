@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -40,7 +42,10 @@ public class FeePaymentNotificationService {
 
         PcsCaseEntity pcsCaseEntity = claimEntity.getPcsCase();
 
-        switch (claimEntity.getLanguageUsed()) {
+        // A claim with no language recorded is treated as English, so the hearing task is still created
+        LanguageUsed languageUsed = Objects.requireNonNullElse(claimEntity.getLanguageUsed(), LanguageUsed.ENGLISH);
+
+        switch (languageUsed) {
             case ENGLISH -> {
                 if (claimEntity.getGenAppExpected() == VerticalYesNo.YES) {
                     camundaService.createTask(pcsCaseEntity.getCaseReference(), TaskType.NEW_CLAIM_CREATE_NEW_HEARING,
