@@ -75,7 +75,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
-                .showSummary();
+                .showSummary()
+                .endButtonLabel("Submit application");
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         enforcementPageConfigurer.configurePages(pageBuilder);
         warrantPagesConfigurer.configurePages(pageBuilder);
