@@ -37,8 +37,7 @@ class CannotApplyForWarrantInfoPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
+            assertThat(response.getErrorMessageOverride())
                     .contains(ERROR_MESSAGE);
         }
     }
