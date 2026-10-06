@@ -22,26 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.CaseFileDocumentDeduplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.legalrepresentative.LegalRepresentativeSummaryService;
-import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseFlagsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseLinkView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseListView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseNoteView;
-import uk.gov.hmcts.reform.pcs.ccd.view.CaseTabView;
-import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
-import uk.gov.hmcts.reform.pcs.ccd.view.DefendantResponseView;
-import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
-import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
-import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
-import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
-import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
-import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.ccd.view.*;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.CaseFieldsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.globalsearch.SearchCriteriaIndexer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -98,6 +79,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final HearingView hearingView;
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
+    private final OrdersTabView ordersTabView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -175,6 +157,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
+        ordersTabView.setCaseFields(pcsCase, pcsCaseEntity);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
