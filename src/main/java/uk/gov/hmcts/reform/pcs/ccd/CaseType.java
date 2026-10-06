@@ -354,4 +354,5 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
     }
+
 }
