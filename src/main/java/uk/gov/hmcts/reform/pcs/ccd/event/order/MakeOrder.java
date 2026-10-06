@@ -45,7 +45,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.S
  * saw; a change with no id starts their draft. An order a caseworker returned to the judge is theirs
  * to change again: they choose it on the case's orders tab, see the caseworker's query, and
  * submit it for review again. Submitting an order asks court staff to review it, with a Work
- * Allocation task.
+ * Allocation task, and closes the task a returned order gave its judge.
  */
 @Component
 @AllArgsConstructor
@@ -63,7 +63,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseRepository pcsCaseRepository;
     private final OrderCaseContext orderCaseContext;
     private final ClientContextRetriever clientContextRetriever;
-    private final ConfirmOrderReviewTask confirmOrderReviewTask;
+    private final OrderTasks orderTasks;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -145,7 +145,10 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         boolean resubmitted = draft.getState() == DraftOrderState.RETURNED_TO_JUDGE;
         draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
         draftOrderRepository.saveAndFlush(draft);
-        confirmOrderReviewTask.create(caseReference, draft, resubmitted);
+        if (resubmitted) {
+            orderTasks.closeJudgeQuery(caseReference, draft);
+        }
+        orderTasks.askStaffToReview(caseReference, draft, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }

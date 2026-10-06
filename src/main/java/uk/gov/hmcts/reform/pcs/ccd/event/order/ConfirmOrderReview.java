@@ -50,8 +50,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
  * returns the order to the judge with a query, or records the order as the caseworker issues it and
  * how it is to be issued, and adds any review dates to the case. The caseworker may change the
  * judge's form and wording; the judge's order is kept as they submitted it. Either closes the
- * order's Work Allocation task. Issuing an order records its wording and generates its document;
- * serving the issued order is not built yet.
+ * order's Work Allocation task for court staff, and returning it gives its judge one. Issuing an
+ * order records its wording and generates its document; serving the issued order is not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -70,7 +70,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final CaseReviewDateService caseReviewDateService;
     private final IssuedOrderService issuedOrderService;
     private final ClientContextRetriever clientContextRetriever;
-    private final ConfirmOrderReviewTask confirmOrderReviewTask;
+    private final OrderTasks orderTasks;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -130,6 +130,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             order.setState(DraftOrderState.RETURNED_TO_JUDGE);
             review.outcome(DraftOrderState.RETURNED_TO_JUDGE).queryToJudge(query);
             save(order, review.build());
+            orderTasks.askJudgeToChange(caseReference, order, query);
             return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
         }
 
@@ -175,7 +176,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private void save(DraftOrderEntity order, OrderReviewEntity review) {
         draftOrderRepository.saveAndFlush(order);
         orderReviewRepository.saveAndFlush(review);
-        confirmOrderReviewTask.close(order.getPcsCase().getCaseReference(), order);
+        orderTasks.closeStaffReview(order.getPcsCase().getCaseReference(), order);
     }
 
     private static String validQuery(String query) {

@@ -157,7 +157,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_12wstqg">
-          <text>"ReviewGenApp","ConfirmOrderReview"</text>
+          <text>"ReviewGenApp","ConfirmOrderReview","ReviewOrderQuery"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1rnyri8">
           <text>"majorPriority"</text>
@@ -357,7 +357,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0v6pdjr">
-          <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag"</text>
+          <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag","ReviewOrderQuery"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1p8y8wb">
           <text>"workType"</text>
@@ -417,7 +417,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
-          <text></text>
+          <text>not("ReviewOrderQuery")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ubz0s5">
           <text>"roleCategory"</text>
@@ -427,6 +427,46 @@ Short name</description>
         </outputEntry>
         <outputEntry id="LiteralExpression_03hwx1w">
           <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_jip2qdf">
+        <inputEntry id="UnaryTests_g8shjj7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_u64e195">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_gcr15ti">
+          <text>"ReviewOrderQuery"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_sa3s2nd">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_fmgfqhi">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_d8c5q6o">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_7uax124">
+        <inputEntry id="UnaryTests_4pkqgzn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_osixdd0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_iq1i17q">
+          <text>"ReviewOrderQuery"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_ognxcdh">
+          <text>"assignee"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_k9gfanj">
+          <text>taskAttributes.assigneeId</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_p9co3o6">
+          <text>false</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_0zpw840">
@@ -477,7 +517,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1tvak6q">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument", "ConfirmOrderReview"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument", "ConfirmOrderReview", "ReviewOrderQuery"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_14ewc8f">
           <text>"dueDateIntervalDays"</text>

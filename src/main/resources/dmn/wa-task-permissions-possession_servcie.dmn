@@ -82,6 +82,35 @@
           <text>false</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_8cgwrta">
+        <inputEntry id="UnaryTests_jfnd7zn">
+          <text>"ReviewOrderQuery"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_sxab64r">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_vkpbzqw">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_r61dtdo">
+          <text>"judge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_mgy6gkr">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_m28f99w">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_wzpnzmb">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_zl4z71m">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_z7dhgtz">
+          <text>true</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1wt3p0o">
         <inputEntry id="UnaryTests_0dx0tat">
           <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument"</text>

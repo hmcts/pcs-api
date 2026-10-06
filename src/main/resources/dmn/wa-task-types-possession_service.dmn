@@ -185,6 +185,17 @@
           <text>"Confirm order review"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_6vdezip">
+        <inputEntry id="UnaryTests_pz5k14q">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_nym6x5k">
+          <text>"ReviewOrderQuery"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_09toqo3">
+          <text>"Review order query"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1rb7ro7">
         <inputEntry id="UnaryTests_1pdvjve">
           <text></text>

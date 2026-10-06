@@ -129,6 +129,14 @@ public enum TaskType {
             Review the order the judge submitted, then either return it to the judge with a query or issue it.
             The task will close when the order is returned or issued.
             """
+    ),
+    REVIEW_ORDER_QUERY(
+        "ReviewOrderQuery",
+        "Review order query",
+        """
+            Court staff returned your order with a query. Change the order and submit it for review again.
+            The task will close when you submit it.
+            """
     );
 
     private final String id;

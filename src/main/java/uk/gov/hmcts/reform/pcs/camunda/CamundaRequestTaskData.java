@@ -29,4 +29,7 @@ public class CamundaRequestTaskData {
     /** The order a task is about, for a task there can be one of per order on a case. */
     private final UUID orderId;
 
+    /** Whom the task is for, which the configuration DMN makes its assignee. */
+    private final UUID assignee;
+
 }

@@ -143,6 +143,8 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.reviewerIdamUserId()).isEqualTo(caseworker.uid());
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
         verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY),
+            contains("Which defendant does paragraph 2 mean?"), eq(order.id()), eq(UUID.fromString(judge.uid())));
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
     }
@@ -175,6 +177,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(asCaseworker.start().order().formData()).containsEntry("notes", "the defendant named");
         assertThat(asAuthor.startExpectingRejection())
             .containsExactly("The order is no longer waiting for you to change it");
+        verify(camundaService).cancelTask(caseReference, TaskType.REVIEW_ORDER_QUERY, order.id());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
             contains("has changed an order that was returned to them"), eq(order.id()));
     }

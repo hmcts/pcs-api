@@ -62,18 +62,26 @@ public class CamundaService {
     }
 
     public void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo) {
-        createTask(caseId, taskType, taskDescription, scheduledTo, null);
+        createTask(caseId, taskType, taskDescription, scheduledTo, null, null);
     }
 
     /**
      * Creates a task about one order on the case, which {@link #cancelTask(long, TaskType, UUID)} cancels.
      */
     public void createTask(long caseId, TaskType taskType, String taskDescription, UUID orderId) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId);
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId, null);
+    }
+
+    /**
+     * Creates a task about one order on the case for one user, whom the task type's configuration
+     * makes its assignee.
+     */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, UUID orderId, UUID assignee) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId, assignee);
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            UUID orderId) {
+                            UUID orderId, UUID assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
@@ -81,6 +89,7 @@ public class CamundaService {
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
             .orderId(orderId)
+            .assignee(assignee)
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -109,7 +118,8 @@ public class CamundaService {
                     taskData.getTaskType(),
                     taskData.getTaskDescription(),
                     taskData.getIdempotencyKey(),
-                    taskData.getOrderId()
+                    taskData.getOrderId(),
+                    taskData.getAssignee()
                 );
             case CANCEL ->
                 requestTaskCancellation(
@@ -134,7 +144,7 @@ public class CamundaService {
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     UUID orderId) {
+                                     UUID orderId, UUID assignee) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -169,6 +179,10 @@ public class CamundaService {
         }
         if (orderId != null) {
             processVariables.put(ORDER_ID, dmnStringValue(orderId.toString()));
+        }
+        // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
+        if (assignee != null) {
+            processVariables.put("assigneeId", dmnStringValue(assignee.toString()));
         }
 
         // Default values - WA task due date is configured in configuration dmn

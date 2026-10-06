@@ -25,10 +25,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConfirmOrderReviewTaskTest {
+class OrderTasksTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID ORDER_ID = UUID.fromString("0b6c1a52-5e43-4a7f-9d3b-1f2a3c4d5e6f");
+    private static final UUID JUDGE_ID = UUID.fromString("5d2e8f10-7a6b-4c3d-9e1f-a2b3c4d5e6f7");
 
     @Mock
     private CamundaService camundaService;
@@ -41,23 +42,23 @@ class ConfirmOrderReviewTaskTest {
     @Captor
     private ArgumentCaptor<String> description;
 
-    private ConfirmOrderReviewTask underTest;
+    private OrderTasks underTest;
     private DraftOrderEntity order;
 
     @BeforeEach
     void setUp() {
         TaskDescriptionService taskDescriptionService = new TaskDescriptionService(
             partyService, new PebbleConfiguration().pebbleEngine(), claimRepository);
-        underTest = new ConfirmOrderReviewTask(camundaService, taskDescriptionService, securityContextService,
-                                               "https://pcs.example");
-        order = DraftOrderEntity.builder().id(ORDER_ID).orderType("OUTRIGHT_POSSESSION").build();
+        underTest = new OrderTasks(camundaService, taskDescriptionService, securityContextService, "https://pcs.example");
+        order = DraftOrderEntity.builder().id(ORDER_ID).orderType("OUTRIGHT_POSSESSION").authorIdamUserId(JUDGE_ID)
+            .build();
     }
 
     @Test
     void asksStaffToReviewTheOrderTheJudgeSubmitted() {
         signedIn("Sarah Hughes");
 
-        underTest.create(CASE_REFERENCE, order, false);
+        underTest.askStaffToReview(CASE_REFERENCE, order, false);
 
         verify(camundaService).createTask(eq(CASE_REFERENCE), eq(TaskType.CONFIRM_ORDER_REVIEW),
                                           description.capture(), eq(ORDER_ID));
@@ -72,7 +73,7 @@ class ConfirmOrderReviewTaskTest {
     void saysWhenAReturnedOrderIsSubmittedAgain() {
         signedIn("Sarah Hughes");
 
-        underTest.create(CASE_REFERENCE, order, true);
+        underTest.askStaffToReview(CASE_REFERENCE, order, true);
 
         verify(camundaService).createTask(eq(CASE_REFERENCE), eq(TaskType.CONFIRM_ORDER_REVIEW),
                                           description.capture(), eq(ORDER_ID));
@@ -85,7 +86,7 @@ class ConfirmOrderReviewTaskTest {
     void escapesTheJudgesName() {
         signedIn("<b>Judge</b>");
 
-        underTest.create(CASE_REFERENCE, order, false);
+        underTest.askStaffToReview(CASE_REFERENCE, order, false);
 
         verify(camundaService).createTask(eq(CASE_REFERENCE), eq(TaskType.CONFIRM_ORDER_REVIEW),
                                           description.capture(), eq(ORDER_ID));
@@ -93,10 +94,43 @@ class ConfirmOrderReviewTaskTest {
     }
 
     @Test
-    void closesTheTaskForTheReviewedOrderOnly() {
-        underTest.close(CASE_REFERENCE, order);
+    void closesTheStaffTaskForTheReviewedOrderOnly() {
+        underTest.closeStaffReview(CASE_REFERENCE, order);
 
         verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, ORDER_ID);
+    }
+
+    @Test
+    void givesTheJudgeWhoWroteTheOrderTheQueryTheirOrderWasReturnedWith() {
+        signedIn("Tom Baker");
+
+        underTest.askJudgeToChange(CASE_REFERENCE, order, "Which defendant does paragraph 2 mean?");
+
+        verify(camundaService).createTask(eq(CASE_REFERENCE), eq(TaskType.REVIEW_ORDER_QUERY),
+                                          description.capture(), eq(ORDER_ID), eq(JUDGE_ID));
+        assertThat(description.getValue())
+            .contains("Tom Baker has returned your outright possession order with a query:")
+            .contains("<div class=\"govuk-inset-text\">Which defendant does paragraph 2 mean?</div>")
+            .contains("<a href=\"https://pcs.example/cases/1234/event/ext:makeOrder"
+                          + "?expected_sub=${[EXPECTED_SUB]}&amp;orderId=" + ORDER_ID + "\">Change the order</a>");
+    }
+
+    @Test
+    void escapesTheQuery() {
+        signedIn("Tom Baker");
+
+        underTest.askJudgeToChange(CASE_REFERENCE, order, "<script>alert</script>");
+
+        verify(camundaService).createTask(eq(CASE_REFERENCE), eq(TaskType.REVIEW_ORDER_QUERY),
+                                          description.capture(), eq(ORDER_ID), eq(JUDGE_ID));
+        assertThat(description.getValue()).contains("&lt;script&gt;").doesNotContain("<script>");
+    }
+
+    @Test
+    void closesTheJudgesQueryTaskForTheOrderOnly() {
+        underTest.closeJudgeQuery(CASE_REFERENCE, order);
+
+        verify(camundaService).cancelTask(CASE_REFERENCE, TaskType.REVIEW_ORDER_QUERY, ORDER_ID);
     }
 
     private void signedIn(String name) {

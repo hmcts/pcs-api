@@ -1168,6 +1168,50 @@ else
           <text>"ADMIN"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_sslekq3">
+        <inputEntry id="UnaryTests_7t2n8ie">
+          <text>"ext:confirmOrderReview"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_c0enhb9">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_3m1aja7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_o0d3qky">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_edze33b">
+          <text>Caseworker returns the order to the judge with a query</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_wg4wtf2">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_9bm5ubw">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_usrtqy0">
+          <text>"ReviewOrderQuery"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_at5248h">
+          <text>"Review order query"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_sm3f90g">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ux20nh">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_wj7zq15">
+          <text>"ReviewOrderQuery"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_f6v0sdu">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_q2wdzh2">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>
