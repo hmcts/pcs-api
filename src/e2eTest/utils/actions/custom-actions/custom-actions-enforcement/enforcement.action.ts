@@ -7,8 +7,12 @@ import {
   evidenceUpload
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import {
+  createCaseApiData,
+  paymentApiData,
+  submitCaseApiData
+} from '@data/api-data';
+import {actionRetries, VERY_LONG_TIMEOUT, VERY_SHORT_TIMEOUT} from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 import {
   propertyAccessDetails,
@@ -29,8 +33,9 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer
+  confirmHCEOfficer, defendantInBreathingSpace, missedPayments
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import Axios from "axios";
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -43,7 +48,7 @@ export let defendantDetails: string[] = [];
 export const moneyMap = new Map<string, number>();
 export const fieldsMap = new Map<string, string>();
 
-export class EnforcementAction implements IAction {
+export class EnforcementAction implements IAction{
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
@@ -77,6 +82,9 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
+      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['updatePaymentAPI', () => this.updatePaymentAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -93,8 +101,7 @@ export class EnforcementAction implements IAction {
       ? enforcementApplication.typeofFee.warrantOfPossessionFee
       : enforcementApplication.typeofFee.writOfPossessionFee;
 
-    const writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
-
+    let writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
     moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
 
@@ -117,6 +124,56 @@ export class EnforcementAction implements IAction {
     }
 
   }
+
+  private async isDefendantInBreathingSpace(breathingSpaceData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion, option: breathingSpaceData.option });
+    await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, breathingSpaceData.nextPage as string);
+    await performAction('clickButton', defendantInBreathingSpace.continueButton);
+  }
+
+  private async missedPayments(missedPaymentsData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
+    await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
+  }
+
+  private async updatePaymentAPI(): Promise<void> {
+    const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
+    const maxRetries = actionRetries + actionRetries;
+    const delayMs = VERY_SHORT_TIMEOUT;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
+        const paymentInfo = response.data;
+        if (!paymentInfo?.length) {
+          throw new Error('No payment information found.');
+        }
+        const requestReference = paymentInfo[0].serviceRequestReference;
+        const updateResponse = await paymentApi.put(
+          paymentApiData.updatePaymentApiEndPoint,
+          paymentApiData.paymentUpdatePayload(requestReference)
+        );
+        if (updateResponse.status === 200 || updateResponse.status === 204) {
+          return;
+        }
+        throw new Error(`Payment update failed with status ${updateResponse.status}`);
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (attempt === maxRetries) {
+          if (Axios.isAxiosError(error)) {
+            throw new Error(`Payment API failed after retries: ${status}`);
+          }
+          throw new Error(`Payment API failed unexpectedly after retries.${error}`);
+        }
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+    }
+    throw new Error('Payment API failed after multiple retries');
+  }
+
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
