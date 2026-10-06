@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -32,7 +31,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.dashboard.DashboardTaskTemplate
 
 class ApplicationsTaskGroupEvaluatorTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final String CURRENT_USER_ID = "00000000-0000-0000-0000-000000000001";
     private static final String CURRENT_ORGANISATION_ID = "org1";
     private static final String OTHER_ORGANISATION_ID = "org2";
     private static final long TEST_CASE_REFERENCE = 100L;

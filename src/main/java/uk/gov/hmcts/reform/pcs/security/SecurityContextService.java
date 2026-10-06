@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.security;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -8,17 +7,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
-import java.util.UUID;
-import java.util.regex.Pattern;
 
-@Slf4j
 @Service
 public class SecurityContextService {
-
-    private static final Pattern UUID_PATTERN = Pattern.compile(
-        "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", Pattern.CASE_INSENSITIVE);
 
     private final String systemUserId;
 
@@ -44,17 +38,13 @@ public class SecurityContextService {
      * @return The user ID for the user making the current request
      * @throws SecurityContextException if the security principal is not set or is not a {@link User} type
      */
-    public UUID getCurrentUserId() {
+    public String getCurrentUserId() {
         UserInfo userDetails = getCurrentUserDetails();
         return userDetails != null ? toUserId(userDetails.getUid()) : null;
     }
 
-    public UUID toUserId(String uid) {
-        if (!UUID_PATTERN.matcher(uid).matches()) {
-            log.debug("IDAM uid is not a UUID, treating the user as having no PCS user id");
-            return null;
-        }
-        return UUID.fromString(uid);
+    public String toUserId(String uid) {
+        return IdamUserIds.normalise(uid);
     }
 
     public String getCurrentUserAuthToken() {

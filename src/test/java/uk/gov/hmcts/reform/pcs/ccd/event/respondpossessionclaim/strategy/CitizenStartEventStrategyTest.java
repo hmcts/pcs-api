@@ -109,7 +109,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PCSCase caseData = PCSCase.builder().build();
         List<ListValue<Document>> tenancyDocuments = List.of(
             ListValue.<Document>builder()
@@ -182,7 +182,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldLoadExistingDraftWhenDraftAlreadyExists() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder().build();
 
@@ -261,7 +261,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -291,7 +291,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldUseDefendantAddressWhenAddressSameAsPropertyIsNotYes() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -322,7 +322,7 @@ class CitizenStartEventStrategyTest {
     @MethodSource("caseAccessExceptionScenarios")
     void shouldThrowCaseAccessExceptionForInvalidAccess(String scenario, String exceptionMessage) {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         PCSCase caseData = PCSCase.builder().build();
 
@@ -348,7 +348,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldCreatePartyWithNullFieldsWhenDefendantDataIsNull() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -383,7 +383,7 @@ class CitizenStartEventStrategyTest {
         String lastName
     ) {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -424,7 +424,7 @@ class CitizenStartEventStrategyTest {
         // Given
         String orgName = "org";
         UUID claimantPartyId = UUID.randomUUID();
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantId = UUID.randomUUID();
         Party claimantParty = Party.builder().orgName(orgName).build();
         ListValue<Party> claimantPartyListValue = ListValue.<Party>builder().id(claimantPartyId.toString())
@@ -490,7 +490,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldThrowExceptionWhenNoDraft() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PCSCase caseData = PCSCase.builder().build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
@@ -514,7 +514,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 

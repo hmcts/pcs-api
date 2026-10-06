@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.OrganisationUserRoles.belongsToOrganisation;
@@ -58,13 +57,13 @@ public class OrganisationService {
     /** Organisation name for the current user, or null if unable to retrieve. */
     public String getOrganisationNameForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
             }
 
-            String organisationName = organisationDetailsService.getOrganisationName(userId.toString());
+            String organisationName = organisationDetailsService.getOrganisationName(userId);
 
             if (organisationName == null || organisationName.isEmpty()) {
                 log.warn("Organisation name is null or empty");
@@ -82,14 +81,14 @@ public class OrganisationService {
     /** Organisation identifier for the current user, or null if it cannot be resolved. */
     public String getOrganisationIdForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
             }
 
             return organisationIdCache.get(
-                userId.toString(),
+                userId,
                 id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
             ).orElse(null);
 
@@ -107,14 +106,14 @@ public class OrganisationService {
      * @return The organisation identifier, or null if the user genuinely has none
      */
     public String requireOrganisationIdForCurrentUser() {
-        UUID userId = resolveProfessionalUserId();
+        String userId = resolveProfessionalUserId();
 
         if (userId == null) {
             return null;
         }
 
         return organisationIdCache.get(
-            userId.toString(),
+            userId,
             id -> Optional.ofNullable(organisationDetailsService.requireOrganisationIdentifier(id))
         ).orElse(null);
     }
@@ -127,13 +126,13 @@ public class OrganisationService {
      */
     public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
             }
 
-            return organisationDetailsService.getOrganisationDetails(userId.toString());
+            return organisationDetailsService.getOrganisationDetails(userId);
 
         } catch (OrganisationDetailsException | SecurityContextException ex) {
             log.error("Error retrieving organisation details from rd-professional API", ex);
@@ -206,13 +205,13 @@ public class OrganisationService {
     public AddressUK getOrganisationAddressForCurrentUser() {
 
         try {
-            UUID userId = resolveProfessionalUserId();
+            String userId = resolveProfessionalUserId();
 
             if (userId == null) {
                 return null;
             }
 
-            AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId.toString());
+            AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId);
 
             // Return null if address is null or all key address fields to be displayed are empty
             if (keyAddressFieldsEmpty(organisationAddress)) {
@@ -238,7 +237,7 @@ public class OrganisationService {
      * IDAM role is being retired under HDPI-7333, and it never distinguished the organisation types
      * anyway.
      */
-    private UUID resolveProfessionalUserId() {
+    private String resolveProfessionalUserId() {
         if (securityContextService.isSystemUser() || currentUserIsCitizen() || !currentUserBelongsToOrganisation()) {
             return null;
         }

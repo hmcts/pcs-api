@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "org";
 

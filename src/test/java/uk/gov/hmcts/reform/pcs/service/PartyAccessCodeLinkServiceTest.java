@@ -48,7 +48,7 @@ class PartyAccessCodeLinkServiceTest {
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
-    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174000";
 
     private UserInfo testUser;
 
@@ -61,7 +61,7 @@ class PartyAccessCodeLinkServiceTest {
         return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
     }
 
-    private PartyEntity createParty(UUID partyId, UUID idamUserId) {
+    private PartyEntity createParty(UUID partyId, String idamUserId) {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(partyId);
         partyEntity.setIdamId(idamUserId);
@@ -139,7 +139,7 @@ class PartyAccessCodeLinkServiceTest {
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
 
-        PartyEntity defendantEntity = createParty(partyId, UUID.randomUUID());
+        PartyEntity defendantEntity = createParty(partyId, UUID.randomUUID().toString());
         PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
@@ -207,7 +207,7 @@ class PartyAccessCodeLinkServiceTest {
         UUID partyId2 = UUID.randomUUID();
 
         // Defendant 1: Linked to different user
-        PartyEntity defendantEntity1 = createParty(partyId1, UUID.randomUUID());
+        PartyEntity defendantEntity1 = createParty(partyId1, UUID.randomUUID().toString());
         // Defendant 2: Not linked yet
         PartyEntity defendantEntity2 = createParty(partyId2, null);
         List<PartyEntity> allDefendants = List.of(defendantEntity1, defendantEntity2);

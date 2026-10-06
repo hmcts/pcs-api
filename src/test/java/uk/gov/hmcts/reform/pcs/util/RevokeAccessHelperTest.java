@@ -161,7 +161,7 @@ class RevokeAccessHelperTest {
         long caseReference = 789L;
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        UUID idamId = UUID.randomUUID();
+        String idamId = UUID.randomUUID().toString();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .caseReference(caseReference)

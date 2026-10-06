@@ -377,7 +377,7 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        UUID userUid = UUID.randomUUID();
+        String userUid = UUID.randomUUID().toString();
         String legalRepEmail = "solicitor@example.com";
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
@@ -408,7 +408,7 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        UUID userUid = UUID.randomUUID();
+        String userUid = UUID.randomUUID().toString();
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
         when(userInfo.getUid()).thenReturn(userUid.toString());

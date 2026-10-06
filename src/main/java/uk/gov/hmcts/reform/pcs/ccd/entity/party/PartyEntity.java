@@ -67,7 +67,7 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    private UUID idamId;
+    private String idamId;
 
     private String firstName;
 

@@ -162,10 +162,10 @@ class SecurityContextServiceTest {
 
         UserInfo userDetails = mock(UserInfo.class);
         when(user.getUserDetails()).thenReturn(userDetails);
-        UUID expectedUserId = UUID.randomUUID();
+        String expectedUserId = UUID.randomUUID().toString();
         when(userDetails.getUid()).thenReturn(expectedUserId.toString());
 
-        UUID actualUserId = underTest.getCurrentUserId();
+        String actualUserId = underTest.getCurrentUserId();
 
         assertThat(actualUserId).isEqualTo(expectedUserId);
     }
@@ -178,17 +178,17 @@ class SecurityContextServiceTest {
 
         UserInfo userDetails = mock(UserInfo.class);
         when(user.getUserDetails()).thenReturn(userDetails);
-        UUID expectedUserId = UUID.randomUUID();
+        String expectedUserId = UUID.randomUUID().toString();
         when(userDetails.getUid()).thenReturn(expectedUserId.toString().toUpperCase());
 
-        UUID actualUserId = underTest.getCurrentUserId();
+        String actualUserId = underTest.getCurrentUserId();
 
         assertThat(actualUserId).isEqualTo(expectedUserId);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"7667", "not-a-uuid", "1-2-3-4-5"})
-    @DisplayName("Should return null user ID for an IDAM uid that is not a UUID")
+    @ValueSource(strings = {"7667", "1245", "not-a-uuid"})
+    @DisplayName("Should keep an IDAM uid that is not a UUID")
     void getUserIdWhenUidIsNotUuid(String uid) {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(user);
@@ -197,9 +197,9 @@ class SecurityContextServiceTest {
         when(user.getUserDetails()).thenReturn(userDetails);
         when(userDetails.getUid()).thenReturn(uid);
 
-        UUID actualUserId = underTest.getCurrentUserId();
+        String actualUserId = underTest.getCurrentUserId();
 
-        assertThat(actualUserId).isNull();
+        assertThat(actualUserId).isEqualTo(uid);
     }
 
     @Test

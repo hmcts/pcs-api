@@ -103,7 +103,7 @@ class PaymentControllerTest {
     void shouldReturnOutstandingCounterClaimPaymentForAuthenticatedDefendant() {
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         long caseReference = 12_345_678L;
-        UUID idamUserId = UUID.randomUUID();
+        String idamUserId = UUID.randomUUID().toString();
         OutstandingCounterClaimPayment outstandingPayment = OutstandingCounterClaimPayment.builder()
             .serviceRequestReference("2026-1234567890123")
             .feeAmount(new BigDecimal("404.00"))

@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 class DraftCaseDataServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final String OWNER_ORGANISATION_ID = "QKLHPMU";
     private static final String OTHER_ORGANISATION_ID = "IHOVCKH";
     private static final EventId PARTY_OWNED_EVENT = EventId.resumePossessionClaim;
@@ -149,19 +149,22 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldReportNoUnsubmittedCaseDataForNonUuidIdamUid() {
+    void shouldFindUnsubmittedCaseDataForNonUuidIdamUid() {
         // Given
+        when(draftCaseDataRepository
+                 .existsByCaseReferenceAndEventIdAndIdamUserIdAndPartyIdIsNull(CASE_REFERENCE, eventId, "7667"))
+            .thenReturn(true);
         UserInfo userInfo = UserInfo.builder()
             .uid("7667")
             .build();
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(securityContextService.toUserId("7667")).thenReturn(null);
+        when(securityContextService.toUserId("7667")).thenReturn("7667");
 
         // When
         boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId);
 
         // Then
-        assertThat(hasUnsubmittedCaseData).isFalse();
+        assertThat(hasUnsubmittedCaseData).isTrue();
     }
 
     @Test

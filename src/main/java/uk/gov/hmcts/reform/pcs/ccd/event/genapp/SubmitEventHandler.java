@@ -190,7 +190,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return partyService.getPartyEntityById(applicantPartyId, caseReference);
         }
 
-        UUID currentUserId = securityContextService.getCurrentUserId();
+        String currentUserId = securityContextService.getCurrentUserId();
         String organisationIdForCurrentUser = organisationService.getOrganisationIdForCurrentUser();
 
         if (caseData.getCurrentRepresentedPartyId() != null) {

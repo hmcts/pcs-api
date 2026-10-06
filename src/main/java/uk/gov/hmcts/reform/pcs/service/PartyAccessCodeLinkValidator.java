@@ -54,7 +54,7 @@ public class PartyAccessCodeLinkValidator {
     public void validateUserNotLinkedToAnotherParty(
         List<PartyEntity> partyEntities,
         UUID currentPartyId,
-        UUID idamUserId
+        String idamUserId
     ) {
         boolean userIdAlreadyLinked = partyEntities.stream()
             .filter(party -> !party.getId().equals(currentPartyId))

@@ -47,7 +47,7 @@ class PartyAccessCodeConstraintIT extends AbstractPostgresContainerIT {
     @DisplayName("rejects a second code for the same defendant, even with a different code value")
     void rejectsDuplicateCodeForSameParty() {
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithMultipleDefendants(
-            1781000000000003L, UUID.randomUUID(), UUID.randomUUID());
+            1781000000000003L, UUID.randomUUID().toString(), UUID.randomUUID().toString());
         PartyEntity defendant = caseCreationHelper.getDefendants(caseEntity).get(0);
 
         partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendant, "CODE_A"));
@@ -61,7 +61,7 @@ class PartyAccessCodeConstraintIT extends AbstractPostgresContainerIT {
     @DisplayName("allows one access code for each defendant on the case")
     void allowsOneCodePerDefendant() {
         PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithMultipleDefendants(
-            1781000000000004L, UUID.randomUUID(), UUID.randomUUID());
+            1781000000000004L, UUID.randomUUID().toString(), UUID.randomUUID().toString());
         List<PartyEntity> defendants = caseCreationHelper.getDefendants(caseEntity);
 
         partyAccessCodeRepository.saveAndFlush(accessCode(caseEntity, defendants.get(0), "CODE_1"));
