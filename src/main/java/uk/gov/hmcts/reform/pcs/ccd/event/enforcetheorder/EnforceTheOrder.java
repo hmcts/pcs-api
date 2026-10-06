@@ -88,7 +88,6 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
         setEnforcementTypes(eventPayload.caseReference(), pcsCase.getEnforcementOrder());
-
         return pcsCase;
     }
 
