@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.pcs.security;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
@@ -20,15 +22,18 @@ public class IdamTokenProvider {
     public static final String BEARER_PREFIX = "Bearer ";
 
     private final OAuth2AuthorizedClientManager authorizedClientManager;
+    private final OAuth2AuthorizedClientService authorizedClientService;
     private final String clientRegistrationId;
     private final String username;
     private final String password;
 
     public IdamTokenProvider(OAuth2AuthorizedClientManager authorizedClientManager,
-                                              String clientRegistrationId,
-                                              String username,
-                                              String password) {
+                             OAuth2AuthorizedClientService authorizedClientService,
+                             String clientRegistrationId,
+                             String username,
+                             String password) {
         this.authorizedClientManager = authorizedClientManager;
+        this.authorizedClientService = authorizedClientService;
         this.clientRegistrationId = clientRegistrationId;
         this.username = username;
         this.password = password;
@@ -45,7 +50,7 @@ public class IdamTokenProvider {
                 .attribute(OAuth2ParameterNames.PASSWORD, password)
                 .build();
 
-            OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
+            OAuth2AuthorizedClient authorizedClient = authorize(authorizeRequest);
 
             if (authorizedClient == null || authorizedClient.getAccessToken() == null) {
                 log.error("Failed to authorize OAuth2 client for {} - client or token is null",
@@ -59,6 +64,26 @@ public class IdamTokenProvider {
             log.error("OAuth2 authorization error retrieving {} token. Error: {}",
                 clientRegistrationId, ex.getError().getErrorCode(), ex);
             throw new IdamException("Unable to get access token response", ex);
+        }
+    }
+
+    /**
+     * Authorizes, retrying once if refreshing the cached token failed: that evicts the cached
+     * client (see OAuth2ClientConfig), so the retry logs in afresh with the password grant. A
+     * failed password login is not retried, so bad credentials cost one attempt, not two.
+     */
+    private OAuth2AuthorizedClient authorize(OAuth2AuthorizeRequest authorizeRequest) {
+        // A cached client means this attempt refreshes it; without one it is the password login.
+        boolean refreshing = authorizedClientService.loadAuthorizedClient(clientRegistrationId, username) != null;
+        try {
+            return authorizedClientManager.authorize(authorizeRequest);
+        } catch (ClientAuthorizationException ex) {
+            if (!refreshing) {
+                throw ex;
+            }
+            log.warn("Authorizing {} failed ({}); retrying with a fresh login", clientRegistrationId,
+                     ex.getError().getErrorCode());
+            return authorizedClientManager.authorize(authorizeRequest);
         }
     }
 }

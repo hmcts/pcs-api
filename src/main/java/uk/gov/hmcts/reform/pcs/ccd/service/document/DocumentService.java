@@ -449,7 +449,9 @@ public class DocumentService {
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
-                 OTHER ->
+                 OTHER,
+                 // Generated bundles are filed under their own "bundles" folder by CaseBundlePublisher
+                 CASE_BUNDLE ->
                 Optional.empty();
         };
     }

@@ -20,6 +20,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
 
 final class AccessGrants {
@@ -57,6 +58,14 @@ final class AccessGrants {
         return readAccess(PARTY_VISIBLE_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> caseDetailsTabAccess() {
+        SetMultimap<HasRole, Permission> grants = partyVisibleReadAccess();
+        // The Case details tab holds documents (e.g. the tenancy agreement) that are left out of
+        // allDocuments to avoid listing them twice, so CDAM only finds them for the system user here.
+        addReadAccess(grants, SYSTEM_USER);
+        return grants;
+    }
+
     static SetMultimap<HasRole, Permission> internalReadAccess() {
         return readAccess(INTERNAL_READ_ROLES);
     }
@@ -76,6 +85,10 @@ final class AccessGrants {
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
         grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
         addReadAccess(grants, INTERNAL_READ_ROLES);
+        // CDAM only serves a case-attached document to a caller who can see it in the case data,
+        // and pcs-api reads case documents as the system user (bundling, bulk print). See also
+        // caseDetailsTabAccess.
+        addReadAccess(grants, SYSTEM_USER);
         return grants;
     }
 

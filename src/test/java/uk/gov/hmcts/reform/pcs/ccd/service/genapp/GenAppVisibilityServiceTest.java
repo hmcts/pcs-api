@@ -325,4 +325,18 @@ class GenAppVisibilityServiceTest {
             .build();
     }
 
+    @Test
+    void shouldNotTreatProfessionalUsersHoldingCaseworkerPcsAsInternal() {
+        assertThat(underTest.isInternalUser(List.of("caseworker", "caseworker-pcs", "caseworker-pcs-solicitor")))
+            .isFalse();
+        assertThat(underTest.isInternalUser(List.of("hearing-centre-admin"))).isTrue();
+        assertThat(underTest.isInternalUser(List.of("judge"))).isTrue();
+    }
+
+    @Test
+    void shouldLetTheSystemUserSeeWithoutNoticeDocuments() {
+        assertThat(underTest.isWithoutNoticeVisibleToUser(null, null, null, List.of("pcs-system-update")))
+            .isTrue();
+        assertThat(underTest.isInternalUser(List.of("pcs-system-update"))).isFalse();
+    }
 }

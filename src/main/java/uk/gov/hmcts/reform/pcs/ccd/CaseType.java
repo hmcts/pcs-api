@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleScope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -203,6 +204,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(CaseBundleScope.BUNDLES_CATEGORY_ID)
+            .categoryLabel(CaseBundleScope.BUNDLES_CATEGORY_LABEL)
+            .displayOrder(CaseFileCategory.values().length + 1)
+            .build();
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
