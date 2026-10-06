@@ -84,7 +84,6 @@ export class CaseManagementAction implements IAction {
       ['addJudicialNotes', () => this.addJudicialNotes(fieldName as actionRecord)],
       ['confirmAddJudicialNotes', () => this.confirmAddJudicialNotes()],
       ['validateJudgeNotesTab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
-      ['selectEventDropdown',() => this.selectEventDropdown(page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -794,13 +793,6 @@ export class CaseManagementAction implements IAction {
       await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedText});
       await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
     }
-
-  private async selectEventDropdown(page: Page): Promise<void> {
-  const eventDropdown = page.locator('#next-step');
-  await expect(eventDropdown).toBeVisible();
-  await eventDropdown.click();
-}
-
 
   private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
     const judicialNote = new Map<string, string>();
