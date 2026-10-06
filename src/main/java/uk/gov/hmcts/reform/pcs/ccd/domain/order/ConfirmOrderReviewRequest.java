@@ -45,9 +45,11 @@ public record ConfirmOrderReviewRequest(Action action,
 
     /**
      * The order as the caseworker issues it: the judge's make order form and order document, with
-     * any changes the caseworker made to either.
+     * any changes the caseworker made to either, and the document's wording as Docweave exports it
+     * to HTML, which becomes the issued order.
      */
-    public record IssuedOrder(String orderType, Map<String, Object> formData, JsonNode docweaveSnapshot) {
+    public record IssuedOrder(String orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
+                              String html) {
     }
 
     public record ReviewDateEntry(LocalDate date, ReviewReason reason, String description) {

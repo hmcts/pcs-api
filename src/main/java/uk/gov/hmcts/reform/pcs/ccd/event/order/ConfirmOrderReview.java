@@ -26,6 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderReviewEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderReviewRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.IssuedOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderHtml;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -48,7 +50,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
  * returns the order to the judge with a query, or records the order as the caseworker issues it and
  * how it is to be issued, and adds any review dates to the case. The caseworker may change the
  * judge's form and wording; the judge's order is kept as they submitted it. Either closes the
- * order's Work Allocation task. Generating, sealing and serving the issued order are not built yet.
+ * order's Work Allocation task. Issuing an order records its wording and generates its document;
+ * serving the issued order is not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -65,6 +68,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderReviewRepository orderReviewRepository;
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
+    private final IssuedOrderService issuedOrderService;
     private final ClientContextRetriever clientContextRetriever;
     private final ConfirmOrderReviewTask confirmOrderReviewTask;
 
@@ -141,7 +145,9 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .serveAllParties(issue.serveAllParties())
             .partiesServed(issue.serveAllParties() ? null : issue.partiesToServe())
             .seal(issue.seal());
-        save(order, review.build());
+        OrderReviewEntity issued = review.build();
+        save(order, issued);
+        issuedOrderService.issue(order, issued, issue.order().html(), UUID.fromString(submit.user().id()));
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(caseReference, issue.reviewDates().stream()
                 .map(ConfirmOrderReview::toReviewDate)
@@ -188,6 +194,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         }
         if (issue.order() == null || issue.order().orderType() == null || issue.order().formData() == null) {
             throw ExternalRejection.because("Send the order as it is to be issued");
+        }
+        if (issue.order().html() != null && issue.order().html().length() > OrderHtml.MAX_LENGTH) {
+            throw ExternalRejection.because("The order is too long to issue");
+        }
+        if (OrderHtml.clean(issue.order().html()) == null) {
+            throw ExternalRejection.because("Send the wording of the order as it is to be issued");
         }
         List<String> errors = new ArrayList<>();
         if (issue.reviewDates().size() > MAX_REVIEW_DATES) {

@@ -310,6 +310,11 @@ counter-claim-form:
     max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+order-document:
+  request:
+    max-retries: ${ORDER_DOCUMENT_MAX_RETRIES:5}
+    backoff-delay-seconds: ${ORDER_DOCUMENT_BACKOFF_DELAY_SECONDS:60s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}

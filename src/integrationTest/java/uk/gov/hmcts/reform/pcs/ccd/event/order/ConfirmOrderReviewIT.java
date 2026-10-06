@@ -61,6 +61,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 @DisplayName("Confirm order review")
 class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
 
+    private static final String WORDING = "<p>IT IS ORDERED THAT:</p><ol><li><p>Possession.</p></li></ol>";
+
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
@@ -192,6 +194,11 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
             order.version(), null, new Issue(asSubmitted(order), List.of(), true, false, false, List.of(), null)))
             .errors())
             .containsExactly("Select who to serve the order on", "Select which seal the order should have");
+        var unworded = new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot(), "<p> </p>");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(unworded, List.of(), true, true, true, List.of(), COUNTY_COURT)))
+            .errors())
+            .containsExactly("Send the wording of the order as it is to be issued");
         assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null,
             new Issue(asSubmitted(order), List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
@@ -219,13 +226,37 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         assertThat(review.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         verify(camundaService).cancelTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, order.id());
+        Issued issued = outcome.changed("issued_orders", Issued.class);
+        assertThat(issued.orderType()).isEqualTo("OUTRIGHT_POSSESSION");
+        assertThat(issued.orderHtml()).isEqualTo(WORDING);
+        assertThat(issued.seal()).isEqualTo("HIGH_COURT");
+        assertThat(issued.finalOrder()).isFalse();
+    }
+
+    @Test
+    @DisplayName("issues only the elements Docweave's output schema has, numbered as its editor shows them")
+    void issuesOnlyTheOrderWording() {
+        Order order = judgeSubmitsOrder("the judge's order");
+        var linked = new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot(),
+            "<p onclick=\"x()\">Possession <a href=\"https://example.com\">here</a></p><img src=\"x\">"
+                + "<script>x()</script><ol><li><p><strong>1</strong> <em>2</em></p><ol><li><p>i</p></li></ol></li></ol>"
+                + "<p>Recital</p><ol><li><p>2</p></li></ol>");
+
+        var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), null, new Issue(linked, List.of(), true, true, true, List.of(), COUNTY_COURT)));
+
+        assertThat(outcome.changed("issued_orders", Issued.class).orderHtml())
+            .isEqualTo("<p>Possession here</p><ol><li><p><strong>1</strong> <em>2</em></p>"
+                + "<ol type=\"i\"><li><p>i</p></li></ol></li></ol>"
+                + "<p>Recital</p><ol start=\"2\"><li><p>2</p></li></ol>");
     }
 
     @Test
     @DisplayName("issues the order as the caseworker changed it, keeping the judge's as they submitted it")
     void issuesTheOrderAsTheCaseworkerChangedIt() {
         Order order = judgeSubmitsOrder("the judge's order");
-        var changed = new IssuedOrder("SUSPENDED_POSSESSION", Map.of("notes", "the caseworker's order"), null);
+        var changed = new IssuedOrder("SUSPENDED_POSSESSION", Map.of("notes", "the caseworker's order"), null,
+            WORDING);
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), null, new Issue(changed, List.of(), true, true, true, List.of(), COUNTY_COURT)));
@@ -279,7 +310,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
 
     /** The judge's order as a caseworker who changed nothing issues it. */
     private static IssuedOrder asSubmitted(Order order) {
-        return new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot());
+        return new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot(), WORDING);
     }
 
     /** The caseworker chooses an order to review, which the frontend names in the client context. */
@@ -290,6 +321,10 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
     private static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of("notes", notes), null));
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    record Issued(String orderType, String orderHtml, String seal, Boolean finalOrder) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
