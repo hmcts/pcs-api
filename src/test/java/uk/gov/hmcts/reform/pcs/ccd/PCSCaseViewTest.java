@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.ccd.view.GenAppsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HearingView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.OrdersTabView;
 import uk.gov.hmcts.reform.pcs.ccd.view.PartiesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
@@ -88,6 +89,8 @@ class PCSCaseViewTest {
     private CaseTitleService caseTitleService;
     @Mock
     private ClaimView claimView;
+    @Mock
+    private OrdersTabView ordersTabView;
     @Mock
     private DocumentsView documentsView;
     @Mock
@@ -161,7 +164,7 @@ class PCSCaseViewTest {
                                     caseLinkView, enforcementOrderMediator,
                                     caseNoteView, caseTabView, partiesView, genAppsView, caseFlagsView,
                                     defendantResponseView, featureFlagView, caseFileDocumentDeduplicationService,
-                                    hearingView, legalRepresentativeSummaryService, organisationService
+                                    hearingView, legalRepresentativeSummaryService, organisationService, ordersTabView
         );
     }
 
@@ -378,6 +381,7 @@ class PCSCaseViewTest {
         // Then
         verify(partiesView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(ordersTabView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(documentsView).setCaseFields(pcsCase, pcsCaseEntity, orgId);
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);

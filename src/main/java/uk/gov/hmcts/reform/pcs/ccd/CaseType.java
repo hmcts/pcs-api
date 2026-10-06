@@ -365,7 +365,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS)
             )
             .field("ordersTab_PossessionOrder")
-            .field("ordersTab_possessionOrderUploadedDate");
+            .field("ordersTab_PossessionOrderUploadedDate");
     }
 
 }
