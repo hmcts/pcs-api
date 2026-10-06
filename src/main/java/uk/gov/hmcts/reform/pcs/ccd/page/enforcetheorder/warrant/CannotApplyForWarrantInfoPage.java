@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import java.util.List;
-
 public class CannotApplyForWarrantInfoPage implements CcdPageConfiguration {
 
     static final String ERROR_MESSAGE = "You cannot continue with this application until "
@@ -47,8 +45,8 @@ public class CannotApplyForWarrantInfoPage implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> before) {
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().
-            errorMessageOverride(ERROR_MESSAGE)
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .errorMessageOverride(ERROR_MESSAGE)
             .build();
     }
 }
