@@ -4,18 +4,11 @@ import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
-import au.com.dius.pact.core.model.Request;
-import au.com.dius.pact.core.model.Response;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import java.util.Map;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -23,31 +16,34 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.pcs.camunda.DmnValue;
 import uk.gov.hmcts.reform.pcs.camunda.SendMessageRequest;
+import uk.gov.hmcts.reform.pcs.camunda.WorkAllocationWorkflowApi;
+
+import java.util.Map;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class
 })
-@EnableFeignClients(clients = WorkAllocationWorkflowApi.class) //is this right
-@TestPropertySource(properties = "wa_workflow.api.url=http://localhost:8899") //any number in here atm - what local port is?
-@ExtendWith(PactConsumerTestExt.class)
-@PactTestFor(providerName = "wa_workflow_api_send_message", port = "8899") //tbd
-
-@RequiredArgsConstructor
+@EnableFeignClients(clients = WorkAllocationWorkflowApi.class)
+@TestPropertySource(properties = "work-allocation.workflow-api.url=http://localhost:8899")
+@ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
+@PactTestFor(providerName = "wa_workflow_api_send_message", port = "8899")
 
 public class WaWorkflowConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
 
     @Autowired
-    private WorkAllocationWorkflowApi workAllocationWorkflowApi; //not needed? Accessing right?
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private WorkAllocationWorkflowApi workAllocationWorkflowApi;
 
     @Pact(provider = "wa_workflow_api_send_message", consumer = "pcs_api")
-    public V4Pact executeSendMessage204(PactDslWithProvider builder) throws JsonProcessingException {
+    public V4Pact executeSendMessage204(PactDslWithProvider builder) {
 
         return builder
             .given("send a message to Camunda")
@@ -63,78 +59,54 @@ public class WaWorkflowConsumerTest {
             .toPact(V4Pact.class);
     }
 
-    PactDslJsonBody createMessage = new PactDslJsonBody() //- try build like this - can always return as a string but it may not like it
-        .stringType("caseId", "some CaseId")
-        .stringType("taskId", "SomeTaskId")
-        .stringType("name", "some Name")
-        .stringType("jurisdiction", "PCS")
-        .stringType("caseType", "PCSCaseType");
+    PactDslJsonBody processVariables = (PactDslJsonBody) new PactDslJsonBody()
+        .object("caseId")
+        .stringType("value", "123412341234")
+        .stringType("type", "String")
+        .closeObject()
+        .object("taskId")
+        .stringType("value", "some taskId")
+        .stringType("type", "String")
+        .closeObject()
+        .object("name")
+        .stringType("value", "some name")
+        .stringType("type", "String")
+        .closeObject()
+        .object("jurisdiction")
+        .stringType("value", "PCS")
+        .stringType("type", "String")
+        .closeObject()
+        .object("caseType")
+        .stringType("value", "PCSCaseType")
+        .stringType("type", "String")
+        .closeObject();
 
-    String createMessageBody = createMessage.getBody().toString();
+    PactDslJsonBody createMessage = new PactDslJsonBody()
+        .stringType("messageName", "some other message")
+        .object("processVariables", processVariables)
+        .nullValue("correlationKeys")
+        .booleanType("all", false);
+
+    Map<String, DmnValue<?>> message = Map.of(
+        "caseId", new DmnValue<>("123412341234", "String"),
+        "taskId", new DmnValue<>("some taskId", "String"),
+        "name", new DmnValue<>("some name", "String"),
+        "jurisdiction", new DmnValue<>("PCS", "String"),
+        "caseType", new DmnValue<>("PCSCaseType", "String")
+    );
+
     SendMessageRequest body = new SendMessageRequest(
-        "one",
-        (Map<String, DmnValue<?>>) createMessage,
+        "some other message",
+        message,
         null,
-        false);
-
-
+        false
+    );
 
     @Test
     @PactTestFor(pactMethod = "executeSendMessage204")
     void sendMessage() {
-        workAllocationWorkflowApi.sendMessage(SERVICE_AUTH_TOKEN, body).getStatus();
-        assertThat(messageResponse.getStatus()).isEqualTo(204);
-        assertThat(messageResponse.getBody()).isNull();
+        assertThatCode(() ->
+                           workAllocationWorkflowApi.sendMessage(SERVICE_AUTH_TOKEN, body)
+        ).doesNotThrowAnyException();
     }
-
 }
-
-   /*
-   public interface WorkAllocationWorkflowApi {
-    String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-
-    @PostMapping(
-        value = "/workflow/message",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    void sendMessage(@RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorisation,
-                     @RequestBody SendMessageRequest sendMessageRequest);
-
-}
-
-
-
-
-   public String createMessage() throws JsonProcessingException {
-
-        Map<String, DmnValue<?>> processVariables = new HashMap<>(); //concurrentHashMap
-
-        processVariables.put("caseId", new DmnValue<> ("some caseId", "String")); //dmstringvalyr(id.tostring) if cALLIBG EXSTING CASE ID ETC
-        processVariables.put("taskId", new DmnValue<>("some taskId", "String"));
-        processVariables.put("name", new DmnValue<>("some name", "String"));
-        processVariables.put("jurisdiction", new DmnValue<>("PCS", "String"));
-        processVariables.put("caseType", new DmnValue<>("PcSCaseType", "String"));
-
-    @Test
-    @PactTestFor(pactMethod = "executeSendMessage204")
-    void sendMessage() throws JsonProcessingException {
-        Response messageResponse = workAllocationWorkflowApi.sendMessage(SERVICE_AUTH_TOKEN, request);
-        assertThat(messageResponse.getStatus()).isEqualTo(204);
-        assertThat(messageResponse.getBody()).isNull();
-    }
-    */
-        /*
-        *   PactDslJsonBody responseBody = new PactDslJsonBody() - try build like this - can always return as a string but it may not like it
-            .stringType("code", "FEE0412")
-            .stringType("description", "Recovery of Land - County Court")
-            .integerType("version", 4)
-            .decimalType("fee_amount", 404.00);
-
-        SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
-            .messageName("some other message")
-            .processVariables(processVariables)
-            .all(false)
-            .build();
-
-        return objectMapper.writeValueAsString(sendMessageRequest); //???? build as a dsl object
-    }*/
