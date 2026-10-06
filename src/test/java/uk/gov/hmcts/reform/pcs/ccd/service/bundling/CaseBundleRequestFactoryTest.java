@@ -98,6 +98,17 @@ class CaseBundleRequestFactoryTest {
             media -> assertThat(media.accessUrl()).isEqualTo(recording.getBinaryUrl()));
     }
 
+    @Test
+    void shouldTitleAnUnnamedDocumentByItsType() {
+        DocumentEntity typed = document(" ", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        typed.setType(DocumentType.WITNESS_STATEMENT);
+        DocumentEntity untyped = document(null, CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
+
+        BundleRequest request = underTest.build(JOB_ID, caseWith(typed, untyped));
+
+        assertThat(titles(request, "Evidence")).containsExactly("Witness statement", "Document");
+    }
+
     private static PcsCaseEntity caseWith(DocumentEntity... documents) {
         PcsCaseEntity pcsCase = new PcsCaseEntity();
         pcsCase.setCaseReference(1234567812345678L);

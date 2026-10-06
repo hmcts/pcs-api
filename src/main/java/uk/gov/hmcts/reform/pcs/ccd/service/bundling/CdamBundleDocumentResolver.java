@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -124,8 +125,14 @@ public class CdamBundleDocumentResolver implements DocumentResolver {
 
         @Override
         public String mediaType() {
-            // The SDK detects the real type from the content; this is only the declared one.
-            MediaType contentType = headers.getContentType();
+            // The SDK detects the real type from the content; this is only the declared one, so an
+            // unparseable header must not fail the bundle.
+            MediaType contentType;
+            try {
+                contentType = headers.getContentType();
+            } catch (InvalidMediaTypeException e) {
+                contentType = null;
+            }
             return contentType == null ? MediaType.APPLICATION_OCTET_STREAM_VALUE
                 : contentType.getType() + "/" + contentType.getSubtype();
         }
