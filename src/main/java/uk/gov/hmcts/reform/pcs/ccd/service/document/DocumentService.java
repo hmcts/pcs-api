@@ -411,6 +411,7 @@ public class DocumentService {
             case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
                  CLAIM,
                  DEFENDANT_RESPONSE,
+                 POSSESSION_ORDER,
                  AMENDED_CLAIM_FORM,
                  PART_20_COUNTERCLAIM,
                  COUNTERCLAIM ->
