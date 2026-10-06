@@ -546,7 +546,7 @@ public class CamundaServiceTest {
         assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.CONFIRM_ORDER_REVIEW);
         assertThat(taskData.getTaskDescription()).isEqualTo("some description");
-        assertThat(taskData.getOrderId()).isEqualTo(orderId);
+        assertThat(taskData.getSubject()).isEqualTo(TaskSubject.order(orderId));
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
     }
@@ -564,7 +564,7 @@ public class CamundaServiceTest {
             .taskType(TaskType.CONFIRM_ORDER_REVIEW)
             .taskDescription("some description")
             .idempotencyKey(UUID.randomUUID())
-            .orderId(orderId)
+            .subject(TaskSubject.order(orderId))
             .build();
 
         // When

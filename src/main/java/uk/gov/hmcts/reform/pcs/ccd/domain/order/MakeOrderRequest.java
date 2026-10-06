@@ -18,12 +18,14 @@ public record MakeOrderRequest(Action action, OrderChange order) {
 
     /**
      * The order as the judge submitted it: which order they are making (none yet has no id), the
-     * make order form, and the order document from the docweave editor, if they have edited it.
+     * make order form, and the order document from the docweave editor, if they have edited it. A
+     * new order on an application names it; an order keeps the application it was started on.
      */
     public record OrderChange(UUID id,
                               long version,
                               String orderType,
                               Map<String, Object> formData,
-                              JsonNode docweaveSnapshot) {
+                              JsonNode docweaveSnapshot,
+                              UUID genAppId) {
     }
 }

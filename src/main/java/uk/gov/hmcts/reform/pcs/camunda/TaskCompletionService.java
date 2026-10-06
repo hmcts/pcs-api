@@ -19,8 +19,8 @@ import java.util.UUID;
 /**
  * Completes a task in task management as the user who did its work, as XUI does when an event a task
  * links to is submitted there. Work done in pcs-frontend never reaches XUI, so pcs-api completes the
- * task itself, and the task is complete when the user is back in XUI. The task is found by its order,
- * among the open tasks the user can see on the case.
+ * task itself, and the task is complete when the user is back in XUI. The task is found by the order or
+ * general application it is about, among the open tasks the user can see on the case.
  */
 @Slf4j
 @AllArgsConstructor
@@ -39,6 +39,13 @@ public class TaskCompletionService {
      * worked, rather than failing the work they've done: anything left open is the caller's to close.
      */
     public boolean completeOrderTasks(long caseReference, TaskType taskType, UUID orderId) {
+        return completeTasks(caseReference, taskType, TaskSubject.order(orderId));
+    }
+
+    /** Completes the user's open tasks of a type about one order or application on the case, as for an order. */
+    public boolean completeTasks(long caseReference, TaskType taskType, TaskSubject subject) {
+        String property = subject.property();
+        UUID id = subject.id();
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             return true;
         }
@@ -48,16 +55,17 @@ public class TaskCompletionService {
             List<Task> tasks = taskManagementApi
                 .searchTasks(user, service, 0, MAX_TASKS, search(caseReference, taskType))
                 .tasks().stream()
-                .filter(task -> orderId.toString().equals(orderId(task)))
+                .filter(task -> id.toString().equals(additionalProperty(task, property)))
                 .toList();
             for (Task task : tasks) {
                 taskManagementApi.completeTask(user, service, task.id(), Map.of());
             }
-            log.info("Completed {} {} tasks for order {} on case {}", tasks.size(), taskType.getId(), orderId,
+            log.info("Completed {} {} tasks for {} {} on case {}", tasks.size(), taskType.getId(), property, id,
                      caseReference);
             return !tasks.isEmpty();
         } catch (Exception e) {
-            log.warn("Could not complete {} task for order {} on case {}", taskType.getId(), orderId, caseReference, e);
+            log.warn("Could not complete {} task for {} {} on case {}", taskType.getId(), property, id, caseReference,
+                     e);
             return false;
         }
     }
@@ -71,7 +79,7 @@ public class TaskCompletionService {
         ));
     }
 
-    private static String orderId(Task task) {
-        return task.additionalProperties() == null ? null : task.additionalProperties().get("orderId");
+    private static String additionalProperty(Task task, String property) {
+        return task.additionalProperties() == null ? null : task.additionalProperties().get(property);
     }
 }

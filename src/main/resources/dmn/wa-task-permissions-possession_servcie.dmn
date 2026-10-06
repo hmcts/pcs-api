@@ -111,6 +111,35 @@
           <text>true</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_boiconm">
+        <inputEntry id="UnaryTests_wpvpbrg">
+          <text>"DecideGenApp"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_ucu9ayq">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_7hou820">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_isi3kax">
+          <text>"judge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_ycst038">
+          <text>"Read,Own,Claim,Unclaim,Manage,Complete"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_awqr8rp">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_4ocau7k">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_6t8ja59">
+          <text>1</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_nruhgxr">
+          <text>true</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1wt3p0o">
         <inputEntry id="UnaryTests_0dx0tat">
           <text>"TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument"</text>

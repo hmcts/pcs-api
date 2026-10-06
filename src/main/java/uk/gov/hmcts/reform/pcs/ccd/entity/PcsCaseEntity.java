@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -151,6 +152,11 @@ public class PcsCaseEntity {
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
+    }
+
+    /** The case's general application with the id, if it has one. */
+    public Optional<GenAppEntity> findGenApp(UUID genAppId) {
+        return genApps.stream().filter(genApp -> genApp.getId().equals(genAppId)).findFirst();
     }
 
     public void addGenApp(GenAppEntity genApp) {

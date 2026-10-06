@@ -196,6 +196,17 @@
           <text>"Review order query"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_o1854ep">
+        <inputEntry id="UnaryTests_xoq1lj0">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_a3xrf36">
+          <text>"DecideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_vgbi3sj">
+          <text>"Decide application"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_1rb7ro7">
         <inputEntry id="UnaryTests_1pdvjve">
           <text></text>

@@ -47,6 +47,10 @@ public class DraftOrderEntity {
     @Column(nullable = false, updatable = false)
     private UUID authorIdamUserId;
 
+    /** The general application the order decides, when the judge started it from one. */
+    @Column(updatable = false)
+    private UUID genAppId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DraftOrderState state;

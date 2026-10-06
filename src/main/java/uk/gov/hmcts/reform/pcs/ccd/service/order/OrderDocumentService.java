@@ -55,7 +55,8 @@ public class OrderDocumentService {
         "OUTRIGHT_POSSESSION", "Order for possession",
         "SUSPENDED_POSSESSION", "Order for possession (suspended)",
         "ADJOURNMENT", "Order (adjournment)",
-        "STRIKE_OUT_DISMISSAL", "Order (strike out or dismissal)"
+        "STRIKE_OUT_DISMISSAL", "Order (strike out or dismissal)",
+        "APPLICATION_DECISION", "Order (application)"
     );
 
     private final IssuedOrderRepository issuedOrderRepository;

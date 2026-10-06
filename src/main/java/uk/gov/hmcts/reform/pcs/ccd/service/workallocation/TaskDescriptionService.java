@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -232,6 +233,24 @@ public class TaskDescriptionService {
         );
 
         String templateName = "review-order-query";
+        return renderTemplate(templateName, context);
+    }
+
+    public String createDecideGenAppDescription(String referrerName,
+                                                String applicant,
+                                                String reference,
+                                                String applicationType,
+                                                String note,
+                                                String decideUrl) {
+        Map<String, Object> context = new HashMap<>();
+        context.put("referrerName", referrerName);
+        context.put("applicant", applicant);
+        context.put("reference", reference);
+        context.put("applicationType", applicationType);
+        context.put("note", note);
+        context.put("decideUrl", decideUrl);
+
+        String templateName = "decide-gen-app";
         return renderTemplate(templateName, context);
     }
 

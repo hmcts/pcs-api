@@ -175,7 +175,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
 
         Order resubmitted = asAuthor.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
                 returned.id(), returned.version(), returned.orderType(), Map.of("notes", "the defendant named"),
-                returned.docweaveSnapshot())))
+                returned.docweaveSnapshot(), null)))
             .changed("draft_orders", Order.class);
         assertThat(resubmitted.id()).isEqualTo(order.id());
         assertThat(resubmitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
@@ -311,7 +311,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
         asJudge.submitExpectingSuccess(startDraft(notes));
         Order draft = asJudge.start().order();
         Order submitted = asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
-                draft.id(), draft.version(), draft.orderType(), draft.formData(), draft.docweaveSnapshot())))
+                draft.id(), draft.version(), draft.orderType(), draft.formData(), draft.docweaveSnapshot(), null)))
             .changed("draft_orders", Order.class);
         choose(submitted.id());
         return submitted;
@@ -337,7 +337,7 @@ class ConfirmOrderReviewIT extends AbstractPostgresContainerIT {
 
     private static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of("notes", notes), null));
+            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of("notes", notes), null, null));
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

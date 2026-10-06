@@ -46,7 +46,6 @@ public class CamundaService {
     private static final String EMPTY_WARNINGS_LIST = "[]";
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
-    private static final String ORDER_ID = "orderId";
     private final Clock utcClock;
 
     public void createTask(long caseId, TaskType taskType) {
@@ -69,7 +68,7 @@ public class CamundaService {
      * Creates a task about one order on the case, which {@link #cancelTask(long, TaskType, UUID)} cancels.
      */
     public void createTask(long caseId, TaskType taskType, String taskDescription, UUID orderId) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId, null);
+        createTask(caseId, taskType, taskDescription, TaskSubject.order(orderId), null);
     }
 
     /**
@@ -77,18 +76,24 @@ public class CamundaService {
      * makes its assignee.
      */
     public void createTask(long caseId, TaskType taskType, String taskDescription, UUID orderId, UUID assignee) {
-        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), orderId, assignee);
+        createTask(caseId, taskType, taskDescription, TaskSubject.order(orderId), assignee);
+    }
+
+    /** Creates a task about one order or application on the case, for one user if there is an assignee. */
+    public void createTask(long caseId, TaskType taskType, String taskDescription, TaskSubject subject,
+                           UUID assignee) {
+        createTask(caseId, taskType, taskDescription, Instant.now(utcClock), subject, assignee);
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            UUID orderId, UUID assignee) {
+                            TaskSubject subject, UUID assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
             .idempotencyKey(UUID.randomUUID())
-            .orderId(orderId)
+            .subject(subject)
             .assignee(assignee)
             .build();
 
@@ -96,21 +101,26 @@ public class CamundaService {
     }
 
     public void cancelTask(long caseId, TaskType taskType) {
-        cancelTask(caseId, taskType, null);
+        cancelTask(caseId, taskType, (TaskSubject) null, Duration.ZERO);
     }
 
     /** Cancels the tasks of a type about one order on the case, leaving those about its other orders. */
     public void cancelTask(long caseId, TaskType taskType, UUID orderId) {
-        cancelTask(caseId, taskType, orderId, Duration.ZERO);
+        cancelTask(caseId, taskType, TaskSubject.order(orderId), Duration.ZERO);
     }
 
     /** Cancels the tasks of a type about one order on the case, after a delay. */
     public void cancelTask(long caseId, TaskType taskType, UUID orderId, Duration delay) {
+        cancelTask(caseId, taskType, TaskSubject.order(orderId), delay);
+    }
+
+    /** Cancels the tasks of a type about one order or application on the case, after a delay. */
+    public void cancelTask(long caseId, TaskType taskType, TaskSubject subject, Duration delay) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CANCEL)
             .caseReference(caseId)
             .taskType(taskType)
-            .orderId(orderId)
+            .subject(subject)
             .build();
         scheduleCamundaRequest(taskData, Instant.now(utcClock).plus(delay));
     }
@@ -123,14 +133,14 @@ public class CamundaService {
                     taskData.getTaskType(),
                     taskData.getTaskDescription(),
                     taskData.getIdempotencyKey(),
-                    taskData.getOrderId(),
+                    taskData.getSubject(),
                     taskData.getAssignee()
                 );
             case CANCEL ->
                 requestTaskCancellation(
                     taskData.getCaseReference(),
                     taskData.getTaskType(),
-                    taskData.getOrderId()
+                    taskData.getSubject()
                 );
         }
     }
@@ -149,7 +159,7 @@ public class CamundaService {
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     UUID orderId, UUID assignee) {
+                                     TaskSubject subject, UUID assignee) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -182,8 +192,8 @@ public class CamundaService {
         } else {
             log.warn("No idempotency key provided for task of type {}", taskType);
         }
-        if (orderId != null) {
-            processVariables.put(ORDER_ID, dmnStringValue(orderId.toString()));
+        if (subject != null) {
+            processVariables.put(subject.property(), dmnStringValue(subject.id().toString()));
         }
         // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
         if (assignee != null) {
@@ -206,7 +216,7 @@ public class CamundaService {
         sendCamundaRequest(request, caseId);
     }
 
-    private void requestTaskCancellation(Long caseId, TaskType taskType, UUID orderId) {
+    private void requestTaskCancellation(Long caseId, TaskType taskType, TaskSubject subject) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped cancelling task for {}", caseId);
             return;
@@ -215,8 +225,8 @@ public class CamundaService {
         Map<String, DmnValue<?>> correlationKeys = new ConcurrentHashMap<>();
         correlationKeys.put("caseId", dmnStringValue(caseId.toString()));
         correlationKeys.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
-        if (orderId != null) {
-            correlationKeys.put(ORDER_ID, dmnStringValue(orderId.toString()));
+        if (subject != null) {
+            correlationKeys.put(subject.property(), dmnStringValue(subject.id().toString()));
         }
 
         Map<String, DmnValue<?>> processVariables = new ConcurrentHashMap<>();

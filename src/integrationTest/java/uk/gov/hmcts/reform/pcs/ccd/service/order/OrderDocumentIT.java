@@ -83,10 +83,10 @@ class OrderDocumentIT extends AbstractPostgresContainerIT {
         Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
         ExternalEvent<OrderStart, MakeOrderRequest> asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of(), null)));
+            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of(), null, null)));
         Order draft = asJudge.start().order();
         Order submitted = asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
-                draft.id(), draft.version(), draft.orderType(), draft.formData(), null)))
+                draft.id(), draft.version(), draft.orderType(), draft.formData(), null, null)))
             .changed("draft_orders", Order.class);
         events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker)
             .withClientContext(Map.of("orderId", submitted.id().toString()))

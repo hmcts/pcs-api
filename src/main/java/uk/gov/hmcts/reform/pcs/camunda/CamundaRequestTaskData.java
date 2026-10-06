@@ -26,8 +26,8 @@ public class CamundaRequestTaskData {
 
     private final UUID idempotencyKey;
 
-    /** The order a task is about, for a task there can be one of per order on a case. */
-    private final UUID orderId;
+    /** The order or application a task is about, for a task there can be one of per order or application. */
+    private final TaskSubject subject;
 
     /** Whom the task is for, which the configuration DMN makes its assignee. */
     private final UUID assignee;

@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
@@ -34,14 +36,17 @@ import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
@@ -76,6 +81,9 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     private IssuedCases cases;
     @MockitoBean
     private CamundaService camundaService;
+    /** The case's view asks CCD for the user's case roles to filter its applications, which the test CCD refuses. */
+    @MockitoBean
+    private UserRoleService userRoleService;
 
     private long caseReference;
     private Actor firstJudge;
@@ -85,6 +93,9 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
+        when(userRoleService.getCurrentUserCaseRoles(anyLong())).thenReturn(new UserRoles(null, List.of()));
+        when(userRoleService.getCurrentUserOrganisationalRoles())
+            .thenReturn(new UserRoles(null, List.of("caseworker-pcs")));
         caseReference = cases.issue();
         firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
         asFirstJudge = events.external(caseReference, MAKE_ORDER).as(firstJudge);
@@ -221,7 +232,7 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
         var document = TextNode.valueOf("the order document");
 
         asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(
-            draft.id(), draft.version(), "SUSPENDED_POSSESSION", Map.of("notes", "second version"), document)));
+            draft.id(), draft.version(), "SUSPENDED_POSSESSION", Map.of("notes", "second version"), document, null)));
 
         Order saved = asFirstJudge.start().order();
         assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
@@ -304,13 +315,13 @@ class MakeOrderIT extends AbstractPostgresContainerIT {
     /** Saves a first draft, which has no id yet. */
     private static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OUTRIGHT_POSSESSION, Map.of("notes", notes), null));
+            new OrderChange(null, 0, OUTRIGHT_POSSESSION, Map.of("notes", notes), null, null));
     }
 
     /** Acts on the order as the judge last saw it, with a new note. */
     private static MakeOrderRequest change(Action action, Order order, String notes) {
         return new MakeOrderRequest(action, new OrderChange(
-            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()));
+            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot(), null));
     }
 
     /** The note on the judge's working draft. */

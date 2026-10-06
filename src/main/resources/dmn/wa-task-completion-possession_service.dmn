@@ -196,6 +196,17 @@
           <text>"manual"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_d50mqbo">
+        <inputEntry id="UnaryTests_gyln5vk">
+          <text>"manually verified event"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_qybktyu">
+          <text>"DecideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_6fqqiea">
+          <text>"manual"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_0lcd9te">
         <description>No associated task</description>
         <inputEntry id="UnaryTests_1drz8vr">

@@ -11,9 +11,12 @@ import java.util.UUID;
 
 public interface DraftOrderRepository extends JpaRepository<DraftOrderEntity, UUID> {
 
-    /** A judge has at most one draft per case, which the database enforces. */
-    Optional<DraftOrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-        long caseReference, UUID authorIdamUserId, DraftOrderState state);
+    /**
+     * A judge has at most one draft per case, and one per application on it, which the database
+     * enforces. A null application finds the draft for the case.
+     */
+    Optional<DraftOrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
+        long caseReference, UUID authorIdamUserId, DraftOrderState state, UUID genAppId);
 
     /** A judge's own order, while it is in one of the states that leave it theirs to change. */
     Optional<DraftOrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(

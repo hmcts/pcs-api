@@ -6,16 +6,20 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskSubject;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 /**
- * The Work Allocation tasks an order passes between court staff and its judge, one of each per order.
+ * The Work Allocation tasks an order passes between court staff and its judge, one of each per order,
+ * and the task asking a judge to decide a general application with an order, one per application.
  * Submitting an order asks court staff to review it; returning it with a query asks the judge who
  * wrote it to change it, assigning them the task. Each task's link starts an event in pcs-frontend on
  * the order, as whoever follows it: XUI puts their IDAM id in place of {@code ${[EXPECTED_SUB]}},
@@ -77,6 +81,28 @@ public class OrderTasks {
     /** Closes the judge's query task once they submit the order for review again. */
     public void closeJudgeQuery(long caseReference, DraftOrderEntity order) {
         close(caseReference, TaskType.REVIEW_ORDER_QUERY, order);
+    }
+
+    /**
+     * Asks the judges to decide a general application court staff have referred, by making an order on
+     * it: the task's link starts the judge's order on the application. A referral replaces any earlier
+     * task to decide the application.
+     */
+    public void askJudgeToDecide(long caseReference, GenAppEntity genApp, String applicant) {
+        TaskSubject subject = TaskSubject.genApp(genApp.getId());
+        camundaService.cancelTask(caseReference, TaskType.DECIDE_GEN_APP, subject, Duration.ZERO);
+        String decideUrl = "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s"
+            .formatted(frontendUrl, caseReference, genApp.getId());
+        String description = taskDescriptionService.createDecideGenAppDescription(currentUserName(COURT_STAFF),
+            applicant, "GA" + genApp.getRank(), genApp.getType().getShortName(), genApp.getReferralNote(), decideUrl);
+        camundaService.createTask(caseReference, TaskType.DECIDE_GEN_APP, description, subject, null);
+    }
+
+    /** Closes the judge's task to decide an application once they send their order on it for review. */
+    public void closeDecideApplication(long caseReference, UUID genAppId) {
+        TaskSubject subject = TaskSubject.genApp(genAppId);
+        camundaService.cancelTask(caseReference, TaskType.DECIDE_GEN_APP, subject, FALLBACK_DELAY);
+        afterCommit(() -> taskCompletionService.completeTasks(caseReference, TaskType.DECIDE_GEN_APP, subject));
     }
 
     private void close(long caseReference, TaskType taskType, DraftOrderEntity order) {

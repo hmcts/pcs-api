@@ -23,6 +23,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.ApplicationOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -130,5 +131,23 @@ public class GenAppEntity {
     private DocumentEntity submissionDocument;
 
     private BigDecimal feeAmountReceived;
+
+    /** When court staff last referred the application to a judge to decide. */
+    private LocalDate referredOn;
+
+    /** What court staff told the judge when they referred it. */
+    private String referralNote;
+
+    /** What the order that decided the application decided, once it is issued. */
+    @Enumerated(EnumType.STRING)
+    private ApplicationOutcome outcome;
+
+    /** The issued order that decided the application. */
+    private UUID decidedByOrderId;
+
+    /** An issued application is open until an order concludes it; listing it for a hearing leaves it open. */
+    public boolean isOpen() {
+        return state == GenAppState.GEN_APP_ISSUED && (outcome == null || outcome == ApplicationOutcome.LISTED);
+    }
 
 }

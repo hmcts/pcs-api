@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Review
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.IssuedOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderReviewEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderReviewRepository;
@@ -52,6 +53,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
  * judge's form and wording; the judge's order is kept as they submitted it. Either closes the
  * order's Work Allocation task for court staff, and returning it gives its judge one. Issuing an
  * order records its wording and generates its document; serving the issued order is not built yet.
+ * Issuing an order on a general application records what it decided about the application.
  */
 @Component
 @AllArgsConstructor
@@ -69,6 +71,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
     private final IssuedOrderService issuedOrderService;
+    private final ApplicationDecisions applicationDecisions;
     private final ClientContextRetriever clientContextRetriever;
     private final OrderTasks orderTasks;
 
@@ -99,7 +102,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 DraftOrderState.SUBMITTED_FOR_REVIEW)
             .orElseThrow(() -> ExternalRejection.because("The order is no longer waiting for review"));
         return ExternalStartResponse.started(new OrderStart(OrderStart.Order.of(order),
-            orderCaseContext.of(order.getPcsCase())));
+            orderCaseContext.of(order.getPcsCase(), order.getGenAppId())));
     }
 
     /**
@@ -148,7 +151,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .seal(issue.seal());
         OrderReviewEntity issued = review.build();
         save(order, issued);
-        issuedOrderService.issue(order, issued, issue.order().html(), UUID.fromString(submit.user().id()));
+        IssuedOrderEntity issuedOrder = issuedOrderService.issue(order, issued, issue.order().html(),
+            UUID.fromString(submit.user().id()));
+        if (order.getGenAppId() != null) {
+            applicationDecisions.record(order.getPcsCase(), order.getGenAppId(), issue.order().formData(),
+                issuedOrder.getId());
+        }
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(caseReference, issue.reviewDates().stream()
                 .map(ConfirmOrderReview::toReviewDate)
