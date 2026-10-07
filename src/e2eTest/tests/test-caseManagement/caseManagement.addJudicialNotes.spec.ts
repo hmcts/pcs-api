@@ -73,43 +73,23 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
   });
 
   test('Case management - As a Judicial user successfully Add Multiple Judicial Notes from the case @CM @regression', async () => {
-    await performActions(
-      `Judicial user selects an event "Add a Judicial Note" from event drop down`,
-      ['When the user selects an event', {eventType: caseSummary.addJudicialNote}]
-    );
-    await performActions(
-      'Adding Judicial Note1',
-      ['When the user adds a Judicial Note', {
-        label: addJudicialNotes.notesAboutThisCaseTextLabel,
-        noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
-        nextPage: checkYourAnswersJudicialNotes.mainHeader
-      }]
-    );
+    await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
+    await performAction('When the user adds a Judicial Note', {
+      label: addJudicialNotes.notesAboutThisCaseTextLabel,
+      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+      nextPage: checkYourAnswersJudicialNotes.mainHeader
+    });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
-    await performActions(
-      'Validating Add Judicial Notes1 confirmation screen',
-      ['Then the user confirms Add Judicial Notes'
-]
-    );
+    await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
-    await performActions(
-      `Judicial user selects an event "Add a Judicial Note" from event drop down`,
-      ['When the user selects an event', {eventType: caseSummary.addJudicialNote}]
-    );
-    await performActions(
-      'Adding Judicial Note2',
-      ['When the user adds a Judicial Note', {
-        label: addJudicialNotes.notesAboutThisCaseTextLabel,
-        noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
-        nextPage: checkYourAnswersJudicialNotes.mainHeader
-      }]
-    );
+    await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
+    await performAction('When the user adds a Judicial Note', {
+      label: addJudicialNotes.notesAboutThisCaseTextLabel,
+      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
+      nextPage: checkYourAnswersJudicialNotes.mainHeader
+    });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
-    await performActions(
-      'Validating Add Judicial Notes2 confirmation screen',
-      ['Then the user confirms Add Judicial Notes'
-]
-    );
+    await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
       'Verify Judicial Notes appear in reverse chronological order on Judicial Notes tab',
@@ -130,12 +110,10 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
   });
 
   test('Case management - Verify Add Judicial Note event is not available for other users @CM @regression', async () => {
-    await performActions(
-      `Verify "Add a judicial note" event is not available`,
-      ['elementNotToBeVisible', {
+    await performValidation('elementNotToBeVisible', {
         locator: `${caseSummary.nextStepEventList} option`,
-        text: caseSummary.addJudicialNote
-      }]
-    );
+        text: caseSummary.addJudicialNote,
+      });
+    await performValidation('elementNotToBeVisible', home.judicialNotes);
   });
 });

@@ -82,7 +82,7 @@ export class CaseManagementAction implements IAction {
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
       ['When the user adds a Judicial Note', () => this.addJudicialNotes(fieldName as actionRecord)],
-      ['confirmWhen the user adds a Judicial Note', () => this.confirmAddJudicialNotes()],
+      ['Then the user confirms Add Judicial Notes', () => this.confirmAddJudicialNotes()],
       ['Then the user validates the Judge Notes tab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
