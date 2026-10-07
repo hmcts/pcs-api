@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.accesscode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -27,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.document.model.accesscode.AccessCodeFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -62,6 +66,8 @@ class AccessCodeFormDocumentGeneratorTest {
     private AddressFormatter addressFormatter;
     @Mock
     private CaseReferenceFormatter caseReferenceFormatter;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     private AccessCodeFormDocumentGenerator underTest;
 
@@ -82,7 +88,8 @@ class AccessCodeFormDocumentGeneratorTest {
             caseReferenceFormatter,
             new RecipientAddressResolver(),
             ukClock,
-            RESPOND_ONLINE_URL
+            RESPOND_ONLINE_URL,
+            featureToggleService
         );
 
         when(caseReferenceFormatter.formatCaseReferenceWithDashes(any())).thenReturn("1234-5678-9012-3456");
@@ -211,8 +218,10 @@ class AccessCodeFormDocumentGeneratorTest {
         verify(docAssemblyService, never()).generateDocument(any(), anyString(), any(), anyString());
     }
 
-    @Test
-    void shouldPlacePlaintextAccessCodeOnPayloadAndUseTemplateAndPdf() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldPlacePlaintextAccessCodeOnPayloadAndUseTemplateAndPdf(boolean release14Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
         PartyEntity defendant = PartyEntity.builder()
             .nameKnown(VerticalYesNo.NO)
             .addressKnown(VerticalYesNo.NO)
@@ -222,11 +231,19 @@ class AccessCodeFormDocumentGeneratorTest {
         String result = underTest.generate(caseEntity, caseEntity.getClaims().getFirst(),
                                                   defendant, "PLAINTEXTPIN1");
 
+        String expectedTemplateId = release14Enabled
+            ? AccessCodeFormDocumentGenerator.TEMPLATE_ID_V2
+            : AccessCodeFormDocumentGenerator.TEMPLATE_ID;
+
         assertThat(result).isEqualTo(DOC_URL);
         assertThat(capturedPayload().getAccessCode()).isEqualTo("PLAINTEXTPIN1");
         assertThat(capturedPayload().getUrl()).isEqualTo(RESPOND_ONLINE_URL);
-        verify(docAssemblyService).generateDocument(any(),
-            eq(AccessCodeFormDocumentGenerator.TEMPLATE_ID), eq(OutputType.PDF), anyString());
+        verify(docAssemblyService).generateDocument(
+            any(),
+            eq(expectedTemplateId),
+            eq(OutputType.PDF),
+            eq("Defendant Access Code " + defendant.getId())
+        );
     }
 
     private AccessCodeFormPayload capturedPayload() {
