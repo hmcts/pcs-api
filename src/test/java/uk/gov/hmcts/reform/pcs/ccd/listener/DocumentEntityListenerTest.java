@@ -43,14 +43,6 @@ class DocumentEntityListenerTest {
     }
 
     @Test
-    void shouldNotAttachAccessCodeLetters() {
-        underTest.onPostPersist(document(DocumentType.DEFENDANT_ACCESS_CODE,
-                                         "http://dm-store/documents/" + UUID.randomUUID()));
-
-        verifyNoInteractions(schedulerClient);
-    }
-
-    @Test
     void shouldNotAttachDocumentsWithoutADmStoreId() {
         underTest.onPostPersist(document(DocumentType.CLAIM, "not a dm store url"));
 

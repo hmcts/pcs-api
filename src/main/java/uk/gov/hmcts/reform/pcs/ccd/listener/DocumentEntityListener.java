@@ -5,7 +5,6 @@ import jakarta.persistence.PostPersist;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent;
@@ -32,9 +31,7 @@ public class DocumentEntityListener {
 
     @PostPersist
     public void onPostPersist(DocumentEntity entity) {
-        // Access code letters are left out of the case's documents, so once attached the data store would refuse
-        // them to bulk print.
-        if (entity.getType() == DocumentType.DEFENDANT_ACCESS_CODE || entity.getPcsCase() == null) {
+        if (entity.getPcsCase() == null) {
             return;
         }
 

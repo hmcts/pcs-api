@@ -12,6 +12,5 @@ SELECT 'attach-document-task',
        1
 FROM document d
 JOIN pcs_case c ON c.id = d.case_id
-WHERE d.type IS DISTINCT FROM 'DEFENDANT_ACCESS_CODE'
-  AND d.url ~ '/documents/[0-9a-fA-F-]{36}'
+WHERE d.url ~ '/documents/[0-9a-fA-F-]{36}'
 ON CONFLICT DO NOTHING;
