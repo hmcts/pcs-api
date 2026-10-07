@@ -22,10 +22,13 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
   initializeExecutor(page);
   initializeCMExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
-  await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
-  await performAction('updatePaymentAPI');
+  await performActions(
+    'Create a case and make the payment',
+    ['createCaseAPI', { data: createCaseApiData.createCasePayload}],
+    ['submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView}],
+    ['getAddressInfo', { data: createCaseApiData.createCasePayload}],
+    ['updatePaymentAPI']
+  );
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
