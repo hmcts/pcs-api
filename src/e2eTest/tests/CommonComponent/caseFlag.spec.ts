@@ -40,7 +40,7 @@ test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
 });
@@ -215,7 +215,7 @@ test.describe('[Common Component Case Flags - Access Management]@CC @caseFlags',
     const password = process.env.IDAM_PCS_USER_PASSWORD as string;
     const runStaffUserTest = async (email: string) => {
       await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
       await performAction('login', { email, password });
       await dismissCookieBanner(page, 'analytics');
       await performAction('navigateToCaseSummary', 'yes');

@@ -55,10 +55,15 @@
   </suppress>
   <suppress until="2026-11-15">
     <notes><![CDATA[
-    CVE-2026-59313/59314: fix is Enterprise-only on Spring 6.2.x (6.2.20) / OSS in 7.x; PCS uses
-    neither SSE functional endpoints nor Content-Disposition built from input. Re-review by the until date.
+    CVE-2026-59313/59314: Spring 6.2.20 is Enterprise-only and absent from Maven Central;
+    the OSS fix is 7.0.9, which requires a Spring Boot 4 migration.
+    PCS declares no functional SSE endpoints and builds no Content-Disposition headers
+    or outbound multipart requests from user input. Its servlet connector is Tomcat,
+    which rejects malicious header characters. Re-review by the until date.
+    https://spring.io/security/cve-2026-59313/
+    https://spring.io/security/cve-2026-59314/
     ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\..*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-.*@6\.2\.19$</packageUrl>
     <cve>CVE-2026-59313</cve>
     <cve>CVE-2026-59314</cve>
   </suppress>
