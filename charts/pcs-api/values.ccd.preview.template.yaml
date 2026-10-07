@@ -165,6 +165,7 @@ ccd:
           secrets:
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
+            - session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"
