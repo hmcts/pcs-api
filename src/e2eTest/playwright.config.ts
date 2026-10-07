@@ -20,7 +20,7 @@ const e2eSpecKeys = (process.env.E2E_SPEC ?? '')
   .split(/[,;]/)
   .map(s => s.trim().replace(/[^\w.-]/g, ''))
   .filter(Boolean);
-const e2eTestMatch = e2eSpecKeys.length ? ['**/upload.setup.ts',...e2eSpecKeys.map(k => `**/*${k}*.spec.ts`)]: undefined;
+const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.ts`): undefined;
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
@@ -63,14 +63,9 @@ export default defineConfig({
     ],
   ],
   projects: [
-    {
-      name: 'setup',
-      testMatch: '**/setup/*.setup.ts',
-    },
+  
     {
       name: 'chrome',
-      dependencies: ['setup'],
-      testIgnore: '**/setup/*.setup.ts',
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
