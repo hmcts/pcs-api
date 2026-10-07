@@ -93,7 +93,8 @@ export class ActionCMRegistry {
     ['When the user adds a Judicial Note', new CaseManagementAction()],
     ['confirmWhen the user adds a Judicial Note', new CaseManagementAction()],
     ['Then the user validates the Judge Notes tab', new CaseManagementAction()],
-    ['When the user performs error validation for Add Judicial Notes', new ErrorValidationAction()],
+    ['Then the user performs error validation for Add Judicial Notes'
+, new ErrorValidationAction()],
   ]);
 
   static getAction(actionName: string): IAction {

@@ -27,7 +27,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
-      ['When the user performs error validation for Add Judicial Notes', () => this.errorValidationAddJudicialNotes(errorFlag as string)]
+      ['Then the user performs error validation for Add Judicial Notes'
+, () => this.errorValidationAddJudicialNotes(errorFlag as string)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);

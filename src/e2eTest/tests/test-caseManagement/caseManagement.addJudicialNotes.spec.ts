@@ -29,7 +29,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     ['getAddressInfo', { data: createCaseApiData.createCasePayload}],
     ['updatePaymentAPI']
   );
-  await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   if (testInfo.title.includes('Judicial user')) {
@@ -51,80 +50,65 @@ test.afterEach(async () => {
 
 test.describe('Case management - Add Judicial Notes @nightly', async () => {
   test('Case management - As a Judicial user successfully Add Judicial Notes from the case @CM @regression @smoke', async () => {
-    const currentTime = getCurrentBSTTime();
-    const judicialNoteText = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
-    await performActions(
-      `Select event "Add a Judicial Note" from event drop down`,
-      ['When the user selects an event', {eventType: caseSummary.addJudicialNote}]
-    );
-    await performActions(
-      'Error validation for Add Judicial Notes screen',
-      ['When the user performs error validation for Add Judicial Notes', addJudicialNotes.errorValidation]
-    );
-    await performActions(
-      'Adding Judicial Note',
-      ['When the user adds a Judicial Note', {
-        label: addJudicialNotes.notesAboutThisCaseTextLabel,
-        noteTextInput: judicialNoteText,
-        nextPage: checkYourAnswersJudicialNotes.mainHeader
-      }]
-    );
+    await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
+    await performAction('Then the user performs error validation for Add Judicial Notes', addJudicialNotes.errorValidation);
+    await performAction('When the user adds a Judicial Note', {
+      label: addJudicialNotes.notesAboutThisCaseTextLabel,
+      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+      nextPage: checkYourAnswersJudicialNotes.mainHeader
+    });
+
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
-    await performActions(
-      'Validating Add Judicial Notes confirmation screen',
-      ['When the user confirms Add Judicial Notes']
-    );
+    await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
       'Verify that the Judicial notes appear on judicial notes tab',
       ['clickTab', home.judicialNotes],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note',
-        userInput: judicialNoteText,
-        createdOn: currentTime
+        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+        createdOn: getCurrentBSTTime()
       }]
     );
   });
 
   test('Case management - As a Judicial user successfully Add Multiple Judicial Notes from the case @CM @regression', async () => {
-    const judicialNote1Text  = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
-    const currentTime1 = getCurrentBSTTime();
-    const judicialNote2Text  = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2);
-    const currentTime2 = getCurrentBSTTime();
     await performActions(
-      `Select event "Add a Judicial Note" from event drop down`,
+      `Judicial user selects an event "Add a Judicial Note" from event drop down`,
       ['When the user selects an event', {eventType: caseSummary.addJudicialNote}]
     );
     await performActions(
       'Adding Judicial Note1',
       ['When the user adds a Judicial Note', {
         label: addJudicialNotes.notesAboutThisCaseTextLabel,
-        noteTextInput: judicialNote1Text,
+        noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
         nextPage: checkYourAnswersJudicialNotes.mainHeader
       }]
     );
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
     await performActions(
       'Validating Add Judicial Notes1 confirmation screen',
-      ['When the user confirms Add Judicial Notes']
+      ['Then the user confirms Add Judicial Notes'
+]
     );
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
-      `Select event "Add a Judicial Note" from event drop down`,
+      `Judicial user selects an event "Add a Judicial Note" from event drop down`,
       ['When the user selects an event', {eventType: caseSummary.addJudicialNote}]
     );
     await performActions(
       'Adding Judicial Note2',
       ['When the user adds a Judicial Note', {
         label: addJudicialNotes.notesAboutThisCaseTextLabel,
-        noteTextInput: judicialNote2Text,
+        noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
         nextPage: checkYourAnswersJudicialNotes.mainHeader
       }]
     );
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
     await performActions(
       'Validating Add Judicial Notes2 confirmation screen',
-      ['When the user confirms Add Judicial Notes']
+      ['Then the user confirms Add Judicial Notes'
+]
     );
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
@@ -132,14 +116,14 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       ['clickTab', home.judicialNotes],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note 2',
-        userInput: judicialNote2Text,
-        createdOn: currentTime2,
+        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
+        createdOn: getCurrentBSTTime(),
         index: 0
       }],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note 1',
-        userInput: judicialNote1Text,
-        createdOn: currentTime1,
+        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+        createdOn: getCurrentBSTTime(),
         index: 1
       }]
     );
