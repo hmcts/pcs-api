@@ -32,13 +32,13 @@ test.beforeEach(async ({ page, context }) => {
   defendantDetails.length = 0;
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayload
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
   });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   // await page.evaluate(() => {
