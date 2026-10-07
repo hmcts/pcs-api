@@ -94,7 +94,7 @@ export class ActionEnforcementRegistry {
     ['validatePrePopulatedData', new EnforcementAction()],
     ['isDefendantInBreathingSpace', new EnforcementAction()],
     ['missedPayments', new EnforcementAction()],
-    ['updatePaymentAPI', new EnforcementAction()],
+    ['updatePaymentAPIEnforcement', new EnforcementAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
     ['errorValidationIsDefendantInBreathingSpacePage', new ErrorValidationAction()],
     ['errorValidationMissedPaymentsPage', new ErrorValidationAction()],

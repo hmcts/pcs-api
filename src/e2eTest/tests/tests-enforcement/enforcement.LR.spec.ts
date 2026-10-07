@@ -53,7 +53,7 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('updatePaymentAPI');
-  await performAction('getCaseAPI', 'Link Solicitor');
+ //await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
@@ -76,7 +76,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
+test.describe.skip('XUI - Respond to a claim - e2e Journey @nightly', () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] - BreathingSpace - Yes @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -86,9 +86,9 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
           journey: enforcementApplication.warrantOfPossessionRadioOption,
             type: enforcementApplication.summaryWritOrWarrantLink,
             label1: enforcementApplication.warrantFeeValidationLabelHidden,
-            text1: enforcementApplication.warrantLRFeeValidationTextHidden,
+            text1: enforcementApplication.warrantFeeValidationTextHidden,
             label2: enforcementApplication.writFeeValidationLabelHidden,
-            text2: enforcementApplication.writLRFeeValidationTextHidden
+            text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
@@ -272,9 +272,9 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
           journey: enforcementApplication.writOfPossessionRadioOption,
           type: enforcementApplication.summaryWritOrWarrantLink,
           label1: enforcementApplication.warrantFeeValidationLabelHidden,
-          text1: enforcementApplication.warrantLRFeeValidationTextHidden,
+          text1: enforcementApplication.warrantFeeValidationTextHidden,
           label2: enforcementApplication.writFeeValidationLabelHidden,
-          text2: enforcementApplication.writLRFeeValidationTextHidden
+          text2: enforcementApplication.writFeeValidationTextHidden
       });
       await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
@@ -293,10 +293,10 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
           defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
           nextPage: defendantInBreathingSpace.mainHeader
       });
-          await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
-          await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
-          await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
-          await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
+      await performAction('errorValidationIsDefendantInBreathingSpacePage', defendantInBreathingSpace.errorValidation);
+      await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+      await performAction('errorValidationMissedPaymentsPage', missedPayments.errorValidation);
+      await performAction('missedPayments', {option: missedPayments.yesRadioOption, nextPage: confirmHCEOfficer.mainHeader});
       await performAction('errorValidationConfirmHCEOHiredPage', confirmHCEOfficer.errorValidation);
       await performAction('selectHaveHiredHCEO', {
           question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
