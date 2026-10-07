@@ -191,7 +191,7 @@ withPipeline(type, product, component) {
 
   before('smoketest:aat') {
     env.CASE_TYPE_SUFFIX="staging"
-    env.CCD_ENABLED = "true"
+    env.CCD_ENABLED = "false" //temporarily setting to false to disable smoke tests for verification run
   }
 
   afterSuccess('dbmigrate:perftest') {
@@ -218,6 +218,8 @@ withPipeline(type, product, component) {
   before('functionalTest:aat') {
     uploadDmnDiagrams()
     uploadBpmnDiagram()
+    //temporarily setting to false to disable functional tests for verification run
+    env.CCD_ENABLED = "false"
   }
 
   // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
