@@ -252,10 +252,7 @@ export class GenAppsAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', sot);
-    await performAction('check', {
-      question: sot.question,
-      option: sot.option,
-    });
+    await performAction('check', sot.option);
     await performAction('inputText', sot.label1, sot.input1);
     await performAction('inputText', sot.label2, sot.input2);
     await performAction('inputText', sot.label3, sot.input3);
@@ -401,7 +398,7 @@ export class GenAppsAction implements IAction {
   }
 
   private async retrieveCYATableData(page: Page,table: actionRecord) {
-    const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    const tables = page.locator(`//table[@aria-label="${table.name}"]`);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
