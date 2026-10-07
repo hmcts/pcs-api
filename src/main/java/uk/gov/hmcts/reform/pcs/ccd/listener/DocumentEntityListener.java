@@ -31,8 +31,8 @@ public class DocumentEntityListener {
 
     @PostPersist
     public void onPostPersist(DocumentEntity entity) {
-        // Warrant of restitution documents are saved before they are linked to anything, so have no case yet
         if (entity.getPcsCase() == null) {
+            log.warn("Not attaching document {} to its case, as it has no case", entity.getId());
             return;
         }
 
