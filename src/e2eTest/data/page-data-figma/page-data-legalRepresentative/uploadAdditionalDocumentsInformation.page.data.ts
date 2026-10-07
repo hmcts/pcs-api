@@ -1,5 +1,5 @@
 export const uploadAdditionalDocumentsInformation = {
-  mainHeader: `Upload Additional Documents`,
+  mainHeader: `Upload additional documents`,
   youCanUploadParagraph: `You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
   weUsuallyShareParagraph: `We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,

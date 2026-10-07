@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -15,7 +16,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class RentArrearsView {
+
+    private final UploadTimestampProvider uploadTimestampProvider;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
@@ -44,13 +48,13 @@ public class RentArrearsView {
             .findFirst();
     }
 
-    private static List<ListValue<Document>> getRentStatement(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getRentStatement(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getDocuments().stream()
             .filter(RentArrearsView::isRentStatement)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
             .filter(DocumentsView::isNotRemoved)
-            .map(RentArrearsView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
@@ -58,7 +62,7 @@ public class RentArrearsView {
         return documentEntity.getType() == DocumentType.RENT_STATEMENT;
     }
 
-    private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
+    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
             .id(documentEntity.getId().toString())
             .value(
@@ -67,6 +71,7 @@ public class RentArrearsView {
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
                     .categoryId(documentEntity.getCategoryId())
+                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
                     .build()
             ).build();
     }

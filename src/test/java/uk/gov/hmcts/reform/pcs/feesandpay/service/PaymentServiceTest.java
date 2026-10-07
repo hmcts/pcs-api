@@ -82,7 +82,7 @@ class PaymentServiceTest {
     private static final int VOLUME = 2;
     private static final String RESPONSIBLE_PARTY = "Applicant";
     private static final UUID RESPONSIBLE_PARTY_ID = UUID.randomUUID();
-    private static final String SYSTEM_TOKEN = "Bearer sys-token";
+    private static final String SYSTEM_USER_BEARER = "Bearer sys-token";
     private static final BigDecimal CALCULATED_AMOUNT = new BigDecimal("808.00");
     private static final String SERVICE_REQUEST_REFERENCE = "SR-123";
     private static final String CALLBACK_URL = "https://etc:123/service-request-update";
@@ -123,7 +123,7 @@ class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_TOKEN);
+        lenient().when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(SYSTEM_USER_BEARER);
 
         setPrivateField(underTest, "callbackUrl", CALLBACK_URL);
         setPrivateField(underTest, "hmctsOrgId", HMCTS_ORG_ID);
@@ -403,7 +403,7 @@ class PaymentServiceTest {
 
             // Then
             verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
-                                                                  eq(SYSTEM_TOKEN),
+                                                                  eq(SYSTEM_USER_BEARER),
                                                                   cardPaymentRequestCaptor.capture());
 
             CardPaymentServiceRequestDTO cardPaymentRequestDto = cardPaymentRequestCaptor.getValue();
@@ -476,7 +476,7 @@ class PaymentServiceTest {
 
             // Then
             verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
-                                                                  eq(SYSTEM_TOKEN),
+                                                                  eq(SYSTEM_USER_BEARER),
                                                                   any(CardPaymentServiceRequestDTO.class));
             assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
             assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
@@ -519,7 +519,7 @@ class PaymentServiceTest {
                 .status(expectedStatus)
                 .build();
 
-            when(paymentsClient.getGovPayCardPaymentStatusWithCallback(paymentReference, SYSTEM_TOKEN))
+            when(paymentsClient.getGovPayCardPaymentStatusWithCallback(paymentReference, SYSTEM_USER_BEARER))
                 .thenReturn(paymentDto);
 
             // When
@@ -619,7 +619,7 @@ class PaymentServiceTest {
             // Then
             verify(organisationDetailsService).getOrganisationName(uid);
             verify(paymentsClient).createPbaPayment(eq(serviceRequestReference),
-                                                                  eq(SYSTEM_TOKEN),
+                                                                  eq(SYSTEM_USER_BEARER),
                                                                   pbaPaymentRequestCaptor.capture());
             PBAServiceRequestDTO capturedPaymentRequest = pbaPaymentRequestCaptor.getValue();
             assertThat(capturedPaymentRequest.getAccountNumber()).isEqualTo(pbaPaymentRequest.getPbaAccount());
@@ -739,7 +739,7 @@ class PaymentServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getServiceRequestReference()).isEqualTo(SERVICE_REQUEST_REFERENCE);
 
-        verify(paymentsClient).createServiceRequest(eq(SYSTEM_TOKEN), createServiceRequestCaptor.capture());
+        verify(paymentsClient).createServiceRequest(eq(SYSTEM_USER_BEARER), createServiceRequestCaptor.capture());
         CreateServiceRequestDTO sent = createServiceRequestCaptor.getValue();
 
         assertCreateServiceRequestDTO(feesAndPayTaskData, sent);

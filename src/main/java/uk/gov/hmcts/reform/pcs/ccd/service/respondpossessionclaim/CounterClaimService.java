@@ -29,18 +29,15 @@ public class CounterClaimService {
     private final PartyRepository partyRepository;
     private final ClaimRepository claimRepository;
     private final CounterClaimRepository counterClaimRepository;
-    private final CounterClaimFeeCalculator counterClaimFeeCalculator;
     private final Clock utcClock;
 
     public CounterClaimService(PartyRepository partyRepository,
                                ClaimRepository claimRepository,
                                CounterClaimRepository counterClaimRepository,
-                               CounterClaimFeeCalculator counterClaimFeeCalculator,
                                @Qualifier("utcClock") Clock utcClock) {
         this.partyRepository = partyRepository;
         this.claimRepository = claimRepository;
         this.counterClaimRepository = counterClaimRepository;
-        this.counterClaimFeeCalculator = counterClaimFeeCalculator;
         this.utcClock = utcClock;
     }
 
@@ -91,7 +88,7 @@ public class CounterClaimService {
             .needHelpWithFees(counterClaim.getNeedHelpWithFees())
             .appliedForHwf(counterClaim.getAppliedForHwf())
             .hwfReferenceNumber(counterClaim.getHwfReferenceNumber())
-            .status(getInitialStatus(counterClaim))
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
             .claimSubmittedDate(submittedAt)
             .party(partyRef)
             .build();
@@ -109,11 +106,6 @@ public class CounterClaimService {
         }
 
         return counterClaimEntity;
-    }
-
-    private CounterClaimState getInitialStatus(CounterClaim counterClaim) {
-        boolean hwfReferencePresent = counterClaimFeeCalculator.isHwfReferencePresent(counterClaim);
-        return hwfReferencePresent ? CounterClaimState.PENDING_REVIEW : CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED;
     }
 
 }

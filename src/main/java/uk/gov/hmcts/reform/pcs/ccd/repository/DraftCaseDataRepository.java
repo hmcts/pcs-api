@@ -20,8 +20,8 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyIdIsNull(
         long caseReference, EventId eventId, String organisationId);
 
-    void deleteByCaseReferenceAndEventIdAndIdamUserIdAndPartyId(
-        long caseReference, EventId eventId, UUID idamUserId, UUID partyId);
+    void deleteByCaseReferenceAndEventIdAndIdamUserId(
+        long caseReference, EventId eventId, UUID idamUserId);
 
     void deleteByCaseReferenceAndEventIdAndOrganisationIdAndPartyId(
         long caseReference, EventId eventId, String legalRepresentativeOrganisationId, UUID partyId);

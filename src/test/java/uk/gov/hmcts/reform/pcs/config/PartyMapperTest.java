@@ -23,4 +23,12 @@ class PartyMapperTest {
 
         assertThat(party.getId()).isEqualTo(partyId.toString());
     }
+
+    @Test
+    void shouldLeaveTheProjectedIdUnsetWhenTheEntityHasNoId() {
+        Party party = modelMapper.map(
+            PartyEntity.builder().firstName("Danny").lastName("Defendant").build(), Party.class);
+
+        assertThat(party.getId()).isNull();
+    }
 }

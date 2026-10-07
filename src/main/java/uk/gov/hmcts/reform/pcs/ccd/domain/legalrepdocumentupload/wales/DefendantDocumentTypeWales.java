@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload;
+package uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,10 +6,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum LegalRepDocumentType implements HasLabel {
+public enum DefendantDocumentTypeWales implements HasLabel {
 
     RENT_STATEMENT("Rent or payments"),
-    TENANCY_AGREEMENT("Your tenancy or agreement"),
+    OCCUPATION_LICENCE("Occupation contract or licence"),
     CORRESPONDENCE_FROM_DEFENDANT("Correspondence from Defendant"),
     CORRESPONDENCE_FROM_CLAIMANT("Correspondence from Claimant"),
     PHOTOGRAPHIC_EVIDENCE("Photographic evidence"),

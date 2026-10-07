@@ -8,11 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
@@ -20,16 +22,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumen
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.page.legalrepdocumentupload.LegalRepDocumentUploadConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.exception.MultiplePartiesException;
+import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -39,6 +45,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
 
 @Component
 @AllArgsConstructor
@@ -50,18 +59,23 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     private final SecurityContextService securityContextService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final OrganisationService organisationService;
-    private final LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+    private final LegalRepPartySelectionService legalRepPartySelectionService;
+    private final PartyService partyService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(legalRepDocumentUpload.name(), this::submit, this::start)
-                .forAllStates()
+                .forStates(EventStates.legalRepUploadDocuments())
                 .name("Upload additional documents")
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showSummary()
+                .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR))
                 .endButtonLabel("Submit");
         legalRepDocumentUploadConfigurer.configurePages(new PageBuilder(eventBuilder));
     }
@@ -93,23 +107,28 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
                 })
                 .toList();
 
-        caseData.getLegalRepDocumentUploadDetails().setValidCategories(
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = caseData.getLegalRepDocumentUploadDetails();
+        legalRepDocumentUploadDetails.setValidCategories(
             DynamicStringList.builder()
                 .listItems(validCategoryItems)
                 .build()
         );
 
         // By default, Main claim is always added
-        caseData.getLegalRepDocumentUploadDetails().setShowExistingApplicationPage(validCategoryItems.size() >= 2
-                                                                                       ? YesOrNo.YES : YesOrNo.NO);
+        legalRepDocumentUploadDetails
+            .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
+
+        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
+
+        legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
-        caseData.getLegalRepDocumentUploadDetails().setIsWales(isWalesClaim ? YesOrNo.YES : YesOrNo.NO);
+        legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));
 
         return caseData;
     }
 
-    DynamicStringListElement buildCategoryItem(
+    private DynamicStringListElement buildCategoryItem(
         DocumentUploadCategory category,
         String code,
         LocalDateTime genAppDate
@@ -168,15 +187,12 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             return null;
         }
         String selectedCode = details.getValidCategories().getValueCode();
-        if (selectedCode == null) {
+        if (selectedCode == null || selectedCode.equals(DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM.name())) {
             return null;
         }
-        UUID selectedId;
-        try {
-            selectedId = UUID.fromString(selectedCode);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+
+        UUID selectedId = UUID.fromString(selectedCode);
+
         return visibleGenAppsForUser(pcsCaseEntity, currentUserId, organisationId).stream()
             .filter(genApp -> selectedId.equals(genApp.getId()))
             .findFirst()
@@ -185,45 +201,72 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity,
-                                                                            organisationId);
+        return legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
+                                                                           organisationId);
     }
 
-    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        Long caseReference = eventPayload.caseReference();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         PCSCase pcsCase = eventPayload.caseData();
         UUID currentUserId = securityContextService.getCurrentUserId();
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         GenAppEntity selectedGenApp = resolveSelectedGenApp(pcsCase, pcsCaseEntity, currentUserId, organisationId);
-        PartyEntity party;
 
-        if (selectedGenApp == null) {
-            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
-            if (partyEntities.size() == 1) {
-                party = partyEntities.getFirst();
-            } else {
-                return errorResponse("Uploading documents for multiple parties is not supported");
-            }
-        } else {
-            party = selectedGenApp.getParty();
+        PartyEntity uploadingParty;
+        try {
+            uploadingParty = getUploadingParty(pcsCaseEntity, organisationId);
+        } catch (MultiplePartiesException | PartyNotFoundException partyException) {
+            return errorResponse(partyException.getMessage());
         }
 
-        List<LegalRepDocument> legalRepDocuments = documentService.createLegalRepDocuments(pcsCase);
-
-        boolean isDocumentNull = legalRepDocuments.stream()
-            .anyMatch(doc -> doc == null || doc.getDocument() == null);
-
-        if (isDocumentNull) {
+        List<LegalRepDocument> legalRepDocuments
+            = unwrapListItems(pcsCase.getLegalRepDocumentUploadDetails().getLegalRepDocuments());
+        if (anyDocumentIsNull(legalRepDocuments)) {
             return errorResponse("Your files were not submitted. Try again.");
         }
 
-        documentService.createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments,pcsCaseEntity,
-                                                                    party,selectedGenApp);
+        documentService.createDocumentEntitiesFromLegalRepDocuments(
+            legalRepDocuments,
+            pcsCaseEntity,
+            uploadingParty,
+            selectedGenApp
+        );
 
         return SubmitResponse.<State>builder()
             .confirmationBody(getDocumentUploadedConfirmationMarkdown())
             .build();
+    }
+
+    private PartyEntity getUploadingParty(PcsCaseEntity pcsCaseEntity,
+                                          String organisationId) {
+
+        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
+
+        if (isClaimantSolicitor) {
+            return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
+        } else {
+            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            if (partyEntities.size() == 1) {
+                return partyEntities.getFirst();
+            } else if (partyEntities.isEmpty()) {
+                throw new PartyNotFoundException("No represented party found");
+            } else {
+                throw new MultiplePartiesException("Uploading documents for multiple parties is not supported");
+            }
+        }
+    }
+
+    private boolean isClaimantSolicitor(PcsCaseEntity pcsCaseEntity, String organisationId) {
+        String claimantOrganisationId = partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+            .getOrganisationId();
+
+        return claimantOrganisationId != null && claimantOrganisationId.equals(organisationId);
+    }
+
+    private static boolean anyDocumentIsNull(List<LegalRepDocument> legalRepDocuments) {
+        return legalRepDocuments.stream()
+            .anyMatch(doc -> doc == null || doc.getDocument() == null);
     }
 
     private static String getDocumentUploadedConfirmationMarkdown() {
@@ -238,7 +281,6 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             """;
     }
 
-    @SuppressWarnings("SameParameterValue")
     private SubmitResponse<State> errorResponse(String message) {
         return SubmitResponse.<State>builder()
             .errors(List.of(message))

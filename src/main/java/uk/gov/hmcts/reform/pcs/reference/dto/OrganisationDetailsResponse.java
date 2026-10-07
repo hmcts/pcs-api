@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.reference.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,8 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import org.springframework.util.CollectionUtils;
 
+// rd-professional adds fields over time (dxAddress and friends); parse only what we use.
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Builder
 @NoArgsConstructor
@@ -81,6 +84,7 @@ public class OrganisationDetailsResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContactInformation {
         @JsonProperty("addressId")
         private String addressId;
@@ -107,9 +111,6 @@ public class OrganisationDetailsResponse {
 
         @JsonProperty("postCode")
         private String postCode;
-
-        @JsonProperty("dxAddress")
-        private List<String> dxAddress;
     }
 
     @Data

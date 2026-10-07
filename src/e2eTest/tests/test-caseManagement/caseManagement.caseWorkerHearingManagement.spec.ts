@@ -28,14 +28,14 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   initializeCMExecutor(page);
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
   });
 
   if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')) {
@@ -61,7 +61,7 @@ test.afterEach(async () => {
 });
 
 test.describe('Case management - Case Worker Manage Hearing @nightly', async () => {
-  test('Case management - Case Worker Edit a hearing @CM', async () => {
+  test('Case management - Case Worker Edit a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(editHearing.dateTypeUserInput, 'dateTime');
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
@@ -91,11 +91,11 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersEditHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersEditHearing.submitButton);
-    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
-  test('Case management - Case Worker Cancel a hearing @CM', async () => {
+  test('Case management - Case Worker Cancel a hearing @CM @regression', async () => {
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
     await performValidation('mainHeader', manageHearing.mainHeader);
     await performAction('errorValidationManageHearing', manageHearing.errorValidation);
@@ -111,11 +111,11 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: manageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
-    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 
-  test('Case management - Case Worker Add a hearing @CM', async () => {
+  test('Case management - Case Worker Add a hearing @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(addHearing.dateTypeHiddenUserInput, 'dateTime');
     let typeOfHearing = addHearing.typeOfHearingOption[0]
     await performAction('selectAnEvent', {eventType: caseSummary.manageHearing});
@@ -138,7 +138,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersManageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
-    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
@@ -166,7 +166,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersManageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
-    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 });

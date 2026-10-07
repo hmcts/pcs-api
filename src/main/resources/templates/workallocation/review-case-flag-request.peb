@@ -1,0 +1,13 @@
+### Review Case Flag request
+
+The following case flags have been requested on the case:
+
+<ul class="govuk-list govuk-list--bullet">
+  {% for flag in flags %}
+  <li class="govuk-!-font-size-19">{{flag}}</li>
+  {% endfor %}
+</ul>
+
+Review the <a href="/cases/case-details/PCS/PCS/{{caseReference}}#Case%20flags">case flag request</a>,
+decide whether it should be approved or rejected, and record the decision. The task will close when the approval or
+rejection event is completed.

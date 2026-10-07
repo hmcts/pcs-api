@@ -31,10 +31,10 @@ const setupGlobalSearchUser = async (
   const { submitCasePayload } = submitCaseApiData;
 
   globalSearchTestData = {
-    name: `${submitCasePayload.claimantName} ${suffix}`,
+    name: `${submitCasePayload().claimantName} ${suffix}`,
     addressLine1: `${propertyAddress.AddressLine1} ${suffix}`,
     postcode: randomPostcode(),
-    email: submitCasePayload.claimantContactEmail.replace('@', `+${suffix}@`)
+    email: submitCasePayload().claimantContactEmail.replace('@', `+${suffix}@`)
   };
 
   await performAction('createCaseAPI', {
@@ -49,7 +49,7 @@ const setupGlobalSearchUser = async (
   });
   await performAction('submitCaseAPI', {
     data: {
-      ...submitCasePayload,
+      ...submitCasePayload(),
       claimantName: globalSearchTestData.name,
       claimantContactEmail: globalSearchTestData.email,
       formattedClaimantContactAddress: `${globalSearchTestData.addressLine1}<br>${propertyAddress.PostTown}<br>${globalSearchTestData.postcode}`
@@ -62,7 +62,7 @@ const setupGlobalSearchUser = async (
   await performAction('login', {email: loggedInUser, password: process.env.IDAM_PCS_USER_PASSWORD});
 
   if (loggedInUser === judicial.possessionFeePaid_Judge_email) {
-    await performAction('handleJudgeBookingPage');
+    await performAction('handleJudgeBookingPageForGlobalSearch');
   }
 
   await dismissCookieBanner(page, 'analytics');

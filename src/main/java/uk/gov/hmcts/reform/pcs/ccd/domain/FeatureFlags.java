@@ -11,5 +11,7 @@ public class FeatureFlags {
     private VerticalYesNo release1dot3Enabled;
     private VerticalYesNo caseWorkerEventsEnabled;
     private VerticalYesNo walesMakeAClaimEnabled;
+    private VerticalYesNo cuiRespondToClaimLrEnabled;
+    private VerticalYesNo makeOrderEnabled;
 
 }

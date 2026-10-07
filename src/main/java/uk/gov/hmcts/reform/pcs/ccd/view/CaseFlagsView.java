@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
@@ -16,13 +17,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNullElse;
@@ -30,12 +35,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.FlagVisibilityConverter.toFlagVis
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class CaseFlagsView {
 
-    private static final String DEFENDANT = "Defendant";
+    public static final String DEFENDANT = "Defendant";
     private static final String CLAIMANT = "Claimant";
     public static final String PATHS_DELIMITER = "_";
     public static final String PATH_DELIMITER = ":";
+
+    private final PartySupportOwnershipResolver partySupportOwnershipResolver;
+    private final SecurityContextService securityContextService;
 
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
@@ -80,14 +89,20 @@ public class CaseFlagsView {
                        caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
                        caseFlagEntity.getFlagRefData().getAvailableExternally()))
-                   .path(getPaths(caseFlagEntity.getPaths()))
+                   .path(parsePaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
     }
 
-    // The limit of 2 keeps a value containing the path delimiter intact
-    private List<ListValue<String>> getPaths(String entityPaths) {
+    /**
+     * Parses the delimited {@code paths} column of a stored flag back into the CCD path list.
+     * The limit of 2 keeps a value containing the path delimiter intact.
+     */
+    public static List<ListValue<String>> parsePaths(String entityPaths) {
+        if (entityPaths == null) {
+            return List.of();
+        }
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER, 2))
@@ -102,7 +117,8 @@ public class CaseFlagsView {
     private void mapComplexPartyFlagFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         Map<UUID, PartyRole> supportedPartyRoles = getSupportedPartyRoles(pcsCaseEntity);
 
-        pcsCase.setPartySupport(mapPartySupport(pcsCaseEntity, supportedPartyRoles));
+        pcsCase.setPartySupport(
+            mapPartySupport(pcsCaseEntity, supportedPartyRoles, resolveRepresentedPartyIds(pcsCaseEntity)));
 
         List<ListValue<Party>> partyListValues = pcsCase.getParties();
         if (CollectionUtils.isEmpty(partyListValues)) {
@@ -146,12 +162,13 @@ public class CaseFlagsView {
     }
 
     private List<ListValue<PartySupport>> mapPartySupport(PcsCaseEntity pcsCaseEntity,
-                                                          Map<UUID, PartyRole> supportedPartyRoles) {
+                                                          Map<UUID, PartyRole> supportedPartyRoles,
+                                                          Set<UUID> representedPartyIds) {
         List<ListValue<PartySupport>> partySupport = new ArrayList<>();
 
         for (PartyEntity partyEntity : pcsCaseEntity.getParties()) {
             PartyRole partyRole = supportedPartyRoles.get(partyEntity.getId());
-            if (partyRole == null) {
+            if (partyRole == null || !representedPartyIds.contains(partyEntity.getId())) {
                 continue;
             }
 
@@ -164,6 +181,25 @@ public class CaseFlagsView {
         }
 
         return partySupport;
+    }
+
+    private Set<UUID> resolveRepresentedPartyIds(PcsCaseEntity pcsCaseEntity) {
+        UUID authenticatedUserId = authenticatedUserIdOrNoneRepresented();
+        if (authenticatedUserId == null) {
+            return Set.of();
+        }
+
+        return partySupportOwnershipResolver.resolveRepresentedPartyIds(pcsCaseEntity.getParties(),
+                                                                       authenticatedUserId);
+    }
+
+    private UUID authenticatedUserIdOrNoneRepresented() {
+        try {
+            return securityContextService.getCurrentUserId();
+        } catch (SecurityContextException ex) {
+            log.debug("No authenticated user available to resolve represented parties for support");
+            return null;
+        }
     }
 
     private Map<UUID, PartyRole> getSupportedPartyRoles(PcsCaseEntity pcsCaseEntity) {

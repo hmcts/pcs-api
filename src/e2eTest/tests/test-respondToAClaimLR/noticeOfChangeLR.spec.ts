@@ -23,7 +23,7 @@ test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.defendantSolicitor);
@@ -55,7 +55,7 @@ test.describe('Legal Representative NOC - e2e Journey @nightly', async () => {
     await performAction('validateErrorPage' );
   });
 
-  test('Notice of change - successful - LR - @regression @smoke @noticeOfChange', async () => {
+  test('Notice of change - successful - LR - @smoke @noticeOfChange', async () => {
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
     await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
     await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );

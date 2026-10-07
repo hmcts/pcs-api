@@ -34,7 +34,7 @@ const userPassword = users.find(
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: userEmail, password: userPassword });
-  await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadCaseSummary, email: userEmail, password: userPassword });
+  await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadCaseSummary(), email: userEmail, password: userPassword });
 });
 
 test.afterEach(async () => {
@@ -46,13 +46,13 @@ test.afterEach(async () => {
 
 test.describe('[Case tabs Access - England Journey] @nightly', async () => {
 users.forEach(({ user, email, password, tabAccess }) => {
-  test(`Case tabs Access - Check for update access for user "${user}" @MAC`, async ({ page, context }) => {
+  test(`Case tabs Access - Check for update access for user "${user}" @MAC @regression`, async ({ page, context }) => {
 
     if (user === 'Defendant Solicitor') {
       await performAction('getCaseAPIDynamic', { req: 'Link Solicitor', email: email, password: password });
     } else if (user === 'Claimant Solicitor') {
       await performAction('createCaseAPIDynamicUsers', { data: createCaseApiData.createCasePayload, email: email, password: password });
-      await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadDefault, email: email, password: password });
+      await performAction('submitCaseAPIDynamicUsers', { data: submitCaseApiData.submitCasePayloadDefault(), email: email, password: password });
     }
     await clearBrowserSession(page, context);
     await dismissCookieBanner(page, 'additional');

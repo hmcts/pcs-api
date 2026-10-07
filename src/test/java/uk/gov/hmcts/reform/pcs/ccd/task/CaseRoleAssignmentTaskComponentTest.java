@@ -84,6 +84,26 @@ class CaseRoleAssignmentTaskComponentTest {
     }
 
     @Test
+    @DisplayName("Should revoke the role carried in the task data when one is set")
+    void shouldRevokeTheRoleFromTheTaskData() {
+        // Given
+        RoleAssignmentTaskData data = RoleAssignmentTaskData.builder()
+            .caseReference("1234")
+            .userId("user-abc")
+            .role(UserRole.DEFENDANT)
+            .build();
+        when(taskInstance.getData()).thenReturn(data);
+        CustomTask<RoleAssignmentTaskData> task = caseRoleAssignmentTaskComponent.roleAssignmentTask();
+
+        // When
+        CompletionHandler<RoleAssignmentTaskData> result = task.execute(taskInstance, executionContext);
+
+        // Then
+        verify(caseRoleAssignmentService).revokeCaseRole(1234L, "user-abc", UserRole.DEFENDANT);
+        assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+    }
+
+    @Test
     @DisplayName("Should rethrow exception when revoke role fails")
     void shouldRethrowExceptionWhenRevokeRoleFails() {
         // Given

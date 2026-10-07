@@ -16,7 +16,8 @@ import {
   home,
   checkYourAnswers,
   resumeClaim,
-  user
+  user,
+  caseSummary
 } from '@data/page-data';
 import {
   claimantType,
@@ -134,6 +135,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -159,6 +161,11 @@ export class CreateCaseAction implements IAction {
     await actionToPerform();
   }
 
+  private async selectAnEvent(event: actionRecord) {
+    await performAction('select', caseSummary.nextStepEventList, event.eventType);
+    await performAction('clickButton', caseSummary.go);
+  }
+  
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);
@@ -175,9 +182,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
-    console.log ("get value:" );
-    console.log (createCase.caseType.civilPossessions);
-    console.log (" value printed" );
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
@@ -471,8 +475,7 @@ export class CreateCaseAction implements IAction {
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
-          }
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.estateManagementGroundsHiddenQuestion, option: possessionGrounds.discretionaryEstateGrounds});          }
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
@@ -978,10 +981,14 @@ export class CreateCaseAction implements IAction {
 
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        const defendantUser = Object.values(user).find(
+          u => u.email === defendantSolicitor.email
+        );
+        const orgName = defendantUser && 'orgName' in defendantUser ? defendantUser.orgName : undefined;
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, submitPayload.claimantName)
+        defendant.set(`Name`, orgName ?? '');
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
@@ -1106,7 +1113,8 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
-    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    const dateSubmitted = page.locator('th', { hasText: 'Date claim Submitted' })
+                         .locator('xpath=following-sibling::td[1]');
     expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
 
 
@@ -1549,7 +1557,7 @@ export class CreateCaseAction implements IAction {
         /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
         /ancestor::div[1]
-        //table[@aria-describedby="complex field table"]`;
+        //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1599,11 +1607,11 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
@@ -1676,7 +1684,7 @@ export class CreateCaseAction implements IAction {
     }
 
     const folder = page
-      .locator('button[role="treeitem"]')
+      .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();

@@ -6,9 +6,13 @@ import lombok.Getter;
 public enum EmailTemplate {
     // Respond to Claim Email Templates
     RESPONSE_NO_COUNTERCLAIM("response-no-counterclaim"),
+    RESPONSE_NO_COUNTERCLAIM_LEGAL_REP("response-no-counterclaim-legal-rep"),
     RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED("counterclaim-payment-required"),
+    RESPONSE_WITH_COUNTERCLAIM_PAYMENT_REQUIRED_LEGAL_REP("counterclaim-payment-required-legal-rep"),
     COUNTERCLAIM_PAYMENT_SUCCESS("counterclaim-payment-success"),
+    COUNTERCLAIM_PAYMENT_SUCCESS_LEGAL_REP("counterclaim-payment-success-legal-rep"),
     RESPONSE_WITH_COUNTERCLAIM_NO_PAYMENT_REQUIRED("counterclaim-no-payment-required"),
+    RESPONSE_SUBMITTED_COUNTERCLAIM_NOT_SUBMITTED("counterclaim-not-submitted-yet"),
 
     // Make a Claim Email Templates
     MAKE_A_CLAIM_CLAIM_SAVED_FOR_LATER("make-a-claim-claim-saved-for-later"),

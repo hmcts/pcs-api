@@ -24,30 +24,36 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimViewTest {
 
+    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
+
     private PCSCase pcsCase;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock(strictness = LENIENT)
     private ClaimEntity claimEntity;
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
 
     private ClaimView underTest;
 
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-        underTest = new ClaimView();
+        underTest = new ClaimView(uploadTimestampProvider);
     }
 
     @Test
@@ -185,6 +191,7 @@ class ClaimViewTest {
     @Test
     void shouldMapOnlyMatchingWalesRequiredDocumentTypes() {
         // Given
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
             documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", null),
@@ -233,6 +240,7 @@ class ClaimViewTest {
         );
         genAppEicrDocument.setGeneralApplication(GenAppEntity.builder().build());
 
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
         when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
             documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
@@ -339,6 +347,7 @@ class ClaimViewTest {
                 assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
                 assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
                 assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
+                assertThat(document.getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
             });
     }
 }

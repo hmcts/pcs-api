@@ -43,6 +43,7 @@ public class AmendDocuments implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(amendDocuments.name(), this::submit, this::start)
                 .forStates(MANAGE_DOCUMENT_STATES)
+                .nonConcurrent()
                 .name("Manage documents: Amend")
                 .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_2, CASEWORKER_EVENTS))
                 .grant(Permission.CRU, CASEWORKER_ROLES)

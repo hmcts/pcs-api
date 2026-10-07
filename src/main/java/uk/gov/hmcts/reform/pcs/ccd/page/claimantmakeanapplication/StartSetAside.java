@@ -69,8 +69,8 @@ public class StartSetAside implements CcdPageConfiguration {
             .page("startSetAside")
             .pageLabel("Ask the court to set aside (cancel) an order")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE))
-            .label("startSetAside-lineSeparator", "---")
-            .label("startSetAside-info", INFO_MARKDOWN);
+            .label("cma-startSetAside-lineSeparator", "---")
+            .label("cma-startSetAside-info", INFO_MARKDOWN);
     }
 
 }

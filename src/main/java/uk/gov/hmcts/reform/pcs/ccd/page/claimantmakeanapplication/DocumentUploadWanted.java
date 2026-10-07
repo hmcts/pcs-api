@@ -16,7 +16,7 @@ public class DocumentUploadWanted implements CcdPageConfiguration {
         pageBuilder
             .page("documentUploadWanted")
             .pageLabel("Confirm if you want to upload documents to support your application")
-            .label("documentUploadWanted-lineSeparator", "---")
+            .label("cma-documentUploadWanted-lineSeparator", "---")
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getHasSupportingDocuments, null, null,
                        "Do you want to upload documents to support your application?")

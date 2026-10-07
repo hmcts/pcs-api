@@ -24,6 +24,14 @@ const e2eTestMatch = e2eSpecKeys.length ? e2eSpecKeys.map(k => `**/*${k}*.spec.t
 const e2eScope = process.env.E2E_TEST_SCOPE?.trim();
 const e2eGrep = e2eScope ? new RegExp(e2eScope) : undefined;
 
+// Preview defaults lower than AAT because each PR release has its own single-replica CCD stack.
+// The actual ceiling is unmeasured; use E2E_WORKERS to tune it without a code change.
+function resolveWorkers(): number {
+  const environmentDefault = process.env.ENVIRONMENT === 'preview' ? 2 : 4;
+  const parsed = Number(process.env.E2E_WORKERS?.trim());
+  return Number.isInteger(parsed) && parsed >= 1 ? parsed : environmentDefault;
+}
+
 export default defineConfig({
   testDir: 'tests/',
   ...(e2eTestMatch?.length ? { testMatch: e2eTestMatch } : {}),
@@ -32,9 +40,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1 : 0,
-  //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
-  workers: process.env.ENVIRONMENT === 'preview' ? 1 : 2,
+  retries: process.env.CI ? 2 : 0,
+  workers: resolveWorkers(),
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
@@ -57,7 +64,13 @@ export default defineConfig({
   ],
   projects: [
     {
+      name: 'setup',
+      testMatch: /upload\.setup\.spec\.ts/,
+    },
+    {
       name: 'chrome',
+      dependencies: ['setup'],
+      testIgnore: /upload\.setup\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
@@ -73,6 +86,7 @@ export default defineConfig({
       ? [
           {
             name: 'firefox',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Firefox'],
               channel: 'firefox',
@@ -86,6 +100,7 @@ export default defineConfig({
           },
           {
             name: 'webkit',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Safari'],
               screenshot: 'only-on-failure' as const,
@@ -98,6 +113,7 @@ export default defineConfig({
           },
           {
             name: 'edge',
+            dependencies: ['setup'],
             use: {
               ...devices['Desktop Edge'],
               channel: 'msedge',
@@ -111,6 +127,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-android',
+            dependencies: ['setup'],
             use: {
               ...devices['Pixel 5'],
               screenshot: 'only-on-failure' as const,
@@ -122,6 +139,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-ios',
+            dependencies: ['setup'],
             use: {
               ...devices['iPhone 12'],
               screenshot: 'only-on-failure' as const,
@@ -133,6 +151,7 @@ export default defineConfig({
           },
           {
             name: 'mobile-ipad',
+            dependencies: ['setup'],
             use: {
               ...devices['iPad Pro 11'],
               screenshot: 'only-on-failure' as const,
