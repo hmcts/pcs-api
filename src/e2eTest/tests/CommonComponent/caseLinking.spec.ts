@@ -24,7 +24,7 @@ test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
   for (let i = 0; i < 5; i++) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('updatePaymentAPI');
     const caseNumber = process.env.CASE_NUMBER;
     if (!caseNumber) {
