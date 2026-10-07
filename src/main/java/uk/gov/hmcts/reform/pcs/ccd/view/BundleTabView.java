@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Fills the Bundle tab: the case bundle, whether it reflects the case as it is now, and which
@@ -82,21 +83,27 @@ public class BundleTabView {
 
     private static String status(Optional<DocumentEntity> bundle, Optional<BundleJob> latest,
                                  boolean hasMissingDocuments) {
-        boolean latestIsStored = latest.isPresent()
-            && bundle.map(DocumentEntity::getBundleJobId).filter(latest.get().externalId()::equals).isPresent();
-        if (latest.isPresent() && !latestIsStored) {
-            BundleJobState state = latest.get().state();
-            if (state == BundleJobState.QUEUED || state == BundleJobState.IN_PROGRESS) {
-                return bundle.isPresent() ? UPDATING : PREPARING;
-            }
-            if (state == BundleJobState.FAILED) {
-                return bundle.isPresent() ? UPDATE_FAILED : CREATE_FAILED;
-            }
+        boolean hasBundle = bundle.isPresent();
+        Optional<UUID> storedJob = bundle.map(DocumentEntity::getBundleJobId);
+        Optional<String> newerJobStatus = latest
+            .filter(job -> storedJob.filter(job.externalId()::equals).isEmpty())
+            .flatMap(job -> newerJobStatus(job.state(), hasBundle));
+        if (newerJobStatus.isPresent()) {
+            return newerJobStatus.get();
         }
-        if (bundle.isEmpty()) {
+        if (!hasBundle) {
             return PREPARING;
         }
         return hasMissingDocuments ? UP_TO_DATE_WITH_MISSING : UP_TO_DATE;
+    }
+
+    /** What a job newer than the stored bundle means for it, unless that job completed. */
+    private static Optional<String> newerJobStatus(BundleJobState state, boolean hasBundle) {
+        return switch (state) {
+            case QUEUED, IN_PROGRESS -> Optional.of(hasBundle ? UPDATING : PREPARING);
+            case FAILED -> Optional.of(hasBundle ? UPDATE_FAILED : CREATE_FAILED);
+            default -> Optional.empty();
+        };
     }
 
     private Document document(DocumentEntity bundle) {

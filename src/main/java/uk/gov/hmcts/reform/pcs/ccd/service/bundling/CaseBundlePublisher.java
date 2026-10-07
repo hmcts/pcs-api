@@ -63,6 +63,8 @@ import java.util.UUID;
 public class CaseBundlePublisher implements BundleJobCompletionHandler {
 
     static final String CLASSIFICATION = "PUBLIC";
+    // Summary key: whether this job's render became the case's bundle.
+    static final String STORED = "stored";
     private static final ZoneId UK = ZoneId.of("Europe/London");
 
     private final CaseDocumentClientApi caseDocumentClientApi;
@@ -102,7 +104,7 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
         if (Boolean.TRUE.equals(transaction.execute(status -> isSuperseded(storedBundle(caseId), job)))) {
             log.info("Case bundle job {} for case {} is older than the stored bundle; discarding it",
                      job.externalId(), caseReference);
-            return Map.of("stored", false);
+            return Map.of(STORED, false);
         }
 
         Document uploaded = upload(result);
@@ -117,11 +119,11 @@ public class CaseBundlePublisher implements BundleJobCompletionHandler {
                  result.missingDocuments().size());
         return stored.document()
             .<Object>map(document -> Map.of(
-                "stored", true,
+                STORED, true,
                 "documentId", document.getId().toString(),
                 "pageCount", result.pageCount(),
                 "missingDocuments", result.missingDocuments().size()))
-            .orElse(Map.of("stored", false));
+            .orElse(Map.of(STORED, false));
     }
 
     /** The outcome of storing: the stored document unless superseded, and the CDAM id to delete. */
