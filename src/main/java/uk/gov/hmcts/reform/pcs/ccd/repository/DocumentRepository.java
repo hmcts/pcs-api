@@ -15,4 +15,7 @@ public interface DocumentRepository extends JpaRepository<DocumentEntity, UUID> 
 
     boolean existsByCounterClaim_IdAndType(UUID counterClaimId, DocumentType type);
 
+    // A case has at most one CASE_BUNDLE document.
+    Optional<DocumentEntity> findByPcsCase_IdAndType(UUID caseId, DocumentType type);
+
 }

@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
@@ -26,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -48,8 +46,6 @@ class DocumentsViewTest {
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
-    @Mock
-    private CaseBundleRepository caseBundleRepository;
 
     private PCSCase pcsCase;
 
@@ -63,8 +59,7 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      caseBundleRepository);
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider());
     }
 
     @Test
@@ -362,25 +357,21 @@ class DocumentsViewTest {
     }
 
     @Test
-    void shouldShowOnlyTheLatestCaseBundleToInternalUsers() {
+    void shouldShowTheCaseBundleToInternalUsers() {
         // Given
-        UUID caseId = UUID.randomUUID();
         DocumentEntity evidence = documentOfType(DocumentType.WITNESS_STATEMENT);
-        DocumentEntity supersededBundle = documentOfType(DocumentType.CASE_BUNDLE);
-        DocumentEntity latestBundle = documentOfType(DocumentType.CASE_BUNDLE);
-        when(pcsCaseEntity.getId()).thenReturn(caseId);
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(evidence, supersededBundle, latestBundle));
+        DocumentEntity bundle = documentOfType(DocumentType.CASE_BUNDLE);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(evidence, bundle));
         when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
             .thenReturn(new UserRoles(CURRENT_USER_ID, List.of("hearing-centre-admin")));
         when(genAppVisibilityService.isInternalUser(List.of("hearing-centre-admin"))).thenReturn(true);
-        when(caseBundleRepository.findLatestDocumentId(caseId)).thenReturn(Optional.of(latestBundle.getId()));
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
 
         // Then
         assertThat(pcsCase.getAllDocuments()).extracting(ListValue::getId)
-            .containsExactly(evidence.getId().toString(), latestBundle.getId().toString());
+            .containsExactly(evidence.getId().toString(), bundle.getId().toString());
     }
 
     @Test

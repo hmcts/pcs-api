@@ -13,14 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -30,7 +27,6 @@ public class DocumentsView {
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
-    private final CaseBundleRepository caseBundleRepository;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
@@ -45,11 +41,13 @@ public class DocumentsView {
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
-        Optional<UUID> visibleBundle = visibleBundle(pcsCaseEntity, userRoles);
+        // The case bundle holds every document on the case (one-click bundle requirement 9), so
+        // only internal (caseworker or judicial) users see it. caseworker-pcs alone does not
+        // count: professional users hold it too.
+        boolean showBundle = genAppVisibilityService.isInternalUser(userRoles.roles());
 
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> documentEntity.getType() != DocumentType.CASE_BUNDLE
-                || visibleBundle.filter(documentEntity.getId()::equals).isPresent())
+            .filter(documentEntity -> documentEntity.getType() != DocumentType.CASE_BUNDLE || showBundle)
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
                                                                    organisationId))
             .map(entity -> ListValue.<Document>builder()
@@ -63,21 +61,6 @@ public class DocumentsView {
                            .build())
                 .build())
             .collect(Collectors.toList());
-    }
-
-    /**
-     * The one bundle shown in case file view: the latest, and only to internal (caseworker or
-     * judicial) users, since it holds every document on the case (one-click bundle requirement
-     * 9). caseworker-pcs alone does not count: professional users hold it too. Superseded
-     * bundles stay in the documents table but are not listed.
-     */
-    private Optional<UUID> visibleBundle(PcsCaseEntity pcsCaseEntity, UserRoles userRoles) {
-        boolean hasBundles = pcsCaseEntity.getDocuments().stream()
-            .anyMatch(documentEntity -> documentEntity.getType() == DocumentType.CASE_BUNDLE);
-        if (!hasBundles || !genAppVisibilityService.isInternalUser(userRoles.roles())) {
-            return Optional.empty();
-        }
-        return caseBundleRepository.findLatestDocumentId(pcsCaseEntity.getId());
     }
 
     private boolean isDocumentVisibleToUser(DocumentEntity documentEntity, UserRoles userRoles, String organisationId) {

@@ -155,6 +155,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildBundleTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -224,6 +226,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(CASE_NOTE_TAB_ROLES)
             .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("bundle", "Bundle")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition("bundleTab_Status=\"*\"")
+            .field("bundleTab_Status")
+            .field("bundleTab_Bundle")
+            .field("bundleTab_LastUpdated")
+            .field("bundleTab_Pages")
+            .field("bundleTab_MissingDocuments");
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

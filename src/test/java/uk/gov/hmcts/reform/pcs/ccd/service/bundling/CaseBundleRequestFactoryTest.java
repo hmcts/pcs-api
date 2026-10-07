@@ -5,6 +5,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleRequest;
 import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.EmptySectionPolicy;
+import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -43,6 +44,7 @@ class CaseBundleRequestFactoryTest {
                 .toList());
         assertThat(request.root().sections()).extracting(BundleSection::emptySectionPolicy)
             .containsOnly(EmptySectionPolicy.INCLUDE_PLACEHOLDER);
+        assertThat(request.missingDocuments()).isEqualTo(MissingDocumentPolicy.PLACEHOLDER);
     }
 
     @Test

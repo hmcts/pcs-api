@@ -23,7 +23,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import feign.FeignException;
+import feign.Request;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
+import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
+import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentReason;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
+import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobWorker;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
@@ -37,19 +43,19 @@ import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
 import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.bundling.CaseBundleDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.bundling.CaseBundleFolder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseBundleEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +66,9 @@ import java.util.function.BooleanSupplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +86,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private DocumentRepository documentRepository;
     @Autowired
-    private CaseBundleRepository caseBundleRepository;
+    private BundleTabView bundleTabView;
     @Autowired
     private OutboxBundleJobService bundleJobs;
     @Autowired
@@ -164,8 +172,8 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("renders the case into a bundle, stores it, and replaces it as latest when a document arrives")
-    void regeneratesTheLatestBundleWhenADocumentIsAdded() throws Exception {
+    @DisplayName("renders the case into a bundle, stores it, and replaces it when a document arrives")
+    void regeneratesTheBundleInPlaceWhenADocumentIsAdded() throws Exception {
         stubCdam();
         UUID caseId = newCase();
         tx.executeWithoutResult(status -> addDocuments(caseId,
@@ -173,20 +181,18 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Inspection report.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 5)),
             document("Claim form.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
 
-        runQueuedJob(caseId);
+        BundleJob firstJob = runQueuedJob(caseId);
 
-        CaseBundleEntity first = latestBundle(caseId);
-        assertThat(first.getStitchStatus()).startsWith("COMPLETED");
-        assertThat(folder(first, "Evidence")).extracting(CaseBundleDocument::docTitle)
-            .containsExactly("Inspection report.pdf", "Witness statement.pdf");
-        assertThat(folder(first, "Statements of case")).extracting(CaseBundleDocument::docTitle)
-            .containsExactly("Claim form.pdf");
-        assertThat(folder(first, "Appeals")).isEmpty();
-        assertThat(first.getFolders()).hasSize(CaseFileCategory.values().length);
-        assertThat(folder(first, "Evidence").getFirst().startPage()).isPositive();
-        DocumentEntity stitched = documentRepository.findById(first.getDocument().getId()).orElseThrow();
-        assertThat(stitched.getType()).isEqualTo(DocumentType.CASE_BUNDLE);
-        assertThat(stitched.getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
+        DocumentEntity first = storedBundle(caseId);
+        assertThat(first.getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
+        assertThat(first.getBundleJobId()).isEqualTo(firstJob.externalId());
+        BundleJobReport firstReport = bundleJobs.findReport(firstJob.externalId()).orElseThrow();
+        assertThat(titles(firstReport, "Evidence")).containsExactly("Inspection report.pdf", "Witness statement.pdf");
+        assertThat(titles(firstReport, "Statements of case")).containsExactly("Claim form.pdf");
+        assertThat(firstReport.request().root().sections()).hasSize(CaseFileCategory.values().length);
+        assertThat(firstReport.documents()).hasSize(3)
+            .allSatisfy(placed -> assertThat(placed.startPage()).isPositive());
+        assertThat(firstReport.missingDocuments()).isEmpty();
         // Storing the bundle's own document did not queue another bundle.
         assertThat(waitingJob(caseId)).isFalse();
 
@@ -194,34 +200,68 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         verify(coreCaseDataApi).createEvent(anyString(), anyString(), anyString(), attach.capture());
         assertThat(attach.getValue().getEvent().getId()).isEqualTo("attachCaseBundle");
         assertThat(attach.getValue().getData().toString()).contains("document_hash=hash-");
-
-        String text = uploadedBundleText();
-        assertThat(text).contains("Inspection report.pdf", "Witness statement.pdf", "Claim form.pdf",
-                                  "Content of Claim form.pdf");
+        assertThat(uploadedBundleText()).contains("Inspection report.pdf", "Witness statement.pdf", "Claim form.pdf",
+                                                  "Content of Claim form.pdf");
+        verify(caseDocumentClientApi, never()).deleteDocument(anyString(), anyString(), any(UUID.class),
+                                                              any(Boolean.class));
 
         tx.executeWithoutResult(status -> addDocuments(caseId,
             document("Late evidence.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 2, 1))));
-        runQueuedJob(caseId);
+        BundleJob secondJob = runQueuedJob(caseId);
 
-        CaseBundleEntity second = latestBundle(caseId);
-        assertThat(second.getId()).isNotEqualTo(first.getId());
-        assertThat(second.getDocumentsSelectedAt()).isAfter(first.getDocumentsSelectedAt());
-        assertThat(folder(second, "Evidence")).extracting(CaseBundleDocument::docTitle)
+        DocumentEntity second = storedBundle(caseId);
+        assertThat(second.getId()).as("replaced in place").isEqualTo(first.getId());
+        assertThat(second.getDocumentId()).isNotEqualTo(first.getDocumentId());
+        assertThat(second.getBundleJobId()).isEqualTo(secondJob.externalId());
+        assertThat(titles(bundleJobs.findReport(secondJob.externalId()).orElseThrow(), "Evidence"))
             .containsExactly("Inspection report.pdf", "Witness statement.pdf", "Late evidence.pdf");
-        assertThat(caseBundleRepository.findByPcsCase_IdOrderByDocumentsSelectedAtDesc(caseId))
-            .extracting(CaseBundleEntity::getId, CaseBundleEntity::isLatest)
-            .containsExactly(org.assertj.core.groups.Tuple.tuple(second.getId(), true),
-                             org.assertj.core.groups.Tuple.tuple(first.getId(), false));
-        assertThat(caseBundleRepository.findLatestDocumentId(caseId)).contains(second.getDocument().getId());
+        verify(caseDocumentClientApi).deleteDocument("Bearer system", "s2s", first.getDocumentId(), true);
     }
 
-    private void runQueuedJob(UUID caseId) {
+    @Test
+    @DisplayName("replaces a document that cannot be fetched with a placeholder, and lists it in the Bundle tab")
+    void listsMissingDocumentsInTheBundleTab() throws Exception {
+        stubCdam();
+        UUID caseId = newCase();
+        DocumentEntity deleted = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 3));
+        when(caseDocumentClientApi.getDocumentBinary(anyString(), anyString(), eq(deleted.getDocumentId())))
+            .thenThrow(FeignException.errorStatus("getDocumentBinary", notFound()));
+        tx.executeWithoutResult(status -> addDocuments(caseId,
+            document("Claim form.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2)), deleted));
+
+        BundleJob job = runQueuedJob(caseId);
+
+        assertThat(bundleJobs.findReport(job.externalId()).orElseThrow().missingDocuments())
+            .singleElement()
+            .satisfies(missing -> assertThat(missing.reason()).isEqualTo(MissingDocumentReason.NOT_FOUND));
+        assertThat(uploadedBundleText()).contains("Deleted.pdf (missing)", MissingDocumentReason.NOT_FOUND.message());
+
+        BundleTab tab = tx.execute(status -> {
+            PCSCase pcsCase = PCSCase.builder().build();
+            bundleTabView.setCaseFields(pcsCase, pcsCaseRepository.findById(caseId).orElseThrow());
+            return pcsCase.getBundleTab();
+        });
+        assertThat(tab.getStatus()).isEqualTo("The bundle is up to date, but some documents could not be "
+                                                  + "included. Each has a page in the bundle explaining why.");
+        assertThat(tab.getBundle().getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
+        assertThat(tab.getPages()).isPositive();
+        assertThat(tab.getMissingDocuments()).extracting(listValue -> listValue.getValue())
+            .singleElement().satisfies(missing -> {
+                assertThat(missing.getDocumentName()).isEqualTo("Deleted.pdf");
+                assertThat(missing.getFolder()).isEqualTo("Evidence");
+                assertThat(missing.getReason()).isEqualTo(MissingDocumentReason.NOT_FOUND.message());
+                assertThat(missing.getPage()).isPositive();
+            });
+    }
+
+    private BundleJob runQueuedJob(UUID caseId) {
         BundleJob job = bundleJobs.findLatest(CaseBundleScope.coalesceKey(caseId)).orElseThrow();
         worker.poll();
         waitUntil(() -> bundleJobs.find(job.externalId()).orElseThrow().state().terminal());
         BundleJob finished = bundleJobs.find(job.externalId()).orElseThrow();
         assertThat(finished.failure()).as("job failure").isEmpty();
         assertThat(finished.state()).isIn(BundleJobState.COMPLETED, BundleJobState.COMPLETED_WITH_WARNINGS);
+        return finished;
     }
 
     private UUID newCase() {
@@ -302,20 +342,29 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         }
     }
 
-    private CaseBundleEntity latestBundle(UUID caseId) {
-        return tx.execute(status -> {
-            CaseBundleEntity bundle = caseBundleRepository.findByPcsCase_IdAndLatestTrue(caseId).orElseThrow();
-            bundle.getDocument().getId();
-            return bundle;
-        });
+    private DocumentEntity storedBundle(UUID caseId) {
+        return documentRepository.findByPcsCase_IdAndType(caseId, DocumentType.CASE_BUNDLE).orElseThrow();
     }
 
-    private static List<CaseBundleDocument> folder(CaseBundleEntity bundle, String name) {
-        return bundle.getFolders().stream()
-            .filter(folder -> folder.folderName().equals(name))
-            .map(CaseBundleFolder::documents)
+    private static List<String> titles(BundleJobReport report, String folder) {
+        return report.request().root().sections().stream()
+            .filter(section -> section.title().equals(folder))
+            .map(BundleSection::documents)
             .findFirst()
-            .orElseThrow();
+            .orElseThrow()
+            .stream()
+            .map(BundleDocument::title)
+            .toList();
+    }
+
+    private static feign.Response notFound() {
+        return feign.Response.builder()
+            .status(404)
+            .reason("Not Found")
+            .request(Request.create(Request.HttpMethod.GET, "http://cdam", Map.of(), null, StandardCharsets.UTF_8,
+                                    null))
+            .headers(Map.of())
+            .build();
     }
 
     private int jobCount(UUID caseId) {
