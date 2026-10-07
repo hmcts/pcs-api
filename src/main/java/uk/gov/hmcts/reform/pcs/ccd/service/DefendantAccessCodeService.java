@@ -145,7 +145,6 @@ public class DefendantAccessCodeService {
         return mainClaim.getClaimParties().stream()
             .filter(claimParty -> PartyRole.DEFENDANT == claimParty.getRole())
             .map(ClaimPartyEntity::getParty)
-            .filter(defendant -> !defendant.isRemoved())
             .toList();
     }
 
