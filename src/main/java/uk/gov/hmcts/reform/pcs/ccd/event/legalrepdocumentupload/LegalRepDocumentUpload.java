@@ -241,8 +241,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
-        return legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
-                                                                           organisationId);
+        return legalRepPartySelectionService.getDefendantsAwaitingResponse(
+            pcsCaseEntity,
+            organisationId
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -280,21 +282,23 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private PartyEntity getUploadingParty(PCSCase caseData, PcsCaseEntity pcsCaseEntity,
                                           String organisationId) {
-
         boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
             List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            String currentRepresentedPartyId = caseData.getCurrentRepresentedPartyId();
 
-            if (isNotEmpty(caseData.getRepresentedPartyNames())) {
-                DynamicListElement selectedPartyElement = caseData.getRepresentedPartyNames().getValue();
+            if (currentRepresentedPartyId != null) {
+                UUID selectedPartyId = UUID.fromString(currentRepresentedPartyId);
+
                 return partyEntities.stream()
-                    .filter(partyEntity -> partyEntity.getId().equals(selectedPartyElement.getCode()))
+                    .filter(party -> selectedPartyId.equals(party.getId()))
                     .findFirst()
                     .orElseThrow(() -> new PartyNotFoundException(
-                        "No represented party found for ID: " + caseData.getCurrentRepresentedPartyId()));
+                        "No represented party found for ID: " + currentRepresentedPartyId
+                    ));
             }
             if (partyEntities.size() == 1) {
                 return partyEntities.getFirst();
