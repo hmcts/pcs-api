@@ -200,6 +200,31 @@ class DefendantAccessCodeServiceTest {
         assertThat(result).containsExactly(p2);
     }
 
+    @Test
+    void findDefendantPartyIdsNeedingAccessCode_skipsRemovedDefendants() {
+        UUID activePartyId = UUID.randomUUID();
+        UUID removedPartyId = UUID.randomUUID();
+        PartyEntity activeParty = PartyEntity.builder().id(activePartyId).build();
+        PartyEntity removedParty = PartyEntity.builder().id(removedPartyId).removed(true).build();
+        ClaimEntity mainClaim = ClaimEntity.builder()
+            .claimParties(List.of(
+                ClaimPartyEntity.builder().party(activeParty).role(PartyRole.DEFENDANT).build(),
+                ClaimPartyEntity.builder().party(removedParty).role(PartyRole.DEFENDANT).build()
+            ))
+            .build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(UUID.randomUUID())
+            .caseReference(1234567890123456L)
+            .claims(List.of(mainClaim))
+            .build();
+        when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
+        when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of());
+
+        List<UUID> result = underTest.findDefendantPartyIdsNeedingAccessCode(2L);
+
+        assertThat(result).containsExactly(activePartyId);
+    }
+
     private static PcsCaseEntity createCaseWithDefendants(UUID... partyIds) {
         List<ClaimPartyEntity> claimPartyList = Arrays.stream(partyIds)
             .map(partyId -> PartyEntity.builder().id(partyId).build())

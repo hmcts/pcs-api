@@ -196,6 +196,16 @@ class PartyServiceTest {
                 .hasMessage("No party found for party ID: " + id + " and case reference: " + caseReference);
         }
 
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        void shouldCheckPartyIsActive(boolean removed) {
+            PartyEntity partyEntity = PartyEntity.builder()
+                .removed(removed)
+                .build();
+
+            assertThat(underTest.isActive(partyEntity)).isEqualTo(!removed);
+        }
+
         @Test
         void shouldGetPrimaryClaimantParty() {
             // Given
