@@ -21,6 +21,7 @@ public class FeatureFlagView {
                                     .caseWorkerEventsEnabled(getFlag(FeatureFlag.CASEWORKER_EVENTS))
                                     .walesMakeAClaimEnabled(getFlag(FeatureFlag.WALES_MAKE_A_CLAIM))
                                     .cuiRespondToClaimLrEnabled(getFlag(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR))
+                                    .xuiWelshLanguageUsedEnabled(getFlag(FeatureFlag.XUI_WELSH_LANGUAGE_USED))
                                     .makeOrderEnabled(getFlag(FeatureFlag.MAKE_ORDER))
                                     .build());
     }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
@@ -13,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
+
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -30,7 +33,7 @@ public class WritDetailsMapper {
             convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
         entity.setHceoDetails(writDetails.getHceoDetails());
         entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
-        entity.setLanguageUsed(writDetails.getLanguageUsed());
+        entity.setLanguageUsed(Objects.requireNonNullElse(writDetails.getLanguageUsed(), LanguageUsed.ENGLISH));
 
         mapLandRegistryFees(writDetails.getLandRegistryFees(), entity);
         mapLegalCosts(writDetails.getLegalCosts(), entity);

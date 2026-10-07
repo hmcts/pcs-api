@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
@@ -83,6 +84,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
+    private FeatureFlagView featureFlagView;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
     @Mock
@@ -153,6 +156,20 @@ class EnforceTheOrderTest extends BaseEventTest {
         assertThat(result.getFormattedPropertyAddress())
                 .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
+    }
+
+    @Test
+    void shouldSetFeatureFlagsInStartCallback() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
+
+        // When
+        PCSCase result = callStartHandler(caseData);
+
+        // Then
+        verify(featureFlagView).setCaseFields(result);
     }
 
     @Test

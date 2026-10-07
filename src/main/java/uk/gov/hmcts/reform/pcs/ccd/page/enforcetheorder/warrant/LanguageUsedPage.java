@@ -8,6 +8,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.XUI_WELSH_LANGUAGE_USED;
+
 /**
  * CCD page configuration for the enforcement Language used screen.
  * Allows users to indicate whether any part of their enforcement application was completed in Welsh.
@@ -19,7 +24,9 @@ public class LanguageUsedPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsed")
             .pageLabel("Language used")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(and(ShowConditionsEnforcementType.WARRANT_FLOW,
+                               featureFlagsEnabled(XUI_WELSH_LANGUAGE_USED)))
+            .readonly(PCSCase::getFeatureFlags, NEVER_SHOW, true)
             .label("languageUsed-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

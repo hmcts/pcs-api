@@ -537,6 +537,21 @@ class GenAppServiceTest {
         }
 
         @Test
+        void shouldDefaultLanguageUsedToEnglishWhenNotSet() {
+            // Given
+            CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()
+                .sotAccepted(VerticalYesNo.YES)
+                .build();
+
+            // When
+            underTest.createGenAppEntity(genAppRequest, pcsCaseEntity, applicantParty, PENDING_GEN_APP_ISSUED);
+
+            // Then
+            verify(genAppRepository).save(genAppEntityCaptor.capture());
+            assertThat(genAppEntityCaptor.getValue().getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+        }
+
+        @Test
         void shouldSetApplicationSubmittedDate() {
             // Given
             CitizenGenAppRequest genAppRequest = CitizenGenAppRequest.builder()

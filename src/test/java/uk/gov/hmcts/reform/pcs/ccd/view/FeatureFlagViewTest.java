@@ -108,4 +108,20 @@ class FeatureFlagViewTest {
             .isEqualTo(VerticalYesNo.from(flagEnabled));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetXuiWelshLanguageUsedFeatureFlagInCaseData(boolean flagEnabled) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.XUI_WELSH_LANGUAGE_USED)).thenReturn(flagEnabled);
+
+        // When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getFeatureFlags().getXuiWelshLanguageUsedEnabled())
+            .isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
 }
