@@ -15,10 +15,13 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 public class SecurityContextService {
 
     private final String systemUserId;
+    private final String idamSystemUsername;
 
     public SecurityContextService(
-        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId) {
+        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId,
+        @Value("${idam.system-user.username}") String idamSystemUsername) {
         this.systemUserId = systemUserId;
+        this.idamSystemUsername = idamSystemUsername;
     }
 
     /**
@@ -31,6 +34,17 @@ public class SecurityContextService {
         return authentication != null
             && authentication.getPrincipal() instanceof User user
             && systemUserId.equals(user.getUserDetails().getUid());
+    }
+
+    /**
+     * True when the current principal is PCS's IDAM system account (idam.system-user.username), which background
+     * tasks such as bulk print use to call other services. Unlike {@link #isSystemUser()} it is a real IDAM user.
+     */
+    public boolean isIdamSystemUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+            && authentication.getPrincipal() instanceof User user
+            && idamSystemUsername.equalsIgnoreCase(user.getUserDetails().getSub());
     }
 
     /**

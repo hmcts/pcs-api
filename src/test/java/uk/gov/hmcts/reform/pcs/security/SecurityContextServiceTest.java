@@ -38,6 +38,7 @@ class SecurityContextServiceTest {
     private MockedStatic<SecurityContextHolder> securityContextHolder;
 
     private static final String SYSTEM_USER_ID = "78acf0a0-079b-3112-8cad-549c81b83510";
+    private static final String IDAM_SYSTEM_USERNAME = "pcs-system-user@localhost";
 
     private SecurityContextService underTest;
 
@@ -46,7 +47,7 @@ class SecurityContextServiceTest {
         securityContextHolder = mockStatic(SecurityContextHolder.class);
         securityContextHolder.when(SecurityContextHolder::getContext).thenReturn(securityContext);
 
-        underTest = new SecurityContextService(SYSTEM_USER_ID);
+        underTest = new SecurityContextService(SYSTEM_USER_ID, IDAM_SYSTEM_USERNAME);
     }
 
     @AfterEach
@@ -78,6 +79,32 @@ class SecurityContextServiceTest {
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
 
         assertThat(underTest.isSystemUser()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should report the IDAM system account whatever the case of its email")
+    void isIdamSystemUserForConfiguredUsername() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getSub()).thenReturn(IDAM_SYSTEM_USERNAME.toUpperCase());
+
+        assertThat(underTest.isIdamSystemUser()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should not report the IDAM system account for another user")
+    void isIdamSystemUserForOtherUsername() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getSub()).thenReturn("someone@example.com");
+
+        assertThat(underTest.isIdamSystemUser()).isFalse();
     }
 
     @Test
