@@ -23,7 +23,8 @@
     "test:openAllureReport": "yarn allure open ../../e2e-output",
     "allure-slack-notify": "tsx ./scripts/allure-slack-notifier.ts",
     "test:welshCapture": "rm -rf welsh-capture && yarn playwright install && WELSH_CAPTURE=1 yarn playwright test --project ${E2E_PROJECT:-chrome}; EXIT_CODE=$?; tsx ./scripts/welsh-capture-report.ts; exit $EXIT_CODE",
-    "welsh:report": "tsx ./scripts/welsh-capture-report.ts"
+    "welsh:report": "tsx ./scripts/welsh-capture-report.ts",
+    "welsh:filter": "tsx ./scripts/welsh-capture-filter.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

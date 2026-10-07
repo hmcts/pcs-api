@@ -8,6 +8,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const DIR = path.join(__dirname, '..', 'welsh-capture');
+const EXCEL_SAFE = process.argv.includes('--excel-safe');
+const HAS_PLACEHOLDER = /\$\{[^}]+\}/;
 
 interface Record_ {
   spec: string; title: string; url: string; phrase: string;
@@ -42,14 +44,17 @@ function merge(into: boolean | null, value: boolean | null): boolean | null {
 }
 
 function csvCell(value: unknown): string {
-  const s = value === null || value === undefined ? '' : String(value);
+  let s = value === null || value === undefined ? '' : String(value);
+  // --excel-safe: prefix cells Excel would read as a formula ("---", "=…") with an apostrophe. Off by default
+  // because the phrase column must stay an exact dictionary key.
+  if (EXCEL_SAFE && /^[=+\-@]/.test(s)) s = `'${s}`;
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 function writeCsv(file: string, rows: Row[]): void {
-  const header = ['phrase', 'translated', 'visible', 'kind', 'seen', 'specs', 'first_url', 'translation'];
+  const header = ['phrase', 'translated', 'visible', 'kind', 'has_placeholder', 'seen', 'specs', 'first_url', 'translation'];
   const lines = rows.map((r) => [
-    r.phrase, r.translated, r.visible, r.kind, r.seen, [...r.specs].sort().join(' | '), r.firstUrl, r.translation,
+    r.phrase, r.translated, r.visible, r.kind, HAS_PLACEHOLDER.test(r.phrase), r.seen, [...r.specs].sort().join(' | '), r.firstUrl, r.translation,
   ].map(csvCell).join(','));
   fs.writeFileSync(file, '﻿' + [header.join(','), ...lines].join('\r\n') + '\r\n');
 }

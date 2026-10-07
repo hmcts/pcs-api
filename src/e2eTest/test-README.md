@@ -227,7 +227,21 @@ Pages failed: 1
 Missing elements: Submit button, Continue link
 ```
 
-## 8. Welsh translation capture
+## 10. Welsh translation capture
+
+Use this to find which ExUI text has no Welsh in an environment's translation dictionary, and to build the
+list to send to the Welsh Language Unit.
+
+| Command                 | What it does                                                                 | Writes to `welsh-capture/`                              |
+|-------------------------|------------------------------------------------------------------------------|---------------------------------------------------------|
+| `yarn test:welshCapture` | Runs the suite in Welsh mode, then runs `welsh:report`                       | `worker-<n>.jsonl`, `report.csv`, `untranslated.csv`    |
+| `yarn welsh:report`     | Rebuilds the two reports from the `worker-*.jsonl` files                     | `report.csv`, `untranslated.csv`                        |
+| `yarn welsh:filter`     | Removes phrases that can never be translated and tags who owns the rest      | `untranslated.filtered.csv`, `untranslated.removed.csv` |
+
+`welsh-capture/` is git-ignored, and `test:welshCapture` deletes it at the start of every run, so copy out
+anything you want to keep first.
+
+### How it works
 
 `WELSH_CAPTURE=1` runs any test in Welsh mode without changing what it asserts. The `_welshCapture`
 auto fixture (`utils/test-fixtures.ts` → `utils/welsh-capture.ts`) sets the ExUI language cookie
@@ -238,6 +252,8 @@ suite's text assertions still pass), and in the background replays the request t
 learn whether each phrase has a Welsh translation. Every phrase is appended to
 `welsh-capture/worker-<n>.jsonl` with the spec, page URL, translated flag and a best-effort visibility
 check for the untranslated ones.
+
+### Running the capture
 
 ```bash
 cd src/e2eTest
@@ -256,3 +272,80 @@ Scope the run like any other (`--grep '@nightly'`, `E2E_SPEC=...`). On a machine
   `visible` and `kind` columns in `report.csv` help triage, the capture itself is not proof a user saw it.
 - A failed test still contributes the phrases it rendered before failing.
 - Phrases with `translated` empty mean the background lookup failed (see `[welsh-capture]` warnings).
+
+What the capture cannot see:
+
+- **Specs that clear cookies.** A spec that logs in as a different user calls `context.clearCookies()` first.
+  That also removes the language cookie, so ExUI stays in English for the rest of the test and nothing is
+  recorded. At the time of writing that is 23 of the 33 spec files, including every caseworker, judge,
+  legal-rep response, notice of change and make an application spec. Check which specs actually recorded:
+
+  ```bash
+  grep -ho '"spec":"[^"]*"' welsh-capture/worker-*.jsonl | sort | uniq -c
+  ```
+
+- **Pages no test opens.** Staff-only events, pages shown only for answers the tests never give, and tabs
+  with no data for a field are not captured. Check those labels against the CCD definition instead.
+- **`ext:` events.** Respond to claim (`ext:respondPossessionClaim`) redirects the browser to pcs-frontend,
+  which takes its Welsh from its own locale files, not from this dictionary.
+
+### Reading the report
+
+`report.csv` has one row per distinct phrase, and `untranslated.csv` has the same columns for the rows
+with `translated` = false.
+
+| Column            | Meaning                                                                                              |
+|-------------------|------------------------------------------------------------------------------------------------------|
+| `phrase`          | Exactly what ExUI sent. This is the dictionary key.                                                  |
+| `translated`      | `true` the environment returned Welsh; `false` it returned the English (no Welsh); blank lookup failed |
+| `visible`         | Untranslated phrases only: whether an element with exactly this text was visible. Blank = not checked (long or multi-line text, or no exact element) |
+| `kind`            | Rough triage: `text`, `markdown-or-html`, `label-template` (`${…}`), `case-data` (case reference or £ amount), `aria-sort` / `aria-change` (screen-reader text), `placeholder` |
+| `has_placeholder` | The phrase contains `${…}`                                                                           |
+| `seen`            | How many times ExUI asked for it                                                                     |
+| `specs`           | The spec files that rendered it                                                                      |
+| `first_url`       | The first page it was seen on                                                                        |
+| `translation`     | The Welsh the environment returned, when there is one                                               |
+
+### Filtering the capture
+
+`yarn welsh:filter` reads `welsh-capture/report.csv` and removes phrases ExUI can never translate: text with a
+substituted value (matched against the `${placeholder}` template the toolkit also sends), case references,
+emails, postcodes, and the staging case-type name. It writes `untranslated.filtered.csv` (still needs a
+translation, with an `owner` column: `pcs-definition`, `pcs-api`, `xui`, or blank for hand triage) and
+`untranslated.removed.csv` (every removed row with its reason, so the cut is auditable).
+
+```bash
+yarn welsh:filter                           # definition values from ../../build/definitions/PCS
+yarn welsh:filter --xui-src path/to/rpx-xui-webapp/src,path/to/ccd-case-ui-toolkit/projects,path/to/rpx-xui-common-lib/projects
+yarn welsh:filter --drop-owner xui          # move XUI shell strings to the removed file
+yarn welsh:filter --input some-other.csv    # any CSV with the report's columns
+yarn welsh:filter --pcs-definition <dir>    # a different generateCCDConfig output
+```
+
+Run `./gradlew generateCCDConfig` from the pcs-api root first, so the definition values are current. Without
+`--xui-src` the `xui` owner is not detected and those rows stay blank. The `owner` column says who would
+change the English: `pcs-definition` (a CCD definition label, hint, list item or name), `pcs-api` (text built
+in Java), `xui` (ExUI's own screens, shared by every service), or blank (triage by hand).
+
+Rows whose phrase contains `${…}` (`has_placeholder` = true) are kept on purpose: the toolkit translates the
+template and then substitutes the value, so the template is the dictionary key to translate and the Welsh must
+keep the same `${…}` tokens. The resolved sentences ("…about Jessie Owens’ circumstances") are what the filter
+removes.
+
+The phrase column is written exactly as ExUI sent it so it can be pasted into a dictionary upload. Excel reads a
+cell starting with `-`, `=` or `+` as a formula (`#NAME?`); either import the CSV with the phrase column as
+Text, or pass `--excel-safe` to either script to prefix those cells with an apostrophe (keys then need the
+apostrophe stripped before upload).
+
+### Getting the Welsh into the dictionary
+
+1. Send the rows from `untranslated.filtered.csv` with each phrase exactly as captured, and keep long phrases
+   whole. An earlier list had 18 phrases cut to 255 characters, so the Welsh that came back could never match.
+2. Upload the returned pairs through the Welsh dictionary page in CCD Admin Web, as a CSV with no header row and
+   one `english,welsh` pair per row:
+   - the columns are positional, and any value in a third column marks the phrase as a yes/no question;
+   - the English must match the captured phrase character for character, line breaks included;
+   - uploading Welsh needs the `manage-translations` role (an account with only `load-translations` is rejected);
+   - one bad row fails the whole upload, and blank Welsh cells are ignored, so an upload cannot remove Welsh.
+3. Download the dictionary again from Admin Web to confirm the Welsh landed, then re-run the capture. Each test
+   uses a fresh browser, so the client's one-day cache does not hide the change.
