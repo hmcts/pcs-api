@@ -273,7 +273,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (userId != null) {
             return pcsCaseEntity.getParties().stream()
                 .filter(party -> userId.equals(party.getIdamId()))
-                .filter(this::isActive)
                 .findFirst();
         } else {
             return Optional.empty();
@@ -295,14 +294,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
         return partyEntities.stream()
-            .filter(this::isActive)
             .map(entity -> modelMapper.map(entity, Party.class))
             .map(party -> ListValue.<Party>builder().id(party.getId()).value(party).build())
             .toList();
-    }
-
-    private boolean isActive(PartyEntity partyEntity) {
-        return !partyEntity.isRemoved();
     }
 
     private record SubmittedCase(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
