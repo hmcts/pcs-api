@@ -39,8 +39,8 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   await performAction('submitCaseAPI', {
     data: isMultiDef
-      ? submitCaseApiData.submitCasePayload
-      : submitCaseApiData.submitCasePayloadDefault,
+      ? submitCaseApiData.submitCasePayload()
+      : submitCaseApiData.submitCasePayloadDefault(),
   });
 
   console.log(`Case created with case number: ${process.env.CASE_NUMBER}`);
