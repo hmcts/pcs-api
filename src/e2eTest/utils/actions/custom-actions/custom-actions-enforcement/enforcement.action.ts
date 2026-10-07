@@ -84,7 +84,6 @@ export class EnforcementAction implements IAction{
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
       ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
       ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
-      ['updatePaymentAPI', () => this.updatePaymentAPI()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -139,41 +138,6 @@ export class EnforcementAction implements IAction{
     await performAction('clickRadioButton', { question: missedPayments.haveDefendantsMissedPaymentsQuestion, option: missedPaymentsData.option });
     await performAction('reTryOnCallBackError', missedPayments.continueButton, missedPaymentsData.nextPage as string);
   }
-
-  private async updatePaymentAPI(): Promise<void> {
-    const paymentApi = Axios.create(paymentApiData.paymentApiInstance());
-    const maxRetries = actionRetries + actionRetries;
-    const delayMs = VERY_SHORT_TIMEOUT;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await paymentApi.get(paymentApiData.getFeePaymentInfoApiEndPoint());
-        const paymentInfo = response.data;
-        if (!paymentInfo?.length) {
-          throw new Error('No payment information found.');
-        }
-        const requestReference = paymentInfo[0].serviceRequestReference;
-        const updateResponse = await paymentApi.put(
-          paymentApiData.updatePaymentApiEndPoint,
-          paymentApiData.paymentUpdatePayload(requestReference)
-        );
-        if (updateResponse.status === 200 || updateResponse.status === 204) {
-          return;
-        }
-        throw new Error(`Payment update failed with status ${updateResponse.status}`);
-      } catch (error: any) {
-        const status = error?.response?.status;
-        if (attempt === maxRetries) {
-          if (Axios.isAxiosError(error)) {
-            throw new Error(`Payment API failed after retries: ${status}`);
-          }
-          throw new Error(`Payment API failed unexpectedly after retries.${error}`);
-        }
-        await new Promise(res => setTimeout(res, delayMs));
-      }
-    }
-    throw new Error('Payment API failed after multiple retries');
-  }
-
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
@@ -461,7 +425,7 @@ export class EnforcementAction implements IAction{
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -478,7 +442,7 @@ export class EnforcementAction implements IAction{
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
-      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
