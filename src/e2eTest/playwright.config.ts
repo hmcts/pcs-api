@@ -63,14 +63,9 @@ export default defineConfig({
     ],
   ],
   projects: [
-    {
-      name: 'setup',
-      testMatch: /upload\.setup\.spec\.ts/,
-    },
+  
     {
       name: 'chrome',
-      dependencies: ['setup'],
-      testIgnore: /upload\.setup\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
@@ -86,8 +81,6 @@ export default defineConfig({
       ? [
           {
             name: 'firefox',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
             use: {
               ...devices['Desktop Firefox'],
               channel: 'firefox',
@@ -101,8 +94,6 @@ export default defineConfig({
           },
           {
             name: 'webkit',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
             use: {
               ...devices['Desktop Safari'],
               screenshot: 'only-on-failure' as const,
@@ -115,8 +106,6 @@ export default defineConfig({
           },
           {
             name: 'edge',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
             use: {
               ...devices['Desktop Edge'],
               channel: 'msedge',
@@ -130,8 +119,6 @@ export default defineConfig({
           },
           {
             name: 'mobile-android',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
             use: {
               ...devices['Pixel 5'],
               screenshot: 'only-on-failure' as const,
@@ -143,8 +130,6 @@ export default defineConfig({
           },
           {
             name: 'mobile-ios',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
             use: {
               ...devices['iPhone 12'],
               screenshot: 'only-on-failure' as const,
@@ -155,9 +140,7 @@ export default defineConfig({
             },
           },
           {
-            name: 'mobile-ipad',
-            dependencies: ['setup'],
-            testIgnore: /upload\.setup\.spec\.ts/,
+            name: 'mobile-ipad',            
             use: {
               ...devices['iPad Pro 11'],
               screenshot: 'only-on-failure' as const,
