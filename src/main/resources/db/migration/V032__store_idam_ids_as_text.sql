@@ -5,3 +5,6 @@ ALTER TABLE draft.draft_case_data
 
 ALTER TABLE public.party
   ALTER COLUMN idam_id TYPE text USING idam_id::text;
+
+ALTER TABLE public.cached_organisation_response
+  ALTER COLUMN idam_id TYPE text USING idam_id::text;
