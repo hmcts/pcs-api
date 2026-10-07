@@ -23,7 +23,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUD
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.manageParties;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CASEWORKER_EVENTS;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Component
 public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
@@ -58,7 +57,7 @@ public class ManageParty implements CCDConfig<PCSCase, State, UserRole> {
             .name("Manage parties")
             .grant(Permission.CRUD, CASEWORKER_ROLES)
             .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
-            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, RELEASE_1_DOT_4, CASEWORKER_EVENTS))
+            .showCondition(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_3, CASEWORKER_EVENTS))
             .showSummary()
             .endButtonLabel("Submit");
 
