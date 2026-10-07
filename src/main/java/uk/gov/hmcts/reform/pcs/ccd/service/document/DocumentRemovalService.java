@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.document;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.exception.DocumentNotFoundException;
@@ -21,7 +20,6 @@ public class DocumentRemovalService {
         this.documentImportService = documentImportService;
     }
 
-    @Transactional
     public void removeDocument(UUID documentEntityId, String reason) {
         DocumentEntity documentEntity = documentRepository.findById(documentEntityId)
             .orElseThrow(() -> new DocumentNotFoundException(documentEntityId));

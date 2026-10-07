@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
@@ -35,6 +37,8 @@ class DocumentRemovalIT extends AbstractPostgresContainerIT {
     private DocumentRepository documentRepository;
     @Autowired
     private JdbcTemplate jdbc;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     // The document store the removed document is deleted from.
     @MockitoBean
@@ -54,7 +58,9 @@ class DocumentRemovalIT extends AbstractPostgresContainerIT {
         pcsCase.addDocument(document);
         pcsCaseRepository.saveAndFlush(pcsCase);
 
-        documentRemovalService.removeDocument(document.getId(), "Duplicate upload");
+        // The event submit handler supplies the transaction in production.
+        new TransactionTemplate(transactionManager).executeWithoutResult(status ->
+            documentRemovalService.removeDocument(document.getId(), "Duplicate upload"));
 
         verify(documentImportService).deleteDocument(document.getUrl());
         Map<String, Object> row = jdbc.queryForMap(
