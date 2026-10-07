@@ -44,6 +44,11 @@ public final class PartyDisplayMapper {
             .filter(claimParty -> claimParty.getRole() == role)
             .sorted(Comparator.comparingInt(ClaimPartyEntity::getRank))
             .map(ClaimPartyEntity::getParty)
+            .filter(PartyDisplayMapper::isActive)
             .toList();
+    }
+
+    private static boolean isActive(PartyEntity party) {
+        return party != null && !party.isRemoved();
     }
 }

@@ -88,6 +88,19 @@ class DefendantSupportEligibilityResolverTest {
     }
 
     @Test
+    void shouldExcludeRemovedDefendants() {
+        PartyEntity activeDefendant = partyWithId();
+        PartyEntity removedDefendant = partyWithId();
+        removedDefendant.setRemoved(true);
+        PcsCaseEntity caseEntity = caseWith(activeDefendant, PartyRole.DEFENDANT);
+        addParty(caseEntity, removedDefendant, PartyRole.DEFENDANT);
+        representing(activeDefendant, removedDefendant);
+
+        assertThat(underTest.resolveEligibleDefendantPartyIds(caseEntity, USER_ID))
+            .containsExactly(activeDefendant.getId());
+    }
+
+    @Test
     void shouldIgnorePartyRolesThatAreNotClaimantOrDefendant() {
         PartyEntity defendantParty = partyWithId();
         PartyEntity otherParty = partyWithId();
