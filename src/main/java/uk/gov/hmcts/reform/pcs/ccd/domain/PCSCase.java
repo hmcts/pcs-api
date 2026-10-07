@@ -23,9 +23,10 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
@@ -38,6 +39,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalCaseFlagAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.InternalTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.PartyVisibleTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RasValidationAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.SystemReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.TranslationAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WAAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.DefendantPaperResponseRequest;
@@ -121,6 +124,9 @@ public class PCSCase {
     @External
     private String feeAmount;
 
+    @CCD(searchable = false)
+    private String caseStatusMarkdown;
+
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")
@@ -149,7 +155,7 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {DefendantAccess.class}
+        access = {CaseworkerReadAccess.class, DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -500,6 +506,12 @@ public class PCSCase {
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
+    @CCD(
+        searchable = false,
+        access = TranslationAccess.class
+    )
+    private List<ListValue<UploadedDocument>> translatedDocuments;
+
     @CCD(searchable = false)
     @JsonUnwrapped()
     private CaseworkerDocument caseworkerDocument;
@@ -660,7 +672,7 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
-    @CCD(access = DocumentAccess.class)
+    @CCD(access = { DocumentAccess.class, SystemReadAccess.class})
     private List<ListValue<Document>> allDocuments;
 
     @CCD(

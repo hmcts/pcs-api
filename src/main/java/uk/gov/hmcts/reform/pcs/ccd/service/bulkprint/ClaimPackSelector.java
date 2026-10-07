@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TranslatedDocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
@@ -79,13 +80,19 @@ public class ClaimPackSelector {
                     pcsCase.getId(), defendant.getId());
                 continue;
             }
+
             List<DocumentEntity> unsent = new ArrayList<>();
-            if (!sent.contains(key(defendant, claimForm))) {
-                unsent.add(claimForm);
-            }
             if (!sent.contains(key(defendant, accessCode))) {
                 unsent.add(accessCode);
             }
+            if (!sent.contains(key(defendant, claimForm))) {
+                unsent.add(claimForm);
+            }
+
+            claim.getTranslatedDocuments().stream()
+                .map(TranslatedDocumentEntity::getDocument)
+                .forEach(unsent::add);
+
             if (!unsent.isEmpty()) {
                 candidates.add(new ClaimPackCandidate(PartyRole.DEFENDANT, defendant, unsent));
             }

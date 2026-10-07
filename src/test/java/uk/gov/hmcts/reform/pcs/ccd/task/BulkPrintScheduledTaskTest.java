@@ -11,6 +11,7 @@ import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.ClaimActivityType;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.BulkPrintQueueService;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
@@ -39,6 +40,8 @@ class BulkPrintScheduledTaskTest {
     private FeatureToggleService featureToggleService;
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
     @Mock
     private ClaimPackSender claimPackSender;
     @Mock
@@ -172,7 +175,7 @@ class BulkPrintScheduledTaskTest {
 
     private BulkPrintScheduledTask component(String schedule, Integer lookbackHours) {
         return new BulkPrintScheduledTask(
-            featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender,
-            schedule, lookbackHours);
+            featureToggleService, claimActivityLogRepository, bulkPrintQueueService, claimPackSender,
+            defencePackSender, genAppPackSender, schedule, lookbackHours);
     }
 }

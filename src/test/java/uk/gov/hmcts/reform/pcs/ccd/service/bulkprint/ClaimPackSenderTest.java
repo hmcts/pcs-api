@@ -34,6 +34,8 @@ class ClaimPackSenderTest {
     private BulkPrintService bulkPrintService;
     @Mock
     private AccessCodeActivityLogService accessCodeActivityLogService;
+    @Mock
+    private BulkPrintQueueService bulkPrintQueueService;
 
     private ClaimPackSender underTest;
 
@@ -45,7 +47,7 @@ class ClaimPackSenderTest {
     @BeforeEach
     void setUp() {
         underTest = new ClaimPackSender(packRecipientResolver, bulkPrintService,
-            new PackSendRecorder(accessCodeActivityLogService));
+            new PackSendRecorder(accessCodeActivityLogService, bulkPrintQueueService));
     }
 
     @Test

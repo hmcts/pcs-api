@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -52,6 +53,7 @@ import static org.mockito.Mockito.withSettings;
 class TaskDescriptionServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final String FRONTEND_URL = "https://pcs-frontend";
 
     @Mock
     private PartyService partyService;
@@ -59,6 +61,8 @@ class TaskDescriptionServiceTest {
     private PebbleEngine pebbleEngine;
     @Mock(strictness = LENIENT)
     private ClaimRepository claimRepository;
+    @Mock
+    private DocumentNameService documentNameService;
     @Mock
     private ClaimEntity mainClaim;
     @Captor
@@ -70,7 +74,8 @@ class TaskDescriptionServiceTest {
     void setUp() {
         when(claimRepository.findClaimByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(mainClaim));
 
-        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository);
+        underTest = new TaskDescriptionService(partyService, pebbleEngine, claimRepository,
+                                               documentNameService, FRONTEND_URL);
     }
 
     @Nested
