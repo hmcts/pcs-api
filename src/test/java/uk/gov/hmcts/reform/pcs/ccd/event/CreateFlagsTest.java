@@ -74,6 +74,45 @@ class CreateFlagsTest extends  BaseEventTest {
     }
 
     @Test
+    void shouldLeaveCaseUnchangedWhenPartiesAreNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(party("defendant-id")))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result).isSameAs(pcsCase);
+        assertThat(result.getParties()).isNull();
+    }
+
+    @Test
+    void shouldLeaveCaseUnchangedWhenAllDefendantsAreNull() {
+        List<ListValue<Party>> parties = List.of(party("claimant-id"));
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(parties)
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result).isSameAs(pcsCase);
+        assertThat(result.getParties()).isSameAs(parties);
+    }
+
+    @Test
+    void shouldUsePartyValueIdWhenCollectionIdIsMissing() {
+        ListValue<Party> defendant = partyWithValueIdOnly("defendant-id");
+        ListValue<Party> malformedParty = ListValue.<Party>builder().build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(defendant, malformedParty))
+            .allDefendants(List.of(partyWithValueIdOnly("defendant-id")))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result.getParties()).containsExactly(defendant);
+    }
+
+    @Test
     void shouldUseCaseFlagsVersion2Point1CreateJourney() {
         assertThat(getDisplayContextParameter("flagLauncherInternal"))
             .isEqualTo("#ARGUMENT(CREATE,VERSION2.1)");
@@ -129,6 +168,12 @@ class CreateFlagsTest extends  BaseEventTest {
     private ListValue<Party> party(String id) {
         return ListValue.<Party>builder()
             .id(id)
+            .value(Party.builder().id(id).build())
+            .build();
+    }
+
+    private ListValue<Party> partyWithValueIdOnly(String id) {
+        return ListValue.<Party>builder()
             .value(Party.builder().id(id).build())
             .build();
     }
