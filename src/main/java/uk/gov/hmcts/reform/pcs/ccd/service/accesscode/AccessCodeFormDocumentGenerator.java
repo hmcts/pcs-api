@@ -92,6 +92,7 @@ public class AccessCodeFormDocumentGenerator {
             .accessCode(plaintextAccessCode)
             .issuedOn(LocalDate.now(ukClock))
             .url(respondOnlineUrl)
+            .courtName(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4) ? servingCourt.courtName() : null)
             .build();
 
         String outputFilename = OUTPUT_FILENAME_PREFIX + " " + defendant.getId();

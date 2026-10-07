@@ -246,6 +246,21 @@ class AccessCodeFormDocumentGeneratorTest {
         );
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldIncludeCourtNameOnlyWhenRelease14Enabled(boolean release14Enabled) {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        PartyEntity defendant = PartyEntity.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+        PcsCaseEntity caseEntity = caseWith(defendant);
+
+        underTest.generate(caseEntity, caseEntity.getClaims().getFirst(), defendant, "PLAINTEXTPIN1");
+
+        assertThat(capturedPayload().getCourtName()).isEqualTo(release14Enabled ? "Central London County Court" : null);
+    }
+
     private AccessCodeFormPayload capturedPayload() {
         verify(docAssemblyService).generateDocument(payloadCaptor.capture(), anyString(), any(), anyString());
         return (AccessCodeFormPayload) payloadCaptor.getValue();
