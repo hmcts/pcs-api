@@ -11,6 +11,7 @@ export default {
   'claimantMakeAnApplicationdocumentUploadWanted' : 'doYouWantToUploadDocumentsToSupportYourApplication.',
   'claimantMakeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportYourApplication',
   'claimantMakeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
-  'claimantMakeAnApplicationstatementOfTruth': 'statementOfTruth',
-  'claimantMakeAnApplication/submit' :'checkYourAnswersClaimantGenApps',
+  'claimantMakeAnApplicationstatementOfTruth': 'statementOfTruthClaimant',
+  'claimantMakeAnApplication/submit': 'checkYourAnswersClaimantGenApps',
+  'claimantMakeAnApplication/confirm': 'applicationSubmitted',
 };
