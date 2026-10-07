@@ -65,7 +65,7 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /upload\.setup\.spec\.ts/,
+      testMatch: '**/setup/*.setup.spec.ts',
     },
     {
       name: 'chrome',
