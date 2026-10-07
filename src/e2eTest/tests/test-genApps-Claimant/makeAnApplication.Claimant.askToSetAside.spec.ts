@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeGenAppsExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
   await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('navigateToSummaryPage');

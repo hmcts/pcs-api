@@ -323,7 +323,6 @@ export class GenAppsAction implements IAction {
     const maxRetries = 10;
     const amount = String(confirmGenApps.PayAmount);
     const payNowText = String(confirmGenApps.payNowLink);
-    const partyName = "Solicitor"
 
     for (
       let retryCount = 0;
@@ -333,7 +332,6 @@ export class GenAppsAction implements IAction {
       await performAction('clickTab', caseSummary.serviceRequestTab);
       const row = page.locator('tbody tr')
         .filter({ hasText: amount })
-        .filter({ hasText: partyName })
         .nth(1);
 
       const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
