@@ -95,6 +95,17 @@ class DocumentImportServiceTest {
         assertThat(addedDocumentEntity.getCategoryId()).isEqualTo(CaseFileCategory.HEARING_DOCUMENTS.getId());
     }
 
+    @Test
+    void shouldDeleteDocumentByExtractedId() {
+        UUID documentId = UUID.randomUUID();
+        String documentUrl = "some document URL";
+        when(documentIdExtractor.extractDocumentId(documentUrl)).thenReturn(documentId);
+
+        underTest.deleteDocument(documentUrl);
+
+        verify(caseDocumentClientApi).deleteDocument(SYSTEM_AUTH_TOKEN, S2S_AUTH_TOKEN, documentId, true);
+    }
+
     @SuppressWarnings("SameParameterValue")
     private Document.Links createLinks(String url, String binaryUrl) {
         Document.Links links = new Document.Links();

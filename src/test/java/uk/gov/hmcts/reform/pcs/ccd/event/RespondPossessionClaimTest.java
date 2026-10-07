@@ -1,91 +1,252 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.LegalRepPartySelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.CitizenSubmissionEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepStartEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.LegalRepSubmissionEventStrategy;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy.SubmitResponseFactory;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimFeeCalculator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.CounterClaimSubmitConfirmationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimSubmitService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
+import uk.gov.hmcts.reform.pcs.ccd.util.SelectedPartyRetriever;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.model.JourneyType;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
-
     @Mock
     private ClaimResponseService claimResponseService;
-
-    @Mock
+    @Mock(strictness = LENIENT)
     private PcsCaseService pcsCaseService;
-
     @Mock
     private SecurityContextService securityContextService;
-
     @Mock
     private PossessionClaimResponseMapper responseMapper;
-
     @Mock
     private DefendantAccessValidator accessValidator;
-
     @Mock
     private DefendantResponseService defendantResponseService;
-
+    @Mock
+    private TranslationWAService translationWAService;
+    @Mock
+    private DefendantResponseRepository defendantResponseRepository;
     @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+    @Mock
+    private CounterClaimService counterClaimService;
+    @Mock
+    private PartyService partyService;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private PaymentService paymentService;
+    @Mock
+    private DocumentService documentService;
+    @Mock
+    private TaskDescriptionService taskDescriptionService;
+    @Mock
+    private CamundaService camundaService;
+    @Mock
+    private ObjectMapper objectMapper;
+    @Mock
+    private SelectedPartyRetriever selectedPartyRetriever;
+    @Mock
+    private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private UserInfo userInfo;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+
+    @Mock
+    private PossessionClaimMerger possessionClaimMerger;
+
+    @Mock
+    private PossessionClaimDraftBuilder possessionClaimDraftBuilder;
+
+    @Mock
+    private DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
+
+    @Mock
+    private SubmitResponseFactory submitResponseFactory;
+    @Mock
+    private CaseDetailsTabView caseDetailsTabView;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private RentArrearsView rentArrearsView;
+    @Mock
+    private OrganisationService organisationService;
+    @Mock
+    private SchedulerClient schedulerClient;
+
+    private StartEventHandler startEventHandler;
+    private SubmitEventHandler submitEventHandler;
 
     @BeforeEach
     void setUp() {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         // Create handlers with real dependencies
-        StartEventHandler startEventHandler = new StartEventHandler(
-            pcsCaseService,
+
+        startEventHandler = new StartEventHandler(
             securityContextService,
-            accessValidator,
-            responseMapper,
-            draftCaseDataService
+            List.of(new CitizenStartEventStrategy(pcsCaseService,
+                                                  securityContextService,
+                                                  accessValidator,
+                                                  responseMapper,
+                                                  draftCaseDataService,
+                                                  possessionClaimMerger,
+                                                  possessionClaimDraftBuilder,
+                                                  defendantOnlyDraftBuilder,
+                                                  defendantResponseRepository,
+                                                  caseDetailsTabView,
+                                                  tenancyLicenceView,
+                                                  rentArrearsView),
+                    new LegalRepStartEventStrategy(pcsCaseService,
+                                                            legalRepForDefendantAccessValidator,
+                                                   new LegalRepPartySelectionService(selectedPartyRetriever,
+                                                                                     defendantResponseRepository,
+                                                                                     draftCaseDataService,
+                                                                                     responseMapper,
+                                                                                     possessionClaimMerger),
+                                                   organisationService)
+            )
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            draftCaseDataService,
+        CounterClaimFeeCalculator feeCalculator = new CounterClaimFeeCalculator(feeService);
+        RespondPossessionClaimSubmitService submitService = new RespondPossessionClaimSubmitService(
             claimResponseService,
-            defendantResponseService
+            defendantResponseService,
+            counterClaimService,
+            feeCalculator,
+            documentService,
+            draftCaseDataService,
+            taskDescriptionService,
+            camundaService,
+            translationWAService,
+            organisationService,
+            schedulerClient
+        );
+
+        lenient().when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().languageUsed(LanguageUsed.ENGLISH).build());
+
+        CounterClaimSubmitConfirmationService confirmationService = new CounterClaimSubmitConfirmationService(
+            partyService,
+            paymentService,
+            objectMapper
+        );
+
+        submitEventHandler = new SubmitEventHandler(
+            List.of(
+                new CitizenSubmissionEventStrategy(
+                    draftCaseDataService,
+                    submitResponseFactory,
+                    submitService,
+                    confirmationService,
+                    partyService,
+                    securityContextService
+                ),
+                new LegalRepSubmissionEventStrategy(
+                    draftCaseDataService,
+                    selectedPartyRetriever,
+                    submitResponseFactory,
+                    partyService,
+                    submitService,
+                    confirmationService,
+                    securityContextService,
+                    organisationService
+                )
+            ),
+            securityContextService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
@@ -96,6 +257,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         // Mock existing draft with claimantProvided for save operations
         setupDefaultExistingDraft();
+    }
+
+    @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.respondPossessionClaim());
+    }
+
+    @Test
+    void shouldBeConfiguredAsNeverShow() {
+        assertConfiguredAsNeverShow();
     }
 
     private void setupDefaultExistingDraft() {
@@ -114,7 +285,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldPopulatePossessionClaimResponseWhenUserIsMatchingDefendant() {
+    void shouldPopulatePossessionClaimResponseWhenUserIsMatchingDefendant_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
 
         AddressUK expectedAddress = AddressUK.builder()
@@ -153,14 +324,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder()
-                    .firstName("John")
-                    .lastName("Doe")
-                    .address(expectedAddress)
-                    .build())
-                .build())
+                                         .party(Party.builder()
+                                                    .firstName("John")
+                                                    .lastName("Doe")
+                                                    .address(expectedAddress)
+                                                    .build())
+                                         .build())
             .build();
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -168,6 +341,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -187,10 +364,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
+        verify(defendantResponseRepository).existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            TEST_CASE_REFERENCE, defendantUserId);
     }
 
     @Test
-    void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
+    void shouldThrowCaseAccessExceptionWhenNoDefendantsFound_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
         ClaimEntity claimEntity = ClaimEntity.builder()
             .build();
@@ -199,6 +379,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
         pcsCaseEntity.getClaims().add(claimEntity);
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -212,12 +394,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldThrowCaseAccessExceptionWhenNoClaimExists() {
+    void shouldThrowCaseAccessExceptionWhenNoClaimExists_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .claims(Collections.emptyList())
             .build();
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -231,7 +415,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
+    void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
         UUID differentUserId = UUID.randomUUID();
 
@@ -255,6 +439,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, differentUserId))
@@ -267,14 +453,17 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .hasMessage("User is not linked as a defendant on this case");
     }
 
-
     @Test
-    void shouldNotSaveDraftWhenPossessionClaimResponseIsNull() {
+    void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(new DefendantResponseEntity());
+
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();
-
-
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
@@ -286,19 +475,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
 
     @Test
-    void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes() {
+    void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("456 Property Street")
             .postTown("Manchester")
             .postCode("M1 1AA")
-            .build();
-
-        AddressEntity propertyAddressEntity = AddressEntity.builder()
-            .addressLine1("456 Property Street")
-            .postTown("Manchester")
-            .postcode("M1 1AA")
             .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
@@ -319,21 +502,22 @@ class RespondPossessionClaimTest extends BaseEventTest {
         claimEntity.getClaimParties().add(claimPartyEntity);
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .propertyAddress(propertyAddressEntity)
             .build();
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder()
-                    .firstName("Jane")
-                    .lastName("Smith")
-                    .address(propertyAddress)
-                    .build())
-                .build())
+                                         .party(Party.builder()
+                                                    .firstName("Jane")
+                                                    .lastName("Smith")
+                                                    .address(propertyAddress)
+                                                    .build())
+                                         .build())
             .build();
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -341,6 +525,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -352,12 +540,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(contactDetails.getParty().getFirstName()).isEqualTo("Jane");
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Smith");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(propertyAddress);
-
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
         verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
     }
 
     @Test
-    void shouldCreatePartyObjectEvenWhenDefendantHasNoData() {
+    void shouldCreatePartyObjectEvenWhenDefendantHasNoData_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
@@ -393,10 +582,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().address(emptyAddress).build())
-                .build())
+                                         .party(Party.builder().address(emptyAddress).build())
+                                         .build())
             .build();
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -404,6 +595,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -425,11 +620,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+        verify(defendantOnlyDraftBuilder).createDefendantOnlyDraft(mockResponse);
+
     }
 
     @Test
-    void shouldNotOverwriteDraftWhenDraftAlreadyExists() {
+    void shouldNotOverwriteDraftWhenDraftAlreadyExists_ForCitizenUser() {
         UUID defendantUserId = UUID.randomUUID();
+        UUID defendantId = UUID.randomUUID();
 
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
@@ -439,6 +637,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PartyEntity matchingDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
+            .id(defendantId)
             .firstName("John")
             .lastName("Doe")
             .address(addressEntity)
@@ -467,14 +666,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
-                .party(draftParty)
-                .build())
+                                         .party(draftParty)
+                                         .build())
             .build();
 
         PCSCase draftData = PCSCase.builder()
             .possessionClaimResponse(draftResponse)
             .build();
 
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(true); // Draft already exists - should NOT seed
@@ -486,17 +687,19 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(Party.builder().build());
 
         PCSCase caseData = PCSCase.builder().build();
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, draftResponse, defendantId)).thenReturn(draftResponse);
+        when(possessionClaimDraftBuilder.buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class)))
+            .thenReturn(PCSCase.builder()
+                            .possessionClaimResponse(draftResponse)
+                            .build());
+        doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(new CaseDetailsTab());
 
-        PCSCase result = callStartHandler(caseData);
+        callStartHandler(caseData);
 
-        // Should return draft data (user's saved progress), NOT database defendant data
-        assertThat(result.getPossessionClaimResponse()).isNotNull();
-        DefendantContactDetails contactDetails = result.getPossessionClaimResponse().getDefendantContactDetails();
-        assertThat(contactDetails.getParty()).isNotNull();
-        assertThat(contactDetails.getParty().getFirstName()).isEqualTo("SavedFirstName");
-        assertThat(contactDetails.getParty().getLastName()).isEqualTo("SavedLastName");
-        assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("saved@example.com");
-
+        verify(possessionClaimDraftBuilder).buildCaseWithDraft(eq(caseData), any(PossessionClaimResponse.class));
         verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
 
@@ -509,13 +712,25 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
+    void shouldReturnErrorWhenPossessionClaimResponseIsNull_ForCitizenUser() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
         PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(null)
+            .possessionClaimResponse(possessionClaimResponse)
             .build();
 
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
+            .errors(List.of("Invalid submission: missing response data"))
+            .build();
+
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
 
         var response = callSubmitHandler(caseData);
 
@@ -531,5 +746,336 @@ class RespondPossessionClaimTest extends BaseEventTest {
             eq(EventId.respondPossessionClaim)
         );
     }
-}
 
+    @Test
+    void shouldReturnErrorWhenDefendantResponseIsNull_ForCitizenUser() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(null)
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> submitResponse = SubmitResponse.<State>builder()
+            .errors(List.of("Invalid submission: missing defendant response data"))
+            .build();
+
+        when(submitResponseFactory.validate(possessionClaimResponse, TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(submitResponse));
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().getFirst())
+            .isEqualTo("Invalid submission: missing defendant response data");
+
+        verify(draftCaseDataService).getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim);
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(),
+            eq(EventId.respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldReturnRepresentedPartiesOnlyWhenNoPartyContextProvided_ForLegalRepresentativeUser() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        UUID differentPartyId = UUID.randomUUID();
+
+        PCSCase caseData = PCSCase.builder().build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        PartyEntity representedParty = PartyEntity.builder()
+            .id(representedPartyId)
+            .firstName("Sam")
+            .lastName("Defendant")
+            .build();
+
+        PartyEntity representedParty2 = PartyEntity.builder()
+            .id(differentPartyId)
+            .build();
+
+        String orgId = "org";
+        String legalRepOrgId = UUID.randomUUID().toString();
+
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+            .thenReturn(List.of(representedParty, representedParty2));
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+
+        // when
+        PCSCase result = callStartHandler(caseData);
+
+        // then
+        assertThat(result.getPossessionClaimResponse()).isNull();
+        assertThat(result.getParties()).hasSize(2);
+        Party returnedParty = result.getParties().getFirst().getValue();
+        assertThat(result.getParties().getFirst().getId()).isEqualTo(representedPartyId.toString());
+        assertThat(returnedParty.getFirstName()).isEqualTo("Sam");
+        assertThat(returnedParty.getLastName()).isEqualTo("Defendant");
+        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                                     representedPartyId, legalRepOrgId);
+    }
+
+    @Test
+    void shouldInitializeDraftForSelectedRepresentedPartyWhenNoDraftExists_ForLegalRepresentativeUser() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+
+        PCSCase caseData = PCSCase.builder().build();
+        PossessionClaimResponse response = PossessionClaimResponse.builder().build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        String orgId = "org";
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+            .thenReturn(List.of(representedParty, PartyEntity.builder().id(UUID.randomUUID()).build()));
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(false);
+
+        // when
+        PCSCase result = callStartHandler(caseData);
+
+        // then
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(response);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId),
+            eq(orgId)
+        );
+    }
+
+    @Test
+    void shouldLoadDraftForSelectedRepresentedPartyWhenDraftExists_ForLegalRepresentativeUser() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        UUID differentPartyId = UUID.randomUUID();
+
+        Party party = Party.builder()
+            .build();
+        Party party2 = Party.builder()
+            .build();
+
+        List<ListValue<Party>> defendantList = new ArrayList<>();
+        defendantList.add(ListValue.<Party>builder().value(party).id(differentPartyId.toString()).build());
+        defendantList.add(ListValue.<Party>builder().value(party2).id(representedPartyId.toString()).build());
+
+        PCSCase caseData = PCSCase.builder()
+            .allDefendants(defendantList)
+            .build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty2 = PartyEntity.builder().id(differentPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        PossessionClaimResponse savedResponse = PossessionClaimResponse.builder().build();
+        PCSCase savedDraft = PCSCase.builder()
+            .possessionClaimResponse(savedResponse)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
+            .build();
+        String orgId = "org";
+        String legalRepOrgId = UUID.randomUUID().toString();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(representedPartyId));
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(Optional.of(savedDraft));
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+            .thenReturn(List.of(representedParty, representedParty2));
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(Optional.of(savedDraft));
+        when(responseMapper.buildPartyFromEntity(representedParty, caseData))
+            .thenReturn(uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder().build());
+        when(possessionClaimMerger.mergeLatestCaseData(caseData, savedResponse, representedPartyId))
+            .thenReturn(savedResponse);
+
+        // when
+        PCSCase result = callStartHandler(caseData);
+
+        // then
+        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId),
+            eq(legalRepOrgId)
+        );
+    }
+
+    @Test
+    void shouldRejectPartyOutsideRepresentedDefendants_ForLegalRepresentativeUser() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+        UUID differentPartyId = UUID.randomUUID();
+        UUID thirdPartyId = UUID.randomUUID();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PartyEntity representedParty2 = PartyEntity.builder().id(thirdPartyId).build();
+        String orgId = "org";
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        PCSCase caseData = PCSCase.builder()
+            .build();
+        when(selectedPartyRetriever.getSelectedPartyId(caseData)).thenReturn(Optional.of(differentPartyId));
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+            .thenReturn(List.of(representedParty, representedParty2));
+
+        // when / then
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant on this case");
+    }
+
+    @Test
+    void shouldInitializeDraftForSingleRepresentedPartyWhenNoDraftExists_ForLegalRepresentativeUser() {
+        // given
+        UUID representedPartyId = UUID.randomUUID();
+
+        PCSCase caseData = PCSCase.builder().build();
+        PossessionClaimResponse response = PossessionClaimResponse.builder().build();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder().build();
+        String orgId = "org";
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(responseMapper.mapFrom(caseData, representedParty)).thenReturn(response);
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(caseEntity);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, orgId, true))
+            .thenReturn(List.of(representedParty));
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(false);
+
+        // when
+        PCSCase result = callStartHandler(caseData);
+
+        // then
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(response);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim), eq(representedPartyId),
+            eq(orgId)
+        );
+        verify(selectedPartyRetriever, times(1)).getRequiredPartyId();
+    }
+
+    @Test
+    void shouldSubmitLegalRepresentativeDraftForSelectedParty_ForLegalRepresentativeUser() {
+        // given
+        UUID legalRepUserId = UUID.randomUUID();
+        UUID representedPartyId = UUID.randomUUID();
+        PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
+
+        UploadedDocument uploadedDocument = UploadedDocument.builder()
+            .document(Document.builder().filename("evidence.pdf").build())
+            .build();
+        List<ListValue<UploadedDocument>> counterClaimDocuments = List.of(
+            ListValue.<UploadedDocument>builder().id("doc-1").value(uploadedDocument).build()
+        );
+
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeConfirmation(YesNoNotSure.YES)
+            .counterClaim(CounterClaim.builder()
+                .claimType(CounterClaimType.SOMETHING_ELSE)
+                .counterClaimFor("For")
+                .needHelpWithFees(VerticalYesNo.NO)
+                .counterClaimReasons("reasons")
+                .otherOrderRequestFacts("Other facts")
+                .otherOrderRequestDetails("Other details")
+                .hwfReferenceNumber("1234567890")
+                .build()
+            )
+            .counterClaimDocuments(counterClaimDocuments)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .build();
+        String orgId = "org";
+        CounterClaimEntity counterClaimEntity = CounterClaimEntity.builder()
+            .party(representedParty)
+            .pcsCase(pcsCaseEntity)
+            .build();
+
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData))
+            .thenReturn(Optional.of(representedPartyId));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                         representedPartyId, orgId))
+            .thenReturn(Optional.of(caseData));
+        when(partyService.getPartyEntityById(representedPartyId, TEST_CASE_REFERENCE)).thenReturn(representedParty);
+
+        when(counterClaimService.saveCounterClaim(TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty))
+            .thenReturn(Optional.of(counterClaimEntity));
+        when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
+            .thenReturn(DefendantResponseEntity.builder().status(DefendantResponseStatus.SUBMITTED).build());
+
+        // when
+        callSubmitHandler(caseData);
+
+        // then
+        verify(claimResponseService).saveDraftDataForParty(possessionClaimResponse, representedParty, 1234L);
+        verify(defendantResponseService).saveDefendantResponse(
+            TEST_CASE_REFERENCE, possessionClaimResponse, representedParty, JourneyType.LEGAL_REPRESENTATIVE);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim,
+                                                               representedPartyId, orgId);
+        verify(draftCaseDataService, never()).getUnsubmittedCaseData(TEST_CASE_REFERENCE, respondPossessionClaim);
+        verify(schedulerClient).scheduleIfNotExists(any());
+
+        // counterclaim
+        verify(counterClaimService).saveCounterClaim(
+            TEST_CASE_REFERENCE, responses.getCounterClaim(), representedParty);
+        verify(documentService, times(1)).createCounterClaimUploadedDocuments(
+            counterClaimDocuments,
+            counterClaimEntity,
+            counterClaimEntity.getPcsCase(),
+            counterClaimEntity.getParty()
+        );
+    }
+
+    @Test
+    void shouldThrowExceptionForNoSelectedParty_ForLegalRepresentativeUser() {
+        // given
+        UUID legalRepUserId = UUID.randomUUID();
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(null)
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(legalRepUserId);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.DEFENDANT_SOLICITOR.getRole()));
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(caseData)).thenReturn(Optional.empty());
+
+        // when / then
+        assertThatThrownBy(() -> callSubmitHandler(caseData))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No selected responding party id for respond to claim");
+    }
+}

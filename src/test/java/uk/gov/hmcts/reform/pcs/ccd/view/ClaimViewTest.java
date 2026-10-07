@@ -8,15 +8,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +47,6 @@ class ClaimViewTest {
     @BeforeEach
     void setUp() {
         pcsCase = PCSCase.builder().build();
-
         underTest = new ClaimView();
     }
 
@@ -57,6 +66,7 @@ class ClaimViewTest {
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getPreActionProtocolIncompleteExplanation()).thenReturn("explanation");
+        when(claimEntity.getIsExemptLandlord()).thenReturn(VerticalYesNo.NO);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -74,6 +84,27 @@ class ClaimViewTest {
         assertThat(pcsCase.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
         assertThat(pcsCase.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
         assertThat(pcsCase.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
+        assertThat(pcsCase.getIsExemptLandlord()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldMapUploadedDocumentChecklist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getUploadedDocumentChecklist()).thenReturn(Set.of(
+            ClaimUploadedDocumentChecklistEntity.builder()
+                .documentType(UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE)
+                .build(),
+            ClaimUploadedDocumentChecklistEntity.builder()
+                .documentType(UploadedDocumentChecklistType.NOTICE_SERVED)
+                .build()
+        ));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        assertThat(pcsCase.getDocumentsYouveUploaded()).containsExactlyInAnyOrder(
+            UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+            UploadedDocumentChecklistType.NOTICE_SERVED
+        );
     }
 
     @ParameterizedTest
@@ -122,6 +153,124 @@ class ClaimViewTest {
     }
 
     @Test
+    void shouldMapWalesRequiredDocumentAnswersWhenNoDocumentsExist() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
+        when(claimEntity.getEnergyPerformanceCertificateProvided()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getGasSafetyReportProvided()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getElectricalInstallationConditionProvided()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getNoEnergyPerformanceCertificateReason()).thenReturn("No EPC reason");
+        when(claimEntity.getNoGasSafetyReportReason()).thenReturn("No gas safety reason");
+        when(claimEntity.getNoElectricalInstallationConditionReason()).thenReturn("No EICR reason");
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertThat(requiredDocumentsWales.getHasEnergyPerformanceCertificate()).isEqualTo(VerticalYesNo.NO);
+        assertThat(requiredDocumentsWales.getHasGasSafetyReport()).isEqualTo(VerticalYesNo.YES);
+        assertThat(requiredDocumentsWales.getHasElectricalInstallationConditionReport()).isEqualTo(VerticalYesNo.NO);
+        assertThat(requiredDocumentsWales.getNoEpcReason()).isEqualTo("No EPC reason");
+        assertThat(requiredDocumentsWales.getNoGasReportReason()).isEqualTo("No gas safety reason");
+        assertThat(requiredDocumentsWales.getNoEicrReason()).isEqualTo(
+            "No EICR reason"
+        );
+        assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
+        assertThat(requiredDocumentsWales.getGasSafetyReport()).isEmpty();
+        assertThat(requiredDocumentsWales.getElectricalInstallation()).isEmpty();
+    }
+
+    @Test
+    void shouldMapOnlyMatchingWalesRequiredDocumentTypes() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+            documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "epc.pdf", null),
+            documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "gas.pdf", null),
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
+            documentEntity(DocumentType.OTHER, "other.pdf", null)
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+
+        assertSingleDocument(requiredDocumentsWales.getEnergyPerformance(), "epc.pdf");
+        assertSingleDocument(requiredDocumentsWales.getGasSafetyReport(), "gas.pdf");
+        assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
+    }
+
+    @Test
+    void shouldSetEmptyWalesRequiredDocumentListsWhenDocumentsExistButDoNotMatchRequiredTypes() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+            documentEntity(DocumentType.OTHER, "other.pdf", null),
+            documentEntity(DocumentType.RENT_STATEMENT, "rent-statement.pdf", null)
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertThat(requiredDocumentsWales.getEnergyPerformance()).isEmpty();
+        assertThat(requiredDocumentsWales.getGasSafetyReport()).isEmpty();
+        assertThat(requiredDocumentsWales.getElectricalInstallation()).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeGenAppDocumentsInWalesRequiredDocuments() {
+        // Given
+        DocumentEntity genAppEicrDocument = documentEntity(
+            DocumentType.EICR_REPORT,
+            "genApps GA2 - Defendant 2.ppt",
+            null
+        );
+        genAppEicrDocument.setGeneralApplication(GenAppEntity.builder().build());
+
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+            documentEntity(DocumentType.EICR_REPORT, "eicr.pdf", null),
+            genAppEicrDocument
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertSingleDocument(requiredDocumentsWales.getElectricalInstallation(), "eicr.pdf");
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1.pdf", null),
+                documentEntity(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE, "1a.pdf", "Add doc 1a"),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2.pdf", null),
+                documentEntity(DocumentType.GAS_SAFETY_CERTIFICATE, "2a.pdf", "Add doc 2a"),
+                documentEntity(DocumentType.EICR_REPORT, "3.pdf", null),
+                documentEntity(DocumentType.EICR_REPORT, "3a.pdf", "Add doc 3a")
+        ));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        WalesDocuments requiredDocumentsWales = pcsCase.getRequiredDocumentsWales();
+        assertThat(requiredDocumentsWales.getEnergyPerformance()).hasSize(1);
+        assertThat(requiredDocumentsWales.getGasSafetyReport()).hasSize(1);
+        assertThat(requiredDocumentsWales.getElectricalInstallation()).hasSize(1);
+    }
+
+    @Test
     void shouldNotPopulateAnyClaimFieldsWhenNoClaimsExist() {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of());
 
@@ -163,4 +312,33 @@ class ClaimViewTest {
         );
     }
 
+    private static DocumentEntity documentEntity(DocumentType documentType, String fileName, String description) {
+        return DocumentEntity.builder()
+            .id(documentId(fileName))
+            .type(documentType)
+            .description(description)
+            .url("http://dm-store/documents/" + fileName)
+            .binaryUrl("http://dm-store/documents/" + fileName + "/binary")
+            .fileName(fileName)
+            .categoryId("category-" + fileName)
+            .build();
+    }
+
+    private static UUID documentId(String fileName) {
+        return UUID.nameUUIDFromBytes(fileName.getBytes());
+    }
+
+    private static void assertSingleDocument(List<ListValue<Document>> documents, String fileName) {
+        assertThat(documents)
+            .singleElement()
+            .satisfies(listValue -> {
+                // Case File View resolves documents by ListValue id - it must be set (HDPI-7064)
+                assertThat(listValue.getId()).isEqualTo(documentId(fileName).toString());
+                Document document = listValue.getValue();
+                assertThat(document.getFilename()).isEqualTo(fileName);
+                assertThat(document.getUrl()).isEqualTo("http://dm-store/documents/" + fileName);
+                assertThat(document.getBinaryUrl()).isEqualTo("http://dm-store/documents/" + fileName + "/binary");
+                assertThat(document.getCategoryId()).isEqualTo("category-" + fileName);
+            });
+    }
 }

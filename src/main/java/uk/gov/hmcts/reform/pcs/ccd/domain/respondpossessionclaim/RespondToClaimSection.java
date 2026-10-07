@@ -1,0 +1,12 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
+
+public enum RespondToClaimSection {
+    START_NOW_AND_DETAILS,
+    PERSONAL_DETAILS,
+    DISPUTE_AND_TENANCY,
+    PAYMENTS,
+    SITUATION_AND_CIRCUMSTANCES,
+    INCOME_AND_EXPENDITURE,
+    UPLOAD_FILES,
+    CHECK_YOUR_ANSWERS_AND_SUBMIT
+}

@@ -16,9 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.UploadedDocumentChecklistType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimUploadedDocumentChecklistEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
@@ -27,13 +30,21 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -41,6 +52,10 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
+
+    private static final LocalDateTime TEST_UTC_DATE_TIME = LocalDate.of(2025, 8, 27)
+        .atTime(12, 51, 19);
+
 
     @Mock
     private ClaimRepository claimRepository;
@@ -58,6 +73,8 @@ class ClaimServiceTest {
     private StatementOfTruthService statementOfTruthService;
     @Mock
     private PCSCase pcsCase;
+    @Mock
+    private Clock utcClock;
 
     private ClaimService claimService;
 
@@ -65,7 +82,9 @@ class ClaimServiceTest {
     void setUp() {
         claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
                                         asbProhibitedConductService, rentArrearsService,
-                                        noticeOfPossessionService, statementOfTruthService);
+                                        noticeOfPossessionService, statementOfTruthService, utcClock);
+        lenient().when(claimRepository.save(any(ClaimEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
@@ -106,6 +125,19 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getPreActionProtocolIncompleteExplanation()).isEqualTo("explanation");
 
         verify(claimRepository).save(createdClaimEntity);
+    }
+
+    @Test
+    void shouldReturnSavedClaimEntity() {
+        // Given
+        ClaimEntity savedClaimEntity = mock(ClaimEntity.class);
+        when(claimRepository.save(any(ClaimEntity.class))).thenReturn(savedClaimEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity).isSameAs(savedClaimEntity);
     }
 
     @Test
@@ -239,7 +271,7 @@ class ClaimServiceTest {
     }
 
     @Test
-    void shouldNotSSetAsbProhibitedConductForNonWalesProperties() {
+    void shouldNotSetAsbProhibitedConductForNonWalesProperties() {
         // Given
         when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
 
@@ -249,6 +281,24 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isNull();
         verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(pcsCase);
+    }
+
+    @Test
+    void shouldNotSetWalesDocumentsForNonWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isNull();
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isNull();
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isNull();
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
+        verify(pcsCase, never()).getRequiredDocumentsWales();
     }
 
     @Test
@@ -293,6 +343,115 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getStatementOfTruth()).isEqualTo(statementOfTruthEntity);
     }
 
+    @Test
+    void shouldSetWalesDocuments() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(
+            WalesDocuments.builder()
+                .hasEnergyPerformanceCertificate(VerticalYesNo.NO)
+                .hasGasSafetyReport(VerticalYesNo.NO)
+                .hasElectricalInstallationConditionReport(VerticalYesNo.NO)
+                .noEpcReason("noEpcReason")
+                .noGasReportReason("noGasReportReason")
+                .noEicrReason("noEicrReason")
+                .build()
+        );
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.NO);
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason())
+            .isEqualTo("noEpcReason");
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isEqualTo("noGasReportReason");
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason())
+            .isEqualTo("noEicrReason");
+    }
+
+    @Test
+    void shouldSetNotWalesDocumentsReasonsIfUserHasDocuments() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getRequiredDocumentsWales()).thenReturn(
+            WalesDocuments.builder()
+                .hasEnergyPerformanceCertificate(VerticalYesNo.YES)
+                .hasGasSafetyReport(VerticalYesNo.YES)
+                .hasElectricalInstallationConditionReport(VerticalYesNo.YES)
+                .noEpcReason("noEpcReason")
+                .noGasReportReason("noGasReportReason")
+                .noEicrReason("noEicrReason")
+                .build()
+        );
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getEnergyPerformanceCertificateProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getGasSafetyReportProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getElectricalInstallationConditionProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(createdClaimEntity.getNoEnergyPerformanceCertificateReason()).isNull();
+        assertThat(createdClaimEntity.getNoGasSafetyReportReason()).isNull();
+        assertThat(createdClaimEntity.getNoElectricalInstallationConditionReason()).isNull();
+    }
+
+    @Test
+    void shouldPersistUploadedDocumentChecklistForWales() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getDocumentsYouveUploaded()).thenReturn(Set.of(
+            UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+            UploadedDocumentChecklistType.OCCUPATION_LICENCE
+        ));
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist())
+            .extracting(ClaimUploadedDocumentChecklistEntity::getDocumentType)
+            .containsExactlyInAnyOrder(
+                UploadedDocumentChecklistType.ENERGY_PERFORMANCE_CERTIFICATE,
+                UploadedDocumentChecklistType.OCCUPATION_LICENCE
+            );
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist())
+            .allSatisfy(item -> assertThat(item.getClaim()).isEqualTo(createdClaimEntity));
+    }
+
+    @Test
+    void shouldNotPersistUploadedDocumentChecklistWhenEmpty() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+        when(pcsCase.getDocumentsYouveUploaded()).thenReturn(Set.of());
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist()).isEmpty();
+    }
+
+    @Test
+    void shouldNotPersistUploadedDocumentChecklistForEngland() {
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        assertThat(createdClaimEntity.getUploadedDocumentChecklist()).isEmpty();
+        verify(pcsCase, never()).getDocumentsYouveUploaded();
+    }
+
+    @Test
+    void shouldSetClaimIssuedDate() {
+        // Given
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(utcClock.instant()).thenReturn(TEST_UTC_DATE_TIME.toInstant(ZoneOffset.UTC));
+        when(utcClock.getZone()).thenReturn(ZoneOffset.UTC);
+
+        // When
+        claimService.setClaimIssuedDate(claimEntity);
+        verify(claimRepository, times(1)).save(claimEntity);
+        assertThat(claimEntity.getClaimIssuedDate()).isEqualTo(TEST_UTC_DATE_TIME);
+    }
+    
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
             arguments(ClaimantType.PRIVATE_LANDLORD),

@@ -4,8 +4,17 @@ export const home =
     mainHeader: 'Case list',
     caseListTab: 'Case list',
     createCaseTab: 'Create case',
+    noticeOfChangeTab: 'Notice of change',
     findCaseTab: 'Find case',
+    findButton: 'Find',
+    caseReferenceSearchLabel: '16-digit case reference:',
     caseParties: 'Case Parties',
+    globalSearchTab: 'Search',
     caseNotes: 'Notes',
-    signOutButton: 'Sign out'
-  }
+    caseSummary: 'Summary',
+    caseDetails: 'Case Details',
+    caseFileView: 'Case File View',
+    caseFileFolders: ['Appeals','Applications','Orders and Notice of Hearings','Hearing documents','Property documents','Evidence','Statements of case','Correspondence','Uncategorised documents'],
+    caseListTableHeader: ['Case number','Date issued','Claimant names','Defendant names','Postcode','State'],
+    signOutButton: 'Sign out',
+  };

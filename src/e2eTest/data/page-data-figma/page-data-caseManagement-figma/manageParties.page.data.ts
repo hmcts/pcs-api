@@ -1,0 +1,17 @@
+export const manageParties = {
+  mainHeader: `Update, add or remove`,
+  whatChangeYouWantMakeQuestion: `What change do you want to make?`,
+  youMustHaveJudicialHintText: `You must have judicial approval to add or remove a party`,
+  updatePartyRadioOption: `Update party details`,
+  addPartyRadioOption: 'Add a party',
+  removePartyRadioOption: `Remove a party`,
+  removeLegalRepresentativeRadioOption: `Remove a legal representative`,
+  whichPartyContactInformationHiddenQuestion:`Which party's contact information needs to be updated?`,
+  ClaimantHiddenRadioOption: `Possession Claims Solicitor Org - Claimant 1`,
+  defendant1HiddenRadioOption: `John Doe - Defendant 1`,
+  defendant2HiddenRadioOption:`Peter Parker - Defendant 2`,
+  defendant3HiddenRadioOption:`Jen Parker - Defendant 3`,
+  continueButton: `Continue`,
+  previousButton: `Previous`,
+  cancelLink: `Cancel`,
+};

@@ -28,8 +28,9 @@ export class ActionGenAppsRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['deleteCaseRole', new CreateCaseAPIAction()],
+    ['updatePaymentAPI', new CreateCaseAPIAction()],
     ['getCaseAPI', new CreateCaseAPIAction()],
-    ['linkSolicitorAPI', new LinkSolicitorAPIAction()], 
+    ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['chooseAnApplication', new GenAppsAction()],
     ['confirmIfCourtHearingInNext14Days', new GenAppsAction()],
     ['doYouNeedHelpPayingFee', new GenAppsAction()],
@@ -47,7 +48,14 @@ export class ActionGenAppsRegistry {
     ['reviewAndUpdateCYA', new GenAppsAction()],
     ['getDefendantDetails', new GenAppsAction()],
     ['selectApplicant', new GenAppsAction()],
-   
+    ['confirmDocumentToUpload', new GenAppsAction()],
+    ['uploadFilesGenApps', new GenAppsAction()],
+    ['verifyApplicationSubmitted', new GenAppsAction()],
+    ['payClaimFeeGenApps', new GenAppsAction()],
+    ['clickPayNowLinkGenApps', new GenAppsAction()],
+    ['inputPaymentDetails', new GenAppsAction()],
+    ['selectPaymentOptions', new GenAppsAction()],
+    ['confirmPaymentGenApps', new GenAppsAction()],
   ]);
 
   static getAction(actionName: string): IAction {

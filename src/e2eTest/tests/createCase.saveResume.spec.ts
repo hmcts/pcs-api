@@ -197,13 +197,6 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('clickButton', checkYourAnswers.submitClaim);
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel],
-    )
   });
 
   test('England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
@@ -277,7 +270,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
-      day: '16', month: '07', year: '1985'
+      day: '16', month: '07', year: '1985', uploadNoticeQuestion: noticeDetails.areYouAbleToUploadQuestion, uploadNoticeOption: noticeDetails.noRadioOption
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {

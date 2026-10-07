@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClient;
@@ -28,8 +28,8 @@ import static uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus.PERMANENT_
 public class VerifyEmailTaskComponent {
     private static final String VERIFY_EMAIL_TASK_NAME = "verify-email-task";
 
-    public static final TaskDescriptor<EmailState> verifyEmailTask =
-        TaskDescriptor.of(VERIFY_EMAIL_TASK_NAME, EmailState.class);
+    public static final TaskDescriptor<SendEmailTaskData> verifyEmailTask =
+        TaskDescriptor.of(VERIFY_EMAIL_TASK_NAME, SendEmailTaskData.class);
 
     private final NotificationService notificationService;
     private final NotificationClient notificationClient;
@@ -63,42 +63,42 @@ public class VerifyEmailTaskComponent {
      * @return the custom task for verifying email delivery status
      */
     @Bean
-    public CustomTask<EmailState> verifyEmailTask() {
+    public CustomTask<SendEmailTaskData> verifyEmailTask() {
         return Tasks.custom(verifyEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesCheckEmail,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(statusCheckBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                EmailState emailState = taskInstance.getData();
-                log.info("Verifying email delivery for ID: {}", emailState.getNotificationId());
+                SendEmailTaskData taskData = taskInstance.getData();
+                log.info("Verifying email delivery for ID: {}", taskData.getNotificationId());
 
                 try {
-                    Notification notification = notificationClient.getNotificationById(emailState.getNotificationId());
+                    Notification notification = notificationClient.getNotificationById(taskData.getNotificationId());
 
                     if (Objects.equals(notification.getStatus().toLowerCase(), DELIVERED.toString())) {
                         notificationService.updateNotificationStatus(
-                            emailState.getDbNotificationId(),
+                            taskData.getDbNotificationId(),
                             notification.getStatus()
                         );
                     } else {
                         notificationService.updateNotificationStatus(
-                            emailState.getDbNotificationId(),
+                            taskData.getDbNotificationId(),
                             PERMANENT_FAILURE.toString()
                         );
                     }
 
                     String status = notification.getStatus();
                     if (DELIVERED.toString().equalsIgnoreCase(status)) {
-                        log.info("Email successfully delivered: {}", emailState.getId());
+                        log.info("Email successfully delivered: {}", taskData.getId());
                     } else {
-                        log.error("Failure with status: {} for task: {}", status, emailState.getId());
+                        log.error("Failure with status: {} for task: {}", status, taskData.getId());
                     }
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (NotificationClientException e) {
                     log.error("Failed to verify status due to API error", e);
 
-                    errorHandler.handleFetchException(e, emailState.getNotificationId());
+                    errorHandler.handleFetchException(e, taskData.getNotificationId());
                     return new CompletionHandler.OnCompleteRemove<>();
                 }
             });

@@ -35,6 +35,25 @@ This will start several containers:
 Once successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
+#### Local environment variables
+
+pcs-api reads configuration from the **process environment** (and Spring system properties). Values are wired in
+`src/main/resources/application.yaml` using the usual `${VAR_NAME:default}` pattern.
+
+A root `.env` file is **not** loaded automatically by Spring or by `./gradlew bootWithCCD`. To override local
+defaults, set variables in the same terminal session (or IDE run configuration) before starting the app, for
+example:
+
+```bash
+export SOME_VAR=value
+./gradlew bootWithCCD
+```
+
+**Only export the variables you intend to override.** A local `.env` can be a handy place to
+keep candidate values, but pcs-api will not read that file. If you export every variable
+from it into the shell (or IDE run config) before `bootWithCCD`, values such as
+`SERVER_PORT` can conflict with the managed local stack.
+
 By default, this runs with local instance of IDAM and
 S2S services. However sometimes it may be required to run
 with the AAT instances of those services, (for example when running both pcs-frontend and pcs-api locally).
@@ -51,7 +70,7 @@ with
 authMode = AuthMode.AAT
 ```
 
-Then set the following environment variables based on the value below or named secret
+Then set the following environment variables (as above) based on the value below or named secret
 from the PCS AAT key vault:
 
 | Environment Variable         | Value or Secret Name                                                         |
@@ -89,26 +108,79 @@ To access the swagger documentation for the API, go to http://localhost:3206/swa
 - Set the authentication mode to `AuthMode.AAT` as described above.
 
 #### Generating the CCD definition XLS
+
 We can generate the xlsx spreadsheet by running the script:
+
 ```
-./bin/create-xlsx.sh 
+./bin/create-xlsx.sh
 ```
-This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx 
+
+This spreadsheet can be found in: /build/definitions/CCD_Definition_PCS_ENVIRONMENT.xlsx
 
 You can specify which environment to generate the spreadsheet for by passing it in when calling the script. E.g ./bin/create-xlsx.sh preview.
 
-If you encounter the error: 
+If you encounter the error:
+
 ```
  [{"code":"UNAUTHORIZED","message":"authentication required,}]
 ```
+
 Run:
+
 ```
 az login
 ```
+
 ```
 - az acr login -n hmctsprod
 ```
 
+### Enabling work allocation for local Dev
+
+To enable work allocation for local dev, run:
+
+```
+docker compose -f docker-compose-wa.yml up -d
+```
+
+You may need to authenticate to the `hmctssandbox` and `hmctsprod` ACR repos first:
+
+```
+az acr login -n hmctssandbox
+az acr login -n hmctsprod
+```
+
+This will start a local Camunda instance, wa-workflow-api and wa-task-monitor.
+
+IMPORTANT: The Camunda container only uses an in-memory H2 DB for simplicity, so after (re-)starting
+it, it is necessary to upload the DMNs again:
+
+```
+cd /bin/wa
+./local-import-dmn-diagrams.sh
+```
+
+To trigger the task
+monitor to check for and configure any unconfigured Camunda tasks, make this request in your Rest
+client or with curl:
+
+```
+POST http://localhost:8077/monitor/tasks/jobs
+Headers:
+  ServiceAuthorization:Bearer {{s2s token for 'pcs_api'}}
+
+Payload:
+
+{
+    "job_details": {
+        "name": "INITIATION"
+    }
+}
+```
+
+Note that there seems to be a delay of a couple of seconds before a freshly submitted Camunda task
+is detected by the task monitor, so you may need to trigger the poll a second time if no Camunda tasks were picked
+up and configured as WA tasks.
 
 ### Running the tests
 
@@ -277,6 +349,34 @@ response for the possession claim fee:
   }
 }
 ```
+
+## Feature flags
+
+We use [LaunchDarkly](https://launchdarkly.com) for feature flags, so behaviour can be turned on or
+off per environment without a redeploy. Flags live in the `FeatureFlag` enum and are read through
+`FeatureToggleService`:
+
+```java
+if (featureToggle.isEnabled(FeatureFlag.BULK_PRINT)) {
+    // ...
+}
+```
+
+Each flag has a key matching the LaunchDarkly dashboard and a default served when LaunchDarkly can't
+be reached. The first flag is `bulk-print-enabled`. To add one, add a constant
+(`MY_FEATURE("my-feature-enabled", false)`) and create the matching flag in LaunchDarkly; to retire
+one, delete the constant and the compiler points you at every use.
+
+The SDK key comes from the key vault (`LAUNCHDARKLY_SDK_KEY`) and `LAUNCHDARKLY_ENV` sets the
+environment used for targeting.
+
+### Local Dev
+
+When running the pcs-api locally, set `LAUNCHDARKLY_OFFLINE` to `true` and optionally specify one or more files
+containing flags values to be used. This is set up by default for cftLibTest and bootWithCcd
+
+With no key the client runs offline and every flag uses its default,
+so it still runs locally; local and `cftlibTest` set `LAUNCHDARKLY_OFFLINE=true`.
 
 ## License
 

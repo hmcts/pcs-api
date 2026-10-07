@@ -1,0 +1,2 @@
+{ "request": { "method": "GET", "urlPath": "/payments/health" },
+  "response": { "status": 200, "headers": { "Content-Type": "application/json" }, "jsonBody": { "status": "UP" } } }

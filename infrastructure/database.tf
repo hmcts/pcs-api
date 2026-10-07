@@ -14,9 +14,8 @@ module "postgresql" {
     azurerm.postgres_network = azurerm.postgres_network
   }
 
-  source = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
-  env    = var.env
-
+  source        = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=DTSPO-30107-additional-postgres-admins"
+  env           = var.env
   product       = var.product
   component     = var.component
   name          = var.product
@@ -29,9 +28,20 @@ module "postgresql" {
       name : var.product
     }
   ]
+  pgsql_server_configuration = [
+    {
+      name  = "backslash_quote"
+      value = "on"
+    },
+    {
+      name  = "pg_qs.query_capture_mode"
+      value = "top"
+    }
+  ]
 
   pgsql_version        = var.pgsql_version
   admin_user_object_id = var.jenkins_AAD_objectId
+
 }
 
 # FlexibleServer v14 creds

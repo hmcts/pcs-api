@@ -1,0 +1,13 @@
+### Review Defendant response and counterclaim
+
+Review {{partyLabel}}’s response and counterclaim, check whether any
+further case action is required, and take the appropriate action before closing the task. Only mark the task as
+complete once the review is finished and any required action has been completed.
+
+#### Help with fees reference:
+
+{{hwfReference}}
+
+#### Fee amount:
+
+{{feeAmount | currency}}

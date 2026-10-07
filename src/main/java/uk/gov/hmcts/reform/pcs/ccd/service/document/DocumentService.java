@@ -4,11 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
+import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -18,22 +21,35 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UploadedDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.documentupload.CaseworkerDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.EvidenceOfDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.wales.LegalRepDocumentTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @AllArgsConstructor
@@ -42,19 +58,38 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentIdExtractor documentIdExtractor;
+    private final DocumentNameService documentNameService;
+    private final TaskDescriptionService taskDescriptionService;
+    private final CamundaService camundaService;
 
-    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+    private static final String CLAIMANT_1 = "Claimant 1";
+    private static final String DEFAULT_CATEGORY_ID = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
 
+    public List<DocumentEntity> buildDocumentEntitiesForCase(PCSCase pcsCase) {
         List<DocumentHolder> allDocuments = getPcsCaseDocuments(pcsCase);
 
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        if (allDocuments.isEmpty()) {
+            return List.of();
+        }
+
+        applyClaimFilename(allDocuments);
+
+        return createDocumentEntities(allDocuments);
+    }
+
+    /**
+     * Convenience wrapper that builds and persists document entities for a {@link PCSCase}.
+     * Production code uses {@link #buildDocumentEntitiesForCase(PCSCase)} directly; this overload
+     * remains for tests and callers that need persisted entities in one step.
+     */
+    public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
+        return documentRepository.saveAll(buildDocumentEntitiesForCase(pcsCase));
     }
 
     public List<DocumentEntity> createAllDocuments(EnforcementOrder enforcementOrder) {
-
-        List<DocumentHolder> allDocuments = getWarrantOfRestitutionDocuments(enforcementOrder);
-
-        return documentRepository.saveAll(createDocumentEntities(allDocuments));
+        return documentRepository.saveAll(
+            createDocumentEntities(getWarrantOfRestitutionDocuments(enforcementOrder))
+        );
     }
 
     private List<DocumentHolder> getPcsCaseDocuments(PCSCase pcsCase) {
@@ -70,7 +105,7 @@ public class DocumentService {
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
                     .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                    .orElse(null), DocumentType.TENANCY_LICENCE));
+                    .orElse(null), DocumentType.TENANCY_AGREEMENT));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
@@ -79,8 +114,23 @@ public class DocumentService {
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                    .map(NoticeServedDetails::getNoticeDocuments)
-                    .orElse(null), DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION));
+                    .map(NoticeServedDetails::getDocuments)
+                    .orElse(null), DocumentType.POSSESSION_NOTICE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getEnergyPerformance)
+                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getGasSafetyReport)
+                .orElse(null), DocumentType.GAS_SAFETY_CERTIFICATE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
+                .map(WalesDocuments::getElectricalInstallation)
+                .orElse(null), DocumentType.EICR_REPORT));
 
         return allDocuments;
     }
@@ -119,7 +169,8 @@ public class DocumentService {
         return ListValueUtils.unwrapListItems(documents).stream()
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
-                .type(mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType()))
+                .type(mapAdditionalDocumentTypeToDocumentType(
+                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
                 .description(doc.getDescription())
                 .build())
             .toList();
@@ -144,29 +195,40 @@ public class DocumentService {
     private List<DocumentEntity> createDocumentEntities(
             List<DocumentHolder> documents) {
 
-        if (CollectionUtils.isEmpty(documents)) {
-            return List.of();
-        }
-
         return documents.stream()
                 .map(holder -> DocumentEntity.builder()
                         .url(holder.getDocument().getUrl())
                         .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
                         .fileName(holder.getDocument().getFilename())
                         .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(mapDocumentTypeToCategory(holder.getType())
-                                        .map(CaseFileCategory::getId)
-                                        .orElse(null))
+                        .categoryId(categoryIdFor(holder.getType()))
                         .type(holder.getType())
                         .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
                         .build())
                 .toList();
     }
 
-    private DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+    private void applyClaimFilename(List<DocumentHolder> allDocuments) {
+        allDocuments.forEach(dh -> {
+            String uploadedFilename = dh.getDocument().getFilename();
+            dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
+                    + "." + FilenameUtils.getExtension(uploadedFilename));
+        });
+
+    }
+
+    public DocumentType mapAdditionalDocumentTypeToDocumentType(AdditionalDocumentType additionalType) {
+        if (additionalType == null) {
+            return null;
+        }
+
         return switch (additionalType) {
             case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
             case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
+            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
+            case EICR_REPORT -> DocumentType.EICR_REPORT;
             case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
             case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
             case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
@@ -181,6 +243,88 @@ public class DocumentService {
         };
     }
 
+    public List<DocumentEntity> linkAdditionalDocumentsToCase(
+        List<ListValue<UploadedDocument>> uploadedDocuments,
+        PcsCaseEntity pcsCase,
+        PartyEntity party,
+        GenAppEntity selectedGenApp
+    ) {
+        long caseReference = pcsCase.getCaseReference();
+
+        if (CollectionUtils.isEmpty(uploadedDocuments)) {
+            log.info("No additional documents to save for case {}", caseReference);
+            return Collections.emptyList();
+        }
+
+        Set<String> existingUrls = pcsCase.getDocuments().stream()
+            .map(DocumentEntity::getUrl)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+        ClaimEntity mainClaim = getMainClaim(pcsCase);
+        List<DocumentEntity> documentEntities = uploadedDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .filter(uploaded -> uploaded.getDocument() != null)
+            .filter(uploaded -> !existingUrls.contains(uploaded.getDocument().getUrl()))
+            .map(uploaded -> {
+                String originalFilename = uploaded.getDocument().getFilename();
+                String renamed = (selectedGenApp != null)
+                    ? documentNameService.appendGenAppPostfix(
+                        originalFilename, selectedGenApp, mainClaim, party.getId())
+                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .generalApplication(selectedGenApp)
+                    .url(uploaded.getDocument().getUrl())
+                    .fileName(renamed)
+                    .binaryUrl(uploaded.getDocument().getBinaryUrl())
+                    .contentType(uploaded.getContentType())
+                    .size(uploaded.getSizeInBytes())
+                    .type(DocumentType.OTHER)
+                    .categoryId(selectedGenApp != null ? CaseFileCategory.APPLICATIONS.getId() : DEFAULT_CATEGORY_ID)
+                    .build();
+            })
+            .toList();
+
+        if (documentEntities.isEmpty()) {
+            log.info("All additional documents for case {} already persisted; nothing to save", caseReference);
+            return Collections.emptyList();
+        }
+
+        if (selectedGenApp != null) {
+            String description = taskDescriptionService.createGenAppAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                selectedGenApp,
+                documentEntities
+            );
+
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_GEN_APP, description);
+        } else {
+            String description = taskDescriptionService.createClaimAdditionalDocumentsDescription(
+                caseReference,
+                mainClaim,
+                party,
+                documentEntities
+            );
+            camundaService.createTask(caseReference, TaskType.REVIEW_ADDITIONAL_DOCS_CLAIM, description);
+        }
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+        log.info("Saved {} additional documents for case {} and party {}",
+                 saved.size(), caseReference, party.getId());
+        return saved;
+    }
+
+    private static ClaimEntity getMainClaim(PcsCaseEntity pcsCase) {
+        return pcsCase.getClaims().stream()
+            .findFirst()
+            .orElseThrow(() -> new ClaimNotFoundException(pcsCase.getCaseReference()));
+    }
+
     public List<DocumentEntity> createDefendantUploadedDocuments(
         List<ListValue<UploadedDocument>> defendantDocuments,
         DefendantResponseEntity defendantResponse,
@@ -192,19 +336,32 @@ public class DocumentService {
             return Collections.emptyList();
         }
 
+        if (pcsCase.getClaims().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ClaimEntity mainClaim = pcsCase.getClaims().getFirst();
+
         List<DocumentEntity> documentEntities = defendantDocuments.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(defDoc -> DocumentEntity.builder()
-                .pcsCase(pcsCase)
-                .party(party)
-                .defendantResponse(defendantResponse)
-                .url(defDoc.getDocument().getUrl())
-                .fileName(defDoc.getDocument().getFilename())
-                .binaryUrl(defDoc.getDocument().getBinaryUrl())
-                .contentType(defDoc.getContentType())
-                .size(defDoc.getSizeInBytes())
-                .build())
+            .map(defDoc -> {
+                String originalFilename = defDoc.getDocument().getFilename();
+                String updatedFilename = documentNameService
+                    .appendDefendantPostfix(originalFilename, mainClaim, party.getId());
+
+                return DocumentEntity.builder()
+                    .pcsCase(pcsCase)
+                    .party(party)
+                    .defendantResponse(defendantResponse)
+                    .url(defDoc.getDocument().getUrl())
+                    .fileName(updatedFilename)
+                    .binaryUrl(defDoc.getDocument().getBinaryUrl())
+                    .contentType(defDoc.getContentType())
+                    .size(defDoc.getSizeInBytes())
+                    .categoryId(DEFAULT_CATEGORY_ID)
+                    .build();
+            })
             .toList();
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
@@ -215,31 +372,138 @@ public class DocumentService {
         return saved;
     }
 
-    private Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
+    public List<DocumentEntity> createCounterClaimUploadedDocuments(
+        List<ListValue<UploadedDocument>> counterClaimDocuments,
+        CounterClaimEntity counterClaim,
+        PcsCaseEntity pcsCase,
+        PartyEntity party
+    ) {
+        if (CollectionUtils.isEmpty(counterClaimDocuments)) {
+            log.info("No counter claim documents to save");
+            return Collections.emptyList();
+        }
+
+        ClaimEntity claim = pcsCase.getClaims().getFirst();
+
+        List<DocumentEntity> documentEntities = counterClaimDocuments.stream()
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(ccDoc -> DocumentEntity.builder()
+                .pcsCase(pcsCase)
+                .party(party)
+                .counterClaim(counterClaim)
+                .url(ccDoc.getDocument().getUrl())
+                .fileName(documentNameService.appendCounterClaimPostfix(
+                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                .binaryUrl(ccDoc.getDocument().getBinaryUrl())
+                .contentType(ccDoc.getContentType())
+                .size(ccDoc.getSizeInBytes())
+                .type(DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM)
+                .categoryId(CaseFileCategory.STATEMENTS_OF_CASE.getId())
+                .build())
+            .toList();
+
+        List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
+
+        log.info("Saved {} counter claim documents for counter claim {}",
+            saved.size(), counterClaim.getId());
+
+        return saved;
+    }
+
+    public Optional<CaseFileCategory> mapDocumentTypeToCategory(DocumentType documentType) {
+        if (documentType == null) {
+            return Optional.empty();
+        }
+
         return switch (documentType) {
-            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION ->
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION,
+                 CLAIM,
+                 DEFENDANT_RESPONSE,
+                 AMENDED_CLAIM_FORM,
+                 PART_20_COUNTERCLAIM,
+                 COUNTERCLAIM ->
                 Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
                  OCCUPATION_LICENCE,
+                 ENERGY_PERFORMANCE_CERTIFICATE,
+                 GAS_SAFETY_CERTIFICATE,
+                 GAS_SAFETY_REPORT,
+                 ELECTRICAL_INSTALLATION_CONDITION,
+                 EICR_REPORT,
                  POSSESSION_NOTICE ->
                 Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
-                 CORRESPONDENCE_FROM_DEFENDANT,
-                 CORRESPONDENCE_FROM_CLAIMANT,
+                 CORRESPONDENCE_BETWEEN_PARTIES,
                  PHOTOGRAPHIC_EVIDENCE,
                  INSPECTION_OR_REPORT ->
                 Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
+                 CORRESPONDENCE_FROM_DEFENDANT,
+                 CORRESPONDENCE_FROM_CLAIMANT,
                  LEGAL_AID_CERTIFICATE ->
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
+            case NOTICE_OF_HEARING,
+                WITH_NOTICE_ORDER,
+                WITHOUT_NOTICE_ORDER,
+                NOTICE_OF_ALLOCATION_TO_TRACK ->
+                Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+            case GENERAL_APPLICATION ->
+                Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
+                 // Defendant access-code letters aren't shown on the case file
+                 DEFENDANT_ACCESS_CODE,
+                 DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
                  OTHER ->
                 Optional.empty();
         };
+    }
+
+    public String categoryIdForDocumentType(DocumentType documentType) {
+        return categoryIdFor(documentType);
+    }
+
+    public DocumentType mapCaseworkerDocumentTypeToDocumentType(CaseworkerDocumentType caseworkerDocumentType) {
+        if (caseworkerDocumentType == null) {
+            return null;
+        }
+
+        return switch (caseworkerDocumentType) {
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case CERTIFICATE_OF_SERVICE -> DocumentType.CERTIFICATE_OF_SERVICE;
+            case ENERGY_PERFORMANCE_CERTIFICATE -> DocumentType.ENERGY_PERFORMANCE_CERTIFICATE;
+            case GAS_SAFETY_CERTIFICATE -> DocumentType.GAS_SAFETY_CERTIFICATE;
+            case EICR_REPORT -> DocumentType.EICR_REPORT;
+            case CORRESPONDENCE_BETWEEN_PARTIES -> DocumentType.CORRESPONDENCE_BETWEEN_PARTIES;
+            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
+            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
+            case POSSESSION_NOTICE -> DocumentType.POSSESSION_NOTICE;
+            case NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION -> DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case INSPECTION_OR_REPORT -> DocumentType.INSPECTION_OR_REPORT;
+            case AMENDED_CLAIM_FORM -> DocumentType.AMENDED_CLAIM_FORM;
+            case PART_20_COUNTERCLAIM -> DocumentType.PART_20_COUNTERCLAIM;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
+            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case NOTICE_OF_HEARING -> DocumentType.NOTICE_OF_HEARING;
+            case WITH_NOTICE_ORDER -> DocumentType.WITH_NOTICE_ORDER;
+            case WITHOUT_NOTICE_ORDER -> DocumentType.WITHOUT_NOTICE_ORDER;
+            case NOTICE_OF_ALLOCATION_TO_TRACK -> DocumentType.NOTICE_OF_ALLOCATION_TO_TRACK;
+            case OTHER -> DocumentType.OTHER;
+        };
+    }
+
+    private String categoryIdFor(DocumentType documentType) {
+        return mapDocumentTypeToCategory(documentType)
+            .map(CaseFileCategory::getId)
+            .orElse(DEFAULT_CATEGORY_ID);
     }
 
     private DocumentType mapEvidenceDocumentTypeToDocumentType(EvidenceDocumentType evidenceDocumentType) {
@@ -251,11 +515,97 @@ public class DocumentService {
         };
     }
 
+    private DocumentType mapLegalRepDocumentTypeToDocumentType(LegalRepDocumentType legalRepDocumentType) {
+        return switch (legalRepDocumentType) {
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
+            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
+            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
+            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case OTHER -> DocumentType.OTHER;
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+        };
+    }
+
+    private DocumentType mapLegalRepDocumentTypeToDocumentType(LegalRepDocumentTypeWales legalRepDocumentTypeWales) {
+        return switch (legalRepDocumentTypeWales) {
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case OCCUPATION_LICENCE -> DocumentType.OCCUPATION_LICENCE;
+            case CORRESPONDENCE_FROM_CLAIMANT -> DocumentType.CORRESPONDENCE_FROM_CLAIMANT;
+            case CORRESPONDENCE_FROM_DEFENDANT -> DocumentType.CORRESPONDENCE_FROM_DEFENDANT;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+            case CERTIFICATE_OF_SUITABILITY_AS_LF -> DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF;
+            case LEGAL_AID_CERTIFICATE -> DocumentType.LEGAL_AID_CERTIFICATE;
+            case OTHER -> DocumentType.OTHER;
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+        };
+    }
+
     @Builder
     @Data
     private static class DocumentHolder {
         private Document document;
         private DocumentType type;
         private String description;
+    }
+
+    public List<LegalRepDocument> createLegalRepDocuments(PCSCase pcsCase) {
+        LegalRepDocumentUploadDetails legalRepDocumentUploadDetails = pcsCase.getLegalRepDocumentUploadDetails();
+
+        return legalRepDocumentUploadDetails.getLegalRepDocuments().stream()
+            .map(ListValue::getValue).toList();
+    }
+
+    public DocumentType resolveDocumentType(LegalRepDocument legalRepDoc) {
+        if (legalRepDoc.getLegalRepDocumentTypeWales() != null) {
+            return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentTypeWales());
+        }
+        return mapLegalRepDocumentTypeToDocumentType(legalRepDoc.getLegalRepDocumentType());
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        GenAppEntity selectedGenApp
+    ) {
+        List<DocumentEntity> documentEntities = legalRepDocuments.stream()
+            .map(legalRepDoc -> {
+
+                DocumentType resolvedDocumentType = resolveDocumentType(legalRepDoc);
+
+                String categoryId = mapDocumentTypeToCategory(resolvedDocumentType)
+                    .map(CaseFileCategory::getId)
+                    .orElse(null);
+
+                ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+
+                String documentUrl = legalRepDoc.getDocument().getUrl();
+                String originalFilename = legalRepDoc.getDocument().getFilename();
+                String renamed = (selectedGenApp != null)
+                    ? documentNameService.appendGenAppPostfix(
+                    originalFilename, selectedGenApp, mainClaim, party.getId())
+                    : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
+
+                return DocumentEntity.builder()
+                .pcsCase(pcsCaseEntity)
+                .url(documentUrl)
+                .documentId(documentIdExtractor.extractDocumentId(documentUrl))
+                .generalApplication(selectedGenApp)
+                .fileName(renamed)
+                .party(party)
+                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                .contentType(legalRepDoc.getContentType())
+                .size(legalRepDoc.getSizeInBytes())
+                .description(legalRepDoc.getDescription())
+                .type(resolvedDocumentType)
+                .categoryId(categoryId)
+                .build();
+            })
+            .toList();
+
+        pcsCaseEntity.addDocuments(documentEntities);
     }
 }

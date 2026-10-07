@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
+import uk.gov.hmcts.reform.pcs.notify.model.SendEmailTaskData;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
@@ -37,8 +37,8 @@ import static uk.gov.hmcts.reform.pcs.notify.task.VerifyEmailTaskComponent.verif
 public class SendEmailTaskComponent {
     private static final String SEND_EMAIL_TASK_NAME = "send-email-task";
 
-    public static final TaskDescriptor<EmailState> sendEmailTask =
-        TaskDescriptor.of(SEND_EMAIL_TASK_NAME, EmailState.class);
+    public static final TaskDescriptor<SendEmailTaskData> sendEmailTask =
+        TaskDescriptor.of(SEND_EMAIL_TASK_NAME, SendEmailTaskData.class);
 
     private final NotificationService notificationService;
     private final NotificationClient notificationClient;
@@ -80,30 +80,30 @@ public class SendEmailTaskComponent {
      * @return the custom task for sending email notifications
      */
     @Bean
-    public CustomTask<EmailState> sendEmailTask() {
+    public CustomTask<SendEmailTaskData> sendEmailTask() {
         return Tasks.custom(sendEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesSendEmail,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(sendingBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                EmailState emailState = taskInstance.getData();
+                SendEmailTaskData taskData = taskInstance.getData();
                 log.info("Processing send email task: {} with DB notification ID: {}",
-                         emailState.getId(), emailState.getDbNotificationId());
+                         taskData.getId(), taskData.getDbNotificationId());
 
                 Optional<CaseNotification> notificationOpt = notificationRepository.findById(
-                    emailState.getDbNotificationId());
+                    taskData.getDbNotificationId());
                 if (notificationOpt.isEmpty()) {
-                    log.error("Notification not found with ID: {}", emailState.getDbNotificationId());
+                    log.error("Notification not found with ID: {}", taskData.getDbNotificationId());
                     return new CompletionHandler.OnCompleteRemove<>();
                 }
 
                 CaseNotification caseNotification = notificationOpt.get();
 
                 try {
-                    final String templateId = emailState.getTemplateId();
-                    final String destinationAddress = emailState.getEmailAddress();
-                    final Map<String, Object> personalisation = emailState.getPersonalisation();
+                    final String templateId = taskData.getTemplateId();
+                    final String destinationAddress = taskData.getEmailAddress();
+                    final Map<String, Object> personalisation = taskData.getPersonalisation();
                     final String referenceId = UUID.randomUUID().toString();
 
                     SendEmailResponse response = notificationClient.sendEmail(
@@ -114,21 +114,21 @@ public class SendEmailTaskComponent {
                     );
 
                     if (response.getNotificationId() == null) {
-                        log.error("Email service returned null notification ID for task: {}", emailState.getId());
+                        log.error("Email service returned null notification ID for task: {}", taskData.getId());
                         throw new PermanentNotificationException("Null notification ID from email service",
                                                                     new IllegalStateException(
                                                                         "Email service returned null notification ID"));
                     }
 
                     notificationService.updateNotificationAfterSending(
-                        emailState.getDbNotificationId(),
+                        taskData.getDbNotificationId(),
                         response.getNotificationId()
                     );
 
                     String notificationId = response.getNotificationId().toString();
                     log.info("Request sent successfully. Notification ID: {}", notificationId);
 
-                    EmailState nextState = emailState.toBuilder()
+                    SendEmailTaskData nextState = taskData.toBuilder()
                         .notificationId(notificationId)
                         .build();
 
@@ -161,7 +161,7 @@ public class SendEmailTaskComponent {
 
     private void updateNotificationFromStatusUpdate(NotificationStatusUpdate statusUpdate) {
         notificationService.updateNotificationStatus(
-            statusUpdate.notification().getNotificationId(),
+            statusUpdate.notification().getId(),
             statusUpdate.status().toString()
         );
     }

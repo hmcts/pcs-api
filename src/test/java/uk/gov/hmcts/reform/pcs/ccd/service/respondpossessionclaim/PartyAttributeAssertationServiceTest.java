@@ -135,12 +135,14 @@ class PartyAttributeAssertationServiceTest {
     }
 
     @Test
-    void shouldSaveAddressWhenCorrespondenceAddressFreshEntryPath() {
+    void shouldSaveAddressAssertionWhenPropertyAddressFallbackScenarioIsUsed() {
         AddressUK address = AddressUK.builder().addressLine1("1 High St").postCode("SW1A 1AA").build();
         Party party = Party.builder().address(address).build();
-        PossessionClaimResponse response =  PossessionClaimResponse.builder()
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
-            .defendantResponses(DefendantResponses.builder().correspondenceAddressConfirmation(null).build())
+            .defendantResponses(DefendantResponses.builder()
+                .propertyAddressConfirmation(VerticalYesNo.YES)
+                .build())
             .build();
 
         underTest.buildPartyAttributeEntities(response, partyEntity);

@@ -7,6 +7,5 @@ public enum StatementOfTruthCompletedBy {
   @CCD(label = "Claimant") CLAIMANT,
 
   @CCD(label = "Claimant’s legal representative (as defined by CPR 2.3 (1))")
-  LEGAL_REPRESENTATIVE
-
+  LEGAL_REPRESENTATIVE,
 }

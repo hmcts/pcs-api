@@ -1,5 +1,5 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
-import {chromium} from '@playwright/test';
+import {chromium, expect} from '@playwright/test';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -21,11 +21,13 @@ function applyPlaywrightServiceUrls(): void {
     process.env.IDAM_TESTING_SUPPORT_URL ||= `https://idam-testing-support-api.${e}.platform.hmcts.net`;
     process.env.S2S_URL ||= `http://rpe-service-auth-provider-${e}.service.core-compute-${e}.internal/testing-support/lease`;
     process.env.CASE_API_URL ||= `http://pcs-api-${e}.service.core-compute-${e}.internal`;
+    process.env.DM_STORE ||= `http://dm-store-${e}.service.core-compute-${e}.internal`;
   } else {
     // preview, empty ENVIRONMENT, etc.: AAT IdAM/S2S (same as Jenkinsfile_CNP defaults). MANAGE_CASE / data-store from Jenkins or exports.
     process.env.IDAM_WEB_URL ||= 'https://idam-api.aat.platform.hmcts.net';
     process.env.IDAM_TESTING_SUPPORT_URL ||= 'https://idam-testing-support-api.aat.platform.hmcts.net';
     process.env.S2S_URL ||= 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease';
+    process.env.DM_STORE ||= `http://dm-store-aat.service.core-compute-aat.internal`
   }
 }
 
@@ -60,12 +62,15 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await dismissCookieBanner(page, 'additional');
 
-    await page.waitForSelector('#username', { timeout: LONG_TIMEOUT });
-    await page.locator('#username').fill(user.claimantSolicitor.email);
+    await page.waitForSelector('#email', { timeout: LONG_TIMEOUT });
+    await page.locator('#email').fill(user.claimantSolicitor.email);
+    await page.getByRole('button', { name: 'Continue' }).click(); 
+    const pwdHeader = page.getByLabel('Enter your password', { exact: true });
+    await expect(pwdHeader).toBeVisible({ timeout: LONG_TIMEOUT });
     await page.locator('#password').fill(user.claimantSolicitor.password);
-    await page.locator('#login-submit-btn').click();
+    await page.getByRole('button', { name: 'Continue' }).click(); 
 
-    await page.waitForURL((url) => !url.href.includes('/login'), { timeout: LONG_TIMEOUT });
+    await page.waitForURL((url) => !url.href.includes('/enter-password'), { timeout: LONG_TIMEOUT });
 
     await page.waitForLoadState('load');
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,15 +26,18 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.notify.listener.CounterClaimEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -45,6 +50,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(CounterClaimEntityListener.class)
 public class CounterClaimEntity {
 
     @Id
@@ -99,7 +105,8 @@ public class CounterClaimEntity {
 
     private String hwfReferenceNumber;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private CounterClaimState status;
 
     private LocalDateTime claimSubmittedDate;
 
@@ -115,4 +122,17 @@ public class CounterClaimEntity {
     @Builder.Default
     private List<CounterClaimPartyEntity> counterClaimParties = new ArrayList<>();
 
+    @Transient
+    private CounterClaimState previousStatus;
+
+    public Optional<DefendantResponseEntity> findAssociatedDefendantResponse() {
+        if (party == null || pcsCase == null || pcsCase.getDefendantResponses() == null) {
+            return Optional.empty();
+        }
+        UUID partyId = party.getId();
+        return pcsCase.getDefendantResponses().stream()
+            .filter(response -> response.getParty() != null
+                && partyId.equals(response.getParty().getId()))
+            .findFirst();
+    }
 }

@@ -14,6 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
+
 @Component
 @Slf4j
 @AllArgsConstructor
@@ -25,13 +33,15 @@ public class CreateCaseLink implements CCDConfig<PCSCase, State, UserRole> {
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.createCaseLink.name(), this::submit)
-                            .forStates(State.PENDING_CASE_ISSUED, State.CASE_ISSUED)
+                            .forStates(EventStates.createCaseLink())
                             .name("Link cases")
                             .description("To link related cases")
-                            .grant(Permission.R, UserRole.PCS_CASE_WORKER)
-                            .grant(Permission.CRU, UserRole.PCS_SOLICITOR))
+                            .grant(Permission.CRU, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER,
+                                   CTSC_ADMIN, CTSC_TEAM_LEADER, WLU_ADMIN, WLU_TEAM_LEADER)
+                            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES))
             .page("createCaseLink")
-            .pageLabel("Case Link")
+            .pageLabel("Link cases")
+            .label("createCaseLink-lineSeparator", "---")
             .optional(PCSCase::getCaseLinks,"LinkedCasesComponentLauncher = \"DONOTSHOW\"",null,true)
             .optional(PCSCase::getLinkedCasesComponentLauncher,
                       null,null,null,null,"#ARGUMENT(CREATE,LinkedCases)");

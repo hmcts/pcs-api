@@ -34,6 +34,11 @@ class MaintainLinkCaseTest extends BaseEventTest {
     }
 
     @Test
+    void shouldBeConfiguredForEventStates() {
+        assertConfiguredForStates(EventStates.maintainCaseLink());
+    }
+
+    @Test
     void shouldModifyCaseLinksInSubmitCallback() {
         // Given
         CaseLink caseLink = CaseLink.builder().build();

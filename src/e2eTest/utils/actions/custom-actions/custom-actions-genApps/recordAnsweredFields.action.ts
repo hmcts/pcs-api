@@ -88,6 +88,32 @@ export class RecordAnswers implements IAction {
 
     recordIfPresent('question', 'option');
     recordIfPresent('label', 'input');
+
+    for (let i = 1; ; i++) {
+      const labelKey = `label${i}` as keyof typeof fields;
+      const inputKey = `input${i}` as keyof typeof fields;
+      const questionKey = `question${i}` as keyof typeof fields;
+      const optionKey = `option${i}` as keyof typeof fields;
+
+      const noLabel = !(labelKey in fields);
+      const noInput = !(inputKey in fields);
+      const noQuestion = !(questionKey in fields);
+      const noOption = !(optionKey in fields);
+
+      if (noLabel && noInput && noQuestion && noOption) {
+        break;
+      }
+
+      if (!noLabel && !noInput) {
+        recordIfPresent(labelKey as string, inputKey as string);
+      }
+
+      if (!noQuestion && !noOption) {
+        recordIfPresent(questionKey as string, optionKey as string);
+      }
+
+
+    }
   }
 
   private normalizeValueData(value: actionData): string {

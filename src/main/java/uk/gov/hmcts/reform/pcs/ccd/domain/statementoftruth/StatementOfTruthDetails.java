@@ -45,6 +45,12 @@ public class StatementOfTruthDetails {
     protected List<AgreementClaimantLegalRep> agreementClaimantLegalRep;
 
     @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AgreementDefendantLegalRep"
+    )
+    protected List<AgreementDefendantLegalRep> agreementDefendantLegalRep;
+
+    @CCD(
         label = "Full name",
         max = 100
     )

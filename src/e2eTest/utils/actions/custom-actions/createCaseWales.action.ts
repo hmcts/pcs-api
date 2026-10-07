@@ -5,9 +5,10 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {
   // migration (page-data → page-data-figma)
   contactPreferences,
+  documentsYouVeUploadedCheckListWales,
   exemptLandlord,
   occupationLicenceDetailsWales,
-  prohibitedConductWales
+  prohibitedConductWales,
 } from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
@@ -17,7 +18,9 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
-      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)]
+      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)],
+      ['requiredDocumentsUpload', () => this.requiredDocumentsUpload(fieldName as actionRecord)],
+      ['selectDocumentsYouVeUploadedCheckList', () => this.selectDocumentsYouVeUploadedCheckList(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -96,5 +99,41 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
     }
     await performAction('clickButton', asbQuestionsWales.continueButton);
+  }
+
+  private async requiredDocumentsUpload(reqDocs: actionRecord){
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: reqDocs.question,
+      option: reqDocs.option
+    });
+    if (reqDocs.option === 'Yes') {
+      await performAction('uploadFile', reqDocs.file);
+    } else {
+      await performAction('inputText', reqDocs.label, reqDocs.input);
+    }   
+
+  }
+
+  private async selectDocumentsYouVeUploadedCheckList(documents: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+
+    if (Array.isArray(documents.uploadedDocuments)) {
+      for (const document of documents.uploadedDocuments) {
+        await performAction('check', { label: document });
+      }
+    } else {
+      throw new Error('uploadedDocuments must be an array');
+    }
+
+    await performAction('clickButton', documentsYouVeUploadedCheckListWales.continueButton);
   }
 }

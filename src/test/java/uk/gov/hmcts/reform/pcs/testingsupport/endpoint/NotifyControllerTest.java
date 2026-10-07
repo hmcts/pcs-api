@@ -11,10 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.PaymentAgreementEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
-import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
+import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -26,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,9 @@ class NotifyControllerTest {
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
 
+    @Mock
+    private FeePaymentRepository feePaymentRepository;
+
     private NotifyController notifyController;
 
     private static final String AUTH_HEADER = "Bearer test-token";
@@ -52,208 +56,7 @@ class NotifyControllerTest {
 
     @BeforeEach
     void setUp() {
-        notifyController = new NotifyController(notificationService, defendantResponseRepository);
-    }
-
-    @Nested
-    @DisplayName("Send Email Tests")
-    class SendEmailTests {
-
-        @Test
-        @DisplayName("Should successfully schedule email notification")
-        void shouldSuccessfullyScheduleEmailNotification() {
-            EmailNotificationRequest request = createValidEmailRequest();
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getTaskId()).isEqualTo(TASK_ID);
-            assertThat(response.getBody().getStatus()).isEqualTo(SCHEDULED_STATUS);
-
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should handle minimal email request")
-        void shouldHandleMinimalEmailRequest() {
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL)
-                .templateId(TEMPLATE_ID)
-                .build();
-
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should handle email request with personalisation")
-        void shouldHandleEmailRequestWithPersonalisation() {
-            Map<String, Object> personalisation = new HashMap<>();
-            personalisation.put("firstName", "John");
-            personalisation.put("lastName", "Doe");
-            personalisation.put("caseReference", "CASE-123");
-
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL)
-                .templateId(TEMPLATE_ID)
-                .personalisation(personalisation)
-                .reference("REF-789")
-                .emailReplyToId("reply-to-123")
-                .build();
-
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody().getTaskId()).isEqualTo(TASK_ID);
-
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should use default authorization header when not provided")
-        void shouldUseDefaultAuthorizationHeaderWhenNotProvided() {
-            EmailNotificationRequest request = createValidEmailRequest();
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                "DummyId", SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should return internal server error when service throws exception")
-        void shouldReturnInternalServerErrorWhenServiceThrowsException() {
-            EmailNotificationRequest request = createValidEmailRequest();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenThrow(new NotificationException("Database error", new RuntimeException()));
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-            assertThat(response.getBody()).isNull();
-
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should return internal server error when service throws runtime exception")
-        void shouldReturnInternalServerErrorWhenServiceThrowsRuntimeException() {
-            EmailNotificationRequest request = createValidEmailRequest();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenThrow(new RuntimeException("Unexpected error"));
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
-            assertThat(response.getBody()).isNull();
-
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should handle empty personalisation map")
-        void shouldHandleEmptyPersonalisationMap() {
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL)
-                .templateId(TEMPLATE_ID)
-                .personalisation(new HashMap<>())
-                .build();
-
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should handle personalisation with different data types")
-        void shouldHandlePersonalisationWithDifferentDataTypes() {
-            Map<String, Object> personalisation = new HashMap<>();
-            personalisation.put("stringValue", "test");
-            personalisation.put("intValue", 123);
-            personalisation.put("booleanValue", true);
-            personalisation.put("doubleValue", 45.67);
-
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL)
-                .templateId(TEMPLATE_ID)
-                .personalisation(personalisation)
-                .build();
-
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
-
-        @Test
-        @DisplayName("Should handle null reference and reply-to ID")
-        void shouldHandleNullReferenceAndReplyToId() {
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL)
-                .templateId(TEMPLATE_ID)
-                .reference(null)
-                .emailReplyToId(null)
-                .build();
-
-            EmailNotificationResponse expectedResponse = createEmailResponse();
-
-            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class), any(UUID.class)))
-                .thenReturn(expectedResponse);
-
-            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
-                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-            assertThat(response.getBody()).isNotNull();
-            verify(notificationService).scheduleEmailNotification(eq(request), any(UUID.class));
-        }
+        notifyController = new NotifyController(notificationService, defendantResponseRepository, feePaymentRepository);
     }
 
     @Nested
@@ -263,6 +66,7 @@ class NotifyControllerTest {
         @DisplayName("Should return all email responses when defendant response exists")
         void shouldReturnAllEmailResponsesWhenDefendantResponseExists() {
             PartyEntity party = new PartyEntity();
+            party.setId(UUID.randomUUID());
             party.setEmailAddress(TEST_EMAIL);
             party.setFirstName("John");
             party.setLastName("Doe");
@@ -271,15 +75,20 @@ class NotifyControllerTest {
             pcsCase.setId(UUID.randomUUID());
             pcsCase.setCaseReference(1234567890L);
 
+            CounterClaimEntity counterClaim = new CounterClaimEntity();
+            counterClaim.setId(UUID.randomUUID());
+            counterClaim.setParty(party);
+            pcsCase.setCounterClaims(List.of(counterClaim));
+
             PaymentAgreementEntity paymentAgreement = new PaymentAgreementEntity();
-            paymentAgreement.setId(UUID.randomUUID());
+            paymentAgreement.setId(1);
 
             DefendantResponseEntity defendantResponse = new DefendantResponseEntity();
             defendantResponse.setParty(party);
             defendantResponse.setPcsCase(pcsCase);
             defendantResponse.setPaymentAgreement(paymentAgreement);
 
-            UUID defendantResponseId = UUID.randomUUID();
+            Integer defendantResponseId = 1;
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.of(defendantResponse));
 
@@ -291,7 +100,8 @@ class NotifyControllerTest {
                      .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse)
             ).thenReturn(response);
             when(notificationService
-                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse)
+                     .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(
+                         eq(defendantResponse), anyString())
             ).thenReturn(response);
             when(notificationService
                      .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse)
@@ -309,7 +119,7 @@ class NotifyControllerTest {
             verify(notificationService)
                 .sendDefendantResponseCounterclaimPaymentRequiredEmailNotification(defendantResponse);
             verify(notificationService)
-                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(defendantResponse);
+                .sendDefendantResponseCounterclaimPaymentSuccessEmailNotification(eq(defendantResponse), anyString());
             verify(notificationService)
                 .sendDefendantResponseCounterclaimNoPaymentRequiredEmailNotification(defendantResponse);
         }
@@ -317,7 +127,7 @@ class NotifyControllerTest {
         @Test
         @DisplayName("Should return 404 when defendant response not found")
         void shouldReturn404WhenDefendantResponseNotFound() {
-            UUID defendantResponseId = UUID.randomUUID();
+            Integer defendantResponseId = 1;
 
             when(defendantResponseRepository.findById(defendantResponseId))
                 .thenReturn(Optional.empty());
@@ -340,7 +150,11 @@ class NotifyControllerTest {
         @Test
         @DisplayName("Should create controller with dependencies")
         void shouldCreateControllerWithNotificationServiceDependency() {
-            NotifyController controller = new NotifyController(notificationService, defendantResponseRepository);
+            NotifyController controller = new NotifyController(
+                notificationService,
+                defendantResponseRepository,
+                feePaymentRepository
+            );
 
             assertThat(controller).isNotNull();
         }
@@ -364,7 +178,7 @@ class NotifyControllerTest {
         EmailNotificationResponse response = new EmailNotificationResponse();
         response.setTaskId(TASK_ID);
         response.setStatus(SCHEDULED_STATUS);
-        response.setNotificationId(UUID.randomUUID());
+        response.setNotificationId(1);
         return response;
     }
 }

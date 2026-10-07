@@ -3,7 +3,7 @@ export const haveYouAlreadyAppliedForHelp = {
   haveYouAlreadyAppliedForHelpQuestion: `Have you already applied for help with your application fee?`,
   yesRadioOption: `Yes`,
   hwfReferenceHiddenTextLabel: `Enter your Help with Fees reference number`,
-  hwfReferenceTextInput: `ReferenceTest123`,
+  hwfReferenceTextInput: `ReferenceTest126`,
   noRadioOption: `No`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,

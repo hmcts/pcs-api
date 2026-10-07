@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -17,29 +17,37 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandl
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
-
     private final RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
+
+    public RespondPossessionClaim(@Qualifier("respondToClaimStartEventHandler") StartEventHandler startEventHandler,
+                                  @Qualifier("respondToClaimSubmitEventHandler") SubmitEventHandler submitEventHandler,
+                                  RespondToPossessionDraftSavePage respondToPossessionDraftSavePage) {
+
+        this.startEventHandler = startEventHandler;
+        this.submitEventHandler = submitEventHandler;
+        this.respondToPossessionDraftSavePage = respondToPossessionDraftSavePage;
+    }
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = configBuilder
             .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
-            // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
-            // Temporarily enabled for all states to allow testing before case submission/payment
-            .forAllStates()
+            .forStates(EventStates.respondPossessionClaim())
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT)
-            .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR);
+            .grant(Permission.CRU, UserRole.DEFENDANT_SOLICITOR)
+            .grant(Permission.CRU, UserRole.GA_DEFENDANT_SOLICITOR)
+            .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
         new PageBuilder(eventBuilder)
             .add(respondToPossessionDraftSavePage);
     }

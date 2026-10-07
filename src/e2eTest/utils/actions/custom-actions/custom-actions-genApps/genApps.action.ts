@@ -1,12 +1,13 @@
 import {
+  applicationSubmitted,
   areThereAnyReasonsThatThisApplicationShouldNotBeShared,
-  checkYourAnswersGenApps,
-  chooseAnApplication,
-  doYouWantToUploadDocumentToSupportYourApplication,
-  haveTheOtherPartiesAgreedToThisApplication,
+  chooseAnApplication, confirmGenApps,
+  confirmYourPaymentGenApps, doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
   haveTheyAlreadyAppliedForHelpWithFees,
   helpPayingTheFee,
-  isTheCourtHearingInTheNext14Days,
+  isTheCourtHearingInTheNext14Days, paymentDetails, serviceRequestGenApps, statementOfTruth,
+  uploadDocumentsToSupportDefendantsApplication,
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from '@data/page-data-figma/page-data-genApps-figma';
@@ -20,6 +21,8 @@ import { defaultJourney, journeys } from '@utils/common/journeyMappingGenApps';
 import { selectParty } from '@data/page-data-figma/page-data-genApps-figma/selectParty.page.data';
 import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
+import {performActions} from "@utils/controller";
+import {caseSummary, home} from "@data/page-data";
 
 
 export const addressInfo = {
@@ -44,15 +47,23 @@ export class GenAppsAction implements IAction {
         'reasonsApplicationShouldNotBeShared',
         () => this.reasonsApplicationShouldNotBeShared(fieldName as actionRecord),
       ],
+      ['confirmDocumentToUpload', () => this.confirmDocumentToUpload(fieldName as actionRecord)],
+      ['uploadFilesGenApps', () => this.uploadFilesGenApps(fieldName as actionRecord)],
       ['selectLanguageUsedToComplete', () => this.selectLanguageUsedToComplete(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['inputErrorValidationGenApp', () => this.inputErrorValidationGenApp(fieldName as actionRecord)],
-      ['retrieveCYATableData', () => this.retrieveCYATableData(page)],
+      ['retrieveCYATableData', () => this.retrieveCYATableData(page, fieldName as actionRecord)],
       ['validateCYA', () => this.validateCYA()],
       ['reviewCYA', () => this.reviewCYA(page, fieldName as actionData)],
       ['reviewAndUpdateCYA', () => this.reviewAndUpdateCYA(page, fieldName as actionRecord)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectApplicant', () => this.selectApplicant(fieldName as actionRecord)],
+      ['verifyApplicationSubmitted', () => this.verifyApplicationSubmitted()],
+      ['payClaimFeeGenApps', () => this.payClaimFeeGenApps()],
+      ['clickPayNowLinkGenApps', () => this.clickPayNowLinkGenApps(page)],
+      ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
+      ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
+      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -95,7 +106,7 @@ export class GenAppsAction implements IAction {
 
   private async selectApplicant(applicant: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', applicant);
     await performAction('clickRadioButton', { question: applicant.question, option: applicant.option });
     await performAction('clickButton', selectParty.continueButton);
@@ -112,7 +123,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmIfCourtHearingInNext14Days(courtHearing: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', courtHearing);
     await performAction('clickRadioButton', {
       question: courtHearing.question,
@@ -123,7 +134,7 @@ export class GenAppsAction implements IAction {
 
   private async doYouNeedHelpPayingFee(feeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', feeHelp);
     await performAction('clickRadioButton', {
       question: feeHelp.question,
@@ -134,7 +145,7 @@ export class GenAppsAction implements IAction {
 
   private async confirmYouHaveAppliedForFeeHelp(confirmFeeHelp: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmFeeHelp);
     await performAction('clickRadioButton', {
       question: confirmFeeHelp.question,
@@ -147,23 +158,26 @@ export class GenAppsAction implements IAction {
           : (confirmFeeHelp.input as string);
       await performAction('inputText', confirmFeeHelp.label, userInput);
       FieldsStore.update(confirmFeeHelp.label as string, userInput);
-      FieldsStore.rename(confirmFeeHelp.label as string, 'What is your Help with Fees reference number?');
     } else {
-      FieldsStore.delete('What is your Help with Fees reference number?');
+      FieldsStore.delete(confirmFeeHelp.label as string);
     }
     await performAction('clickButton', haveTheyAlreadyAppliedForHelpWithFees.continueButton);
   }
 
   private async confirmOtherPartiesAgreed(confirmOtherParty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('recordUserEntry', confirmOtherParty);
     await performAction('clickRadioButton', {
       question: confirmOtherParty.question,
       option: confirmOtherParty.option,
     });
-    await performAction('clickButton', haveTheOtherPartiesAgreedToThisApplication.continueButton);
+    await performAction('clickButton', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.continueButton);
   }
 
   private async reasonsApplicationShouldNotBeShared(reason: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', reason);
     await performAction('clickRadioButton', {
       question: reason.question,
@@ -181,18 +195,51 @@ export class GenAppsAction implements IAction {
   }
 
   private async confirmOrderDoYouWant(confirmOrder: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', confirmOrder);
     const userInput =
       typeof confirmOrder.input === 'number'
         ? generateRandomString(confirmOrder.input)
         : (confirmOrder.input as string);
     await performAction('inputText', confirmOrder.label, userInput);
-    FieldsStore.rename(confirmOrder.label as string, 'What order do you want the court to make and why?');
-    FieldsStore.update('What order do you want the court to make and why?', userInput);
+    FieldsStore.update(confirmOrder.label as string, userInput);
     await performAction('clickButton', whatOrderDoYouWantTheCourtToMakeAndWhy.continueButton);
   }
 
+  private async confirmDocumentToUpload(confirmUpload: actionRecord) {
+    await performAction('recordUserEntry', confirmUpload);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', confirmUpload);
+    await performAction('clickRadioButton', {
+      question: confirmUpload.question,
+      option: confirmUpload.option,
+    });
+    await performAction('clickButton', doYouWantToUploadDocumentsToSupportDefendantsApplication.continueButton);
+  }
+  private async uploadFilesGenApps(uploadDocs: actionRecord): Promise<void> {
+    await performAction('recordUserEntry', uploadDocs);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', uploadDocs);
+    if (Array.isArray(uploadDocs.documents)) {
+      for (let fileIndex = 0; fileIndex < uploadDocs.documents.length; fileIndex++) {
+        const document = uploadDocs.documents[fileIndex]; await performActions(
+          'Add Document',
+          ['uploadFile', document.fileName],
+          ['select', {dropdown: uploadDocumentsToSupportDefendantsApplication.typeOfDocumentHiddenTextLabel, index: fileIndex}, document.type],
+        )
+        FieldsStore.set('Type of document', String(document.type));
+        FieldsStore.set('Document', String(document.fileName));
+      }
+    }
+    await performAction('clickButton', uploadDocumentsToSupportDefendantsApplication.continueButton);
+  }
+
   private async selectLanguageUsedToComplete(selectLanguageData: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
     await performAction('recordUserEntry', selectLanguageData);
     await performAction('clickRadioButton', {
       question: selectLanguageData.question,
@@ -202,22 +249,121 @@ export class GenAppsAction implements IAction {
   }
 
   private async selectStatementOfTruth(sot: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', sot);
     await performAction('check', {
       question: sot.question,
       option: sot.option,
     });
-    await performAction('inputText', sot.label, sot.input);
+    await performAction('inputText', sot.label1, sot.input1);
+    await performAction('inputText', sot.label2, sot.input2);
+    await performAction('inputText', sot.label3, sot.input3);
+    FieldsStore.delete(sot.question as string);
+    await performAction('clickButton', statementOfTruth.continueButton);
+  }
 
-    const key = isTheCourtHearingInTheNext14Days.isTheCourtHearingInTheNext14DaysQuestion as string;
+  private async verifyApplicationSubmitted(): Promise<void> {
+    await performValidation('mainHeader', applicationSubmitted.mainHeader);
+    await performValidation('text', {elementType: 'span', text: applicationSubmitted.applicationSubmittedHeader});
+    await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
+  }
 
-    const isKeyPresent = FieldsStore.has(key);
-    const value = isKeyPresent ? FieldsStore.get(key) : undefined;
+  private async payClaimFeeGenApps( clickLink?: boolean ) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performValidation('mainHeader', confirmGenApps.mainHeader);
+    await performValidation('text', {elementType: 'span', text: confirmGenApps.pay126ApplicationFeeParagraph});
+    if (clickLink === true) {
+      await performAction('clickButton', confirmGenApps.payYourApplicationLink);
+    } else {
+      await performAction('clickButton', confirmGenApps.closeAndReturnToCaseDetailsButton);
+    }
+  }
 
-    const button =
-      isKeyPresent && value === 'No'
-        ? checkYourAnswersGenApps.submitHiddenButton
-        : checkYourAnswersGenApps.continueToPaymentHiddenButton;
-    await performAction('clickButton', button);
+  private async clickPayNowLinkGenApps(page: Page ) {
+    const maxRetries = 10;
+    const amount = String(confirmGenApps.PayAmount);
+    const payNowText = String(confirmGenApps.payNowLink);
+    const partyName= String(confirmGenApps.partyName);
+
+    for (
+      let retryCount = 0;
+      retryCount < maxRetries;
+      retryCount++
+    ) {
+      await performAction('clickTab', caseSummary.serviceRequestTab);
+      const row = page.locator('tbody tr')
+        .filter({ hasText: amount })
+        .filter({ hasText: partyName })
+        .nth(1);
+
+      const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
+      let isPayNowVisible = false;
+      for (let i = 0; i < 10; i++) {
+        isPayNowVisible = await payNowLocator.isVisible();
+        if (isPayNowVisible) {
+          break;
+        }
+        await page.waitForTimeout(500);
+      }
+      if (isPayNowVisible) {
+        await payNowLocator.scrollIntoViewIfNeeded();
+        await payNowLocator.click();
+        return;
+      }
+      await performAction('clickTab',home.caseSummary );
+      await performValidation('mainHeader', home.caseSummary);
+    }
+    throw new Error(
+      `${payNowText} link for amount '${amount}' was not visible after maximum retries`
+    );
+  }
+
+  private async selectPaymentOptions(paymentOptions: actionRecord, page: Page) {
+    const amountLabel = paymentOptions.amountLabel;
+    if (typeof amountLabel === 'string' && amountLabel !== '') {
+      await performValidation('elementToBeVisible', amountLabel);
+    }
+    const expectedAmount = paymentOptions.expectedAmount;
+    if (typeof expectedAmount === 'string' && expectedAmount !== '') {
+      await expect(page.getByText(expectedAmount, {exact: true})).toBeVisible();
+    }
+    await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+      if(paymentOptions.payByOption == serviceRequestGenApps.payByAccountRadioOption) {
+        await performAction('clickRadioButton', {option: paymentOptions.payByOption});
+        await performAction('select', paymentOptions.pbaLabel, paymentOptions.pbaValue);
+        const locator = page.locator('button', {hasText: 'Confirm payment'});
+        await expect(locator).toBeDisabled();
+        await performAction('inputText', paymentOptions.referenceLabel, paymentOptions.referenceText);
+        await page.click('body');
+        await expect(locator).toBeEnabled();
+      }
+      await performAction('clickButton', paymentOptions.button);
+}
+
+  private async inputPaymentDetails(inputDetails: actionRecord) {
+    await performActions(
+      'Enter details',
+      ['inputText', paymentDetails.cardNumberTextLabel, inputDetails.cardNumber],
+      ['inputText', paymentDetails.monthTextLabel, inputDetails.month],
+      ['inputText', paymentDetails.yearTextLabel, inputDetails.year],
+      ['inputText', paymentDetails.nameOnCardTextLabel, inputDetails.nameOnCard],
+      ['inputText', paymentDetails.cardSecurityCodeTextLabel, inputDetails.cardSecurityCode],
+      ['inputText', paymentDetails.addressLine1TextLabel, inputDetails.addressLine1],
+      ['inputText', paymentDetails.townOrCityTextLabel, inputDetails.townOrCity],
+      ['inputText', paymentDetails.postcodeTextLabel, inputDetails.postcode],
+      ['inputText', paymentDetails.emailTextLabel, inputDetails.email]
+    );
+    await performAction('clickButton', paymentDetails.continueButton);
+  }
+
+  private async confirmPaymentGenApps() {
+    await performValidation('mainHeader', confirmYourPaymentGenApps.mainHeader);
+    await performAction('clickButton', confirmYourPaymentGenApps.confirmPaymentButton);
   }
 
   private async inputErrorValidationGenApp(validationArr: actionRecord) {
@@ -254,36 +400,27 @@ export class GenAppsAction implements IAction {
     }
   }
 
-  private async retrieveCYATableData(page: Page) {
-    const tables = page.locator(`//dl`);
+  private async retrieveCYATableData(page: Page,table: actionRecord) {
+    const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
     const tableCount = await tables.count();
 
-    if (tableCount === 0) {
-      throw new Error(`CYA table not found. Exiting...`);
-    }
+    if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
 
     for (let i = 0; i < tableCount; i++) {
-      const curTable = tables.nth(i);
+      const table = tables.nth(i);
+      await expect(table).toBeVisible();
 
-      if (!(await curTable.isVisible())) {
-        throw new Error('table not found');
-      }
-
-      const rows = curTable.locator('.govuk-summary-list__row');
+      const rows = table.locator('tr');
       const rowCount = await rows.count();
-      if (rowCount === 0) {
-        continue;
-      }
 
       for (let j = 0; j < rowCount; j++) {
         const row = rows.nth(j);
+        if (!(await row.isVisible())) continue;
 
-        if (!(await row.isVisible())) {
-          continue;
-        }
+        const keyQns = row.locator('th span, th');
+        const valAns = row.locator('td.case-field-content, td');
 
-        const keyQns = row.locator('dt.govuk-summary-list__key');
-        const valAns = row.locator('dd.govuk-summary-list__value');
+        if ((await keyQns.count()) === 0 || (await valAns.count()) === 0) continue;
 
         const keyText = (await keyQns.first().innerText()).trim();
         const valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
@@ -292,6 +429,7 @@ export class GenAppsAction implements IAction {
         }
       }
     }
+    cyaMap.delete('Add document');
 
     await test.step('Retrieved CYA values can be found in the console logs', async () => {
       console.log('\nThe Data Retrieved From Check Your Answers Page Are As Follows');
@@ -398,7 +536,7 @@ export class GenAppsAction implements IAction {
             option: helpPayingTheFee.noRadioOption,
           });
         } else {
-          await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+          await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
           FieldsStore.deleteKeys([
             helpPayingTheFee.doYouNeedHelpPayingTheFeeQuestion,
             haveTheyAlreadyAppliedForHelpWithFees.haveYouAlreadyAppliedForHelpQuestion,
@@ -432,7 +570,7 @@ export class GenAppsAction implements IAction {
             input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
           });
         }
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
       case 'whatOrderDoYouWantTheCourtToMakeAndWhy': {
@@ -441,7 +579,7 @@ export class GenAppsAction implements IAction {
           label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
           input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
         });
-        await performValidation('mainHeader', doYouWantToUploadDocumentToSupportYourApplication.mainHeader);
+        await performValidation('mainHeader', doYouWantToUploadDocumentsToSupportDefendantsApplication.mainHeader);
         break;
       }
       case 'haveYouAlreadyAppliedForHelpWithYourApplicationFee': {
@@ -452,7 +590,7 @@ export class GenAppsAction implements IAction {
           label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
           input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
         });
-        await performValidation('mainHeader', haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+        await performValidation('mainHeader', hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.mainHeader);
         break;
       }
 

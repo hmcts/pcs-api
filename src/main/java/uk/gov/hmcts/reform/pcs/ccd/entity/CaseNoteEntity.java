@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,8 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
+import static jakarta.persistence.FetchType.LAZY;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @Entity
@@ -33,13 +32,13 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 public class CaseNoteEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "claim_id")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "case_id")
     @JsonBackReference
-    private ClaimEntity claim;
+    private PcsCaseEntity pcsCase;
 
     private String createdBy;
 

@@ -29,7 +29,7 @@ public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
 
                 <a href="https://www.gov.uk/government/collections/property-possession-forms" rel="noreferrer noopener"
                     target="_blank"
-                    class="govuk-link">View the full list of property possessions forms (opens in a new tab)</a>.
+                    class="govuk-link">View the full list of property possessions forms (opens in a new tab)</a>
                 </p>
 
                 <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">

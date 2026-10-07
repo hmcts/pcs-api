@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
@@ -36,6 +37,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(new Error(caseNotFoundException.getMessage()));
+    }
+
+    @ExceptionHandler(FeePaymentNotFoundException.class)
+    public ResponseEntity<Error> handleFeePaymentNotFoundException(FeePaymentNotFoundException ex) {
+        log.error("Fee payment not found", ex);
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(new Error("Fee payment not found"));
     }
 
     @ExceptionHandler(InvalidAccessCodeException.class)

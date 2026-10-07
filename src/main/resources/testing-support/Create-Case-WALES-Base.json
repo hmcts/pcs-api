@@ -1,4 +1,6 @@
 {
+  "regionId":"7",
+  "caseManagementLocationNumber":"366572",
   "legislativeCountry":"Wales",
   "claimantType":{
     "value":{
@@ -29,9 +31,7 @@
   "orgNameFound":"YES",
   "claimantName":"Possession Claims Solicitor Org",
   "isClaimantNameCorrect":"YES",
-  "walesRegistered":"NO",
-  "walesLicensed":"NO",
-  "walesLicensedAgentAppointed":"NO",
+  "isExemptLandlord":"NO",
   "claimantContactEmail":"pcs-solicitor1@test.com",
   "isCorrectClaimantContactEmail":"YES",
   "orgAddressFound":"YES",

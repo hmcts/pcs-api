@@ -4,6 +4,7 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
@@ -19,36 +20,41 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.view.FeatureFlagView;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.PaymentCallbackHandlerType.CLAIM;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEES_AND_PAY_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -56,6 +62,7 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final PartyService partyService;
     private final SecurityContextService securityContextService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final OrganisationService organisationService;
@@ -64,18 +71,22 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
-
     private final ResumePossessionClaimConfigurer resumePossessionClaimConfigurer;
+    private final NotificationService notificationService;
+    private final FeatureFlagView featureFlagView;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
-                .forState(AWAITING_SUBMISSION_TO_HMCTS)
+                .forStates(EventStates.resumePossessionClaim())
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary()
                 .endButtonLabel("${endButtonLabel}");
 
@@ -88,11 +99,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
+        featureFlagView.setCaseFields(caseData);
         setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-        // Fetch organisation name from rd-professional API
-        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        OrganisationDetailsResponse orgDetails = organisationService.getOrganisationDetailsForCurrentUser();
+        String organisationName = organisationService.getOrganisationName(orgDetails);
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
@@ -130,7 +142,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddress(orgDetails));
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
@@ -142,6 +154,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         }
 
         caseData.setClaimantContactPreferences(contactPreferences);
+
+        pcsCaseService.allocateRegionId(caseData);
 
         return caseData;
     }
@@ -156,13 +170,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    @Transactional
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
         if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
             return submitClaim(caseReference, pcsCase);
         } else {
+            notificationService.sendClaimantDraftSavedForLaterEmailNotification(caseReference, pcsCase);
             return saveForLater();
         }
     }
@@ -172,10 +188,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        schedulePartyAccessCodeGeneration(caseReference);
-
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference,
-                                                            getResponsiblePartyName(pcsCase.getClaimantInformation()));
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, getClaimantParty(caseReference));
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
@@ -184,13 +197,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
     }
 
-    private String getResponsiblePartyName(ClaimantInformation claimantInformation) {
-        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
-            return claimantInformation.getFallbackClaimantName();
-        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
-            return claimantInformation.getOverriddenClaimantName();
-        }
-        return claimantInformation.getClaimantName();
+    private PartyEntity getClaimantParty(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
     }
 
     private SubmitResponse<State> saveForLater() {
@@ -201,48 +210,29 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getClaimantInformation())
+        return ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
     }
 
-    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
-
+    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, PartyEntity claimantParty) {
         FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
-
-        String taskId = UUID.randomUUID().toString();
-
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
-            .caseReference(String.valueOf(caseReference))
-            .responsibleParty(responsibleParty)
+            .caseReference(caseReference)
+            .responsiblePartyId(claimantParty.getId())
+            .responsiblePartyName(partyService.getPartyName(claimantParty))
+            .paymentCallbackHandlerType(CLAIM)
             .build();
 
         schedulerClient.scheduleIfNotExists(
-            FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
+            FEES_AND_PAY_TASK_DESCRIPTOR
+                .instance(UUID.randomUUID().toString())
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
 
         return feeDetails;
-    }
-
-    private void schedulePartyAccessCodeGeneration(long caseReference) {
-
-        String taskId = UUID.randomUUID().toString();
-
-        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
-            .caseReference(String.valueOf(caseReference))
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            ACCESS_CODE_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(taskData)
-                .scheduledTo(Instant.now())
-        );
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {

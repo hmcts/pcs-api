@@ -74,4 +74,25 @@ public class AddressFormatter {
             .collect(Collectors.joining(delimiter));
     }
 
+    /**
+     * Formats a full address but omits the country, which England & Wales possession documents do not show.
+     *
+     * @param address The address to format
+     * @param delimiter The delimiter with which to join each part of the address
+     * @return A formatted address String
+     */
+    public String formatFullAddressWithoutCountry(AddressUK address, String delimiter) {
+        Objects.requireNonNull(delimiter, "Delimiter must not be null");
+
+        if (address == null) {
+            return null;
+        }
+
+        return Stream.of(address.getAddressLine1(), address.getAddressLine2(),
+                         address.getAddressLine3(),
+                         address.getPostTown(), address.getCounty(), address.getPostCode())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(delimiter));
+    }
+
 }

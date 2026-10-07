@@ -2,17 +2,26 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 
 @Service
 @AllArgsConstructor
 public class CaseNameFormatter {
+
+    private static final String CASE_NAME_SEPARATOR = " vs ";
+    private static final String PERSONS_UNKNOWN = "Persons unknown";
+    private static final String OTHERS = "Others";
+    private static final int MAX_DEFENDANT_NAMES = 2;
 
     /**
      * Builds a formatted string for the case name hmcts field based on certain rules.
@@ -33,36 +42,60 @@ public class CaseNameFormatter {
      * @param defendants List of defendant {@link Party}
      */
     public String formatCaseName(List<Party> claimants, List<Party> defendants) {
-        return getFormattedClaimantName(claimants)
-            + " vs " + getFormattedDefendantName(defendants);
+        Party claimant = getFirstClaimant(claimants);
+        return getFormattedClaimantName(claimant)
+            + CASE_NAME_SEPARATOR + getFormattedDefendantName(defendants);
     }
 
-    private String getFormattedClaimantName(final List<Party> claimants) {
-        String formattedClaimantName = null;
-        if (claimants != null && !claimants.isEmpty()) {
-            var claimant = claimants.getFirst();
-            formattedClaimantName = claimant.getOrgName() != null
-                ? claimant.getOrgName() :
-                claimant.getLastName();
+    private Party getFirstClaimant(final List<Party> claimants) {
+        if (CollectionUtils.isEmpty(claimants)) {
+            return null;
         }
-        return formattedClaimantName;
+
+        return claimants.getFirst();
+    }
+
+    private String getFormattedClaimantName(final Party claimant) {
+        if (claimant == null) {
+            return null;
+        }
+
+        return claimant.getOrgName() != null
+            ? claimant.getOrgName()
+            : formatFullName(claimant);
     }
 
     private String getFormattedDefendantName(final List<Party> defendants) {
-        StringBuilder formattedDefendantName = new StringBuilder();
-        if (defendants != null && !defendants.isEmpty() && isDefendantNameKnown(defendants)) {
-            formattedDefendantName.append(defendants.getFirst().getLastName());
-            if (defendants.size() > 1) {
-                formattedDefendantName.append(" and Others");
-            }
-        } else {
-            formattedDefendantName.append("persons unknown");
+        if (defendants == null || defendants.isEmpty()) {
+            return PERSONS_UNKNOWN;
         }
-        return formattedDefendantName.toString();
+
+        List<String> defendantNames = defendants.stream()
+            .limit(MAX_DEFENDANT_NAMES)
+            .map(this::formatDefendantName)
+            .toList();
+
+        if (defendants.size() > MAX_DEFENDANT_NAMES) {
+            return String.join(", ", defendantNames) + " and " + OTHERS;
+        }
+
+        return String.join(" and ", defendantNames);
     }
 
-    private boolean isDefendantNameKnown(final List<Party> defendants) {
-        return defendants.getFirst().getNameKnown() == VerticalYesNo.YES;
+    private String formatDefendantName(Party defendant) {
+        return isPartyNameKnown(defendant)
+            ? formatFullName(defendant)
+            : PERSONS_UNKNOWN;
+    }
+
+    private String formatFullName(Party party) {
+        return Stream.of(party.getFirstName(), party.getLastName())
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
+    }
+
+    private boolean isPartyNameKnown(final Party party) {
+        return party != null && party.getNameKnown() == VerticalYesNo.YES;
     }
 
 }

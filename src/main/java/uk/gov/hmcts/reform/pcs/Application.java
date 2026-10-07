@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.pcs.camunda.CamundaApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamUserInfoApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
@@ -19,7 +19,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         "uk.gov.hmcts.reform.pcs",
         "uk.gov.hmcts.ccd.sdk",
         "uk.gov.hmcts.reform.payments.client",
-        "uk.gov.hmcts.reform.ccd.client"
+        "uk.gov.hmcts.reform.ccd.client",
+        "uk.gov.hmcts.reform.sendletter"
     })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
 @EnableFeignClients(
@@ -31,10 +32,11 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
         RdProfessionalApi.class,
         FeesApi.class,
-        CaseDocumentClientApi.class
+        CaseDocumentClientApi.class,
+        CamundaApi.class
     }
 )
-@EnableJms
+
 @EnableScheduling
 public class Application {
 

@@ -18,7 +18,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -26,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -84,7 +88,9 @@ public class DocumentEntity {
 
     @CreationTimestamp
     private Instant submittedDate;
-  
+
+    private LocalDate issueDate;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id")
     private ClaimEntity claim;
@@ -103,10 +109,19 @@ public class DocumentEntity {
     @JoinColumn(name = "counter_claim_id")
     private CounterClaimEntity counterClaim;
 
+    private boolean removed;
+
+    private String removalReason;
+
+    private LocalDateTime removedAt;
+
     @PrePersist
     void prePersist() {
         if (submittedDate == null) {
             submittedDate = Instant.now();
+        }
+        if (StringUtils.isBlank(categoryId)) {
+            categoryId = CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId();
         }
     }
 }

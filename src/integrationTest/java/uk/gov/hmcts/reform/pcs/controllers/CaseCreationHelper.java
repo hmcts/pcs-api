@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeHashingService;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class CaseCreationHelper {
 
     private PcsCaseRepository pcsCaseRepository;
     private PartyAccessCodeRepository partyAccessCodeRepository;
+    private PartyAccessCodeHashingService hashingService;
 
     PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
@@ -76,7 +78,7 @@ public class CaseCreationHelper {
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
             .partyId(partyId)
             .pcsCase(caseEntity)
-            .code(ACCESS_CODE)
+            .code(hashingService.encodeForStorage(ACCESS_CODE))
             .role(PartyRole.DEFENDANT)
             .build();
 

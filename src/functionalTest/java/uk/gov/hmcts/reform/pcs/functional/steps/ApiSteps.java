@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +32,13 @@ public class ApiSteps {
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
+    private static final String dataStoreUrl = System.getenv("DATA_STORE_URL_BASE");
     public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
     public static String solicitorUserIdamToken;
-    Long caseId;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -105,6 +107,7 @@ public class ApiSteps {
             case "POST" -> request.when().post(resourceAPI.getResource());
             case "GET" -> request.when().get(resourceAPI.getResource());
             case "DELETE" -> request.when().delete(resourceAPI.getResource());
+            case "PUT" -> request.when().put(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         };
     }
@@ -174,6 +177,15 @@ public class ApiSteps {
 
     @Step("a case for {0} is created")
     public Long ccdCaseIsCreated(String legislativeCountry) {
+        return createCase(legislativeCountry, false);
+    }
+
+    @Step("a case for {0} is created, issued and access codes generated")
+    public Long ccdCaseIsCreatedAndIssued(String legislativeCountry) {
+        return createCase(legislativeCountry, true);
+    }
+
+    private Long createCase(String legislativeCountry, boolean issueAndGenerateAccessCodes) {
         final int maxAttempts = 3;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -183,9 +195,9 @@ public class ApiSteps {
                 .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
                 .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
                 .pathParam("legislativeCountry", legislativeCountry)
+                .queryParam("issueAndGenerateAccessCodes", issueAndGenerateAccessCodes)
                 .when()
                 .post(Endpoints.CreateTestCase.getResource());
-
             if (response.statusCode() == 201) {
                 return response.then().extract().path("caseId");
             }
@@ -260,6 +272,105 @@ public class ApiSteps {
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
                 "Validate access code failed: " + caseReference, e
+            );
+        }
+    }
+
+    @Step("fee payment info details fetched")
+        public List<Map<String, Object>> getFeePaymentDetailsForCaseReference(Long caseReference) {
+        Callable<List<Map<String, Object>>> getPaymentInfo = () -> {
+            List<Map<String,Object>> paymentDetails = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPaymentInfoDetails.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<List<Map<String, Object>>>() {
+                });
+
+            if (paymentDetails != null && !paymentDetails.isEmpty()) {
+                return paymentDetails;
+            }
+            return null;
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(getPaymentInfo, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Error getting payment info details for case reference: " + caseReference, e
+            );
+        }
+    }
+
+    @Step("retrieving internal details from ccd data store")
+    public Map<String,String> getInternalCaseDetails(Long caseReference) {
+        //NB: event permissions don't apply for this call, any valid IDAM token can be used
+        Response response = SerenityRest.given()
+            .baseUri(dataStoreUrl)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + citizenUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .header("Experimental", "True")
+            .pathParam("caseReference", caseReference)
+            .when()
+            .get("/cases/{caseReference}/event-triggers/addCaseNote")
+            .then()
+            .statusCode(200)
+            .extract()
+            .response();
+        String liveCaseNoteToken = response.jsonPath().getString("token");
+        String caseVersion = response.jsonPath().getString("case_details.version");
+        DecodedJWT decodedJWT = JWT.decode(liveCaseNoteToken);
+        String caseId = decodedJWT.getClaim("case-id").asString();
+
+        return Map.of(
+            "case-id", caseId,
+            "case-version", caseVersion
+        );
+    }
+
+    @Step("Validate event data")
+    public String validateEventData(PcsIdamTokenClient.UserType userType, String eventPageId, Object body) {
+        String userToken = switch (userType) {
+            case systemUser -> systemUserIdamToken;
+            case citizenUser -> citizenUserIdamToken;
+            case solicitorUser -> solicitorUserIdamToken;
+        };
+        String acceptVal = "application/vnd.uk.gov.hmcts.ccd-data-store-api.case-data-validate.v2+json;charset=UTF-8";
+
+        Callable<String> validateCode = () -> {
+            SerenityRest.given()
+                .baseUri(dataStoreUrl)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + userToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .header("Experimental", "True")
+                .header("Accept",acceptVal)
+                .header("Content-Type","application/json")
+                .body(body)
+                .when()
+                .post("/case-types/PCS/validate?pageId=" + eventPageId)
+                .then()
+                .statusCode(200);
+            return "Success";
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(validateCode, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Validate event data failed: ", e
             );
         }
     }

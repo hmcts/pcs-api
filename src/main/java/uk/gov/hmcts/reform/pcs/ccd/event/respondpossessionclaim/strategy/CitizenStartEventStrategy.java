@@ -1,0 +1,138 @@
+package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.strategy;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.DefendantOnlyDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimDraftBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.utils.PossessionClaimMerger;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.util.List;
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
+
+@Component
+@Slf4j
+@AllArgsConstructor
+public class CitizenStartEventStrategy implements RespondPossessionClaimStartEventStrategy {
+
+    private final PcsCaseService pcsCaseService;
+    private final SecurityContextService securityContextService;
+    private final DefendantAccessValidator accessValidator;
+    private final PossessionClaimResponseMapper responseMapper;
+    private final DraftCaseDataService draftCaseDataService;
+    private final PossessionClaimMerger possessionClaimMerger;
+    private final PossessionClaimDraftBuilder possessionClaimDraftBuilder;
+    private final DefendantOnlyDraftBuilder defendantOnlyDraftBuilder;
+    private final DefendantResponseRepository defendantResponseRepository;
+    private final CaseDetailsTabView caseDetailsTabView;
+    private final TenancyLicenceView tenancyLicenceView;
+    private final RentArrearsView rentArrearsView;
+
+    @Override
+    public boolean supports(List<String> roles) {
+        return roles.contains(UserRole.CITIZEN.getRole());
+    }
+
+    @Override
+    public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+
+        PartyEntity defendant = loadAndValidateDefendant(caseEntity);
+        PCSCase responseCase;
+
+        if (hasSubmittedResponse(caseReference, securityContextService.getCurrentUserId())) {
+            responseCase = buildSubmittedResponseCase(pcsCase);
+        } else if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
+            responseCase = restoreDraft(caseReference, pcsCase, defendant);
+        } else {
+            responseCase = initialiseDraft(caseReference, pcsCase, defendant);
+        }
+
+        responseCase = loadCaseDetailsTab(caseEntity, responseCase);
+        return responseCase;
+    }
+
+    private boolean hasSubmittedResponse(long caseReference, UUID userId) {
+        return userId != null
+            && defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
+    }
+
+    private PCSCase buildSubmittedResponseCase(PCSCase pcsCase) {
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                .defendantResponses(DefendantResponses.builder()
+                    .status(DefendantResponseStatus.SUBMITTED)
+                    .build())
+                .build())
+            .hasUnsubmittedCaseData(YesOrNo.NO)
+            .build();
+    }
+
+    private PartyEntity loadAndValidateDefendant(PcsCaseEntity caseEntity) {
+        return accessValidator.validateAndGetDefendant(caseEntity, securityContextService.getCurrentUserId());
+    }
+
+    private PCSCase initialiseDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant) {
+        PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, defendant);
+        PCSCase draft = PCSCase.builder()
+            .possessionClaimResponse(defendantOnlyDraftBuilder.createDefendantOnlyDraft(response))
+            .build();
+
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draft, respondPossessionClaim);
+
+        return pcsCase.toBuilder()
+            .possessionClaimResponse(response)
+            .build();
+    }
+
+    private PCSCase restoreDraft(long caseReference, PCSCase pcsCase, PartyEntity defendant) {
+        PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+        PossessionClaimResponse merged = possessionClaimMerger.mergeLatestCaseData(pcsCase,
+                                                                                   savedDraft
+                                                                                       .getPossessionClaimResponse(),
+                                                                                   defendant.getId())
+            .toBuilder()
+            .claimantEnteredDefendantDetails(responseMapper.buildPartyFromEntity(defendant, pcsCase))
+            .build();
+
+        return possessionClaimDraftBuilder.buildCaseWithDraft(pcsCase, merged);
+    }
+
+    private PCSCase loadCaseDetailsTab(PcsCaseEntity caseEntity, PCSCase pcsCase) {
+        tenancyLicenceView.setCaseFields(pcsCase, caseEntity);
+        rentArrearsView.setCaseFields(pcsCase, caseEntity);
+
+        var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
+        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCase.getDateSubmitted() != null);
+        var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
+
+        caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
+        caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
+        caseDetailsTab.setOccupationContractLicenceDetails(builtCaseDetailsTab.getOccupationContractLicenceDetails()); 
+        
+        pcsCase.setCaseDetailsTab(caseDetailsTab);
+        return pcsCase;
+    }
+}

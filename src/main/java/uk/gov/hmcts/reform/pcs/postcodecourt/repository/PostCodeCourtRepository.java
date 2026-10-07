@@ -51,4 +51,15 @@ public interface PostCodeCourtRepository extends JpaRepository<PostCodeCourtEnti
         """)
     List<PostCodeCourtEntity> findActiveByPostCodeIn(List<String> postcodes, LocalDate currentDate);
 
+    @Query("""
+            SELECT p FROM PostCodeCourtEntity p
+            WHERE p.legislativeCountry = :legislativeCountry
+              AND p.id.postCode IN :postcodes
+              AND p.effectiveFrom <= :currentDate
+              AND (p.effectiveTo IS NULL OR p.effectiveTo >= :currentDate)
+        """)
+    List<PostCodeCourtEntity> findActiveByPostCodeIn(List<String> postcodes,
+                                                     LegislativeCountry legislativeCountry,
+                                                     LocalDate currentDate);
+
 }

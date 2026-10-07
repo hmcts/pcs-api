@@ -1,0 +1,18 @@
+package uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Builder
+@Data
+@AllArgsConstructor
+public class CounterClaimSubmitResponse {
+
+    private final CounterClaimState status;
+    private final String serviceRequestReference;
+    private final BigDecimal feeAmount;
+    private final CounterClaimType claimType;
+}

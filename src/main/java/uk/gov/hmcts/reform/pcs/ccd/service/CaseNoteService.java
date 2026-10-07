@@ -4,9 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -18,17 +17,15 @@ import java.time.Instant;
 public class CaseNoteService {
 
     private final PcsCaseService pcsCaseService;
-    private final ClaimRepository claimRepository;
+    private PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final Clock utcClock;
 
     public void addCaseNote(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
-        ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
         CaseNoteEntity caseNoteEntity = createCaseNoteEntity(pcsCase);
-        claimEntity.addCaseNote(caseNoteEntity);
-        claimRepository.save(claimEntity);
+        pcsCaseEntity.addCaseNote(caseNoteEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     private CaseNoteEntity createCaseNoteEntity(PCSCase pcsCase) {

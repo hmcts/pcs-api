@@ -14,6 +14,6 @@ export const selectCasesToLink = {
   otherDescriptionInputLabel: 'otherDescription',
   otherDescriptionInputText: 'Input for other reason testing purpose',
   proposeLinkButton: 'Propose case link',
-  submitButton: 'Submit',
+  saveAndContinueButton: 'Save and continue',
   cancel: 'Cancel',
 }

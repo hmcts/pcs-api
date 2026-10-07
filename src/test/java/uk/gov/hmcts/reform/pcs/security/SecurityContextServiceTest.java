@@ -65,6 +65,20 @@ class SecurityContextServiceTest {
     }
 
     @Test
+    @DisplayName("Should get the user auth token from the security context")
+    void getCurrentUserAuthToken() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        String expectedAuthToken = "Bearer user-token";
+        when(user.getAuthToken()).thenReturn(expectedAuthToken);
+
+        String actualAuthToken = underTest.getCurrentUserAuthToken();
+
+        assertThat(actualAuthToken).isEqualTo(expectedAuthToken);
+    }
+
+    @Test
     @DisplayName("Should return null user details when no authentication in the security context")
     void getUserDetailsWhenNoAuthentication() {
         when(securityContext.getAuthentication()).thenReturn(null);

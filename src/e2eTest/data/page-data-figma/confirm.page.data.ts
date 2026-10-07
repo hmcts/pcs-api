@@ -1,8 +1,8 @@
 export const confirm = {
   makeAClaimDynamicHeader: `Make a claim`,
-  pay404ClaimFeeDynamicParagraph: `Pay £404 claim fee`,
+  pay415ClaimFeeDynamicParagraph: `Pay £415 claim fee`,
   makeAPaymentDynamicSubHeader: `Make a payment`,
-  makeAPaymentYouMustDynamicParagraph: `You must pay the claim fee of £404. Your claim will not progress until this fee has been paid.`,
+  makeAPaymentYouMustDynamicParagraph: `You must pay the claim fee of £415. Your claim will not progress until this fee has been paid.`,
   payTheClaimFeeDynamicLink: `Pay the claim fee`,
   claimSavedDynamicLabel: `Claim saved`,
   aDraftOfYourClaimDynamicParagraph: `A draft of your claim has been saved. To sign, submit and pay for your claim:`,

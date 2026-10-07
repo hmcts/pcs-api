@@ -11,4 +11,5 @@ export const fetchCurrentUserTokenApiData = {
     },
   }),
   fetchCurrentUserApiEndPoint: (): string => `${process.env.IDAM_TESTING_SUPPORT_URL}/test/idam/users?email=${user.claimantSolicitor.email}`,
+  fetchDefendantSolicitorUserApiEndPoint: (): string => `${process.env.IDAM_TESTING_SUPPORT_URL}/test/idam/users?email=${user.defendantSolicitor.email}`,
 };

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+@SuppressWarnings("java:S115") // constant names match the camelCase CCD event IDs registered via .name()
 public enum EventId {
 
     createPossessionClaim,
@@ -8,12 +9,28 @@ public enum EventId {
     respondPossessionClaim,
     submitDefendantResponse,
     makeAnApplication,
+    claimantMakeAnApplication,
     createTestCase,
     createCaseLink,
     maintainCaseLink,
     dashboardView,
     confirmEviction,
+    uploadDocuments,
+    amendDocuments,
     addCaseNote,
+    addCaseReviewDate,
     createFlags,
-    amendFlags
+    amendFlags,
+    requestSupport,
+    manageSupport,
+    claimIssuePayment,
+    changeCaseState,
+    manageHearing,
+    enterGenApp,
+    caseworkerUploadDocuments,
+    removeDocument,
+    legalRepDocumentUpload,
+    manageParties,
+    defendantPaperResponse,
+    legalRepresentativeContactDetails
 }

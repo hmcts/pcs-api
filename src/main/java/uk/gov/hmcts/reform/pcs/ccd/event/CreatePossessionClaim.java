@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
 
 @Slf4j
@@ -54,7 +55,10 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
+                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES);
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService())
@@ -84,7 +88,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
+        pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(),
+                                  caseData.getLegislativeCountry());
 
         String userId = securityContextService.getCurrentUserDetails().getUid();
         scheduleRoleAssignment(caseReference, userId);

@@ -19,6 +19,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -26,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyLegalRepresentativeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -72,6 +74,12 @@ public class PartyEntity {
 
     private String orgName;
 
+    private String organisationId;
+    private String organisationProfileId;
+
+    /** The claimant the case was created for, marked at creation as there is no claim role to read yet. */
+    private boolean claimCreator;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo nameKnown;
@@ -80,7 +88,7 @@ public class PartyEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo nameOverridden;
 
-    @OneToOne(cascade = ALL)
+    @OneToOne(cascade = ALL, orphanRemoval = true)
     private AddressEntity address;
 
     @OneToOne(cascade = ALL)
@@ -110,13 +118,13 @@ public class PartyEntity {
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
-    private List<ClaimPartyLegalRepresentativeEntity> claimPartyLegalRepresentativeList = new ArrayList<>();
+    private List<ClaimPartyOrganisationEntity> claimPartyOrganisationList = new ArrayList<>();
 
     @OneToMany(mappedBy = "party",
         cascade = ALL,
         orphanRemoval = true)
     @Builder.Default
+    @Fetch(FetchMode.SUBSELECT)
     private List<CasePartyFlagEntity> defendantFlags = new ArrayList<>();
 
 }
-

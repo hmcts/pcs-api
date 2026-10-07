@@ -13,10 +13,16 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {
-  askTheCourtToMakeAnOrder, chooseAnApplication, haveTheOtherPartiesAgreedToThisApplication,
-  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty
+  askTheCourtToMakeAnOrder, checkYourAnswersGenApps, chooseAnApplication,
+  doYouWantToUploadDocumentsToSupportDefendantsApplication,
+  hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication,
+  haveTheyAlreadyAppliedForHelpWithFees, helpPayingTheFee, selectParty,
+  statementOfTruth, uploadDocumentsToSupportDefendantsApplication, whatOrderDoYouWantTheCourtToMakeAndWhy,
+  whichLanguageDidYouUseToCompleteThisService
 } from "@data/page-data-figma/page-data-genApps-figma";
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-genApps';
+import { home } from '@data/page-data';
+
 
 test.use({ storageState: undefined });
 
@@ -28,7 +34,8 @@ test.beforeEach(async ({ page, context }) => {
   FieldsStore.clear();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('getCaseAPI');
+  await performAction('updatePaymentAPI');
+  await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getDefendantDetails', {
     defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
@@ -53,6 +60,9 @@ test.beforeEach(async ({ page, context }) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+  await page.waitForLoadState();
+  await page.locator('.spinner-container').waitFor({ state: 'detached' });
+  await performValidation('mainHeader', home.caseSummary);
 });
 
 test.afterEach(async () => {
@@ -64,9 +74,10 @@ test.afterEach(async () => {
 });
 
 test.describe('Make an Application - e2e Journey @nightly', async () => {
-  test('Select an Application - Something else @regression @smoke', async () => {
+  test('Select an Application - Something else @smoke', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.makeAnApplication);
     await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', chooseAnApplication.mainHeader);
     await performAction('chooseAnApplication', {
       question: chooseAnApplication.whatDoYouWantToApplyForQuestion,
       option: chooseAnApplication.somethingElseRadioOption,
@@ -89,6 +100,45 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
       label: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceHiddenTextLabel,
       input: haveTheyAlreadyAppliedForHelpWithFees.hwfReferenceTextInput,
     });
-    await performValidation('mainHeader',haveTheOtherPartiesAgreedToThisApplication.mainHeader);
+    await performAction('confirmOtherPartiesAgreed', {
+      question: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.haveTheOtherPartiesAgreedQuestion,
+      option: hasTheDefendantAskedTheOtherPartiesAgreedToThisApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', whatOrderDoYouWantTheCourtToMakeAndWhy.mainHeader);
+    await performAction('confirmOrderDoYouWant', {
+      label: whatOrderDoYouWantTheCourtToMakeAndWhy.explainWhatYouWantTextLabel,
+      input: whatOrderDoYouWantTheCourtToMakeAndWhy.whatYouWantTheCourtToDoTextInput,
+    });
+    await performAction('confirmDocumentToUpload', {
+      question: doYouWantToUploadDocumentsToSupportDefendantsApplication.doYouWantToUploadDocumentQuestion,
+      option: doYouWantToUploadDocumentsToSupportDefendantsApplication.yesRadioOption,
+    });
+    await performValidation('mainHeader', uploadDocumentsToSupportDefendantsApplication.mainHeader);
+    await performAction('uploadFilesGenApps', {
+      documents: [
+        {type: uploadDocumentsToSupportDefendantsApplication.inspectionOrReportDropDownInput, fileName: 'genApps.ppt'},
+      ]
+    });
+    await performAction('selectLanguageUsedToComplete', {
+      question: whichLanguageDidYouUseToCompleteThisService.whichLanguageDidYouUseQuestion,
+      option: whichLanguageDidYouUseToCompleteThisService.englishAndWelshRadioOption,
+    });
+    await performValidation('mainHeader', statementOfTruth.mainHeader);
+    await performAction('selectStatementOfTruth', {
+      question: statementOfTruth.completedByTheDefendantsLegalParagraph,
+      option: statementOfTruth.theDefendantBelievesCheckBox,
+      label1: statementOfTruth.fullNameTextLabel,
+      input1: statementOfTruth.fullNameTextInput,
+      label2: statementOfTruth.nameOfFirmTextLabel,
+      input2: statementOfTruth.nameOfFirmTextInput,
+      label3: statementOfTruth.positionOrOfficeHeldTextLabel,
+      input3: statementOfTruth.positionOrOfficeHeldTextInput,
+    });
+    await performValidation('mainHeader', checkYourAnswersGenApps.mainHeader);
+    await performAction('retrieveCYATableData', { name: 'check your answers table' });
+    await performAction('validateCYA');
+    await performAction('clickButton', checkYourAnswersGenApps.submitButton);
+    await performAction('verifyApplicationSubmitted');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make an application');
   });
 });
