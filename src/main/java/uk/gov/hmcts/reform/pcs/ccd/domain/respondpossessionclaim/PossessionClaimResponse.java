@@ -65,6 +65,10 @@ public class PossessionClaimResponse {
     @CCD(access = {DefendantAccess.class})
     private String responseDocumentId;
 
+    // Version of the stored draft these answers were read from; the UI echoes it back so the submit is bound to it.
+    @CCD(access = {DefendantAccess.class}, label = "Draft version")
+    private Long draftVersion;
+
     @CCD(access = {CitizenAccess.class}, label = "Date issued")
     private LocalDate claimIssuedDate;
 

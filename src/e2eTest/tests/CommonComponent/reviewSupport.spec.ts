@@ -27,7 +27,7 @@ test.beforeEach(async ({page, context}) => {
   await context.clearCookies();
   initializeExecutor(page);
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
 
@@ -40,7 +40,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Review support request] - Solicitor user - @nightly @CC @supportEvents', async () => {
+test.describe('[Review support request] - HearingCenterAdmin user - @nightly @CC @supportEvents', async () => {
 
   test('Approve the support request', async ({page}) => {
     await performAction('login', {email: user.claimantSolicitorForGATest.email, password: user.claimantSolicitorForGATest.password});
@@ -85,7 +85,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
@@ -145,7 +145,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
@@ -205,7 +205,7 @@ test.describe('[Review support request] - Solicitor user - @nightly @CC @support
     await performAction('signOut');
 
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', {email: user.staffAdmin.email, password: user.staffAdmin.password});
+    await performAction('login', {email: user.hearingCenterAdmin.email, password: user.hearingCenterAdmin.password});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary');
     await performAction('select', caseSummary.nextStepEventList, caseSummary.reviewSupport);
