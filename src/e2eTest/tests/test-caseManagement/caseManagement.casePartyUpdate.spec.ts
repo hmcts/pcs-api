@@ -17,14 +17,14 @@ test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
   initializeCMExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
   });
 
   for (const defendant of defendantUserDetails) {
@@ -85,7 +85,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Defendant`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
@@ -132,7 +132,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Claimant`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateClaimantDetails', {
@@ -182,7 +182,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Litigation friend`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
@@ -219,7 +219,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
     await performAction('confirmPartyDetailsUpdated', {
       userType: `Defendant's details`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });
@@ -247,7 +247,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
     await performAction('confirmPartyDetailsUpdated', {
       userType: `Claimant's details`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });

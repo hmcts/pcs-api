@@ -28,14 +28,14 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   initializeCMExecutor(page);
   allPartyDetails.length = 0;
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   await performAction('getAllPartyDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-    payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+    defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
   });
 
   if (testInfo.title.includes('Edit a hearing') || testInfo.title.includes('Cancel a hearing')) {
@@ -91,7 +91,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersEditHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersEditHearing.submitButton);
-    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmHearingEdited', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
@@ -111,7 +111,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: manageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersCancelHearing.submitButton);
-    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmHearingCancelled', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   });
 
@@ -138,7 +138,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersManageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
-    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 
@@ -166,7 +166,7 @@ test.describe('Case management - Case Worker Manage Hearing @nightly', async () 
       nextPage: checkYourAnswersManageHearing.mainHeader
     });
     await performAction('clickButton', checkYourAnswersManageHearing.submitButton);
-    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAddHearing', { submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage hearing');
   })
 });
