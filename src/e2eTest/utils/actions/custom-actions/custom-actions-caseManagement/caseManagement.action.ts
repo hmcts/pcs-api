@@ -1027,7 +1027,7 @@ export class CaseManagementAction implements IAction {
           /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
           /ancestor::div[1]
-          //table[@aria-describedby="complex field table"]`;
+          //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
