@@ -49,6 +49,16 @@ class DocumentEntityListenerTest {
         verifyNoInteractions(schedulerClient);
     }
 
+    @Test
+    void shouldNotAttachDocumentsWithoutACase() {
+        DocumentEntity document = document(DocumentType.CLAIM, "http://dm-store/documents/" + UUID.randomUUID());
+        document.setPcsCase(null);
+
+        underTest.onPostPersist(document);
+
+        verifyNoInteractions(schedulerClient);
+    }
+
     @SuppressWarnings("unchecked")
     private AttachDocumentTaskData scheduledData(DocumentEntity document) {
         ArgumentCaptor<SchedulableInstance<AttachDocumentTaskData>> captor =

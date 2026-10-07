@@ -32,6 +32,7 @@ public class DocumentEntityListener {
     @PostPersist
     public void onPostPersist(DocumentEntity entity) {
         if (entity.getPcsCase() == null) {
+            log.warn("Not attaching document {} to its case, as it has no case", entity.getId());
             return;
         }
 
