@@ -45,7 +45,7 @@ public class DraftOrderEntity {
     private PcsCaseEntity pcsCase;
 
     @Column(nullable = false, updatable = false)
-    private UUID authorIdamUserId;
+    private String authorIdamUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
