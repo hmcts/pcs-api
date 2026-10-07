@@ -95,13 +95,13 @@ class CounterClaimServiceTest {
 
         Optional<CounterClaimEntity> saved = underTest.saveCounterClaim(CASE_REFERENCE, counterClaim, partyEntity);
 
+        verify(pcsCaseEntity).addCounterClaim(any(CounterClaimEntity.class));
         verify(counterClaimRepository).save(counterClaimCaptor.capture());
         CounterClaimEntity captured = counterClaimCaptor.getValue();
         assertThat(saved).contains(captured);
         assertThat(captured.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
         assertThat(captured.getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
         assertThat(captured.getParty()).isEqualTo(partyEntity);
-        assertThat(captured.getPcsCase()).isEqualTo(pcsCaseEntity);
     }
 
     @Test

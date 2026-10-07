@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -61,6 +62,32 @@ class CaseworkerDocumentListServiceTest {
 
         assertThat(result.getValue().getCode()).isEqualTo(GEN_APP_ID_PREFIX + ":" + GEN_APP_ID);
         assertThat(result.getValue().getLabel()).isEqualTo("General Application GA1 - submitted 1 July 2026");
+    }
+
+    @Test
+    void shouldBuildCounterClaimRelatedSubmissionsListWithRank() {
+        UUID ccId = UUID.fromString("44444444-4444-4444-4444-444444444444");
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .id(ccId)
+            .rank(2)
+            .status(uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState
+                .PENDING_COUNTER_CLAIM_ISSUED)
+            .claimSubmittedDate(LocalDateTime.of(2026, 8, 15, 10, 0))
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        DynamicStringList result = underTest.buildRelatedSubmissionsList(
+            pcsCaseEntity,
+            List.of(),
+            List.of(counterClaim),
+            null
+        );
+
+        assertThat(result.getListItems()).hasSize(2);
+        assertThat(result.getListItems().getFirst().getCode()).isEqualTo("COUNTERCLAIM:" + ccId);
+        assertThat(result.getListItems().getFirst().getLabel())
+            .isEqualTo("Counter claim CC2 - submitted 15 August 2026");
     }
 
     @Test

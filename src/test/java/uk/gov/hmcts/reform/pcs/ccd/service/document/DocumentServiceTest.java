@@ -1082,10 +1082,11 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
         when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
-        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
         UploadedDocument uploaded = UploadedDocument.builder()
@@ -1100,8 +1101,6 @@ class DocumentServiceTest {
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
         // When
         underTest.linkAdditionalDocumentsToCase(uploadedDocs, pcsCase, party, null, selectedCounterClaim);
@@ -1126,10 +1125,11 @@ class DocumentServiceTest {
         PartyEntity party = mock(PartyEntity.class);
         UUID partyId = UUID.randomUUID();
         ClaimEntity mainClaim = mock(ClaimEntity.class);
+        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
         when(party.getId()).thenReturn(partyId);
         when(pcsCase.getDocuments()).thenReturn(new ArrayList<>());
         when(pcsCase.getClaims()).thenReturn(List.of(mainClaim));
-        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", mainClaim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file-new.pdf", selectedCounterClaim, mainClaim, partyId))
             .thenReturn("file-new - Defendant 1.pdf");
 
         UploadedDocument uploaded = UploadedDocument.builder()
@@ -1142,8 +1142,6 @@ class DocumentServiceTest {
         );
 
         when(documentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
-
-        CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
 
         String expectedTaskDescription = "some counterclaim task description";
         when(taskDescriptionService.createCounterClaimAdditionalDocumentsDescription(
@@ -1415,9 +1413,9 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
-        when(documentNameService.appendCounterClaimPostfix("file2.docx", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file2.docx", counterClaim, claim, partyId))
             .thenReturn("file2 - Defendant 1.docx");
 
         UploadedDocument ccDoc1 = UploadedDocument.builder()
@@ -1508,7 +1506,7 @@ class DocumentServiceTest {
 
         when(counterClaim.getId()).thenReturn(UUID.randomUUID());
         when(party.getId()).thenReturn(partyId);
-        when(documentNameService.appendCounterClaimPostfix("file1.pdf", claim, partyId))
+        when(documentNameService.appendCounterClaimPostfix("file1.pdf", counterClaim, claim, partyId))
             .thenReturn("file1 - Defendant 1.pdf");
 
         UploadedDocument validDoc = UploadedDocument.builder()
