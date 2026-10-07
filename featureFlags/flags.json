@@ -8,6 +8,6 @@
     "release-1.4-enabled": false,
     "wales-make-a-claim-enabled": true,
     "caseworker-wa-enabled": false,
-    "enforcement": true
+    "enforcement-enabled": true
   }
 }
