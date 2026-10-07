@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -586,6 +587,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(expectedParty));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(expectedParty));
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
                 .document(mock(Document.class))
@@ -596,6 +599,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 .legalRepDocumentUploadDetails(LegalRepDocumentUploadDetails.builder()
                                                    .legalRepDocuments(wrapListItems(List.of(legalRepDocument)))
                                                    .build())
+                .representedPartyNames(buildRepresentedPartyList(expectedParty))
                 .build();
 
             // When
@@ -607,19 +611,36 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
                 List.of(legalRepDocument), pcsCaseEntity, expectedParty, null);
         }
 
+        private DynamicList buildRepresentedPartyList(PartyEntity expectedParty) {
+            DynamicListElement party = DynamicListElement.builder()
+                .code(expectedParty.getId()).label(expectedParty.getFirstName() + " " + expectedParty.getLastName())
+                .build();
+
+            return DynamicList.builder()
+                .listItems(List.of(party))
+                .value(party)
+                .build();
+        }
+
         @Test
         void shouldReturnErrorWhenCurrentRepresentedPartyIdDoesNotExistInCaseParties() {
             // Given
             UUID unknownPartyId = UUID.randomUUID();
+            PartyEntity unknownParty = PartyEntity.builder()
+                .id(unknownPartyId)
+                .build();
             PartyEntity otherParty = PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .build();
 
             when(pcsCaseEntity.getParties()).thenReturn(Set.of(otherParty));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
+                .thenReturn(List.of(otherParty));
 
             PCSCase pcsCase = PCSCase.builder()
                 .currentRepresentedPartyId(unknownPartyId.toString())
+                .representedPartyNames(buildRepresentedPartyList(unknownParty))
                 .build();
 
             // When

@@ -48,6 +48,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
@@ -285,17 +286,16 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
-            String currentRepresentedPartyId = caseData.getCurrentRepresentedPartyId();
-            if (currentRepresentedPartyId != null) {
-                UUID selectedPartyId = UUID.fromString(currentRepresentedPartyId);
-                return pcsCaseEntity.getParties().stream()
-                    .filter(party -> selectedPartyId.equals(party.getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new PartyNotFoundException("No represented party found for ID: "
-                                                                      + currentRepresentedPartyId));
-            }
-
             List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+
+            if (isNotEmpty(caseData.getRepresentedPartyNames())) {
+                DynamicListElement selectedPartyElement = caseData.getRepresentedPartyNames().getValue();
+                return partyEntities.stream()
+                    .filter(partyEntity -> partyEntity.getId().equals(selectedPartyElement.getCode()))
+                    .findFirst()
+                    .orElseThrow(() -> new PartyNotFoundException(
+                        "No represented party found for ID: " + caseData.getCurrentRepresentedPartyId()));
+            }
             if (partyEntities.size() == 1) {
                 return partyEntities.getFirst();
             } else if (partyEntities.isEmpty()) {
