@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@DisplayName("ChangeNameAddressPage tests")
+@DisplayName("LegalRepSelectDefendant tests")
 class LegalRepSelectDefendantTest extends BasePageTest {
 
     private static final UUID FIRST_ID = UUID.randomUUID();
@@ -56,7 +56,6 @@ class LegalRepSelectDefendantTest extends BasePageTest {
                                            .listItems(List.of(FIRST_PARTY, SECOND_PARTY))
                                            .value(DynamicListElement.EMPTY)
                                            .build())
-                .currentRepresentedPartyId(String.valueOf(selectedParty.getCode()))
                 .build();
 
 
@@ -65,8 +64,8 @@ class LegalRepSelectDefendantTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getData().getCurrentRepresentedPartyId().equals(id));
-            assertThat(response.getData().getCurrentRepresentedPartyName().equals(name));
+            assertThat(response.getData().getCurrentRepresentedPartyId()).isEqualTo(id);
+            assertThat(response.getData().getCurrentRepresentedPartyName()).isEqualTo(name);
         }
     }
 }
