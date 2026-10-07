@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -56,6 +57,20 @@ class CreateFlagsTest extends  BaseEventTest {
 
         // Then
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldOnlyOfferDefendantsForPartyFlags() {
+        ListValue<Party> claimant = party("claimant-id");
+        ListValue<Party> defendant = party("defendant-id");
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(claimant, defendant))
+            .allDefendants(List.of(defendant))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result.getParties()).containsExactly(defendant);
     }
 
     @Test
@@ -109,5 +124,12 @@ class CreateFlagsTest extends  BaseEventTest {
                            .name("Complex Case")
                            .build())
                 .build());
+    }
+
+    private ListValue<Party> party(String id) {
+        return ListValue.<Party>builder()
+            .id(id)
+            .value(Party.builder().id(id).build())
+            .build();
     }
 }

@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -17,6 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -38,7 +42,7 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         new PageBuilder(configBuilder
-                .decentralisedEvent(EventId.createFlags.name(), this::submit)
+                .decentralisedEvent(EventId.createFlags.name(), this::submit, this::start)
                 .forStates(CREATE_FLAG_STATES)
                 .nonConcurrent()
                 .name("Create case flags")
@@ -55,13 +59,37 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
                 .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
                 .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
-                    //.optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                    .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
                     .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
                 .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
                       "#ARGUMENT(CREATE,VERSION2.1)");
 
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
+        if (pcsCase.getParties() == null || pcsCase.getAllDefendants() == null) {
+            return pcsCase;
+        }
+
+        Set<String> defendantIds = pcsCase.getAllDefendants().stream()
+            .map(this::partyId)
+            .collect(Collectors.toSet());
+
+        pcsCase.setParties(pcsCase.getParties().stream()
+            .filter(party -> defendantIds.contains(partyId(party)))
+            .toList());
+
+        return pcsCase;
+    }
+
+    private String partyId(ListValue<Party> party) {
+        if (party.getId() != null) {
+            return party.getId();
+        }
+        return party.getValue() == null ? null : party.getValue().getId();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
