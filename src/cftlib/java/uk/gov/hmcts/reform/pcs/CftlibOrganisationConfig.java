@@ -29,7 +29,7 @@ public class CftlibOrganisationConfig {
     @Bean("cftlibOrganisationService")
     @Primary
     public OrganisationService organisationService() {
-        return new OrganisationService(null, null) {
+        return new OrganisationService(null, null, null) {
             @Override
             public OrganisationDetailsResponse getOrganisationDetailsForCurrentUser() {
                 OrganisationDetailsResponse response = new OrganisationDetailsResponse();

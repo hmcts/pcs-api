@@ -31,6 +31,7 @@ public class MaintainLinkCase implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.maintainCaseLink.name(), this::submit)
                             .forStates(EventStates.maintainCaseLink())
+                            .nonConcurrent()
                             .name("Manage case links")
                             .description("To manage link related cases")
                             .grant(Permission.CRUD, HEARING_CENTRE_ADMIN, HEARING_CENTRE_TEAM_LEADER)
