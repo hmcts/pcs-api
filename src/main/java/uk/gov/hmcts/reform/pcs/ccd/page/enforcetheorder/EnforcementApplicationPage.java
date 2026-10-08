@@ -111,6 +111,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
+            .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
@@ -136,6 +137,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
+        enforcementOrder.setHasUnsubmittedEnforcementData(YesOrNo.YES);
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
                 .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
             populateWarrantRestDetails(enforcementOrder, details.getId());

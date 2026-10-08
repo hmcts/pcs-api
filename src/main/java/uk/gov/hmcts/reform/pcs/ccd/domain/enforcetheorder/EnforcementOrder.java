@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
@@ -71,4 +72,10 @@ public class EnforcementOrder {
 
     private String warrantOfRestitutionInfoText;
 
+    @CCD(label = "Are you sure you want to permanently delete this draft application? "
+            + "You will no longer be able to view the details in the future.")
+    private YesOrNo deleteDraftApplication;
+
+    @CCD(searchable = false)
+    private YesOrNo hasUnsubmittedEnforcementData;
 }
