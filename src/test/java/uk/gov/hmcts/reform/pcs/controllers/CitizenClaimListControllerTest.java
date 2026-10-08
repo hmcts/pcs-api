@@ -40,7 +40,7 @@ class CitizenClaimListControllerTest {
     void shouldReturn200WithClaims_WhenClaimsExist() {
         // Given
         UserInfo userDetails = mock(UserInfo.class);
-        when(userDetails.getUid()).thenReturn(IDAM_ID.toString());
+        when(userDetails.getUid()).thenReturn(IDAM_ID);
         User user = mock(User.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
@@ -62,7 +62,7 @@ class CitizenClaimListControllerTest {
     void shouldReturn200WithEmptyList_WhenNoClaimsExist() {
         // Given
         UserInfo userDetails = mock(UserInfo.class);
-        when(userDetails.getUid()).thenReturn(IDAM_ID.toString());
+        when(userDetails.getUid()).thenReturn(IDAM_ID);
         User user = mock(User.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         when(idamAuthenticator.validateAuthToken(AUTH_HEADER)).thenReturn(user);
