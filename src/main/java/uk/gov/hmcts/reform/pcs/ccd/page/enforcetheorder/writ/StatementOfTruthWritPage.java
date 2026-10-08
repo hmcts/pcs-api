@@ -26,15 +26,6 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .pageLabel("Statement of truth")
             .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("statementOfTruthWrit-line-separator", "---")
-            .label("statementOfTruthWrit-declaration",
-                   """
-                  <p class="govuk-body">
-                  I certify that the details I have given are correct and that to my knowledge there is no application
-                  or other procedure pending.</p>
-                  <p class="govuk-body">
-                  I request an order for enforcement in the High Court by writ of possession.</p>
-                  """
-            )
             .complex(PCSCase:: getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getRepaymentCosts)
@@ -43,7 +34,38 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                    "${writStatementOfTruthRepaymentSummaryMarkdown}")
             .done()
             .complex(WritDetails::getStatementOfTruth)
-            .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
+            .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
+            .label(
+                "statementOfTruthWrit-certification-details",
+                """
+                <div class="govuk-!-margin-left-6 govuk-!-margin-top-0">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-top-0">
+                        <li>
+                            The details I have given are correct and that to my knowledge
+                            there is no application or other procedure pending.
+                        </li>
+                        <li>
+                            I request an order for enforcement in the High Court by
+                            Writ of Possession.
+                        </li>
+                        <li>
+                            I believe that the facts stated in this form are true.
+                        </li>
+                    </ul>
+                </div>
+                """
+            )
+            .label(
+                "statementOfTruthWrit-completedBy-heading",
+                """
+                <p class="govuk-body govuk-!-font-weight-bold">
+                    Completed by
+                </p>
+                """
+            )
+            .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy,null,
+                       null,
+                       " ")
             .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
                        WRIT_COMPLETED_BY_CLAIMANT
             )
