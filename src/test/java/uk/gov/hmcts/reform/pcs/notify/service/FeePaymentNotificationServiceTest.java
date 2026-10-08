@@ -109,10 +109,9 @@ class FeePaymentNotificationServiceTest {
             .fileName("claim-form.pdf")
             .claim(claim)
             .build();
-        DocumentEntity removedDocument = DocumentEntity.builder().claim(claim).removed(true).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .caseReference(1234L)
-            .documents(List.of(documentEntity, removedDocument))
+            .documents(List.of(documentEntity))
             .build();
         claim.setPcsCase(pcsCaseEntity);
         FeePaymentEntity feePayment = FeePaymentEntity.builder()
