@@ -47,6 +47,10 @@ postgresql:
       - name: "pr-${CHANGE_ID}-data-store"
       - name: "pr-${CHANGE_ID}-definition-store"
       - name: "pr-${CHANGE_ID}-pcs"
+      # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - START
+      - name: "pr-${CHANGE_ID}-role-assignment"
+      - name: "pr-${CHANGE_ID}-org-role-mapping"
+      # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - END
 ccd:
   enabled: true
   ccd:
@@ -63,7 +67,8 @@ ccd:
     apiGatewayWeb:
       enabled: true
     ras:
-      enabled: false
+      # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW
+      enabled: true
     elastic:
       enabled: true
   ccd-definition-store-api:
@@ -166,7 +171,6 @@ ccd:
             - session-keys
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
-            - session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"
@@ -186,9 +190,9 @@ ccd:
     imageTag: "7.16.1"
     imagePullPolicy: "IfNotPresent"
     logstashJavaOpts: "-Xmx1g -Xms512M"
+  # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - START
   am-role-assignment-service:
     java:
-      nameOverride: ${SERVICE_NAME}-am-role-assignment-service
       image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
       autoscaling:
@@ -222,6 +226,7 @@ ccd:
           secretRef: postgres
           key: PASSWORD
           disabled: false
+    # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - END
 xui-webapp:
   enabled: true
   nodejs:
@@ -241,8 +246,10 @@ xui-webapp:
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_CCD_CASE_ASSIGNMENT_API: http://${SERVICE_NAME}-aac-manage-case-assignment
-      SERVICES_ROLE_ASSIGNMENT_API: http://am-role-assignment-service-aat.service.core-compute-aat.internal
-      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
+      # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - START
+      SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://${SERVICE_NAME}-am-org-role-mapping-service
+      # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - END
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
@@ -259,10 +266,10 @@ xui-webapp:
       PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
       LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
       SERVICE_REF_DATA_MAPPING: >-
-          [{"service":"IA","serviceCodes":["BFA1"]},
-           {"service":"CIVIL","serviceCodes":["AAA6","AAA7"]},
-           {"service":"SSCS","serviceCodes":["BBA3"]},
-           {"service":"PCS","serviceCodes":["AAA3"]}]
+        [{"service":"IA","serviceCodes":["BFA1"]},
+         {"service":"CIVIL","serviceCodes":["AAA6","AAA7"]},
+         {"service":"SSCS","serviceCodes":["BBA3"]},
+         {"service":"PCS","serviceCodes":["AAA3"]}]
       DECENTRALISED_CASE_TYPE_CONFIG: >-
         {"PCS": {"webUrl":"${PCS_FRONTEND_URL}", "nocBaseUrl": "https://${SERVICE_NAME}.preview.platform.hmcts.net"}}
     keyVaults:
@@ -275,7 +282,6 @@ xui-webapp:
           - system-user-password
           - mc-session-secret
           - appinsights-connection-string-mc
-
 
 ccd-case-document-am-api:
   enabled: true
@@ -298,6 +304,50 @@ ccd-case-document-am-api:
           - name: ccd-case-document-am-api-s2s-secret
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
 
+  # TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - START
+am-org-role-mapping-service:
+  enabled: true
+  java:
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
+    ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
+    releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
+    secrets:
+      ORG_ROLE_MAPPING_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+        disabled: false
+    keyVaults:
+      am:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: am-org-role-mapping-service-s2s-secret
+            alias: AM_ORG_ROLE_MAPPING_SERVICE_SECRET
+          - name: orm-IDAM-CLIENT-ID
+            alias: ORM_IDAM_CLIENT_ID
+          - name: orm-IDAM-CLIENT-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_CLIENT_SECRET
+          - name: orm-IDAM-ADMIN-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_ADMIN_PASSWORD
+    devcpuRequests: 500m
+    devmemoryRequests: 1Gi
+    devcpuLimits: 1
+    devmemoryLimits: 4Gi
+    environment:
+      ROLE_ASSIGNMENT_APP_URL: http://${SERVICE_NAME}-am-role-assignment-service
+      AMQP_ENABLED: false
+      ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+      ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
+      ORG_ROLE_MAPPING_DB_USERNAME: hmcts
+      ORG_ROLE_MAPPING_DB_PORT: 5432
+      ORG_ROLE_MAPPING_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      TESTING_SUPPORT_ENABLED: true
+      REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
+      DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
+      ORM_ENV: pr
+      PROFESSIONAL_SCHEDULING_ENABLED: true
+      PROFESSIONAL_REFRESH_API_ENABLED: true
+# TODO HDPI-8939: REMOVE BEFORE MERGE - ONLY ADDED TO ENABLE TESTING IN PREVIEW - END
 
 aac-manage-case-assignment:
   enabled: true
