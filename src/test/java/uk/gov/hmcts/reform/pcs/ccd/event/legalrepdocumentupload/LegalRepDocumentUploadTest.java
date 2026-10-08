@@ -114,7 +114,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             organisationService,
             legalRepPartySelectionService,
             partyService,
-            new CounterClaimDetailsHydrator());
+            new CounterClaimDetailsHydrator(partyService));
 
         setEventUnderTest(legalRepDocumentUpload);
     }
@@ -284,7 +284,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             // Then
             assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
-                .contains("Counterclaim CC1 - Acme Corp.pdf");
+                .contains("Counterclaim CC1 - Defendant 1.pdf");
+            assertThat(result.getLegalRepDocumentUploadDetails().getValidCounterclaims()
+                .getListItems().get(0).getLabel())
+                .contains("Acme Corp");
         }
 
         @Test
@@ -305,7 +308,10 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             // Then
             assertThat(result.getLegalRepDocumentUploadDetails().getCounterclaimDocumentLinks())
-                .contains("Counterclaim CC1 - Jane Smith.pdf");
+                .contains("Counterclaim CC1 - Defendant 1.pdf");
+            assertThat(result.getLegalRepDocumentUploadDetails().getValidCounterclaims()
+                .getListItems().get(0).getLabel())
+                .contains("Jane Smith");
         }
 
         @Test
@@ -447,7 +453,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             assertThat(details).isNotNull();
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks()).contains("govuk-inset-text");
-            assertThat(details.getCounterclaimDocumentLinks()).contains("Counterclaim CC1 - John Doe.pdf");
+            assertThat(details.getCounterclaimDocumentLinks()).contains("Counterclaim CC1 - Defendant 1.pdf");
 
             DynamicStringList validCCs = details.getValidCounterclaims();
             assertThat(validCCs).isNotNull();

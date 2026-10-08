@@ -6,15 +6,18 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.time.LocalDateTime;
@@ -22,12 +25,16 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CounterClaimDetailsHydratorTest {
 
     private static final String CURRENT_ORG_ID = "currentOrgId";
     private static final String OTHER_ORG_ID = "otherOrgId";
+
+    @Mock
+    private PartyService partyService;
 
     @InjectMocks
     private CounterClaimDetailsHydrator underTest;
@@ -112,11 +119,13 @@ class CounterClaimDetailsHydratorTest {
 
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks())
-                .contains("Issued Co")
-                .doesNotContain("Pending Co");
+                .contains("Counterclaim CC1 - Defendant 1.pdf");
             assertThat(details.getValidCounterclaims().getListItems()).hasSize(2);
             assertThat(details.getValidCounterclaims().getListItems().get(0).getCode())
                 .isEqualTo(issuedId.toString());
+            assertThat(details.getValidCounterclaims().getListItems().get(0).getLabel())
+                .contains("Issued Co")
+                .doesNotContain("Pending Co");
         }
 
         @Test
@@ -149,7 +158,7 @@ class CounterClaimDetailsHydratorTest {
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks())
                 .contains("govuk-inset-text")
-                .contains("Counterclaim CC1 - My Firm.pdf")
+                .contains("Counterclaim CC1 - Defendant 1.pdf")
                 .contains("/documents/123/binary");
 
             DynamicStringList validCCs = details.getValidCounterclaims();
@@ -192,13 +201,54 @@ class CounterClaimDetailsHydratorTest {
 
             assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(details.getCounterclaimDocumentLinks())
-                .contains("Counterclaim CC1 - John &lt;Script&gt; Doe &amp; Co.pdf")
+                .contains("Counterclaim CC1 - Defendant 1.pdf")
                 .contains("/documents/456");
 
             DynamicStringList validCCs = details.getValidCounterclaims();
             assertThat(validCCs.getListItems().get(0).getLabel())
                 .contains("Yes, the documents I'm uploading relate to the counterclaim made by "
                     + "John &lt;Script&gt; Doe &amp; Co on Tuesday 22 September 2026");
+        }
+
+        @Test
+        void shouldUsePartyLabelFromPartyServiceWhenAvailable() {
+            UUID ccId = UUID.randomUUID();
+            UUID partyId = UUID.randomUUID();
+            PartyEntity party = PartyEntity.builder()
+                .id(partyId)
+                .organisationId(OTHER_ORG_ID)
+                .firstName("Alice")
+                .lastName("Smith")
+                .build();
+
+            CounterClaimEntity counterClaim = issuedCounterClaim()
+                .id(ccId)
+                .rank(2)
+                .party(party)
+                .claimSubmittedDate(LocalDateTime.of(2026, 9, 22, 10, 0))
+                .build();
+
+            DocumentEntity document = DocumentEntity.builder()
+                .counterClaim(counterClaim)
+                .type(DocumentType.COUNTERCLAIM)
+                .url("http://dm-store/documents/789")
+                .build();
+
+            ClaimEntity claim = ClaimEntity.builder().build();
+            PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .claims(List.of(claim))
+                .counterClaims(List.of(counterClaim))
+                .documents(List.of(document))
+                .build();
+
+            when(partyService.getPartyLabel(claim, partyId)).thenReturn("Defendant 2");
+
+            underTest.hydrate(caseEntity, details, CURRENT_ORG_ID);
+
+            assertThat(details.getShowCounterclaimPage()).isEqualTo(VerticalYesNo.YES);
+            assertThat(details.getCounterclaimDocumentLinks())
+                .contains("Counterclaim CC2 - Defendant 2.pdf")
+                .contains("/documents/789");
         }
 
         @Test

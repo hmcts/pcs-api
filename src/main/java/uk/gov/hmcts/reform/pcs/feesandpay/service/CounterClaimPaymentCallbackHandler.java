@@ -78,6 +78,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
 
             counterClaimEntity.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
             counterClaimEntity.setClaimIssuedDate(LocalDateTime.now(utcClock));
+            assignRankIfMissing(counterClaimEntity);
             scheduleCounterClaimIssuedNotification(counterClaimEntity, feePaymentEntity);
             counterClaimFormScheduler.scheduleCounterClaimFormGeneration(counterClaimId);
 
@@ -138,5 +139,22 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList();
+    }
+
+    private void assignRankIfMissing(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity.getRank() != null) {
+            return;
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null
+            && !counterClaimEntity.getPcsCase().getCounterClaims().isEmpty()) {
+            counterClaimEntity.getPcsCase().assignCounterClaimRank(counterClaimEntity);
+        } else if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getId() != null) {
+            int nextRank = counterClaimRepository.countByPcsCase_IdAndStatus(
+                counterClaimEntity.getPcsCase().getId(), CounterClaimState.COUNTER_CLAIM_ISSUED
+            ) + 1;
+            counterClaimEntity.setRank(nextRank);
+        } else {
+            counterClaimEntity.setRank(1);
+        }
     }
 }

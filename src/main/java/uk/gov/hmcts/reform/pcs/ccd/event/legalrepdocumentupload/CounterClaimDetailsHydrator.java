@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -29,6 +30,16 @@ public class CounterClaimDetailsHydrator {
 
     private static final DateTimeFormatter CC_LABEL_DATE_FORMAT =
         DateTimeFormatter.ofPattern("EEEE d MMMM uuuu", Locale.UK);
+
+    private final PartyService partyService;
+
+    public CounterClaimDetailsHydrator(PartyService partyService) {
+        this.partyService = partyService;
+    }
+
+    public CounterClaimDetailsHydrator() {
+        this(null);
+    }
 
     public void hydrate(
         PcsCaseEntity pcsCaseEntity,
@@ -53,16 +64,20 @@ public class CounterClaimDetailsHydrator {
         for (int i = 0; i < counterClaims.size(); i++) {
             CounterClaimEntity cc = counterClaims.get(i);
             int ccIndex = i + 1;
-            String defName = getPartyDisplayName(cc.getParty(), ccIndex);
-            String escapedDefName = HtmlUtils.htmlEscape(defName);
+            int ccRank = cc.getRank() != null ? cc.getRank() : ccIndex;
+            String partyLabel = getPartyLabel(pcsCaseEntity, cc, ccIndex);
+            String escapedPartyLabel = HtmlUtils.htmlEscape(partyLabel);
 
-            String fileName = String.format("Counterclaim CC%d - %s.pdf", ccIndex, escapedDefName);
+            String fileName = String.format("Counterclaim CC%d - %s.pdf", ccRank, escapedPartyLabel);
             String docUrl = findCounterclaimDocumentUrl(pcsCaseEntity, cc);
 
             linksHtml.append(String.format(
                 "  <p class=\"govuk-body\"><a href=\"%s\" target=\"_blank\" rel=\"noopener noreferrer\">%s (Open in a new tab)</a></p>%n",
                 docUrl, fileName
             ));
+
+            String defName = getPartyDisplayName(cc.getParty(), ccIndex);
+            String escapedDefName = HtmlUtils.htmlEscape(defName);
 
             String formattedDate = cc.getClaimSubmittedDate() != null
                 ? " on " + cc.getClaimSubmittedDate().format(CC_LABEL_DATE_FORMAT)
@@ -111,6 +126,21 @@ public class CounterClaimDetailsHydrator {
                 .collect(joining(" "));
             if (isNotBlank(fullName)) {
                 return fullName;
+            }
+        }
+        return "Defendant " + fallbackIndex;
+    }
+
+    private String getPartyLabel(PcsCaseEntity pcsCaseEntity, CounterClaimEntity cc, int fallbackIndex) {
+        if (partyService != null && pcsCaseEntity != null && pcsCaseEntity.getMainClaim() != null
+            && cc.getParty() != null && cc.getParty().getId() != null) {
+            try {
+                String label = partyService.getPartyLabel(pcsCaseEntity.getMainClaim(), cc.getParty().getId());
+                if (StringUtils.isNotBlank(label)) {
+                    return label;
+                }
+            } catch (Exception ignored) {
+                // Fallback to default label
             }
         }
         return "Defendant " + fallbackIndex;

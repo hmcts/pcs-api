@@ -101,6 +101,7 @@ class CounterClaimServiceTest {
         assertThat(saved).contains(captured);
         assertThat(captured.getClaimType()).isEqualTo(CounterClaimType.PAYMENT_OR_COMPENSATION);
         assertThat(captured.getStatus()).isEqualTo(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED);
+        assertThat(captured.getRank()).isNull();
         assertThat(captured.getParty()).isEqualTo(partyEntity);
     }
 

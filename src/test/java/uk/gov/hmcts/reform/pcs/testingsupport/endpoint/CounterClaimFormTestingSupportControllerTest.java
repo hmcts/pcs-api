@@ -63,6 +63,7 @@ class CounterClaimFormTestingSupportControllerTest {
         assertThat(response.getBody()).isEqualTo(COUNTER_CLAIM_ID);
         assertThat(counterClaim.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaim.getClaimIssuedDate()).isEqualTo(FIXED_NOW);
+        assertThat(counterClaim.getRank()).isEqualTo(1);
         verify(counterClaimRepository).save(counterClaim);
         verify(counterClaimFormScheduler).scheduleCounterClaimFormGeneration(COUNTER_CLAIM_ID);
     }

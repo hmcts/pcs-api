@@ -112,6 +112,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         assertThat(counterClaimEntity.getStatus()).isEqualTo(CounterClaimState.COUNTER_CLAIM_ISSUED);
         assertThat(counterClaimEntity.getClaimIssuedDate()).isEqualTo(LocalDateTime.of(2026, 6, 1, 10, 0));
+        assertThat(counterClaimEntity.getRank()).isEqualTo(1);
 
         verify(schedulerClient).scheduleIfNotExists(taskInstanceCaptor.capture());
 
