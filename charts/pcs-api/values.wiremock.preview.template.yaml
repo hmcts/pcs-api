@@ -70,7 +70,7 @@ wiremock:
           "urlPath": "/fees-register/fees/lookup",
           "queryParameters": {
             "service": {
-              "equalTo": "general"
+              "equalTo": "other"
             },
             "jurisdiction1": {
               "equalTo": "civil"
@@ -82,10 +82,16 @@ wiremock:
               "equalTo": "default"
             },
             "event": {
-              "equalTo": "general application"
+              "equalTo": "miscellaneous"
+            },
+            "applicant_type": {
+              "equalTo": "all"
+            },
+            "amount_or_volume": {
+              "equalTo": "1"
             },
             "keyword": {
-              "equalTo": "ApplicationToVaryJudgmentOrSuspendEnforcement"
+              "equalTo": "AppnToVaryOrSuspend"
             }
           }
         },
@@ -96,8 +102,8 @@ wiremock:
           },
           "jsonBody": {
             "code": "FEE0458",
-            "description": "Stub for application to vary a judgment or suspend enforcement",
-            "version": 1,
+            "description": "Application to vary a judgement or suspend enforcement",
+            "version": 4,
             "fee_amount": 16.0
           }
         }

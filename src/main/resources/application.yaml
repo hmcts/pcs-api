@@ -228,12 +228,14 @@ fees:
       event: general application
       keyword: GAOnNotice
     genAppSuspendFee:
-      service: general
+      service: other
       jurisdiction1: civil
       jurisdiction2: civil
       channel: default
-      event: general application
-      keyword: ApplicationToVaryJudgmentOrSuspendEnforcement
+      event: miscellaneous
+      applicantType: all
+      amountOrVolume: 1
+      keyword: AppnToVaryOrSuspend
     counterClaimFlatFee:
       service: other
       jurisdiction1: civil
