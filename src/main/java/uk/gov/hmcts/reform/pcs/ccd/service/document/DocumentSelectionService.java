@@ -122,7 +122,6 @@ public class DocumentSelectionService {
                 .filter(Objects::nonNull)
                 .filter(document -> isInCategory(document, category))
                 .filter(document -> document.getType() != DocumentType.DEFENDANT_ACCESS_CODE)
-                .filter(document -> !document.isRemoved())
                 .filter(document -> document.getCounterClaim() == null
                     || document.getCounterClaim().getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED)
                 .sorted(DOCUMENT_ORDER)
