@@ -285,6 +285,11 @@ send-letter:
   # silently posting to AAT.
   url: ${SEND_LETTER_URL:http://localhost:8485}
 
+sdp-export:
+  enabled: ${SDP_EXPORT_ENABLED:false}
+  account-url: ${SDP_EXPORT_ACCOUNT_URL:}
+  container: ${SDP_EXPORT_CONTAINER:sdp-export}
+
 logging:
   level:
     uk.gov.hmcts.reform.pcs.ccd.service.bulkprint: INFO
