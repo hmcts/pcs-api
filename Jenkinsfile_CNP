@@ -117,7 +117,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup()
+    enableHighLevelDataSetup("", true)
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
@@ -248,11 +248,22 @@ withPipeline(type, product, component) {
   afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
+      env.E2E_TEST_FAILED = "true"
     }
   }
 
   afterSuccess('E2eTest:aat') {
     env.ENVIRONMENT= "prod"
+  }
+
+  // catchError() in the shared library's sectionDeployToAKS swallows the e2e failure
+  // throw error here to aborts the build before Helm chart publish / prod deploy run.
+  before('Publish Helm chart') {
+    onMaster {
+      if (env.E2E_TEST_FAILED == "true") {
+        error('Aborting pipeline: AAT E2E tests failed')
+      }
+    }
   }
 }
 
