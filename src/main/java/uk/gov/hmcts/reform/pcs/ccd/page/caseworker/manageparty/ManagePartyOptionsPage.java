@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions13;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -32,6 +33,7 @@ import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.LAST_PARTY_ERROR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Component
 @RequiredArgsConstructor
@@ -39,8 +41,15 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String MANAGE_PARTY_OPTIONS_FIELD = "addParty_ManagePartyOptions";
+    private static final String MANAGE_PARTY_OPTIONS_1_3_FIELD = "addParty_ManagePartyOptions_1_3";
     private static final String REMOVE_PARTY_CONDITION =
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.REMOVE_PARTY);
+    private static final String ADD_PARTY_CONDITION = ShowConditions.or(
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.ADD_PARTY),
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions13.ADD_PARTY));
+    private static final String UPDATE_PARTY_CONDITION = ShowConditions.or(
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.UPDATE),
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions13.UPDATE));
     private static final String DATE_OF_BIRTH_UNKNOWN = "Date of birth unknown";
     private static final String ADDRESS_UNKNOWN = "Address unknown";
     private static final String REMOVE_PARTY_REQUIRED_ERROR = "Which party are you removing? is required";
@@ -61,11 +70,17 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             .page("managePartyOptions", this::midEvent)
             .pageLabel("Update, add or remove")
             .label("managePartyOptions-separator", "---")
+            .readonly(PCSCase::getFeatureFlags, ShowConditions.NEVER_SHOW, true)
             .complex(PCSCase::getAddPartyDetails)
-                .mandatory(AddPartyDetails::getManagePartyOptions)
+                .mandatory(
+                    AddPartyDetails::getManagePartyOptions13,
+                    ShowConditions.featureFlagsDisabled(RELEASE_1_DOT_4))
+                .mandatory(
+                    AddPartyDetails::getManagePartyOptions,
+                    ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4))
                 .mandatory(
                     AddPartyDetails::getAddPartyType,
-                    ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.ADD_PARTY))
+                    ADD_PARTY_CONDITION)
             .done()
             .complex(PCSCase::getRemovePartyDetails)
                 .readonly(RemovePartyDetails::getCanSelectParty, ShowConditions.NEVER_SHOW, true)
@@ -79,7 +94,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             .complex(PCSCase::getUpdatePartyDetails)
                 .mandatory(
                     UpdatePartyDetails::getPartyToUpdate,
-                    ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.UPDATE))
+                    UPDATE_PARTY_CONDITION)
                 .readonly(UpdatePartyDetails::getPreviouslySelectedPartyId, ShowConditions.NEVER_SHOW, true)
                 .readonly(UpdatePartyDetails::getPartyType, ShowConditions.NEVER_SHOW, true)
             .done();
@@ -88,6 +103,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        syncManagePartyOptions(caseData.getAddPartyDetails());
 
         if (caseData.getAddPartyDetails().getManagePartyOptions() == ManagePartyOptions.UPDATE) {
             prepopulateForUpdate(caseData.getUpdatePartyDetails(), details.getId());
@@ -102,6 +118,13 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(caseData).build();
+    }
+
+    private void syncManagePartyOptions(AddPartyDetails addPartyDetails) {
+        if (addPartyDetails.getManagePartyOptions() == null && addPartyDetails.getManagePartyOptions13() != null) {
+            addPartyDetails.setManagePartyOptions(
+                ManagePartyOptions.valueOf(addPartyDetails.getManagePartyOptions13().name()));
+        }
     }
 
     private void prepopulateForUpdate(UpdatePartyDetails updatePartyDetails, long caseReference) {
