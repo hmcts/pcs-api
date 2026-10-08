@@ -1,13 +1,15 @@
 import { generateRandomFirstAndLastNames } from "@utils/common/userData.utils";
+import { testDocument, testDocumentListValue } from '@utils/common/uploadDocument.utils';
 
 const names = generateRandomFirstAndLastNames({
 countOfFirstNamesToGenerate: 3,
 countOfLastNamesToGenerate: 3,
 });
 
+
 export const submitCaseApiData = {
   submitCaseEventName: 'resumePossessionClaim',
-  submitCasePayload: {
+  submitCasePayload: ()=> ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -84,8 +86,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadNoDefendants: {
+  }),
+  submitCasePayloadNoDefendants: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -137,7 +139,7 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
+  }),
   submitCasePayloadOnlyMain: {
     regionId: '1',
     caseManagementLocationNumber: '20262',
@@ -211,7 +213,7 @@ export const submitCaseApiData = {
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
-  submitCasePayloadCaseTab: {
+  submitCasePayloadCaseTab: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -303,8 +305,8 @@ export const submitCaseApiData = {
     applicationWithClaim: 'NO',
     languageUsed: 'ENGLISH',
     completionNextStep: 'SUBMIT_AND_PAY_NOW'
-  },
-  submitCasePayloadCaseSummary: {
+  }),
+  submitCasePayloadCaseSummary: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -415,8 +417,8 @@ export const submitCaseApiData = {
       positionParty: 'fg',
       agreementClaimant: ['BELIEVE_TRUE'],
     },
-  },
-  submitCasePayloadCaseDetails: {
+  }),
+  submitCasePayloadCaseDetails: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -494,14 +496,7 @@ export const submitCaseApiData = {
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '1429',
     rentArrears_StatementDocuments: [
-      {
-        id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056`,
-          document_binary_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary`,
-          document_filename: 'rentStatement.pdf',
-        }
-      }
+      testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
@@ -564,8 +559,8 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: [],
       agreementDefendantLegalRep: []
     },
-  },
-  submitCasePayloadCaseFileView: {
+  }),
+  submitCasePayloadCaseFileView: () =>({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -636,14 +631,7 @@ export const submitCaseApiData = {
     tenancy_TenancyLicenceDate: '2013-01-01',
     tenancy_HasCopyOfTenancyLicence: 'YES',
     tenancy_TenancyLicenceDocuments: [
-      {
-        id: '3bbe3b5d-8a49-46cf-ac3e-8863a7aea372',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765`,
-          document_binary_url: `${process.env.DM_STORE}/documents/b5aacf07-97b4-4455-9140-c9220725a765/binary`,
-          document_filename: 'tenancy.pdf',
-        }
-      }
+      testDocumentListValue('tenancy.pdf')
     ],
     claimDueToRentArrears: 'Yes',
     rentArrears_RentArrearsGrounds: [
@@ -658,27 +646,13 @@ export const submitCaseApiData = {
     notice_PostedDate: '2015-12-01',
     notice_AbleToUploadDocument: 'Yes',    
     notice_Documents: [
-      {
-        id: '83193877-14e5-4955-b589-c80fbe0edb53',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e`,
-          document_binary_url: `${process.env.DM_STORE}/documents/341d1564-ee21-4394-af5d-de45aeb0951e/binary`,
-          document_filename: 'NoticeDetails.pdf',
-        }
-      }
+      testDocumentListValue('NoticeDetails.pdf')
     ],
     rentDetails_CurrentRent: '1200',
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '171',
     rentArrears_StatementDocuments: [
-      {
-        id: '468ec779-350f-4484-9694-ea6b3285d86e',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52`,
-          document_binary_url: `${process.env.DM_STORE}/documents/c88969c7-b5c7-4f87-89b7-5ec0c74c3e52/binary`,
-          document_filename: `rentStatement.pdf`,
-        }
-      }
+      testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '123300',
     rentArrears_RecoveryAttempted: 'YES',
@@ -730,13 +704,10 @@ export const submitCaseApiData = {
             valueLabel: 'Inspection or report'
           },
           description: 'inspection',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/9b3b7d09-188c-4d6b-9b11-8dcc78978c80`,
-            document_binary_url: `${process.env.DM_STORE}/documents/9b3b7d09-188c-4d6b-9b11-8dcc78978c80/binary`,
-            document_filename: 'inspectionOrReport.pdf',
-          }
+          document:
+            testDocument('inspectionOrReport.pdf')
+          
         },
-        id: '87b02265-f876-43da-bcd4-2cbb998cb948'
       },
       {
         value: {
@@ -745,17 +716,14 @@ export const submitCaseApiData = {
               code: '64af55f3-bb64-403b-832d-01df63bb47b9',
               label: 'Other document'
             },
+            
             valueCode: '64af55f3-bb64-403b-832d-01df63bb47b9',
             valueLabel: 'Other document'
           },
           description: 'other doc',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/85ce1a13-4606-4519-aafd-b6ce3a0c2d3c`,
-            document_binary_url: `${process.env.DM_STORE}/documents/85ce1a13-4606-4519-aafd-b6ce3a0c2d3c/binary`,
-            document_filename: 'otherDocument.pdf',
-          }
+          document:
+          testDocument(`otherDocument.pdf`)
         },
-        id: '66246982-90b5-407d-8b5b-59565a0cb091'
       },
       {
         value: {
@@ -768,13 +736,9 @@ export const submitCaseApiData = {
             valueLabel: 'Legal aid certificate'
           },
           description: 'legal aid',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/b4dea258-4a5c-4a00-b217-3ccacbdb1d8f`,
-            document_binary_url: `${process.env.DM_STORE}/documents/b4dea258-4a5c-4a00-b217-3ccacbdb1d8f/binary`,
-            document_filename: 'legalAidCertificate.pdf',
-          }
+          document: 
+          testDocument(`legalAidCertificate.pdf`)
         },
-        id: '2beff9b1-44d2-4e1a-9ea5-4c9d29e9cc39'
       },
       {
         value: {
@@ -787,13 +751,9 @@ export const submitCaseApiData = {
             valueLabel: 'Notice for service out of the jurisdiction'
           },
           description: 'notice of service',
-          document: {
-            document_url: `${process.env.DM_STORE}/documents/90c34915-95a9-492e-a796-12fa2314f7b6`,
-            document_binary_url: `${process.env.DM_STORE}/documents/90c34915-95a9-492e-a796-12fa2314f7b6/binary`,
-            document_filename: 'noticeForService.pdf',
-          }
+          document: 
+          testDocument(`noticeForService.pdf`)
         },
-        id: '3b0a1f05-18c5-42ba-9e67-e81347125398'
       }
     ],
     applicationWithClaim: 'NO',
@@ -814,8 +774,8 @@ export const submitCaseApiData = {
       agreementDefendantLegalRep: []
     }
 
-  },
-  submitCasePayloadDefault: {
+  }),
+  submitCasePayloadDefault: () => ( {
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -893,14 +853,7 @@ export const submitCaseApiData = {
     rentDetails_Frequency: 'WEEKLY',
     rentDetails_CalculatedDailyCharge: '1429',
     rentArrears_StatementDocuments: [
-      {
-        id: '77d43175-cf1f-4feb-885f-0a0c454391c2',
-        value: {
-          document_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056`,
-          document_binary_url: `${process.env.DM_STORE}/documents/fee16b4c-b9f2-4697-8f5e-10db5c51e056/binary`,
-          document_filename: 'rentStatement.pdf',
-        }
-      }
+     testDocumentListValue('rentStatement.pdf')
     ],
     rentArrears_Total: '23999',
     rentArrears_RecoveryAttempted: 'NO',
@@ -963,7 +916,7 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: ['AGREED'],
       agreementDefendantLegalRep: []
     },
-  },
+  }),
 
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,

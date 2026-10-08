@@ -24,8 +24,8 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   createPayload = createCaseApiData.createCasePayload
   submitPayload = testInfo.title.toLowerCase().includes('single defendant')
-    ? submitCaseApiData.submitCasePayloadDefault
-    : submitCaseApiData.submitCasePayloadCaseFileView;
+    ? submitCaseApiData.submitCasePayloadDefault()
+    : submitCaseApiData.submitCasePayloadCaseFileView();
 
   await test.step('Create and submit case, update payment and retrieve party details', async () => {
     await performAction('createCaseAPI', { data: createPayload });
@@ -103,7 +103,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Defendant`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitPayload,
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
@@ -151,7 +151,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Claimant`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitPayload,
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateClaimantDetails', {
@@ -201,7 +201,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('confirmAddParty', {
       userType: `Litigation friend`,
       name: `${firstName} ${lastName}`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitPayload,
     });
     await performValidation('mainHeader', home.caseParties);
     await performAction('validateDefendantDetails', {
@@ -249,7 +249,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
       await performAction('clickButton', checkYourAnswersManageParties.submitButton);
       await performAction('confirmPartyDetailsUpdated', {
         userType: `Defendant's details`,
-        submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+        submitPayload: submitPayload
       });
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
     });
@@ -279,8 +279,8 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
   });
 
   test(`Case management - As a Case Worker Update Claimant details on the case  @CM @regression`, async () => {
-    let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
-    let party = `${submitPayLoad.claimantName} - Claimant 1`;
+  
+    let party = `${submitPayload.claimantName} - Claimant 1`;
     await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
@@ -301,7 +301,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     await performAction('clickButton', checkYourAnswersManageParties.submitButton);
     await performAction('confirmPartyDetailsUpdated', {
       userType: `Claimant's details`,
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView
+      submitPayload: submitPayload,
     });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage parties');
   });

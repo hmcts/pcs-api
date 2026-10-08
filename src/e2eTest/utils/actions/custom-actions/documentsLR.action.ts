@@ -210,7 +210,7 @@ export class DocumentsAction implements IAction {
   private cyaChangeLinksMap: Map<string, { text: string; href: string; locator: Locator } | null> = new Map();
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
-    const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    const tables = page.locator(`//table[@aria-label="${table.name}"]`);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
@@ -301,7 +301,7 @@ export class DocumentsAction implements IAction {
     // ensure the CYA page/table is fully settled before the caller clicks Submit -
     // stops a race where Submit is clicked while Angular is still finishing render
     await test.step('Waiting for CYA page to be fully settled before Submit', async () => {
-      const cyaTable = page.locator('//table[@aria-describedby="check your answers table"]');
+      const cyaTable = page.locator('//table[@aria-label="check your answers table"]');
       await expect(cyaTable.first()).toBeVisible({ timeout: 15000 });
       await page.waitForLoadState();
     });
@@ -318,7 +318,7 @@ export class DocumentsAction implements IAction {
    */
   private async validateChangeLinks(page: Page) {
     const misMatches: string[] = [];
-    const cyaTable = page.locator('//table[@aria-describedby="check your answers table"]');
+    const cyaTable = page.locator('//table[@aria-label="check your answers table"]');
 
     await test.step('Validating change links navigate to the correct question page', async () => {
       for (const [key, changeInfo] of this.cyaChangeLinksMap.entries()) {
