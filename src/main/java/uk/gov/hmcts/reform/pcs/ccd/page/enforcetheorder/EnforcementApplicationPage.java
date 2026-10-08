@@ -150,8 +150,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
             pcsCase.setFormattedDefendantNames(defendants.stream()
-                                                   .map(defendant -> resolvePartyName(defendant.getValue()) + "<br>")
-                                                   .collect(Collectors.joining("\n")));
+                                                   .map(defendant -> "<div class=\"govuk-!-margin-bottom-2\">"
+                                                       + resolvePartyName(defendant.getValue()) + "</div>")
+                                                   .collect(Collectors.joining()));
         }
     }
 

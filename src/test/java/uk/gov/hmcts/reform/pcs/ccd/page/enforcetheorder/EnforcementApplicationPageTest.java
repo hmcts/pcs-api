@@ -58,7 +58,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("John Doe<br>");
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
     }
 
     @Test
@@ -72,7 +72,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("Person unknown<br>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>");
     }
 
     @Test
@@ -90,9 +90,9 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("John Doe<br>\n"
-                        + "Test Testing<br>\n"
-                        + "Third Def<br>");
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
     }
 
     @Test
@@ -110,9 +110,9 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-            .isEqualTo("John Doe<br>\n"
-                           + "Person unknown<br>\n"
-                           + "Third Def<br>");
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
     }
 
     @Test
