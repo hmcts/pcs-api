@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -12,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -47,12 +44,9 @@ public class GenAppWaTaskService {
             return;
         }
 
-        List<DocumentEntity> documents = genAppEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved())
-            .toList();
-
         PcsCaseEntity pcsCaseEntity = genAppEntity.getPcsCase();
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, party,
+                                                                           genAppEntity.getDocuments());
     }
 
 }

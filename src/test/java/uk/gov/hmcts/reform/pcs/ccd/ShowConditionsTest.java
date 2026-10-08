@@ -23,6 +23,7 @@ import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_L
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_2;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_3;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1B;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.WALES_MAKE_A_CLAIM;
 
@@ -110,7 +111,7 @@ class ShowConditionsTest {
 
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
             "CUI_RESPOND_TO_CLAIM_LR", "RELEASE_1B", "MAKE_ORDER"},
         mode = INCLUDE)
     void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
@@ -121,7 +122,7 @@ class ShowConditionsTest {
     @ParameterizedTest
     @EnumSource(
         value = FeatureFlag.class,
-        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
             "CUI_RESPOND_TO_CLAIM_LR", "RELEASE_1B", "MAKE_ORDER"},
         mode = EXCLUDE
     )
@@ -146,6 +147,8 @@ class ShowConditionsTest {
                       "featureFlags.release1dot3Enabled=\"YES\""),
             arguments(List.of(RELEASE_1B),
                       "featureFlags.release1bEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_4),
+                      "featureFlags.release1dot4Enabled=\"YES\""),
             arguments(List.of(CASEWORKER_EVENTS),
                       "featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(WALES_MAKE_A_CLAIM),
