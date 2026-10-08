@@ -27,7 +27,7 @@ test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
 
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
     await performAction('updatePaymentAPI');
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await dismissCookieBanner(page, 'additional');

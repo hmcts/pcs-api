@@ -11,7 +11,7 @@ import { home } from '@data/page-data';
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
   
