@@ -9,7 +9,7 @@ global:
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresUsername: "hmcts"
-  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  amRoleAssignmentServiceUrl: http://${SERVICE_NAME}-am-role-assignment-service
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
@@ -24,7 +24,7 @@ java:
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
-    ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+    ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -110,6 +110,7 @@ ccd:
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
