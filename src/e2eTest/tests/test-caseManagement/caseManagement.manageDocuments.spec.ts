@@ -22,7 +22,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   initializeCMExecutor(page);
   await test.step('Create and submit case, update payment, submit defendant response, retrieve party details and create applications', async () => {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
     await performAction('updatePaymentAPI');
     await performAction('getCaseAPI', 'Link Solicitor');
@@ -30,9 +30,9 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
     await performAction('updatePaymentAPI', { amt: 3500, app: 'Counter Claim' });
     await performAction('getAllPartyDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadCaseFileView
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadCaseFileView().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadCaseFileView().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadCaseFileView()
     });
 
     genAppPayload =
@@ -92,7 +92,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -128,13 +128,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName, date)
     });
   });
@@ -164,13 +164,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersAmendDocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAmendDocument.submitButton);
-    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmAmend', { fileName: fileName.replace(/\.[^.]+$/, ''), party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView() });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Amend');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Uncategorised documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       ccPayload : midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(),
       caseWorkerAmend: CaseManagementCommonUtils.renameDocument(fileName)
     });
@@ -195,7 +195,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView()});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -243,13 +243,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, date)
     });
   });
@@ -274,13 +274,13 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
     await clearBrowserSession(page, context);
@@ -297,7 +297,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Evidence',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName)
     });
   });
@@ -322,7 +322,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
       nextPage: checkYourAnswersUploadADocument.mainHeader
     });
     await performAction('clickButton', checkYourAnswersUploadADocument.submitButton);
-    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView, });
+    await performAction('confirmUpload', { fileName: fileName, app: appType, party: party, fileDate: date, submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(), });
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Manage documents: Upload');
     await performAction('clickTab', home.caseFileView);
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
@@ -345,11 +345,11 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Property documents',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
     });
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView,
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       allowEmptyFolder: true
     });
 

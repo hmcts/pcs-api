@@ -325,6 +325,10 @@ defendant-response-notification:
     max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
     backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
 
+attach-document:
+  max-retries: ${ATTACH_DOCUMENT_MAX_RETRIES:10}
+  backoff-delay-seconds: ${ATTACH_DOCUMENT_BACKOFF_DELAY_SECONDS:600s}
+
 fee-payment-notification:
   request:
     max-retries: ${FEE_PAYMENT_NOTIFICATION_MAX_RETRIES:5}
@@ -375,3 +379,7 @@ ccd:
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
+
+docweave:
+  templates:
+    allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}

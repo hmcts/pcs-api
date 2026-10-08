@@ -40,7 +40,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const isMultiDef = title.toLowerCase().includes('multi def');
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
+  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload() : submitCaseApiData.submitCasePayloadDefault();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
 
   await performAction('submitCaseAPI', { data: submitPayload });
