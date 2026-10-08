@@ -17,5 +17,4 @@ export default {
   'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
   'makeAnApplicationstatementOfTruth': 'statementOfTruth',
   'makeAnApplication/submit': 'checkYourAnswersGenApps',
-  'makeAnApplication/confirm': 'applicationSubmitted'
 };

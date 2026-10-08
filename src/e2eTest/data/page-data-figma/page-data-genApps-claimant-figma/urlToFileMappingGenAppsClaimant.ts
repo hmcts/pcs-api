@@ -13,5 +13,4 @@ export default {
   'claimantMakeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
   'claimantMakeAnApplicationstatementOfTruth': 'statementOfTruthClaimant',
   'claimantMakeAnApplication/submit': 'checkYourAnswersClaimantGenApps',
-  'claimantMakeAnApplication/confirm': 'applicationSubmitted',
 };
