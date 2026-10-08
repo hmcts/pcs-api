@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Objects;
-import java.util.UUID;
 
 public class IdamUserIdUuidConverter implements UserType<String> {
 
@@ -45,9 +44,9 @@ public class IdamUserIdUuidConverter implements UserType<String> {
     public void nullSafeSet(PreparedStatement st, String value, int index, SharedSessionContractImplementor session)
         throws SQLException {
         if (value == null) {
-            st.setNull(index, Types.OTHER);
+            st.setNull(index, Types.VARCHAR);
         } else {
-            st.setObject(index, UUID.fromString(value), Types.OTHER);
+            st.setString(index, value);
         }
     }
 
