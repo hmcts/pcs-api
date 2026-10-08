@@ -1210,6 +1210,10 @@ export class CreateCaseAction implements IAction {
           caseSummary.set(`Contact phone number`, submitPayLoad.claimantContactPhoneNumber);
         break;
 
+      case 'Claimant registration and licensing':
+        caseSummary.set(`Are you an exempt landlord under Part 1 of the Housing (Wales) Act 2014?`, formatWord(submitPayLoad.isExemptLandlord));
+        break;
+
       case 'Claimant circumstances':
         caseSummary.set(`Is there any information you’d like to provide about the claimant’s circumstances?`, formatWord(submitPayLoad.claimantCircumstancesSelect));
         if (submitPayLoad.claimantCircumstancesSelect === 'YES') {
