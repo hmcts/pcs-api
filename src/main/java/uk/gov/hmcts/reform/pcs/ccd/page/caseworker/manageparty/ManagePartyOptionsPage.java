@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions_1_3;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions13;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -46,10 +46,10 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.REMOVE_PARTY);
     private static final String ADD_PARTY_CONDITION = ShowConditions.or(
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.ADD_PARTY),
-        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions_1_3.ADD_PARTY));
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions13.ADD_PARTY));
     private static final String UPDATE_PARTY_CONDITION = ShowConditions.or(
         ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_FIELD, ManagePartyOptions.UPDATE),
-        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions_1_3.UPDATE));
+        ShowConditions.fieldEquals(MANAGE_PARTY_OPTIONS_1_3_FIELD, ManagePartyOptions13.UPDATE));
     private static final String DATE_OF_BIRTH_UNKNOWN = "Date of birth unknown";
     private static final String ADDRESS_UNKNOWN = "Address unknown";
     private static final String REMOVE_PARTY_REQUIRED_ERROR = "Which party are you removing? is required";

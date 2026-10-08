@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum ManagePartyOptions_1_3 implements HasLabel {
+public enum ManagePartyOptions13 implements HasLabel {
 
     UPDATE("Update party details"),
     ADD_PARTY("Add a party"),

@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions_1_3;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions13;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -100,7 +100,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder()
-                                 .managePartyOptions13(ManagePartyOptions_1_3.ADD_PARTY)
+                                 .managePartyOptions13(ManagePartyOptions13.ADD_PARTY)
                                  .build())
             .updatePartyDetails(UpdatePartyDetails.builder().build())
             .build();
