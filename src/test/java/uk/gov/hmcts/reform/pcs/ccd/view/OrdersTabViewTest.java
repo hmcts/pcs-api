@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.OrdersTableRenderer;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +29,8 @@ class OrdersTabViewTest {
 
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
+    @Mock
+    private OrdersTableRenderer ordersTableRenderer;
 
     @InjectMocks
     private OrdersTabView underTest;

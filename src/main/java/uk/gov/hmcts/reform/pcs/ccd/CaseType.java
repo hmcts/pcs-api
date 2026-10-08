@@ -359,13 +359,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildOrdersTab(
         ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+
         builder.tab("orders", "Orders")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
             .showCondition(
                 ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS)
             )
-            .field("ordersTab_PossessionOrder")
-            .field("ordersTab_PossessionOrderUploadedDate");
+            .label("ordersTableLabel", null, "${ordersTab_TableMarkup}")
+            .field("ordersTab_TableMarkup", NEVER_SHOW);
     }
 
 }

@@ -26,5 +26,8 @@ public class OrdersTab {
     @CCD(label = "Uploaded")
     private LocalDateTime possessionOrderUploadedDate;
 
+    @CCD(label = "Orders table", searchable = false)
+    private String tableMarkup;
+
 
 }
