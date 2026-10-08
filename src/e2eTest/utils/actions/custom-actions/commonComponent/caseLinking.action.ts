@@ -156,7 +156,7 @@ export class CaseLinking implements IAction {
   private async createCases(count: number): Promise<void> {
     for (let i = 0; i < count; i++) {
       await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+      await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
       await performAction('updatePaymentAPI');
       const caseNumber = process.env.CASE_NUMBER;
       if (!caseNumber) {
