@@ -56,8 +56,7 @@ public class FeePaymentNotificationService {
 
     private void createTranslationTaskForClaim(long caseReference, ClaimEntity claimEntity) {
         List<DocumentEntity> documents = claimEntity.getPcsCase().getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getClaim() != null
+            .filter(document -> document.getClaim() != null
                 && document.getClaim().getId().equals(claimEntity.getId()))
             .toList();
 
