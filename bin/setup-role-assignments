@@ -4,7 +4,7 @@ set -eu
 # LOCALLY:
 IDAM_DATA_STORE_SYSTEM_USER_USERNAME=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-username)
 IDAM_DATA_STORE_SYSTEM_USER_PASSWORD=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name idam-data-store-system-user-password)
-ORG_ROLE_MAPPING_SERVICE_URL=http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
+ORG_ROLE_MAPPING_SERVICE_URL=https://am-org-role-mapping-service-pcs-api-pr-2845.preview.platform.hmcts.net
 
 export CCD_API_GATEWAY_IDAM_CLIENT_SECRET=$(az keyvault secret show --vault-name ccd-aat -o tsv --query value --name ccd-api-gateway-oauth2-client-secret)
 export IDAM_API_BASE_URL=https://idam-api.aat.platform.hmcts.net
