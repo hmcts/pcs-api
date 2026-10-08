@@ -31,7 +31,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
 
   const title = testInfo.title;
   const isMultiDef = title.toLowerCase().includes('multi def');
-  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload : submitCaseApiData.submitCasePayloadDefault;
+  submitPayload = isMultiDef ? submitCaseApiData.submitCasePayload() : submitCaseApiData.submitCasePayloadDefault();
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitPayload });
   await performAction('updatePaymentAPI');
@@ -45,7 +45,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload;
   } else if (title.includes('GENADJ_WITHOUT_NOTICE')) {
     genAppPayload = makeAnApplicationApiData.makeAnApplicationAdjournWithOutNoticePayload;
-  } 
+  }
 
   if (genAppPayload) {
     await performAction('makeAnApplicationAPI', {
