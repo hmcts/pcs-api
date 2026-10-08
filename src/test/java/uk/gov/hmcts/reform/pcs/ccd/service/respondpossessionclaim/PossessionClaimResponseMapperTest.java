@@ -43,7 +43,7 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapDefendantDataWithContactDetails() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantPartyId = UUID.randomUUID();
 
         AddressEntity addressEntity = AddressEntity.builder()

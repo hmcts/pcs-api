@@ -72,7 +72,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
 
     @Mock

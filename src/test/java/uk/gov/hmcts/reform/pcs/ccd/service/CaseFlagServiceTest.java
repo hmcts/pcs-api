@@ -61,7 +61,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CaseFlagServiceTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final LocalDateTime FLAG_CREATED = LocalDateTime.of(2026, 8, 1, 12, 0);
     private static final long CASE_REFERENCE = 1234L;
 
@@ -2227,7 +2227,7 @@ class CaseFlagServiceTest {
 
         private static final String CLAIMANT_FIRM = "CLAIMANT-FIRM";
         private static final String DEFENDANT_FIRM = "DEFENDANT-FIRM";
-        private static final UUID SOLICITOR_USER_ID = UUID.randomUUID();
+        private static final String SOLICITOR_USER_ID = UUID.randomUUID().toString();
 
         @Mock
         private OrganisationService organisationService;
@@ -2480,7 +2480,7 @@ class CaseFlagServiceTest {
             assertThat(defendant.getDefendantFlags()).containsExactly(untouched);
         }
 
-        private void merge(PartyEntity party, PartySupport incoming, UUID authenticatedUserId) {
+        private void merge(PartyEntity party, PartySupport incoming, String authenticatedUserId) {
             caseFlagService.mergePartySupportFlags(
                 List.of(createPartySupportListValue(party.getId().toString(), incoming)),
                 Set.of(party), authenticatedUserId
@@ -2529,7 +2529,7 @@ class CaseFlagServiceTest {
             return flag;
         }
 
-        private PartyEntity partyForUser(UUID idamId) {
+        private PartyEntity partyForUser(String idamId) {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
                 .idamId(idamId)
@@ -2541,7 +2541,7 @@ class CaseFlagServiceTest {
         private PartyEntity claimantRepresentedBy(String organisationId) {
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
-                .idamId(UUID.randomUUID())
+                .idamId(UUID.randomUUID().toString())
                 .organisationId(organisationId)
                 .claimPartyOrganisationList(new ArrayList<>())
                 .defendantFlags(new ArrayList<>())
@@ -2561,7 +2561,7 @@ class CaseFlagServiceTest {
 
             return PartyEntity.builder()
                 .id(UUID.randomUUID())
-                .idamId(UUID.randomUUID())
+                .idamId(UUID.randomUUID().toString())
                 .claimPartyOrganisationList(new ArrayList<>(List.of(link)))
                 .defendantFlags(new ArrayList<>())
                 .build();

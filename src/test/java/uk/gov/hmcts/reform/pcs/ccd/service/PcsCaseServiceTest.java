@@ -572,7 +572,7 @@ class PcsCaseServiceTest {
     void shouldMergeSupportFlagsForEligibleDefendantPartiesOnly() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
-        UUID authenticatedUserId = UUID.randomUUID();
+        String authenticatedUserId = UUID.randomUUID().toString();
         UUID eligibleDefendantPartyId = UUID.randomUUID();
         when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
         when(defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
@@ -610,7 +610,7 @@ class PcsCaseServiceTest {
     void shouldRetainOnlyEligibleDefendantSupportEntries() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
-        UUID authenticatedUserId = UUID.randomUUID();
+        String authenticatedUserId = UUID.randomUUID().toString();
         UUID eligibleDefendantPartyId = UUID.randomUUID();
         when(securityContextService.getCurrentUserId()).thenReturn(authenticatedUserId);
         when(defendantSupportEligibilityResolver.resolveEligibleDefendantPartyIds(
@@ -666,7 +666,7 @@ class PcsCaseServiceTest {
     void shouldTouchNothingButThePartiesWhenPatchingSupportFlags() {
         // Given
         PcsCaseEntity pcsCaseEntity = stubFindCase();
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
 
         // When
         underTest.patchSupportFlags(CASE_REFERENCE, PCSCase.builder()

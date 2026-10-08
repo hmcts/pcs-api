@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -187,12 +189,44 @@ class SecurityContextServiceTest {
 
         UserInfo userDetails = mock(UserInfo.class);
         when(user.getUserDetails()).thenReturn(userDetails);
-        UUID expectedUserId = UUID.randomUUID();
+        String expectedUserId = UUID.randomUUID().toString();
         when(userDetails.getUid()).thenReturn(expectedUserId.toString());
 
-        UUID actualUserId = underTest.getCurrentUserId();
+        String actualUserId = underTest.getCurrentUserId();
 
         assertThat(actualUserId).isEqualTo(expectedUserId);
+    }
+
+    @Test
+    @DisplayName("Should get the user ID from an upper-case UUID uid")
+    void getUserIdWhenUidIsUpperCaseUuid() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        String expectedUserId = UUID.randomUUID().toString();
+        when(userDetails.getUid()).thenReturn(expectedUserId.toString().toUpperCase());
+
+        String actualUserId = underTest.getCurrentUserId();
+
+        assertThat(actualUserId).isEqualTo(expectedUserId);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"7667", "1245", "not-a-uuid"})
+    @DisplayName("Should keep an IDAM uid that is not a UUID")
+    void getUserIdWhenUidIsNotUuid(String uid) {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(user);
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(user.getUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(uid);
+
+        String actualUserId = underTest.getCurrentUserId();
+
+        assertThat(actualUserId).isEqualTo(uid);
     }
 
     @Test

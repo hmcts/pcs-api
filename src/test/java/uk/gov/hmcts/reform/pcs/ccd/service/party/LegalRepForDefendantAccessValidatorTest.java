@@ -99,7 +99,7 @@ class LegalRepForDefendantAccessValidatorTest {
 
     @Test
     void shouldThrowWhenLegalRepIsInDifferentOrganisation() {
-        UUID authenticatedUserId = UUID.randomUUID();
+        String authenticatedUserId = UUID.randomUUID().toString();
 
         PartyEntity defendant = PartyEntity.builder().build();
         OrganisationEntity linkedRepresentative = OrganisationEntity.builder()

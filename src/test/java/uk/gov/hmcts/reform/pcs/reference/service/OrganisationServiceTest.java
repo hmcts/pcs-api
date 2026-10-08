@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OrganisationServiceTest {
 
-    private static final UUID USER_ID = UUID.fromString("dc3f786d-4ad4-4b5d-a79f-6e35a6520ace");
+    private static final String USER_ID = "dc3f786d-4ad4-4b5d-a79f-6e35a6520ace";
     private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
     private static final String ORGANISATION_IDENTIFIER = "ORG-123";
     private static final String S2S_TOKEN = "test-s2s-token";

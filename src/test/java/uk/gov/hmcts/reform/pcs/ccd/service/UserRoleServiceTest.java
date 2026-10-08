@@ -29,7 +29,8 @@ import static org.mockito.Mockito.when;
 class UserRoleServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
+    private static final String LEGACY_UID = "7667";
     private static final String USER_AUTH_HEADER = "Bearer user-token";
     private static final String S2S_AUTH_HEADER = "Bearer s2s-token";
 
@@ -192,11 +193,54 @@ class UserRoleServiceTest {
         verifyNoInteractions(caseAssignmentApi);
     }
 
+    @Test
+    void shouldKeepNonUuidIdamUidOnCaseRoles() {
+        stubAuth();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker-pcs"))
+            .build());
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(LEGACY_UID);
+        when(caseAssignmentApi.getUserRoles(
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
+            List.of(String.valueOf(CASE_REFERENCE)),
+            List.of(LEGACY_UID)
+        )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder()
+                .roleAssignment(List.of(RoleAssignment.builder().roleName("hearing-centre-admin").build()))
+                .build());
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldKeepNonUuidIdamUidOnOrganisationalRoles() {
+        stubAuth();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker"))
+            .build());
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(LEGACY_UID);
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder().build());
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
+        assertThat(userRoles.roles()).containsExactly("caseworker");
+    }
+
     private void stubCurrentUserDetails(List<String> roles) {
         when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
             .uid(CURRENT_USER_ID.toString())
             .roles(roles)
             .build());
+        when(securityContextService.toUserId(CURRENT_USER_ID.toString())).thenReturn(CURRENT_USER_ID);
     }
 
     private void stubAuth() {

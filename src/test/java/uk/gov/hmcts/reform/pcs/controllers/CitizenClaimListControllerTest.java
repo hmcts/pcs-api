@@ -25,7 +25,7 @@ class CitizenClaimListControllerTest {
 
     private static final String AUTH_HEADER = "Bearer user-token";
     private static final String S2S_TOKEN = "service-token";
-    private static final UUID IDAM_ID = UUID.randomUUID();
+    private static final String IDAM_ID = UUID.randomUUID().toString();
 
     @Mock
     private IdamAuthenticator idamAuthenticator;
