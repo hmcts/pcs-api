@@ -116,7 +116,7 @@ class ShowConditionsTest {
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
         names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
-            "CUI_RESPOND_TO_CLAIM_LR"},
+            "CUI_RESPOND_TO_CLAIM_LR", "MAKE_ORDER"},
         mode = INCLUDE)
     void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
         // When / Then
@@ -127,7 +127,7 @@ class ShowConditionsTest {
     @EnumSource(
         value = FeatureFlag.class,
         names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
-            "CUI_RESPOND_TO_CLAIM_LR"},
+            "CUI_RESPOND_TO_CLAIM_LR", "MAKE_ORDER"},
         mode = EXCLUDE
     )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
@@ -149,6 +149,8 @@ class ShowConditionsTest {
                       "featureFlags.release1dot2Enabled=\"YES\""),
             arguments(List.of(RELEASE_1_DOT_3),
                       "featureFlags.release1dot3Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_4),
+                      "featureFlags.release1dot4Enabled=\"YES\""),
             arguments(List.of(CASEWORKER_EVENTS),
                       "featureFlags.caseWorkerEventsEnabled=\"YES\""),
             arguments(List.of(WALES_MAKE_A_CLAIM),
