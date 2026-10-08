@@ -81,6 +81,37 @@ public class NoticeOfPossessionView {
             .findFirst();
     }
 
+    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
+        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
+            return List.of();
+        }
+
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(NoticeOfPossessionView::isNoticeStatement)
+            .filter(DocumentsView::isNotGenAppDocument)
+            .filter(DocumentsView::isDescriptionEmpty)
+            .map(this::toDocument)
+            .toList();
+    }
+
+    private static boolean isNoticeStatement(DocumentEntity documentEntity) {
+        return documentEntity.getType() == DocumentType.POSSESSION_NOTICE;
+    }
+
+    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
+        return ListValue.<Document>builder()
+            .id(documentEntity.getId().toString())
+            .value(
+                Document.builder()
+                    .url(documentEntity.getUrl())
+                    .filename(documentEntity.getFileName())
+                    .binaryUrl(documentEntity.getBinaryUrl())
+                    .categoryId(documentEntity.getCategoryId())
+                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
+                    .build()
+            ).build();
+    }
+
     private static void setAbletoUploadDocument(NoticeServedDetails noticeServedDetails,
                                                 NoticeOfPossessionEntity noticeOfPossessionEntity) {
         if (noticeOfPossessionEntity.getIsAbleToUploadDocument() != null) {
