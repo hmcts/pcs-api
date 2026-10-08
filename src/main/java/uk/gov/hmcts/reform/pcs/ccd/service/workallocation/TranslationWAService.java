@@ -65,8 +65,7 @@ public class TranslationWAService {
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
 
         List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getClaim() != null
+            .filter(document -> document.getClaim() != null
                 && document.getClaim().getId().equals(mainClaim.getId()))
             .toList();
 
@@ -82,7 +81,6 @@ public class TranslationWAService {
 
             if (isOtherDefendant) {
                 List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-                    .filter(document -> !document.isRemoved())
                     .filter(document -> isDefendantDocument(document, party))
                     .toList();
 
