@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
@@ -52,6 +53,7 @@ public class CaseCreationService {
                             .build())
             .noticeServed(YesOrNo.NO)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+            .languageUsed(LanguageUsed.ENGLISH)
             .build();
 
         ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, authorisation);
