@@ -4,6 +4,8 @@ import org.hibernate.type.SqlTypes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,8 +33,8 @@ class IdamUserIdUuidConverterTest {
     private PreparedStatement preparedStatement;
 
     @Test
-    void reportsUuidSqlTypeAndStringReturnedClass() {
-        assertThat(converter.getSqlType()).isEqualTo(SqlTypes.UUID);
+    void reportsVarcharSqlTypeAndStringReturnedClass() {
+        assertThat(converter.getSqlType()).isEqualTo(SqlTypes.VARCHAR);
         assertThat(converter.returnedClass()).isEqualTo(String.class);
         assertThat(converter.isMutable()).isFalse();
     }
@@ -60,20 +62,24 @@ class IdamUserIdUuidConverterTest {
 
         when(resultSet.getObject(2)).thenReturn(IDAM_ID);
         assertThat(converter.nullSafeGet(resultSet, 2, null, null)).isEqualTo(IDAM_ID);
+
+        when(resultSet.getObject(3)).thenReturn("1245");
+        assertThat(converter.nullSafeGet(resultSet, 3, null, null)).isEqualTo("1245");
     }
 
     @Test
-    void nullSafeSetBindsNullAsOther() throws Exception {
+    void nullSafeSetBindsNullAsVarchar() throws Exception {
         converter.nullSafeSet(preparedStatement, null, 1, null);
 
-        verify(preparedStatement).setNull(1, Types.OTHER);
+        verify(preparedStatement).setNull(1, Types.VARCHAR);
     }
 
-    @Test
-    void nullSafeSetBindsUuidValue() throws Exception {
-        converter.nullSafeSet(preparedStatement, IDAM_ID, 1, null);
+    @ParameterizedTest
+    @ValueSource(strings = {IDAM_ID, "1245", "7667"})
+    void nullSafeSetBindsIdAsString(String idamId) throws Exception {
+        converter.nullSafeSet(preparedStatement, idamId, 1, null);
 
-        verify(preparedStatement).setObject(1, UUID.fromString(IDAM_ID), Types.OTHER);
+        verify(preparedStatement).setString(1, idamId);
     }
 
     @Test
