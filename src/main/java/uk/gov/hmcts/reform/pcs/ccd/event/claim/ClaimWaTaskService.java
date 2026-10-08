@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.claim;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ClaimWaTaskService {
 
     private final CamundaService camundaService;
@@ -25,6 +27,11 @@ public class ClaimWaTaskService {
     public void createTasksForIssuedClaim(long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = pcsCaseEntity.getMainClaim();
+
+        if(claimEntity == null) {
+            log.error("No main claim on case");
+            return;
+        }
 
         switch (claimEntity.getLanguageUsed()) {
             case ENGLISH -> {
