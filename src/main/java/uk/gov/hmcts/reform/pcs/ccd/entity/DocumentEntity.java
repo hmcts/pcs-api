@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SoftDelete;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.listener.DocumentEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -45,6 +48,10 @@ import static jakarta.persistence.FetchType.LAZY;
 @AllArgsConstructor
 @Entity
 @Table(name = "document")
+// Removing a document sets removed = true, and Hibernate leaves such rows out of every load: by id,
+// by query and through the collections that hold them. The row stays for removal_reason and removed_at.
+@SoftDelete(columnName = "removed")
+@EntityListeners(DocumentEntityListener.class)
 public class DocumentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
