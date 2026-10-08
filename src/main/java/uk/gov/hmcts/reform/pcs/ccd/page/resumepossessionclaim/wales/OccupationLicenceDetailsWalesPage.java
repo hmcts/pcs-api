@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
@@ -38,6 +39,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
     private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -102,6 +104,10 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
             // Validate date fields
             validationErrors.addAll(validateOccupationLicenceDetailsWales(occupationLicenceDetailsWales));
+
+            // Validate uploaded documents for disallowed file types
+            validationErrors.addAll(fileUploadValidationService.validateDocuments(
+                occupationLicenceDetailsWales.getLicenceDocuments()));
         }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
