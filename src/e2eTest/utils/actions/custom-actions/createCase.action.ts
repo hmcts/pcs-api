@@ -477,8 +477,7 @@ export class CreateCaseAction implements IAction {
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
-          }
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.estateManagementGroundsHiddenQuestion, option: possessionGrounds.discretionaryEstateGrounds});          }
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
@@ -749,7 +748,14 @@ export class CreateCaseAction implements IAction {
       question: documentsData.question,
       option: documentsData.option
     });
-    await performAction('clickButton', uploadAdditionalDocuments.continueButton);
+    const nextPageHeader = documentsData.option === wantToUploadDocuments.yesRadioOption
+      ? uploadAdditionalDocuments.mainHeader
+      : generalApplication.mainHeader;
+    await performAction(
+      'clickButtonAndVerifyPageNavigation',
+      uploadAdditionalDocuments.continueButton,
+      nextPageHeader
+    );
   }
 
   private async uploadAdditionalDocs(documentsData: actionRecord) {
@@ -1117,7 +1123,8 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
-    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    const dateSubmitted = page.locator('th', { hasText: 'Date claim Submitted' })
+                         .locator('xpath=following-sibling::td[1]');
     expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
 
 
@@ -1560,7 +1567,7 @@ export class CreateCaseAction implements IAction {
         /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
         /ancestor::div[1]
-        //table[@aria-describedby="complex field table"]`;
+        //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1610,7 +1617,7 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
@@ -1698,7 +1705,7 @@ export class CreateCaseAction implements IAction {
     }
 
     const folder = page
-      .locator('button[role="treeitem"]')
+      .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
