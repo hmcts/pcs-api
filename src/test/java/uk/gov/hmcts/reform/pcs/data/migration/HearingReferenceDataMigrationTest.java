@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class HearingReferenceDataMigrationTest {
 
-    private static final String REFERENCE_TABLES_SCRIPT = "db/migration/V031__create_hearing_reference_data_tables.sql";
-    private static final String KEY_COLUMNS_SCRIPT = "db/migration/V032__add_hearing_reference_data_keys.sql";
+    private static final String REFERENCE_TABLES_SCRIPT = "db/migration/V033__create_hearing_reference_data_tables.sql";
+    private static final String KEY_COLUMNS_SCRIPT = "db/migration/V034__add_hearing_reference_data_keys.sql";
 
     // Active PCS (AAA3) and shared rows in List of Values V76; V76 has no additional_roles values.
     private static final Map<String, Integer> EXPECTED_ROW_COUNTS = Map.ofEntries(
