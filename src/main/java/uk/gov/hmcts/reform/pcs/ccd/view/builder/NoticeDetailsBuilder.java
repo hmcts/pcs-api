@@ -170,7 +170,6 @@ public class NoticeDetailsBuilder {
             .filter(NoticeDetailsBuilder::isNoticeStatement)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
