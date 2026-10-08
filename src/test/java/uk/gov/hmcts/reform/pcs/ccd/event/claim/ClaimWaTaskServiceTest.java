@@ -82,9 +82,8 @@ class ClaimWaTaskServiceTest {
         PcsCaseEntity pcsCaseEntity = stubCaseWithClaim(claim);
 
         DocumentEntity documentEntity = DocumentEntity.builder().claim(claim).build();
-        DocumentEntity removedDocument = DocumentEntity.builder().claim(claim).removed(true).build();
 
-        pcsCaseEntity.addDocuments(List.of(documentEntity, removedDocument));
+        pcsCaseEntity.addDocuments(List.of(documentEntity));
 
         // When
         underTest.createTasksForIssuedClaim(CASE_REFERENCE);

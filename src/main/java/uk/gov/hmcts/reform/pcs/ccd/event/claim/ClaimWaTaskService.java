@@ -44,8 +44,7 @@ public class ClaimWaTaskService {
                                                ClaimEntity claimEntity) {
 
         List<DocumentEntity> documents = pcsCaseEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getClaim() != null
+            .filter(document -> document.getClaim() != null
                 && document.getClaim().getId().equals(claimEntity.getId()))
             .toList();
 
