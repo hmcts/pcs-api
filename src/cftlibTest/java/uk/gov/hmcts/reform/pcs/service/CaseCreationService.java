@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.client.CcdClient;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
@@ -77,6 +79,7 @@ public class CaseCreationService {
                             .build())
             .noticeServed(YesOrNo.NO)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+            .languageUsed(LanguageUsed.ENGLISH)
             .build();
 
         ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, authorisation);
