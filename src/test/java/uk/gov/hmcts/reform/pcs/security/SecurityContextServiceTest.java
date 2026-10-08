@@ -190,7 +190,7 @@ class SecurityContextServiceTest {
         UserInfo userDetails = mock(UserInfo.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         String expectedUserId = UUID.randomUUID().toString();
-        when(userDetails.getUid()).thenReturn(expectedUserId.toString());
+        when(userDetails.getUid()).thenReturn(expectedUserId);
 
         String actualUserId = underTest.getCurrentUserId();
 
@@ -206,7 +206,7 @@ class SecurityContextServiceTest {
         UserInfo userDetails = mock(UserInfo.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         String expectedUserId = UUID.randomUUID().toString();
-        when(userDetails.getUid()).thenReturn(expectedUserId.toString().toUpperCase());
+        when(userDetails.getUid()).thenReturn(expectedUserId.toUpperCase());
 
         String actualUserId = underTest.getCurrentUserId();
 

@@ -183,7 +183,7 @@ class RevokeAccessHelperTest {
                      scheduledCaptor.getValue().getTaskInstance().getId());
         RoleAssignmentTaskData scheduledData =
             (RoleAssignmentTaskData) scheduledCaptor.getValue().getTaskInstance().getData();
-        assertEquals(idamId.toString(), scheduledData.getUserId());
+        assertEquals(idamId, scheduledData.getUserId());
         assertEquals(UserRole.DEFENDANT, scheduledData.getRole());
         assertEquals(String.valueOf(caseReference), scheduledData.getCaseReference());
         verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(
