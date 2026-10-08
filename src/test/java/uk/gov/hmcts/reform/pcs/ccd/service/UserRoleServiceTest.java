@@ -78,13 +78,13 @@ class UserRoleServiceTest {
             USER_AUTH_HEADER,
             S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
+            List.of(CURRENT_USER_ID)
         );
 
         verify(roleAssignmentApi, times(1)).getRoles(
             S2S_AUTH_HEADER,
             USER_AUTH_HEADER,
-            CURRENT_USER_ID.toString()
+            CURRENT_USER_ID
         );
     }
 
@@ -96,7 +96,7 @@ class UserRoleServiceTest {
             USER_AUTH_HEADER,
             S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
+            List.of(CURRENT_USER_ID)
         )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
 
         UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
@@ -132,7 +132,7 @@ class UserRoleServiceTest {
     void shouldHandleMissingRoleAssignmentData() {
         stubAuth();
         stubCurrentUserDetails(List.of("caseworker-pcs"));
-        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID.toString()))
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
             .thenReturn(RoleAssignmentResponse.builder().build());
         UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
@@ -166,7 +166,7 @@ class UserRoleServiceTest {
         verify(roleAssignmentApi, times(1)).getRoles(
             S2S_AUTH_HEADER,
             USER_AUTH_HEADER,
-            CURRENT_USER_ID.toString()
+            CURRENT_USER_ID
         );
     }
 
@@ -237,10 +237,10 @@ class UserRoleServiceTest {
 
     private void stubCurrentUserDetails(List<String> roles) {
         when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
-            .uid(CURRENT_USER_ID.toString())
+            .uid(CURRENT_USER_ID)
             .roles(roles)
             .build());
-        when(securityContextService.toUserId(CURRENT_USER_ID.toString())).thenReturn(CURRENT_USER_ID);
+        when(securityContextService.toUserId(CURRENT_USER_ID)).thenReturn(CURRENT_USER_ID);
     }
 
     private void stubAuth() {
@@ -253,12 +253,12 @@ class UserRoleServiceTest {
             USER_AUTH_HEADER,
             S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
+            List.of(CURRENT_USER_ID)
         )).thenReturn(CaseAssignmentUserRolesResource.builder()
             .caseAssignmentUserRoles(Stream.of(roles)
                 .map(role -> CaseAssignmentUserRole.builder()
                     .caseDataId(String.valueOf(CASE_REFERENCE))
-                    .userId(CURRENT_USER_ID.toString())
+                    .userId(CURRENT_USER_ID)
                     .caseRole(role)
                     .build())
                 .toList())
@@ -266,7 +266,7 @@ class UserRoleServiceTest {
     }
 
     private void stubRoleAssignmentRoles(String... roles) {
-        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID.toString()))
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
             .thenReturn(
                 RoleAssignmentResponse.builder()
                     .roleAssignment(

@@ -205,7 +205,7 @@ class GenAppsViewTest {
         Party genApp2Party = genApps.get(1).getValue().getParty();
 
         assertThat(genApp1Party.getId()).isEqualTo(currentParty.getId().toString());
-        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId().toString());
+        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId());
         assertThat(genApp1Party.getFirstName()).isEqualTo("Current party first name");
         assertThat(genApp1Party.getLastName()).isEqualTo("Current party last name");
 

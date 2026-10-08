@@ -111,7 +111,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
-        when(userDetails.getUid()).thenReturn(USER_ID.toString());
+        when(userDetails.getUid()).thenReturn(USER_ID);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, partyService, securityContextService,
