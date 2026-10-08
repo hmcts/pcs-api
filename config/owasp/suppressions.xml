@@ -40,6 +40,37 @@
     <cve>CVE-2026-41178</cve>
     <cve>CVE-2026-54285</cve>
   </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9102: false positive. CVE-2026-33117 is in the Key Vault Keys library only
+    (com.azure:azure-security-keyvault-keys < 4.10.6, GHSA-97jf-46m3-8953). NVD records it
+    against the generic azure_sdk_for_java CPE with versionEndExcluding 4.10.6, so every
+    Azure SDK jar versioned below 4.10.6 matches. PCS does not depend on
+    azure-security-keyvault-keys. Re-review by the until date.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/azure-(core|core-http-jdk-httpclient|json|xml|identity)@.*$</packageUrl>
+    <cve>CVE-2026-33117</cve>
+  </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9102: false positive. Both are fixed for Java: CVE-2023-36415 in azure-identity
+    1.10.2; CVE-2024-35255 in azure-identity 1.12.2 and msal4j 1.15.1 (GHSA-m5vv-6r4h-3vj9).
+    The match comes from the non-Java CPE ranges on the same CVEs (JavaScript identity
+    < 3.3.1 / < 4.2.1, .NET MSAL < 4.61.3), which our Java version numbers fall under.
+    The patterns only cover versions at or above the Java fixes.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity@1\.(1[3-9]|[2-9][0-9])\..*$</packageUrl>
+    <cve>CVE-2023-36415</cve>
+    <cve>CVE-2024-35255</cve>
+  </suppress>
+  <suppress until="2026-11-15">
+    <notes><![CDATA[
+    HDPI-9102: false positive. CVE-2024-35255 is fixed in msal4j 1.15.1 (GHSA-m5vv-6r4h-3vj9);
+    the match comes from the Node.js / .NET MSAL CPE ranges on the same CVE.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.microsoft\.azure/msal4j@1\.(1[6-9]|[2-9][0-9])\..*$</packageUrl>
+    <cve>CVE-2024-35255</cve>
+  </suppress>
   <!--End of false positives section -->
 
   <suppress until="2026-11-15">
