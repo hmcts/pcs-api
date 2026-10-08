@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIdUuidConverter;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -67,6 +69,7 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
+    @Convert(converter = IdamUserIdUuidConverter.class)
     private String idamId;
 
     private String firstName;
