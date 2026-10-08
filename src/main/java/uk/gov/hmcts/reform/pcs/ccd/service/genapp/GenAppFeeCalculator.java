@@ -26,6 +26,10 @@ public class GenAppFeeCalculator {
             return Optional.empty();
         }
 
+        if (genAppRequest.getApplicationType() == GenAppType.SUSPEND) {
+            return Optional.of(feeService.getFee(FeeType.GEN_APP_SUSPEND_FEE));
+        }
+
         VerticalYesNo otherPartiesAgreed = genAppRequest.getOtherPartiesAgreed();
         FeeType feeType;
         if (otherPartiesAgreed == VerticalYesNo.YES) {
