@@ -9,6 +9,7 @@ public class OrganisationBasePersonalisation implements TemplatePersonalisation 
 
     private final String organisationName;
     private final String caseNumber;
+    private final String caseName;
     private final String claimantName;
     private final String primaryDefendantName;
 
@@ -17,6 +18,7 @@ public class OrganisationBasePersonalisation implements TemplatePersonalisation 
         return Map.of(
             "organisationName", organisationName,
             "caseNumber", caseNumber,
+            "caseName", caseName,
             "claimantName", claimantName,
             "primaryDefendantName", primaryDefendantName
         );
