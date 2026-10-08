@@ -28,7 +28,7 @@ public class ClaimWaTaskService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         ClaimEntity claimEntity = pcsCaseEntity.getMainClaim();
 
-        if(claimEntity == null) {
+        if (claimEntity == null) {
             log.error("No main claim on case");
             return;
         }
