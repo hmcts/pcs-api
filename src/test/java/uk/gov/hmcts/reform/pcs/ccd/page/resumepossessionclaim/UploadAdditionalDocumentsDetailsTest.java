@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeEngland;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentTypeWales;
@@ -15,10 +17,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.testutil.DocumentTestData;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ADDITIONAL_DOCUMENT_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ALLOWED_FILE_TYPE_GUIDANCE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.DISALLOWED_FILE_TYPE_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
@@ -26,7 +32,8 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new UploadAdditionalDocumentsDetails(textAreaValidationService));
+        setPageUnderTest(new UploadAdditionalDocumentsDetails(
+            textAreaValidationService, DocumentTestData.restrictionEnabledFileUploadValidationService()));
     }
 
     @Test
@@ -73,6 +80,7 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
     }
 
     @Test
+
     void shouldKeepEnglandDocumentTypeOnSubmit() {
         AdditionalDocumentEngland additionalDocument = AdditionalDocumentEngland.builder()
             .documentType(AdditionalDocumentTypeEngland.TENANCY_AGREEMENT)
@@ -158,4 +166,37 @@ class UploadAdditionalDocumentsDetailsTest extends BasePageTest {
             response.getData().getAdditionalDocumentsWales().getFirst().getValue();
         assertThat(returnedDocument.getDocumentType()).isEqualTo(AdditionalDocumentTypeWales.OCCUPATION_LICENCE);
     }
+
+    void shouldReturnRequiredErrorWhenNoAdditionalDocumentUploaded() {
+        // Given
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride()).isEqualTo(ADDITIONAL_DOCUMENT_REQUIRED);
+    }
+
+    @Test
+    void shouldReturnErrorWhenAdditionalDocumentIsDisallowedFileType() {
+        // Given
+        AdditionalDocument doc = AdditionalDocument.builder()
+                .description("Valid description")
+                .document(Document.builder().filename("evidence.mp4").build())
+                .build();
+
+        PCSCase caseData = PCSCase.builder()
+                .additionalDocuments(List.of(ListValue.<AdditionalDocument>builder().value(doc).build()))
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo(DISALLOWED_FILE_TYPE_ERROR + "\n" + ALLOWED_FILE_TYPE_GUIDANCE);
+    }
+
+
 }
