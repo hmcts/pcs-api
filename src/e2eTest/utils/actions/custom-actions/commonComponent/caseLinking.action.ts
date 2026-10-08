@@ -33,7 +33,7 @@ export class CaseLinking implements IAction {
     const caseRefs = String(caseNumbers).split(',');
     for (let i = 0; i < caseRefs.length - 1; i++) {
       await performAction('inputText', selectCasesToLink.caseRefLabel, caseRefs[i]);
-      await performAction('check', { question: caseData.question, option: caseData.option });
+      await performAction('check', caseData.option );
       await performAction('clickButton', caseData.proposeButton);
       console.log(`selected Case ${i}: ${caseRefs[i]} to link`);
     }
