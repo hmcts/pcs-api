@@ -58,6 +58,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     private final DefendantService defendantService;
     private final FeeApplier feeApplier;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final EnforcementSubmitEvent enforcementSubmitEvent;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -137,16 +138,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         enforcementOrder.setWarrantOfRestitutionInfoText(text);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        return submitOrder(caseReference, eventPayload.caseData());
-    }
-
-    public SubmitResponse<State> submitOrder(long caseReference, PCSCase pcsCase) {
-        enforcementOrderService.saveAndClearDraftData(caseReference, pcsCase.getEnforcementOrder());
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {} in event {}",
-                  caseReference, enforceTheOrder);
-        return SubmitResponse.defaultResponse();
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        return enforcementSubmitEvent.submit(eventPayload);
     }
 
 }

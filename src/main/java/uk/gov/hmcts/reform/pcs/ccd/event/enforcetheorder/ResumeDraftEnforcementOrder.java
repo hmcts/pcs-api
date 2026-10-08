@@ -19,11 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @Slf4j
 @Component
@@ -35,7 +34,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     private final WritPageConfigurer writPageConfigurer;
     private final WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
-    private final EnforcementOrderService enforcementOrderService;
+    private final EnforcementSubmitEvent enforcementSubmitEvent;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -46,10 +45,10 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
                 .name("Resume Draft Application")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                .grant(Permission.CRUD, UserRole.CLAIMANT)
                 .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showCondition(ShowConditions.and(
-                   ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4), "hasUnsubmittedEnforcementData=\"Yes\""))
+                   ShowConditions.featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"Yes\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, resumeEnforcementOrder);
@@ -60,11 +59,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        enforcementOrderService.saveAndClearDraftData(caseReference, eventPayload.caseData().getEnforcementOrder());
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {} in event {}",
-                  caseReference, resumeEnforcementOrder);
-        return SubmitResponse.defaultResponse();
+        return enforcementSubmitEvent.submit(eventPayload);
     }
 
 }
