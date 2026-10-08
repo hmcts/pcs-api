@@ -80,7 +80,6 @@ public class TenancyLicenceView {
             .filter(TenancyLicenceView::isTenancyLicence)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
@@ -98,7 +97,6 @@ public class TenancyLicenceView {
             .filter(TenancyLicenceView::isOccupationLicence)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
