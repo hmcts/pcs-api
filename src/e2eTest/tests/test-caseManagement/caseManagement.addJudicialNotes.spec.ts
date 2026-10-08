@@ -25,7 +25,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performActions(
     'Create a case and make the payment',
     ['createCaseAPI', { data: createCaseApiData.createCasePayload}],
-    ['submitCaseAPI', { data: submitCaseApiData.submitCasePayloadCaseFileView}],
+    ['submitCaseAPI', { data: submitCaseApiData.submitCasePayload()}],
     ['getAddressInfo', { data: createCaseApiData.createCasePayload}],
     ['updatePaymentAPI']
   );
@@ -65,7 +65,7 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       'Verify that the Judicial notes appear on judicial notes tab',
       ['clickTab', home.judicialNotes],
       ['Then the user validates the Judge Notes tab', {
-        table: 'Note',
+        table: 'Note 1',
         userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
         createdOn: getCurrentBSTTime()
       }]

@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 
@@ -226,7 +226,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
 
   test('Case management - update party to the case- Claimant details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView as Record<string, any>;
+    let submitPayLoad = submitCaseApiData.submitCasePayload() as Record<string, any>;
     await performAction('When the user selects an event', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
