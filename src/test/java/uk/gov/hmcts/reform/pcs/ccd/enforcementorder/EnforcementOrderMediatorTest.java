@@ -11,13 +11,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,11 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-
-import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,22 +32,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderMediatorTest {
 
-    private static final long CASE_REFERENCE = 1234L;
-    private static final State DEFAULT_STATE = State.CASE_ISSUED;
-
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
-    @Mock
-    private DraftCaseDataService draftCaseDataService;
 
     @InjectMocks
     private EnforcementOrderMediator underTest;
@@ -78,7 +66,7 @@ class EnforcementOrderMediatorTest {
             .thenReturn(List.of(enforcementOrderEntity));
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         assertEquals(YesOrNo.YES, pcsCase.getShowConfirmEvictionJourney());
@@ -97,7 +85,7 @@ class EnforcementOrderMediatorTest {
             .thenReturn(List.of(enforcementOrderEntity));
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         assertEquals(YesOrNo.NO, pcsCase.getShowConfirmEvictionJourney());
@@ -117,7 +105,7 @@ class EnforcementOrderMediatorTest {
         when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of(enforcementOrderEntity));
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.UK);
@@ -137,7 +125,7 @@ class EnforcementOrderMediatorTest {
             .thenReturn(List.of(enforcementOrderEntity));
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
@@ -148,7 +136,7 @@ class EnforcementOrderMediatorTest {
     @Test
     void shouldNotProcessWhenCaseEntityIsNull() {
         // When
-        underTest.handleEnforcementRequirements(null, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(null, pcsCase);
 
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
@@ -162,7 +150,7 @@ class EnforcementOrderMediatorTest {
         PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, null, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, null);
 
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
@@ -239,98 +227,12 @@ class EnforcementOrderMediatorTest {
         when(enforcementOrderRepository.findByClaimId(any(UUID.class))).thenReturn(List.of());
 
         // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, DEFAULT_STATE);
+        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase);
 
         // Then
         assertNull(pcsCase.getShowConfirmEvictionJourney());
         assertNull(pcsCase.getConfirmEvictionSummaryMarkup());
         verify(enforcementOrderRepository).findByClaimId(any(UUID.class));
-    }
-
-    @Test
-    void shouldSetHasUnsubmittedEnforcementDataToYesAndInflateEnforcementOrderWhenDraftExists() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        EnforcementOrder draftEnforcementOrder = EnforcementOrder.builder().build();
-        PCSCase draftCase = PCSCase.builder()
-            .enforcementOrder(draftEnforcementOrder)
-            .build();
-
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
-            .thenReturn(Optional.of(draftCase));
-
-        // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertEquals(YesOrNo.YES, pcsCase.getHasUnsubmittedEnforcementData());
-        assertThat(pcsCase.getEnforcementOrder()).isSameAs(draftEnforcementOrder);
-        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-    }
-
-    @Test
-    void shouldSetHasUnsubmittedEnforcementDataToYesAndKeepEnforcementOrderWhenDraftDataIsEmpty() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(true);
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder))
-            .thenReturn(Optional.empty());
-        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
-
-        // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertEquals(YesOrNo.YES, pcsCase.getHasUnsubmittedEnforcementData());
-        assertThat(pcsCase.getEnforcementOrder()).isSameAs(originalEnforcementOrder);
-        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-    }
-
-    @Test
-    void shouldSetHasUnsubmittedEnforcementDataToNoWhenNoDraftExists() {
-        // Given
-        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder)).thenReturn(false);
-        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
-
-        // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertEquals(YesOrNo.NO, pcsCase.getHasUnsubmittedEnforcementData());
-        assertThat(pcsCase.getEnforcementOrder()).isSameAs(originalEnforcementOrder);
-        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), any());
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = State.class, names = "CASE_ISSUED", mode = EnumSource.Mode.EXCLUDE)
-    void shouldNotCheckDraftDataWhenStateIsNotCaseIssued(State state) {
-        // Given
-        PcsCaseEntity pcsCaseEntity = createPcsCaseEntity();
-        EnforcementOrder originalEnforcementOrder = pcsCase.getEnforcementOrder();
-
-        // When
-        underTest.handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE, state);
-
-        // Then
-        assertNull(pcsCase.getHasUnsubmittedEnforcementData());
-        assertThat(pcsCase.getEnforcementOrder()).isSameAs(originalEnforcementOrder);
-        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(anyLong(), any());
-        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), any());
-    }
-
-    @Test
-    void shouldNotCheckDraftDataWhenCaseEntityIsNull() {
-        // When
-        underTest.handleEnforcementRequirements(null, pcsCase, CASE_REFERENCE, State.CASE_ISSUED);
-
-        // Then
-        assertNull(pcsCase.getHasUnsubmittedEnforcementData());
-        verify(draftCaseDataService, never()).hasUnsubmittedCaseData(anyLong(), any());
-        verify(draftCaseDataService, never()).getUnsubmittedCaseData(anyLong(), any());
     }
 
     @ParameterizedTest(name = "{0}")

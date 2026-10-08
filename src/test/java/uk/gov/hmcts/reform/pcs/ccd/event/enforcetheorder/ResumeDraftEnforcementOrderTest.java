@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
-import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeDraftEnforcementOrderTest extends BaseEventTest {
@@ -52,6 +51,8 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
     private EnforcementOrderService enforcementOrderService;
     @Mock
     private SavingPageBuilder savingPageBuilder;
+    @Mock
+    private EnforcementSubmitEvent enforcementSubmitEvent;
 
     @InjectMocks
     private ResumeDraftEnforcementOrder resumeDraftEnforcementOrder;
@@ -84,14 +85,12 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
 
     @Test
     void shouldBeConfiguredWithFeatureFlagAndUnsubmittedEnforcementDataShowCondition() {
-        assertConfiguredShowConditions(ShowConditions.and(ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4),
+        assertConfiguredShowConditions(ShowConditions.and(ShowConditions.featureFlagsEnabled(ENFORCEMENT),
             "hasUnsubmittedEnforcementData=\"Yes\""));
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {
-        "PCS_SOLICITOR", "GA_CLAIMANT_SOLICITOR", "DEFENDANT_SOLICITOR", "GA_DEFENDANT_SOLICITOR"
-    })
+    @EnumSource(value = UserRole.class, names = {"PCS_SOLICITOR", "GA_CLAIMANT_SOLICITOR", "CLAIMANT"})
     void shouldGrantCrudToSolicitorRoles(UserRole userRole) {
         assertGrants(userRole, Permission.CRUD);
     }
@@ -112,11 +111,10 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
         // When
-        SubmitResponse<State> response = callSubmitHandler(caseData);
+        callSubmitHandler(caseData);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(TEST_CASE_REFERENCE, enforcementOrder);
+        verify(enforcementSubmitEvent).submit(any());
         verifyNoMoreInteractions(enforcementOrderService);
-        assertThat(response).isEqualTo(SubmitResponse.defaultResponse());
     }
 }

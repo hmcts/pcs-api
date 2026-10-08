@@ -109,7 +109,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .label("enforcementApplication-content", "---")
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
-            .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .mandatory(EnforcementOrder::getChooseEnforcementType)

@@ -46,7 +46,6 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                 .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
                 .showCondition(ShowConditions.and(
                    ShowConditions.featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"Yes\""))
                 .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)

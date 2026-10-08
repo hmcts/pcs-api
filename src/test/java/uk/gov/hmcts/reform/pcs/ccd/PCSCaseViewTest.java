@@ -489,8 +489,16 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase, CASE_REFERENCE,
-                                                                       DEFAULT_STATE);
+        verify(enforcementOrderMediator).handleEnforcementRequirements(pcsCaseEntity, pcsCase);
+    }
+
+    @Test
+    void shouldCallEnforcementOrderView() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(enforcementOrderView).setCaseFields(pcsCase, CASE_REFERENCE, DEFAULT_STATE);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
