@@ -117,7 +117,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup()
+    enableHighLevelDataSetup("", true)
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
@@ -191,7 +191,7 @@ withPipeline(type, product, component) {
 
   before('smoketest:aat') {
     env.CASE_TYPE_SUFFIX="staging"
-    env.CCD_ENABLED = "false" //temporarily setting to false to disable smoke tests for verification run
+    env.CCD_ENABLED = "true"
   }
 
   afterSuccess('dbmigrate:perftest') {
@@ -218,8 +218,6 @@ withPipeline(type, product, component) {
   before('functionalTest:aat') {
     uploadDmnDiagrams()
     uploadBpmnDiagram()
-    //temporarily setting to false to disable functional tests for verification run
-    env.CCD_ENABLED = "false"
   }
 
   // Promote the WA Camunda diagrams to prod after AAT functional tests pass.
