@@ -70,6 +70,7 @@ public class ManagePartyOptionsPage implements CcdPageConfiguration {
             .page("managePartyOptions", this::midEvent)
             .pageLabel("Update, add or remove")
             .label("managePartyOptions-separator", "---")
+            .readonly(PCSCase::getFeatureFlags, ShowConditions.NEVER_SHOW, true)
             .complex(PCSCase::getAddPartyDetails)
                 .mandatory(
                     AddPartyDetails::getManagePartyOptions13,

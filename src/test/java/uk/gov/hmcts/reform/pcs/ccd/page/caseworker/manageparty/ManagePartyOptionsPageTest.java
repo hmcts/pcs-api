@@ -84,6 +84,10 @@ class ManagePartyOptionsPageTest extends BasePageTest {
             .toList();
 
         assertThat(fields)
+            .filteredOn(field -> "featureFlags".equals(field.getId()))
+            .singleElement()
+            .satisfies(field -> assertThat(field.getShowCondition()).isEqualTo("[STATE]=\"NEVER_SHOW\""));
+        assertThat(fields)
             .filteredOn(field -> "addParty_ManagePartyOptions_1_3".equals(field.getId()))
             .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition())
