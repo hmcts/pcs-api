@@ -1,0 +1,29 @@
+{% autoescape true %}
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--m">
+    Orders
+  </caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header">Type</th>
+      <th scope="col" class="govuk-table__header">Uploaded on</th>
+      <th scope="col" class="govuk-table__header">Document URL</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">Possession order</td>
+      <td class="govuk-table__cell">{{ uploadedOn }}</td>
+      <td class="govuk-table__cell">
+        {% if documentUrl is not empty %}
+          <a class="govuk-link" href="{{ documentUrl }}">
+            {{ documentName | default("View possession order", true) }}
+          </a>
+        {% else %}
+          {{ documentName | default("Document unavailable", true) }}
+        {% endif %}
+      </td>
+    </tr>
+  </tbody>
+</table>
+{% endautoescape %}

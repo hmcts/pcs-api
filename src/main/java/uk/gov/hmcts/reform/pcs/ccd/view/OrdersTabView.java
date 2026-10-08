@@ -14,35 +14,43 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 public class OrdersTabView {
 
     private final UploadTimestampProvider uploadTimestampProvider;
+    private final OrdersTableRenderer ordersTableRenderer;
 
-    public void setCaseFields(
-        PCSCase pcsCase,
-        PcsCaseEntity pcsCaseEntity
-    ) {
-        pcsCaseEntity.getDocuments().stream()
+    public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        pcsCase.setOrdersTab(null);
+
+        getPossessionOrder(pcsCaseEntity)
+            .ifPresent(documentEntity -> setOrdersTabFields(pcsCase, documentEntity));
+    }
+
+    private void setOrdersTabFields(PCSCase pcsCase, DocumentEntity documentEntity) {
+        LocalDateTime uploadedDate = uploadTimestampProvider.uploadTimestamp(documentEntity);
+
+        OrdersTab ordersTab = OrdersTab.builder()
+            .possessionOrder(toDocument(documentEntity))
+            .possessionOrderUploadedDate(uploadedDate)
+            .tableMarkup(ordersTableRenderer.render(documentEntity, uploadedDate))
+            .build();
+
+        pcsCase.setOrdersTab(ordersTab);
+    }
+
+    private static Optional<DocumentEntity> getPossessionOrder(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getDocuments().stream()
+            .filter(OrdersTabView::isPossessionOrder)
             .filter(DocumentsView::isNotRemoved)
-            .filter(this::isPossessionOrder)
-            .findFirst()
-            .ifPresent(documentEntity -> pcsCase.setOrdersTab(
-                OrdersTab.builder()
-                    .possessionOrder(toDocument(documentEntity))
-                    .possessionOrderUploadedDate(
-                        uploadTimestampProvider.uploadTimestamp(documentEntity)
-                    )
-                    .build()
-            ));
+            .findFirst();
     }
 
-    private boolean isPossessionOrder(DocumentEntity document) {
-        return document.getType() == DocumentType.POSSESSION_ORDER;
+    private static boolean isPossessionOrder(DocumentEntity documentEntity) {
+        return documentEntity.getType() == DocumentType.POSSESSION_ORDER;
     }
 
-    private Document toDocument(DocumentEntity entity) {
+    private static Document toDocument(DocumentEntity documentEntity) {
         return Document.builder()
-            .filename(entity.getFileName())
-            .url(entity.getUrl())
-            .binaryUrl(entity.getBinaryUrl())
+            .filename(documentEntity.getFileName())
+            .url(documentEntity.getUrl())
+            .binaryUrl(documentEntity.getBinaryUrl())
             .build();
     }
-
 }
