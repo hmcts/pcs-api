@@ -16,8 +16,8 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.SdpExportRoundTripResult;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.SdpExportRoundTripService;
 
 /**
- * Test-support only: lets the functional tests prove the deployed pod can write to, read from and
- * delete in the SDP export container with its workload identity.
+ * Test-support only: lets the functional tests prove the deployed pod can write to and read from the
+ * SDP export container with its workload identity. The test blob is left in the container.
  */
 @RestController
 @RequiredArgsConstructor
@@ -30,11 +30,12 @@ public class SdpExportTestingSupportController {
 
     @Operation(
         summary = "Round-trip a test blob through the SDP export container",
-        description = "Writes a JSON blob under functional-test/, reads it back, checks the content and "
-            + "deletes it. Failures return 500 with the Azure error message."
+        description = "Writes a JSON blob named after the current UTC time under functional-test/, reads it "
+            + "back and checks the content. The blob is left in the container. Failures return 500 with the "
+            + "Azure error message."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Blob written, read back and deleted"),
+        @ApiResponse(responseCode = "200", description = "Blob written and read back"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
         @ApiResponse(responseCode = "500", description = "Round trip failed; body carries the error")

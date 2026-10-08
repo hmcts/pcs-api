@@ -4,28 +4,32 @@ import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 import uk.gov.hmcts.reform.pcs.sdp.SdpExportBlobWriter;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.SdpExportRoundTripResult;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SdpExportRoundTripServiceTest {
+
+    private static final Instant NOW = Instant.parse("2026-10-08T15:28:21.123456Z");
+    private static final String EXPECTED_BLOB_NAME = "functional-test/2026-10-08T15-28-21.123Z.json";
 
     @Mock
     private SdpExportBlobWriter sdpExportBlobWriter;
@@ -36,39 +40,46 @@ class SdpExportRoundTripServiceTest {
     @Mock
     private BlobClient blobClient;
 
-    @Captor
-    private ArgumentCaptor<String> blobNameCaptor;
-
     private final ObjectMapper objectMapper = new JacksonConfiguration().getMapper();
 
-    private SdpExportRoundTripService underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new SdpExportRoundTripService(sdpExportBlobWriter, blobContainerClient, objectMapper);
-        when(blobContainerClient.getBlobClient(blobNameCaptor.capture())).thenReturn(blobClient);
-    }
-
     @Test
-    void shouldWriteReadBackAndDeleteATestBlob() {
+    void shouldWriteAndReadBackATimestampedTestBlob() {
         // Given
+        SdpExportRoundTripService underTest = serviceAt(NOW);
+        when(blobContainerClient.getBlobClient(EXPECTED_BLOB_NAME)).thenReturn(blobClient);
         echoWrittenPayloadOnDownload();
 
         // When
         SdpExportRoundTripResult result = underTest.roundTrip();
 
         // Then
-        String blobName = blobNameCaptor.getValue();
-        assertThat(blobName).startsWith("functional-test/").endsWith(".json");
-        assertThat(result).isEqualTo(SdpExportRoundTripResult.success(blobName));
+        assertThat(result).isEqualTo(SdpExportRoundTripResult.success(EXPECTED_BLOB_NAME));
         verify(sdpExportBlobWriter).write(
-            blobName, new SdpExportRoundTripService.TestBlob(blobName, SdpExportRoundTripService.PURPOSE));
-        verify(blobClient).deleteIfExists();
+            EXPECTED_BLOB_NAME,
+            new SdpExportRoundTripService.TestBlob(
+                EXPECTED_BLOB_NAME, SdpExportRoundTripService.PURPOSE, "2026-10-08T15:28:21.123Z"));
     }
 
     @Test
-    void shouldFailAndStillDeleteWhenReadBackDiffers() {
+    void shouldAlwaysIncludeMillisecondsInTheBlobName() {
         // Given
+        SdpExportRoundTripService underTest = serviceAt(Instant.parse("2026-10-08T15:28:21Z"));
+        String blobName = "functional-test/2026-10-08T15-28-21.000Z.json";
+        when(blobContainerClient.getBlobClient(blobName)).thenReturn(blobClient);
+        echoWrittenPayloadOnDownload();
+
+        // When
+        SdpExportRoundTripResult result = underTest.roundTrip();
+
+        // Then
+        assertThat(result).isEqualTo(SdpExportRoundTripResult.success(blobName));
+    }
+
+    @Test
+    void shouldFailWhenReadBackDiffers() {
+        // Given
+        SdpExportRoundTripService underTest = serviceAt(NOW);
+        when(blobContainerClient.getBlobClient(EXPECTED_BLOB_NAME)).thenReturn(blobClient);
         when(blobClient.downloadContent()).thenReturn(BinaryData.fromString("{\"blobName\":\"other\"}"));
 
         // When
@@ -76,54 +87,29 @@ class SdpExportRoundTripServiceTest {
 
         // Then
         assertThat(result.roundTrip()).isFalse();
-        assertThat(result.blobName()).isEqualTo(blobNameCaptor.getValue());
+        assertThat(result.blobName()).isEqualTo(EXPECTED_BLOB_NAME);
         assertThat(result.error()).startsWith("IllegalStateException: Read-back content did not match");
-        verify(blobClient).deleteIfExists();
     }
 
     @Test
     void shouldReportTheWriteFailureAndNotReadBack() {
         // Given
-        doThrow(new IllegalStateException("Status code 403, AuthorizationPermissionMismatch"))
+        SdpExportRoundTripService underTest = serviceAt(NOW);
+        doThrow(new IllegalStateException("Status code 409, BlobAlreadyExists"))
             .when(sdpExportBlobWriter).write(anyString(), any());
 
         // When
         SdpExportRoundTripResult result = underTest.roundTrip();
 
         // Then
-        assertThat(result.roundTrip()).isFalse();
-        assertThat(result.error()).isEqualTo("IllegalStateException: Status code 403, AuthorizationPermissionMismatch");
-        verify(blobClient, never()).downloadContent();
-        verify(blobClient).deleteIfExists();
+        assertThat(result).isEqualTo(SdpExportRoundTripResult.failure(
+            EXPECTED_BLOB_NAME, "IllegalStateException: Status code 409, BlobAlreadyExists"));
+        verifyNoInteractions(blobContainerClient);
     }
 
-    @Test
-    void shouldKeepTheOriginalFailureWhenCleanupAlsoFails() {
-        // Given
-        doThrow(new IllegalStateException("write failed"))
-            .when(sdpExportBlobWriter).write(anyString(), any());
-        when(blobClient.deleteIfExists()).thenThrow(new IllegalStateException("delete failed"));
-
-        // When
-        SdpExportRoundTripResult result = underTest.roundTrip();
-
-        // Then
-        assertThat(result.error()).isEqualTo(
-            "IllegalStateException: write failed (cleanup also failed: IllegalStateException: delete failed)");
-    }
-
-    @Test
-    void shouldFailWhenOnlyTheDeleteFails() {
-        // Given
-        echoWrittenPayloadOnDownload();
-        when(blobClient.deleteIfExists()).thenThrow(new IllegalStateException("delete failed"));
-
-        // When
-        SdpExportRoundTripResult result = underTest.roundTrip();
-
-        // Then
-        assertThat(result.roundTrip()).isFalse();
-        assertThat(result.error()).isEqualTo("IllegalStateException: delete failed");
+    private SdpExportRoundTripService serviceAt(Instant instant) {
+        return new SdpExportRoundTripService(
+            sdpExportBlobWriter, blobContainerClient, objectMapper, Clock.fixed(instant, ZoneOffset.UTC));
     }
 
     private void echoWrittenPayloadOnDownload() {

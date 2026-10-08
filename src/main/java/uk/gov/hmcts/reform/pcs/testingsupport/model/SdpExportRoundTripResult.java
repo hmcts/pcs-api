@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Outcome of writing, reading back and deleting a test blob in the SDP export container.
+ * Outcome of writing and reading back a test blob in the SDP export container.
  * {@code error} is only set when {@code roundTrip} is false.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
