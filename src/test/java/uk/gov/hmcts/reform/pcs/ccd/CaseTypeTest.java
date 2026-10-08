@@ -160,7 +160,11 @@ class CaseTypeTest {
         assertThat(caseFileViewTab.getFields()).hasSize(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
         assertThat(ordersTab.getFields()).extracting(TabField::getId)
-            .containsExactly("ordersTab_PossessionOrder", "ordersTab_PossessionOrderUploadedDate");
+            .containsExactly("ordersTableLabel", "ordersTab_TableMarkup");
+        assertThat(ordersTab.getFields()).extracting(TabField::getShowCondition)
+            .containsExactly(null, ShowConditions.NEVER_SHOW);
+        assertThat(ordersTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");

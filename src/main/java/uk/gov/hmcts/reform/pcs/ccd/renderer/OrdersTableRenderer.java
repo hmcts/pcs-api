@@ -26,7 +26,7 @@ public class OrdersTableRenderer {
     private final PebbleEngine pebbleEngine;
 
     public String render(DocumentEntity documentEntity, LocalDateTime uploadedDate) {
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("ordersTable.peb");
+        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("ordersTable");
         Writer writer = new StringWriter();
 
         Map<String, Object> context = new HashMap<>();
