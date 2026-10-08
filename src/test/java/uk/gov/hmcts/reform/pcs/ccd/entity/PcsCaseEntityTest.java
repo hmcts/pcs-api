@@ -2,7 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -69,6 +71,51 @@ class PcsCaseEntityTest {
         // Then
         verify(genAppEntity).setRank(6);
         verify(genAppEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldNotAssignRankToPendingCounterClaim() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+
+        underTest.addCounterClaim(counterClaim);
+
+        assertThat(counterClaim.getRank()).isNull();
+        assertThat(counterClaim.getPcsCase()).isSameAs(underTest);
+    }
+
+    @Test
+    void shouldAssignRankWhenIssuedCounterClaimAdded() {
+        CounterClaimEntity counterClaim1 = CounterClaimEntity.builder()
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .build();
+        CounterClaimEntity counterClaim2 = CounterClaimEntity.builder()
+            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .build();
+
+        underTest.addCounterClaim(counterClaim1);
+        underTest.addCounterClaim(counterClaim2);
+
+        assertThat(counterClaim1.getRank()).isEqualTo(1);
+        assertThat(counterClaim1.getPcsCase()).isSameAs(underTest);
+
+        assertThat(counterClaim2.getRank()).isEqualTo(2);
+        assertThat(counterClaim2.getPcsCase()).isSameAs(underTest);
+    }
+
+    @Test
+    void shouldAssignRankToCounterClaimWhenIssuedLater() {
+        CounterClaimEntity pendingCounterClaim = CounterClaimEntity.builder()
+            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
+            .build();
+        underTest.addCounterClaim(pendingCounterClaim);
+        assertThat(pendingCounterClaim.getRank()).isNull();
+
+        pendingCounterClaim.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
+        underTest.assignCounterClaimRank(pendingCounterClaim);
+
+        assertThat(pendingCounterClaim.getRank()).isEqualTo(1);
     }
 
     @Test

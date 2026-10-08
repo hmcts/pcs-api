@@ -285,7 +285,8 @@ public class DocumentService {
             type = DocumentType.OTHER;
             categoryId = CaseFileCategory.APPLICATIONS.getId();
         } else if (selectedCounterClaim != null) {
-            renamed = documentNameService.appendCounterClaimPostfix(originalFilename, mainClaim, party.getId());
+            renamed = documentNameService.appendCounterClaimPostfix(
+                originalFilename, selectedCounterClaim, mainClaim, party.getId());
             type = DocumentType.DOCUMENTS_SUPPORTING_A_COUNTERCLAIM;
             // Set explicitly: mapDocumentTypeToCategory has no mapping for this type
             categoryId = CaseFileCategory.STATEMENTS_OF_CASE.getId();
@@ -385,7 +386,7 @@ public class DocumentService {
                 .counterClaim(counterClaim)
                 .url(ccDoc.getDocument().getUrl())
                 .fileName(documentNameService.appendCounterClaimPostfix(
-                    ccDoc.getDocument().getFilename(), claim, party.getId()))
+                    ccDoc.getDocument().getFilename(), counterClaim, claim, party.getId()))
                 .binaryUrl(ccDoc.getDocument().getBinaryUrl())
                 .contentType(ccDoc.getContentType())
                 .size(ccDoc.getSizeInBytes())
@@ -548,6 +549,16 @@ public class DocumentService {
         PartyEntity party,
         GenAppEntity selectedGenApp
     ) {
+        createDocumentEntitiesFromLegalRepDocuments(legalRepDocuments, pcsCaseEntity, party, selectedGenApp, null);
+    }
+
+    public void createDocumentEntitiesFromLegalRepDocuments(
+        List<LegalRepDocument> legalRepDocuments,
+        PcsCaseEntity pcsCaseEntity,
+        PartyEntity party,
+        GenAppEntity selectedGenApp,
+        CounterClaimEntity selectedCounterClaim
+    ) {
         List<DocumentEntity> documentEntities = legalRepDocuments.stream()
             .map(legalRepDoc -> {
 
@@ -571,6 +582,7 @@ public class DocumentService {
                 .url(documentUrl)
                 .documentId(documentIdExtractor.extractDocumentId(documentUrl))
                 .generalApplication(selectedGenApp)
+                .counterClaim(selectedCounterClaim)
                 .fileName(renamed)
                 .party(party)
                 .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
@@ -588,7 +600,7 @@ public class DocumentService {
         createAdditionalDocsWATask(
             party,
             selectedGenApp,
-            null,
+            selectedCounterClaim,
             pcsCaseEntity.getCaseReference(),
             pcsCaseEntity.getMainClaim(),
             documentEntities

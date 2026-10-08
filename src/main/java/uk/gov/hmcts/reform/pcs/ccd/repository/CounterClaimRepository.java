@@ -16,4 +16,6 @@ public interface CounterClaimRepository extends JpaRepository<CounterClaimEntity
         UUID partyId,
         CounterClaimState status
     );
+
+    int countByPcsCase_IdAndStatus(UUID caseId, CounterClaimState status);
 }
