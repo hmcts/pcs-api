@@ -12,16 +12,10 @@ import java.sql.Types;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Maps Java {@link String} IDAM ids onto DB columns that are still {@code uuid} (Part 1),
- * while also reading {@code text} values after the Part 2 Flyway widen so rolling deploys
- * stay safe until the bridge is removed in Part 3.
- */
 public class IdamUserIdUuidConverter implements UserType<String> {
 
     @Override
     public int getSqlType() {
-        // Match uuid columns for schema validation while Part 1 is live.
         return SqlTypes.UUID;
     }
 
@@ -53,7 +47,6 @@ public class IdamUserIdUuidConverter implements UserType<String> {
         if (value == null) {
             st.setNull(index, Types.OTHER);
         } else {
-            // UUID bind satisfies uuid columns; PostgreSQL also accepts it for text via cast.
             st.setObject(index, UUID.fromString(value), Types.OTHER);
         }
     }
