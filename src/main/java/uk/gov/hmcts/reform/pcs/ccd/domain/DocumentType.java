@@ -38,6 +38,7 @@ public enum DocumentType implements HasLabel {
     DEFENDANT_RESPONSE("Defendant response"),
     COUNTERCLAIM("Counterclaim"),
     NOTICE_OF_HEARING("Notice of hearing"),
+    HEARING_NOTICE("Notice of hearing"),
     WITH_NOTICE_ORDER("With notice order"),
     WITHOUT_NOTICE_ORDER("Without notice order"),
     NOTICE_OF_ALLOCATION_TO_TRACK("Notice of allocation to track"),

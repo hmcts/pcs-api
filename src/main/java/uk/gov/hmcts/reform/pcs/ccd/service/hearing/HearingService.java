@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -40,34 +39,31 @@ import java.util.stream.Collectors;
 public class HearingService {
 
     private final PcsCaseService pcsCaseService;
-    private final PcsCaseRepository pcsCaseRepository;
     private final HearingRepository hearingRepository;
     private final PartyRepository partyRepository;
     private final PartyService partyService;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
-                          PcsCaseRepository pcsCaseRepository,
                           HearingRepository hearingRepository,
                           PartyRepository partyRepository,
                           PartyService partyService,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
-        this.pcsCaseRepository = pcsCaseRepository;
         this.hearingRepository = hearingRepository;
         this.partyRepository = partyRepository;
         this.partyService = partyService;
         this.ukClock = ukClock;
     }
 
-    public void addHearing(long caseReference, PCSCase pcsCase) {
+    public HearingEntity addHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         HearingEntity hearingEntity = populateHearingEntity(new HearingEntity(), pcsCase);
         pcsCaseEntity.addHearing(hearingEntity);
-        pcsCaseRepository.save(pcsCaseEntity);
+        return hearingRepository.save(hearingEntity);
     }
 
-    public void updateHearing(long caseReference, PCSCase pcsCase) {
+    public HearingEntity updateHearing(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         Integer selectedHearingId = Integer.valueOf(Objects.requireNonNull(
             pcsCase.getSelectedHearingId(),
@@ -82,7 +78,7 @@ public class HearingService {
             ));
 
         populateHearingEntity(hearingEntity, pcsCase);
-        pcsCaseRepository.save(pcsCaseEntity);
+        return hearingRepository.save(hearingEntity);
     }
 
     public void cancelHearing(Hearing hearing) {
