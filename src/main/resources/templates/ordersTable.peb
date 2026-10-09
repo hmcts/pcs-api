@@ -17,10 +17,10 @@
       <td class="govuk-table__cell">
         {% if documentUrl is not empty %}
           <a class="govuk-link" href="{{ documentUrl }}">
-            {{ documentName | default("View possession order", true) }}
+            Possession_Order_Document
           </a>
         {% else %}
-          {{ documentName | default("Document unavailable", true) }}
+          Document unavailable
         {% endif %}
       </td>
     </tr>

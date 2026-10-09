@@ -42,7 +42,6 @@ public class OrdersTabView {
     private static Optional<DocumentEntity> getPossessionOrder(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getDocuments().stream()
             .filter(OrdersTabView::isPossessionOrder)
-            .filter(DocumentsView::isNotRemoved)
             .findFirst();
     }
 

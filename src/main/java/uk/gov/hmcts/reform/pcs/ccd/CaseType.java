@@ -167,6 +167,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildOrdersTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -253,8 +255,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private void buildSummaryTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("summary", "Summary")
             .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .label("summaryLegalRepresentativeMarkdownLabel", null,
-                   "${summaryLegalRepresentativeMarkdown}")
+            .label(
+                "summaryLegalRepresentativeMarkdownLabel", null,
+                "${summaryLegalRepresentativeMarkdown}"
+            )
             .field("summaryLegalRepresentativeMarkdown", NEVER_SHOW)
             .label("confirmEvictionSummaryMarkupLabel", null, "${confirmEvictionSummaryMarkup}")
             .field("confirmEvictionSummaryMarkup", NEVER_SHOW)
@@ -263,30 +267,42 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("summaryTab_GroundsForPossession")
             .field("summaryTab_ReasonsForPossession")
             .field("summaryTab_DateClaimSubmitted")
-            .label("Claimant details",
-                   "summaryTab_ClaimantDetails!=\"\"",
-                   "## Claimant details")
+            .label(
+                "Claimant details",
+                "summaryTab_ClaimantDetails!=\"\"",
+                "## Claimant details"
+            )
             .field("summaryTab_ClaimantDetails")
-            .label("Defendant details",
-                   "summaryTab_DefendantDetails!=\"\"",
-                   "## Defendant details")
+            .label(
+                "Defendant details",
+                "summaryTab_DefendantDetails!=\"\"",
+                "## Defendant details"
+            )
             .field("summaryTab_DefendantDetails")
             .field("summaryTab_AdditionalDefendants")
-            .label("Rent arrears",
-                   "summaryTab_RentArrearsDetails!=\"\"",
-                   "## Rent arrears")
+            .label(
+                "Rent arrears",
+                "summaryTab_RentArrearsDetails!=\"\"",
+                "## Rent arrears"
+            )
             .field("summaryTab_RentArrearsDetails")
-            .label("Tenancy or occupation contract or licence",
-                   "summaryTab_TenancyDetails!=\"\"",
-                   "## Tenancy, occupation contract or licence")
+            .label(
+                "Tenancy or occupation contract or licence",
+                "summaryTab_TenancyDetails!=\"\"",
+                "## Tenancy, occupation contract or licence"
+            )
             .field("summaryTab_TenancyDetails")
-            .label("Occupation contract or licence",
-                   "summaryTab_OccupationContractOrLicenceDetails!=\"\"",
-                   "## Occupation contract or licence")
+            .label(
+                "Occupation contract or licence",
+                "summaryTab_OccupationContractOrLicenceDetails!=\"\"",
+                "## Occupation contract or licence"
+            )
             .field("summaryTab_OccupationContractOrLicenceDetails")
-            .label("Notice",
-                   "summaryTab_NoticeDetails!=\"\"",
-                   "## Notice")
+            .label(
+                "Notice",
+                "summaryTab_NoticeDetails!=\"\"",
+                "## Notice"
+            )
             .field("summaryTab_NoticeDetails");
     }
 
@@ -371,5 +387,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getDefendantNames, "Defendant names")
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
+    }
+
+    private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("orders", "Orders")
+            .forRoles(PARTY_VISIBLE_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .label("ordersTableLabel", null, "${ordersTab_TableMarkup}")
+            .field("ordersTab_TableMarkup", NEVER_SHOW);
     }
 }

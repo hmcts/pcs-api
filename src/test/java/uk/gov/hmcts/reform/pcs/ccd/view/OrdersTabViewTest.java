@@ -104,28 +104,6 @@ class OrdersTabViewTest {
     }
 
     @Test
-    void shouldIgnoreRemovedPossessionOrder() {
-        // Given
-        DocumentEntity possessionOrder = DocumentEntity.builder()
-            .type(DocumentType.POSSESSION_ORDER)
-            .fileName("Possession order.pdf")
-            .removed(true)
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .documents(List.of(possessionOrder))
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder().build();
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity);
-
-        // Then
-        assertThat(pcsCase.getOrdersTab()).isNull();
-    }
-
-    @Test
     void shouldIgnoreOtherDocumentsAndUsePossessionOrder() {
         // Given
         DocumentEntity otherDocument = DocumentEntity.builder()
