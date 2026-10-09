@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
@@ -31,6 +32,14 @@ public class StartEventHandler implements Start<PCSCase, State> {
         applyApplicationFeeAmounts(caseData);
 
         caseData.getXuiGenAppRequest().setShowHwfScreens(VerticalYesNo.YES);
+
+        GenAppType genAppType = caseData.getXuiGenAppRequest().getApplicationType();
+
+        if (genAppType != GenAppType.SUSPEND) {
+            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.YES);
+        } else {
+            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.NO);
+        }
 
         return caseData;
     }

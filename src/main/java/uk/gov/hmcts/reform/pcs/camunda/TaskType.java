@@ -50,6 +50,15 @@ public enum TaskType {
             have been reviewed and any required action has been completed.
             """
     ),
+    REVIEW_SUSPEND_GEN_APP(
+        "ReviewSuspendGenApp",
+        "Review suspend gen app",
+        """
+            Review the general application to suspend the eviction, decide what action is needed, and take the
+            appropriate action. Only mark the task as complete once the application has been reviewed and any
+            required action has been completed.
+            """
+    ),
     REVIEW_ADJOURN_GEN_APP(
         "ReviewAdjournGenApp",
         "Review adjourn gen app",

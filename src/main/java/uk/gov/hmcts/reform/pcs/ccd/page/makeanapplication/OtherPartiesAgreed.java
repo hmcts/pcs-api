@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Slf4j
 @AllArgsConstructor
@@ -45,6 +48,7 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
             .pageLabel("Has the defendant asked the other parties if they agree to this application?")
             .label("otherPartiesAgreed-lineSeparator", "---")
             .label("otherPartiesAgreed-info", INFO_MARKDOWN)
+            .showCondition(fieldEquals("xui_genapp_ShowNoticeScreens", VerticalYesNo.YES))
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getOtherPartiesAgreed)
             .done();

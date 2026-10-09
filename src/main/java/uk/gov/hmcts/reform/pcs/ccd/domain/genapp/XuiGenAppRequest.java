@@ -143,6 +143,9 @@ public class XuiGenAppRequest implements GenAppRequest {
     @CCD(searchable = false)
     private VerticalYesNo showHwfScreens;
 
+    @CCD(searchable = false)
+    private VerticalYesNo showNoticeScreens;
+
     private String applicantPartyId;
 
     @Override
