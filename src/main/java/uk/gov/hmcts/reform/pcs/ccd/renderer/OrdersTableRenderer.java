@@ -21,7 +21,7 @@ import java.util.Map;
 public class OrdersTableRenderer {
 
     private static final DateTimeFormatter UPLOADED_DATE_FORMAT =
-        DateTimeFormatter.ofPattern("d MMMM uuuu", Locale.UK);
+        DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.UK);
 
     private final PebbleEngine pebbleEngine;
 
