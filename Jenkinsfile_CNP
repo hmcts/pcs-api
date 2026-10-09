@@ -80,9 +80,9 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
-    // pr-values:am is a standalone alternative to pr-values:ccd (brings its own full CCD stack
-    // plus RAS/ORM) — apply only one of the two labels to a PR, never both.
-    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:am")) {
+    // pr-values:ccd-am is a standalone alternative to pr-values:ccd (brings its own full CCD
+    // stack plus RAS/ORM) — apply only one of the two labels to a PR, never both.
+    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:ccd-am")) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
