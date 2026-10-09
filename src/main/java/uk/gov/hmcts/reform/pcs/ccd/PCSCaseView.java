@@ -111,18 +111,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         SubmittedCase submittedCase = getSubmittedCase(caseReference, state);
         PCSCase pcsCase = submittedCase.pcsCase();
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
+        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         if (hasUnsubmittedCaseData) {
             draftCaseDataService
                 .getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     draft -> {
-                        caseTabView.setDraftCaseTabFields(pcsCase, draft);
+                        caseTabView.setDraftCaseTabFields(pcsCase, draft, pcsCaseEntity);
                         },
-                    () -> caseTabView.setCaseTabFields(pcsCase)
+                    () -> caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity)
                 );
         } else {
-            caseTabView.setCaseTabFields(pcsCase);
+            caseTabView.setCaseTabFields(pcsCase, pcsCaseEntity);
         }
         caseFileDocumentDeduplicationService.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
 
