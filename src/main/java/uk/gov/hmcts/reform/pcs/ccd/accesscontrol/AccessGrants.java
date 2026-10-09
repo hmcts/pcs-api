@@ -10,6 +10,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
@@ -17,11 +18,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
 final class AccessGrants {
 
@@ -48,6 +51,19 @@ final class AccessGrants {
         LEADERSHIP_JUDGE,
         HEARING_CENTRE_ADMIN,
         CTSC_ADMIN,
+        WLU_ADMIN
+    };
+
+    static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
+        HEARING_CENTRE_TEAM_LEADER,
+        HEARING_CENTRE_ADMIN,
+        CTSC_TEAM_LEADER,
+        CTSC_ADMIN,
+        WLU_TEAM_LEADER,
         WLU_ADMIN
     };
 
@@ -85,6 +101,10 @@ final class AccessGrants {
 
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {
         return internalReadAccess();
+    }
+
+    static SetMultimap<HasRole, Permission> paymentHistoryReadAccess() {
+        return readAccess(PAYMENT_HISTORY_READ_ROLES);
     }
 
     private static SetMultimap<HasRole, Permission> readAccess(UserRole... roles) {
