@@ -36,6 +36,7 @@ export class ActionCMRegistry {
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateDefendantDetails', new CaseManagementAction()],
@@ -95,6 +96,8 @@ export class ActionCMRegistry {
     ['Then the user confirms Add Judicial Notes', new CaseManagementAction()],
     ['Then the user validates the Judge Notes tab', new CaseManagementAction()],
     ['Then the user performs error validation for Add Judicial Notes', new ErrorValidationAction()],
+    ['validateCaseNotesDetails', new CaseManagementAction()],
+
   ]);
 
   static getAction(actionName: string): IAction {

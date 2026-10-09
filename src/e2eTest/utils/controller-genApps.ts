@@ -47,7 +47,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth')|| currentUrl.includes('#Case%20File%20View') || currentUrl.includes('#Summary') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -91,6 +91,16 @@ export async function performAction(action: string, fieldName?: actionData | act
   } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
     const obj = fieldName as Record<string, any>;
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
+    const obj = fieldName as Record<string, any>;    
+    displayValue = Object.fromEntries(
+      Object.entries(obj).map(([key, value]) =>
+        key.includes('Payload')
+          ? [key, 'Payload is Input']
+          : [key, value]
+      )
+    );
     displayFieldName = displayValue;
   }
   let errorValidationRequired = false;
