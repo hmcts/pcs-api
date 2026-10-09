@@ -40,6 +40,11 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 GradleBuilder builder = new GradleBuilder(this, product)
 
+// Checks whether the current PR branch has a matching label.
+boolean hasLabel(githubApi, String label) {
+  return githubApi.getLabelsbyPattern(env.BRANCH_NAME, label).size() > 0
+}
+
 // Shutters the PCS case type across all environments (bakes shutterService() into the generated
 // CCD definition). While shuttered, cases cannot be created, so the e2e suite is not run.
 def shutterService = false
@@ -75,7 +80,9 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    // pr-values:am is a standalone alternative to pr-values:ccd (brings its own full CCD stack
+    // plus RAS/ORM) — apply only one of the two labels to a PR, never both.
+    if (hasLabel(githubApi, "pr-values:ccd") || hasLabel(githubApi, "pr-values:am")) {
       env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
     } else {
@@ -89,25 +96,25 @@ withPipeline(type, product, component) {
     if (waPRLabels.contains("pr-values:wa-ft-tests")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+    if (hasLabel(githubApi, "enable_e2e_full_regression")) {
       env.E2E_SUITE = "chrome"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_healthCheck").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_healthCheck")) {
       env.E2E_SUITE = "healthCheck"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_regression")) {
       env.E2E_SUITE = "regression"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_makeAClaim_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_makeAClaim_test")) {
       env.E2E_SUITE = "makeAClaim"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CC_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_CC_test")) {
       env.E2E_SUITE = "commonComponent"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_CM_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_CM_test")) {
       env.E2E_SUITE = "caseManagement"
     }
-    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_NOC_test").size() > 0) {
+    else if (hasLabel(githubApi, "enable_e2e_NOC_test")) {
       env.E2E_SUITE = "noticeOfChange"
     }
   }
@@ -184,7 +191,7 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+    if (env.CCD_ENABLED == "true") {
       sh "./bin/trigger-global-search-index.sh"
     }
   }
@@ -204,7 +211,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('akschartsinstall') {
     onPR {
-      if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa").size() > 0) {
+      if (hasLabel(githubApi, "pr-values:wa")) {
         env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         println """After akschartsinstall upload DMN and BPMN diagrams""".stripIndent()
         uploadDmnDiagrams()

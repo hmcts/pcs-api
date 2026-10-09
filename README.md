@@ -350,6 +350,25 @@ response for the possession claim fee:
 }
 ```
 
+### Running with Access Management (RAS/ORM) in Preview environment
+
+To enable RAS (am-role-assignment-service) and ORM (am-org-role-mapping-service) pods in the Preview
+environment for a PR, add the label `pr-values:am` to the PR. This is a **standalone alternative to**
+`pr-values:ccd` — it deploys its own full CCD stack (ccd, xui-webapp, xui-mo-webapp,
+ccd-case-document-am-api, aac-manage-case-assignment) plus the RAS and ORM pods, with
+AAC/XUI/XUI-MO/CCD pointed at those preview RAS/ORM pods instead of AAT, allowing role/case
+assignment to be tested end-to-end against preview data. Apply only one of `pr-values:ccd` or
+`pr-values:am` to a PR — never both — since they would otherwise deploy conflicting, overlapping
+CCD stacks.
+
+A standalone AM file is used instead of a `pr-values:ccd` overlay because of the risk of variable conflicts.
+The CNP Jenkins pipeline merges label templates in whatever order
+GitHub happens to return that PR's label list — not a guaranteed or alphabetical order. An overlay
+file depends on loading *after* the file(s) it overrides; with no deterministic ordering guarantee,
+`values.am.preview.template.yaml` could merge before `values.ccd.preview.template.yaml` and have its
+RAS/ORM URL overrides silently overwritten by CCD's AAT defaults. Making `values.am.preview.template.yaml`
+fully self-contained (its own copy of the CCD stack, not a diff against it) avoids the issue.
+
 ## Feature flags
 
 We use [LaunchDarkly](https://launchdarkly.com) for feature flags, so behaviour can be turned on or
