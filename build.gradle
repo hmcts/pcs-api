@@ -317,6 +317,7 @@ jacoco {
 jacocoTestReport {
   // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
+  mustRunAfter integration
   reports {
     xml.required = true
     csv.required = false
@@ -325,7 +326,8 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-  dependsOn jacocoTestReport
+  // PR checks skip integration, but Sonar needs its coverage before generating the report.
+  dependsOn integration, jacocoTestReport
 }
 
 if (integrationTestsEnabled) {
