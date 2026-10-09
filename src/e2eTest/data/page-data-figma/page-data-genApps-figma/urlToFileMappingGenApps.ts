@@ -16,5 +16,5 @@ export default {
   'makeAnApplicationuploadSupportingDocuments': 'uploadDocumentsToSupportDefendantsApplication',
   'makeAnApplicationwhichLanguage': 'whichLanguageDidYouUseToCompleteThisService',
   'makeAnApplicationstatementOfTruth': 'statementOfTruth',
-  'submit':'checkYourAnswersGenApps',
+  'makeAnApplication/submit': 'checkYourAnswersGenApps',
 };

@@ -11,6 +11,7 @@ import {
   whatOrderDoYouWantTheCourtToMakeAndWhy,
   whichLanguageDidYouUseToCompleteThisService
 } from '@data/page-data-figma/page-data-genApps-figma';
+import { statementOfTruthClaimant } from "@data/page-data-figma/page-data-genApps-claimant-figma";
 import { Page, expect, test } from '@playwright/test';
 import { compareMaps } from '@utils/common/compareMaps.util';
 import { performAction, performValidation } from '@utils/controller-genApps';
@@ -23,6 +24,8 @@ import { caseInfo } from '../createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 import {performActions} from "@utils/controller";
 import {caseSummary, home} from "@data/page-data";
+import {getCaseTypeId} from "@utils/common/caseType.utils";
+import {VERY_LONG_TIMEOUT} from "../../../../playwright.config";
 
 
 export const addressInfo = {
@@ -63,7 +66,9 @@ export class GenAppsAction implements IAction {
       ['clickPayNowLinkGenApps', () => this.clickPayNowLinkGenApps(page)],
       ['inputPaymentDetails', () => this.inputPaymentDetails(fieldName as actionRecord)],
       ['selectPaymentOptions', () => this.selectPaymentOptions(fieldName as actionRecord, page)],
-      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()]
+      ['confirmPaymentGenApps',() => this.confirmPaymentGenApps()],
+      ['navigateToSummaryPage',() => this.navigateToSummaryPage(page)],
+      ['selectGenAppsClaimantStatementOfTruth', () => this.selectGenAppsClaimantStatementOfTruth(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) {
@@ -102,6 +107,17 @@ export class GenAppsAction implements IAction {
     ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
 
+  }
+  private async navigateToSummaryPage(page: Page) {
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
+    await expect(async () => {
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`, { waitUntil: 'domcontentloaded' });
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+    await page.waitForLoadState();
+    await page.locator('.spinner-container').waitFor({ state: 'detached' });
+    await performValidation('mainHeader', home.caseSummary);
   }
 
   private async selectApplicant(applicant: actionRecord) {
@@ -260,9 +276,31 @@ export class GenAppsAction implements IAction {
     await performAction('clickButton', statementOfTruth.continueButton);
   }
 
+  private async selectGenAppsClaimantStatementOfTruth(claimantDetails: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`});
+    await performAction('recordUserEntry', claimantDetails);
+    await performAction('clickRadioButton', {
+      question: statementOfTruthClaimant.completedByParagraph,
+      option: claimantDetails.completedBy
+    });
+    if(claimantDetails.completedBy == statementOfTruthClaimant.claimantRadioOption){
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthClaimant.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthClaimant.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if(claimantDetails.completedBy == statementOfTruthClaimant.claimantLegalRepresentativeRadioOption){
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthClaimant.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthClaimant.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthClaimant.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruth.continueButton);
+  }
+
   private async verifyApplicationSubmitted(): Promise<void> {
     await performValidation('mainHeader', applicationSubmitted.mainHeader);
-    await performValidation('text', {elementType: 'span', text: applicationSubmitted.applicationSubmittedHeader});
+    await performValidation('text', {elementType: 'span', text: applicationSubmitted.applicationSubmittedParagraph});
     await performAction('clickButton', applicationSubmitted.closeAndReturnToCaseOverviewButton);
   }
 
@@ -285,7 +323,6 @@ export class GenAppsAction implements IAction {
     const maxRetries = 10;
     const amount = String(confirmGenApps.PayAmount);
     const payNowText = String(confirmGenApps.payNowLink);
-    const partyName= String(confirmGenApps.partyName);
 
     for (
       let retryCount = 0;
@@ -295,7 +332,6 @@ export class GenAppsAction implements IAction {
       await performAction('clickTab', caseSummary.serviceRequestTab);
       const row = page.locator('tbody tr')
         .filter({ hasText: amount })
-        .filter({ hasText: partyName })
         .nth(1);
 
       const payNowLocator = row.getByRole('link', { name: payNowText, exact: true });
