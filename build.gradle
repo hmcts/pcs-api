@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version '7.7.0'
+  id 'hmcts.ccd.sdk' version '7.12.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2419'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -317,6 +317,7 @@ jacoco {
 jacocoTestReport {
   // Tolerates missing exec files: jacoco skips execution data that is not present.
   executionData(test, integration, cftlibTest)
+  mustRunAfter integration
   reports {
     xml.required = true
     csv.required = false
@@ -325,7 +326,8 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-  dependsOn jacocoTestReport
+  // PR checks skip integration, but Sonar needs its coverage before generating the report.
+  dependsOn integration, jacocoTestReport
 }
 
 if (integrationTestsEnabled) {

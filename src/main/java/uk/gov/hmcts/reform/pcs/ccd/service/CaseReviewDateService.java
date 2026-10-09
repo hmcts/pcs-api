@@ -35,11 +35,13 @@ public class CaseReviewDateService {
     private final TaskDescriptionService taskDescriptionService;
 
     public void addCaseReviewDates(long caseReference, PCSCase pcsCase) {
+        addCaseReviewDates(caseReference, pcsCase.getReviewDates().stream().map(ListValue::getValue).toList());
+    }
+
+    public void addCaseReviewDates(long caseReference, List<ReviewDate> reviewDates) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        List<ListValue<ReviewDate>> reviewDates = pcsCase.getReviewDates();
         String waReviewDueDateTaskDescription = taskDescriptionService.createReviewDueDateDescription(caseReference);
-        for (ListValue<ReviewDate> listValue : reviewDates) {
-            ReviewDate reviewDate = listValue.getValue();
+        for (ReviewDate reviewDate : reviewDates) {
             CaseReviewDateEntity caseReviewDateEntity = createCaseReviewDateEntity(reviewDate);
             pcsCaseEntity.addCaseReviewDate(caseReviewDateEntity);
 

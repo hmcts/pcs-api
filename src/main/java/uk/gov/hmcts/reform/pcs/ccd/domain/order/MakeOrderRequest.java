@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * What the frontend sends when a judge acts on their order: the action, and the order as the judge
- * last saw it, naming the version the change is made from.
- */
-public record MakeOrderRequest(Action action, OrderChange order) {
+/** What the frontend sends when a judge saves or submits their order; only a returned order has a task. */
+public record MakeOrderRequest(Action action, OrderChange order, String taskId) {
 
     public enum Action {
         SAVE_DRAFT,
@@ -22,7 +19,7 @@ public record MakeOrderRequest(Action action, OrderChange order) {
      */
     public record OrderChange(UUID id,
                               long version,
-                              String orderType,
+                              OrderType orderType,
                               Map<String, Object> formData,
                               JsonNode docweaveSnapshot) {
     }

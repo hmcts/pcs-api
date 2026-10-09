@@ -363,6 +363,8 @@ camunda:
 work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}
+  task-management:
+    url: ${TASK_MANAGEMENT_API_URL:http://localhost:8087}
 
 role-assigment:
   url: ${ROLE_ASSIGNMENT_URL:http://localhost:4096}

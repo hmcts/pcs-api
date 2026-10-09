@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -187,6 +188,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field("waysToPay");
 
         buildCaseNotesTab(builder);
+        buildOrdersTab(builder);
 
         builder.tab("caseLinks", "Linked Cases")
             .forRoles(INTERNAL_TAB_ROLES)
@@ -229,6 +231,14 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
             .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
+    }
+
+    private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("orders", "Orders")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition(ShowConditions.featureFlagsEnabled(FeatureFlag.MAKE_ORDER))
+            .label("ordersMarkdownLabel", null, "${ordersMarkdown}")
+            .field("ordersMarkdown", NEVER_SHOW);
     }
 
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

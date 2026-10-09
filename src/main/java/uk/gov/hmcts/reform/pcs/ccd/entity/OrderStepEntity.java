@@ -11,58 +11,66 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/** A judge's draft of an order, until it is issued; its history is in the case event audit, not timestamps. */
+/** An order as it stood after one change to it. Steps are only ever added; the latest is the order as it stands. */
 @Entity
-@Table(name = "draft_orders")
+@Immutable
+@Table(name = "order_steps")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DraftOrderEntity {
+public class OrderStepEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "case_id", nullable = false)
-    private PcsCaseEntity pcsCase;
-
-    @Column(nullable = false, updatable = false)
-    private UUID authorIdamUserId;
+    @JoinColumn(name = "order_id", nullable = false)
+    private OrderEntity order;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DraftOrderState state;
-
-    @Version
-    private long version;
+    private OrderState state;
 
     @Column(nullable = false)
-    private String orderType;
+    private Instant createdAt;
 
-    /** The make order form as the judge last submitted it. */
+    @Column(nullable = false)
+    private UUID actorIdamUserId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderType orderType;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
     private Map<String, Object> formData;
 
-    /** The order document as the judge last edited it in the frontend's docweave editor. */
+    /** The frontend's Docweave editor state. */
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode docweaveSnapshot;
+
+    /** On the issuing step, the order's wording as issued. */
+    private String orderHtml;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "note_id")
+    private CaseNoteEntity note;
 }

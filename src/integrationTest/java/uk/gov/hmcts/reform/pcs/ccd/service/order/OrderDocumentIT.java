@@ -1,0 +1,159 @@
+package uk.gov.hmcts.reform.pcs.ccd.service.order;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import com.github.kagkarlsson.scheduler.Scheduler;
+import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
+import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.ccd.document.am.model.Document;
+import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.IssuedOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
+import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
+import uk.gov.hmcts.reform.pcs.config.IssuedCases;
+import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
+import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
+import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.BooleanSupplier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.COUNTY_COURT;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM_ORDER_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
+
+/** The document of an issued order: rendered by the job the issuing event schedules, and added to the case. */
+@DisplayName("Issued order document")
+class OrderDocumentIT extends OrderEventIT {
+
+    private static final String WORDING = "<p>IT IS ORDERED THAT:</p><ol><li><p>Possession.</p></li></ol>";
+    private static final String DM_STORE_URL = "http://dm-store/documents/" + UUID.randomUUID();
+
+    @Autowired
+    private CcdEventTestSupport<PCSCase, State> events;
+    @Autowired
+    private IssuedCases cases;
+    @Autowired
+    private OrderDocumentService orderDocumentService;
+    @Autowired
+    private Scheduler scheduler;
+
+    @Test
+    @DisplayName("renders the issued order's wording with the case, its parties and the judge, and adds it to the case")
+    void rendersAndAttachesTheIssuedOrder() {
+        long caseReference = cases.issue();
+        Actor judge = events.registerActor("Sarah", "Hughes", "caseworker-pcs");
+        Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
+        ExternalEvent<OrderStart, MakeOrderRequest> asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
+        asJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null), null));
+        Order draft = asJudge.start().order();
+        asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
+            draft.id(), draft.version(), draft.orderType(), draft.formData(), null), null));
+        var asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker)
+            .withClientContext(Map.of("orderId", draft.id().toString()));
+        Order submitted = asCaseworker.start().order();
+        when(docAssemblyService.generateDocument(any(), anyString(), any(), anyString())).thenReturn(DM_STORE_URL);
+        when(caseDocumentClientApi.getMetadataForDocument(any(), any(), any())).thenReturn(storedDocument());
+
+        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, submitted.id(),
+            submitted.version(), "staff-review", null,
+            new Issue(new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, WORDING), List.of(),
+                COUNTY_COURT)));
+        scheduler.triggerCheckForDueExecutions();
+        assertThat(await(() -> !documents(caseReference, caseworker).isEmpty()))
+            .as("the order's document was generated").isTrue();
+
+        String caseNumber = String.valueOf(caseReference).replaceAll("(\\d{4})(\\d{4})(\\d{4})(\\d{4})", "$1-$2-$3-$4");
+        OrderDocumentPayload rendered = rendered(caseNumber).getFirst();
+        assertThat(rendered.getJudgeName()).isEqualTo("Sarah Hughes");
+        assertThat(rendered.isCountyCourtSeal()).isTrue();
+        assertThat(rendered.isHighCourtSeal()).isFalse();
+        assertThat(rendered.getOrderHtml()).isEqualTo(WORDING);
+        assertThat(rendered.getParties()).contains(new OrderParty(IssuedCases.DEFENDANT, "Defendant"));
+        assertThat(documents(caseReference, caseworker))
+            .extracting(document -> document.getFilename(), document -> document.getCategoryId())
+            .containsExactly(tuple("Order for possession.pdf", "ordersAndNoticeOfHearings"));
+        var history = events.history(caseReference).getLast();
+        assertThat(history.eventId()).isEqualTo("orderDocumentGenerated");
+        assertThat(history.userId()).isEqualTo(caseworker.uid());
+
+        // A re-run, as a retried job is, renders nothing and adds no second document.
+        orderDocumentService.generateAndAttach(
+            new OrderDocumentTaskData(submitted.id(), caseworker.uid(), "Tom", "Baker"));
+        assertThat(rendered(caseNumber)).hasSize(1);
+        assertThat(documents(caseReference, caseworker)).hasSize(1);
+    }
+
+    /** The order documents rendered for a case; other cases' orders may be rendered by the same scheduler. */
+    private List<OrderDocumentPayload> rendered(String caseNumber) {
+        ArgumentCaptor<FormPayload> payload = ArgumentCaptor.forClass(FormPayload.class);
+        verify(docAssemblyService, atLeastOnce()).generateDocument(payload.capture(),
+            eq("CV-PCS-ORD-ENG-Order.docx"), eq(OutputType.PDF), eq("Order for possession"));
+        return payload.getAllValues().stream()
+            .map(OrderDocumentPayload.class::cast)
+            .filter(rendered -> caseNumber.equals(rendered.getCaseNumber()))
+            .toList();
+    }
+
+    /** The documents on the case, as the case file view lists them. */
+    private List<uk.gov.hmcts.ccd.sdk.type.Document> documents(long caseReference, Actor viewer) {
+        return events.view(caseReference, viewer).getAllDocuments().stream().map(ListValue::getValue).toList();
+    }
+
+    /** Waits up to 15 seconds for the scheduler to have done something; whether it did is the test's to check. */
+    private static boolean await(BooleanSupplier done) {
+        Instant until = Instant.now().plus(Duration.ofSeconds(15));
+        while (!done.getAsBoolean()) {
+            if (Instant.now().isAfter(until)) {
+                return false;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** The rendered order as CDAM describes it once Docmosis has stored it. */
+    private static Document storedDocument() {
+        Document document = Document.builder().originalDocumentName("Order for possession.pdf").build();
+        document.links = new Document.Links();
+        document.links.self = new Document.Link();
+        document.links.self.href = DM_STORE_URL;
+        document.links.binary = new Document.Link();
+        document.links.binary.href = DM_STORE_URL + "/binary";
+        return document;
+    }
+}

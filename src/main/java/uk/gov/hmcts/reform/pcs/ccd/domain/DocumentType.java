@@ -40,6 +40,7 @@ public enum DocumentType implements HasLabel {
     NOTICE_OF_HEARING("Notice of hearing"),
     WITH_NOTICE_ORDER("With notice order"),
     WITHOUT_NOTICE_ORDER("Without notice order"),
+    ORDER("Order"),
     NOTICE_OF_ALLOCATION_TO_TRACK("Notice of allocation to track"),
     GENERAL_APPLICATION("General application"),
     OTHER("Other document");
