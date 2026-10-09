@@ -1,11 +1,13 @@
-# Access Management (AM) preview stack — enabled by adding the `pr-values:am` label to a PR.
+# CCD + Access Management (CCD-AM) preview stack — enabled by adding the `pr-values:ccd-am` label
+# to a PR.
 #
 # This is a standalone alternative to `pr-values:ccd`, NOT an add-on to it: it brings up the same
-# full CCD stack (ccd, xui-webapp, ccd-case-document-am-api, aac-manage-case-assignment) plus RAS
-# (am-role-assignment-service) and ORM (am-org-role-mapping-service), with AAC/XUI/CCD pointed at
-# the preview RAS/ORM pods instead of AAT. Apply only ONE of `pr-values:ccd` or `pr-values:am` to a
-# PR — never both — so there's only ever one values file supplying these keys and no Helm merge
-# ordering ambiguity between the two label overlays.
+# full CCD stack (ccd, xui-webapp, xui-mo-webapp, ccd-case-document-am-api,
+# aac-manage-case-assignment) plus RAS (am-role-assignment-service) and ORM
+# (am-org-role-mapping-service), with AAC/XUI/XUI-MO/CCD pointed at the preview RAS/ORM pods
+# instead of AAT. Apply only ONE of `pr-values:ccd` or `pr-values:ccd-am` to a PR — never both — so
+# there's only ever one values file supplying these keys and no Helm merge ordering ambiguity
+# between the two label overlays.
 global:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
