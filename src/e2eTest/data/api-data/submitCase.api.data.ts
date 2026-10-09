@@ -1070,7 +1070,7 @@ export const submitCaseApiData = {
       agreementClaimantLegalRep: ['AGREED'],
       agreementDefendantLegalRep: []
     },
-  },
+  }),
   submitCaseDefendantAddressKnown: {
       regionId: '1',
       caseManagementLocationNumber: '20262',

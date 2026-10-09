@@ -22,7 +22,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     await performAction('submitCaseAPI', {data: submitCaseApiData.submitCaseDefendantAddressKnown});
   } else {
     await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+    await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
   }
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
