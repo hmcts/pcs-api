@@ -15,7 +15,6 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
 import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNoteType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -23,11 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.entity.CaseNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.CaseNoteRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
@@ -35,8 +33,6 @@ import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,6 +43,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDIUM_TEXT_LIMIT;
 
 /**
  * A caseworker reviews an order a judge submitted, through pcs-frontend's confirm order review
@@ -69,7 +66,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private static final String OPEN_FROM_TASK = "Open the order to review from its task";
 
     private final OrderRepository orderRepository;
-    private final CaseNoteRepository caseNoteRepository;
     private final OrderSteps orderSteps;
     private final OrderCaseContext orderCaseContext;
     private final CaseReviewDateService caseReviewDateService;
@@ -78,7 +74,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
-    private final Clock utcClock;
+    private final CaseNoteService caseNoteService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -126,7 +122,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                     .orderType(submitted.getOrderType())
                     .formData(submitted.getFormData())
                     .docweaveSnapshot(submitted.getDocweaveSnapshot())
-                    .note(queryNote(order, query, caseworker)));
+                    .note(caseNoteService.addCaseNote(order.getPcsCase(), query)));
             orderTasks.askJudgeToChange(caseReference, returned, query);
             return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
         }
@@ -162,22 +158,12 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("The order is no longer waiting for review"));
     }
 
-    /** The caseworker's query, as a note on the case the returning step points at. */
-    private CaseNoteEntity queryNote(OrderEntity order, String query, UserInfo caseworker) {
-        CaseNoteEntity note = CaseNoteEntity.builder()
-            .type(CaseNoteType.ORDER)
-            .note(query)
-            .createdBy(caseworker.getName())
-            .authorIdamUserId(UUID.fromString(caseworker.getUid()))
-            .createdOn(Instant.now(utcClock))
-            .build();
-        note.setPcsCase(order.getPcsCase());
-        return caseNoteRepository.save(note);
-    }
-
     private static String validQuery(String query) {
         if (query == null || query.isBlank()) {
             throw ExternalRejection.because("Enter a query for the judge");
+        }
+        if (query.length() > MEDIUM_TEXT_LIMIT) {
+            throw ExternalRejection.because("The query must be 500 characters or fewer");
         }
         return query;
     }

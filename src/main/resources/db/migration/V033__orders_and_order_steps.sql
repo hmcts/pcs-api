@@ -33,13 +33,6 @@ ALTER TABLE orders
         (serve_all_parties = FALSE AND jsonb_array_length(parties_served) > 0)
         OR (serve_all_parties IS DISTINCT FROM FALSE AND parties_served IS NULL));
 
--- A note may be longer than a case note, and belong somewhere other than the Case notes tab: an
--- order's query to its judge is one, and the Messages tab will show them.
-ALTER TABLE case_note
-    ALTER COLUMN note TYPE VARCHAR(30000),
-    ADD COLUMN author_idam_user_id UUID,
-    ADD COLUMN type TEXT NOT NULL DEFAULT 'CASE_NOTE' CHECK (type IN ('CASE_NOTE', 'ORDER'));
-
 CREATE TABLE order_steps (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,

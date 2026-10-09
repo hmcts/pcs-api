@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -123,8 +124,9 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
         assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
-        assertThat(events.view(caseReference, caseworker).getCaseNotes())
-            .as("an order's query is not a case note").isEmpty();
+        assertThat(events.view(caseReference, caseworker).getCaseNotes()).extracting(ListValue::getValue)
+            .extracting(CaseNote::getNote, CaseNote::getCreatedBy)
+            .containsExactly(tuple(QUERY, "A Caseworker"));
         assertThat(events.view(caseReference, judge).getOrdersMarkdown()).contains("Returned to judge");
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
