@@ -49,7 +49,6 @@ class DraftCaseDataServiceTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final UUID USER_ID = UUID.randomUUID();
     private static final String OWNER_ORGANISATION_ID = "QKLHPMU";
-    private static final String OTHER_ORGANISATION_ID = "IHOVCKH";
     private static final EventId PARTY_OWNED_EVENT = EventId.resumePossessionClaim;
 
     @Mock
