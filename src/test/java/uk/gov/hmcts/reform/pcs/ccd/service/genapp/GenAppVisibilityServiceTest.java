@@ -129,23 +129,6 @@ class GenAppVisibilityServiceTest {
     }
 
     @Test
-    void shouldTreatGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
-        // Given
-        PartyEntity party = mock(PartyEntity.class);
-
-        // When
-        boolean documentVisibleToUser = underTest.isWithoutNoticeVisibleToUser(
-            party,
-            CURRENT_USER_ID,
-            null,
-            List.of(UserRole.PCS_CASE_WORKER.getRole())
-        );
-
-        // Then
-        assertThat(documentVisibleToUser).isTrue();
-    }
-
-    @Test
     void shouldNotTreatSolicitorWithGenericPcsCaseworkerRoleAsInternalVisibilityRole() {
         // Given
         PartyEntity party = mock(PartyEntity.class);

@@ -2,6 +2,7 @@
 
 @Library("Infrastructure@2.4.9")
 
+import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
 import uk.gov.hmcts.contino.GradleBuilder
@@ -66,6 +67,9 @@ withPipeline(type, product, component) {
   }
 
   onPR() {
+    // On PRs these run in GitHub Actions instead. Master still runs them here.
+    env.INTEGRATION_TESTS_ENABLED = "false"
+
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
@@ -82,11 +86,14 @@ withPipeline(type, product, component) {
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
-    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+    if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_healthCheck").size() > 0) {
+      env.E2E_SUITE = "healthCheck"
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
@@ -110,7 +117,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup()
+    enableHighLevelDataSetup("", true)
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
@@ -144,9 +151,9 @@ withPipeline(type, product, component) {
     }
     onMaster{
       if(env.ENVIRONMENT == "prod") {
-        env.SHUTTER_SERVICE = true
+        env.SHUTTER_SERVICE = false
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-        env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
         env.CASE_TYPE_SUFFIX=""
       } else {
         env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
@@ -185,6 +192,14 @@ withPipeline(type, product, component) {
   before('smoketest:aat') {
     env.CASE_TYPE_SUFFIX="staging"
     env.CCD_ENABLED = "true"
+  }
+
+  afterSuccess('dbmigrate:perftest') {
+    runPerftestSmokeTests(builder, secrets, product)
+  }
+
+  afterAlways('dbmigrate:perftest') {
+    archiveSmokeTestReports()
   }
 
   afterSuccess('akschartsinstall') {
@@ -233,11 +248,22 @@ withPipeline(type, product, component) {
   afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
+      env.E2E_TEST_FAILED = "true"
     }
   }
 
   afterSuccess('E2eTest:aat') {
     env.ENVIRONMENT= "prod"
+  }
+
+  // catchError() in the shared library's sectionDeployToAKS swallows the e2e failure
+  // throw error here to aborts the build before Helm chart publish / prod deploy run.
+  before('Publish Helm chart') {
+    onMaster {
+      if (env.E2E_TEST_FAILED == "true") {
+        error('Aborting pipeline: AAT E2E tests failed')
+      }
+    }
   }
 }
 
@@ -261,7 +287,7 @@ def setAatEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
   env.ENABLE_TESTING_SUPPORT = "true"
-  env.E2E_SUITE= "regression"
+  env.E2E_SUITE= "healthCheck"
 }
 
 def setProdEnvVars() {
@@ -269,7 +295,7 @@ def setProdEnvVars() {
   env.ENVIRONMENT= "prod"
   env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
   env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
 }
 
 def setDemoEnvVars() {
@@ -288,6 +314,27 @@ def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
   env.CAMUNDA_BASE_URL = "http://camunda-api-perftest.service.core-compute-perftest.internal"
   env.S2S_URL_BASE = "http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal"
+}
+
+def runPerftestSmokeTests(builder, Map secrets, String product) {
+  def vaultConfig = new AppPipelineConfig()
+  vaultConfig.vaultSecrets = secrets
+
+  stageWithEnvironmentAgent('Smoke Test - perftest', product, 'perftest') {
+    withTeamSecrets(vaultConfig, 'perftest', 'pcs') {
+    withEnv([
+      "TEST_URL=http://pcs-api-perftest.service.core-compute-perftest.internal",
+      "ENVIRONMENT_NAME=perftest",
+      "DATA_STORE_URL_BASE=http://ccd-data-store-api-perftest.service.core-compute-perftest.internal",
+      "IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-perftest.service.core-compute-perftest.internal",
+      "IDAM_API_URL=https://idam-api.perftest.platform.hmcts.net",
+      "CASE_TYPE_SUFFIX="
+    ]) {
+      echo "Running smoke tests against ${env.TEST_URL}"
+      builder.smokeTest()
+    }
+  }
+}
 }
 
 def generateDefinitions(builder) {
@@ -371,5 +418,3 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
 }
-
-

@@ -20,9 +20,13 @@ import {ExpandSummaryAction, InputDateAction} from '@utils/actions/element-actio
 import {FeeAndPayAction } from '@utils/actions/custom-actions/commonComponent/feeAndPay.action';
 import {CaseFlagAction } from '@utils/actions/custom-actions/commonComponent/caseFlag.action';
 import {CaseLinking } from '@utils/actions/custom-actions/commonComponent/caseLinking.action';
-import { LinkSolicitorAPIAction } from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {LinkSolicitorAPIAction} from '@utils/actions/custom-actions/linkSolicitorAPI.action';
+import {RespondToAClaimAction} from '@utils/actions/custom-actions/custom-actions-respondToAClaimLR/respondToAClaim.action';
 import {DocumentsAction} from "@utils/actions/custom-actions/documentsLR.action";
 import {RecordAnswers} from "@utils/actions/custom-actions";
+import {RetryOnCallBackError} from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import {YourSupportAction} from '@utils/actions/custom-actions/commonComponent/yourSupport.action';
+import {RemoveFileAction} from '@utils/actions/element-actions/removeFile.action';
 
 
 
@@ -36,6 +40,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['inputDate', new InputDateAction()],
     ['check', new CheckAction()],
+    ['selectAnEvent', new CreateCaseAction()],
     ['uncheck', new CheckAction()],
     ['select', new SelectAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -138,6 +143,7 @@ export class ActionRegistry {
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
+    ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -163,7 +169,15 @@ export class ActionRegistry {
     ['selectCasesToLink', new CaseLinking()],
     ['selectCasesToUnLink', new CaseLinking()],
     ['verifyLinkedCases', new CaseLinking()],
+    ['navigateToCaseSummary', new CaseLinking()],
+    ['canLinkCases', new CaseLinking()],
+    ['canManageCases', new CaseLinking()],
+    ['canViewLinkedCases', new CaseLinking()],
+    ['handleJudgeBookingPage', new CaseLinking()],
+    ['createCases', new CaseLinking()],
     ['handleJudgeBookingPage', new CaseFlagAction()],
+    ['handleJudgeBookingPageForCaseFlags', new CaseFlagAction()],
+    ['handleJudgeBookingPageForGlobalSearch', new GlobalSearchCaseAction()],
     ['searchResults', new GlobalSearchCaseAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
     ['requestRemission', new FeeAndPayAction()],
@@ -176,14 +190,24 @@ export class ActionRegistry {
     ['verifyChangeLink', new CreateCaseAction()],
     ['validateErrorPage', new CreateCaseAction()],
     ['noticeOfChangeSuccessful', new CreateCaseAction()],
+    ['createPartialClaimDetails', new CreateCaseAction()],
+    ['resumePartialClaim', new CreateCaseAction()],
     ['navigateToSummaryPage', new DocumentsAction()],
     ['uploadAdditionalDocumentsInfo', new DocumentsAction()],
     ['verifyDocumentRelatesToApplication', new DocumentsAction()],
     ['uploadFiles', new DocumentsAction()],
+    ['uploadAdditionalDocsLR', new DocumentsAction()],
+    ['selectDocumentRelatingTo', new DocumentsAction()],
+    ['verifyPdfLinks', new DocumentsAction()],
     ['recordUserEntry', new RecordAnswers()],
     ['retrieveCYATableDataLR', new DocumentsAction()],
     ['validateCYAForLR', new DocumentsAction()],
     ['readDocumentsSubmit', new DocumentsAction()],
+    ['selectAnEvent', new CreateCaseAction()],
+    ['reTryOnCallBackError', new RetryOnCallBackError()],
+    ['confirmStatusForFlag', new CaseFlagAction()],
+    ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['removeFile', new RemoveFileAction()],    
   ]);
 
   static getAction(actionName: string): IAction {

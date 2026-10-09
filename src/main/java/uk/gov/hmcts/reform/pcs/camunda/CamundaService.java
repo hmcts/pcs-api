@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.camunda;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -29,11 +29,10 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 import static uk.gov.hmcts.reform.pcs.camunda.CamundaRequestTaskComponent.CAMUNDA_REQUEST_TASK_DESCRIPTOR;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class CamundaService {
 
-    private final CamundaApi camundaApi;
+    private final WorkAllocationWorkflowApi workAllocationWorkflowApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final SchedulerClient schedulerClient;
     private final FeatureToggleService featureToggleService;
@@ -47,6 +46,25 @@ public class CamundaService {
     private static final String CANCELLATION_PROCESS = "CASE_EVENT_CANCELLATION";
     private static final String UNABLE_TO_FIND_LOCATION = "Unable to find location";
     private final Clock utcClock;
+    private final String pcsApiEnvironment;
+
+    public CamundaService(WorkAllocationWorkflowApi workAllocationWorkflowApi,
+                          AuthTokenGenerator authTokenGenerator,
+                          SchedulerClient schedulerClient,
+                          FeatureToggleService featureToggleService,
+                          LocationReferenceService locationReferenceService,
+                          PcsCaseRepository pcsCaseRepository,
+                          Clock utcClock,
+                          @Value("${camunda.pcs-api-env}") String pcsApiEnvironment) {
+        this.workAllocationWorkflowApi = workAllocationWorkflowApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.schedulerClient = schedulerClient;
+        this.featureToggleService = featureToggleService;
+        this.locationReferenceService = locationReferenceService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.utcClock = utcClock;
+        this.pcsApiEnvironment = pcsApiEnvironment;
+    }
 
     public void createTask(long caseId, TaskType taskType) {
         createTask(caseId, taskType, taskType.getDefaultDescription(), Instant.now(utcClock));
@@ -66,6 +84,7 @@ public class CamundaService {
             .caseReference(caseId)
             .taskType(taskType)
             .taskDescription(taskDescription)
+            .idempotencyKey(UUID.randomUUID())
             .build();
 
         scheduleCamundaRequest(taskData, scheduledTo);
@@ -82,10 +101,16 @@ public class CamundaService {
 
     void handleRequest(CamundaRequestTaskData taskData) {
         switch (taskData.getAction()) {
-            case CREATE ->
-                requestTaskCreation(taskData.getCaseReference(), taskData.getTaskType(), taskData.getTaskDescription());
-            case CANCEL ->
-                requestTaskCancellation(taskData.getCaseReference(), taskData.getTaskType());
+            case CREATE -> requestTaskCreation(
+                taskData.getCaseReference(),
+                taskData.getTaskType(),
+                taskData.getTaskDescription(),
+                taskData.getIdempotencyKey()
+            );
+            case CANCEL -> requestTaskCancellation(
+                taskData.getCaseReference(),
+                taskData.getTaskType()
+            );
         }
     }
 
@@ -102,7 +127,7 @@ public class CamundaService {
                 .scheduledTo(scheduledTo));
     }
 
-    private void requestTaskCreation(Long caseId, TaskType taskType, String taskDescription) {
+    private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -125,11 +150,17 @@ public class CamundaService {
         processVariables.put("name", dmnStringValue(taskType.getName()));
         processVariables.put("taskDescription", dmnStringValue(taskDescription));
         processVariables.put("taskId", dmnStringValue(taskType.getId()));
-        processVariables.put("caseId", dmnStringValue(caseId.toString()));
+        processVariables.put("caseId", dmnStringValue(Long.toString(caseId)));
         processVariables.put("delayUntil", dmnStringValue(delayUntil.format(ISO_LOCAL_DATE_TIME)));
         processVariables.put("hasWarnings", dmnBooleanValue(false));
         processVariables.put("warningList", dmnStringValue(EMPTY_WARNINGS_LIST));
         processVariables.put("__processCategory__" + taskType.getId(), dmnBooleanValue(true));
+        processVariables.put("pcsApiEnv", dmnStringValue(pcsApiEnvironment));
+        if (idempotencyKey != null) {
+            processVariables.put("idempotencyKey", dmnStringValue(idempotencyKey.toString()));
+        } else {
+            log.warn("No idempotency key provided for task of type {}", taskType);
+        }
 
         // Default values - WA task due date is configured in configuration dmn
         LocalDateTime dueDate = LocalDateTime.of(2050, 1, 1, 17, 0, 0);
@@ -141,6 +172,7 @@ public class CamundaService {
         SendMessageRequest request = SendMessageRequest.builder()
             .messageName(CREATE)
             .processVariables(processVariables)
+            .all(false)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -163,6 +195,7 @@ public class CamundaService {
             .messageName(CANCEL)
             .processVariables(processVariables)
             .correlationKeys(correlationKeys)
+            .all(true)
             .build();
 
         sendCamundaRequest(request, caseId);
@@ -173,7 +206,7 @@ public class CamundaService {
 
         try {
             log.info("Camunda request for case id {}: {}", caseId, request);
-            camundaApi.sendMessage(s2sToken, request);
+            workAllocationWorkflowApi.sendMessage(s2sToken, request);
         } catch (Exception e) {
             log.error("Failed to send Camunda request for caseId {}", caseId, e);
             throw e;

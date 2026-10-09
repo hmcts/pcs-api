@@ -19,6 +19,7 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.CCDAccessGroup;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
 @Getter
 public enum AccessProfile implements HasRole {
@@ -32,7 +33,7 @@ public enum AccessProfile implements HasRole {
     PCS_CASE_WORKER("caseworker-pcs", Set.of(R)),
     PCS_SOLICITOR("caseworker-pcs-solicitor", CRU),
 
-    GA_CLAIMANT("claimant", CRU,
+    CLAIMANT("claimant", CRU,
              LOCAL_AUTHORITY_CLAIMANT_ACCESS,
              REAL_ESTATE_ORG_CLAIMANT_ACCESS,
              PROPERTY_CONSTRUCTION_ORG_CLAIMANT_ACCESS,
@@ -46,12 +47,12 @@ public enum AccessProfile implements HasRole {
     FEE_PAID_JUDGE("fee-paid-judge", CRU),
     CIRCUIT_JUDGE("circuit-judge", CRU),
     LEADERSHIP_JUDGE("leadership-judge", CRU),
-    CTSC_TEAM_LEADER("ctsc-team-leader", Permission.CRU),
-    CTSC_ADMIN("ctsc", Permission.CRU),
-    HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", Permission.CRU),
-    HEARING_CENTRE_ADMIN("hearing-centre-admin", Permission.CRU),
-    WLU_TEAM_LEADER("wlu-team-leader", Permission.CRU),
-    WLU_ADMIN("wlu-admin", Permission.CRU),
+    CTSC_TEAM_LEADER("ctsc-team-leader", CRU),
+    CTSC_ADMIN("ctsc", CRU),
+    HEARING_CENTRE_TEAM_LEADER("hearing-centre-team-leader", CRU),
+    HEARING_CENTRE_ADMIN("hearing-centre-admin", CRU),
+    WLU_TEAM_LEADER("wlu-team-leader", CRU),
+    WLU_ADMIN("wlu-admin", CRU),
     GS_PROFILE("GS_profile", Set.of(R)),
     SYSTEM_USER("pcs-system-update", CRU),
     WA_SYSTEM_USER("caseworker-wa-task-configuration", CRU),
@@ -87,5 +88,20 @@ public enum AccessProfile implements HasRole {
 
     public String getCaseTypePermissions() {
         return Permission.toString(caseTypePermissions);
+    }
+
+    /**
+     * Group access is configured on the canonical PCS case type only. A suffixed case type
+     * (PCS-staging, PR previews) shares the jurisdiction, so emitting the same AccessType rows there
+     * makes PRM mint a second set of organisation roles against that case type - and XUI's case list
+     * then defaults to it, showing no cases. Emit nothing so no such roles exist to pick.
+     */
+    @Override
+    public List<CCDAccessGroup> getAccessGroups() {
+        return accessGroupsFor(CaseType.isSuffixedCaseType());
+    }
+
+    List<CCDAccessGroup> accessGroupsFor(boolean suffixedCaseType) {
+        return suffixedCaseType ? List.of() : accessGroups;
     }
 }

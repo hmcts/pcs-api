@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,8 @@ public class DocumentsView {
 
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
+    private final UploadTimestampProvider uploadTimestampProvider;
+    private final SecurityContextService securityContextService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
@@ -43,7 +46,6 @@ public class DocumentsView {
         return pcsCaseEntity.getDocuments().stream()
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
                                                                    organisationId))
-            .filter(this::isNotInCaseDetailsTab)
             .map(entity -> ListValue.<Document>builder()
                 .id(entity.getId().toString())
                 .value(Document.builder()
@@ -51,10 +53,7 @@ public class DocumentsView {
                            .url(entity.getUrl())
                            .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
-                           .uploadTimestamp(entity.getSubmittedDate() == null
-                                                ? null
-                                                : entity.getSubmittedDate()
-                               .atZone(java.time.ZoneOffset.UTC).toLocalDateTime())
+                           .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(entity))
                            .build())
                 .build())
             .collect(Collectors.toList());
@@ -91,8 +90,10 @@ public class DocumentsView {
     }
 
     private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
+        // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
+        // account. CDAM only serves a document attached to a case to a user who can see it in the case.
         return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            || documentEntity.isRemoved();
+            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
@@ -100,31 +101,8 @@ public class DocumentsView {
                 || documentEntity.getDescription().trim().isEmpty();
     }
 
-    public static boolean isNotRemoved(DocumentEntity documentEntity) {
-        return !documentEntity.isRemoved();
-    }
-
     public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
         return documentEntity.getGeneralApplication() == null;
     }
 
-    private boolean isNotInCaseDetailsTab(DocumentEntity documentEntity) {
-        List<DocumentType> caseDetailsDocuments = List.of(
-            DocumentType.TENANCY_AGREEMENT,
-            DocumentType.POSSESSION_NOTICE,
-            DocumentType.RENT_STATEMENT,
-            DocumentType.ENERGY_PERFORMANCE_CERTIFICATE,
-            DocumentType.EICR_REPORT,
-            DocumentType.GAS_SAFETY_CERTIFICATE,
-            DocumentType.OCCUPATION_LICENCE
-        );
-
-        DocumentType type = documentEntity.getType();
-        if (type == null || !caseDetailsDocuments.contains(type)) {
-            return true;
-        }
-
-        // Is not an additional document
-        return !isDescriptionEmpty(documentEntity);
-    }
 }

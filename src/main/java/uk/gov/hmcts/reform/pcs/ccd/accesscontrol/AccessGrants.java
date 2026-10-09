@@ -5,25 +5,36 @@ import com.google.common.collect.SetMultimap;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CITIZEN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CIRCUIT_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CTSC_ADMIN;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.FEE_PAID_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_CLAIMANT_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.GA_DEFENDANT_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.HEARING_CENTRE_TEAM_LEADER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.LEADERSHIP_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.SYSTEM_USER;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_ADMIN;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.WLU_TEAM_LEADER;
 
 final class AccessGrants {
 
     static final UserRole[] PARTY_VISIBLE_ROLES = {
         CITIZEN,
         DEFENDANT,
+        GA_DEFENDANT_SOLICITOR,
         PCS_SOLICITOR,
+        CLAIMANT,
+        GA_CLAIMANT_SOLICITOR,
         JUDGE,
         FEE_PAID_JUDGE,
         CIRCUIT_JUDGE,
@@ -43,6 +54,19 @@ final class AccessGrants {
         WLU_ADMIN
     };
 
+    static final UserRole[] PAYMENT_HISTORY_READ_ROLES = {
+        JUDGE,
+        FEE_PAID_JUDGE,
+        CIRCUIT_JUDGE,
+        LEADERSHIP_JUDGE,
+        HEARING_CENTRE_TEAM_LEADER,
+        HEARING_CENTRE_ADMIN,
+        CTSC_TEAM_LEADER,
+        CTSC_ADMIN,
+        WLU_TEAM_LEADER,
+        WLU_ADMIN
+    };
+
     private AccessGrants() {
     }
 
@@ -54,19 +78,33 @@ final class AccessGrants {
         return readAccess(INTERNAL_READ_ROLES);
     }
 
+    static SetMultimap<HasRole, Permission> caseNoteReadAccess() {
+        return readAccess(CASE_NOTE_ROLES);
+    }
+
     static SetMultimap<HasRole, Permission> documentAccess() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(PCS_SOLICITOR, Permission.CR);
         grants.putAll(CITIZEN, Permission.CR);
         grants.putAll(DEFENDANT, Permission.CR);
+        grants.putAll(CLAIMANT, Permission.CR);
         grants.putAll(CLAIMANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_CLAIMANT_SOLICITOR, Permission.CR);
         grants.putAll(DEFENDANT_SOLICITOR, Permission.CR);
+        grants.putAll(GA_DEFENDANT_SOLICITOR, Permission.CR);
+        // Bulk print downloads documents through CDAM as the system user, and CDAM only serves a document attached to
+        // a case to a user who can read it in the case.
+        grants.put(SYSTEM_USER, Permission.R);
         addReadAccess(grants, INTERNAL_READ_ROLES);
         return grants;
     }
 
     static SetMultimap<HasRole, Permission> caseLinkingAccess() {
         return internalReadAccess();
+    }
+
+    static SetMultimap<HasRole, Permission> paymentHistoryReadAccess() {
+        return readAccess(PAYMENT_HISTORY_READ_ROLES);
     }
 
     private static SetMultimap<HasRole, Permission> readAccess(UserRole... roles) {

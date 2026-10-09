@@ -1,5 +1,23 @@
 [
   {
+    "email": "judge@pcs.com",
+    "id": "749ce9f7-535a-3cf5-ba07-f66e6d55c5fa",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "judge",
+        "grantType": "STANDARD",
+        "roleCategory": "JUDICIAL",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
     "email": "citizen@pcs.com",
     "id": "355fe639-be35-3723-b802-c91d3a9372e7",
     "roleAssignments": [
@@ -22,6 +40,26 @@
         "classification": "RESTRICTED",
         "readOnly": false,
         "attributes": { "caseType": "PCS", "jurisdiction": "PCS" },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "pcs-solicitor1@test.com",
+    "id": "f6484bbb-c10e-319b-ab8d-14361a7d2a23",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "claimant-solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "jurisdiction": "PCS",
+          "caseType": "PCS",
+          "caseAccessGroupId": "PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:TEST-123"
+        },
         "authorisations": []
       }
     ]

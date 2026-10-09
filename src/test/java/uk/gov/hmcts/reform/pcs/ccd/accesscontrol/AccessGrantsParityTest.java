@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteRoles.CASE_NOTE_ROLES;
 
 class AccessGrantsParityTest {
 
@@ -24,6 +25,18 @@ class AccessGrantsParityTest {
             .isEqualTo(accessGrantProfiles(AccessGrants.INTERNAL_READ_ROLES));
     }
 
+    @Test
+    void shouldKeepCaseNoteTabProfilesAlignedWithFieldAccessRoles() throws Exception {
+        assertThat(caseTypeAccessProfiles("CASE_NOTE_TAB_ROLES"))
+            .isEqualTo(accessGrantProfiles(CASE_NOTE_ROLES));
+    }
+
+    @Test
+    void shouldKeepPaymentHistoryTabProfilesAlignedWithFieldAccessRoles() throws Exception {
+        assertThat(caseTypeAccessProfiles("PAYMENT_HISTORY_TAB_ROLES"))
+            .isEqualTo(accessGrantRoles(AccessGrants.PAYMENT_HISTORY_READ_ROLES));
+    }
+
     private Set<String> caseTypeAccessProfiles(String fieldName) throws Exception {
         Field field = CaseType.class.getDeclaredField(fieldName);
         field.setAccessible(true);
@@ -36,6 +49,12 @@ class AccessGrantsParityTest {
     private Set<String> accessGrantProfiles(UserRole[] roles) {
         return Arrays.stream(roles)
             .flatMap(role -> Arrays.stream(role.getAccessProfiles()))
+            .collect(Collectors.toSet());
+    }
+
+    private Set<String> accessGrantRoles(UserRole[] roles) {
+        return Arrays.stream(roles)
+            .map(UserRole::getRole)
             .collect(Collectors.toSet());
     }
 }

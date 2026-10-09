@@ -22,8 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -68,7 +68,7 @@ class CounterClaimPaymentCallbackHandlerTest {
     @Mock
     private ObjectMapper objectMapper;
     @Captor
-    private ArgumentCaptor<SchedulableInstance<CounterClaimStatusChangeTaskData>> taskInstanceCaptor;
+    private ArgumentCaptor<SchedulableInstance<CounterClaimTaskData>> taskInstanceCaptor;
 
     @InjectMocks
     private CounterClaimPaymentCallbackHandler underTest;
@@ -119,7 +119,7 @@ class CounterClaimPaymentCallbackHandlerTest {
 
         TaskInstance<?> taskInstance = schedulableInstance.getTaskInstance();
         assertThat(taskInstance.getTaskName()).isEqualTo(COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR.getTaskName());
-        CounterClaimStatusChangeTaskData data = (CounterClaimStatusChangeTaskData) taskInstance.getData();
+        CounterClaimTaskData data = (CounterClaimTaskData) taskInstance.getData();
         assertThat(data.getCounterClaimId()).isEqualTo(counterClaimId);
         assertThat(data.getPaymentReference()).isEqualTo(paymentReference);
 
@@ -237,16 +237,12 @@ class CounterClaimPaymentCallbackHandlerTest {
             .fileName("counterclaim-evidence.pdf")
             .counterClaim(counterClaimEntity)
             .build();
-        DocumentEntity removedDocument = DocumentEntity.builder()
-            .counterClaim(counterClaimEntity)
-            .removed(true)
-            .build();
         DocumentEntity noCounterClaimDocument = DocumentEntity.builder().build();
         DocumentEntity otherCounterClaimDocument = DocumentEntity.builder()
             .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
             .build();
         pcsCaseEntity.setDocuments(
-            List.of(activeDocument, removedDocument, noCounterClaimDocument, otherCounterClaimDocument));
+            List.of(activeDocument, noCounterClaimDocument, otherCounterClaimDocument));
 
         FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 

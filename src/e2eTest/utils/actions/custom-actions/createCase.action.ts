@@ -13,7 +13,11 @@ import {
   userIneligible,
   whatAreYourGroundsForPossessionWales,
   addressCheckYourAnswers,
-  home
+  home,
+  checkYourAnswers,
+  resumeClaim,
+  user,
+  caseSummary
 } from '@data/page-data';
 import {
   claimantType,
@@ -52,6 +56,8 @@ import {
   underlesseeMortgageeDetails,
   checkingNoticeWales,
   addCaseNote,
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 import {compareMaps} from '@utils/common/compareMaps.util';
@@ -65,6 +71,7 @@ import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresent
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
+import { dismissCookieBanner } from '@config/cookie-banner';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -128,6 +135,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],
@@ -145,10 +153,19 @@ export class CreateCaseAction implements IAction {
       ['verifyChangeLink', () => this.verifyChangeLink(fieldName as actionRecord)],
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
+      ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
+  }
+
+  private async selectAnEvent(event: actionRecord) {
+    await performAction('select', caseSummary.nextStepEventList, event.eventType);
+    await performAction('clickButton', caseSummary.go);
   }
 
   private async housingPossessionClaim() {
@@ -380,11 +397,6 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
@@ -460,8 +472,7 @@ export class CreateCaseAction implements IAction {
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
-          }
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.estateManagementGroundsHiddenQuestion, option: possessionGrounds.discretionaryEstateGrounds});          }
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
@@ -738,6 +749,7 @@ export class CreateCaseAction implements IAction {
   private async uploadAdditionalDocs(documentsData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performAction('removeFile');
     if (Array.isArray(documentsData.documents)) {
       for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
         const document = documentsData.documents[fileIndex]; await performActions(
@@ -879,11 +891,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === underlesseeMortgageeDetails.yesRadioOption) {
           await performAction('inputText', {text: underlesseeMortgageeDetails.whatIsTheirNameHiddenTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
         }
@@ -967,10 +979,14 @@ export class CreateCaseAction implements IAction {
 
       case 'Defendant-Representative':
         const defendantSolicitor = JSON.parse(process.env.Defendant_SOLICITOR || '');
+        const defendantUser = Object.values(user).find(
+          u => u.email === defendantSolicitor.email
+        );
+        const orgName = defendantUser && 'orgName' in defendantUser ? defendantUser.orgName : undefined;
         defendant.set(`Representative’s first name`, defendantSolicitor.displayName);
         defendant.set(`Representative’s last name`, defendantSolicitor.surname);
         defendant.set(`Email address`, defendantSolicitor.email);
-        defendant.set(`Name`, 'Possession Claim Service Org1')
+        defendant.set(`Name`, orgName ?? '');
         defendant.set(`Building and Street`, submitPayload.organisationAddress.AddressLine1);
         defendant.set(`Address Line 2`, submitPayload.organisationAddress.AddressLine2);
         defendant.set(`Town or City`, submitPayload.organisationAddress.PostTown);
@@ -1095,7 +1111,8 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
-    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    const dateSubmitted = page.locator('th', { hasText: 'Date claim Submitted' })
+                         .locator('xpath=following-sibling::td[1]');
     expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
 
 
@@ -1538,7 +1555,7 @@ export class CreateCaseAction implements IAction {
         /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
         /ancestor::div[1]
-        //table[@aria-describedby="complex field table"]`;
+        //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1588,11 +1605,11 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT,
     });
     const folderRetrieved = (await folderLocator.allTextContents()).map(item => item.slice(1));
     const folder:string[] = caseFileView as string[];
@@ -1606,6 +1623,11 @@ export class CreateCaseAction implements IAction {
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
     let userInputFiles:string[]= [];
+    const file =
+      caseFile.caseWorkerUpload ??
+      caseFile.caseWorkerAmend ??
+      caseFile.genApp;    
+
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1620,6 +1642,12 @@ export class CreateCaseAction implements IAction {
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+         } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
         }
         break;
 
@@ -1629,11 +1657,15 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+        } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
         }
         break;
 
@@ -1643,20 +1675,16 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1665,13 +1693,35 @@ export class CreateCaseAction implements IAction {
     }
 
     const folder = page
-      .locator('button[role="treeitem"]')
+      .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
-    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+    let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
-    if (fileCount === 0) {
+    if (caseFile.allowEmptyFolder) {
+      if (fileCount > 0) {
+        throw new Error(
+          `Expected folder "${folderName}" to be empty, but found ${fileCount} file(s)`
+        );
+      }
+      return;
+    }
+
+    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+      await expect(async () => {        
+        await performAction('clickTab', home.caseSummary);
+        await performAction('clickTab', home.caseFileView);        
+        await this.checkFolderCount(page);
+        const text = await folder.innerText();
+        fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+        expect(fileCount).toBeGreaterThan(0);
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
+    }
+
+    if (fileCount === 0) {      
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -1896,5 +1946,133 @@ export class CreateCaseAction implements IAction {
     expect(actual).toBe(
       `Notice of change successful\n\n\nYou're now representing a client on case\n${nocData.caseRefNo}`
     );
+  }
+
+  private async createPartialClaimDetails() {
+    await performAction('clickTab', home.createCaseTab);
+    await performAction('selectJurisdictionCaseTypeEvent');
+    await performAction('housingPossessionClaim');
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performValidation('mainHeader', claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
+  }
+
+  private async resumePartialClaim() {
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimType.noRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
+    await performValidation('mainHeader', contactPreferences.mainHeader)
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
+    });
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      day: tenancyLicenceDetails.dayTextInput,
+      month: tenancyLicenceDetails.monthTextInput,
+      year: tenancyLicenceDetails.yearTextInput,
+      question: tenancyLicenceDetails.doYouHaveACopyOftenancyQuestion,
+      option: tenancyLicenceDetails.noRadioOption,
+      reason: tenancyLicenceDetails.reasonForNoCopyInputText
+    });
+    await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.noRadioOption });
+    await performAction('selectYourPossessionGrounds', {
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
+    });
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
+      whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
+    });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', { rentFrequencyOption: 'Weekly', rentAmount: '800' });
+    await performValidation('mainHeader', rentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession');
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption
+    });
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performValidation('mainHeader', claimLanguageUsed.mainHeader);
+    await performAction('selectLanguageUsed', {
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
+    });
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
+    await performAction('clickButton', checkYourAnswers.submitClaim);
+    await performAction('payClaimFee');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+
+  }
+  private async checkFolderCount(page:Page){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
   }
 }

@@ -78,6 +78,22 @@ class FeatureFlagViewTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
+    void shouldSetRelease1dot4FeatureFlagInCaseData(boolean flagEnabled) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(flagEnabled);
+
+        // When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getFeatureFlags().getRelease1dot4Enabled())
+            .isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     void shouldSetWalesMakeAClaimFeatureFlagInCaseData(boolean flagEnabled) {
         // Given
         PCSCase pcsCase = PCSCase.builder().build();
@@ -89,6 +105,22 @@ class FeatureFlagViewTest {
 
         // Then
         assertThat(pcsCase.getFeatureFlags().getWalesMakeAClaimEnabled())
+            .isEqualTo(VerticalYesNo.from(flagEnabled));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldSetCuiRespondToClaimLrFeatureFlagInCaseData(boolean flagEnabled) {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        when(featureToggleService.isEnabled(isA(FeatureFlag.class))).thenReturn(false);
+        when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(flagEnabled);
+
+        // When
+        underTest.setCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getFeatureFlags().getCuiRespondToClaimLrEnabled())
             .isEqualTo(VerticalYesNo.from(flagEnabled));
     }
 

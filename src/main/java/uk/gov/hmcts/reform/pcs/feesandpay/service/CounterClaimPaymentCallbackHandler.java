@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimSta
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.CounterClaimStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.CounterClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform.CounterClaimFormScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
@@ -113,7 +113,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         schedulerClient.scheduleIfNotExists(
             CounterClaimIssuedNotificationTaskComponent.COUNTER_CLAIM_ISSUED_TASK_DESCRIPTOR
                 .instance(taskId)
-                .data(CounterClaimStatusChangeTaskData.builder()
+                .data(CounterClaimTaskData.builder()
                           .counterClaimId(counterClaimId)
                           .paymentReference(feePaymentEntity.getExternalReference())
                           .build())
@@ -134,8 +134,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
         }
 
         return counterClaimEntity.getPcsCase().getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getType() != DocumentType.COUNTERCLAIM
+            .filter(document -> document.getType() != DocumentType.COUNTERCLAIM
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList();

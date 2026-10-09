@@ -32,7 +32,10 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR,
+        AccessProfile.CLAIMANT,
         AccessProfile.PCS_SOLICITOR,
+        AccessProfile.GA_CLAIMANT_SOLICITOR,
         AccessProfile.JUDGE,
         AccessProfile.FEE_PAID_JUDGE,
         AccessProfile.CIRCUIT_JUDGE,
@@ -50,7 +53,37 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         AccessProfile.CTSC_ADMIN,
         AccessProfile.WLU_ADMIN
     };
+
+    static final AccessProfile[] CASE_NOTE_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_ADMIN
+    };
+
+    static final AccessProfile[] DEFENDANT_SUPPORT_TAB_ROLES = {
+        AccessProfile.CITIZEN,
+        AccessProfile.DEFENDANT,
+        AccessProfile.GA_DEFENDANT_SOLICITOR
+    };
+
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
+
+    static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_TEAM_LEADER,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_TEAM_LEADER,
+        AccessProfile.WLU_ADMIN
+    };
 
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
@@ -166,6 +199,13 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getCaseFlags, "flagLauncherInternal!=\"\"")
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
+        buildSupportTab(builder);
+
+        builder.tab("paymentHistory", "Payment History")
+            .forRoles(PAYMENT_HISTORY_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCasePaymentHistoryViewer);
+
         if (shutterService) {
             builder.shutterService();
         }
@@ -175,7 +215,7 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void configureCaseFileCategories(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         for (CaseFileCategory category : CaseFileCategory.values()) {
-            builder.categories(AccessProfile.PCS_SOLICITOR)
+            builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
                 .categoryID(category.getId())
                 .categoryLabel(category.getLabel())
                 .displayOrder(category.getDisplayOrder())
@@ -183,9 +223,18 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
         }
     }
 
+    private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("support", "Support")
+            .forRoles(DEFENDANT_SUPPORT_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getFlagLauncherExternal, null, "#ARGUMENT(READ,EXTERNAL)")
+            .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
+    }
+
     private void buildCaseNotesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("notes", "Notes")
-            .forRoles(INTERNAL_TAB_ROLES)
+            .forRoles(CASE_NOTE_TAB_ROLES)
+            .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
     }
 

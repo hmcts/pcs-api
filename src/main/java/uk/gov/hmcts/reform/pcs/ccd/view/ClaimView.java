@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.view;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -23,7 +24,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class ClaimView {
+
+    private final UploadTimestampProvider uploadTimestampProvider;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!pcsCaseEntity.getClaims().isEmpty()) {
@@ -104,7 +108,7 @@ public class ClaimView {
 
     }
 
-    private static List<ListValue<Document>> getEnergyPerformanceCertificate(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getEnergyPerformanceCertificate(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
@@ -113,12 +117,11 @@ public class ClaimView {
             .filter(ClaimView::isEnergyPerformanceCertificate)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
-            .map(ClaimView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
-    private static List<ListValue<Document>> getGasSafetyReport(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getGasSafetyReport(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
@@ -127,12 +130,11 @@ public class ClaimView {
             .filter(ClaimView::isGasSafetyReport)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
-            .map(ClaimView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
-    private static List<ListValue<Document>> getElectricalInstallationCondition(PcsCaseEntity pcsCaseEntity) {
+    private List<ListValue<Document>> getElectricalInstallationCondition(PcsCaseEntity pcsCaseEntity) {
         if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
             return new ArrayList<>();
         }
@@ -141,8 +143,7 @@ public class ClaimView {
             .filter(ClaimView::isElectricalInstallationCondition)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
-            .map(ClaimView::toDocument)
+            .map(this::toDocument)
             .toList();
     }
 
@@ -158,7 +159,7 @@ public class ClaimView {
         return documentEntity.getType() == DocumentType.EICR_REPORT;
     }
 
-    private static ListValue<Document> toDocument(DocumentEntity documentEntity) {
+    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
         return ListValue.<Document>builder()
             .id(documentEntity.getId().toString())
             .value(
@@ -167,6 +168,7 @@ public class ClaimView {
                     .filename(documentEntity.getFileName())
                     .binaryUrl(documentEntity.getBinaryUrl())
                     .categoryId(documentEntity.getCategoryId())
+                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
                     .build()
             ).build();
     }

@@ -173,7 +173,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
             String orgName = "ACME Org Ltd";
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
+            when(organisationService.getOrganisationName(any())).thenReturn(orgName);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -193,8 +193,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
@@ -215,10 +213,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
             AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
             when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
                 .thenReturn("formatted org address");
 
@@ -241,10 +238,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
             AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(organisationService.getOrganisationAddress(any())).thenReturn(organisationAddress);
 
             String formattedOrgAddress = "formatted org address";
             when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
@@ -272,9 +268,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             String userEmail = "user@test.com";
             when(userDetails.getSub()).thenReturn(userEmail);
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
             when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
                 .thenReturn(null);
 
@@ -347,8 +341,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .thenReturn(hasUnsubmittedData);
 
             when(userDetails.getSub()).thenReturn("user@test.com");
-            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
             when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
@@ -449,8 +441,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldCreateMainClaimOnCase() {
             // Given
             stubFeeService();
-            String orgId = "org123";
-            when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(orgId);
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
@@ -461,7 +451,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData, orgId);
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test

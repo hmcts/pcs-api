@@ -2,6 +2,7 @@ export const caseSummary = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Case Summary',
   nextStepEventList: 'Next step',
+  amendRepresentativeDetails: 'Amend representative’s details',
   linkCaseEvent: 'Link cases',
   manageCaseEvent: 'Manage case links',
   enforceTheOrderEvent: 'Enforce the order',
@@ -13,7 +14,12 @@ export const caseSummary = {
   addCaseNote: 'Add a case note',
   go: "Go",
   HistoryTab: 'History',
+  linkedCasesTab: 'Linked Cases',
+  linkedCasesHeader: 'Linked cases',
   serviceRequestTab: 'Service Request',
+  requestSupport: 'Request support',
+  manageSupport: 'Manage support',
+  reviewSupport: 'Review support request',
   manageDocuments:{
     amend : 'Manage documents: Amend',
     upload : 'Manage documents: Upload'

@@ -68,7 +68,7 @@ class AmendDocumentsTest extends BaseEventTest {
             .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U);
         assertThat(configuredEvent.getGrants().get(UserRole.HEARING_CENTRE_ADMIN))
             .containsExactlyInAnyOrder(Permission.C, Permission.R, Permission.U);
-        assertThat(configuredEvent.getGrants().get(UserRole.PCS_SOLICITOR)).isEmpty();
+        assertThat(configuredEvent.getGrants().get(UserRole.GA_CLAIMANT_SOLICITOR)).isEmpty();
         assertThat(configuredEvent.getGrants().get(UserRole.CTSC_ADMIN)).containsExactly(Permission.R);
         assertThat(configuredEvent.getGrants().get(UserRole.CTSC_TEAM_LEADER)).containsExactly(Permission.R);
         assertThat(configuredEvent.getGrants().get(UserRole.CIRCUIT_JUDGE)).containsExactly(Permission.R);

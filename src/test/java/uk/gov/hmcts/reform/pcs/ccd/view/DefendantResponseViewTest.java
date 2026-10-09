@@ -100,7 +100,7 @@ class DefendantResponseViewTest {
     @Test
     void shouldNotLoadResponseWhenUserIsNotCitizen() {
         UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getRoles()).thenReturn(List.of(UserRole.PCS_SOLICITOR.getRole()));
+        when(userInfo.getRoles()).thenReturn(List.of(UserRole.GA_CLAIMANT_SOLICITOR.getRole()));
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);

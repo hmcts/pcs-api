@@ -43,7 +43,7 @@ public class ClaimPartyContactDetailsEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @OneToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "organisation_id")
     @JsonBackReference
     private OrganisationEntity organisation;

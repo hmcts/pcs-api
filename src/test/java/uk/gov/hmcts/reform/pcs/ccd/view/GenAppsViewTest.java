@@ -244,7 +244,7 @@ class GenAppsViewTest {
     }
 
     @Test
-    void shouldSetSupporingDocsDocument() {
+    void shouldSetSupportingDocuments() {
         // Given
         UUID pcsDocumentId1 = UUID.randomUUID();
         UUID pcsDocumentId2 = UUID.randomUUID();

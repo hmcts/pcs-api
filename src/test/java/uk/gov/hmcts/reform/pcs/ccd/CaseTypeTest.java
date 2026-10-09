@@ -20,8 +20,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -42,10 +46,10 @@ class CaseTypeTest {
     @Test
     void shouldGetCaseType() {
         // When
-        String caseType = CaseType.getCaseType();
+        String caseTyp = CaseType.getCaseType();
 
         // Then
-        assertThat(caseType).contains("PCS");
+        assertThat(caseTyp).contains("PCS");
     }
 
     @Test
@@ -90,11 +94,13 @@ class CaseTypeTest {
         final TabBuilder<PCSCase, AccessProfile> caseHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> hiddenTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> serviceRequestTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> paymentHistoryTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
+        final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseDetailsTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
         final Search.SearchBuilder<PCSCase, AccessProfile> searchBuilder =
@@ -115,16 +121,19 @@ class CaseTypeTest {
         when(builder.tab("CaseHistory", "History")).thenReturn(caseHistoryTabBuilder);
         when(builder.tab("hidden", "HiddenFields")).thenReturn(hiddenTabBuilder);
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(serviceRequestTabBuilder);
+        when(builder.tab("paymentHistory", "Payment History")).thenReturn(paymentHistoryTabBuilder);
         when(builder.tab("notes", "Notes")).thenReturn(caseNotesTabBuilder);
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(caseLinksTabBuilder);
         when(builder.tab("caseFileView", "Case File View")).thenReturn(caseFileViewTabBuilder);
         when(builder.tab("caseParties", "Case Parties")).thenReturn(casePartiesTabBuilder);
         when(builder.tab("caseFlags", "Case flags")).thenReturn(caseFlagsTabBuilder);
+        when(builder.tab("support", "Support")).thenReturn(supportTabBuilder);
         when(builder.tab("caseDetails", "Case Details")).thenReturn(caseDetailsTabBuilder);
-        when(builder.categories(AccessProfile.PCS_SOLICITOR))
-            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+        when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
         lenient().when(builder.accessType(anyString())).thenReturn(accessTypeBuilder);
         lenient().when(builder.accessTypeRole(anyString())).thenReturn(accessTypeRoleBuilder);
+        when(utils.getPropertyName(eq(PCSCase.class), any())).thenReturn("casePaymentHistoryViewer");
 
         // When
         caseType.configure(builder);
@@ -133,23 +142,31 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseHistoryTab = caseHistoryTabBuilder.build();
         final Tab<PCSCase, AccessProfile> hiddenTab = hiddenTabBuilder.build();
         final Tab<PCSCase, AccessProfile> serviceRequestTab = serviceRequestTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> paymentHistoryTab = paymentHistoryTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseDetailsTab = caseDetailsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
 
 
         // Then
         assertThat(nextStepsTab.getFields()).extracting(TabField::getId).contains("nextStepsMarkdown");
         assertThat(summaryTab.getFields()).extracting(TabField::getId).contains("confirmEvictionSummaryMarkup");
         assertThat(caseHistoryTab.getFields()).extracting(TabField::getId).contains("caseHistory");
-        assertThat(hiddenTab.getFields().size()).isEqualTo(4);
+        assertThat(hiddenTab.getFields()).hasSize(4);
         assertThat(serviceRequestTab.getFields()).extracting(TabField::getId).contains("waysToPay");
+        assertThat(paymentHistoryTab.getFields()).extracting(TabField::getId)
+            .containsExactly("casePaymentHistoryViewer");
+        assertThat(paymentHistoryTab.getForRoles())
+            .containsExactlyInAnyOrder(CaseType.PAYMENT_HISTORY_TAB_ROLES);
+        assertThat(paymentHistoryTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
         assertThat(caseLinksTab.getFields()).extracting(TabField::getShowCondition)
             .contains("LinkedCasesComponentLauncher!=\"\"");
-        assertThat(caseFileViewTab.getFields().size()).isEqualTo(1);
+        assertThat(caseFileViewTab.getFields()).hasSize(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
@@ -161,9 +178,51 @@ class CaseTypeTest {
         assertThat(serviceRequestTab.getForRoles()).containsExactlyInAnyOrder(CaseType.PARTY_VISIBLE_TAB_ROLES);
         assertThat(caseHistoryTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
         assertThat(caseLinksTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
-        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(caseNotesTab.getForRoles()).containsExactlyInAnyOrder(CaseType.CASE_NOTE_TAB_ROLES);
         assertThat(caseFlagsTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(supportTab.getForRoles())
+            .containsExactlyInAnyOrder(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
+        assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
+
+        assertThat(supportTab.getFields()).hasSize(2);
+        assertThat(supportTab.getFields()).extracting(TabField::getDisplayContextParameter)
+            .containsExactly("#ARGUMENT(READ,EXTERNAL)", "#ARGUMENT(Flags)");
+        assertThat(supportTab.getFields()).extracting(TabField::getShowCondition)
+            .containsExactly(null, "flagLauncherExternal!=\"\"");
+        assertThat(supportTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+    }
+
+    @Test
+    void shouldNotRepeatAnAccessProfileWithinATabRoleSet() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).doesNotHaveDuplicates();
+        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES).doesNotHaveDuplicates();
+        assertThat(CaseType.INTERNAL_TAB_ROLES).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void shouldGrantTheSupportTabToEveryDefendantSideProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES).containsExactlyInAnyOrder(
+            AccessProfile.CITIZEN,
+            AccessProfile.DEFENDANT,
+            AccessProfile.GA_DEFENDANT_SOLICITOR);
+    }
+
+    @Test
+    void shouldNotGrantTheSupportTabToAnyClaimantSideOrInternalProfile() {
+        assertThat(CaseType.DEFENDANT_SUPPORT_TAB_ROLES)
+            .doesNotContain(AccessProfile.CLAIMANT,
+                            AccessProfile.GA_CLAIMANT_SOLICITOR,
+                            AccessProfile.CLAIMANT_SOLICITOR,
+                            AccessProfile.PCS_SOLICITOR)
+            .doesNotContainAnyElementsOf(Arrays.asList(CaseType.INTERNAL_TAB_ROLES));
+    }
+
+    @Test
+    void shouldKeepEverySupportProfileAmongThePartyVisibleProfiles() {
+        assertThat(CaseType.PARTY_VISIBLE_TAB_ROLES)
+            .contains(CaseType.DEFENDANT_SUPPORT_TAB_ROLES);
     }
 
     @Test
@@ -211,13 +270,15 @@ class CaseTypeTest {
         when(builder.tab("CaseHistory", "History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("hidden", "HiddenFields")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("serviceRequest", "Service Request")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("paymentHistory", "Payment History")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("notes", "Notes")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseLinks", "Linked Cases")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFileView", "Case File View")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseParties", "Case Parties")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseFlags", "Case flags")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
+        when(builder.tab("support", "Support")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
         when(builder.tab("caseDetails", "Case Details")).thenReturn(TabBuilder.builder(PCSCase.class, utils));
-        when(builder.categories(AccessProfile.PCS_SOLICITOR))
-            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.PCS_SOLICITOR));
+        when(builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR))
+            .thenReturn(CaseCategory.CaseCategoryBuilder.builder(AccessProfile.GA_CLAIMANT_SOLICITOR));
     }
 }

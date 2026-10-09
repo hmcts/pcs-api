@@ -105,6 +105,20 @@ class ReferenceDataServiceTest {
     }
 
     @Test
+    @DisplayName("Should return null when organisation details is null for populateClaimantInformation")
+    void shouldReturnNullWhenOrganisationDetailsIsNullForPopulateClaimantInformation() {
+        // Given
+        when(organisationDetailsService.getOrganisationDetails(USER_ID)).thenReturn(null);
+
+        // When
+        ReferenceDataService.ClaimantInformation result = referenceDataService.populateClaimantInformation(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+        verify(organisationDetailsService).getOrganisationDetails(USER_ID);
+    }
+
+    @Test
     @DisplayName("Should throw exception when organisation details service fails")
     void shouldThrowExceptionWhenOrganisationDetailsServiceFails() {
         // Given

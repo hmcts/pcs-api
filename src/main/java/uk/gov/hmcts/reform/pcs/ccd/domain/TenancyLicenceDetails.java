@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantReadAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,7 +33,7 @@ public class TenancyLicenceDetails {
 
     @CCD(
         label = "What type of tenancy or licence is in place, or was in place?",
-        access = {CaseworkerReadAccess.class, CitizenAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
     private TenancyLicenceType typeOfTenancyLicence;
 
@@ -40,14 +41,14 @@ public class TenancyLicenceDetails {
         label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
         hint = "You can enter up to 500 characters",
         typeOverride = TextArea,
-        access = {CaseworkerReadAccess.class, CitizenAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
     private String detailsOfOtherTypeOfTenancyLicence;
 
     @CCD(
         label = "What date did the tenancy or licence begin?",
         hint = "For example, 16 4 2021",
-        access = {CaseworkerReadAccess.class, CitizenAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class, DefendantReadAccess.class}
     )
     private LocalDate tenancyLicenceDate;
 

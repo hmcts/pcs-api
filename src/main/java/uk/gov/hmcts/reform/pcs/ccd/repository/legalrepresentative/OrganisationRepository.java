@@ -13,15 +13,18 @@ import java.util.UUID;
 public interface OrganisationRepository extends JpaRepository<OrganisationEntity, UUID> {
 
     @Query("""
-        SELECT o
-        FROM OrganisationEntity o
-        JOIN o.claimPartyOrganisationList cpo
+        SELECT oe
+        FROM OrganisationEntity oe
+        JOIN oe.claimPartyOrganisationList cpo
         JOIN cpo.party p
+        JOIN p.pcsCase pcsCase
         WHERE p.id = :partyId
+        AND pcsCase.caseReference = :caseReference
         AND cpo.active = 'YES'
         """)
-    Optional<OrganisationEntity> findByPartyLinkedToOrganisationAndActive(
-        @Param("partyId") UUID partyId);
+    Optional<OrganisationEntity> findByPartyLinkedToOrganisationAndCaseAndActive(
+        @Param("partyId") UUID partyId,
+        @Param("caseReference") long caseReference);
 
     @Query("""
         SELECT COUNT(o) > 0
