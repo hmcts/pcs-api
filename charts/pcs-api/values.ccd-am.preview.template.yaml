@@ -9,17 +9,9 @@
 # there's only ever one values file supplying these keys and no Helm merge ordering ambiguity
 # between the two label overlays.
 global:
-  ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
-  ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
-  ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
-  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
-  idamApiUrl: https://idam-api.aat.platform.hmcts.net
-  idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
-  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresUsername: "hmcts"
-  amRoleAssignmentServiceUrl: http://${SERVICE_NAME}-am-role-assignment-service
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
