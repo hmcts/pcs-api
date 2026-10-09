@@ -1,0 +1,16 @@
+spring:
+  mvc:
+    static-path-pattern: /test-documents/**
+  web:
+    resources:
+      static-locations: classpath:/test-documents/
+
+security:
+  anonymousPaths:
+    - "/health"
+    - "/health/liveness"
+    - "/health/readiness"
+    - "/swagger-ui.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/test-documents/Possession_Order_Document.pdf"

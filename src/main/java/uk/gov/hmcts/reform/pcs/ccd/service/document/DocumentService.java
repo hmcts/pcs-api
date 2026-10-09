@@ -98,38 +98,45 @@ public class DocumentService {
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRentArrears())
-                    .map(RentArrearsSection::getStatementDocuments)
-                    .orElse(null), DocumentType.RENT_STATEMENT));
+                .map(RentArrearsSection::getStatementDocuments)
+                .orElse(null), DocumentType.RENT_STATEMENT
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                    .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                    .orElse(null), DocumentType.TENANCY_AGREEMENT));
+                .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                .orElse(null), DocumentType.TENANCY_AGREEMENT
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                    .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                    .orElse(null), DocumentType.OCCUPATION_LICENCE));
+                .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                .orElse(null), DocumentType.OCCUPATION_LICENCE
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getNoticeServedDetails())
-                    .map(NoticeServedDetails::getDocuments)
-                    .orElse(null), DocumentType.POSSESSION_NOTICE));
+                .map(NoticeServedDetails::getDocuments)
+                .orElse(null), DocumentType.POSSESSION_NOTICE
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
                 .map(WalesDocuments::getEnergyPerformance)
-                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE));
+                .orElse(null), DocumentType.ENERGY_PERFORMANCE_CERTIFICATE
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
                 .map(WalesDocuments::getGasSafetyReport)
-                .orElse(null), DocumentType.GAS_SAFETY_CERTIFICATE));
+                .orElse(null), DocumentType.GAS_SAFETY_CERTIFICATE
+        ));
 
         allDocuments.addAll(mapDocumentsWithType(
             Optional.ofNullable(pcsCase.getRequiredDocumentsWales())
                 .map(WalesDocuments::getElectricalInstallation)
-                .orElse(null), DocumentType.EICR_REPORT));
+                .orElse(null), DocumentType.EICR_REPORT
+        ));
 
         return allDocuments;
     }
@@ -137,29 +144,29 @@ public class DocumentService {
     private List<DocumentHolder> getWarrantOfRestitutionDocuments(EnforcementOrder enforcementOrder) {
 
         return new ArrayList<>(mapEvidenceOfDefendantsDocumentsWithType(
-                enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
+            enforcementOrder.getWarrantOfRestitutionDetails().getAdditionalDocuments()));
     }
 
     private List<DocumentHolder> mapDocumentsWithType(
-            List<ListValue<Document>> docs, DocumentType type) {
+        List<ListValue<Document>> docs, DocumentType type) {
 
         if (CollectionUtils.isEmpty(docs)) {
             return Collections.emptyList();
         }
 
         return docs.stream()
-                .map(ListValue::getValue)
-                .filter(Objects::nonNull)
-                .map(doc -> DocumentHolder.builder()
-                        .document(doc)
-                        .type(type)
-                        .description("")
-                        .build())
-                .toList();
+            .map(ListValue::getValue)
+            .filter(Objects::nonNull)
+            .map(doc -> DocumentHolder.builder()
+                .document(doc)
+                .type(type)
+                .description("")
+                .build())
+            .toList();
     }
 
     private List<DocumentHolder> mapAdditionalDocumentsWithType(
-            List<ListValue<AdditionalDocument>> documents) {
+        List<ListValue<AdditionalDocument>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
@@ -169,14 +176,14 @@ public class DocumentService {
             .map(doc -> DocumentHolder.builder()
                 .document(doc.getDocument())
                 .type(documentTypeMapper.mapToDocumentType(
-                        AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
+                    AdditionalDocumentType.getValueFromLabel(doc.getDocumentType().getValueLabel())))
                 .description(doc.getDescription())
                 .build())
             .toList();
     }
 
     private List<DocumentHolder> mapEvidenceOfDefendantsDocumentsWithType(
-            List<ListValue<EvidenceOfDefendants>> documents) {
+        List<ListValue<EvidenceOfDefendants>> documents) {
 
         if (CollectionUtils.isEmpty(documents)) {
             return Collections.emptyList();
@@ -192,26 +199,26 @@ public class DocumentService {
     }
 
     private List<DocumentEntity> createDocumentEntities(
-            List<DocumentHolder> documents) {
+        List<DocumentHolder> documents) {
 
         return documents.stream()
-                .map(holder -> DocumentEntity.builder()
-                        .url(holder.getDocument().getUrl())
-                        .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
-                        .fileName(holder.getDocument().getFilename())
-                        .binaryUrl(holder.getDocument().getBinaryUrl())
-                        .categoryId(categoryIdFor(holder.getType()))
-                        .type(holder.getType())
-                        .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
-                        .build())
-                .toList();
+            .map(holder -> DocumentEntity.builder()
+                .url(holder.getDocument().getUrl())
+                .documentId(documentIdExtractor.extractDocumentId(holder.getDocument().getUrl()))
+                .fileName(holder.getDocument().getFilename())
+                .binaryUrl(holder.getDocument().getBinaryUrl())
+                .categoryId(categoryIdFor(holder.getType()))
+                .type(holder.getType())
+                .description(StringUtils.isEmpty(holder.getDescription()) ? null : holder.getDescription())
+                .build())
+            .toList();
     }
 
     private void applyClaimFilename(List<DocumentHolder> allDocuments) {
         allDocuments.forEach(dh -> {
             String uploadedFilename = dh.getDocument().getFilename();
             dh.getDocument().setFilename(FilenameUtils.getBaseName(uploadedFilename) + " - " + CLAIMANT_1
-                    + "." + FilenameUtils.getExtension(uploadedFilename));
+                                             + "." + FilenameUtils.getExtension(uploadedFilename));
         });
 
     }
@@ -260,8 +267,10 @@ public class DocumentService {
         );
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
-        log.info("Saved {} additional documents for case {} and party {}",
-                 saved.size(), caseReference, party.getId());
+        log.info(
+            "Saved {} additional documents for case {} and party {}",
+            saved.size(), caseReference, party.getId()
+        );
         return saved;
     }
 
@@ -357,8 +366,10 @@ public class DocumentService {
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
 
-        log.info("Saved {} defendant evidence documents for defendant response {}",
-            saved.size(), defendantResponse.getId());
+        log.info(
+            "Saved {} defendant evidence documents for defendant response {}",
+            saved.size(), defendantResponse.getId()
+        );
 
         return saved;
     }
@@ -396,8 +407,10 @@ public class DocumentService {
 
         List<DocumentEntity> saved = documentRepository.saveAll(documentEntities);
 
-        log.info("Saved {} counter claim documents for counter claim {}",
-            saved.size(), counterClaim.getId());
+        log.info(
+            "Saved {} counter claim documents for counter claim {}",
+            saved.size(), counterClaim.getId()
+        );
 
         return saved;
     }
@@ -413,8 +426,7 @@ public class DocumentService {
                  DEFENDANT_RESPONSE,
                  AMENDED_CLAIM_FORM,
                  PART_20_COUNTERCLAIM,
-                 COUNTERCLAIM ->
-                Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
+                 COUNTERCLAIM -> Optional.of(CaseFileCategory.STATEMENTS_OF_CASE);
             case RENT_STATEMENT,
                  TENANCY_AGREEMENT,
                  TENANCY_LICENCE,
@@ -424,33 +436,28 @@ public class DocumentService {
                  GAS_SAFETY_REPORT,
                  ELECTRICAL_INSTALLATION_CONDITION,
                  EICR_REPORT,
-                 POSSESSION_NOTICE ->
-                Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
+                 POSSESSION_NOTICE -> Optional.of(CaseFileCategory.PROPERTY_DOCUMENTS);
             case WITNESS_STATEMENT,
                  CERTIFICATE_OF_SERVICE,
                  CORRESPONDENCE_BETWEEN_PARTIES,
                  PHOTOGRAPHIC_EVIDENCE,
-                 INSPECTION_OR_REPORT ->
-                Optional.of(CaseFileCategory.EVIDENCE);
+                 INSPECTION_OR_REPORT -> Optional.of(CaseFileCategory.EVIDENCE);
             case CERTIFICATE_OF_SUITABILITY_AS_LF,
                  CORRESPONDENCE_FROM_DEFENDANT,
                  CORRESPONDENCE_FROM_CLAIMANT,
-                 LEGAL_AID_CERTIFICATE ->
-                Optional.of(CaseFileCategory.CORRESPONDENCE);
+                 LEGAL_AID_CERTIFICATE -> Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_OF_HEARING,
-                WITH_NOTICE_ORDER,
-                WITHOUT_NOTICE_ORDER,
-                NOTICE_OF_ALLOCATION_TO_TRACK ->
-                Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
-            case GENERAL_APPLICATION ->
-                Optional.of(CaseFileCategory.APPLICATIONS);
+                 WITH_NOTICE_ORDER,
+                 POSSESSION_ORDER,
+                 WITHOUT_NOTICE_ORDER,
+                 NOTICE_OF_ALLOCATION_TO_TRACK -> Optional.of(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+            case GENERAL_APPLICATION -> Optional.of(CaseFileCategory.APPLICATIONS);
             case NOTICE_SERVED,
                  POLICE_REPORT,
                  // Defendant access-code letters aren't shown on the case file
                  DEFENDANT_ACCESS_CODE,
                  DOCUMENTS_SUPPORTING_A_COUNTERCLAIM,
-                 OTHER ->
-                Optional.empty();
+                 OTHER -> Optional.empty();
         };
     }
 
@@ -567,19 +574,19 @@ public class DocumentService {
                     : documentNameService.appendPartyPostfix(originalFilename, mainClaim, party.getId());
 
                 return DocumentEntity.builder()
-                .pcsCase(pcsCaseEntity)
-                .url(documentUrl)
-                .documentId(documentIdExtractor.extractDocumentId(documentUrl))
-                .generalApplication(selectedGenApp)
-                .fileName(renamed)
-                .party(party)
-                .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
-                .contentType(legalRepDoc.getContentType())
-                .size(legalRepDoc.getSizeInBytes())
-                .description(legalRepDoc.getDescription())
-                .type(resolvedDocumentType)
-                .categoryId(categoryId)
-                .build();
+                    .pcsCase(pcsCaseEntity)
+                    .url(documentUrl)
+                    .documentId(documentIdExtractor.extractDocumentId(documentUrl))
+                    .generalApplication(selectedGenApp)
+                    .fileName(renamed)
+                    .party(party)
+                    .binaryUrl(legalRepDoc.getDocument().getBinaryUrl())
+                    .contentType(legalRepDoc.getContentType())
+                    .size(legalRepDoc.getSizeInBytes())
+                    .description(legalRepDoc.getDescription())
+                    .type(resolvedDocumentType)
+                    .categoryId(categoryId)
+                    .build();
             })
             .toList();
 
