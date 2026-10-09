@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -56,6 +57,59 @@ class CreateFlagsTest extends  BaseEventTest {
 
         // Then
         verify(pcsCaseService).patchCaseFlags(TEST_CASE_REFERENCE, pcsCase);
+    }
+
+    @Test
+    void shouldOnlyOfferDefendantsForPartyFlags() {
+        ListValue<Party> claimant = party("claimant-id");
+        ListValue<Party> defendant = party("defendant-id");
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(claimant, defendant))
+            .allDefendants(List.of(defendant))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result.getParties()).containsExactly(defendant);
+    }
+
+    @Test
+    void shouldLeaveCaseUnchangedWhenPartiesAreNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .allDefendants(List.of(party("defendant-id")))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result).isSameAs(pcsCase);
+        assertThat(result.getParties()).isNull();
+    }
+
+    @Test
+    void shouldLeaveCaseUnchangedWhenAllDefendantsAreNull() {
+        List<ListValue<Party>> parties = List.of(party("claimant-id"));
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(parties)
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result).isSameAs(pcsCase);
+        assertThat(result.getParties()).isSameAs(parties);
+    }
+
+    @Test
+    void shouldUsePartyValueIdWhenCollectionIdIsMissing() {
+        ListValue<Party> defendant = partyWithValueIdOnly("defendant-id");
+        ListValue<Party> malformedParty = ListValue.<Party>builder().build();
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(defendant, malformedParty))
+            .allDefendants(List.of(partyWithValueIdOnly("defendant-id")))
+            .build();
+
+        PCSCase result = callStartHandler(pcsCase);
+
+        assertThat(result.getParties()).containsExactly(defendant);
     }
 
     @Test
@@ -109,5 +163,18 @@ class CreateFlagsTest extends  BaseEventTest {
                            .name("Complex Case")
                            .build())
                 .build());
+    }
+
+    private ListValue<Party> party(String id) {
+        return ListValue.<Party>builder()
+            .id(id)
+            .value(Party.builder().id(id).build())
+            .build();
+    }
+
+    private ListValue<Party> partyWithValueIdOnly(String id) {
+        return ListValue.<Party>builder()
+            .value(Party.builder().id(id).build())
+            .build();
     }
 }
