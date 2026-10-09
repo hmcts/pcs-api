@@ -660,7 +660,7 @@ export const submitCaseApiData = {
       agreementDefendantLegalRep: []
     },
   }),
-  submitCasePayloadCaseFileView: () =>({
+  submitCasePayloadCaseFileView: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     orgNameFound: 'Yes',
@@ -911,7 +911,7 @@ export const submitCaseApiData = {
     }
 
   }),
-  submitCasePayloadDefault: () => ( {
+  submitCasePayloadDefault: () => ({
     regionId: '1',
     caseManagementLocationNumber: '20262',
     legislativeCountry: 'England',
@@ -1071,7 +1071,7 @@ export const submitCaseApiData = {
       agreementDefendantLegalRep: []
     },
   }),
-  submitCaseDefendantAddressKnown: {
+  submitCaseDefendantAddressKnown: () =>  ({
       regionId: '1',
       caseManagementLocationNumber: '20262',
       orgNameFound: 'Yes',
@@ -1151,15 +1151,7 @@ export const submitCaseApiData = {
       rentDetails_Frequency: 'WEEKLY',
       rentDetails_CalculatedDailyCharge: '1000',
       rentArrears_StatementDocuments: [
-        {
-          value: {
-            document_url:
-              'http://dm-store-aat.service.core-compute-aat.internal/documents/94bdbbe5-44fa-442d-8109-627af191f2d8',
-            document_binary_url:
-              'http://dm-store-aat.service.core-compute-aat.internal/documents/94bdbbe5-44fa-442d-8109-627af191f2d8/binary',
-            document_filename: 'Screenshot 2026-08-05 at 15.54.17.png',
-          },
-        },
+        testDocumentListValue('rentStatement.pdf')
       ],
       rentArrears_Total: '40000',
       rentArrears_RecoveryAttempted: 'NO',
@@ -1192,7 +1184,7 @@ export const submitCaseApiData = {
         agreementClaimant: ['BELIEVE_TRUE'],
         agreementDefendantLegalRep: [],
       },
-  },
+  }),
 
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,
