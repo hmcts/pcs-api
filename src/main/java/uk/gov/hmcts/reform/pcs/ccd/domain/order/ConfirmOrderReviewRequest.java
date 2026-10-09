@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason;
 
@@ -21,18 +22,15 @@ public record ConfirmOrderReviewRequest(Action action,
         ISSUE
     }
 
-    /** How the order is issued. Parties are named by the ids the case context gave them. */
-    public record Issue(IssuedOrder order,
-                        List<ReviewDateEntry> reviewDates,
-                        boolean nextStepsComplete,
-                        boolean finalOrder,
-                        boolean serveAllParties,
-                        List<String> partiesToServe,
-                        OrderSeal seal) {
+    /**
+     * How the order is issued. The frontend also asks about next steps, whether the order is final and
+     * whom to serve it on; nothing acts on those answers yet, so they are not read.
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Issue(IssuedOrder order, List<ReviewDateEntry> reviewDates, OrderSeal seal) {
 
         public Issue {
             reviewDates = reviewDates == null ? List.of() : reviewDates;
-            partiesToServe = partiesToServe == null ? List.of() : partiesToServe;
         }
     }
 

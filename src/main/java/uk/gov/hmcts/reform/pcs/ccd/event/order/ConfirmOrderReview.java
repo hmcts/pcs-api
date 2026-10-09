@@ -37,7 +37,6 @@ import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -124,14 +123,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
-        if (!partyIds(order).containsAll(issue.partiesToServe())) {
-            throw ExternalRejection.because("The order can only be served on parties to the case");
-        }
         order.setSeal(issue.seal());
-        order.setFinalOrder(issue.finalOrder());
-        order.setServeAllParties(issue.serveAllParties());
-        order.setPartiesServed(issue.serveAllParties() ? null : issue.partiesToServe());
-        order.setNextStepsComplete(issue.nextStepsComplete());
         orderSteps.append(order, ISSUED, UUID.fromString(caseworker.getUid()), OrderStepEntity.builder()
             .orderType(issue.order().orderType())
             .formData(issue.order().formData())
@@ -163,13 +155,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             throw ExternalRejection.because("The query must be 500 characters or fewer");
         }
         return query;
-    }
-
-    private static Set<String> partyIds(OrderEntity order) {
-        return order.getPcsCase().getClaims().stream()
-            .flatMap(claim -> claim.getClaimParties().stream())
-            .map(claimParty -> claimParty.getId().getPartyId().toString())
-            .collect(Collectors.toSet());
     }
 
     private static ReviewDate toReviewDate(ReviewDateEntry entry) {

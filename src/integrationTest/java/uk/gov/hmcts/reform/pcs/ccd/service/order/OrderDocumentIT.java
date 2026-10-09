@@ -86,8 +86,8 @@ class OrderDocumentIT extends OrderEventIT {
 
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, submitted.id(),
             submitted.version(), "staff-review", null,
-            new Issue(new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, WORDING),
-                List.of(), true, true, true, List.of(), COUNTY_COURT)));
+            new Issue(new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, WORDING), List.of(),
+                COUNTY_COURT)));
         scheduler.triggerCheckForDueExecutions();
         assertThat(await(() -> !documents(caseReference, caseworker).isEmpty()))
             .as("the order's document was generated").isTrue();

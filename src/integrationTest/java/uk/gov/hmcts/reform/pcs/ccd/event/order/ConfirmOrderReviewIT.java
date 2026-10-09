@@ -43,7 +43,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.RETURN_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.COUNTY_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal.HIGH_COURT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
@@ -152,28 +151,19 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("issues the order as the caseworker changed it, saying how, and adds the review dates to the case")
+    @DisplayName("issues the order as the caseworker changed it, with its seal, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
-        String defendant = asCaseworker.start().caseContext().defendants().getFirst().id();
         var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"), null,
             WORDING);
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), "staff-review", null,
-            new Issue(changed, List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT))).errors())
-            .containsExactly("The order can only be served on parties to the case");
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(changed, List.of(reviewDate), true, false, false, List.of(defendant), HIGH_COURT)));
+            new Issue(changed, List.of(reviewDate), HIGH_COURT)));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
-        assertThat(issued.nextStepsComplete()).isTrue();
-        assertThat(issued.finalOrder()).isFalse();
-        assertThat(issued.serveAllParties()).isFalse();
-        assertThat(issued.partiesServed()).containsExactly(defendant);
         assertThat(issued.seal()).isEqualTo("HIGH_COURT");
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
         PCSCase view = events.view(caseReference, caseworker);
@@ -221,11 +211,6 @@ class ConfirmOrderReviewIT extends OrderEventIT {
 
     /** The orders row once issued. */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Issued(OrderState state,
-                  Boolean nextStepsComplete,
-                  Boolean finalOrder,
-                  Boolean serveAllParties,
-                  List<String> partiesServed,
-                  String seal) {
+    record Issued(OrderState state, String seal) {
     }
 }

@@ -1,4 +1,4 @@
--- An order lives on one orders row, which holds where it is and, once issued, how it is to be issued.
+-- An order lives on one orders row, which holds where it is and, once issued, its seal and document.
 -- Each change to the order appends an order_steps row with the order as it then stood; the latest step
 -- is the current order, and its id is the order's version. A step may point at a case_note, such as the
 -- query a caseworker returns an order with.
@@ -12,21 +12,9 @@ ALTER TABLE orders
         CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED')),
     -- The judge's name, for the order's document.
     ADD COLUMN author_name TEXT,
+    -- The seal and document of an issued order.
     ADD COLUMN seal TEXT CHECK (seal IN ('COUNTY_COURT', 'HIGH_COURT')),
-    ADD COLUMN final_order BOOLEAN,
-    ADD COLUMN serve_all_parties BOOLEAN,
-    ADD COLUMN parties_served JSONB,
-    ADD COLUMN next_steps_complete BOOLEAN,
-    ADD COLUMN document_id UUID REFERENCES document(id),
-    -- An issued order, and only an issued order, says how it is to be issued and may have its document.
-    ADD CONSTRAINT orders_issue_answers_check CHECK (
-        (state = 'ISSUED' AND seal IS NOT NULL AND final_order IS NOT NULL AND serve_all_parties IS NOT NULL
-            AND next_steps_complete IS NOT NULL)
-        OR (state <> 'ISSUED' AND seal IS NULL AND final_order IS NULL AND serve_all_parties IS NULL
-            AND next_steps_complete IS NULL AND parties_served IS NULL AND document_id IS NULL)),
-    ADD CONSTRAINT orders_parties_served_check CHECK (
-        (serve_all_parties = FALSE AND jsonb_array_length(parties_served) > 0)
-        OR (serve_all_parties IS DISTINCT FROM FALSE AND parties_served IS NULL));
+    ADD COLUMN document_id UUID REFERENCES document(id);
 
 CREATE TABLE order_steps (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

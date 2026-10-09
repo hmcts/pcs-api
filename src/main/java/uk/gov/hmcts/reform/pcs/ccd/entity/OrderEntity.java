@@ -16,12 +16,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 
-import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -58,20 +55,8 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderState state;
 
-    // Set when the order is issued.
-
     @Enumerated(EnumType.STRING)
     private OrderSeal seal;
-
-    private Boolean finalOrder;
-
-    private Boolean serveAllParties;
-
-    /** The ids of the parties to serve, when the order is not served on all of them. */
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<String> partiesServed;
-
-    private Boolean nextStepsComplete;
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")
