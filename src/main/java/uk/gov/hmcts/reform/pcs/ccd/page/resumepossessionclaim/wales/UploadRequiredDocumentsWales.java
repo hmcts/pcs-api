@@ -8,8 +8,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ConditionalDocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -18,12 +21,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.WALES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_ELECTRICAL_INSTALLATION_CONDITION_REPORT_REASON_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_ENERGY_PERFORMANCE_CERTIFICATE_REASON_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesDocuments.NO_GAS_SAFETY_REPORT_REASON_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ELECTRICAL_INSTALLATION_REPORT_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED;
+import static uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService.GAS_SAFETY_REPORT_REQUIRED;
 
 @AllArgsConstructor
 @Component
 public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -43,7 +50,7 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 """)
             .complex(PCSCase::getRequiredDocumentsWales)
             .mandatory(WalesDocuments::getHasEnergyPerformanceCertificate)
-            .mandatory(
+            .optional(
                 WalesDocuments::getEnergyPerformance,
                 "walesDocs_HasEnergyPerformanceCertificate=\"YES\""
             )
@@ -52,7 +59,7 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 "walesDocs_HasEnergyPerformanceCertificate=\"NO\""
             )
             .mandatory(WalesDocuments::getHasGasSafetyReport)
-            .mandatory(
+            .optional(
                 WalesDocuments::getGasSafetyReport,
                 "walesDocs_HasGasSafetyReport=\"YES\""
             )
@@ -61,7 +68,7 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 "walesDocs_HasGasSafetyReport=\"NO\""
             )
             .mandatory(WalesDocuments::getHasElectricalInstallationConditionReport)
-            .mandatory(
+            .optional(
                 WalesDocuments::getElectricalInstallation,
                 "walesDocs_HasElectricalInstallationConditionReport=\"YES\""
             )
@@ -93,6 +100,22 @@ public class UploadRequiredDocumentsWales implements CcdPageConfiguration {
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         );
+
+        WalesDocuments requiredDocumentsWales = caseData.getRequiredDocumentsWales();
+
+        validationErrors.addAll(fileUploadValidationService.validateConditionalDocuments(List.of(
+            new ConditionalDocumentUpload(
+                VerticalYesNo.YES.equals(requiredDocumentsWales.getHasEnergyPerformanceCertificate()),
+                requiredDocumentsWales.getEnergyPerformance(),
+                ENERGY_PERFORMANCE_CERTIFICATE_REQUIRED),
+            new ConditionalDocumentUpload(
+                VerticalYesNo.YES.equals(requiredDocumentsWales.getHasGasSafetyReport()),
+                requiredDocumentsWales.getGasSafetyReport(),
+                GAS_SAFETY_REPORT_REQUIRED),
+            new ConditionalDocumentUpload(
+                VerticalYesNo.YES.equals(requiredDocumentsWales.getHasElectricalInstallationConditionReport()),
+                requiredDocumentsWales.getElectricalInstallation(),
+                ELECTRICAL_INSTALLATION_REPORT_REQUIRED))));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
