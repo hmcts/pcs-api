@@ -276,7 +276,6 @@ public class CamundaServiceTest {
         assertThat(processVariables.get("taskRegion").getType()).isEqualTo("Integer");
         assertThat(processVariables.get("idempotencyKey").getValue()).isNotNull();
         assertThat(processVariables.get("idempotencyKey").getType()).isEqualTo("String");
-        assertThat(processVariables).doesNotContainKeys("orderId", "assigneeId");
     }
 
     @Test
@@ -465,7 +464,6 @@ public class CamundaServiceTest {
         assertThat(correlationKeys).isNotEmpty();
         assertThat(correlationKeys.get("caseId").getValue()).isEqualTo(Long.toString(CASE_REFERENCE));
         assertThat(correlationKeys.get("__processCategory__NewClaimCreateNewHearing").getValue()).isEqualTo(true);
-        assertThat(correlationKeys).doesNotContainKey("orderId");
     }
 
     @Test
@@ -526,105 +524,6 @@ public class CamundaServiceTest {
         assertThat(taskData.getTaskType()).isEqualTo(TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
         assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
             .isEqualTo(instant);
-    }
-
-    @Test
-    void shouldScheduleCamundaCreateRequestTaskForAnOrder() {
-        // Given
-        stubWaFeatureFlag(true);
-        UUID orderId = UUID.randomUUID();
-
-        // When
-        camundaService.createTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, "some description", orderId);
-
-        // Then
-        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-
-        SchedulableInstance<CamundaRequestTaskData> schedulableInstance = schedulableInstanceCaptor.getValue();
-
-        CamundaRequestTaskData taskData = schedulableInstance.getTaskInstance().getData();
-        assertThat(taskData.getAction()).isEqualTo(Action.CREATE);
-        assertThat(taskData.getTaskType()).isEqualTo(TaskType.CONFIRM_ORDER_REVIEW);
-        assertThat(taskData.getTaskDescription()).isEqualTo("some description");
-        assertThat(taskData.getOrderId()).isEqualTo(orderId);
-        assertThat(schedulableInstance.getNextExecutionTime(Instant.now()))
-            .isEqualTo(Instant.parse("2025-08-27T12:51:19Z"));
-    }
-
-    @Test
-    void shouldSendTheOrderOfAnOrdersTaskToCamunda() {
-        // Given
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        stubWaFeatureFlag(true);
-        UUID orderId = UUID.randomUUID();
-
-        CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
-            .action(Action.CREATE)
-            .caseReference(CASE_REFERENCE)
-            .taskType(TaskType.CONFIRM_ORDER_REVIEW)
-            .taskDescription("some description")
-            .idempotencyKey(UUID.randomUUID())
-            .orderId(orderId)
-            .build();
-
-        // When
-        camundaService.handleRequest(taskData);
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        Map<String, DmnValue<?>> processVariables = requestArgumentCaptor.getValue().getProcessVariables();
-        assertThat(processVariables.get("taskId").getValue()).isEqualTo("ConfirmOrderReview");
-        assertThat(processVariables.get("name").getValue()).isEqualTo("Confirm order review");
-        assertThat(processVariables.get("orderId").getValue()).isEqualTo(orderId.toString());
-        assertThat(processVariables.get("orderId").getType()).isEqualTo("String");
-    }
-
-    @Test
-    void shouldSendWhomAnOrdersTaskIsForToCamunda() {
-        // Given
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        stubWaFeatureFlag(true);
-        UUID orderId = UUID.randomUUID();
-        UUID judge = UUID.randomUUID();
-
-        // When
-        camundaService.createTask(CASE_REFERENCE, TaskType.REVIEW_ORDER_QUERY, "some description", orderId, judge);
-        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-        camundaService.handleRequest(schedulableInstanceCaptor.getValue().getTaskInstance().getData());
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        Map<String, DmnValue<?>> processVariables = requestArgumentCaptor.getValue().getProcessVariables();
-        assertThat(processVariables.get("taskId").getValue()).isEqualTo("ReviewOrderQuery");
-        assertThat(processVariables.get("orderId").getValue()).isEqualTo(orderId.toString());
-        assertThat(processVariables.get("assigneeId").getValue()).isEqualTo(judge.toString());
-        assertThat(processVariables).doesNotContainKey("assignee");
-    }
-
-    @Test
-    void shouldCancelOnlyTheTasksAboutAnOrder() {
-        // Given
-        when(authTokenGenerator.generate()).thenReturn("authToken");
-        stubWaFeatureFlag(true);
-        UUID orderId = UUID.randomUUID();
-
-        // When
-        camundaService.cancelTask(CASE_REFERENCE, TaskType.CONFIRM_ORDER_REVIEW, orderId);
-        verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-        camundaService.handleRequest(schedulableInstanceCaptor.getValue().getTaskInstance().getData());
-
-        // Then
-        ArgumentCaptor<SendMessageRequest> requestArgumentCaptor = ArgumentCaptor.forClass(SendMessageRequest.class);
-        verify(workAllocationWorkflowApi).sendMessage(eq("authToken"), requestArgumentCaptor.capture());
-        SendMessageRequest sendMessageRequest = requestArgumentCaptor.getValue();
-        assertThat(sendMessageRequest.getMessageName()).isEqualTo("cancelTasks");
-
-        Map<String, DmnValue<?>> correlationKeys = sendMessageRequest.getCorrelationKeys();
-        assertThat(correlationKeys.get("caseId").getValue()).isEqualTo(Long.toString(CASE_REFERENCE));
-        assertThat(correlationKeys.get("__processCategory__ConfirmOrderReview").getValue()).isEqualTo(true);
-        assertThat(correlationKeys.get("orderId").getValue()).isEqualTo(orderId.toString());
     }
 
     private static CamundaRequestTaskData buildTaskDataForCreate(TaskType taskType, String taskDescription) {

@@ -1,5 +1,6 @@
 {
   "flagValues": {
-    "make-order-enabled": true
+    "make-order-enabled": true,
+    "caseworker-wa-enabled": true
   }
 }

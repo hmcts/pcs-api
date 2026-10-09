@@ -174,28 +174,6 @@
           <text>"manual"</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_nwme2e0">
-        <inputEntry id="UnaryTests_j6asqqm">
-          <text>"ext:confirmOrderReview"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_e299l7r">
-          <text>"ConfirmOrderReview"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_13q1kts">
-          <text>"Auto"</text>
-        </outputEntry>
-      </rule>
-      <rule id="DecisionRule_vz2a0af">
-        <inputEntry id="UnaryTests_s9f31lk">
-          <text>"manually verified event"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_r3j0azs">
-          <text>"ReviewOrderQuery"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_t0lumho">
-          <text>"manual"</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_0lcd9te">
         <description>No associated task</description>
         <inputEntry id="UnaryTests_1drz8vr">

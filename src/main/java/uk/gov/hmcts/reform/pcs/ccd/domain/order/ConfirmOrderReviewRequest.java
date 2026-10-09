@@ -10,12 +10,13 @@ import java.util.UUID;
 
 /**
  * What the frontend sends when a caseworker finishes reviewing an order, naming the order and the
- * version they reviewed: either a query returning it to the judge, or the order as they issue it and
- * how it is to be issued.
+ * version they reviewed, and the Work Allocation task they came from: either a query returning it to
+ * the judge, or the order as they issue it and how it is to be issued.
  */
 public record ConfirmOrderReviewRequest(Action action,
                                         UUID orderId,
                                         long version,
+                                        String taskId,
                                         String queryToJudge,
                                         Issue issue) {
 
@@ -46,7 +47,7 @@ public record ConfirmOrderReviewRequest(Action action,
     /**
      * The order as the caseworker issues it: the judge's make order form and order document, with
      * any changes the caseworker made to either, and the document's wording as Docweave exports it
-     * to HTML, which becomes the issued order.
+     * to HTML, which is issued as it is.
      */
     public record IssuedOrder(String orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
                               String html) {

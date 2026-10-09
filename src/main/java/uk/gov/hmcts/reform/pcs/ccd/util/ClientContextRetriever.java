@@ -8,8 +8,11 @@ import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Component
@@ -41,6 +44,19 @@ public class ClientContextRetriever {
             return objectMapper.readValue(clientContextAsStringJson, ClientContext.class);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to parse Client-context",e);
+        }
+    }
+
+    /**
+     * The order the frontend names in the Client-Context header, since CCD passes no parameters to the
+     * start of an event; anything named that is not an order is refused.
+     */
+    public Optional<UUID> getOrderId(String otherwise) {
+        ClientContext clientContext = getClientContext();
+        try {
+            return Optional.ofNullable(clientContext == null ? null : clientContext.getOrderId()).map(UUID::fromString);
+        } catch (IllegalArgumentException e) {
+            throw ExternalRejection.because(otherwise);
         }
     }
 

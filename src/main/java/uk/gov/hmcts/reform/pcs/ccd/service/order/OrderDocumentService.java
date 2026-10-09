@@ -1,20 +1,33 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.order;
 
-import jakarta.persistence.EntityManager;
+import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.FailureHandler;
+import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
+import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import com.github.kagkarlsson.scheduler.task.helper.Tasks;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import uk.gov.hmcts.ccd.sdk.ActorAttribution;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.ccd.sdk.SystemEventResult;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.IssuedOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.repository.IssuedOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -23,31 +36,42 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
+import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+
 /**
  * Generates an issued order's document from its wording and adds it to the case, where it shows
- * under "Orders and Notice of Hearings". Like {@link uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimFormService},
- * the Docmosis render runs between a read-only transaction that builds the payload and a short write
- * transaction that attaches the document, and a re-run never attaches a second document.
+ * under "Orders and Notice of Hearings". It runs as a job once the issuing event has committed, and
+ * adds the document in a system event on behalf of the caseworker who issued the order, so the
+ * order's row is only written in case events. A re-run never adds a second document.
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class OrderDocumentService {
 
     static final String TEMPLATE_ID = "CV-PCS-ORD-ENG-Order.docx";
+    static final TaskDescriptor<Generation> ORDER_DOCUMENT =
+        TaskDescriptor.of("order-document-generation", Generation.class);
+    private static final int MAX_RETRIES = 5;
+    private static final Duration RETRY_AFTER = Duration.ofMinutes(1);
 
     private static final DateTimeFormatter ORDER_DATE = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
 
@@ -58,7 +82,9 @@ public class OrderDocumentService {
         "STRIKE_OUT_DISMISSAL", "Order (strike out or dismissal)"
     );
 
-    private final IssuedOrderRepository issuedOrderRepository;
+    private final OrderRepository orderRepository;
+    private final OrderSteps orderSteps;
+    private final SystemEventExecutor systemEventExecutor;
     private final DocAssemblyService docAssemblyService;
     private final DocumentImportService documentImportService;
     private final LocationReferenceService locationReferenceService;
@@ -66,74 +92,96 @@ public class OrderDocumentService {
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
-    private final EntityManager entityManager;
-    private final TransactionTemplate readOnly;
-    private final TransactionTemplate readWrite;
+    private final TransactionTemplate transactionTemplate;
 
-    public OrderDocumentService(IssuedOrderRepository issuedOrderRepository,
-                                DocAssemblyService docAssemblyService,
-                                DocumentImportService documentImportService,
-                                LocationReferenceService locationReferenceService,
-                                PartyService partyService,
-                                AddressMapper addressMapper,
-                                AddressFormatter addressFormatter,
-                                CaseReferenceFormatter caseReferenceFormatter,
-                                EntityManager entityManager,
-                                PlatformTransactionManager transactionManager) {
-        this.issuedOrderRepository = issuedOrderRepository;
-        this.docAssemblyService = docAssemblyService;
-        this.documentImportService = documentImportService;
-        this.locationReferenceService = locationReferenceService;
-        this.partyService = partyService;
-        this.addressMapper = addressMapper;
-        this.addressFormatter = addressFormatter;
-        this.caseReferenceFormatter = caseReferenceFormatter;
-        this.entityManager = entityManager;
-        this.readOnly = new TransactionTemplate(transactionManager);
-        this.readOnly.setReadOnly(true);
-        this.readWrite = new TransactionTemplate(transactionManager);
+    /** The job's data: the issued order, and the caseworker who issued it, on whose behalf the document is added. */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Generation {
+        private UUID orderId;
+        private String caseworkerId;
+        private String caseworkerFirstName;
+        private String caseworkerLastName;
     }
 
-    public void generateAndAttach(UUID issuedOrderId) {
-        OrderDocumentPayload payload = readOnly.execute(status -> {
-            IssuedOrderEntity issued = issuedOrder(issuedOrderId);
-            return issued.getDocument() == null ? payload(issued) : null;
-        });
-        if (payload == null) {
+    /** The job that generates an order's document, for the issuing event to schedule; it runs once that commits. */
+    public static SchedulableInstance<Generation> generation(OrderEntity order, UserInfo caseworker) {
+        return ORDER_DOCUMENT
+            .instance(order.getId().toString())
+            .data(new Generation(order.getId(), caseworker.getUid(), caseworker.getGivenName(),
+                caseworker.getFamilyName()))
+            .scheduledTo(Instant.now());
+    }
+
+    @Bean
+    public CustomTask<Generation> orderDocumentJob() {
+        return Tasks.custom(ORDER_DOCUMENT)
+            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(MAX_RETRIES,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(RETRY_AFTER)))
+            .execute((instance, context) -> {
+                generateAndAttach(instance.getData());
+                return new CompletionHandler.OnCompleteRemove<>();
+            });
+    }
+
+    public void generateAndAttach(Generation generation) {
+        Optional<Rendering> rendering = transactionTemplate.execute(status -> rendering(generation.orderId));
+        if (rendering.isEmpty()) {
             return;
         }
+        OrderDocumentPayload payload = rendering.get().payload();
         String dmStoreUrl = docAssemblyService.generateDocument(
             payload, TEMPLATE_ID, OutputType.PDF, payload.getOrderTitle());
         try {
-            readWrite.executeWithoutResult(status -> attach(issuedOrderId, dmStoreUrl));
+            systemEventExecutor.execute(rendering.get().caseReference(), caseworker(generation),
+                generation.orderId, context -> attach(rendering.get(), generation.orderId, dmStoreUrl));
         } catch (Exception e) {
-            deleteOrphanedDocument(issuedOrderId, dmStoreUrl);
+            deleteOrphanedDocument(generation.orderId, dmStoreUrl);
             throw e;
         }
     }
 
-    /** The issued order, which the task can look for before the issuing event commits; it then retries. */
-    private IssuedOrderEntity issuedOrder(UUID issuedOrderId) {
-        return issuedOrderRepository.findById(issuedOrderId)
-            .orElseThrow(() -> new IllegalStateException("No issued order " + issuedOrderId));
+    private record Rendering(long caseReference, LocalDate issuedOn, OrderDocumentPayload payload) {
     }
 
-    private void attach(UUID issuedOrderId, String dmStoreUrl) {
-        IssuedOrderEntity issued = issuedOrder(issuedOrderId);
-        if (issued.getDocument() != null) {
-            deleteOrphanedDocument(issuedOrderId, dmStoreUrl);
-            return;
+    /** What to render, or nothing when the order already has its document. */
+    private Optional<Rendering> rendering(UUID orderId) {
+        OrderEntity order = issuedOrder(orderId);
+        if (order.getDocument() != null) {
+            return Optional.empty();
         }
-        DocumentEntity document = documentImportService.addDocumentToCase(
-            issued.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
-        document.setType(DocumentType.ORDER);
-        document.setIssueDate(issued.getIssuedOn());
-        entityManager.persist(document);
-        issued.setDocument(document);
+        // The order is issued, so its latest step is the issuing one.
+        OrderStepEntity issued = orderSteps.latest(order);
+        LocalDate issuedOn = issued.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate();
+        return Optional.of(new Rendering(order.getPcsCase().getCaseReference(), issuedOn,
+            payload(order, issued, issuedOn)));
     }
 
-    private OrderDocumentPayload payload(IssuedOrderEntity issued) {
-        PcsCaseEntity pcsCase = issued.getPcsCase();
+    private OrderEntity issuedOrder(UUID orderId) {
+        return orderRepository.findById(orderId)
+            .filter(order -> order.getState() == ISSUED)
+            .orElseThrow(() -> new IllegalStateException("No issued order " + orderId));
+    }
+
+    /** Adds the document to the case; the system event's idempotency key means this runs once per order. */
+    private SystemEventResult attach(Rendering rendering, UUID orderId, String dmStoreUrl) {
+        OrderEntity order = issuedOrder(orderId);
+        DocumentEntity document = documentImportService.addDocumentToCase(
+            order.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
+        document.setType(DocumentType.ORDER);
+        document.setIssueDate(rendering.issuedOn());
+        order.setDocument(document);
+        return SystemEventResult.withoutStateTransition("orderDocumentGenerated", "Order document generated");
+    }
+
+    private static ActorAttribution caseworker(Generation generation) {
+        return new ActorAttribution(generation.caseworkerId, generation.caseworkerFirstName,
+            generation.caseworkerLastName);
+    }
+
+    private OrderDocumentPayload payload(OrderEntity order, OrderStepEntity issued, LocalDate issuedOn) {
+        PcsCaseEntity pcsCase = order.getPcsCase();
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
         Optional<CourtVenue> court = court(pcsCase);
         return OrderDocumentPayload.builder()
@@ -148,13 +196,12 @@ public class OrderDocumentService {
                 .orElse(List.of()))
             .propertyAddress(addressFormatter.formatFullAddressWithoutCountry(
                 addressMapper.toAddressUK(pcsCase.getPropertyAddress()), AddressFormatter.COMMA_DELIMITER))
-            .judgeName(judgeName(pcsCase.getCaseReference(), issued.getDraftOrder().getAuthorIdamUserId())
-                .orElse("the Judge"))
-            .orderDate(ORDER_DATE.format(issued.getIssuedOn()))
+            .judgeName(Optional.ofNullable(order.getAuthorName()).orElse("the Judge"))
+            .orderDate(ORDER_DATE.format(issuedOn))
             .orderHtml(issued.getOrderHtml())
-            .sealName(issued.getSeal() == OrderSeal.HIGH_COURT ? "High Court" : countyCourt(court))
-            .countyCourtSeal(issued.getSeal() == OrderSeal.COUNTY_COURT)
-            .highCourtSeal(issued.getSeal() == OrderSeal.HIGH_COURT)
+            .sealName(order.getSeal() == OrderSeal.HIGH_COURT ? "High Court" : countyCourt(court))
+            .countyCourtSeal(order.getSeal() == OrderSeal.COUNTY_COURT)
+            .highCourtSeal(order.getSeal() == OrderSeal.HIGH_COURT)
             .build();
     }
 
@@ -189,29 +236,11 @@ public class OrderDocumentService {
         }
     }
 
-    /**
-     * The judge who made the order, as CCD recorded them when they last changed it: draft orders keep
-     * only the judge's IDAM id.
-     */
-    private Optional<String> judgeName(long caseReference, UUID judge) {
-        List<?> names = entityManager.createNativeQuery("""
-                SELECT concat_ws(' ', e.user_first_name, e.user_last_name) FROM ccd.case_event e
-                JOIN ccd.case_data c ON c.id = e.case_data_id
-                WHERE c.reference = :caseReference AND e.user_id = :judge AND e.event_id = 'ext:makeOrder'
-                ORDER BY e.id DESC LIMIT 1""")
-            .setParameter("caseReference", caseReference)
-            .setParameter("judge", judge.toString())
-            .getResultList();
-        return names.stream().filter(Objects::nonNull).map(name -> name.toString().trim())
-            .filter(name -> !name.isEmpty()).findFirst();
-    }
-
-    private void deleteOrphanedDocument(UUID issuedOrderId, String dmStoreUrl) {
+    private void deleteOrphanedDocument(UUID orderId, String dmStoreUrl) {
         try {
             documentImportService.deleteDocument(dmStoreUrl);
         } catch (Exception e) {
-            log.error("Failed to delete orphaned order document for issued order {}: {}",
-                issuedOrderId, dmStoreUrl, e);
+            log.error("Failed to delete orphaned order document for order {}: {}", orderId, dmStoreUrl, e);
         }
     }
 }

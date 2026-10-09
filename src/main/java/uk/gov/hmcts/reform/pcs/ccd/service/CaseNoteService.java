@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -34,6 +35,7 @@ public class CaseNoteService {
         return CaseNoteEntity
             .builder()
             .createdBy(userInfo.getName())
+            .authorIdamUserId(UUID.fromString(userInfo.getUid()))
             .note(pcsCase.getNote())
             .createdOn(Instant.now(utcClock))
             .build();

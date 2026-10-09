@@ -3,7 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,24 +19,25 @@ import java.util.UUID;
  */
 public record OrderStart(Order order, CaseContext caseContext) {
 
-    /** The order; for a judge's working order, no id means they have no draft on the case yet. */
+    /**
+     * The order; for a judge's working order, no id means they have no draft on the case yet. The
+     * version is the id of the step the order was last left by, sent back with a change to it.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,
-                        DraftOrderState state,
+                        OrderState state,
                         long version,
                         String orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
                         String queryFromCaseworker) {
 
-        public static Order of(DraftOrderEntity order) {
-            return of(order, null);
-        }
+        public static final Order NONE = new Order(null, OrderState.DRAFT, 0, null, Map.of(), null, null);
 
-        /** An order a caseworker returned to the judge, with the query they returned it with. */
-        public static Order of(DraftOrderEntity order, String queryFromCaseworker) {
-            return new Order(order.getId(), order.getState(), order.getVersion(),
-                order.getOrderType(), order.getFormData(), order.getDocweaveSnapshot(), queryFromCaseworker);
+        /** An order as its latest step left it, with the query it was returned with if it was. */
+        public static Order of(OrderEntity order, OrderStepEntity latest, String queryFromCaseworker) {
+            return new Order(order.getId(), order.getState(), latest.getId(), latest.getOrderType(),
+                latest.getFormData(), latest.getDocweaveSnapshot(), queryFromCaseworker);
         }
     }
 

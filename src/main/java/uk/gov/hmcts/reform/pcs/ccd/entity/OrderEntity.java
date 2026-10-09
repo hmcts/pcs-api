@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,61 +18,53 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
- * A caseworker's review of an order a judge submitted: the query returning it to the judge, or the
- * order as they issued it and how it is to be issued. The judge's order stays as they submitted it.
- * Its history is in the case event audit, like the order's.
+ * An order on a case, from a judge's draft until it is issued: who wrote it, where it is, and once
+ * issued how it is to be issued. Its content is on its steps, the latest of which is the order as it
+ * stands and whose id is the order's version; its history is in them and in the case event audit, so
+ * it keeps no timestamps.
  */
 @Entity
-@Table(name = "order_reviews")
+@Table(name = "orders")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderReviewEntity {
+public class OrderEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "draft_order_id", nullable = false)
-    private DraftOrderEntity draftOrder;
+    @JoinColumn(name = "case_id", nullable = false)
+    private PcsCaseEntity pcsCase;
 
     @Column(nullable = false, updatable = false)
-    private UUID reviewerIdamUserId;
+    private UUID authorIdamUserId;
 
-    /** The version of the order the caseworker reviewed; an order returned more than once has a review of each. */
-    @Column(nullable = false, updatable = false)
-    private long reviewedVersion;
+    /** The judge's name as IDAM had it when they started the order, for the order's document. */
+    @Column(updatable = false)
+    private String authorName;
 
-    /** RETURNED_TO_JUDGE or ISSUED: the state the review left the order in. */
+    /** The state the latest step left the order in. */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DraftOrderState outcome;
+    private OrderState state;
 
-    private String queryToJudge;
+    // How the order is to be issued, answered by the caseworker who issued it.
 
-    /** The order as the caseworker issued it, which may differ from the judge's in its form or its wording. */
-    private String orderType;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> formData;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private JsonNode docweaveSnapshot;
-
-    private Boolean nextStepsComplete;
+    @Enumerated(EnumType.STRING)
+    private OrderSeal seal;
 
     private Boolean finalOrder;
 
@@ -82,6 +74,10 @@ public class OrderReviewEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> partiesServed;
 
-    @Enumerated(EnumType.STRING)
-    private OrderSeal seal;
+    private Boolean nextStepsComplete;
+
+    /** The issued order's document, once Docmosis has rendered it. */
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "document_id")
+    private DocumentEntity document;
 }

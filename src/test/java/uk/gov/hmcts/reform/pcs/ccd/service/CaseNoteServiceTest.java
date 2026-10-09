@@ -19,6 +19,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -42,6 +43,7 @@ class CaseNoteServiceTest {
     @InjectMocks
     private CaseNoteService caseNoteService;
 
+    private static final UUID AUTHOR_ID = UUID.fromString("5d1f4b3e-8c2a-4f6e-9b7d-1a2b3c4d5e6f");
     private static final Instant FIXED_INSTANT = Instant.parse("2026-04-22T21:05:30Z");
 
     @BeforeEach
@@ -65,6 +67,7 @@ class CaseNoteServiceTest {
 
         UserInfo userInfo = UserInfo.builder()
             .name(name)
+            .uid(AUTHOR_ID.toString())
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
@@ -87,6 +90,7 @@ class CaseNoteServiceTest {
         assertThat(persistedCaseNote.getPcsCase()).isEqualTo(persistedCaseEntity);
         assertThat(persistedCaseNote.getNote()).isEqualTo(note);
         assertThat(persistedCaseNote.getCreatedBy()).isEqualTo(name);
+        assertThat(persistedCaseNote.getAuthorIdamUserId()).isEqualTo(AUTHOR_ID);
         assertThat(persistedCaseNote.getCreatedOn()).isEqualTo(FIXED_INSTANT);
     }
 
@@ -115,6 +119,7 @@ class CaseNoteServiceTest {
 
         UserInfo userInfo = UserInfo.builder()
             .name(newAuthor)
+            .uid(AUTHOR_ID.toString())
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
@@ -172,6 +177,7 @@ class CaseNoteServiceTest {
 
         UserInfo userInfo = UserInfo.builder()
                 .name(newAuthor)
+                .uid(AUTHOR_ID.toString())
                 .build();
 
         PCSCase pcsCase = PCSCase.builder()

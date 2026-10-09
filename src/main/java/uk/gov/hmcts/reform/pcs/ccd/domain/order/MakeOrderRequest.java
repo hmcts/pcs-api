@@ -6,10 +6,11 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * What the frontend sends when a judge acts on their order: the action, and the order as the judge
- * last saw it, naming the version the change is made from.
+ * What the frontend sends when a judge acts on their order: the action, the order as the judge last
+ * saw it, naming the version the change is made from, and the Work Allocation task they came from, if
+ * they are changing an order returned to them.
  */
-public record MakeOrderRequest(Action action, OrderChange order) {
+public record MakeOrderRequest(Action action, OrderChange order, String taskId) {
 
     public enum Action {
         SAVE_DRAFT,

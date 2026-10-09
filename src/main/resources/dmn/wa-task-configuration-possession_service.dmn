@@ -469,26 +469,6 @@ Short name</description>
           <text>false</text>
         </outputEntry>
       </rule>
-      <rule id="DecisionRule_fadgwi1">
-        <inputEntry id="UnaryTests_yjyjzuz">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_4qus2g9">
-          <text></text>
-        </inputEntry>
-        <inputEntry id="UnaryTests_47n5osk">
-          <text>"ConfirmOrderReview","ReviewOrderQuery"</text>
-        </inputEntry>
-        <outputEntry id="LiteralExpression_dl12v6l">
-          <text>"additionalProperties_orderId"</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_snz45fc">
-          <text>taskAttributes.orderId</text>
-        </outputEntry>
-        <outputEntry id="LiteralExpression_4el8tcl">
-          <text>true</text>
-        </outputEntry>
-      </rule>
       <rule id="DecisionRule_0zpw840">
         <inputEntry id="UnaryTests_0i9u3p3">
           <text></text>

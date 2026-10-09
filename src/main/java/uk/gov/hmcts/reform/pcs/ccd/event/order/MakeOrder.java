@@ -11,41 +11,42 @@ import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalStartResponse;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitRequest;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalSubmitResponse;
+import uk.gov.hmcts.reform.pcs.camunda.TaskCompletionService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DraftOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.OrderReviewEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DraftOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.OrderReviewRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.ClientContext;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerRoles.CASEWORKER_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.DRAFT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 
 /**
  * A judge makes an order through pcs-frontend's make order journey. Starting the event sends them
  * their working order and the facts of the case; each submission saves or submits for review their
  * draft. A judge has one working draft per case, and a change is made from the version they last
  * saw; a change with no id starts their draft. An order a caseworker returned to the judge is theirs
- * to change again: they choose it on the case's orders tab, see the caseworker's query, and
+ * to change again: they open it from the task the return gave them, see the caseworker's query, and
  * submit it for review again. Submitting an order asks court staff to review it, with a Work
- * Allocation task, and closes the task a returned order gave its judge.
+ * Allocation task, and completes the task a returned order gave its judge.
  */
 @Component
 @AllArgsConstructor
@@ -55,15 +56,17 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         ExternalEventId.of("ext:makeOrder", OrderStart.class, MakeOrderRequest.class);
 
     /** The states that leave an order its author's to change. */
-    private static final Set<DraftOrderState> CHANGEABLE =
-        Set.of(DraftOrderState.DRAFT, DraftOrderState.RETURNED_TO_JUDGE);
+    private static final Set<OrderState> CHANGEABLE = Set.of(DRAFT, RETURNED_TO_JUDGE);
+    private static final String NO_LONGER_CHANGEABLE = "The order is no longer waiting for you to change it";
 
-    private final DraftOrderRepository draftOrderRepository;
-    private final OrderReviewRepository orderReviewRepository;
+    private final OrderRepository orderRepository;
+    private final OrderSteps orderSteps;
     private final PcsCaseRepository pcsCaseRepository;
     private final OrderCaseContext orderCaseContext;
     private final ClientContextRetriever clientContextRetriever;
+    private final SecurityContextService securityContextService;
     private final OrderTasks orderTasks;
+    private final TaskCompletionService taskCompletionService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -92,39 +95,23 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
         UUID judge = UUID.fromString(start.user().id());
-        OrderStart.Order workingOrder = chosenOrderId()
+        OrderStart.Order workingOrder = clientContextRetriever.getOrderId(NO_LONGER_CHANGEABLE)
             .map(orderId -> chosenOrder(orderId, caseReference, judge))
-            .orElseGet(() -> findDraft(caseReference, judge)
-                .map(OrderStart.Order::of)
-                .orElseGet(() -> new OrderStart.Order(null, DraftOrderState.DRAFT, 0, null, Map.of(), null, null)));
+            .orElseGet(() -> orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
+                    caseReference, judge, DRAFT)
+                .map(draft -> OrderStart.Order.of(draft, orderSteps.latest(draft), null))
+                .orElse(OrderStart.Order.NONE));
         return ExternalStartResponse.started(
             new OrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
     }
 
-    /**
-     * The order the judge chose on the case's orders tab, which the frontend names in the
-     * Client-Context header: one a caseworker returned to them, with the query it came back with.
-     */
+    /** The order the judge's task links to: one a caseworker returned to them, with the query it came back with. */
     private OrderStart.Order chosenOrder(UUID orderId, long caseReference, UUID judge) {
-        DraftOrderEntity order = draftOrderRepository
+        OrderEntity order = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(orderId, caseReference, judge, CHANGEABLE)
-            .orElseThrow(() -> ExternalRejection.because("The order is no longer waiting for you to change it"));
-        String query = order.getState() == DraftOrderState.RETURNED_TO_JUDGE
-            ? orderReviewRepository.findFirstByDraftOrderIdOrderByReviewedVersionDesc(order.getId())
-                .map(OrderReviewEntity::getQueryToJudge)
-                .orElse(null)
-            : null;
-        return OrderStart.Order.of(order, query);
-    }
-
-    private Optional<UUID> chosenOrderId() {
-        ClientContext clientContext = clientContextRetriever.getClientContext();
-        String orderId = clientContext == null ? null : clientContext.getOrderId();
-        try {
-            return Optional.ofNullable(orderId).map(UUID::fromString);
-        } catch (IllegalArgumentException e) {
-            throw ExternalRejection.because("The order is no longer waiting for you to change it");
-        }
+            .orElseThrow(() -> ExternalRejection.because(NO_LONGER_CHANGEABLE));
+        // Only a returned order has a query: the step that returns it is the only one with a note.
+        return OrderStart.Order.of(order, orderSteps.latest(order), orderSteps.query(order).orElse(null));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<MakeOrderRequest> submit) {
@@ -132,55 +119,43 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderChange change = request.order();
         long caseReference = submit.caseReference();
         UUID judge = UUID.fromString(submit.user().id());
-        DraftOrderEntity draft = change.id() == null
+        OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge)
             : workingDraft(caseReference, judge, change);
-        draft.setOrderType(change.orderType());
-        draft.setFormData(change.formData());
-        draft.setDocweaveSnapshot(change.docweaveSnapshot());
+        boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
+        OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
+        OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
+            .orderType(change.orderType())
+            .formData(change.formData())
+            .docweaveSnapshot(change.docweaveSnapshot()));
         if (request.action() != SUBMIT_FOR_REVIEW) {
-            draftOrderRepository.saveAndFlush(draft);
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        boolean resubmitted = draft.getState() == DraftOrderState.RETURNED_TO_JUDGE;
-        draft.setState(DraftOrderState.SUBMITTED_FOR_REVIEW);
-        draftOrderRepository.saveAndFlush(draft);
-        if (resubmitted) {
-            orderTasks.closeJudgeQuery(caseReference, draft);
-        }
-        orderTasks.askStaffToReview(caseReference, draft, resubmitted);
+        // Only a returned order comes with a task, the one its return gave the judge.
+        submit.afterCommit(taskCompletionService.complete(request.taskId()));
+        orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }
 
-    /** A judge has one draft per case, which the database also enforces. */
-    private DraftOrderEntity newDraft(long caseReference, UUID judge) {
-        if (findDraft(caseReference, judge).isPresent()) {
-            throw ExternalRejection.because("You already have an order draft for this case");
-        }
-        return DraftOrderEntity.builder()
+    /** A judge has one draft per case, which the database enforces. */
+    private OrderEntity newDraft(long caseReference, UUID judge) {
+        return OrderEntity.builder()
             .pcsCase(findCase(caseReference))
             .authorIdamUserId(judge)
-            .state(DraftOrderState.DRAFT)
+            .authorName(securityContextService.getCurrentUserDetails().getName())
+            .state(DRAFT)
             .build();
     }
 
     /** The judge's own draft, or order returned to them, this change is for, at the version they last saw. */
-    private DraftOrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
-        DraftOrderEntity draft = draftOrderRepository
+    private OrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
+        OrderEntity draft = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
                 change.id(), caseReference, judge, CHANGEABLE)
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
-        if (draft.getVersion() != change.version()) {
-            throw ExternalRejection.because(
-                "The order draft has been updated by another user. Reload it and try again");
-        }
+        orderSteps.latest(draft, change.version(), "The order draft");
         return draft;
-    }
-
-    private Optional<DraftOrderEntity> findDraft(long caseReference, UUID judge) {
-        return draftOrderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-            caseReference, judge, DraftOrderState.DRAFT);
     }
 
     private PcsCaseEntity findCase(long caseReference) {
