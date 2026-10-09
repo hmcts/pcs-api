@@ -1,3 +1,5 @@
+import { testDocument } from "@utils/common/uploadDocument.utils";
+
 export const midEventLRRespondPossessionClaimApiData = {
   midEventLRRespondPossessionClaimApiInstance: (defendantID: any) => ({
     baseURL: process.env.DATA_STORE_URL_BASE,
@@ -34,7 +36,6 @@ export const midEventLRRespondPossessionClaimApiData = {
             hwfReferenceNumber: 'HWF-12345',
             counterClaimAgainst: [
               {
-                //id: '42a22318-5294-471e-b035-29f8c93db5da',
                 value: {
                   address: {
                     Country: 'United Kingdom',
@@ -66,30 +67,18 @@ export const midEventLRRespondPossessionClaimApiData = {
           completedSections: [],
           defendantDocuments: [
             {
-              // id: 'b886c020-2ea5-4166-aad5-8bf2346bc578',
               value: {
-                document: {
-                  document_url: `${process.env.DM_STORE}/documents/5643cef3-21e8-47c9-b161-85024090fba4`,
-                  document_filename: 'licence.pdf',
-                  document_binary_url: `${process.env.DM_STORE}/documents/5643cef3-21e8-47c9-b161-85024090fba4/binary`
-                },
-                //contentType: 'application/pdf',
-                //sizeInBytes: 74871
+                document:
+                  testDocument('licence.pdf')
               }
             }
           ],
           otherConsiderations: 'NO',
           counterClaimDocuments: [
             {
-              //id: '25352b67-b689-4365-a065-507ffa1dfe7c',
               value: {
-                document: {
-                  document_url: `${process.env.DM_STORE}/documents/65aa208b-9415-4407-bca9-c87ffa31648d`,
-                  document_filename: 'possessionNoticeWithOutNotice.pdf',
-                  document_binary_url: `${process.env.DM_STORE}/documents/65aa208b-9415-4407-bca9-c87ffa31648d/binary`
-                },
-                //contentType: 'application/pdf',
-                //sizeInBytes: 9637
+                document:
+                  testDocument('possessionNoticeWithOutNotice.pdf')
               }
             }
           ],
@@ -130,7 +119,7 @@ export const midEventLRRespondPossessionClaimApiData = {
     ignore_warning: false,
   }),
 
-    midEventLRCounterClaimClaimPaymentPayload: () => ({
+  midEventLRCounterClaimClaimPaymentPayload: () => ({
     event: {
       id: 'respondPossessionClaim',
       summary: 'Legal representative respondPossessionClaim draft save summary',
@@ -152,7 +141,6 @@ export const midEventLRRespondPossessionClaimApiData = {
             isClaimAmountKnown: 'YES',
             counterClaimAgainst: [
               {
-                //id: '42a22318-5294-471e-b035-29f8c93db5da',
                 value: {
                   address: {
                     Country: 'United Kingdom',
@@ -184,30 +172,17 @@ export const midEventLRRespondPossessionClaimApiData = {
           completedSections: [],
           defendantDocuments: [
             {
-              // id: 'b886c020-2ea5-4166-aad5-8bf2346bc578',
               value: {
-                document: {
-                  document_url: `${process.env.DM_STORE}/documents/5643cef3-21e8-47c9-b161-85024090fba4`,
-                  document_filename: 'licence.pdf',
-                  document_binary_url: `${process.env.DM_STORE}/documents/5643cef3-21e8-47c9-b161-85024090fba4/binary`
-                },
-                //contentType: 'application/pdf',
-                //sizeInBytes: 74871
+                document:
+                  testDocument('licence.pdf')
               }
             }
           ],
           otherConsiderations: 'NO',
           counterClaimDocuments: [
             {
-              //id: '25352b67-b689-4365-a065-507ffa1dfe7c',
               value: {
-                document: {
-                  document_url: `${process.env.DM_STORE}/documents/65aa208b-9415-4407-bca9-c87ffa31648d`,
-                  document_filename: 'possessionNoticeWithOutNotice.pdf',
-                  document_binary_url: `${process.env.DM_STORE}/documents/65aa208b-9415-4407-bca9-c87ffa31648d/binary`
-                },
-                //contentType: 'application/pdf',
-                //sizeInBytes: 9637
+                document: testDocument('possessionNoticeWithOutNotice.pdf')
               }
             }
           ],
