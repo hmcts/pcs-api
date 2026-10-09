@@ -3,10 +3,12 @@ import {initializeExecutor, performValidation} from '@utils/controller';
 import test from '@playwright/test';
 import { caseInfo } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, user } from '@data/page-data';
+import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
 import {addReviewDates, checkYourAnswersAddReviewDates} from "@data/page-data-figma/page-data-caseManagement-figma";
+import { formatDate, generateRandomString, getCurrentBSTTime } from '@utils/common/string.utils';
+import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 
 
 test.use({ storageState: undefined })
@@ -20,6 +22,7 @@ test.beforeEach(async ({ page, context }) => {
   await performAction('getAddressInfo', { data: createCaseApiData.createCasePayload });
   await performAction('updatePaymentAPI');
   await performAction('getCaseAPI', 'Link Solicitor');
+  await performAction('fetchCurrentUserAPI', 'CaseWorker');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -37,20 +40,34 @@ test.afterEach(async () => {
 
 test.describe('Case management - Case Worker Add Review date @nightly', async () => {
   test('Case management - Case Worker Add Review Date @CM @regression', async () => {
+    const userInput =
+      typeof addReviewDates.descriptionTextInput === 'number'
+        ? generateRandomString(addReviewDates.descriptionTextInput)
+        : (addReviewDates.descriptionTextInput as string);
+    let date = CaseManagementCommonUtils.getRandomDate(addReviewDates.dateTypeHiddenUserInput as string);
+    let reviewReason = addReviewDates.reviewReasonArray[Math.floor(Math.random() * addReviewDates.reviewReasonArray.length)];
     await performAction('selectAnEvent', { eventType: caseSummary.addReviewDates });
     await performValidation('mainHeader', addReviewDates.mainHeader);
     await performAction('clickButton', addReviewDates.addNewButton);
     await performAction('errorValidationAddReviewDatesPage', addReviewDates.errorValidation);
     await performAction('addReviewDates', {
-      day: addReviewDates.dayHiddenTextLabel,
-      month: addReviewDates.monthHiddenTextLabel,
-      year: addReviewDates.yearHiddenTextLabel,
-      question: addReviewDates.reasonHiddenLabel, option: addReviewDates.dismissCaseHiddenRadioOption,
-      label: addReviewDates.descriptionHiddenTextLabel, userInput: addReviewDates.descriptionTextInput,
+      reviewDateLabel:  addReviewDates.dateOfReviewHiddenLabel,
+      date: date,
+      question: addReviewDates.reasonHiddenLabel, option: reviewReason,
+      label: addReviewDates.descriptionHiddenTextLabel, userInput: userInput,
       nextPage: checkYourAnswersAddReviewDates.mainHeader
     });
     await performAction('clickButton', checkYourAnswersAddReviewDates.submitButton);
     await performAction('confirmReviewDatesAdded');
+    const currentTime = getCurrentBSTTime();
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add review date');
+    await performAction('clickTab', home.caseNotes);
+    await performAction('validateCaseNotesDetails', {
+      createdDate: currentTime.replace(/:\d{2} /, " "),
+      reviewDescription: userInput,
+      reviewDate: formatDate(date,'DD/MON/YYYY'),
+      reviewReason: reviewReason,
+      table: 'Review date 1'
+    });
   });
 });

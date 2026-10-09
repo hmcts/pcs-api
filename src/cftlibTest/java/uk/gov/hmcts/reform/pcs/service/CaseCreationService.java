@@ -51,6 +51,10 @@ public class CaseCreationService {
     private final CcdClient ccdClient;
 
     public long createMinimalCase(String authorisation) {
+        return createMinimalCase(authorisation, LanguageUsed.ENGLISH);
+    }
+
+    public long createMinimalCase(String authorisation, LanguageUsed languageUsed) {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
@@ -79,7 +83,7 @@ public class CaseCreationService {
                             .build())
             .noticeServed(YesOrNo.NO)
             .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
-            .languageUsed(LanguageUsed.ENGLISH)
+            .languageUsed(languageUsed)
             .build();
 
         ccdClient.updateCase(resumePossessionClaim, caseReference, caseData, authorisation);
