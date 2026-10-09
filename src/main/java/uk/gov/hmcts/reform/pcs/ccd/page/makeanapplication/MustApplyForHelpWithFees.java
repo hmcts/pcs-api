@@ -29,7 +29,7 @@ public class MustApplyForHelpWithFees implements CcdPageConfiguration {
             when you (or they) apply for Help with Fees.
         </p>
         <p class="govuk-body">
-            After you (or they) have applied you (or they) will receive a Help With Fees reference number.
+            After you (or they) have applied you (or they) will receive a Help with Fees reference number.
             Enter the reference number when you return to this application.
         </p>
         <p class="govuk-body">
