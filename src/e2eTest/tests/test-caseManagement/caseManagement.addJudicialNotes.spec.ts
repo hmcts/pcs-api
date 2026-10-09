@@ -50,11 +50,13 @@ test.afterEach(async () => {
 
 test.describe('Case management - Add Judicial Notes @nightly', async () => {
   test('Case management - As a Judicial user successfully Add Judicial Notes from the case @CM @regression @smoke', async () => {
+    let userInputText = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
+    let currentBSTTime = getCurrentBSTTime();
     await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
     await performAction('Then the user performs error validation for Add Judicial Notes', addJudicialNotes.errorValidation);
     await performAction('When the user adds a Judicial Note', {
       label: addJudicialNotes.notesAboutThisCaseTextLabel,
-      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+      noteTextInput: userInputText,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
 
@@ -66,17 +68,21 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       ['clickTab', home.judicialNotes],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note 1',
-        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
-        createdOn: getCurrentBSTTime()
+        userInput: userInputText,
+        createdOn: currentBSTTime
       }]
     );
   });
 
   test('Case management - As a Judicial user successfully Add Multiple Judicial Notes from the case @CM @regression', async () => {
+    let userInputText1 = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1);
+    let currentBSTTime1 = getCurrentBSTTime();
+    let userInputText2 = CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2);
+    let currentBSTTime2 = getCurrentBSTTime();
     await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
     await performAction('When the user adds a Judicial Note', {
       label: addJudicialNotes.notesAboutThisCaseTextLabel,
-      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
+      noteTextInput: userInputText1,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
@@ -85,7 +91,7 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
     await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
     await performAction('When the user adds a Judicial Note', {
       label: addJudicialNotes.notesAboutThisCaseTextLabel,
-      noteTextInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
+      noteTextInput: userInputText2,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
@@ -96,20 +102,20 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       ['clickTab', home.judicialNotes],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note 2',
-        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText2),
-        createdOn: getCurrentBSTTime(),
+        userInput: userInputText2,
+        createdOn: currentBSTTime2,
         index: 0
       }],
       ['Then the user validates the Judge Notes tab', {
         table: 'Note 1',
-        userInput: CaseManagementCommonUtils.generateRandomString(addJudicialNotes.notesAboutThisCaseInputText1),
-        createdOn: getCurrentBSTTime(),
+        userInput: userInputText1,
+        createdOn: currentBSTTime1,
         index: 1
       }]
     );
   });
 
-  test('Case management - Verify Add Judicial Note event is not available for other users @CM @regression', async () => {
+  test('Case management - Verify Add Judicial Note event and Note Tab is not available for other users @CM @regression', async () => {
     await performValidation('elementNotToBeVisible', {
         locator: `${caseSummary.nextStepEventList} option`,
         text: caseSummary.addJudicialNote,
