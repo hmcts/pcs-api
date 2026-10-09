@@ -9,8 +9,9 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 @Service
 @AllArgsConstructor
 public class CounterClaimFormDocumentGenerator {
-    static final String TEMPLATE_ID = "CV-PCS-CLM-ENG-Counterclaim-Form.docx";
-    static final String OUTPUT_FILENAME_TEMPLATE = "Counterclaim CC%d - Defendant %d";
+    static final String LIP_TEMPLATE_ID = "CV-PCS-CLM-ENG-Counterclaim-Form.docx";
+    static final String LR_TEMPLATE_ID = "CV-PCS-CLM-ENG-Counterclaim-Form-LR.docx";
+    static final String OUTPUT_FILENAME_PREFIX = "Counterclaim - Defendant ";
 
     private final DocAssemblyService docAssemblyService;
 
@@ -18,9 +19,13 @@ public class CounterClaimFormDocumentGenerator {
         String filename = String.format(OUTPUT_FILENAME_TEMPLATE, counterClaimRank, defendantNumber);
         return docAssemblyService.generateDocument(
             payload,
-            TEMPLATE_ID,
+            getTemplateId(payload),
             OutputType.PDF,
             filename
         );
+    }
+
+    private static String getTemplateId(CounterClaimFormPayload payload) {
+        return payload.isCompletedByLegalRepresentative() ? LR_TEMPLATE_ID : LIP_TEMPLATE_ID;
     }
 }

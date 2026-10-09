@@ -63,6 +63,7 @@ export default defineConfig({
     ],
   ],
   projects: [
+  
     {
       name: 'chrome',
       use: {
@@ -139,7 +140,7 @@ export default defineConfig({
             },
           },
           {
-            name: 'mobile-ipad',
+            name: 'mobile-ipad',            
             use: {
               ...devices['iPad Pro 11'],
               screenshot: 'only-on-failure' as const,

@@ -92,7 +92,7 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 // It will be enabled once the feature is included in the execution scope.
-test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
+test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);

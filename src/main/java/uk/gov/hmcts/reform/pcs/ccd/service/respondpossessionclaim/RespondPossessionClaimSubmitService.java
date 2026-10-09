@@ -59,7 +59,7 @@ public class RespondPossessionClaimSubmitService {
         PartyEntity defendantParty,
         JourneyType journeyType
     ) {
-        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference);
+        claimResponseService.saveDraftDataForParty(responseDraftData, defendantParty, caseReference, journeyType);
         DefendantResponseEntity savedDefendantResponseEntity = defendantResponseService.saveDefendantResponse(
             caseReference, responseDraftData, defendantParty, journeyType);
 
@@ -164,12 +164,9 @@ public class RespondPossessionClaimSubmitService {
             return;
         }
 
-        List<DocumentEntity> documents = counterClaimDocuments.stream()
-            .filter(document -> !document.isRemoved())
-            .toList();
-
         PcsCaseEntity pcsCaseEntity = defendantParty.getPcsCase();
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty,
+                                                                           counterClaimDocuments);
     }
 
     private void scheduleDefendantResponseSubmittedNotification(DefendantResponseEntity defendantResponse) {
