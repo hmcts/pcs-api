@@ -1,7 +1,7 @@
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { initializeExecutor } from '@utils/controller';
 import test from '@playwright/test';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseSummary, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
@@ -12,7 +12,7 @@ import {
   enterGenappApplication,
   enterGenAppapplicationFee,
   enterGenAppConsentAndNotice,
-   enterGenAppHearingDate, enterGenAppPreferApplicationToJudge, enterGenAppUploadGeneralApplication,
+  enterGenAppHearingDate, enterGenAppPreferApplicationToJudge, enterGenAppUploadGeneralApplication,
   enterGenAppUploadRelatedEvidence, genAppsCheckYourAnswers
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { label } from 'allure-js-commons';
@@ -50,8 +50,8 @@ test.afterEach(async () => {
 
 });
 
-test.describe('Case management - Case Worker Enter a General application @nightly', async () => {
-  test('Case management - Case Worker Enter a General application ADJOURN Journey @CM @regression', async () => {
+test.describe('Case management - As a Case Worker i want to test as all Four General Application Journey @nightly', async () => {
+  test('Case management - As a Case Worker I want to Enter a General application Details for ADJOURN when Application Fee Received is set to YES @CM @regression', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -94,12 +94,12 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
-    await performAction('uploadRelativeEvidence',{
-      label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+    await performAction('uploadRelativeEvidence', {
+      label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
       files: enterGenAppUploadRelatedEvidence.uploadDocHiddenOption,
-      nextPage:enterGenAppPreferApplicationToJudge.mainHeader
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
-    await performAction('verifyReferToJudge',{
+    await performAction('verifyReferToJudge', {
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -108,7 +108,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
   });
 
 
-  test('Case management - Case Worker Enter a General application ADJOURN Journey - Application Fee Received - NO @CM', async () => {
+  test('Case management - As a Case Worker I want to Enter a General application Details for ADJOURN when Application Fee Received is set to NO @CM', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
@@ -137,7 +137,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     });
   });
 
-  test('Case management - Case Worker Enter a General application ADJOURN Journey - Fee Reference included - NO @CM', async () => {
+  test('Case management - As a Case Worker I want to Enter a General application Details for ADJOURN Journey with Fee Reference included - NO @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[3];
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -174,8 +174,8 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
-    await performAction('uploadRelativeEvidence',{
-      label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+    await performAction('uploadRelativeEvidence', {
+      label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -183,7 +183,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
-  test('Case management - Case Worker Enter a General application SET ASIDE Journey @CM', async () => {
+  test('Case management - As a Case Worker I want to Enter a General application Details for SET ASIDE @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[1];
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -216,11 +216,11 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
-    await performAction('uploadRelativeEvidence',{
-      label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
-      nextPage:enterGenAppPreferApplicationToJudge.mainHeader
+    await performAction('uploadRelativeEvidence', {
+      label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
-    await performAction('verifyReferToJudge',{
+    await performAction('verifyReferToJudge', {
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
@@ -228,7 +228,7 @@ test.describe('Case management - Case Worker Enter a General application @nightl
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
   });
 
-  test('Case management - Case Worker Enter a General application SOMETHING ELSE Journey @CM', async () => {
+  test('Case management - As a Case Worker I want to Enter a General application Details for SOMETHING ELSE @CM', async () => {
     let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
@@ -261,15 +261,58 @@ test.describe('Case management - Case Worker Enter a General application @nightl
       file: fileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
-    await performAction('uploadRelativeEvidence',{
-      label : enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
-      nextPage:enterGenAppPreferApplicationToJudge.mainHeader
+    await performAction('uploadRelativeEvidence', {
+      label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      nextPage: enterGenAppPreferApplicationToJudge.mainHeader
     });
-    await performAction('verifyReferToJudge',{
+    await performAction('verifyReferToJudge', {
       nextPage: genAppsCheckYourAnswers.mainHeader
     });
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
+  });
+
+  test('Case management - As a Case Worker I want to Enter a General application Details for SUSPEND @CM', async () => {
+    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
+    let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[2];
+    await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
+    await performValidation('mainHeader', enterGenappApplication.mainHeader);
+    await performAction('enterApplicationDetails', {
+      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[2],
+      question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.suspendRadioOption,
+      label: enterGenappApplication.whichCategoriesHiddenTextLabel,
+      input: enterGenappApplication.whichCategoriesHiddenTextInput,
+      label1: enterGenappApplication.whatDateAppReceivedQuestion,
+      date: date,
+      dateType: enterGenappApplication.dateTypeHiddenUserInput,
+      nextPage: enterGenAppapplicationFee.mainHeader
+    });
+    await performAction('enterApplicationFeeDetails', {
+      question1: enterGenAppapplicationFee.appFeeReceivedQuestion, option1: enterGenAppapplicationFee.yesRadioOption,
+      question2: enterGenAppapplicationFee.referenceNumberIncludedQuestion, option2: enterGenAppapplicationFee.yesRadioOption,
+      label1: enterGenAppapplicationFee.enterTheAmountReceivedHiddenTextLabel,
+      label2: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextLabel,
+      input: enterGenAppapplicationFee.enterTheFeeReferenceHiddenTextInput,
+      nextPage: enterGenAppUploadGeneralApplication.mainHeader
+    });
+    await performAction('uploadADocument', {
+      label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
+      file: fileName
+    });
+    await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
+    await performAction('uploadRelativeEvidence', {
+      label: enterGenAppUploadRelatedEvidence.uploadADocumentHiddenTextLabel,
+      nextPage: genAppsCheckYourAnswers.mainHeader
+    });
+    await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
+    await performAction('verifyGenAppConfirm');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
+    await performAction('validateCaseFileViewIndividualFolder', {
+      folder: 'Applications',
+      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
+      caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
+    });
   });
 });

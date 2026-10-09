@@ -6,6 +6,7 @@ export const enterGenappApplication = {
   adjournRadioOption: `Adjourn`,
   setAsideRadioOption: `Set aside`,
   somethingElseRadioOption: `Something else`,
+  suspendRadioOption: `Suspend`,
   dayTextLabel: `Day`,
   monthTextLabel: `Month`,
   yearTextLabel: `Year`,

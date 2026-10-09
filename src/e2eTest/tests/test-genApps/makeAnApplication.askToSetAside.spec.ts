@@ -141,7 +141,7 @@ test.describe('Make an Application - e2e Journey @nightly', async () => {
     await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayload,
+      submitPayload: submitCaseApiData.submitCasePayload(),
       genApp: CaseManagementCommonUtils.renameDocument('genApps.docx', '', appType),
       defendantIndex: 1
     });

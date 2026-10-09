@@ -1686,8 +1686,10 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Applications':
+        if(caseFile.genApp){
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        }
         if (file) {
           userInputFiles.push(file as string);
         }
