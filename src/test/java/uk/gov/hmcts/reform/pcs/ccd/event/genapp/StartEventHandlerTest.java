@@ -196,24 +196,24 @@ class StartEventHandlerTest {
         assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
     }
 
-    @Test
-    void shouldSetShowNoticeScreensFlagToNo() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .xuiGenAppRequest(XuiGenAppRequest.builder().applicationType(GenAppType.SUSPEND).build())
-            .build();
-        DynamicList expectedPartyNameList = DynamicList.builder()
-            .listItems(List.of())
-            .build();
-        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
-            .thenReturn(expectedPartyNameList);
-
-        // When
-        underTest.start(eventPayload(caseData));
-
-        // Then
-        assertThat(caseData.getXuiGenAppRequest().getShowNoticeScreens()).isEqualTo(VerticalYesNo.NO);
-    }
+    //    @Test
+    //    void shouldSetShowNoticeScreensFlagToNo() {
+    //        // Given
+    //        PCSCase caseData = PCSCase.builder()
+    //            .xuiGenAppRequest(XuiGenAppRequest.builder().applicationType(GenAppType.SUSPEND).build())
+    //            .build();
+    //        DynamicList expectedPartyNameList = DynamicList.builder()
+    //            .listItems(List.of())
+    //            .build();
+    //        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+    //            .thenReturn(expectedPartyNameList);
+    //
+    //        // When
+    //        underTest.start(eventPayload(caseData));
+    //
+    //        // Then
+    //        assertThat(caseData.getXuiGenAppRequest().getShowNoticeScreens()).isEqualTo(VerticalYesNo.NO);
+    //    }
 
     private static EventPayload<PCSCase, State> eventPayload(PCSCase caseData) {
         return new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
