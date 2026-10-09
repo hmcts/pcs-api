@@ -734,7 +734,7 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldSetCaseDetailsTabFieldsForWalesWithExemptLandlordQuestion() {
+    void shouldSetCaseDetailsTabFieldsForWales() {
         AddressUK propertyAddress = AddressUK.builder().postCode("SW1A 1AA").build();
         AddressUK defendantAddress = AddressUK.builder().postCode("E1 1AA").build();
         AddressUK underlesseeAddress = AddressUK.builder().postCode("CV1 1DF").build();
