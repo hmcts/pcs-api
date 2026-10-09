@@ -42,7 +42,7 @@ test.afterEach(async () => {
 //Case Linking is not working in preview env as explained in https://tools.hmcts.net/jira/browse/HDPI-6095
 //So these tests won't be executed in preview
 test.describe('[Common Component Case Linking] @nightly @caseLinking @CC', async () => {
-  test('Case Linking can be done and managed by Hearing Centre Team Lead @smoke @caseLinking @reerun', async ({page}) => {
+  test('Case Linking can be done and managed by Hearing Centre Team Lead @smoke @caseLinking @rerun', async ({page}) => {
     await performAction('login', {email: staff.pcs_hearing_centre_team_leader_email, password: process.env.IDAM_PCS_USER_PASSWORD});
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToCaseSummary', 'yes');
