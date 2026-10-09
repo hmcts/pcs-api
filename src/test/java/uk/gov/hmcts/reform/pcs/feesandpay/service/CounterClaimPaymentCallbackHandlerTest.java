@@ -239,16 +239,12 @@ class CounterClaimPaymentCallbackHandlerTest {
             .fileName("counterclaim-evidence.pdf")
             .counterClaim(counterClaimEntity)
             .build();
-        DocumentEntity removedDocument = DocumentEntity.builder()
-            .counterClaim(counterClaimEntity)
-            .removed(true)
-            .build();
         DocumentEntity noCounterClaimDocument = DocumentEntity.builder().build();
         DocumentEntity otherCounterClaimDocument = DocumentEntity.builder()
             .counterClaim(CounterClaimEntity.builder().id(UUID.randomUUID()).build())
             .build();
         pcsCaseEntity.setDocuments(
-            List.of(activeDocument, removedDocument, noCounterClaimDocument, otherCounterClaimDocument));
+            List.of(activeDocument, noCounterClaimDocument, otherCounterClaimDocument));
 
         FeesAndPayTaskData taskData = createFeesAndPayTaskData(partyId, counterClaimId);
 

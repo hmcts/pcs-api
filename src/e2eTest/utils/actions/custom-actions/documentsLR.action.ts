@@ -28,7 +28,7 @@ export const documentsAddressInfo = {
 export class DocumentsAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo()],
+      //['uploadAdditionalDocumentsInfo', () => this.uploadAdditionalDocumentsInfo()],
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
       ['retrieveCYATableDataLR', () => this.retrieveCYATableDataLR(page, fieldName as actionRecord)],
       ['validateCYAForLR', () => this.validateCYAForLR(page)],
@@ -38,6 +38,8 @@ export class DocumentsAction implements IAction {
         'verifyDocumentRelatesToApplication',
         () => this.verifyDocumentRelatesToApplication(page, fieldName as actionRecord),
       ],
+      ['uploadAdditionalDocsLR', () => this.uploadAdditionalDocsLR(fieldName as actionRecord)],
+      ['selectDocumentRelatingTo', () => this.selectDocumentRelatingTo(fieldName as actionRecord)],
     ]);
 
     const actionToPerform = actionsMap.get(action);
@@ -47,9 +49,9 @@ export class DocumentsAction implements IAction {
     await actionToPerform();
   }
 
-  private async uploadAdditionalDocumentsInfo(): Promise<void> {
-    await performAction('clickButton', uploadAdditionalDocumentsInformation.continueButton);
-  }
+  // private async uploadAdditionalDocumentsInfo(): Promise<void> {
+  //   await performAction('clickButton', uploadAdditionalDocumentsInformation.continueButton);
+  // }
 
 
   private async verifyDocumentRelatesToApplication(
@@ -124,7 +126,7 @@ export class DocumentsAction implements IAction {
 
     const selectOption =
       confirmDocumentData.option ===
-      confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
+        confirmIfTheseDocumentsRelateToAnApplication.noRadioOption
         ? confirmDocumentData.option
         : `${confirmDocumentData.option} ${formattedDate}`;
 
@@ -204,11 +206,11 @@ export class DocumentsAction implements IAction {
     await performAction('clickButton', uploadYourDocuments.continueButton);
   }
 
-// class-level fields, alongside the existing cyaMap
+  // class-level fields, alongside the existing cyaMap
   private cyaChangeLinksMap: Map<string, { text: string; href: string; locator: Locator } | null> = new Map();
 
   private async retrieveCYATableDataLR(page: Page, table: actionRecord) {
-    const tables = page.locator(`//table[@aria-describedby="${table.name}"]`);
+    const tables = page.locator(`//table[@aria-label="${table.name}"]`);
     const tableCount = await tables.count();
 
     if (tableCount === 0 && table.name === 'check your answers table') throw new Error(`the table ${table.name} not found. Exiting...`);
@@ -265,7 +267,7 @@ export class DocumentsAction implements IAction {
         lines.push(line);
       }
     });
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState();
   }
 
   private async validateCYAForLR(page: Page) {
@@ -299,9 +301,9 @@ export class DocumentsAction implements IAction {
     // ensure the CYA page/table is fully settled before the caller clicks Submit -
     // stops a race where Submit is clicked while Angular is still finishing render
     await test.step('Waiting for CYA page to be fully settled before Submit', async () => {
-      const cyaTable = page.locator('//table[@aria-describedby="check your answers table"]');
+      const cyaTable = page.locator('//table[@aria-label="check your answers table"]');
       await expect(cyaTable.first()).toBeVisible({ timeout: 15000 });
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState();
     });
     await performAction(
       'clickButton',
@@ -316,7 +318,7 @@ export class DocumentsAction implements IAction {
    */
   private async validateChangeLinks(page: Page) {
     const misMatches: string[] = [];
-    const cyaTable = page.locator('//table[@aria-describedby="check your answers table"]');
+    const cyaTable = page.locator('//table[@aria-label="check your answers table"]');
 
     await test.step('Validating change links navigate to the correct question page', async () => {
       for (const [key, changeInfo] of this.cyaChangeLinksMap.entries()) {
@@ -333,7 +335,7 @@ export class DocumentsAction implements IAction {
         }
 
         await locator.click();
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState();
 
         const landedOnCorrectPage = await this.isQuestionFieldVisible(page, key);
         if (!landedOnCorrectPage) {
@@ -386,5 +388,27 @@ export class DocumentsAction implements IAction {
 
   private async readDocumentsSubmit(): Promise<void> {
     await performValidation('elementToBeVisible', documentsUploadConfirm.documentsParagraph);
+    await performAction('clickButton', documentsUploadConfirm.closeAndReturnToCaseDetailsButton);
+  }
+
+  private async uploadAdditionalDocsLR(documentsData: actionRecord) {
+    // await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    // await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    if (Array.isArray(documentsData.documents)) {
+      for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
+        const document = documentsData.documents[fileIndex]; await performActions(
+          'Add Document',
+          ['uploadFile', { label: uploadYourDocuments.documentHiddenSubHeader, files: document.fileName }],
+          ['select', { dropdown: uploadYourDocuments.typeOfDocumentHiddenTextLabel, index: fileIndex }, document.type],
+          ['inputText', { text: uploadYourDocuments.shortDescriptionHiddenTextLabel, index: fileIndex }, document.description]
+        );
+      }
+    }
+    await performAction('clickButton', uploadYourDocuments.continueButton);
+  }
+
+  private async selectDocumentRelatingTo(selectDoc: actionRecord) {
+    await performAction('clickRadioButton', { question: selectDoc.question, option: selectDoc.option });
+    await performAction('reTryOnCallBackError', confirmIfTheseDocumentsRelateToAnApplication.continueButton, selectDoc.nextPage as string);
   }
 }

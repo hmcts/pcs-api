@@ -1260,11 +1260,10 @@ class DefendantResponseServiceTest {
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
-        DocumentEntity removedDocument = DocumentEntity.builder().fileName("removed.pdf").removed(true).build();
         when(documentService.createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
-            .thenReturn(List.of(activeDocument, removedDocument));
-        when(translationWAService.isTranslationRequired(languageUsed)).thenReturn(true);
+            .thenReturn(List.of(activeDocument));
+        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
 
         // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);

@@ -2,38 +2,20 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
-import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.feeandpay.FeePaymentRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TranslationWAService;
 import uk.gov.hmcts.reform.pcs.exception.FeePaymentNotFoundException;
 
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,12 +25,6 @@ class FeePaymentNotificationServiceTest {
     private NotificationService notificationService;
     @Mock
     private FeePaymentRepository feePaymentRepository;
-    @Mock
-    private CamundaService camundaService;
-    @Mock
-    private TranslationWAService translationWAService;
-    @Captor
-    private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
 
     @InjectMocks
     private FeePaymentNotificationService underTest;
@@ -67,100 +43,6 @@ class FeePaymentNotificationServiceTest {
         underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
 
         verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
-        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
-    void shouldNotCreateHearingTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {
-        Integer feePaymentId = 1;
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
-        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).claimCreator(true).build();
-        pcsCaseEntity.setParties(new HashSet<>(List.of(claimant)));
-        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(languageUsed).build();
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .claim(claim)
-            .build();
-        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
-
-        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
-
-        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
-        verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
-    void shouldCreateTranslateTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {
-        Integer feePaymentId = 1;
-        ClaimEntity claim = ClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .languageUsed(languageUsed)
-            .build();
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .fileName("Uploaded doc.pdf")
-            .claim(claim)
-            .build();
-        DocumentEntity removedDocument = DocumentEntity.builder().claim(claim).removed(true).build();
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .caseReference(1234L)
-            .documents(List.of(documentEntity, removedDocument))
-            .build();
-        PartyEntity claimant = PartyEntity.builder().id(UUID.randomUUID()).claimCreator(true).build();
-        pcsCaseEntity.setParties(new HashSet<>(List.of(claimant)));
-        claim.setPcsCase(pcsCaseEntity);
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .claim(claim)
-            .build();
-        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
-
-        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
-
-        verify(translationWAService).createTranslateClaimantSubmittedDocumentTask(
-            eq(pcsCaseEntity), eq(claimant), documentsCaptor.capture());
-        assertThat(documentsCaptor.getValue())
-            .extracting(DocumentEntity::getFileName)
-            .containsExactly("Claim - Claimant 1.pdf", "Uploaded doc.pdf");
-        verify(camundaService, never()).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING);
-    }
-
-    @Test
-    void shouldNotCreateTranslateTaskWhenLanguageIsEnglish() {
-        Integer feePaymentId = 1;
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
-        ClaimEntity claim = ClaimEntity.builder().pcsCase(pcsCaseEntity).languageUsed(LanguageUsed.ENGLISH).build();
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .claim(claim)
-            .build();
-        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
-
-        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
-
-        verifyNoInteractions(translationWAService);
-    }
-
-    @Test
-    void shouldDelayCreatingWaTaskByOneDayIfGenAppExpected() {
-        Integer feePaymentId = 1;
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().caseReference(1234L).build();
-        ClaimEntity claim = ClaimEntity.builder()
-            .pcsCase(pcsCaseEntity)
-            .languageUsed(LanguageUsed.ENGLISH)
-            .genAppExpected(VerticalYesNo.YES)
-            .build();
-        FeePaymentEntity feePayment = FeePaymentEntity.builder()
-            .id(feePaymentId)
-            .claim(claim)
-            .build();
-        when(feePaymentRepository.findById(feePaymentId)).thenReturn(Optional.of(feePayment));
-
-        underTest.sendClaimantPaidCaseIssuedNotification(feePaymentId);
-
-        verify(notificationService).sendClaimantClaimIssuedEmailNotification(claim);
-        verify(camundaService).createTask(1234L, TaskType.NEW_CLAIM_CREATE_NEW_HEARING, Duration.ofDays(1));
     }
 
     @Test

@@ -155,8 +155,7 @@ class TranslationWAServiceTest {
             .fileName("evidence.pdf")
             .party(otherClaimant)
             .build();
-        DocumentEntity removedDocument = DocumentEntity.builder().party(otherClaimant).removed(true).build();
-        pcsCaseEntity.setDocuments(List.of(ownDocument, removedDocument));
+        pcsCaseEntity.setDocuments(List.of(ownDocument));
 
         when(partyService.getPartyRole(otherClaimant)).thenReturn(PartyRole.CLAIMANT);
 
@@ -253,11 +252,6 @@ class TranslationWAServiceTest {
             .party(otherDefendant1)
             .defendantResponse(otherDefendant1Response)
             .build();
-        DocumentEntity otherDefendant1RemovedDocument = DocumentEntity.builder()
-            .party(otherDefendant1)
-            .defendantResponse(otherDefendant1Response)
-            .removed(true)
-            .build();
 
         GenAppEntity otherDefendant1GenApp = GenAppEntity.builder()
             .party(otherDefendant1)
@@ -283,8 +277,8 @@ class TranslationWAServiceTest {
             .build();
 
         pcsCaseEntity.setDocuments(
-            List.of(otherDefendant1Document, otherDefendant1RemovedDocument, otherDefendant1GenAppDocument,
-                otherDefendant2Document, claimantDocument));
+            List.of(otherDefendant1Document, otherDefendant1GenAppDocument, otherDefendant2Document,
+                claimantDocument));
 
         when(partyService.getPartyRole(otherDefendant1)).thenReturn(PartyRole.DEFENDANT);
         when(partyService.getPartyRole(otherDefendant2)).thenReturn(PartyRole.DEFENDANT);

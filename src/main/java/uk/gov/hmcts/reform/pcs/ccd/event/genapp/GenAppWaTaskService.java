@@ -65,7 +65,6 @@ public class GenAppWaTaskService {
             .build());
 
         documents.addAll(genAppEntity.getDocuments().stream()
-            .filter(document -> !document.isRemoved())
             .filter(document -> !document.equals(genAppEntity.getSubmissionDocument()))
             .toList());
 

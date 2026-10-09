@@ -101,13 +101,12 @@ class GenAppWaTaskServiceTest {
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
-        DocumentEntity removedDocument = DocumentEntity.builder().removed(true).build();
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .party(party)
             .pcsCase(genAppPcsCase)
             .languageUsed(LanguageUsed.WELSH)
-            .documents(List.of(activeDocument, removedDocument))
+            .documents(List.of(activeDocument))
             .build();
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.DEFENDANT);
@@ -174,13 +173,12 @@ class GenAppWaTaskServiceTest {
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
-        DocumentEntity removedDocument = DocumentEntity.builder().removed(true).build();
 
         GenAppEntity genAppEntity = GenAppEntity.builder()
             .party(party)
             .pcsCase(genAppPcsCase)
             .languageUsed(LanguageUsed.WELSH)
-            .documents(List.of(activeDocument, removedDocument))
+            .documents(List.of(activeDocument))
             .build();
 
         when(partyService.getPartyRole(party)).thenReturn(PartyRole.CLAIMANT);

@@ -87,15 +87,13 @@ public class TranslationWAService {
                 if (party.isClaimCreator()) {
                     documents.add(resolveGeneratedClaimForm());
                     documents.addAll(pcsCaseEntity.getDocuments().stream()
-                        .filter(document -> !document.isRemoved()
-                            && document.getClaim() != null
+                        .filter(document -> document.getClaim() != null
                             && document.getClaim().getId().equals(mainClaim.getId()))
                         .toList());
                 }
                 documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
 
                 documents.addAll(pcsCaseEntity.getDocuments().stream()
-                    .filter(document -> !document.isRemoved())
                     .filter(document -> isPartyDocument(document, party))
                     .toList());
 
@@ -119,7 +117,6 @@ public class TranslationWAService {
                 documents.addAll(resolveGeneratedGenAppDocuments(pcsCaseEntity, party, mainClaim));
 
                 documents.addAll(pcsCaseEntity.getDocuments().stream()
-                    .filter(document -> !document.isRemoved())
                     .filter(document -> isPartyDocument(document, party))
                     .toList());
 

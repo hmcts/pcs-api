@@ -145,8 +145,7 @@ public class CounterClaimPaymentCallbackHandler implements PaymentCallbackStrate
             .build());
 
         documents.addAll(counterClaimEntity.getPcsCase().getDocuments().stream()
-            .filter(document -> !document.isRemoved()
-                && document.getType() != DocumentType.COUNTERCLAIM
+            .filter(document -> document.getType() != DocumentType.COUNTERCLAIM
                 && document.getCounterClaim() != null
                 && document.getCounterClaim().getId().equals(counterClaimEntity.getId()))
             .toList());
