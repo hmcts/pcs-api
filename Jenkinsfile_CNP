@@ -86,7 +86,7 @@ withPipeline(type, product, component) {
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
-    if (waPRLabels.contains("pr-values:wa-ft-tests")) {
+    if (waPRLabels.contains("pr-values:wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
@@ -117,7 +117,7 @@ withPipeline(type, product, component) {
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    enableHighLevelDataSetup()
+    enableHighLevelDataSetup("", true)
     setAatEnvVars()
     env.CAMUNDA_BASE_URL = "http://camunda-api-aat.service.core-compute-aat.internal"
     // The e2e journeys all create cases, which is blocked while the service is shuttered.
@@ -153,7 +153,7 @@ withPipeline(type, product, component) {
       if(env.ENVIRONMENT == "prod") {
         env.SHUTTER_SERVICE = false
         env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-        env.CASE_API_URL = "https://pcs-api.prod.platform.hmcts.net"
+        env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
         env.CASE_TYPE_SUFFIX=""
       } else {
         env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
@@ -248,11 +248,22 @@ withPipeline(type, product, component) {
   afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
+      env.E2E_TEST_FAILED = "true"
     }
   }
 
   afterSuccess('E2eTest:aat') {
     env.ENVIRONMENT= "prod"
+  }
+
+  // catchError() in the shared library's sectionDeployToAKS swallows the e2e failure
+  // throw error here to aborts the build before Helm chart publish / prod deploy run.
+  before('Publish Helm chart') {
+    onMaster {
+      if (env.E2E_TEST_FAILED == "true") {
+        error('Aborting pipeline: AAT E2E tests failed')
+      }
+    }
   }
 }
 
@@ -284,7 +295,7 @@ def setProdEnvVars() {
   env.ENVIRONMENT= "prod"
   env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-prod.service.core-compute-prod.internal"
   env.DATA_STORE_URL_BASE="http://ccd-data-store-api-prod.service.core-compute-prod.internal"
-  env.CASE_API_URL = "pcs-api-prod.service.core-compute-prod.internal"
+  env.CASE_API_URL = "http://pcs-api-prod.service.core-compute-prod.internal"
 }
 
 def setDemoEnvVars() {
