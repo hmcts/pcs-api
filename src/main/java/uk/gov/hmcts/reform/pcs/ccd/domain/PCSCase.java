@@ -936,4 +936,5 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo hasUnsubmittedEnforcementData;
+
 }

@@ -85,6 +85,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     private EnforceTheOrder enforceTheOrder;
     @Mock
     private SavingPageBuilder savingPageBuilder;
+    @Mock
+    private EnforcementSubmitEvent enforcementSubmitEvent;
 
     private MockedStatic<TestSupportEnvironment> mockedEnv;
 
@@ -163,7 +165,8 @@ class EnforceTheOrderTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(enforcementOrderService).saveAndClearDraftData(TEST_CASE_REFERENCE, enforcementOrder);
+        verify(enforcementSubmitEvent).submit(any());
+
     }
 
     @Nested

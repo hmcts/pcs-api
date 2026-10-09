@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
@@ -74,8 +73,6 @@ class TestCaseGenerationTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private OrganisationService organisationService;
     @Mock
     private ResumePossessionClaim resumePossessionClaim;
     @Mock
@@ -236,17 +233,11 @@ class TestCaseGenerationTest {
         // Given
         Long caseReference = 456L;
         String label = "Create Enforcement Warrant Basic Case";
-
         DynamicList testFilesList = DynamicList.builder()
-            .value(DynamicListElement.builder().label(label).build())
-            .build();
-
-        PCSCase pcsCase = PCSCase.builder()
-            .testCaseSupportFileList(testFilesList)
-            .build();
+            .value(DynamicListElement.builder().label(label).build()).build();
+        PCSCase pcsCase = PCSCase.builder().testCaseSupportFileList(testFilesList).build();
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, pcsCase, null);
-
         PCSCase loadedCase = PCSCase.builder().build();
         TestCaseGeneration spyUnderTest = spy(underTest);
 
@@ -259,7 +250,7 @@ class TestCaseGenerationTest {
         // Then
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
         verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
-        verify(enforceTheOrder).submitOrder(caseReference, loadedCase);
+        verify(enforceTheOrder).submit(new EventPayload<>(caseReference, loadedCase, null));
     }
 
     @Test
