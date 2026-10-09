@@ -33,13 +33,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
         caseData.getXuiGenAppRequest().setShowHwfScreens(VerticalYesNo.YES);
 
-        GenAppType genAppType = caseData.getXuiGenAppRequest().getApplicationType();
+        // GenAppType genAppType = caseData.getXuiGenAppRequest().getApplicationType();
 
-        if (genAppType != GenAppType.SUSPEND) {
-            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.YES);
-        } else {
-            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.NO);
-        }
+        // if (genAppType != GenAppType.SUSPEND) {
+        // caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.YES);
+        // } else {
+        // caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.NO);
+        // }
 
         return caseData;
     }
