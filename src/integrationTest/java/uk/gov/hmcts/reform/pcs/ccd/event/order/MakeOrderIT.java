@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseContext;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
@@ -62,8 +63,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
  */
 @DisplayName("Make an order")
 class MakeOrderIT extends OrderEventIT {
-
-    private static final String OUTRIGHT_POSSESSION = "OUTRIGHT_POSSESSION";
 
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
@@ -203,11 +202,11 @@ class MakeOrderIT extends OrderEventIT {
         Order draft = asFirstJudge.start().order();
         var document = TextNode.valueOf("the order document");
 
-        asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(
-            draft.id(), draft.version(), "SUSPENDED_POSSESSION", Map.of("notes", "second version"), document), null));
+        asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draft.id(),
+            draft.version(), OrderType.SUSPENDED_POSSESSION, Map.of("notes", "second version"), document), null));
 
         Order saved = asFirstJudge.start().order();
-        assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
+        assertThat(saved.orderType()).isEqualTo(OrderType.SUSPENDED_POSSESSION);
         assertThat(saved.formData()).containsEntry("notes", "second version");
         assertThat(saved.docweaveSnapshot()).isEqualTo(document);
         verifyNoInteractions(camundaService);
@@ -233,7 +232,7 @@ class MakeOrderIT extends OrderEventIT {
         asFirstJudge.submitExpectingSuccess(change(SAVE_DRAFT, staleCopy, "second version"));
 
         assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, staleCopy, "stale version")).errors())
-            .containsExactly("The order draft has been updated by another user. Reload it and try again");
+            .containsExactly("The order has been updated by another user. Reload it and try again");
         assertThat(workingDraft(asFirstJudge)).isEqualTo("second version");
     }
 

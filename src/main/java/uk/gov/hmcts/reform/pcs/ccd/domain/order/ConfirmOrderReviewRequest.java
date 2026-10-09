@@ -49,7 +49,7 @@ public record ConfirmOrderReviewRequest(Action action,
      * any changes the caseworker made to either, and the document's wording as Docweave exports it
      * to HTML, which is issued as it is.
      */
-    public record IssuedOrder(String orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
+    public record IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
                               String html) {
     }
 

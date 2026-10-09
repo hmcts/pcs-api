@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.order;
+package uk.gov.hmcts.reform.pcs.ccd.service.order;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -34,10 +34,10 @@ public class OrderSteps {
     }
 
     /** The order as it stands, if that is the version the user last saw. */
-    public OrderStepEntity latest(OrderEntity order, long versionSeen, String otherwise) {
+    public OrderStepEntity latest(OrderEntity order, long versionSeen) {
         OrderStepEntity latest = latest(order);
         if (latest.getId() != versionSeen) {
-            throw ExternalRejection.because(otherwise + " has been updated by another user. Reload it and try again");
+            throw ExternalRejection.because("The order has been updated by another user. Reload it and try again");
         }
         return latest;
     }

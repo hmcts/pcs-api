@@ -19,6 +19,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 
 import java.time.Instant;
 import java.util.Map;
@@ -59,8 +60,9 @@ public class OrderStepEntity {
     @Column(nullable = false)
     private UUID actorIdamUserId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String orderType;
+    private OrderType orderType;
 
     /** The make order form as it then stood. */
     @JdbcTypeCode(SqlTypes.JSON)
@@ -77,9 +79,4 @@ public class OrderStepEntity {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "note_id")
     private CaseNoteEntity note;
-
-    /** The order type as the frontend named it, such as OUTRIGHT_POSSESSION, in words. */
-    public String orderTypeInWords() {
-        return orderType.replace('_', ' ').toLowerCase();
-    }
 }

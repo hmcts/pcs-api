@@ -51,12 +51,12 @@ public class ClientContextRetriever {
      * The order the frontend names in the Client-Context header, since CCD passes no parameters to the
      * start of an event; anything named that is not an order is refused.
      */
-    public Optional<UUID> getOrderId(String otherwise) {
+    public Optional<UUID> getOrderId() {
         ClientContext clientContext = getClientContext();
         try {
             return Optional.ofNullable(clientContext == null ? null : clientContext.getOrderId()).map(UUID::fromString);
         } catch (IllegalArgumentException e) {
-            throw ExternalRejection.because(otherwise);
+            throw ExternalRejection.because("The link to the order is not valid");
         }
     }
 

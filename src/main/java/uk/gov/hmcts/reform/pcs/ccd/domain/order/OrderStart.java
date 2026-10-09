@@ -27,7 +27,7 @@ public record OrderStart(Order order, CaseContext caseContext) {
     public record Order(UUID id,
                         OrderState state,
                         long version,
-                        String orderType,
+                        OrderType orderType,
                         Map<String, Object> formData,
                         JsonNode docweaveSnapshot,
                         String queryFromCaseworker) {

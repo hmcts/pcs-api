@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.HtmlUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
@@ -53,10 +52,6 @@ public class OrdersView {
             <tr class="govuk-table__row">
             <td class="govuk-table__cell">%s</td>
             <td class="govuk-table__cell">%s</td>
-            </tr>""".formatted(capitalised(order.orderTypeInWords()), STATES.get(order.getState()));
-    }
-
-    private static String capitalised(String words) {
-        return HtmlUtils.htmlEscape(Character.toUpperCase(words.charAt(0)) + words.substring(1));
+            </tr>""".formatted(order.getOrderType().getLabel(), STATES.get(order.getState()));
     }
 }

@@ -24,15 +24,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Review
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
-import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,6 +46,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JUDGE;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDIUM_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
  * A caseworker reviews an order a judge submitted, through pcs-frontend's confirm order review
@@ -62,8 +65,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     public static final ExternalEventId<OrderStart, ConfirmOrderReviewRequest> CONFIRM_ORDER_REVIEW =
         ExternalEventId.of("ext:confirmOrderReview", OrderStart.class, ConfirmOrderReviewRequest.class);
-
-    private static final String OPEN_FROM_TASK = "Open the order to review from its task";
 
     private final OrderRepository orderRepository;
     private final OrderSteps orderSteps;
@@ -98,8 +99,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     /** Starts the review of the order the caseworker's task links to. */
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
-        UUID orderId = clientContextRetriever.getOrderId(OPEN_FROM_TASK)
-            .orElseThrow(() -> ExternalRejection.because(OPEN_FROM_TASK));
+        UUID orderId = clientContextRetriever.getOrderId()
+            .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
             OrderStart.Order.of(order, orderSteps.latest(order), null), orderCaseContext.of(order.getPcsCase())));
@@ -107,27 +108,29 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
         ConfirmOrderReviewRequest request = submit.payload();
-        long caseReference = submit.caseReference();
-        OrderEntity order = orderAwaitingReview(request.orderId(), caseReference);
-        OrderStepEntity submitted = orderSteps.latest(order, request.version(), "The order");
-        UserInfo caseworker = securityContextService.getCurrentUserDetails();
-        UUID caseworkerId = UUID.fromString(caseworker.getUid());
+        OrderEntity order = orderAwaitingReview(request.orderId(), submit.caseReference());
+        OrderStepEntity submitted = orderSteps.latest(order, request.version());
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
+        UserInfo caseworker = securityContextService.getCurrentUserDetails();
+        return request.action() == RETURN_TO_JUDGE
+            ? returnToJudge(order, submitted, validQuery(request.queryToJudge()), caseworker)
+            : issue(order, request.issue(), caseworker);
+    }
 
-        if (request.action() == RETURN_TO_JUDGE) {
-            String query = validQuery(request.queryToJudge());
-            // The order goes back as the judge submitted it, with the query the judge will read.
-            OrderStepEntity returned = orderSteps.append(order, RETURNED_TO_JUDGE, caseworkerId,
-                OrderStepEntity.builder()
-                    .orderType(submitted.getOrderType())
-                    .formData(submitted.getFormData())
-                    .docweaveSnapshot(submitted.getDocweaveSnapshot())
-                    .note(caseNoteService.addCaseNote(order.getPcsCase(), query)));
-            orderTasks.askJudgeToChange(caseReference, returned, query);
-            return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
-        }
+    /** The order goes back as the judge submitted it, with the query the judge will read. */
+    private ExternalSubmitResponse<State> returnToJudge(OrderEntity order, OrderStepEntity submitted, String query,
+                                                        UserInfo caseworker) {
+        OrderStepEntity returned = orderSteps.append(order, RETURNED_TO_JUDGE, UUID.fromString(caseworker.getUid()),
+            OrderStepEntity.builder()
+                .orderType(submitted.getOrderType())
+                .formData(submitted.getFormData())
+                .docweaveSnapshot(submitted.getDocweaveSnapshot())
+                .note(caseNoteService.addCaseNote(order.getPcsCase(), query)));
+        orderTasks.askJudgeToChange(order.getPcsCase().getCaseReference(), returned, query);
+        return ExternalSubmitResponse.accepted("Order returned to judge", "Returned an order to the judge");
+    }
 
-        Issue issue = request.issue();
+    private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
         if (!partyIds(order).containsAll(issue.partiesToServe())) {
             throw ExternalRejection.because("The order can only be served on parties to the case");
         }
@@ -136,18 +139,19 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         order.setServeAllParties(issue.serveAllParties());
         order.setPartiesServed(issue.serveAllParties() ? null : issue.partiesToServe());
         order.setNextStepsComplete(issue.nextStepsComplete());
-        orderSteps.append(order, ISSUED, caseworkerId, OrderStepEntity.builder()
+        orderSteps.append(order, ISSUED, UUID.fromString(caseworker.getUid()), OrderStepEntity.builder()
             .orderType(issue.order().orderType())
             .formData(issue.order().formData())
             .docweaveSnapshot(issue.order().docweaveSnapshot())
             .orderHtml(issue.order().html()));
-        // Scheduled here rather than by the document service, which the event cannot depend on: the
-        // service runs system events, whose runtime is built from the events.
-        schedulerClient.scheduleIfNotExists(OrderDocumentService.generation(order, caseworker));
+        schedulerClient.scheduleIfNotExists(ORDER_DOCUMENT_TASK_DESCRIPTOR
+            .instance(order.getId().toString())
+            .data(new OrderDocumentTaskData(order.getId(), caseworker.getUid(), caseworker.getGivenName(),
+                caseworker.getFamilyName()))
+            .scheduledTo(Instant.now()));
         if (!issue.reviewDates().isEmpty()) {
-            caseReviewDateService.addCaseReviewDates(caseReference, issue.reviewDates().stream()
-                .map(ConfirmOrderReview::toReviewDate)
-                .toList());
+            caseReviewDateService.addCaseReviewDates(order.getPcsCase().getCaseReference(),
+                issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());
         }
         return ExternalSubmitResponse.accepted("Order issued", "Reviewed and issued an order");
     }

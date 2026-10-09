@@ -21,7 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
-import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService.Generation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
+import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
@@ -77,7 +78,7 @@ class OrderDocumentIT extends OrderEventIT {
         Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
         ExternalEvent<OrderStart, MakeOrderRequest> asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of(), null), null));
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null), null));
         Order draft = asJudge.start().order();
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
             draft.id(), draft.version(), draft.orderType(), draft.formData(), null), null));
@@ -89,7 +90,7 @@ class OrderDocumentIT extends OrderEventIT {
 
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, submitted.id(),
             submitted.version(), "staff-review", null,
-            new Issue(new IssuedOrder("OUTRIGHT_POSSESSION", Map.of(), null, WORDING),
+            new Issue(new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, WORDING),
                 List.of(), true, true, true, List.of(), COUNTY_COURT)));
         scheduler.triggerCheckForDueExecutions();
         assertThat(await(() -> !documents(caseReference, caseworker).isEmpty()))
@@ -110,7 +111,8 @@ class OrderDocumentIT extends OrderEventIT {
         assertThat(history.userId()).isEqualTo(caseworker.uid());
 
         // A re-run, as a retried job is, renders nothing and adds no second document.
-        orderDocumentService.generateAndAttach(new Generation(submitted.id(), caseworker.uid(), "Tom", "Baker"));
+        orderDocumentService.generateAndAttach(
+            new OrderDocumentTaskData(submitted.id(), caseworker.uid(), "Tom", "Baker"));
         assertThat(rendered(caseNumber)).hasSize(1);
         assertThat(documents(caseReference, caseworker)).hasSize(1);
     }

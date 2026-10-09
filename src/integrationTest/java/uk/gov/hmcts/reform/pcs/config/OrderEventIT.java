@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 
 import java.util.Map;
@@ -45,7 +46,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     /** A judge saves a first draft, which has no id yet. */
     protected static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, "OUTRIGHT_POSSESSION", Map.of("notes", notes), null), null);
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), null), null);
     }
 
     /** The judge acts on the order as they last saw it, with a new note. */

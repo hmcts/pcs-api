@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -95,7 +96,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
         UUID judge = UUID.fromString(start.user().id());
-        OrderStart.Order workingOrder = clientContextRetriever.getOrderId(NO_LONGER_CHANGEABLE)
+        OrderStart.Order workingOrder = clientContextRetriever.getOrderId()
             .map(orderId -> chosenOrder(orderId, caseReference, judge))
             .orElseGet(() -> orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
                     caseReference, judge, DRAFT)
@@ -154,7 +155,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
                 change.id(), caseReference, judge, CHANGEABLE)
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
-        orderSteps.latest(draft, change.version(), "The order draft");
+        orderSteps.latest(draft, change.version());
         return draft;
     }
 

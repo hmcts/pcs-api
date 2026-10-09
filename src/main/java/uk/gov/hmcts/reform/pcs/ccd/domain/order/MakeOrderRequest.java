@@ -23,7 +23,7 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId) 
      */
     public record OrderChange(UUID id,
                               long version,
-                              String orderType,
+                              OrderType orderType,
                               Map<String, Object> formData,
                               JsonNode docweaveSnapshot) {
     }
