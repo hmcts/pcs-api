@@ -84,6 +84,7 @@ class ConfirmationScreenFactoryTest {
     private static Stream<Arguments> noFeeScenarios() {
         return Stream.of(
             arguments(GenAppType.ADJOURN, "We have received your request to adjourn (delay) the court hearing"),
+            arguments(GenAppType.SUSPEND, "We have received your request to suspend the eviction."),
             arguments(GenAppType.SET_ASIDE, "We have received your request to set aside (cancel) the order"),
             arguments(GenAppType.SOMETHING_ELSE, "We have received your request to ask the court to make an order")
         );

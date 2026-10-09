@@ -16,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
@@ -193,6 +194,25 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(caseData.getXuiGenAppRequest().getShowHwfScreens()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldSetShowNoticeScreensFlagToNo() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .xuiGenAppRequest(XuiGenAppRequest.builder().applicationType(GenAppType.SUSPEND).build())
+            .build();
+        DynamicList expectedPartyNameList = DynamicList.builder()
+            .listItems(List.of())
+            .build();
+        when(legalRepresentativeService.getRepresentedPartiesDynamicList(null, TEST_CASE_REFERENCE))
+            .thenReturn(expectedPartyNameList);
+
+        // When
+        underTest.start(eventPayload(caseData));
+
+        // Then
+        assertThat(caseData.getXuiGenAppRequest().getShowNoticeScreens()).isEqualTo(VerticalYesNo.NO);
     }
 
     private static EventPayload<PCSCase, State> eventPayload(PCSCase caseData) {

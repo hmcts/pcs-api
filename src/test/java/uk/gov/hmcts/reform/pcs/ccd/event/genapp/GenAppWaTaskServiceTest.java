@@ -74,6 +74,7 @@ class GenAppWaTaskServiceTest {
 
     private static Stream<Arguments> genAppTypeToTaskTypeScenarios() {
         return Stream.of(
+            Arguments.arguments(GenAppType.SUSPEND, TaskType.REVIEW_SUSPEND_GEN_APP),
             Arguments.arguments(GenAppType.ADJOURN, TaskType.REVIEW_ADJOURN_GEN_APP),
             Arguments.arguments(GenAppType.SET_ASIDE, TaskType.REVIEW_SET_ASIDE_GEN_APP),
             Arguments.arguments(GenAppType.SOMETHING_ELSE, TaskType.REVIEW_GEN_APP)
