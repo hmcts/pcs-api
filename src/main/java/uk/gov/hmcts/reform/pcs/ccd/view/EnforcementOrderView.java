@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.Optional;
@@ -19,22 +18,22 @@ public class EnforcementOrderView {
     private final DraftCaseDataService draftCaseDataService;
 
     public void setCaseFields(PCSCase pcsCase, long caseReference, State state) {
-        if (pcsCase.getEnforcementOrder() == null && State.CASE_ISSUED == state) {
-            pcsCase.setEnforcementOrder(new EnforcementOrder());
-            hasEnforcementDraftData(caseReference, pcsCase);
-        }
+        setHasEnforcementDraftData(caseReference, state, pcsCase);
     }
 
-    private void hasEnforcementDraftData(long caseReference, PCSCase pcsCase) {
-        boolean hasUnsubmittedCaseData = draftCaseDataService.hasUnsubmittedCaseData(caseReference, enforceTheOrder);
-        if (hasUnsubmittedCaseData) {
-            Optional<PCSCase> unsubmittedCaseData = draftCaseDataService.getUnsubmittedCaseData(caseReference,
-                                                                                                enforceTheOrder);
-            unsubmittedCaseData.ifPresent(inflated ->
-                                              pcsCase.setEnforcementOrder(inflated.getEnforcementOrder()));
-            pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(YesOrNo.YES);
-        } else {
-            pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(YesOrNo.NO);
+    private void setHasEnforcementDraftData(long caseReference, State state, PCSCase pcsCase) {
+        if (State.CASE_ISSUED == state) {
+            boolean hasUnsubmittedCaseData = draftCaseDataService
+                .hasUnsubmittedCaseData(caseReference, enforceTheOrder);
+            if (hasUnsubmittedCaseData) {
+                Optional<PCSCase> unsubmittedCaseData = draftCaseDataService
+                    .getUnsubmittedCaseData(caseReference, enforceTheOrder);
+                unsubmittedCaseData.ifPresent(inflated ->
+                                                  pcsCase.setEnforcementOrder(inflated.getEnforcementOrder()));
+                pcsCase.setHasUnsubmittedEnforcementData(YesOrNo.YES);
+            } else {
+                pcsCase.setHasUnsubmittedEnforcementData(YesOrNo.NO);
+            }
         }
     }
 }

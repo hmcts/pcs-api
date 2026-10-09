@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -19,8 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.and;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.featureFlagsEnabled;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
@@ -47,11 +47,8 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
                         .name("Resume Draft Application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                        .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
-                        .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
-                        .showCondition(ShowConditions.and(
-                                ShowConditions.featureFlagsEnabled(ENFORCEMENT),
-                                "hasUnsubmittedEnforcementData=\"Yes\""))
+                        .grant(Permission.CRUD, UserRole.CLAIMANT)
+                        .showCondition(and(featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"Yes\""))
                         .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
                         .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);

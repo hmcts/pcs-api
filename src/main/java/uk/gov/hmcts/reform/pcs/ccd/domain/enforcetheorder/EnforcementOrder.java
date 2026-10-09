@@ -76,6 +76,4 @@ public class EnforcementOrder {
             + "You will no longer be able to view the details in the future.")
     private YesOrNo deleteDraftApplication;
 
-    @CCD(searchable = false)
-    private YesOrNo hasUnsubmittedEnforcementData;
 }

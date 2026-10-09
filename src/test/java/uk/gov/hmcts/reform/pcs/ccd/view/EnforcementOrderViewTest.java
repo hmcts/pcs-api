@@ -48,7 +48,7 @@ class EnforcementOrderViewTest {
         // Then
         if (state == State.CASE_ISSUED) {
             verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
-            assertThat(pcsCase.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
+            assertThat(pcsCase.getHasUnsubmittedEnforcementData()).isEqualTo(expectedFlag);
             if (hasDraftData) {
                 verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, enforceTheOrder);
             }

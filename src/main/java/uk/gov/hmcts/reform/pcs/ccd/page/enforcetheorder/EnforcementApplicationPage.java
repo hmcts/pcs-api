@@ -109,8 +109,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .label("enforcementApplication-content", "---")
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
+            .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .mandatory(EnforcementOrder::getChooseEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
@@ -133,10 +133,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
+        data.setHasUnsubmittedEnforcementData(YesOrNo.YES);
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
         EnforcementOrder enforcementOrder = data.getEnforcementOrder();
-        enforcementOrder.setHasUnsubmittedEnforcementData(YesOrNo.YES);
         if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
                 .equals(enforcementOrder.getChooseEnforcementType().getValueCode())) {
             populateWarrantRestDetails(enforcementOrder, details.getId());
