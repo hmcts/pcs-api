@@ -1,3 +1,13 @@
+# CCD + Access Management (CCD-AM) preview stack — enabled by adding the `pr-values:ccd-am` label
+# to a PR.
+#
+# This is a standalone alternative to `pr-values:ccd`, NOT an add-on to it: it brings up the same
+# full CCD stack (ccd, xui-webapp, xui-mo-webapp, ccd-case-document-am-api,
+# aac-manage-case-assignment) plus RAS (am-role-assignment-service) and ORM
+# (am-org-role-mapping-service), with AAC/XUI/XUI-MO/CCD pointed at the preview RAS/ORM pods
+# instead of AAT. Apply only ONE of `pr-values:ccd` or `pr-values:ccd-am` to a PR — never both — so
+# there's only ever one values file supplying these keys and no Helm merge ordering ambiguity
+# between the two label overlays.
 global:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
@@ -9,7 +19,7 @@ global:
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresUsername: "hmcts"
-  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  amRoleAssignmentServiceUrl: http://${SERVICE_NAME}-am-role-assignment-service
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
@@ -24,7 +34,7 @@ java:
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
-    ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+    ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -47,6 +57,8 @@ postgresql:
       - name: "pr-${CHANGE_ID}-data-store"
       - name: "pr-${CHANGE_ID}-definition-store"
       - name: "pr-${CHANGE_ID}-pcs"
+      - name: "pr-${CHANGE_ID}-role-assignment"
+      - name: "pr-${CHANGE_ID}-org-role-mapping"
 ccd:
   enabled: true
   ccd:
@@ -63,7 +75,7 @@ ccd:
     apiGatewayWeb:
       enabled: true
     ras:
-      enabled: false
+      enabled: true
     elastic:
       enabled: true
   ccd-definition-store-api:
@@ -105,6 +117,7 @@ ccd:
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
@@ -185,6 +198,44 @@ ccd:
     imageTag: "7.16.1"
     imagePullPolicy: "IfNotPresent"
     logstashJavaOpts: "-Xmx1g -Xms512M"
+  am-role-assignment-service:
+    java:
+      image: 'hmctsprod.azurecr.io/am/role-assignment-service:latest'
+      ingressHost: am-role-assignment-service-${SERVICE_FQDN}
+      autoscaling:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 1
+      environment:
+        ROLE_ASSIGNMENT_DB_USERNAME: hmcts
+        ROLE_ASSIGNMENT_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+        ORM_ENV: pr
+        CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+        RAS_ENV: pr
+        # Default list (see am-role-assignment-service chart) plus pcs_api, so pcs-api can call RAS
+        # without a 403.
+        ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES: "ccd_gw,am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_workflow_api,wa_task_monitor,wa_case_event_handler,iac,hmc_cft_hearing_service,ccd_case_disposer,sscs,fis_hmc_api,fpl_case_service,disposer-idam-user,civil_service,prl_cos_api,wa_reporting_frontend,pcs_api"
+      devmemoryRequests: 1024Mi
+      devcpuRequests: 250m
+      devmemoryLimits: 2048Mi
+      devcpuLimits: 1500m
+      keyVaults:
+        am:
+          resourceGroup: am
+          secrets:
+            - name: am-role-assignment-service-s2s-secret
+              alias: AM_ROLE_ASSIGNMENT_SERVICE_SECRET
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: role-assignment-service-IDAM-CLIENT-SECRET
+              alias: ROLE_ASSIGNMENT_IDAM_CLIENT_SECRET
+            - name: role-assignment-service-IDAM-ADMIN-SECRET
+              alias: ROLE_ASSIGNMENT_IDAM_ADMIN_PASSWORD
+      secrets:
+        ROLE_ASSIGNMENT_DB_PASSWORD:
+          secretRef: postgres
+          key: PASSWORD
+          disabled: false
 xui-webapp:
   enabled: true
   nodejs:
@@ -204,8 +255,8 @@ xui-webapp:
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_CCD_CASE_ASSIGNMENT_API: http://${SERVICE_NAME}-aac-manage-case-assignment
-      SERVICES_ROLE_ASSIGNMENT_API: http://am-role-assignment-service-aat.service.core-compute-aat.internal
-      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://am-org-role-mapping-service-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://${SERVICE_NAME}-am-org-role-mapping-service
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       JURISDICTIONS: PCS
@@ -239,6 +290,25 @@ xui-webapp:
           - mc-session-secret
           - appinsights-connection-string-mc
 
+xui-mo-webapp:
+  enabled: true
+  nodejs:
+    imagePullPolicy: Always
+    releaseNameOverride: ${SERVICE_NAME}-xui-mo-webapp
+    image: hmctsprod.azurecr.io/xui/mo-webapp:latest
+    ingressHost: xui-mo-${SERVICE_FQDN}
+    environment:
+      MANAGE_CASE_LINK: https://xui-${SERVICE_FQDN}/cases
+      MANAGE_ORG_LINK: https://xui-mo-${SERVICE_FQDN}
+      SERVICES_CCD_DEFINITION_STORE_API: http://${SERVICE_NAME}-ccd-definition-store
+      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      RD_PROFESSIONAL_API_SERVICE: http://rd-professional-api-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://${SERVICE_NAME}-am-org-role-mapping-service
+      SERVICES_MCA_PROXY_API: http://${SERVICE_NAME}-aac-manage-case-assignment
+      FEATURE_OGD_UPDATE_REFRESH_USER_ENABLED: true
+      CASE_TYPES: PCS
+
 ccd-case-document-am-api:
   enabled: true
   java:
@@ -259,6 +329,49 @@ ccd-case-document-am-api:
         secrets:
           - name: ccd-case-document-am-api-s2s-secret
             alias: CASE_DOCUMENT_AM_API_S2S_SECRET
+
+am-org-role-mapping-service:
+  enabled: true
+  java:
+    image: 'hmctsprod.azurecr.io/am/org-role-mapping-service:latest'
+    ingressHost: am-org-role-mapping-service-${SERVICE_FQDN}
+    releaseNameOverride: ${SERVICE_NAME}-am-org-role-mapping-service
+    secrets:
+      ORG_ROLE_MAPPING_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+        disabled: false
+    keyVaults:
+      am:
+        secrets:
+          - name: app-insights-connection-string
+            alias: app-insights-connection-string
+          - name: am-org-role-mapping-service-s2s-secret
+            alias: AM_ORG_ROLE_MAPPING_SERVICE_SECRET
+          - name: orm-IDAM-CLIENT-ID
+            alias: ORM_IDAM_CLIENT_ID
+          - name: orm-IDAM-CLIENT-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_CLIENT_SECRET
+          - name: orm-IDAM-ADMIN-SECRET
+            alias: ORG_ROLE_MAPPING_IDAM_ADMIN_PASSWORD
+    devcpuRequests: 500m
+    devmemoryRequests: 1Gi
+    devcpuLimits: 1
+    devmemoryLimits: 4Gi
+    environment:
+      ROLE_ASSIGNMENT_APP_URL: http://${SERVICE_NAME}-am-role-assignment-service
+      AMQP_ENABLED: false
+      ORG_ROLE_MAPPING_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+      ORG_ROLE_MAPPING_DB_NAME: "pr-${CHANGE_ID}-org-role-mapping"
+      ORG_ROLE_MAPPING_DB_USERNAME: hmcts
+      ORG_ROLE_MAPPING_DB_PORT: 5432
+      ORG_ROLE_MAPPING_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      TESTING_SUPPORT_ENABLED: true
+      REFRESH_BULK_ASSIGNMENT_INCLUDE_BOOKINGS: true
+      DB_FEATURE_FLAG_ENABLE: st_cic_wa_1_0
+      ORM_ENV: pr
+      PROFESSIONAL_SCHEDULING_ENABLED: true
+      PROFESSIONAL_REFRESH_API_ENABLED: true
 
 aac-manage-case-assignment:
   enabled: true
@@ -281,7 +394,7 @@ aac-manage-case-assignment:
       PRD_HOST: http://rd-professional-api-aat.service.core-compute-aat.internal
       CCD_DEFINITION_STORE_ALLOWED_SERVICE: xui_webapp
       CCD_DATA_STORE_ALLOWED_SERVICE: xui_webapp
-      ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+      ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
     autoscaling:
       enabled: false
     keyVaults:
