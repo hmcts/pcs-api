@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
@@ -30,10 +31,13 @@ import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.hearingnotice.HearingNoticePayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -51,10 +56,15 @@ import static org.mockito.Mockito.when;
 class HearingNoticeDocumentGeneratorTest {
 
     private static final long CASE_REFERENCE = 1234567890123456L;
+    private static final int HEARING_ID = 7;
+    private static final int BASE_LOCATION = 20262;
     private static final String COURT_NAME = "Cardiff Civil and Family Justice Centre";
     private static final String PORTAL_URL = "https://pcs.aat.platform.hmcts.net";
-    private static final String EXUI_URL = "https://manage-case.aat.platform.hmcts.net";
 
+    @Mock
+    private HearingRepository hearingRepository;
+    @Mock
+    private LocationReferenceService locationReferenceService;
     @Mock
     private DocAssemblyService docAssemblyService;
     @Mock
@@ -83,9 +93,9 @@ class HearingNoticeDocumentGeneratorTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new HearingNoticeDocumentGenerator(docAssemblyService, documentImportService, documentNameService,
-            claimActivityLogService, new CaseReferenceFormatter(), recipientAddressResolver,
-            defenceCorrespondenceAddressResolver, addressMapper, PORTAL_URL, EXUI_URL);
+        underTest = new HearingNoticeDocumentGenerator(hearingRepository, locationReferenceService, docAssemblyService,
+            documentImportService, documentNameService, claimActivityLogService, new CaseReferenceFormatter(),
+            recipientAddressResolver, defenceCorrespondenceAddressResolver, addressMapper, PORTAL_URL);
 
         ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
             ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
@@ -93,7 +103,12 @@ class HearingNoticeDocumentGeneratorTest {
             ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build()
         )).build();
         pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).claims(List.of(claim))
-            .documents(new ArrayList<>()).build();
+            .baseLocation(BASE_LOCATION).documents(new ArrayList<>()).build();
+
+        CourtVenue courtVenue = mock(CourtVenue.class);
+        lenient().when(courtVenue.courtName()).thenReturn(COURT_NAME);
+        lenient().when(locationReferenceService.getCourtVenues(List.of(BASE_LOCATION)))
+            .thenReturn(List.of(courtVenue));
 
         lenient().when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Acme Ltd");
         lenient().when(recipientAddressResolver.resolveDisplayName(defendant1)).thenReturn("Bob Tenant");
@@ -111,25 +126,38 @@ class HearingNoticeDocumentGeneratorTest {
     void shouldDoNothingWhenNoticeIsNotIssued() {
         HearingEntity hearing = hearing(VerticalYesNo.NO, null);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         verifyNoInteractions(docAssemblyService, documentImportService, claimActivityLogService);
     }
 
     @Test
-    void shouldThrowWhenCourtNameIsMissing() {
+    void shouldThrowWhenNoCourtVenueIsFound() {
+        HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
+        when(locationReferenceService.getCourtVenues(List.of(BASE_LOCATION))).thenReturn(List.of());
+
+        assertThatThrownBy(() -> generateNotices(hearing))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("No court venue found");
+        verifyNoInteractions(docAssemblyService);
+    }
+
+    @Test
+    void shouldThrowWhenCaseHasNoBaseLocation() {
+        pcsCase.setBaseLocation(null);
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
 
-        assertThatThrownBy(() -> underTest.generateNotices(pcsCase, hearing, " "))
+        assertThatThrownBy(() -> generateNotices(hearing))
             .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No hearing location");
+            .hasMessageContaining("No base location");
+        verifyNoInteractions(locationReferenceService, docAssemblyService);
     }
 
     @Test
     void shouldGenerateOneNoticePerPartyForWithNoticeHearing() {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         verify(docAssemblyService).generateDocument(any(), eq(HearingNoticeDocumentGenerator.TEMPLATE_ID),
             eq(OutputType.PDF), eq("Notice of hearing 1"));
@@ -155,7 +183,7 @@ class HearingNoticeDocumentGeneratorTest {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
         hearing.addParty(defendant2);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         assertThat(hearing.getNoticeDocuments()).extracting(DocumentEntity::getParty).containsExactly(defendant2);
     }
@@ -167,7 +195,7 @@ class HearingNoticeDocumentGeneratorTest {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
         hearing.addParty(defendant1);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         verify(docAssemblyService).generateDocument(any(), any(), any(), eq("Notice of hearing 2"));
     }
@@ -177,7 +205,7 @@ class HearingNoticeDocumentGeneratorTest {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
         hearing.addParty(defendant2);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         verify(docAssemblyService).generateDocument(payloadCaptor.capture(), any(), any(), any());
         HearingNoticePayload payload = (HearingNoticePayload) payloadCaptor.getValue();
@@ -204,18 +232,25 @@ class HearingNoticeDocumentGeneratorTest {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
         hearing.addParty(claimant);
 
-        underTest.generateNotices(pcsCase, hearing, COURT_NAME);
+        generateNotices(hearing);
 
         verify(docAssemblyService).generateDocument(payloadCaptor.capture(), any(), any(), any());
         HearingNoticePayload payload = (HearingNoticePayload) payloadCaptor.getValue();
         assertThat(payload.getRecipientAddressLine1()).isEqualTo("1 Firm Street");
         assertThat(payload.getClaimantName()).isEqualTo("Acme Ltd");
         assertThat(payload.getDefendantName()).isEqualTo("Bob Tenant, Jo Tenant");
-        assertThat(payload.getUrl()).isEqualTo(EXUI_URL);
+        assertThat(payload.getUrl()).isEqualTo(PORTAL_URL);
     }
 
-    private static HearingEntity hearing(VerticalYesNo issueNotice, VerticalYesNo isWithoutNotice) {
+    private void generateNotices(HearingEntity hearing) {
+        when(hearingRepository.findById(HEARING_ID)).thenReturn(Optional.of(hearing));
+        underTest.generateNotices(HEARING_ID);
+    }
+
+    private HearingEntity hearing(VerticalYesNo issueNotice, VerticalYesNo isWithoutNotice) {
         return HearingEntity.builder()
+            .id(HEARING_ID)
+            .pcsCase(pcsCase)
             .issueNotice(issueNotice)
             .isWithoutNotice(isWithoutNotice)
             .hearingDate(LocalDateTime.of(2026, 8, 15, 15, 40))

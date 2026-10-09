@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
@@ -49,7 +49,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final HearingSummaryRenderer hearingSummaryRenderer;
     private final ConfirmationBodyRenderer confirmationBodyRenderer;
-    private final HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator;
+    private final HearingNoticeScheduler hearingNoticeScheduler;
 
     public ManageHearing(ManageHearingConfigurer manageHearingConfigurer,
                          HearingService hearingService,
@@ -57,7 +57,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
                          PcsCaseService pcsCaseService,
                          HearingSummaryRenderer hearingSummaryRenderer,
                          ConfirmationBodyRenderer confirmationBodyRenderer,
-                         HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator) {
+                         HearingNoticeScheduler hearingNoticeScheduler) {
 
         this.manageHearingConfigurer = manageHearingConfigurer;
         this.hearingService = hearingService;
@@ -65,7 +65,7 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         this.pcsCaseService = pcsCaseService;
         this.hearingSummaryRenderer = hearingSummaryRenderer;
         this.confirmationBodyRenderer = confirmationBodyRenderer;
-        this.hearingNoticeDocumentGenerator = hearingNoticeDocumentGenerator;
+        this.hearingNoticeScheduler = hearingNoticeScheduler;
     }
 
     @Override
@@ -153,14 +153,14 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         switch (caseData.getManageHearingOption()) {
             case ADD: {
                 HearingEntity addedHearing = hearingService.addHearing(caseReference, caseData);
-                generateHearingNotices(caseReference, caseData, addedHearing);
+                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, addedHearing.getId());
                 confirmationBody = confirmationBodyRenderer
                     .renderHearingAddedConfirmationBody(caseData, caseReference);
                 break;
             }
             case EDIT: {
                 HearingEntity updatedHearing = hearingService.updateHearing(caseReference, caseData);
-                generateHearingNotices(caseReference, caseData, updatedHearing);
+                hearingNoticeScheduler.scheduleHearingNoticeGeneration(caseReference, updatedHearing.getId());
                 confirmationBody = confirmationBodyRenderer
                     .renderHearingEditedConfirmationBody(caseData, caseReference);
                 break;
@@ -176,13 +176,6 @@ public class ManageHearing implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder()
             .confirmationBody(confirmationBody)
             .build();
-    }
-
-    // Reuses the court name looked up in start; the not-found placeholder is never printed on a notice.
-    private void generateHearingNotices(long caseReference, PCSCase caseData, HearingEntity hearing) {
-        String hearingLocation = caseData.getHearingLocation();
-        String courtName = HEARING_LOCATION_NOT_FOUND.equals(hearingLocation) ? null : hearingLocation;
-        hearingNoticeDocumentGenerator.generateNotices(pcsCaseService.loadCase(caseReference), hearing, courtName);
     }
 
 }

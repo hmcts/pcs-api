@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReferenceFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
@@ -25,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.form.RecipientAddressResolver;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.document.model.hearingnotice.HearingNoticePayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,8 @@ public class HearingNoticeDocumentGenerator {
     static final String TEMPLATE_ID = "CV-PCS-HNO-ENG-Hearing-Notice.docx";
     private static final String OUTPUT_FILENAME_FORMAT = "Notice of hearing %d";
 
+    private final HearingRepository hearingRepository;
+    private final LocationReferenceService locationReferenceService;
     private final DocAssemblyService docAssemblyService;
     private final DocumentImportService documentImportService;
     private final DocumentNameService documentNameService;
@@ -54,9 +60,10 @@ public class HearingNoticeDocumentGenerator {
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
     private final String portalUrl;
-    private final String exuiUrl;
 
-    public HearingNoticeDocumentGenerator(DocAssemblyService docAssemblyService,
+    public HearingNoticeDocumentGenerator(HearingRepository hearingRepository,
+                                          LocationReferenceService locationReferenceService,
+                                          DocAssemblyService docAssemblyService,
                                           DocumentImportService documentImportService,
                                           DocumentNameService documentNameService,
                                           ClaimActivityLogService claimActivityLogService,
@@ -64,8 +71,9 @@ public class HearingNoticeDocumentGenerator {
                                           RecipientAddressResolver recipientAddressResolver,
                                           DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                           AddressMapper addressMapper,
-                                          @Value("${frontend.url}") String portalUrl,
-                                          @Value("${exui.url}") String exuiUrl) {
+                                          @Value("${frontend.url}") String portalUrl) {
+        this.hearingRepository = hearingRepository;
+        this.locationReferenceService = locationReferenceService;
         this.docAssemblyService = docAssemblyService;
         this.documentImportService = documentImportService;
         this.documentNameService = documentNameService;
@@ -75,17 +83,17 @@ public class HearingNoticeDocumentGenerator {
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
         this.portalUrl = portalUrl;
-        this.exuiUrl = exuiUrl;
     }
 
-    public void generateNotices(PcsCaseEntity pcsCase, HearingEntity hearing, String courtName) {
+    @Transactional
+    public void generateNotices(Integer hearingId) {
+        HearingEntity hearing = hearingRepository.findById(hearingId)
+            .orElseThrow(() -> new IllegalStateException("No hearing found for id: " + hearingId));
         if (hearing.getIssueNotice() != VerticalYesNo.YES) {
             return;
         }
-        if (StringUtils.isBlank(courtName)) {
-            throw new IllegalStateException(
-                "No hearing location for case " + pcsCase.getCaseReference() + "; cannot generate notice of hearing");
-        }
+        PcsCaseEntity pcsCase = hearing.getPcsCase();
+        String courtName = resolveCourtName(pcsCase);
         ClaimEntity claim = pcsCase.getMainClaim();
         List<PartyEntity> claimants = partiesByRole(claim, PartyRole.CLAIMANT);
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
@@ -101,8 +109,6 @@ public class HearingNoticeDocumentGenerator {
             String defendantName = isClaimant ? allDefendantNames : recipientName;
             HearingNoticePayload payload = buildPayload(pcsCase, hearing, recipientAddress(pcsCase, recipient,
                 isClaimant), recipientName, claimantName, defendantName, courtName);
-            // Claimants are represented and log in to ExUI; defendants use the citizen portal.
-            payload.setUrl(isClaimant ? exuiUrl : portalUrl);
 
             String filename = documentNameService.appendPartyPostfix(
                 OUTPUT_FILENAME_FORMAT.formatted(nextNumber++), claim, recipient.getId());
@@ -117,6 +123,21 @@ public class HearingNoticeDocumentGenerator {
 
             claimActivityLogService.logGenerationSuccess(pcsCase, recipient);
         }
+    }
+
+    private String resolveCourtName(PcsCaseEntity pcsCase) {
+        Integer baseLocation = pcsCase.getBaseLocation();
+        if (baseLocation == null) {
+            throw new IllegalStateException(
+                "No base location for case " + pcsCase.getCaseReference() + "; cannot generate notice of hearing");
+        }
+        List<CourtVenue> courtVenues = locationReferenceService.getCourtVenues(List.of(baseLocation));
+        if (courtVenues == null || courtVenues.isEmpty()) {
+            throw new IllegalStateException(
+                "No court venue found for base location " + baseLocation + " on case "
+                    + pcsCase.getCaseReference() + "; cannot generate notice of hearing");
+        }
+        return courtVenues.getFirst().courtName();
     }
 
     // Without notice: only the parties selected on the hearing. With notice: every claimant and defendant.
@@ -152,6 +173,7 @@ public class HearingNoticeDocumentGenerator {
             .defendantName(defendantName)
             .hearingTime(formatShortTime(hearing.getHearingDate()))
             .hearingDate(formatOrdinalDate(hearing.getHearingDate().toLocalDate()))
+            .url(portalUrl)
             .build();
     }
 

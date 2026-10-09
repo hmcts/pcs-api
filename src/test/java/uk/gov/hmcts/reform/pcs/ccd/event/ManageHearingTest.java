@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ConfirmationBodyRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ManageHearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeScheduler;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -43,7 +43,9 @@ import static java.time.Month.JULY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +71,7 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
-    private HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator;
+    private HearingNoticeScheduler hearingNoticeScheduler;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -80,8 +82,10 @@ public class ManageHearingTest extends BaseEventTest {
     void setUp() {
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
                                       pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer,
-                                      hearingNoticeDocumentGenerator);
+                                      hearingNoticeScheduler);
         setEventUnderTest(underTest);
+        lenient().when(hearingService.addHearing(anyLong(), any())).thenReturn(HearingEntity.builder().build());
+        lenient().when(hearingService.updateHearing(anyLong(), any())).thenReturn(HearingEntity.builder().build());
     }
 
     @Test
@@ -446,66 +450,41 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             verify(hearingService).cancelHearing(hearing);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
-            verifyNoInteractions(hearingNoticeDocumentGenerator);
+            verifyNoInteractions(hearingNoticeScheduler);
         }
 
         @Test
-        void shouldGenerateHearingNoticesForAddedHearing() {
+        void shouldScheduleHearingNoticesForAddedHearing() {
             // Given
             PCSCase pcsCase = PCSCase.builder()
                 .manageHearingOption(ManageHearingOption.ADD)
                 .showManageHearingPage(VerticalYesNo.YES)
-                .hearingLocation("Cardiff Civil and Family Justice Centre")
                 .build();
             HearingEntity addedHearing = HearingEntity.builder().id(1).build();
             when(hearingService.addHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(addedHearing);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
             // When
             callSubmitHandler(pcsCase);
 
             // Then
-            verify(hearingNoticeDocumentGenerator)
-                .generateNotices(pcsCaseEntity, addedHearing, "Cardiff Civil and Family Justice Centre");
+            verify(hearingNoticeScheduler).scheduleHearingNoticeGeneration(TEST_CASE_REFERENCE, 1);
         }
 
         @Test
-        void shouldGenerateHearingNoticesForUpdatedHearing() {
+        void shouldScheduleHearingNoticesForUpdatedHearing() {
             // Given
             PCSCase pcsCase = PCSCase.builder()
                 .manageHearingOption(ManageHearingOption.EDIT)
                 .showManageHearingPage(VerticalYesNo.YES)
-                .hearingLocation("Cardiff Civil and Family Justice Centre")
                 .build();
             HearingEntity updatedHearing = HearingEntity.builder().id(2).build();
             when(hearingService.updateHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(updatedHearing);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
             // When
             callSubmitHandler(pcsCase);
 
             // Then
-            verify(hearingNoticeDocumentGenerator)
-                .generateNotices(pcsCaseEntity, updatedHearing, "Cardiff Civil and Family Justice Centre");
-        }
-
-        @Test
-        void shouldPassNoCourtNameWhenHearingLocationWasNotFound() {
-            // Given
-            PCSCase pcsCase = PCSCase.builder()
-                .manageHearingOption(ManageHearingOption.ADD)
-                .showManageHearingPage(VerticalYesNo.YES)
-                .hearingLocation("Unable to find hearing location")
-                .build();
-            HearingEntity addedHearing = HearingEntity.builder().id(1).build();
-            when(hearingService.addHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(addedHearing);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
-            // When
-            callSubmitHandler(pcsCase);
-
-            // Then
-            verify(hearingNoticeDocumentGenerator).generateNotices(pcsCaseEntity, addedHearing, null);
+            verify(hearingNoticeScheduler).scheduleHearingNoticeGeneration(TEST_CASE_REFERENCE, 2);
         }
     }
 

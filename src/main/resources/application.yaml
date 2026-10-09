@@ -315,6 +315,11 @@ gen-app-form:
     max-retries: ${GEN_APP_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${GEN_APP_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+hearing-notice:
+  request:
+    max-retries: ${HEARING_NOTICE_MAX_RETRIES:5}
+    backoff-delay-seconds: ${HEARING_NOTICE_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
@@ -385,9 +390,6 @@ ccd:
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
-
-exui:
-  url: ${MANAGE_CASE_URL:http://localhost:3000}
 
 docweave:
   templates:

@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -51,19 +50,18 @@ public class HearingNoticeSelector {
         Set<String> sent =
             sentPackDocuments.sentDocumentKeys(claimActivityLogRepository.findAllByPcsCase_Id(pcsCase.getId()));
 
-        List<HearingNoticePackCandidate> candidates = new ArrayList<>();
-        for (DocumentEntity notice : pcsCase.getDocuments()) {
-            HearingEntity hearing = notice.getHearing();
-            if (!isIssuedNotice(notice, hearing)) {
-                continue;
-            }
-            PartyEntity party = notice.getParty();
-            if (!isPostableDefendant(party, defendantIds) || sent.contains(key(party.getId(), notice.getId()))) {
-                continue;
-            }
-            candidates.add(new HearingNoticePackCandidate(PartyRole.DEFENDANT, party, List.of(notice)));
-        }
-        return candidates;
+        return pcsCase.getDocuments().stream()
+            .filter(notice -> isPostableNotice(notice, defendantIds, sent))
+            .map(notice -> new HearingNoticePackCandidate(PartyRole.DEFENDANT, notice.getParty(), List.of(notice)))
+            .toList();
+    }
+
+    // An issued notice for a postable defendant that has not been posted yet.
+    private boolean isPostableNotice(DocumentEntity notice, Set<UUID> defendantIds, Set<String> sent) {
+        PartyEntity party = notice.getParty();
+        return isIssuedNotice(notice, notice.getHearing())
+            && isPostableDefendant(party, defendantIds)
+            && !sent.contains(key(party.getId(), notice.getId()));
     }
 
     // A generated notice of hearing for a live hearing that issues a notice.
