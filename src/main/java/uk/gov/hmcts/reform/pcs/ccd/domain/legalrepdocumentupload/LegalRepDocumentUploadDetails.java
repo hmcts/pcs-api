@@ -43,6 +43,10 @@ public class LegalRepDocumentUploadDetails {
     private VerticalYesNo showExistingApplicationPage;
 
     @CCD(searchable = false)
+    @JsonProperty("lrDocUpload_ExistingApplicationDocumentLinks")
+    private String existingApplicationDocumentLinks;
+
+    @CCD(searchable = false)
     @JsonProperty("lrDocUpload_PartyType")
     private PartyType partyType;
 
