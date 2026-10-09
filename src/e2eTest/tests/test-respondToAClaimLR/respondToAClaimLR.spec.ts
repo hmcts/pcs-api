@@ -96,6 +96,10 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performAction('submitPossessionClaimResponseLRAPI');
     await performAction('clickButton', caseSummary.summaryTab);
     //disabled
-
+    await performValidation('elementNotToBeVisible', {
+          elementType: 'text',
+          text: 'Respond to the claim.',
+        });
+    await performAction('validateTabAccess', { user: user, tabs: ['Amend representative`s details', 'Make an application', 'Manage support', 'Request support', 'Respond to claim', 'Upload additional documents'] });
   });
 });
