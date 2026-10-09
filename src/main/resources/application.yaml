@@ -281,8 +281,8 @@ bulk-print:
   # so enabling the flag cannot flood send-letter with the historical backlog. Unset in prod = full backlog.
 
 enforcement-draft-deletion:
-  schedule: ${ENFORCEMENT_DRAFT_DELETION_SCHEDULE:FIXED_DELAY|180s}
-  discard-after-days: ${ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS:-1}
+  schedule: ${ENFORCEMENT_DRAFT_DELETION_SCHEDULE:DAILY|02:30}
+  discard-after-days: ${ENFORCEMENT_DRAFT_DELETION_DISCARD_AFTER_DAYS:30}
   request:
     max-retries: ${ENFORCEMENT_DRAFT_DELETION_REQUEST_MAX_RETRIES:3}
     backoff-delay-seconds: ${ENFORCEMENT_DRAFT_DELETION_REQUEST_BACKOFF_DELAY_SECONDS:10s}
