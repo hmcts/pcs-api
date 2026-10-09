@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -39,11 +41,14 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.legalRepDocumentUpload;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.unwrapListItems;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.CUI_RESPOND_TO_CLAIM_LR;
@@ -118,9 +123,44 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails
             .setShowExistingApplicationPage(VerticalYesNo.from(validCategoryItems.size() >= 2));
 
-        boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
+        PartyType partyType = isClaimantSolicitor(pcsCaseEntity, organisationId) ? PartyType.CLAIMANT :
+            PartyType.DEFENDANT;
+        legalRepDocumentUploadDetails.setPartyType(partyType);
 
-        legalRepDocumentUploadDetails.setPartyType(isClaimantSolicitor ? PartyType.CLAIMANT : PartyType.DEFENDANT);
+        if (partyType == PartyType.DEFENDANT) {
+            List<PartyEntity> defendantPartyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+
+            List<DynamicListElement> listItems = defendantPartyEntities.stream()
+                .map(partyEntity -> DynamicListElement.builder()
+                    .code(partyEntity.getId())
+                    .label(partyEntity.getFirstName() + " " + partyEntity.getLastName())
+                    .build())
+                .toList();
+
+            DynamicList representedDefendantPartyNames = DynamicList.builder()
+                .listItems(listItems)
+                .value(DynamicListElement.EMPTY)
+                .build();
+
+            if (isEmpty(representedDefendantPartyNames.getListItems())) {
+                caseData.setMultipleRepresentedParties(VerticalYesNo.NO);
+                caseData.setRepresentedPartyNames(DynamicList.builder()
+                                                      .listItems(Collections.emptyList())
+                                                      .build());
+
+            } else {
+                boolean representingMultipleParties = representedDefendantPartyNames.getListItems().size() > 1;
+                if (!representingMultipleParties) {
+                    DynamicListElement soleDefendant = representedDefendantPartyNames.getListItems().getFirst();
+                    caseData.setCurrentRepresentedPartyId(String.valueOf(soleDefendant.getCode()));
+                    caseData.setCurrentRepresentedPartyName(soleDefendant.getLabel());
+                }
+                caseData.setMultipleRepresentedParties(VerticalYesNo.from(representingMultipleParties));
+                caseData.setRepresentedPartyNames(representedDefendantPartyNames);
+            }
+        } else {
+            // party type == CLAIMANT. No op.
+        }
 
         boolean isWalesClaim = pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES;
         legalRepDocumentUploadDetails.setIsWales(VerticalYesNo.from(isWalesClaim));
@@ -201,8 +241,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
     private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
 
-        return legalRepPartySelectionService.getDefendantsAwaitingResponse(pcsCaseEntity,
-                                                                           organisationId);
+        return legalRepPartySelectionService.getDefendantsAwaitingResponse(
+            pcsCaseEntity,
+            organisationId
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -215,7 +257,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
 
         PartyEntity uploadingParty;
         try {
-            uploadingParty = getUploadingParty(pcsCaseEntity, organisationId);
+            uploadingParty = getUploadingParty(pcsCase, pcsCaseEntity, organisationId);
         } catch (MultiplePartiesException | PartyNotFoundException partyException) {
             return errorResponse(partyException.getMessage());
         }
@@ -238,15 +280,26 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .build();
     }
 
-    private PartyEntity getUploadingParty(PcsCaseEntity pcsCaseEntity,
+    private PartyEntity getUploadingParty(PCSCase caseData, PcsCaseEntity pcsCaseEntity,
                                           String organisationId) {
-
         boolean isClaimantSolicitor = isClaimantSolicitor(pcsCaseEntity, organisationId);
 
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
             List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            String currentRepresentedPartyId = caseData.getCurrentRepresentedPartyId();
+
+            if (currentRepresentedPartyId != null) {
+                UUID selectedPartyId = UUID.fromString(currentRepresentedPartyId);
+
+                return partyEntities.stream()
+                    .filter(party -> selectedPartyId.equals(party.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new PartyNotFoundException(
+                        "No represented party found for ID: " + currentRepresentedPartyId
+                    ));
+            }
             if (partyEntities.size() == 1) {
                 return partyEntities.getFirst();
             } else if (partyEntities.isEmpty()) {
