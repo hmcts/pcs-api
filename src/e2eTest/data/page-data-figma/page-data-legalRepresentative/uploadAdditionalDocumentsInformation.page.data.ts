@@ -1,15 +1,16 @@
-export const uploadAdditionalDocumentsInformation = {
+export const uploadAdditionalDocumentsInformation = (testTitle: string) =>({
   mainHeader: `Upload additional documents`,
-  youCanUploadParagraph: `You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
-  weUsuallyShareParagraph: `We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
+  youCanUploadParagraph: testTitle.toLowerCase().includes('claimant')?`You can upload a document to support an application, or to show proof that you have done something.`:`You can upload a document to support an application, a counterclaim, or to show proof that you have done something.`,
+  weUsuallyShareParagraph: testTitle.toLowerCase().includes('claimant')?`We usually share anything you upload with the other party, for example your tenant or the mortgage payer.`:`We usually share anything you upload with the other parties, for example other defendants, the defendant’s landlord, housing association or mortgage provider.`,
   ifYourApplicationParagraph: `If your application is ‘without notice’ (where you have asked us to consider your application without telling the other party) we will not share anything with them.`,
   whatYouCanUploadParagraph: `What you can upload`,
   youCanUploadAnyDocsParagraph: `You can upload any documents that you think are relevant.`,
   forExampleYouCanShareParagraph: `For example, you can share:`,
-  evidenceThatJudgeList: `evidence that a judge has asked for, like bank statements showing your rent payments`,
-  photographsOfPropertyList: `photographs of the property in a state of disrepair, like damp in the bathroom`,
-  reportFromElectricianList: `a report from an electrician or a plumber, showing evidence of a repair that needs to be done`,
-  emailsOrLettersList: `emails or letters from the claimant (the defendant’s landlord, housing association, or mortgage lender)`,
+  proofOfEvictionList:testTitle.toLowerCase().includes('claimant')?`proof that you have cancelled an eviction`:``,
+  evidenceThatJudgeList: testTitle.toLowerCase().includes('claimant')?`evidence that a judge has asked for, like a witness statement, or a tenancy agreement`:`evidence that a judge has asked for, like bank statements showing your rent payments`,
+  photographsOfPropertyList: testTitle.toLowerCase().includes('claimant')?`photographs of damage to the property`:`photographs of the property in a state of disrepair, like damp in the bathroom`,
+  reportFromElectricianList: testTitle.toLowerCase().includes('claimant')?`an inspection of the property, or a report done by a surveyor`:`a report from an electrician or a plumber, showing evidence of a repair that needs to be done`,
+  emailsOrLettersList: testTitle.toLowerCase().includes('claimant')?`letters, emails and text messages from the defendant`:`emails or letters from the claimant (the defendant’s landlord, housing association, or mortgage lender)`,
   youCanUploadFollowingParagraph: `You can upload the following file types:`,
   docWordList: `DOC/DOCX(Word)`,
   xlsExcelList: `XLS/XLSM(Excel)`,
@@ -28,4 +29,4 @@ export const uploadAdditionalDocumentsInformation = {
   cymraegLink: `Cymraeg`,
   cancelLink: `Cancel`,
   feedbackLink: `feedback`,
-};
+});
