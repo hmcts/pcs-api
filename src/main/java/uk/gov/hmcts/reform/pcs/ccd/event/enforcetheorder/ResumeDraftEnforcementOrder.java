@@ -19,8 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumeEnforcementOrder;
 import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
@@ -39,25 +41,27 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-            configBuilder
-                .decentralisedEvent(resumeEnforcementOrder.name(), this::submit)
-                .forState(State.CASE_ISSUED)
-                .name("Resume Draft Application")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
-                .grant(Permission.CRUD, UserRole.CLAIMANT)
-                .showCondition(ShowConditions.and(
-                   ShowConditions.featureFlagsEnabled(ENFORCEMENT), "hasUnsubmittedEnforcementData=\"Yes\""))
-                .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
-                .showSummary();
-        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, resumeEnforcementOrder);
+                configBuilder
+                        .decentralisedEvent(resumeEnforcementOrder.name(), this::submit)
+                        .forState(State.CASE_ISSUED)
+                        .name("Resume Draft Application")
+                        .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                        .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
+                        .grant(Permission.CRUD, UserRole.DEFENDANT_SOLICITOR)
+                        .grant(Permission.CRUD, UserRole.GA_DEFENDANT_SOLICITOR)
+                        .showCondition(ShowConditions.and(
+                                ShowConditions.featureFlagsEnabled(ENFORCEMENT),
+                                "hasUnsubmittedEnforcementData=\"Yes\""))
+                        .grantHistoryOnly(JUDICIAL_HISTORY_ROLES)
+                        .showSummary();
+        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         enforcementPageConfigurer.configurePages(pageBuilder);
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
         warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         return enforcementSubmitEvent.submit(eventPayload);
     }
 
