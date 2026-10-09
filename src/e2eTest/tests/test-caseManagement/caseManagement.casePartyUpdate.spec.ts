@@ -6,7 +6,7 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction } from '@utils/controller-caseManagement';
-import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, selectDocument, uploadADocument, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
+import { addParty, checkYourAnswersManageParties, manageParty, partyDetails, updatePartyDetails } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { CaseManagementCommonUtils } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagementUtils.action';
 import { addressInfo, allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement/caseManagement.action';
 
@@ -56,7 +56,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let date = CaseManagementCommonUtils.getRandomDate(partyDetails.dateTypeHiddenUserInput);
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageParties });
+    await performAction('When the user selects an event', { eventType: caseSummary.manageParties });
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -101,7 +101,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let firstName = partyDetails.firstNames[Math.floor(Math.random() * partyDetails.firstNames.length)];
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -149,7 +149,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
     let lastName = partyDetails.lastNames[Math.floor(Math.random() * partyDetails.lastNames.length)];
     let orgName = partyDetails.orgNames[Math.floor(Math.random() * partyDetails.orgNames.length)];
     let party = allPartyDetails[1];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectManageParty', {
       partyToChangeQn: manageParty.whatChangeQuestion,
@@ -197,7 +197,7 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
   test('Case management - update party to the case - Defendants details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
     let party= allPartyDetails[1];
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    await performAction('When the user selects an event', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
       question1: manageParty.whatChangeQuestion,
@@ -226,8 +226,8 @@ test.describe('Case management - Case Party Management e2e Journey @nightly', as
 
   test('Case management - update party to the case- Claimant details @CM @regression', async () => {
     let date = CaseManagementCommonUtils.getRandomDate(updatePartyDetails.dateTypeHiddenUserInput);
-    let submitPayLoad = submitCaseApiData.submitCasePayloadCaseFileView() as Record<string, any>;
-    await performAction('selectAnEvent', {eventType: caseSummary.manageParties});
+    let submitPayLoad = submitCaseApiData.submitCasePayload() as Record<string, any>;
+    await performAction('When the user selects an event', {eventType: caseSummary.manageParties});
     await performValidation('mainHeader', manageParty.mainHeader);
     await performAction('selectParty', {
       question1: manageParty.whatChangeQuestion,

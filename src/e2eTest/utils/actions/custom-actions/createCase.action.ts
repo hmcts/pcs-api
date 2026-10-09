@@ -135,7 +135,7 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['When the user selects an event', () => this.selectAnEvent(fieldName as actionRecord)],
       ['claimSaved', () => this.claimSaved()],
       ['payClaimFee', () => this.payClaimFee()],
       ['validateDefendantDetails', () => this.validateDefendantDetails(page, fieldName as actionRecord)],

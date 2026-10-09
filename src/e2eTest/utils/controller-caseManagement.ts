@@ -87,8 +87,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     || action === 'selectParty'
     || action === 'updatePartyDetails'
     || action === 'selectManageHearing'
-    || action === 'addReviewDates'
-    || action === 'addCourtPermissionDetails') {
+    || action == 'When the user adds a Judicial Note') {
     captureDataForCYAPage = true;
   }
 
@@ -97,7 +96,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
     disableCYACapture = true;
     return
   }
-  
+
   if (disableCYACapture) {
     return;
   }
@@ -174,7 +173,7 @@ export async function performValidation(validation: string, inputFieldName?: val
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed action group: ${groupName}`, async () => {
+  await test.step(`${groupName}`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
       await performAction(actionName, fieldName, value);
@@ -184,7 +183,7 @@ export async function performActions(groupName: string, ...actions: actionTuple[
 
 export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed validation group: ${groupName}`, async () => {
+  await test.step(`${groupName}`, async () => {
     for (const validation of validations) {
       const [validationType, fieldName, data] = validation;
       await performValidation(validationType, fieldName, data);

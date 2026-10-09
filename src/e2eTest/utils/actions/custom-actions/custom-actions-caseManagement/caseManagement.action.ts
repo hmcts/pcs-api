@@ -30,7 +30,7 @@ import {
   addHearing,
   confirmHearing,
   updatePartyDetails,
-  confirmCancelHearing
+  confirmCancelHearing, addJudicialNotes, confirmJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -46,7 +46,7 @@ export class CaseManagementAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['navigateToSummaryPage', () => this.navigateToSummaryPage(page)],
-      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['When the user selects an event', () => this.selectAnEvent(fieldName as actionRecord)],
       ['selectDocumentToAmend', () => this.selectDocumentToAmend(fieldName as actionRecord)],
       ['addReviewDates', () => this.addReviewDates(fieldName as actionRecord)],
       ['confirmReviewDatesAdded', () => this.confirmReviewDatesAdded()],
@@ -81,6 +81,9 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
+      ['When the user adds a Judicial Note', () => this.addJudicialNotes(fieldName as actionRecord)],
+      ['Then the user confirms Add Judicial Notes', () => this.confirmAddJudicialNotes()],
+      ['Then the user validates the Judge Notes tab',() => this.validateJudgeNotesTab(page, fieldName as actionRecord)],
       ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
@@ -762,6 +765,97 @@ export class CaseManagementAction implements IAction {
     await performAction('clickButton', confirmManageParties.closeAndReturnToCaseOverviewButton);
   }
 
+  private async addJudicialNotes(judicialNotes: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('inputText', judicialNotes.label, judicialNotes.noteTextInput);
+    await performAction('reTryOnCallBackError', addJudicialNotes.continueButton, judicialNotes.nextPage as string);
+  }
+
+  private async confirmAddJudicialNotes(): Promise<void> {
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+      });
+      await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph});
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedParagraph});
+      await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
+    }
+
+  private async validateJudgeNotesTab(page: Page, judicialNotes: actionRecord): Promise<void> {
+    const judicialNote = new Map<string, string>();
+
+    judicialNote.set('Note', judicialNotes.userInput as string);
+    const expectedCreatedOn = judicialNotes.createdOn as string;
+    judicialNote.set('Created on', expectedCreatedOn.replace(/:\d{2}(?=\s(?:AM|PM)$)/, ''));
+
+    const noteCards = page.locator('.govuk-summary-card');
+    const index = judicialNotes.index !== undefined ? Number(judicialNotes.index) : 0;
+    const noteCard = noteCards.nth(index);
+
+    await expect(noteCard).toBeVisible();
+    const cardTitle = (await noteCard.locator('.govuk-summary-card__title').textContent())?.trim();
+    expect(cardTitle).toBe(judicialNotes.table as string);
+    const rows = noteCard.locator('.govuk-summary-list__row');
+    const caseTabMap = new Map<string, string>();
+    for (let i = 0; i < await rows.count(); i++) {
+      const row = rows.nth(i);
+      const key = (
+        await row.locator('.govuk-summary-list__key').textContent())?.trim();
+      let value = (await row.locator('.govuk-summary-list__value').textContent())?.trim();
+
+      if (key === 'Created by') {
+        continue;
+      }
+      if (key === 'Created on' && value) {
+        value = value.replace(/:\d{2}(?=\s(?:AM|PM)$)/, '');
+      }
+      if (key) {
+        caseTabMap.set(key, value ?? '');
+      }
+    }
+    const misMatchMap = compareMaps(
+      judicialNote,
+      caseTabMap,
+      {
+        name1: 'JudicialNote',
+        name2: 'CaseNotesTab',
+      }
+    );
+
+    if (misMatchMap.size > 0) {
+      console.log(
+        `\n❌ Differences found: ${misMatchMap.size}`
+      );
+
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+
+        console.log(
+          '============================================================'
+        );
+
+        console.log(
+          `• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`
+        );
+      }
+
+      throw new Error(
+        `Judicial Notes validations failed for ${misMatchMap.size} ${
+          misMatchMap.size === 1 ? 'item' : 'items'}`
+      );
+    }
+    console.log(
+      `✅ ${judicialNotes.table} validation passed`
+    );
+  }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
     if (Array.isArray(validationArr.inputArray)) {
@@ -939,7 +1033,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -982,7 +1076,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);

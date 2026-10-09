@@ -25,6 +25,7 @@ export class ActionCMRegistry {
     ['select', new SelectAction()],
     ['uploadFile', new UploadFileAction()],
     ['login', new LoginAction()],
+    ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['createUser', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
@@ -42,7 +43,7 @@ export class ActionCMRegistry {
     ['validateClaimantDetails', new CaseManagementAction()],
     ['validateCaseSummaryDetails', new CreateCaseAction()],
     ['navigateToSummaryPage', new CaseManagementAction()],
-    ['selectAnEvent', new CaseManagementAction()],
+    ['When the user selects an event', new CaseManagementAction()],
     ['selectDocumentToAmend', new CaseManagementAction()],
     ['changeCaseState', new CaseManagementAction()],
     ['confirmCaseStateChange', new CaseManagementAction()],
@@ -91,6 +92,10 @@ export class ActionCMRegistry {
     ['selectParty', new CaseManagementAction()],
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
+    ['When the user adds a Judicial Note', new CaseManagementAction()],
+    ['Then the user confirms Add Judicial Notes', new CaseManagementAction()],
+    ['Then the user validates the Judge Notes tab', new CaseManagementAction()],
+    ['Then the user performs error validation for Add Judicial Notes', new ErrorValidationAction()],
     ['validateCaseNotesDetails', new CaseManagementAction()],
 
   ]);
