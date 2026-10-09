@@ -49,8 +49,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
       });
     };
   });
-
-
+  
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);

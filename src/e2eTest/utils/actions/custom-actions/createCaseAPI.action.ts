@@ -274,7 +274,7 @@ export class CreateCaseAPIAction implements IAction {
         await this.generateSolicitorAccessToken(getDetails.email as string, getDetails.password as string);
         const allDefendants = createResponse.data.data.allDefendants;
         const defendantIds = allDefendants.map((d: any) => d.id);
-        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);
+        if (defendantIds.length === 0) throw new Error(`No Defendants ID retrieved and the status is ${createResponse.status}`);       
 
         defendantUserDetails.length = 0;
         for (const defendant of allDefendants) {
