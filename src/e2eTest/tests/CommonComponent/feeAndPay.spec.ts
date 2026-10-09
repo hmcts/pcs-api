@@ -208,7 +208,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');
@@ -238,7 +238,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');
@@ -268,7 +268,7 @@ test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC 
       confirmButton: serviceRequest.confirmPaymentButton,
     });
     await performValidation('mainHeader', serviceRequest.paymentSuccessMainHeader);
-    await clearBrowserSession(page, context);
+    await performAction('signOut');
     //The Refund button is enabled only when the payment is at least 6 days old.
     //Therefore, the following API is used to backdate a payment made today.
     await performAction('backDateTheCasePaymentAPI');
