@@ -152,8 +152,10 @@ az acr login -n hmctsprod
 
 This will start a local Camunda instance, wa-workflow-api and wa-task-monitor.
 
-IMPORTANT: The Camunda container only uses an in-memory H2 DB for simplicity, so after (re-)starting
-it, it is necessary to upload the DMNs again:
+The Camunda container only uses an in-memory H2 DB for simplicity so any changes are lost on restart.
+However it will automatically load any DMNs in /src/main/resources/dmn at startup so will reset to
+whatever is in the local workspace. If you make changes to the DMNs and wish to update them in
+Camunda without restarting the container then run this script to re-import them:
 
 ```
 cd /bin/wa
