@@ -6,10 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Payload for the order-document-generation db-scheduler task: the issued order, and the caseworker who
- * issued it, on whose behalf the document is added.
- */
+/** Payload for the order-document-generation task: the issued order, and the caseworker who issued it. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

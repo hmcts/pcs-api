@@ -82,7 +82,7 @@ public class CamundaService {
         createTask(caseId, taskType, taskDescription, scheduledTo, null);
     }
 
-    /** Creates a task for one user, whom the task type's configuration makes its assignee. */
+    /** Creates a task assigned to one user. */
     public void createTask(long caseId, TaskType taskType, String taskDescription, UUID assignee) {
         createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
     }

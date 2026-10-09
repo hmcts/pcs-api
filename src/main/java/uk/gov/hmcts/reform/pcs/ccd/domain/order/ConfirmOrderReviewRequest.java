@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * What the frontend sends when a caseworker finishes reviewing an order, naming the order and the
- * version they reviewed, and the Work Allocation task they came from: either a query returning it to
- * the judge, or the order as they issue it and how it is to be issued.
- */
+/** What the frontend sends when a caseworker returns an order to its judge with a query, or issues it. */
 public record ConfirmOrderReviewRequest(Action action,
                                         UUID orderId,
                                         long version,
@@ -25,11 +21,7 @@ public record ConfirmOrderReviewRequest(Action action,
         ISSUE
     }
 
-    /**
-     * The caseworker's answers for issuing the order: the order as they issue it, any review dates
-     * to add to the case, and how the order is served and sealed. Parties are named by the ids the
-     * case context gave them.
-     */
+    /** How the order is issued. Parties are named by the ids the case context gave them. */
     public record Issue(IssuedOrder order,
                         List<ReviewDateEntry> reviewDates,
                         boolean nextStepsComplete,
@@ -45,9 +37,8 @@ public record ConfirmOrderReviewRequest(Action action,
     }
 
     /**
-     * The order as the caseworker issues it: the judge's make order form and order document, with
-     * any changes the caseworker made to either, and the document's wording as Docweave exports it
-     * to HTML, which is issued as it is.
+     * The order as issued, with any changes the caseworker made; {@code html} is Docweave's export,
+     * issued as is.
      */
     public record IssuedOrder(OrderType orderType, Map<String, Object> formData, JsonNode docweaveSnapshot,
                               String html) {

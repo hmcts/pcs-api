@@ -52,13 +52,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.ConfirmOrderReview.CONFIRM
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 
 /**
- * Caseworkers review an order a judge submitted through the confirm order review event as the
- * frontend drives it: they open the order from their Work Allocation task, starting the event sends
- * them that order and the case, and they either return it to the judge with a query or issue it,
- * with any changes they made to it, saying how it is to be issued. The frontend names the order in
- * the client context. The judge who wrote a returned order opens it from the task its return gave
- * them, to change it and submit it for review again. Each step completes the Work Allocation task that asked
- * for it, in task management, and asks for the next.
+ * Caseworkers review a submitted order through the confirm order review event as the frontend drives it,
+ * naming the order in the client context, and return it to its judge or issue it.
  */
 @DisplayName("Confirm order review")
 class ConfirmOrderReviewIT extends OrderEventIT {

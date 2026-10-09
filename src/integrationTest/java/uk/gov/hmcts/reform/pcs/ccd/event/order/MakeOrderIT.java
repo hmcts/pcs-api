@@ -57,9 +57,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENG
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 /**
- * Judges make orders through the make order event as the frontend drives it: starting it sends them
- * their working order and the case, and they act on that order by submitting a request. The form is
- * opaque to pcs-api, so a single note stands in for it.
+ * Judges make orders through the make order event as the frontend drives it. The form is opaque to
+ * pcs-api, so a single note stands in for it.
  */
 @DisplayName("Make an order")
 class MakeOrderIT extends OrderEventIT {

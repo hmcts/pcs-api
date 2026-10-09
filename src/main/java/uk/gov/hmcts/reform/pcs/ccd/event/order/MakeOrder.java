@@ -41,13 +41,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.RETURNED_TO_JU
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_REVIEW;
 
 /**
- * A judge makes an order through pcs-frontend's make order journey. Starting the event sends them
- * their working order and the facts of the case; each submission saves or submits for review their
- * draft. A judge has one working draft per case, and a change is made from the version they last
- * saw; a change with no id starts their draft. An order a caseworker returned to the judge is theirs
- * to change again: they open it from the task the return gave them, see the caseworker's query, and
- * submit it for review again. Submitting an order asks court staff to review it, with a Work
- * Allocation task, and completes the task a returned order gave its judge.
+ * A judge makes an order in pcs-frontend. Each judge has one working draft per case, which a change
+ * with no id starts. An order a caseworker returned is the judge's to change and resubmit, opened from
+ * the task its return gave them.
  */
 @Component
 @AllArgsConstructor
@@ -106,12 +102,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             new OrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
     }
 
-    /** The order the judge's task links to: one a caseworker returned to them, with the query it came back with. */
+    /** A returned order the judge's task links to, with its query. */
     private OrderStart.Order chosenOrder(UUID orderId, long caseReference, UUID judge) {
         OrderEntity order = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(orderId, caseReference, judge, CHANGEABLE)
             .orElseThrow(() -> ExternalRejection.because(NO_LONGER_CHANGEABLE));
-        // Only a returned order has a query: the step that returns it is the only one with a note.
         return OrderStart.Order.of(order, orderSteps.latest(order), orderSteps.query(order).orElse(null));
     }
 
@@ -149,7 +144,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    /** The judge's own draft, or order returned to them, this change is for, at the version they last saw. */
     private OrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
         OrderEntity draft = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(

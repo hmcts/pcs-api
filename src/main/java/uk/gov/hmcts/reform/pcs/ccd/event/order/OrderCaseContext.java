@@ -25,10 +25,7 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState.COUNTER_CLAIM_ISSUED;
 
-/**
- * The case an order is made on, as the frontend shows it to the judge making it and the caseworker
- * reviewing it: its property and the parties and facts of its main claim.
- */
+/** The case as the order journeys show it: its property, and its main claim's parties and facts. */
 @Component
 @AllArgsConstructor
 class OrderCaseContext {

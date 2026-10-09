@@ -18,10 +18,8 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 
 /**
- * The order events' tests, sharing one application context: each stubs the same services outside
- * pcs-api, so there is one scheduler running the jobs the events leave behind, not one per context.
- * Work Allocation tasks are checked as the events ask for them; sending them to Camunda is
- * CamundaService's own concern.
+ * The order events' tests share one application context, and so one scheduler: each stubs the same
+ * services outside pcs-api.
  */
 @PcsCcdEventTest
 public abstract class OrderEventIT extends AbstractPostgresContainerIT {

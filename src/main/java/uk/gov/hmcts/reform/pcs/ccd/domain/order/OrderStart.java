@@ -12,16 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * What the frontend is sent when an order event starts: the order, and the case it is made on. The make order
- * event sends the judge their working order, or the order a caseworker returned to them with its query; the
- * confirm order review event sends the caseworker the order awaiting review.
- */
+/** What the frontend is sent when an order event starts: the order, and the case it is made on. */
 public record OrderStart(Order order, CaseContext caseContext) {
 
     /**
-     * The order; for a judge's working order, no id means they have no draft on the case yet. The
-     * version is the id of the step the order was last left by, sent back with a change to it.
+     * No id means the judge has no draft on the case yet. The version is the latest step's id, sent back
+     * with a change to the order.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Order(UUID id,

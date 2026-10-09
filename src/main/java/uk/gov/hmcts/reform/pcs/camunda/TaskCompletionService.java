@@ -11,10 +11,8 @@ import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import java.util.Map;
 
 /**
- * Completes a Work Allocation task in task management as the user who did its work, by the id XUI put
- * in the task's link, as XUI does when an event a task links to is submitted there. Work done in
- * pcs-frontend never reaches XUI, so pcs-api completes the task itself once the event has committed,
- * and the task is gone from the user's list when they are back in XUI.
+ * Completes a Work Allocation task as the user who did its work. XUI does this for events submitted
+ * there, but work done in pcs-frontend never reaches XUI.
  */
 @Slf4j
 @AllArgsConstructor
@@ -26,7 +24,7 @@ public class TaskCompletionService {
     private final SecurityContextService securityContextService;
     private final FeatureToggleService featureToggleService;
 
-    /** Returns the task's completion, for the event to run as the user once it has committed. */
+    /** The completion for the event to run once it has committed, as the current user. */
     public Runnable complete(String taskId) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA) || taskId == null) {
             return () -> { };

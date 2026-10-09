@@ -27,11 +27,7 @@ import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * An order as it stood after one write to it: a judge saving or submitting it, or court staff
- * returning or issuing it. Steps are only ever added, so the latest is the order as it stands and the
- * rest are its history. A step may carry a note, such as the query an order is returned with.
- */
+/** An order as it stood after one change to it. Steps are only ever added; the latest is the order as it stands. */
 @Entity
 @Immutable
 @Table(name = "order_steps")
@@ -49,7 +45,6 @@ public class OrderStepEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    /** The state this step left the order in. */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderState state;
@@ -64,12 +59,11 @@ public class OrderStepEntity {
     @Column(nullable = false)
     private OrderType orderType;
 
-    /** The make order form as it then stood. */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false)
     private Map<String, Object> formData;
 
-    /** The order document as it then stood in the frontend's docweave editor. */
+    /** The frontend's Docweave editor state. */
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode docweaveSnapshot;
 

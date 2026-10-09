@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * The case's orders as the orders tab shows them: each order's type and where it is. The work on an
- * order is reached from the Work Allocation task that asks for it, not from here.
- */
+/** The orders tab: each order's type and state. It is read-only; work on orders is reached from tasks. */
 @Component
 @AllArgsConstructor
 public class OrdersView {

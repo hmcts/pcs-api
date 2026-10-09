@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Steps are only ever added, so this reads them and saves new ones. */
 public interface OrderStepRepository extends JpaRepository<OrderStepEntity, Long> {
 
-    /** The order as it stands. */
     Optional<OrderStepEntity> findFirstByOrderIdOrderByIdDesc(UUID orderId);
 
     /** The step that last returned the order to its judge, with the query it was returned with. */

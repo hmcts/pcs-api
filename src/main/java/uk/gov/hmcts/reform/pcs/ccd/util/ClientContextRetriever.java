@@ -47,10 +47,7 @@ public class ClientContextRetriever {
         }
     }
 
-    /**
-     * The order the frontend names in the Client-Context header, since CCD passes no parameters to the
-     * start of an event; anything named that is not an order is refused.
-     */
+    /** The order named in the Client-Context header, since CCD passes no parameters to an event's start. */
     public Optional<UUID> getOrderId() {
         ClientContext clientContext = getClientContext();
         try {

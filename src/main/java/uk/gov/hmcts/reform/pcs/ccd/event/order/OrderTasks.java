@@ -14,12 +14,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.Locale;
 
 /**
- * The Work Allocation tasks an order passes between court staff and its judge, one of each per order.
- * Submitting an order asks court staff to review it; returning it with a query asks the judge who
- * wrote it to change it, assigning them the task. Each task's link starts an event in pcs-frontend on
- * the order, as whoever follows it: XUI puts their IDAM id in place of {@code ${[EXPECTED_SUB]}}, which
- * the handover checks, and the task's id in place of {@code ${[id]}}, which the next step on the order
- * sends back so the task can be completed as that step returns.
+ * The Work Allocation tasks an order passes between court staff and its judge. XUI fills in each task
+ * link: {@code ${[EXPECTED_SUB]}} with the user's IDAM id, which the frontend's handover checks, and
+ * {@code ${[id]}} with the task's id, which the next step sends back so the task can be completed.
  */
 @Service
 public class OrderTasks {
@@ -42,7 +39,6 @@ public class OrderTasks {
         this.frontendUrl = frontendUrl;
     }
 
-    /** Asks court staff to review the order the judge has just submitted, again if it had been returned to them. */
     public void askStaffToReview(long caseReference, OrderStepEntity submitted, boolean resubmitted) {
         String description = taskDescriptionService.createConfirmOrderReviewDescription(
             currentUserName(A_JUDGE), inWords(submitted.getOrderType()),
@@ -51,7 +47,6 @@ public class OrderTasks {
         camundaService.createTask(caseReference, TaskType.CONFIRM_ORDER_REVIEW, description);
     }
 
-    /** Asks the judge who wrote the order to answer the query court staff returned it with. */
     public void askJudgeToChange(long caseReference, OrderStepEntity returned, String query) {
         OrderEntity order = returned.getOrder();
         String description = taskDescriptionService.createReviewOrderQueryDescription(

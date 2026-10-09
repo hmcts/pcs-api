@@ -49,15 +49,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDI
 import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.ORDER_DOCUMENT_TASK_DESCRIPTOR;
 
 /**
- * A caseworker reviews an order a judge submitted, through pcs-frontend's confirm order review
- * journey, opened from their Work Allocation task. Starting the event sends them the order the task
- * names and the case; submitting either
- * returns the order to the judge with a query, or issues the order as the caseworker has it, saying
- * how it is to be issued, and adds any review dates to the case. The caseworker may change the
- * judge's form and wording; the judge's order stays on its earlier steps. The wording is issued as
- * the frontend exports it from Docweave: what was written in the editor is the order. Either
- * completes the caseworker's task, and returning it gives its judge one. Issuing an order generates
- * its document; serving the issued order is not built yet.
+ * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
+ * returns it to the judge with a query or issues it, with any changes they made. Issuing generates the
+ * order's document; serving it is not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -97,7 +91,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .onStart(this::start);
     }
 
-    /** Starts the review of the order the caseworker's task links to. */
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         UUID orderId = clientContextRetriever.getOrderId()
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
@@ -172,7 +165,6 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
         return query;
     }
 
-    /** The ids of the parties to the claim, whom the order may be served on. */
     private static Set<String> partyIds(OrderEntity order) {
         return order.getPcsCase().getClaims().stream()
             .flatMap(claim -> claim.getClaimParties().stream())

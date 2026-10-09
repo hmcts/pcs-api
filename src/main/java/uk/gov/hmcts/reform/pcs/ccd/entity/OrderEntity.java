@@ -27,10 +27,8 @@ import java.util.UUID;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
- * An order on a case, from a judge's draft until it is issued: who wrote it, where it is, and once
- * issued how it is to be issued. Its content is on its steps, the latest of which is the order as it
- * stands and whose id is the order's version; its history is in them and in the case event audit, so
- * it keeps no timestamps.
+ * An order on a case. Its content is on its steps ({@link OrderStepEntity}), the latest of which is the
+ * order as it stands; that step's id is the order's version, so there is no {@code @Version} here.
  */
 @Entity
 @Table(name = "orders")
@@ -56,12 +54,11 @@ public class OrderEntity {
     @Column(updatable = false)
     private String authorName;
 
-    /** The state the latest step left the order in. */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderState state;
 
-    // How the order is to be issued, answered by the caseworker who issued it.
+    // Set when the order is issued.
 
     @Enumerated(EnumType.STRING)
     private OrderSeal seal;
@@ -76,7 +73,6 @@ public class OrderEntity {
 
     private Boolean nextStepsComplete;
 
-    /** The issued order's document, once Docmosis has rendered it. */
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")
     private DocumentEntity document;

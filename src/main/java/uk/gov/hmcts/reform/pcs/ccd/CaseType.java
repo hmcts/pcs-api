@@ -233,7 +233,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getPartySupport, "flagLauncherExternal!=\"\"", "#ARGUMENT(Flags)");
     }
 
-    /** The case's orders and where each is; the work on them is reached from Work Allocation tasks. */
     private void buildOrdersTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("orders", "Orders")
             .forRoles(INTERNAL_TAB_ROLES)

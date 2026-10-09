@@ -13,7 +13,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
         long caseReference, UUID authorIdamUserId, OrderState state);
 
-    /** A judge's own order, while it is in one of the states that leave it theirs to change. */
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
         UUID id, long caseReference, UUID authorIdamUserId, Collection<OrderState> states);
 

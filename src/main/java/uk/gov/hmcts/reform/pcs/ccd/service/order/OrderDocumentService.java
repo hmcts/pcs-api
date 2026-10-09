@@ -44,11 +44,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
- * Generates an issued order's document from its wording and adds it to the case, where it shows
- * under "Orders and Notice of Hearings". It runs as a job once the issuing event has committed
- * ({@link uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent}), and adds the document
- * in a system event on behalf of the caseworker who issued the order, so the order's row is only
- * written in case events. A re-run never adds a second document.
+ * Renders an issued order's document and adds it to the case in a system event on behalf of the
+ * caseworker who issued it. A re-run never adds a second document.
  */
 @Service
 @Slf4j

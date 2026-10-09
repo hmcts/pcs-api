@@ -28,7 +28,6 @@ public class OrderSteps {
     private final OrderStepRepository orderStepRepository;
     private final Clock utcClock;
 
-    /** The order as it stands. */
     public OrderStepEntity latest(OrderEntity order) {
         return orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId()).orElseThrow();
     }

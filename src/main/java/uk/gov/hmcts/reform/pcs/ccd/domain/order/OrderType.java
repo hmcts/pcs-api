@@ -3,10 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * The kinds of order a judge can make in pcs-frontend: how the orders tab and Work Allocation tasks name
- * them, and the title the issued order's document carries.
- */
+/** The kinds of order a judge can make, as pcs-frontend names them. */
 @Getter
 @AllArgsConstructor
 public enum OrderType {
