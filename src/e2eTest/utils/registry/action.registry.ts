@@ -206,6 +206,8 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
+    ['validateChallengedAccessLink', new GlobalSearchCaseAction()],
+    ['requestChallengedAccess', new GlobalSearchCaseAction()],
     ['removeFile', new RemoveFileAction()],    
   ]);
 
