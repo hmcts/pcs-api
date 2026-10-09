@@ -24,6 +24,7 @@ java:
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     CASE_DOCUMENT_AM_URL: http://${SERVICE_NAME}-cdam
+    ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -159,11 +160,14 @@ ccd:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
         ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
         ALLOW_CONFIG_MUTATIONS: true
+        SESSION_KEYS: '${SESSION_KEYS}'
       keyVaults:
         ccd:
           secrets:
+            - session-keys
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
+            - session-keys
   elasticsearch:
     nameOverride: ${SERVICE_NAME}-es
     clusterName: "es"

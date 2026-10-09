@@ -1,0 +1,74 @@
+package uk.gov.hmcts.reform.pcs.security;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.ActorAttribution;
+import uk.gov.hmcts.ccd.sdk.SystemEventAction;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutionResult;
+import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
+import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.idam.UserInfo;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Supplier;
+
+/**
+ * Wraps the SDK executor and runs it as the authenticated system user: the case projection inside
+ * the event transaction reads the current user and their auth token from the security context,
+ * which the background threads that record system events do not have.
+ */
+@Component
+@Primary
+public class SecurityContextSystemEventExecutor implements SystemEventExecutor {
+
+    private final SystemEventExecutor delegate;
+    private final IdamTokenProvider systemUpdateUserTokenProvider;
+    private final UserInfo systemUserInfo;
+
+    public SecurityContextSystemEventExecutor(
+        @Qualifier("systemEventExecutorImpl") SystemEventExecutor delegate,
+        @Qualifier("systemUpdateUserTokenProvider") IdamTokenProvider systemUpdateUserTokenProvider,
+        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId,
+        @Value("${ccd.decentralised-runtime.system-user.first-name}") String systemUserFirstName,
+        @Value("${ccd.decentralised-runtime.system-user.last-name}") String systemUserLastName
+    ) {
+        this.delegate = delegate;
+        this.systemUpdateUserTokenProvider = systemUpdateUserTokenProvider;
+        this.systemUserInfo = UserInfo.builder()
+            .uid(systemUserId)
+            .givenName(systemUserFirstName)
+            .familyName(systemUserLastName)
+            .roles(List.of())
+            .build();
+    }
+
+    @Override
+    public SystemEventExecutionResult execute(long caseReference, UUID idempotencyKey, SystemEventAction action) {
+        return runAsSystemUser(() -> delegate.execute(caseReference, idempotencyKey, action));
+    }
+
+    @Override
+    public SystemEventExecutionResult execute(long caseReference, ActorAttribution actor, UUID idempotencyKey,
+                                              SystemEventAction action) {
+        return runAsSystemUser(() -> delegate.execute(caseReference, actor, idempotencyKey, action));
+    }
+
+    private SystemEventExecutionResult runAsSystemUser(Supplier<SystemEventExecutionResult> execution) {
+        Authentication previousAuthentication = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            User systemUser = new User(systemUpdateUserTokenProvider.getAuthToken(), systemUserInfo);
+            SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(systemUser, null, Collections.emptyList()));
+            return execution.get();
+        } finally {
+            SecurityContextHolder.getContext().setAuthentication(previousAuthentication);
+        }
+    }
+}

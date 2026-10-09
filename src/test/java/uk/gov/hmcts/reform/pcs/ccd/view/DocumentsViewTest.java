@@ -18,9 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -46,6 +47,8 @@ class DocumentsViewTest {
     private GenAppVisibilityService genAppVisibilityService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private SecurityContextService securityContextService;
 
     private PCSCase pcsCase;
 
@@ -59,7 +62,8 @@ class DocumentsViewTest {
 
         pcsCase = PCSCase.builder().build();
 
-        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider());
+        underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
+                                      securityContextService);
     }
 
     @Test
@@ -146,6 +150,24 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
+    void shouldShowAccessCodeLettersToTheSystemUser() {
+        DocumentEntity accessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("access-code-letter.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        when(securityContextService.isIdamSystemUser()).thenReturn(true);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename())
+                .isEqualTo("access-code-letter.pdf"));
     }
 
     @Test
@@ -347,72 +369,6 @@ class DocumentsViewTest {
         assertThat(result).isEqualTo(expectedEmpty);
     }
 
-    @ParameterizedTest
-    @MethodSource("caseDetailsTabDocuments")
-    void shouldFilterOutCaseDetailsTabDocumentsWithoutDescription(DocumentType documentType) {
-        // Given
-        UUID document1Id = UUID.randomUUID();
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(document1Id)
-            .fileName("filename")
-            .type(documentType)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).isEmpty();
-    }
-
-    @ParameterizedTest
-    @MethodSource("caseDetailsTabDocuments")
-    void shouldNotFilterOutDocumentsThatHaveADescription(DocumentType documentType) {
-        // Given
-        UUID document1Id = UUID.randomUUID();
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(document1Id)
-            .type(documentType)
-            .fileName("filename")
-            .description("description")
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).hasSize(1);
-        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
-    }
-
-    @ParameterizedTest
-    @MethodSource("nonCaseDetailsTabDocuments")
-    void shouldNotFilterOutDocumentsThatDoNotAppearInCaseDetailsTab(DocumentType documentType) {
-        // Given
-        UUID document1Id = UUID.randomUUID();
-        DocumentEntity documentEntity = DocumentEntity.builder()
-            .id(document1Id)
-            .fileName("filename")
-            .type(documentType)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(documentEntity));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        List<ListValue<Document>> allDocuments = pcsCase.getAllDocuments();
-        assertThat(allDocuments).hasSize(1);
-        assertThat(allDocuments.getFirst().getValue().getFilename()).isEqualTo("filename");
-    }
-
     private static Stream<Arguments> descriptionProvider() {
         return Stream.of(
                 Arguments.of(null, true),
@@ -422,34 +378,4 @@ class DocumentsViewTest {
         );
     }
 
-
-    private static Stream<Arguments> caseDetailsTabDocuments() {
-        return Stream.of(
-            Arguments.of(DocumentType.TENANCY_AGREEMENT),
-            Arguments.of(DocumentType.POSSESSION_NOTICE),
-            Arguments.of(DocumentType.RENT_STATEMENT),
-            Arguments.of(DocumentType.ENERGY_PERFORMANCE_CERTIFICATE),
-            Arguments.of(DocumentType.GAS_SAFETY_CERTIFICATE),
-            Arguments.of(DocumentType.EICR_REPORT),
-            Arguments.of(DocumentType.OCCUPATION_LICENCE)
-        );
-    }
-
-    private static Stream<Arguments> nonCaseDetailsTabDocuments() {
-        return Stream.of(
-            Arguments.of(DocumentType.TENANCY_LICENCE),
-            Arguments.of(DocumentType.NOTICE_SERVED),
-            Arguments.of(DocumentType.WITNESS_STATEMENT),
-            Arguments.of(DocumentType.CERTIFICATE_OF_SERVICE),
-            Arguments.of(DocumentType.CORRESPONDENCE_FROM_DEFENDANT),
-            Arguments.of(DocumentType.CORRESPONDENCE_FROM_CLAIMANT),
-            Arguments.of(DocumentType.NOTICE_FOR_SERVICE_OUT_OF_JURISDICTION),
-            Arguments.of(DocumentType.PHOTOGRAPHIC_EVIDENCE),
-            Arguments.of(DocumentType.INSPECTION_OR_REPORT),
-            Arguments.of(DocumentType.CERTIFICATE_OF_SUITABILITY_AS_LF),
-            Arguments.of(DocumentType.LEGAL_AID_CERTIFICATE),
-            Arguments.of(DocumentType.POLICE_REPORT),
-            Arguments.of(DocumentType.OTHER)
-        );
-    }
 }

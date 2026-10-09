@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.feesandpay.FeePaymentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.claim.ClaimWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.model.FeePaymentStatusChangeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantAccessCodeService;
@@ -42,6 +43,7 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final DefendantAccessCodeService defendantAccessCodeService;
     private final ClaimFormScheduler claimFormScheduler;
+    private final ClaimWaTaskService claimWaTaskService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -71,17 +73,17 @@ public class ClaimIssuePayment implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Received: {}", eventPayload);
         PCSCase caseData = eventPayload.caseData();
         long caseReference = eventPayload.caseReference();
         if (caseData.getDateIssued() == null) {
             log.info("Payment confirmed for case {} - issuing case and scheduling claim-form, "
-                     + "access-code letter generation and claim-issued notification", caseReference);
+                     + "access-code letter generation, claim-issued notification and WA tasks", caseReference);
             pcsCaseService.setCaseIssuedDate(caseReference);
             claimFormScheduler.scheduleClaimFormGeneration(caseReference);
             // Case issued (status -> CASE_ISSUED): generate the defendant access-code letters.
             scheduleAccessCodeFormGeneration(caseReference);
             scheduleClaimIssuedNotification(caseReference);
+            claimWaTaskService.createTasksForIssuedClaim(caseReference);
         }
         return SubmitResponse.<State>builder().state(State.CASE_ISSUED).build();
     }

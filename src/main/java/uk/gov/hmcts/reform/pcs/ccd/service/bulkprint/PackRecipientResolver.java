@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -84,9 +85,17 @@ public class PackRecipientResolver {
     private ResolvedRecipient resolveDefenceRecipient(PcsCaseEntity pcsCase, DefencePackCandidate candidate) {
         PartyEntity recipient = candidate.recipient();
         PartyRole role = candidate.role();
-        return new ResolvedRecipient(pcsCase, recipient, LetterType.DEFENCE_PACK, candidate.documents(),
+        List<DocumentEntity> documents = candidate.documents();
+        return new ResolvedRecipient(pcsCase, recipient, defenceLetterType(documents), documents,
             recipientAddressResolver.resolveDisplayName(recipient),
             correspondenceAddress(recipient, role, pcsCase.getPropertyAddress()));
+    }
+
+    // DEF-01-IN1 when any form comes from a legal representative's response.
+    private LetterType defenceLetterType(List<DocumentEntity> documents) {
+        return documents.stream().anyMatch(LegalRepResponseDocuments::isFromLegalRepResponse)
+            ? LetterType.DEFENCE_PACK_LEGAL_REP
+            : LetterType.DEFENCE_PACK;
     }
 
     private ResolvedRecipient resolveGenAppRecipient(PcsCaseEntity pcsCase, GenAppPackCandidate candidate) {

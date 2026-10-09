@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.FlagDetail;
 import uk.gov.hmcts.ccd.sdk.type.FlagVisibility;
 import uk.gov.hmcts.ccd.sdk.type.Flags;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PartySupport;
@@ -17,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.FlagRefDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartySupportOwnershipResolver;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -257,6 +262,39 @@ class CaseFlagsViewTest {
     }
 
     @Test
+    void shouldKeepReviewedSupportFlagsVisibleWhateverTheirStatus() {
+        CasePartyFlagEntity notApproved = createMockCasePartyFlagsEntity();
+        notApproved.setVisibility("External");
+        notApproved.setDefaultStatus("Not approved");
+        notApproved.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
+
+        CasePartyFlagEntity inactive = createMockCasePartyFlagsEntity();
+        inactive.setVisibility("External");
+        inactive.setDefaultStatus("Inactive");
+        inactive.setFlagRefData(createMockRefDataFlagsEntity("RA0013", "Assistance dog"));
+
+        PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(notApproved, inactive));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(List.of(mappedParty(defendantEntity)))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(Set.of(defendantEntity));
+        setClaimParties(pcsCaseEntity, createClaimParty(defendantEntity, PartyRole.DEFENDANT));
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        Party mappedDefendant = pcsCase.getParties().getFirst().getValue();
+
+        assertEquals(2, mappedDefendant.getPartyFlagsExternal().getDetails().size());
+        assertEquals(List.of("Not approved", "Inactive"),
+            mappedDefendant.getPartyFlagsExternal().getDetails().stream()
+                .map(detail -> detail.getValue().getStatus())
+                .toList());
+    }
+
+    @Test
     void shouldGroupInternalAndExternalPartyFlagsByPartyId() {
         PartyEntity defendantEntity = createPartyEntity(null);
 
@@ -395,7 +433,7 @@ class CaseFlagsViewTest {
     }
 
     @Test
-    void shouldMapClaimantPartyFlagCollectionsWithClaimantRole() {
+    void shouldMapClaimantPartyFlagCollectionsAndSupportWithClaimantRole() {
         CasePartyFlagEntity externalFlag = createMockCasePartyFlagsEntity();
         externalFlag.setVisibility("External");
         externalFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
@@ -414,12 +452,18 @@ class CaseFlagsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         Party mappedClaimant = pcsCase.getParties().getFirst().getValue();
+        assertNotNull(mappedClaimant.getDefendantFlags(),
+                      "an internal caseworker can flag a claimant party");
         assertEquals("Claimant", mappedClaimant.getPartyFlagsExternal().getRoleOnCase());
         assertEquals(1, mappedClaimant.getPartyFlagsExternal().getDetails().size());
         assertEquals("RA0042",
             mappedClaimant.getPartyFlagsExternal().getDetails().getFirst().getValue().getFlagCode());
+
+        Flags claimantSupport = pcsCase.getPartySupport().getFirst().getValue().getSupportFlags();
         assertEquals(1, pcsCase.getPartySupport().size());
-        assertEquals(1, pcsCase.getPartySupport().getFirst().getValue().getSupportFlags().getDetails().size());
+        assertEquals("Claimant", claimantSupport.getRoleOnCase());
+        assertEquals(1, claimantSupport.getDetails().size());
+        assertEquals("RA0042", claimantSupport.getDetails().getFirst().getValue().getFlagCode());
     }
 
     @Test
@@ -683,6 +727,10 @@ class CaseFlagsViewTest {
 
     @Test
     void shouldAssociateFlagsByPartyIdRegardlessOfCollectionOrder() {
+        CasePartyFlagEntity defendantFlag = createMockCasePartyFlagsEntity();
+        defendantFlag.setVisibility("External");
+        defendantFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0033", "Hearing loop"));
+
         CasePartyFlagEntity claimantFlag = createMockCasePartyFlagsEntity();
         claimantFlag.setVisibility("External");
         claimantFlag.setFlagRefData(createMockRefDataFlagsEntity("RA0042", "Reasonable adjustment"));
@@ -690,12 +738,15 @@ class CaseFlagsViewTest {
         PartyEntity claimantEntity = createPartyEntity(null);
         claimantEntity.setDefendantFlags(List.of(claimantFlag));
         PartyEntity defendantEntity = createPartyEntity(null);
+        defendantEntity.setDefendantFlags(List.of(defendantFlag));
 
+        // Domain order and CCD collection order are deliberately reversed, so a positional match
+        // would associate the flag with the wrong party.
         PCSCase pcsCase = PCSCase.builder()
-            .parties(List.of(mappedParty(defendantEntity), mappedParty(claimantEntity)))
+            .parties(List.of(mappedParty(claimantEntity), mappedParty(defendantEntity)))
             .build();
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(claimantEntity, defendantEntity)));
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(defendantEntity, claimantEntity)));
         setClaimParties(pcsCaseEntity,
                         createClaimParty(claimantEntity, PartyRole.CLAIMANT),
                         createClaimParty(defendantEntity, PartyRole.DEFENDANT));
@@ -703,11 +754,12 @@ class CaseFlagsViewTest {
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
         Party mappedDefendant = findPartyById(pcsCase, defendantEntity.getId().toString());
-        Party mappedClaimant = findPartyById(pcsCase, claimantEntity.getId().toString());
-
         assertEquals("Defendant", mappedDefendant.getPartyFlagsExternal().getRoleOnCase());
-        assertEquals(0, mappedDefendant.getPartyFlagsExternal().getDetails().size());
+        assertEquals(1, mappedDefendant.getPartyFlagsExternal().getDetails().size());
+        assertEquals("RA0033",
+            mappedDefendant.getPartyFlagsExternal().getDetails().getFirst().getValue().getFlagCode());
 
+        Party mappedClaimant = findPartyById(pcsCase, claimantEntity.getId().toString());
         assertEquals("Claimant", mappedClaimant.getPartyFlagsExternal().getRoleOnCase());
         assertEquals(1, mappedClaimant.getPartyFlagsExternal().getDetails().size());
         assertEquals("RA0042",
@@ -741,6 +793,74 @@ class CaseFlagsViewTest {
         assertNull(noId.getValue().getPartyFlagsExternal());
         assertNull(malformedId.getValue().getPartyFlagsExternal());
         assertNotNull(findPartyById(pcsCase, defendantEntity.getId().toString()).getPartyFlagsExternal());
+    }
+
+    @Test
+    void shouldNotMakeAClaimantOrARepresentingOrganisationASupportParty() {
+        // Given
+        PartyEntity orgClaimant = createPartyEntity("PCS_Local_Auth_Org_Testing");
+        orgClaimant.setOrganisationId("HC9X8YK");
+        PartyEntity defendant = createPartyEntity(null);
+
+        OrganisationEntity representingOrg = OrganisationEntity.builder()
+            .organisationId("YPERQ40")
+            .organisationName("PCS_Solicitor_Org_Testing")
+            .build();
+        defendant.setClaimPartyOrganisationList(new ArrayList<>(List.of(
+            ClaimPartyOrganisationEntity.builder()
+                .organisation(representingOrg)
+                .active(YesOrNo.YES)
+                .build())));
+
+        PCSCase pcsCase = PCSCase.builder()
+            .parties(new ArrayList<>(List.of(mappedParty(orgClaimant), mappedParty(defendant))))
+            .build();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setParties(new LinkedHashSet<>(List.of(orgClaimant, defendant)));
+        setClaimParties(pcsCaseEntity,
+                        createClaimParty(orgClaimant, PartyRole.CLAIMANT),
+                        createClaimParty(defendant, PartyRole.DEFENDANT));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        Party projectedClaimant = findPartyById(pcsCase, orgClaimant.getId().toString());
+        assertNotNull(projectedClaimant.getDefendantFlags(),
+                      "a claimant keeps its Case Flags collection");
+        assertNotNull(projectedClaimant.getPartyFlagsExternal(),
+                      "a claimant keeps its Case Flags collection");
+        assertEquals("Claimant", projectedClaimant.getPartyFlagsExternal().getRoleOnCase());
+
+        assertNotNull(findPartyById(pcsCase, defendant.getId().toString()).getDefendantFlags(),
+                      "defendants remain flaggable");
+        assertNotNull(findPartyById(pcsCase, defendant.getId().toString()).getPartyFlagsExternal());
+
+        assertEquals(2, pcsCase.getParties().size(),
+                     "the claimant stays a case party and is not removed from the domain");
+        assertEquals(orgClaimant.getId().toString(), projectedClaimant.getId(),
+                     "the claimant keeps its party id");
+        assertEquals(orgClaimant.getId().toString(),
+                     findPartyListValueById(pcsCase, orgClaimant.getId()).getId(),
+                     "the claimant keeps its collection id");
+
+        assertThat(pcsCase.getPartySupport())
+            .as("a claimant is not a support party")
+            .noneMatch(listValue -> orgClaimant.getId().toString().equals(listValue.getId()));
+
+        assertThat(pcsCase.getParties())
+            .as("the representing organisation must never be projected as a party of its own")
+            .noneMatch(listValue -> "PCS_Solicitor_Org_Testing".equals(listValue.getValue().getOrgName()));
+        assertThat(pcsCase.getPartySupport())
+            .as("representation organisations are not support parties either")
+            .noneMatch(listValue -> "YPERQ40".equals(listValue.getId()));
+    }
+
+    private ListValue<Party> findPartyListValueById(PCSCase pcsCase, UUID partyId) {
+        return pcsCase.getParties().stream()
+            .filter(listValue -> partyId.toString().equals(listValue.getValue().getId()))
+            .findFirst()
+            .orElseThrow();
     }
 
     private PartyEntity partyWithSupport(CasePartyFlagEntity... flags) {

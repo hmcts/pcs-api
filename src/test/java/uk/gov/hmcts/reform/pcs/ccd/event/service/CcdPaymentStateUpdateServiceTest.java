@@ -29,8 +29,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.claimIssuePayment;
 class CcdPaymentStateUpdateServiceTest {
 
     private static final long CASE_ID = 1234L;
-    private static final String IDAM_TOKEN = "Bearer idam";
-    private static final String S2S_TOKEN = "Bearer s2s";
+    private static final String IDAM_BEARER = "Bearer idam";
+    private static final String S2S_BEARER = "Bearer s2s";
 
     @Mock
     private IdamTokenProvider systemUpdateUserTokenProvider;
@@ -51,15 +51,15 @@ class CcdPaymentStateUpdateServiceTest {
     @Test
     void shouldStartEventAndSubmitPaymentSuccessfully() {
         // Given
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_TOKEN);
-        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn(IDAM_BEARER);
+        when(s2sAuthTokenGenerator.generate()).thenReturn(S2S_BEARER);
 
-        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_TOKEN).build();
-        when(coreCaseDataApi.startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), claimIssuePayment.name()))
+        StartEventResponse startEventResponse = StartEventResponse.builder().token(IDAM_BEARER).build();
+        when(coreCaseDataApi.startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), claimIssuePayment.name()))
             .thenReturn(startEventResponse);
 
         CaseResource expectedCaseResource = new CaseResource();
-        when(coreCaseDataApi.createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
+        when(coreCaseDataApi.createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                          any(CaseDataContent.class)))
             .thenReturn(expectedCaseResource);
         when(objectMapper.valueToTree(any())).thenReturn(mock(JsonNode.class));
@@ -69,12 +69,12 @@ class CcdPaymentStateUpdateServiceTest {
 
         // Then
         assertThat(result).isSameAs(expectedCaseResource);
-        verify(coreCaseDataApi).startEvent(IDAM_TOKEN, S2S_TOKEN, String.valueOf(CASE_ID), claimIssuePayment.name());
+        verify(coreCaseDataApi).startEvent(IDAM_BEARER, S2S_BEARER, String.valueOf(CASE_ID), claimIssuePayment.name());
         ArgumentCaptor<CaseDataContent> contentCaptor = ArgumentCaptor.forClass(CaseDataContent.class);
-        verify(coreCaseDataApi).createEvent(eq(IDAM_TOKEN), eq(S2S_TOKEN), eq(String.valueOf(CASE_ID)),
+        verify(coreCaseDataApi).createEvent(eq(IDAM_BEARER), eq(S2S_BEARER), eq(String.valueOf(CASE_ID)),
                                             contentCaptor.capture());
         CaseDataContent submitted = contentCaptor.getValue();
-        assertThat(submitted.getEventToken()).isEqualTo(IDAM_TOKEN);
+        assertThat(submitted.getEventToken()).isEqualTo(IDAM_BEARER);
         assertThat(submitted.getEvent().getId()).isEqualTo(claimIssuePayment.name());
     }
 }

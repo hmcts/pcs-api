@@ -48,6 +48,9 @@ spring:
     import: "optional:configtree:/mnt/secrets/pcs/"
   application:
     name: pcs api
+  cloud:
+    loadbalancer:
+      enabled: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${PCS_DB_PORT:6432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
@@ -307,6 +310,11 @@ counter-claim-form:
     max-retries: ${COUNTER_CLAIM_FORM_MAX_RETRIES:5}
     backoff-delay-seconds: ${COUNTER_CLAIM_FORM_BACKOFF_DELAY_SECONDS:3600s}
 
+gen-app-form:
+  request:
+    max-retries: ${GEN_APP_FORM_MAX_RETRIES:5}
+    backoff-delay-seconds: ${GEN_APP_FORM_BACKOFF_DELAY_SECONDS:3600s}
+
 role-assignment:
   request:
     max-retries: ${ROLE_ASSIGNMENT_MAX_RETRIES:5}
@@ -321,6 +329,10 @@ defendant-response-notification:
   request:
     max-retries: ${DEFENDANT_RESPONSE_NOTIFICAITON_MAX_RETRIES:5}
     backoff-delay-seconds: ${DEFENDANT_RESPONSE_NOTIFICAITON_BACKOFF_DELAY_SECONDS:3600s}
+
+attach-document:
+  max-retries: ${ATTACH_DOCUMENT_MAX_RETRIES:10}
+  backoff-delay-seconds: ${ATTACH_DOCUMENT_BACKOFF_DELAY_SECONDS:600s}
 
 fee-payment-notification:
   request:
@@ -343,6 +355,7 @@ caseApi:
   url: ${CASE_API_URL:http://localhost:3206}
 
 camunda:
+  pcs-api-env: ${PCS_API_ENV:default}
   request:
     max-retries: ${CAMUNDA_REQUEST_TASK_MAX_RETRIES:3}
     backoff-delay-duration: ${CAMUNDA_REQUEST_TASK_BACKOFF_DURATION:20m}
@@ -351,6 +364,9 @@ work-allocation:
   workflow-api:
     url: ${WA_WORKFLOW_API:http://localhost:8099}
 
+role-assigment:
+  url: ${ROLE_ASSIGNMENT_URL:http://localhost:4096}
+
 shutter:
   service: ${SHUTTER_SERVICE:false}
 
@@ -358,6 +374,18 @@ ccd:
   decentralised-runtime:
     noc:
       enabled: true
+    system-user:
+      # Fixed identity stamped on system events (shown as the "via" actor in History). The SDK
+      # treats it as an opaque label, but the id must be UUID-shaped: the case projection parses
+      # the current user id (SecurityContextService.getCurrentUserId) during the event transaction.
+      id: 78acf0a0-079b-3112-8cad-549c81b83510
+      username: pcs-system-event
+      first-name: PCS
+      last-name: System
 
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
+
+docweave:
+  templates:
+    allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}

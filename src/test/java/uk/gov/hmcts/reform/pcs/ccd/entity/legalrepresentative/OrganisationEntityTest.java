@@ -78,6 +78,47 @@ class OrganisationEntityTest {
     }
 
     @Test
+    void addParty_ShouldRelinkPartyWhenExistingLinkIsInactive() {
+        // given - the party was previously represented by this organisation, then moved away
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = PartyEntity.builder()
+            .id(partyId)
+            .build();
+
+        underTest.addParty(party);
+        underTest.getClaimPartyOrganisationList().getFirst().setActive(YesOrNo.NO);
+
+        // when - a notice of change brings the party back to this organisation
+        underTest.addParty(party);
+
+        // then - a fresh active link is created alongside the historic inactive one
+        assertThat(underTest.getClaimPartyOrganisationList()).hasSize(2);
+        assertThat(underTest.getClaimPartyOrganisationList().getFirst().getActive()).isEqualTo(YesOrNo.NO);
+
+        ClaimPartyOrganisationEntity relinked = underTest.getClaimPartyOrganisationList().get(1);
+        assertThat(relinked.getParty().getId()).isEqualTo(partyId);
+        assertThat(relinked.getActive()).isEqualTo(YesOrNo.YES);
+        assertThat(relinked.getOrganisation()).isEqualTo(underTest);
+    }
+
+    @Test
+    void addParty_ShouldNotAddPartyWhenActiveLinkMatchesByIdValue() {
+        // given - same party id carried by distinct entity instances (e.g. separate loads)
+        String partyId = "11111111-2222-3333-4444-555555555555";
+        underTest.addParty(PartyEntity.builder()
+            .id(UUID.fromString(partyId))
+            .build());
+
+        // when
+        underTest.addParty(PartyEntity.builder()
+            .id(UUID.fromString(partyId))
+            .build());
+
+        // then
+        assertThat(underTest.getClaimPartyOrganisationList()).hasSize(1);
+    }
+
+    @Test
     void addLegalRepresentativeOrganisationContactDetails_WithContactDetails_SetsReference() {
         // given
         ClaimPartyContactDetailsEntity contactDetails =
