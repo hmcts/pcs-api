@@ -1,7 +1,10 @@
 export const addressDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'What is the address of the property you’re claiming possession of?',
-  sectionTitle: 'Property address',
+  youMustEnterParagraph : 'You must enter the correct address.',
+  weWillAskParagraph : 'We will ask you to check it on the next page.',
+  afterThatParagraph : 'After that, you will not be able to change it again.',
+  thePropertyParagraph : 'The property must be located in England or Wales.',
   enterUKPostcodeTextLabel : 'Enter a UK postcode',
   findAddressButton: 'Find address',
   addressSelectLabel: 'Select an address',
