@@ -25,6 +25,7 @@ export class ActionCMRegistry {
     ['select', new SelectAction()],
     ['uploadFile', new UploadFileAction()],
     ['login', new LoginAction()],
+    ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['createUser', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
