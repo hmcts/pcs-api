@@ -33,6 +33,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
                   or other procedure pending.</p>
                   <p class="govuk-body">
                   I request an order for enforcement in the High Court by writ of possession.</p>
+                  <p class="govuk-body">
+                  I believe that the facts stated in this form are true.</p>
                   """
             )
             .complex(PCSCase:: getEnforcementOrder)
