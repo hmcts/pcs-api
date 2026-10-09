@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,10 +16,12 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
@@ -30,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfi
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -37,8 +41,12 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -46,6 +54,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,6 +71,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 class EnforceTheOrderTest extends BaseEventTest {
 
     private static final int FEE_AMOUNT = 1000;
+    private static final BigDecimal WARRANT_FEE_AMOUNT = new BigDecimal("123.40");
+
 
     @Mock
     private AddressFormatter addressFormatter;
@@ -69,6 +80,10 @@ class EnforceTheOrderTest extends BaseEventTest {
     private FeeApplier feeApplier;
     @Mock
     private DefendantService defendantService;
+    @Mock
+    private FeeService feeService;
+    @Mock
+    private MoneyFormatter moneyFormatter;
     @Mock
     private EnforcementOrderService enforcementOrderService;
     @Mock
@@ -154,16 +169,43 @@ class EnforceTheOrderTest extends BaseEventTest {
     }
 
     @Test
-    void shouldCreateEnforcementDataInSubmitCallback() {
+    void shouldCompleteSubmitAndReturnConfirmation() {
         // Given
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        String formattedFee = "£" + WARRANT_FEE_AMOUNT;
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .chooseEnforcementType(EnforcementDataUtil.buildEnforcementTypes(WARRANT))
+                .build();
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
+        when(feeService.getFee(any(FeeType.class))).thenReturn(FeeDetails.builder()
+                .feeAmount(WARRANT_FEE_AMOUNT)
+                .build());
+        when(moneyFormatter.formatFee(WARRANT_FEE_AMOUNT)).thenReturn(formattedFee);
+
         // When
-        callSubmitHandler(pcsCase);
+        SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
         // Then
         verify(enforcementOrderService).saveAndClearDraftData(TEST_CASE_REFERENCE, enforcementOrder);
+        assertThat(submitResponse.getConfirmationBody()).contains("Pay " + formattedFee);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SelectEnforcementType.class,
+        names = {"WARRANT_OF_RESTITUTION", "WRIT_OF_RESTITUTION"})
+    void shouldThrowExceptionForUnimplementedEnforcementTypes(SelectEnforcementType enforcementType) {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .chooseEnforcementType(DynamicStringList.builder()
+                .value(DynamicStringListElement.builder().code(enforcementType.name()).build())
+                .build())
+            .build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When / Then
+        assertThatThrownBy(() -> callSubmitHandler(pcsCase))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Unimplemented enforcement type: " + enforcementType);
     }
 
     @Nested
