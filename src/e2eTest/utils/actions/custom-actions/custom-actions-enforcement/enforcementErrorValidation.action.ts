@@ -264,7 +264,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
         button: statementOfTruth.continueButton
       });
@@ -310,7 +310,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         button: statementOfTruth.continueButton
       });
@@ -356,7 +356,7 @@ export class ErrorValidationAction implements IAction {
 
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByLabel,
+        question: statementOfTruth.completedByParagraph,
         option: statementOfTruth.claimantRadioOption,
         button: statementOfTruth.continueButton
       });
