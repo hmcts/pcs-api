@@ -8,7 +8,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performActions } from '@utils/controller-caseManagement';
 import {
   addJudicialNotes,
-  checkYourAnswersJudicialNotes
+  checkYourAnswersJudicialNotes, confirmJudicialNotes
 } from "@data/page-data-figma/page-data-caseManagement-figma";
 import {getCurrentBSTTime} from "@utils/common/string.utils";
 import {
@@ -59,8 +59,7 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       noteTextInput: userInputText,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
-
-    await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
+    await performAction('clickButtonAndVerifyPageNavigation', checkYourAnswersJudicialNotes.submitButton,  confirmJudicialNotes.mainHeader);
     await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
@@ -85,7 +84,7 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       noteTextInput: userInputText1,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
-    await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
+    await performAction('clickButtonAndVerifyPageNavigation', checkYourAnswersJudicialNotes.submitButton,  confirmJudicialNotes.mainHeader);
     await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performAction('When the user selects an event', {eventType: caseSummary.addJudicialNote});
@@ -94,7 +93,7 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       noteTextInput: userInputText2,
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
-    await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
+    await performAction('clickButtonAndVerifyPageNavigation', checkYourAnswersJudicialNotes.submitButton,  confirmJudicialNotes.mainHeader);
     await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
