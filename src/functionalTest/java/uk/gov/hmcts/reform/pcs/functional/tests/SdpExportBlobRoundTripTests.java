@@ -17,9 +17,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
-// Needs no CCD, so it is not gated on CCD_ENABLED and runs on unlabelled PRs. Writes a real blob to the
-// SDP export storage account with the pod's workload identity and reads it back. The blob is left in the
-// container under functional-test/, named after the UTC time it was written.
 @Issue("HDPI-9102")
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
