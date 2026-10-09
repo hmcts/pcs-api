@@ -615,7 +615,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_PORT', '6432'
   environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
-  environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'SPRING_PROFILES_ACTIVE', 'dev, local-test-documents'
   // No LaunchDarkly key for local/cftlibTest - run the client offline so it serves code defaults
   environment 'LAUNCHDARKLY_OFFLINE', 'true'
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
