@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Slf4j
 @AllArgsConstructor
