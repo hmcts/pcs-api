@@ -3,10 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.order;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import com.github.kagkarlsson.scheduler.Scheduler;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.ccd.document.am.model.Document;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
@@ -25,11 +27,15 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload;
 import uk.gov.hmcts.reform.pcs.document.model.order.OrderDocumentPayload.OrderParty;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,6 +66,8 @@ class OrderDocumentIT extends OrderEventIT {
     private IssuedCases cases;
     @Autowired
     private OrderDocumentService orderDocumentService;
+    @Autowired
+    private Scheduler scheduler;
 
     @Test
     @DisplayName("renders the issued order's wording with the case, its parties and the judge, and adds it to the case")
@@ -84,7 +92,8 @@ class OrderDocumentIT extends OrderEventIT {
             new Issue(new IssuedOrder("OUTRIGHT_POSSESSION", Map.of(), null, WORDING),
                 List.of(), true, true, true, List.of(), COUNTY_COURT)));
         scheduler.triggerCheckForDueExecutions();
-        awaitDocument(submitted.id());
+        assertThat(await(() -> !documents(caseReference, caseworker).isEmpty()))
+            .as("the order's document was generated").isTrue();
 
         String caseNumber = String.valueOf(caseReference).replaceAll("(\\d{4})(\\d{4})(\\d{4})(\\d{4})", "$1-$2-$3-$4");
         OrderDocumentPayload rendered = rendered(caseNumber).getFirst();
@@ -93,12 +102,9 @@ class OrderDocumentIT extends OrderEventIT {
         assertThat(rendered.isHighCourtSeal()).isFalse();
         assertThat(rendered.getOrderHtml()).isEqualTo(WORDING);
         assertThat(rendered.getParties()).contains(new OrderParty(IssuedCases.DEFENDANT, "Defendant"));
-        assertThat(jdbcTemplate.queryForMap("""
-            SELECT d.type, d.file_name, d.category_id FROM orders o JOIN document d ON d.id = o.document_id
-            WHERE o.id = ?""", submitted.id()))
-            .containsEntry("type", "ORDER")
-            .containsEntry("file_name", "Order for possession.pdf")
-            .containsEntry("category_id", "ordersAndNoticeOfHearings");
+        assertThat(documents(caseReference, caseworker))
+            .extracting(document -> document.getFilename(), document -> document.getCategoryId())
+            .containsExactly(tuple("Order for possession.pdf", "ordersAndNoticeOfHearings"));
         var history = events.history(caseReference).getLast();
         assertThat(history.eventId()).isEqualTo("orderDocumentGenerated");
         assertThat(history.userId()).isEqualTo(caseworker.uid());
@@ -106,6 +112,7 @@ class OrderDocumentIT extends OrderEventIT {
         // A re-run, as a retried job is, renders nothing and adds no second document.
         orderDocumentService.generateAndAttach(new Generation(submitted.id(), caseworker.uid(), "Tom", "Baker"));
         assertThat(rendered(caseNumber)).hasSize(1);
+        assertThat(documents(caseReference, caseworker)).hasSize(1);
     }
 
     /** The order documents rendered for a case; other cases' orders may be rendered by the same scheduler. */
@@ -119,11 +126,26 @@ class OrderDocumentIT extends OrderEventIT {
             .toList();
     }
 
-    /** Waits for the scheduled job to add the order's document. */
-    private void awaitDocument(UUID orderId) {
-        assertThat(await(() -> Boolean.TRUE.equals(jdbcTemplate.queryForObject(
-            "SELECT document_id IS NOT NULL FROM orders WHERE id = ?", Boolean.class, orderId))))
-            .as("the order's document was generated").isTrue();
+    /** The documents on the case, as the case file view lists them. */
+    private List<uk.gov.hmcts.ccd.sdk.type.Document> documents(long caseReference, Actor viewer) {
+        return events.view(caseReference, viewer).getAllDocuments().stream().map(ListValue::getValue).toList();
+    }
+
+    /** Waits up to 15 seconds for the scheduler to have done something; whether it did is the test's to check. */
+    private static boolean await(BooleanSupplier done) {
+        Instant until = Instant.now().plus(Duration.ofSeconds(15));
+        while (!done.getAsBoolean()) {
+            if (Instant.now().isAfter(until)) {
+                return false;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return true;
     }
 
     /** The rendered order as CDAM describes it once Docmosis has stored it. */

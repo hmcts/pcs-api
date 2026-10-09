@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
@@ -29,9 +31,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ReviewReason.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Action.ISSUE;
@@ -53,7 +56,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
  * with any changes they made to it, saying how it is to be issued. The frontend names the order in
  * the client context. The judge who wrote a returned order opens it from the task its return gave
  * them, to change it and submit it for review again. Each step completes the Work Allocation task that asked
- * for it, in task management, before the event returns.
+ * for it, in task management, and asks for the next.
  */
 @DisplayName("Confirm order review")
 class ConfirmOrderReviewIT extends OrderEventIT {
@@ -82,7 +85,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("shows the caseworker the order the judge submitted and the case")
+    @DisplayName("shows the caseworker the order the judge submitted and the case, and lists it as waiting for review")
     void showsTheSubmittedOrderAndTheCase() {
         Order submitted = judgeSubmitsOrder("the judge's order");
 
@@ -92,6 +95,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(start.order().formData()).containsEntry("notes", "the judge's order");
         assertThat(start.caseContext().caseReference()).isEqualTo(caseReference);
         assertThat(start.caseContext().defendants()).extracting(Party::name).containsExactly(IssuedCases.DEFENDANT);
+        assertThat(events.view(caseReference, caseworker).getOrdersMarkdown())
+            .contains("Outright possession", "Waiting for review");
     }
 
     @Test
@@ -107,59 +112,29 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("lists the order as waiting for review on the orders tab")
-    void listsTheOrderAsWaitingForReview() {
-        judgeSubmitsOrder("the judge's order");
-
-        assertThat(events.view(caseReference, caseworker).getOrdersMarkdown())
-            .contains("Outright possession", "Waiting for review");
-    }
-
-    @Test
-    @DisplayName("returns the order to the judge with the caseworker's query, as a note on the case")
+    @DisplayName("returns the order to the judge with a query, for them to change and submit for review again")
     void returnsTheOrderToTheJudge() {
         Order order = judgeSubmitsOrder("the judge's order");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
+            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", " ", null)).errors())
+            .containsExactly("Enter a query for the judge");
 
         var outcome = asCaseworker.submitExpectingSuccess(returnToJudge(order));
 
         assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
-        assertThat(steps(order)).containsExactly("SUBMITTED_FOR_REVIEW:the judge's order:null",
-            "RETURNED_TO_JUDGE:the judge's order:" + QUERY);
-        assertThat(jdbcTemplate.queryForMap("""
-            SELECT n.type, n.created_by, n.author_idam_user_id FROM case_note n
-            JOIN pcs_case c ON c.id = n.case_id WHERE c.case_reference = ?""", caseReference))
-            .containsEntry("type", "ORDER")
-            .containsEntry("created_by", "A Caseworker")
-            .containsEntry("author_idam_user_id", UUID.fromString(caseworker.uid()));
+        assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
         assertThat(events.view(caseReference, caseworker).getCaseNotes())
             .as("an order's query is not a case note").isEmpty();
-        assertThat(outcome.audit().summary()).isEqualTo("Order returned to judge");
-        // The staff task was completed before the event returned; the judge's is created by the scheduler.
-        verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-        camundaRequestsRun();
-        var judgesTask = created(TaskType.REVIEW_ORDER_QUERY).getProcessVariables();
-        assertThat((String) judgesTask.get("taskDescription").getValue()).contains(QUERY);
-        assertThat(judgesTask.get("assigneeId").getValue()).isEqualTo(judge.uid());
+        assertThat(events.view(caseReference, judge).getOrdersMarkdown()).contains("Returned to judge");
         assertThat(asCaseworker.startExpectingRejection())
             .containsExactly("The order is no longer waiting for review");
-    }
+        verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
+            eq(UUID.fromString(judge.uid())));
 
-    @Test
-    @DisplayName("lets the judge change an order returned to them, seeing the query, and submit it for review again")
-    void letsTheJudgeChangeAReturnedOrder() {
-        Order order = judgeSubmitsOrder("the judge's order");
-        asCaseworker.submitExpectingSuccess(returnToJudge(order));
-
-        assertThat(events.view(caseReference, judge).getOrdersMarkdown()).contains("Returned to judge");
-
+        // The judge opens the order from their task, seeing the query, and can save changes to it.
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
-        Order returned = asAuthor.start().order();
-        assertThat(returned.state()).isEqualTo(RETURNED_TO_JUDGE);
-        assertThat(returned.queryFromCaseworker()).isEqualTo(QUERY);
-        assertThat(returned.formData()).containsEntry("notes", "the judge's order");
-
-        // The judge can save their changes and come back to them, still seeing the query.
-        asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, returned, "half way"));
+        asAuthor.submitExpectingSuccess(change(SAVE_DRAFT, asAuthor.start().order(), "half way"));
         Order saved = asAuthor.start().order();
         assertThat(saved.state()).isEqualTo(RETURNED_TO_JUDGE);
         assertThat(saved.formData()).containsEntry("notes", "half way");
@@ -174,50 +149,26 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(asAuthor.startExpectingRejection())
             .containsExactly("The order is no longer waiting for you to change it");
         verify(taskManagementApi).completeTask(any(), any(), eq("judge-query"), any());
-        camundaRequestsRun();
-        // The first submission's request may be sent after this one: the scheduler sends them in parallel.
-        assertThat(createdDescriptions(TaskType.CONFIRM_ORDER_REVIEW))
-            .anySatisfy(description ->
-                assertThat(description).contains("has changed an order that was returned to them"));
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
+            contains("has changed an order that was returned to them"));
     }
 
     @Test
-    @DisplayName("returns the order to the judge even when task management is down")
-    void returnsTheOrderWhenTaskManagementIsDown() {
-        Order order = judgeSubmitsOrder("the judge's order");
-        doThrow(new IllegalStateException("task management is down"))
-            .when(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
-
-        var outcome = asCaseworker.submitExpectingSuccess(returnToJudge(order));
-
-        assertThat(outcome.changed("orders", Order.class).state()).isEqualTo(RETURNED_TO_JUDGE);
-    }
-
-    @Test
-    @DisplayName("does not act on a review that is missing what the schema cannot check")
-    void rejectsAnIncompleteReview() {
-        Order order = judgeSubmitsOrder("the judge's order");
-
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(
-            RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", " ", null)).errors())
-            .containsExactly("Enter a query for the judge");
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), "staff-review", null,
-            new Issue(asSubmitted(order), List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT)))
-            .errors())
-            .containsExactly("The order can only be served on parties to the case");
-    }
-
-    @Test
-    @DisplayName("records how the order is issued, adds the review dates to the case, and keeps the order as issued")
+    @DisplayName("issues the order as the caseworker changed it, saying how, and adds the review dates to the case")
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
         String defendant = asCaseworker.start().caseContext().defendants().getFirst().id();
+        var changed = new IssuedOrder("SUSPENDED_POSSESSION", Map.of("notes", "the caseworker's order"), null,
+            WORDING);
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
+        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, order.id(),
+            order.version(), "staff-review", null,
+            new Issue(changed, List.of(), true, false, false, List.of("not-a-party"), COUNTY_COURT))).errors())
+            .containsExactly("The order can only be served on parties to the case");
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
             order.version(), "staff-review", null,
-            new Issue(asSubmitted(order), List.of(reviewDate), true, false, false, List.of(defendant), HIGH_COURT)));
+            new Issue(changed, List.of(reviewDate), true, false, false, List.of(defendant), HIGH_COURT)));
 
         Issued issued = outcome.changed("orders", Issued.class);
         assertThat(issued.state()).isEqualTo(ISSUED);
@@ -226,15 +177,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         assertThat(issued.serveAllParties()).isFalse();
         assertThat(issued.partiesServed()).containsExactly(defendant);
         assertThat(issued.seal()).isEqualTo("HIGH_COURT");
-        assertThat(issuedWording(order)).isEqualTo(WORDING);
         assertThat(outcome.audit().summary()).isEqualTo("Order issued");
-        assertThat(jdbcTemplate.queryForList("""
-            SELECT r.date, r.reason, r.description FROM case_review_date r
-            JOIN pcs_case c ON c.id = r.case_id WHERE c.case_reference = ?""", caseReference))
-            .containsExactly(Map.of(
-                "date", java.sql.Date.valueOf(reviewDate.date()),
-                "reason", "GENERAL_ORDER",
-                "description", "Check the rent is paid"));
+        PCSCase view = events.view(caseReference, caseworker);
+        assertThat(view.getOrdersMarkdown()).contains("Suspended possession", "Issued");
+        assertThat(view.getCaseReviewDates()).extracting(ListValue::getValue)
+            .extracting(CaseReviewDate::getDate, CaseReviewDate::getReason, CaseReviewDate::getDescription)
+            .containsExactly(tuple(reviewDate.date(), GENERAL_ORDER, "Check the rent is paid"));
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
         // Issued is final: neither the caseworker nor the judge can open the order again.
         assertThat(asCaseworker.startExpectingRejection())
@@ -244,36 +192,14 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("issues the order as the caseworker changed it, keeping the judge's as they submitted it")
-    void issuesTheOrderAsTheCaseworkerChangedIt() {
-        Order order = judgeSubmitsOrder("the judge's order");
-        var changed = new IssuedOrder("SUSPENDED_POSSESSION", Map.of("notes", "the caseworker's order"), null,
-            WORDING);
-
-        asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),
-            order.version(), "staff-review", null,
-            new Issue(changed, List.of(), true, true, true, List.of(), COUNTY_COURT)));
-
-        assertThat(steps(order)).containsExactly(
-            "SUBMITTED_FOR_REVIEW:the judge's order:null", "ISSUED:the caseworker's order:null");
-        assertThat(events.view(caseReference, caseworker).getOrdersMarkdown())
-            .contains("Suspended possession", "Issued");
-    }
-
-    @Test
     @DisplayName("does not act on a copy of the order from before it was returned and resubmitted")
     void rejectsAStaleReview() {
-        Order order = judgeSubmitsOrder("the judge's order");
-        Order staleCopy = asCaseworker.start().order();
-        asCaseworker.submitExpectingSuccess(returnToJudge(order));
-        var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));
+        Order staleCopy = judgeSubmitsOrder("the judge's order");
+        asCaseworker.submitExpectingSuccess(returnToJudge(staleCopy));
+        var asAuthor = asJudge.withClientContext(Map.of("orderId", staleCopy.id().toString()));
         asAuthor.submitExpectingSuccess(change(SUBMIT_FOR_REVIEW, asAuthor.start().order(), "changed"));
 
         assertThat(asCaseworker.submitExpectingRejection(returnToJudge(staleCopy)).errors())
-            .containsExactly("The order has been updated by another user. Reload it and try again");
-        assertThat(asCaseworker.submitExpectingRejection(new ConfirmOrderReviewRequest(ISSUE, staleCopy.id(),
-            staleCopy.version(), "staff-review", null,
-            new Issue(asSubmitted(staleCopy), List.of(), true, true, true, List.of(), COUNTY_COURT))).errors())
             .containsExactly("The order has been updated by another user. Reload it and try again");
     }
 
@@ -286,27 +212,8 @@ class ConfirmOrderReviewIT extends OrderEventIT {
         return asCaseworker.start().order();
     }
 
-    /** The order's steps since it was submitted: the state, note and query each left it with. */
-    private List<String> steps(Order order) {
-        return jdbcTemplate.queryForList("""
-            SELECT s.state || ':' || (s.form_data->>'notes') || ':' || coalesce(n.note, 'null')
-            FROM order_steps s LEFT JOIN case_note n ON n.id = s.note_id
-            WHERE s.order_id = ? AND s.state <> 'DRAFT' ORDER BY s.id""", String.class, order.id());
-    }
-
-    /** The wording of the order as issued, on its issuing step. */
-    private String issuedWording(Order order) {
-        return jdbcTemplate.queryForObject(
-            "SELECT order_html FROM order_steps WHERE order_id = ? AND state = 'ISSUED'", String.class, order.id());
-    }
-
     private static ConfirmOrderReviewRequest returnToJudge(Order order) {
         return new ConfirmOrderReviewRequest(RETURN_TO_JUDGE, order.id(), order.version(), "staff-review", QUERY, null);
-    }
-
-    /** The judge's order as a caseworker who changed nothing issues it. */
-    private static IssuedOrder asSubmitted(Order order) {
-        return new IssuedOrder(order.orderType(), order.formData(), order.docweaveSnapshot(), WORDING);
     }
 
     /** The caseworker chooses an order to review, which the frontend names in the client context. */

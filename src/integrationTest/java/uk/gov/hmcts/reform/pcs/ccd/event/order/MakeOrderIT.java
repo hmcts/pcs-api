@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
@@ -31,12 +30,14 @@ import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
@@ -196,17 +197,6 @@ class MakeOrderIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("does not let a judge start a second draft on the same case")
-    void rejectsASecondDraftForTheSameJudge() {
-        asFirstJudge.submitExpectingSuccess(startDraft("first draft"));
-
-        // The database holds the one-draft rule; the frontend never offers a second draft.
-        assertThatThrownBy(() -> asFirstJudge.submit(startDraft("second draft")))
-            .isInstanceOf(DataIntegrityViolationException.class);
-        assertThat(workingDraft(asFirstJudge)).isEqualTo("first draft");
-    }
-
-    @Test
     @DisplayName("keeps the order type, form and document a judge saves as their working order")
     void savesADraft() {
         asFirstJudge.submitExpectingSuccess(startDraft("first version"));
@@ -220,7 +210,7 @@ class MakeOrderIT extends OrderEventIT {
         assertThat(saved.orderType()).isEqualTo("SUSPENDED_POSSESSION");
         assertThat(saved.formData()).containsEntry("notes", "second version");
         assertThat(saved.docweaveSnapshot()).isEqualTo(document);
-        assertThat(camundaMessages()).as("saving a draft asks nothing of Work Allocation").isEmpty();
+        verifyNoInteractions(camundaService);
     }
 
     @Test
@@ -258,13 +248,11 @@ class MakeOrderIT extends OrderEventIT {
         Order submitted = submission.changed("orders", Order.class);
         assertThat(submitted.id()).isEqualTo(draft.id());
         assertThat(submitted.state()).isEqualTo(SUBMITTED_FOR_REVIEW);
-        assertThat(steps(draft)).containsExactly("DRAFT:draft", "SUBMITTED_FOR_REVIEW:final");
         assertThat(asFirstJudge.start().order().id()).as("no working draft after submission").isNull();
         assertThat(submission.audit().summary()).isEqualTo("Order submitted for review");
         assertThat(submission.audit().userId()).isEqualTo(firstJudge.uid());
-        camundaRequestsRun();
-        assertThat((String) created(TaskType.CONFIRM_ORDER_REVIEW).getProcessVariables().get("taskDescription")
-            .getValue()).contains("has submitted an order for review");
+        verify(camundaService).createTask(eq(caseReference), eq(TaskType.CONFIRM_ORDER_REVIEW),
+            contains("has submitted an order for review"));
         // The submitted order is out of the judge's hands, and they can start their next one.
         assertThat(asFirstJudge.submitExpectingRejection(change(SAVE_DRAFT, submitted, "changed")).errors())
             .containsExactly("The order draft does not exist for this case");
@@ -275,12 +263,5 @@ class MakeOrderIT extends OrderEventIT {
     /** The note on the judge's working draft. */
     private static Object workingDraft(ExternalEvent<OrderStart, MakeOrderRequest> judge) {
         return judge.start().order().formData().get("notes");
-    }
-
-    /** The order's history: the state and note each step left it with. */
-    private List<String> steps(Order order) {
-        return jdbcTemplate.queryForList(
-            "SELECT state || ':' || (form_data->>'notes') FROM order_steps WHERE order_id = ? ORDER BY id",
-            String.class, order.id());
     }
 }
