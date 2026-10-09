@@ -273,29 +273,6 @@ class DefendantResponseReadMapperTest {
     }
 
     @Test
-    void shouldNotMapCounterclaimDocumentIdWhenFormDocumentIsRemoved() {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity party = partyWithId(partyId);
-        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
-        DocumentEntity removedForm = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(DocumentType.COUNTERCLAIM)
-            .counterClaim(counterClaim)
-            .removed(true)
-            .build();
-
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
-            .counterClaims(List.of(counterClaim))
-            .documents(List.of(removedForm))
-            .build();
-
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
-            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
-
-        assertThat(response.getCounterclaimDocumentId()).isNull();
-    }
-
-    @Test
     void shouldMapHouseholdIncomeExpensesPaymentAgreementAddressAndCounterClaim() {
         final AddressMapper addressMapper = mock(AddressMapper.class);
 

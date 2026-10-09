@@ -99,7 +99,6 @@ public class DefendantResponseReadMapper {
         }
 
         return pcsCase.getDocuments().stream()
-            .filter(doc -> !doc.isRemoved())
             .filter(doc -> doc.getType() == DocumentType.COUNTERCLAIM)
             .filter(doc -> doc.getCounterClaim() != null
                 && counterClaimId.equals(doc.getCounterClaim().getId()))
