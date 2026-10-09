@@ -72,6 +72,19 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     static final AccessProfile[] NON_INTERNAL_HISTORY_ROLES = nonInternalHistoryRoles();
 
+    static final AccessProfile[] PAYMENT_HISTORY_TAB_ROLES = {
+        AccessProfile.JUDGE,
+        AccessProfile.FEE_PAID_JUDGE,
+        AccessProfile.CIRCUIT_JUDGE,
+        AccessProfile.LEADERSHIP_JUDGE,
+        AccessProfile.HEARING_CENTRE_TEAM_LEADER,
+        AccessProfile.HEARING_CENTRE_ADMIN,
+        AccessProfile.CTSC_TEAM_LEADER,
+        AccessProfile.CTSC_ADMIN,
+        AccessProfile.WLU_TEAM_LEADER,
+        AccessProfile.WLU_ADMIN
+    };
+
     @Value("${hmcts.hmctsOrgId}")
     private String hmctsServiceId;
 
@@ -154,8 +167,6 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
-        buildOrdersTab(builder);
-
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -189,6 +200,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getParties, "flagLauncherInternal!=\"\"", "#ARGUMENT(Flags)");
 
         buildSupportTab(builder);
+
+        builder.tab("paymentHistory", "Payment History")
+            .forRoles(PAYMENT_HISTORY_TAB_ROLES)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCasePaymentHistoryViewer);
 
         if (shutterService) {
             builder.shutterService();
@@ -356,17 +372,4 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .field(PCSCase::getPostCode, "Postcode")
             .field("[STATE]", "State");
     }
-
-    private void buildOrdersTab(
-        ConfigBuilder<PCSCase, State, AccessProfile> builder) {
-
-        builder.tab("orders", "Orders")
-            .forRoles(PARTY_VISIBLE_TAB_ROLES)
-            .showCondition(
-                ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS)
-            )
-            .label("ordersTableLabel", null, "${ordersTab_TableMarkup}")
-            .field("ordersTab_TableMarkup", NEVER_SHOW);
-    }
-
 }
