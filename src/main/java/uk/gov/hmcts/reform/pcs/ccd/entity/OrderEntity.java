@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,8 +52,10 @@ public class OrderEntity {
     @Column(updatable = false)
     private String authorName;
 
+    // The latest step's state, kept here for lookups and audit; only OrderSteps.append moves it.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Setter(AccessLevel.NONE)
     private OrderState state;
 
     @Enumerated(EnumType.STRING)
@@ -61,4 +64,8 @@ public class OrderEntity {
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "document_id")
     private DocumentEntity document;
+
+    public void moveTo(OrderState state) {
+        this.state = state;
+    }
 }

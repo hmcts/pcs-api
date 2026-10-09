@@ -49,7 +49,7 @@ public class OrderSteps {
 
     public OrderStepEntity append(OrderEntity order, OrderState to, UUID actor,
                                   OrderStepEntity.OrderStepEntityBuilder step) {
-        order.setState(to);
+        order.moveTo(to);
         orderRepository.save(order);
         return orderStepRepository.saveAndFlush(step
             .order(order)
