@@ -1,5 +1,5 @@
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {caseNumber} from '@utils/actions/custom-actions/createCase.action';
+import {allPartyDetails, caseNumber} from '@utils/actions/custom-actions/createCase.action';
 import {test} from '@utils/test-fixtures';
 import {createCaseApiData, submitCaseApiData} from '@data/api-data';
 import {caseSummary, home, user} from '@data/page-data';
@@ -22,12 +22,22 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
 }
 
 test.use({storageState: undefined});
+let partyNames: { firstName: string; lastName: string }[] = [];
 
 test.beforeEach(async ({page, context}) => {
   await context.clearCookies();
   initializeExecutor(page);
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload()});
+  await performAction('getAllPartyDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+    additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
+    payLoad: submitCaseApiData.submitCasePayload()
+  });
+  partyNames = allPartyDetails.map(p => {
+    const [firstName, ...lastName] = p.split(' - ')[0].trim().split(/\s+/)
+    return { firstName, lastName: lastName.join(' ') };
+  });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
 });
@@ -46,8 +56,8 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('clickTab', home.noticeOfChangeTab);
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
-    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
-    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('clientDetails', { firstName: partyNames[0].firstName , lastName: partyNames[0].lastName });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: partyNames[0].firstName , lastName: partyNames[0].lastName } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
     await new Promise(resolve => setTimeout(resolve, 5000));
     await performAction('clickLink', reviewSupport.viewThisCase);
@@ -58,7 +68,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
-      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      optionToSelect: `${partyNames[0].firstName} ${partyNames[0].lastName} ${reviewSupport.whoIsTheSupportForOption}`,
       continueButton: reviewSupport.continueButton,
       headerToCheck: reviewSupport.supporTypeHeader
     });
@@ -83,7 +93,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
-    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Special measure, Evidence by live link (Claimant Test Create Support)' });
+    await performAction('clickRadioButton', { option: `${partyNames[0].firstName} ${partyNames[0].lastName} (Defendant) - Special measure, Evidence by live link (Claimant Test Create Support)` });
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
@@ -99,8 +109,8 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('clickTab', home.noticeOfChangeTab);
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
-    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
-    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('clientDetails', { firstName: partyNames[0].firstName , lastName: partyNames[0].lastName });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: partyNames[0].firstName , lastName: partyNames[0].lastName } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
     await new Promise(resolve => setTimeout(resolve, 5000));
     await performAction('clickLink', reviewSupport.viewThisCase);
@@ -111,7 +121,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
-      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      optionToSelect: `${partyNames[0].firstName} ${partyNames[0].lastName} ${reviewSupport.whoIsTheSupportForOption}`,
       continueButton: reviewSupport.continueButton,
       headerToCheck: reviewSupport.supporTypeHeader
     });
@@ -143,7 +153,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
-    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)' });
+    await performAction('clickRadioButton', { option: `${partyNames[0].firstName} ${partyNames[0].lastName} (Defendant) - Reasonable adjustment, Friend or family with me (Claimant Test Create Support)` });
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);
@@ -159,8 +169,8 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('clickTab', home.noticeOfChangeTab);
     await performAction('noticeOfChange', { caseRefNo: caseInfo.id } );
-    await performAction('clientDetails', { firstName: 'Peter' , lastName: 'Parker' });
-    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: 'Peter' , lastName: 'Parker' } );
+    await performAction('clientDetails', { firstName: partyNames[0].firstName , lastName: partyNames[0].lastName });
+    await performAction('checkAndSubmit', { caseRefNo: caseInfo.id, firstName: partyNames[0].firstName , lastName: partyNames[0].lastName } );
     await performAction('noticeOfChangeSuccessful', { caseRefNo: caseInfo.fid } );
     await new Promise(resolve => setTimeout(resolve, 5000));
     await performAction('clickLink', reviewSupport.viewThisCase);
@@ -171,7 +181,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
-      optionToSelect: reviewSupport.whoIsTheSupportForOption,
+      optionToSelect: `${partyNames[0].firstName} ${partyNames[0].lastName} ${reviewSupport.whoIsTheSupportForOption}`,
       continueButton: reviewSupport.continueButton,
       headerToCheck: reviewSupport.supporTypeHeader
     });
@@ -193,7 +203,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
     await performAction('select', caseSummary.nextStepEventList, caseSummary.manageSupport);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
-    await performAction('clickRadioButton', { option: 'Peter Parker (Defendant) - Language Interpreter, Telugu (Claimant Test Create Support)' });
+    await performAction('clickRadioButton', { option: `${partyNames[0].firstName} ${partyNames[0].lastName} (Defendant) - Language Interpreter, Telugu (Claimant Test Create Support)` });
     await performAction('clickButton', reviewSupport.continueButton);
     await performValidation('mainHeader', reviewSupport.mainHeaderManage);
     await performAction('inputText', reviewSupport.updateCommentLabel, reviewSupport.updateCommentText);

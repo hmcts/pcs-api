@@ -75,6 +75,7 @@ import { dismissCookieBanner } from '@config/cookie-banner';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+export let allPartyDetails: string[] = [];
 
 export const addressInfoCaseTab = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -156,6 +157,7 @@ export class CreateCaseAction implements IAction {
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
       ['resumePartialClaim', () => this.resumePartialClaim()],
       ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+      ['getAllPartyDetails', () => this.getAllPartyDetails(fieldName as actionRecord)],
 
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -2080,4 +2082,37 @@ export class CreateCaseAction implements IAction {
       timeout: MEDIUM_TIMEOUT,
     });
   }
+
+  private async getAllPartyDetails(allPartiesDetails: actionRecord) {
+  
+      let originalDefendantDetails: string[] = [];
+      const payLoad = allPartiesDetails.payLoad as Record<string, any>;
+      if (allPartiesDetails.defendant1NameKnown === 'YES') {
+        originalDefendantDetails.push(
+          `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName} - Defendant 1`
+        );
+      } else {
+        originalDefendantDetails.push(
+          `null null`
+        );
+      }
+  
+      if (allPartiesDetails.additionalDefendants === 'YES') {
+  
+        for (const [index, defendant] of payLoad.additionalDefendants.entries()) {
+          if (defendant.value.nameKnown === 'YES') {
+            originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName} - Defendant ${index + 2}`);
+          } else {
+            originalDefendantDetails.push(
+              `null null`
+            );
+          }
+        }
+      }
+  
+      allPartyDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+      ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+      ];
+      allPartyDetails.push(`${payLoad.claimantName} - Claimant 1`);
+    }
 }
