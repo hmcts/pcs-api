@@ -73,8 +73,7 @@ class DeleteDraftApplicationTest extends BaseEventTest {
                 TEST_CASE_REFERENCE, enforceTheOrder);
 
         assertThat(submitResponse.getConfirmationBody())
-                .contains("Draft application deleted")
-                .contains("Close and return to case list");
+                .contains("Draft application deleted");
     }
 
     @Test

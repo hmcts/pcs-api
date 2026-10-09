@@ -33,9 +33,6 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
                 <span class="govuk-panel__title govuk-!-font-size-36">Draft application deleted</span>
                 </div>
-                <p class="govuk-body govuk-!-font-size-19">
-                <span><a class="govuk-link--no-visited-state" href="/cases">Close and return to case list</a></span>
-                </p>
                 """;
 
     private final DraftCaseDataService draftCaseDataService;
@@ -46,7 +43,7 @@ public class DeleteDraftApplication implements CCDConfig<PCSCase, State, UserRol
                 configBuilder
                         .decentralisedEvent(deleteDraftApplication.name(), this::submit)
                         .forState(State.CASE_ISSUED)
-                        .name("Delete this draft application")
+                        .name("Delete draft application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.CLAIMANT)
