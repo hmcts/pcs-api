@@ -513,15 +513,15 @@ class UploadDocumentsTest extends BaseEventTest {
             // SUSPEND was removed from GenAppType by PR #1804. Until it is restored, the
             // SUSPEND_EVICTION_APPLICATION category must be filtered out so we don't render
             // a radio backed by no data.
-            GenAppEntity adjourn = stubGenApp(GenAppType.ADJOURN, LocalDateTime.now());
-            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(adjourn));
+            GenAppEntity suspend = stubGenApp(GenAppType.SUSPEND, LocalDateTime.now());
+            when(pcsCaseEntity.getGenApps()).thenReturn(Set.of(suspend));
 
             PCSCase result = callStartHandler(PCSCase.builder().build());
 
             assertThat(result.getDocumentUploadDetails().getRelatedApplicationOptions())
                 .isNotEmpty()
                 .extracting(option -> option.getValue().getCategory())
-                .doesNotContain(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
+                .containsExactly(DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION);
         }
 
         @Test

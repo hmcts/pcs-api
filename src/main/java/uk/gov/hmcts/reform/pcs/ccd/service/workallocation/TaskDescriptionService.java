@@ -54,6 +54,7 @@ public class TaskDescriptionService {
         );
 
         String templateName = switch (genAppEntity.getType()) {
+            case SUSPEND ->  "reviwe-suspend-gen-app";
             case ADJOURN -> "review-adjourn-gen-app";
             case SET_ASIDE -> "review-set-aside-gen-app";
             case SOMETHING_ELSE -> "review-gen-app";

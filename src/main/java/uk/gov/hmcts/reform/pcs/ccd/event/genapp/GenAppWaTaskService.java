@@ -26,6 +26,7 @@ public class GenAppWaTaskService {
             .createReviewGenAppDescription(caseReference, genAppEntity);
 
         TaskType taskType = switch (genAppEntity.getType()) {
+            case SUSPEND -> TaskType.REVIEW_SUSPEND_GEN_APP;
             case ADJOURN -> TaskType.REVIEW_ADJOURN_GEN_APP;
             case SET_ASIDE -> TaskType.REVIEW_SET_ASIDE_GEN_APP;
             case SOMETHING_ELSE -> TaskType.REVIEW_GEN_APP;

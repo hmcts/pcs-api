@@ -12,22 +12,27 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.AppliedForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSuspend;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HearingInNext14Days;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.HelpWithFeesNeeded;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.AppliedForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.MustApplyForHelpWithFees;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.OtherPartiesAgreed;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ReasonsNotToShare;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.SelectParty;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartAdjourn;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSetAside;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StartSomethingElse;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.UploadSupportingDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhatOrderWanted;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.DocumentUploadWanted;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.UploadSupportingDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.WhichLanguage;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.StatementOfTruth;
+
+
+
+
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.makeAnApplication;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
@@ -60,6 +65,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new ChooseAnApplication())
+            .add(new StartSuspend())
             .add(new StartAdjourn())
             .add(new StartSetAside())
             .add(new StartSomethingElse())
