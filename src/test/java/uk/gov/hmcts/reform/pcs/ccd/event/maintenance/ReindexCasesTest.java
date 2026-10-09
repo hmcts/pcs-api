@@ -24,14 +24,14 @@ import static org.mockito.Mockito.when;
 class ReindexCasesTest extends BaseEventTest {
 
     @Mock
-    private CaseReindexingService reindexQueueService;
+    private CaseReindexingService caseReindexingService;
     @Mock
     private ReindexCasesCriteria reindexCasesCriteria;
 
 
     @BeforeEach
     void setUp() {
-        ReindexCases underTest = new ReindexCases(reindexQueueService, reindexCasesCriteria);
+        ReindexCases underTest = new ReindexCases(caseReindexingService, reindexCasesCriteria);
         setEventUnderTest(underTest);
     }
 
@@ -47,13 +47,13 @@ class ReindexCasesTest extends BaseEventTest {
                               .build())
             .build();
 
-        when(reindexQueueService.enqueueCasesModifiedSince(expectedSinceDate)).thenReturn(expectedCaseCount);
+        when(caseReindexingService.enqueueCasesModifiedSince(expectedSinceDate)).thenReturn(expectedCaseCount);
 
         // When
         SubmitResponse<State> submitResponse = callSubmitHandler(pcsCase);
 
         // Then
-        verify(reindexQueueService).enqueueCasesModifiedSince(expectedSinceDate);
+        verify(caseReindexingService).enqueueCasesModifiedSince(expectedSinceDate);
         assertThat(submitResponse.getConfirmationBody())
             .contains("10 cases modified since 10 June 2025 have been queued for re-indexing");
 

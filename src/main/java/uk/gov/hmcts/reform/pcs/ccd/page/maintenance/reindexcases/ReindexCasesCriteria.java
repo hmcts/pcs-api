@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReindexCasesCriteria implements CcdPageConfiguration {
 
-    private final CaseReindexingService reindexQueueService;
+    private final CaseReindexingService caseReindexingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -43,7 +43,7 @@ public class ReindexCasesCriteria implements CcdPageConfiguration {
         ReindexCasesDetails reindexCases = caseData.getReindexCases();
         LocalDate since = reindexCases.getModifiedSince();
 
-        long matching = reindexQueueService.countCasesModifiedSince(since);
+        long matching = caseReindexingService.countCasesModifiedSince(since);
         reindexCases.setMatchingCount(matching);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

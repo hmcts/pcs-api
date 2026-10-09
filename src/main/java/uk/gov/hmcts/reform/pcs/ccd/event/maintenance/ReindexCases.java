@@ -28,7 +28,7 @@ public class ReindexCases implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK);
 
-    private final CaseReindexingService reindexQueueService;
+    private final CaseReindexingService caseReindexingService;
     private final ReindexCasesCriteria reindexCasesCriteria;
 
     @Override
@@ -52,7 +52,7 @@ public class ReindexCases implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         LocalDate sinceDate = caseData.getReindexCases().getModifiedSince();
 
-        int enqueuedCaseCount = reindexQueueService.enqueueCasesModifiedSince(sinceDate);
+        int enqueuedCaseCount = caseReindexingService.enqueueCasesModifiedSince(sinceDate);
 
         return SubmitResponse.<State>builder()
             .confirmationBody(buildConfirmationMarkdown(sinceDate, enqueuedCaseCount))
