@@ -58,7 +58,21 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("John Doe<br>");
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_SingleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(createDefendant(null, null));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>");
     }
 
     @Test
@@ -76,9 +90,29 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getFormattedDefendantNames())
-                .isEqualTo("John Doe<br>\n"
-                        + "Test Testing<br>\n"
-                        + "Third Def<br>");
+                .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Test Testing</div>"
+                        + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
+    }
+
+    @Test
+    void shouldSetFormattedDefendantNames_MultipleDefendantNameUnknown() {
+        // Given
+        PCSCase caseData = createCaseWithDefendants(
+            createDefendant("John", "Doe"),
+            createDefendant(null, null),
+            createDefendant("Third", "Def")
+        );
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getFormattedDefendantNames())
+            .isEqualTo("<div class=\"govuk-!-margin-bottom-2\">John Doe</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Person unknown</div>"
+                           + "<div class=\"govuk-!-margin-bottom-2\">Third Def</div>");
     }
 
     @Test
