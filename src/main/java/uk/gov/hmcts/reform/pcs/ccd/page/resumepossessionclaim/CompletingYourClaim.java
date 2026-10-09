@@ -42,7 +42,6 @@ public class CompletingYourClaim implements CcdPageConfiguration {
             )
             .mandatory(PCSCase::getCompletionNextStep)
             .readonly(PCSCase::getEndButtonLabel, NEVER_SHOW, true)
-            .readonly(PCSCase::getHasUnsubmittedEnforcementData, NEVER_SHOW, true)
             .label("completingYourClaim-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
