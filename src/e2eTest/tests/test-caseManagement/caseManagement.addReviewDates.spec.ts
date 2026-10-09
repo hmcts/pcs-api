@@ -46,7 +46,7 @@ test.describe('Case management - Case Worker Add Review date @nightly', async ()
         : (addReviewDates.descriptionTextInput as string);
     let date = CaseManagementCommonUtils.getRandomDate(addReviewDates.dateTypeHiddenUserInput as string);
     let reviewReason = addReviewDates.reviewReasonArray[Math.floor(Math.random() * addReviewDates.reviewReasonArray.length)];
-    await performAction('selectAnEvent', { eventType: caseSummary.addReviewDates });
+    await performAction('When the user selects an event', {eventType: caseSummary.addReviewDates});
     await performValidation('mainHeader', addReviewDates.mainHeader);
     await performAction('clickButton', addReviewDates.addNewButton);
     await performAction('errorValidationAddReviewDatesPage', addReviewDates.errorValidation);

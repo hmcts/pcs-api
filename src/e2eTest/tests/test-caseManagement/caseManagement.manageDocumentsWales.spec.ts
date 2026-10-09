@@ -67,7 +67,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     let party = allPartyDetails[0];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[0].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', {eventType: caseSummary.manageDocuments.amend});
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('errorValidationSelectDocumentPage', selectDocument.errorValidation);
     await performAction('selectDocumentToAmend', {
@@ -102,7 +102,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[1];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[2].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', {eventType: caseSummary.manageDocuments.amend});
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[2],
@@ -138,7 +138,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let appType = amendDocumentDetails.notRelatedToAppRadioOption;
     let party = allPartyDetails[0];
     let fileName = (selectDocument.typeOfDocumentHiddenRadioOption)[1].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.amend });
+    await performAction('When the user selects an event', {eventType: caseSummary.manageDocuments.amend});
     await performValidation('mainHeader', selectDocument.mainHeader);
     await performAction('selectDocumentToAmend', {
       question: selectDocument.whichFolderQuestion, option: (selectDocument.docFolderHiddenOption)[1],
@@ -225,7 +225,7 @@ test.describe('Case management - Manage documents Wales Journey @nightly', async
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[1];
     let party = allPartyDetails[1];
     let fileName = uploadADocument.uploadDocHiddenOption[3];
-    await performAction('selectAnEvent', { eventType: caseSummary.manageDocuments.upload });
+    await performAction('When the user selects an event', {eventType: caseSummary.manageDocuments.upload});
     await performValidation('mainHeader', uploadADocument.mainHeader);
     await performAction('uploadADocument', { label: uploadADocument.uploadADocumentTextLabel, file: fileName })
     await performAction('selectDynamicAppAndPartyDocRelatedTo', {
