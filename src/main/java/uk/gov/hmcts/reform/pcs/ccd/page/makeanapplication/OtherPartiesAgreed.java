@@ -2,12 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 
 @Slf4j
@@ -46,11 +47,11 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
         pageBuilder
             .page("otherPartiesAgreed")
             .pageLabel("Has the defendant asked the other parties if they agree to this application?")
+            .showCondition(fieldEquals("xui_genapp_ShowNoticeScreens", VerticalYesNo.YES))
             .label("otherPartiesAgreed-lineSeparator", "---")
             .label("otherPartiesAgreed-info", INFO_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
-            .mandatory(XuiGenAppRequest::getOtherPartiesAgreed,
-                       ShowConditions.fieldEquals("xui_genapp_ShowNoticeScreens", VerticalYesNo.YES))
+            .mandatory(XuiGenAppRequest::getOtherPartiesAgreed)
             .done();
     }
 
