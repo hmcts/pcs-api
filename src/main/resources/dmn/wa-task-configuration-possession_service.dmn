@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.49.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-configuration-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.52.0">
   <decision id="wa-task-configuration-pcs-pcs" name="Task configuration DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_14cx079" hitPolicy="RULE ORDER">
       <input id="InputClause_1gxyo7f" label="CCD Case Data" camunda:inputVariable="caseData">
@@ -547,6 +547,66 @@ Short name</description>
         </outputEntry>
         <outputEntry id="LiteralExpression_1t9vr9a">
           <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0kcpr99">
+        <inputEntry id="UnaryTests_1q32rvx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cvyr5m">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10oxlrc">
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestAdmin"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0dvlm9l">
+          <text>"workType"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pqijpr">
+          <text>"access-requests"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0175zcx">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0cdi2y4">
+        <inputEntry id="UnaryTests_1w915iy">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0yiwcag">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0yfgol1">
+          <text>"reviewSpecificAccessRequestLegalOps"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0z125bd">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_050zuto">
+          <text>"LEGAL_OPERATIONS"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mgamxz">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_12ldkqn">
+        <inputEntry id="UnaryTests_000jiln">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0d29clr">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0j4fck1">
+          <text>"reviewSpecificAccessRequestJudiciary"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0xups1h">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0mpqcdu">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kt28x9">
+          <text></text>
         </outputEntry>
       </rule>
     </decisionTable>
