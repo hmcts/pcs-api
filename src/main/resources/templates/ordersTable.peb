@@ -14,15 +14,7 @@
     <tr class="govuk-table__row">
       <td class="govuk-table__cell">Possession order</td>
       <td class="govuk-table__cell">{{ uploadedOn }}</td>
-      <td class="govuk-table__cell">
-        {% if documentUrl is not empty %}
-          <a class="govuk-link" href="{{ documentUrl }}">
-            Possession_Order_Document
-          </a>
-        {% else %}
-          Document unavailable
-        {% endif %}
-      </td>
+      <td class="govuk-table__cell">{% if documentUrl is not empty %}<a class="govuk-link" href="{{ documentUrl }}">Possession_Order_Document.pdf</a>{% else %}Document unavailable{% endif %}</td>
     </tr>
   </tbody>
 </table>
