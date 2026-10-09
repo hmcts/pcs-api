@@ -924,4 +924,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {DefendantSolicitorAccess.class})
     private YesOrNo legalRepUpdatedDetails;
+
+    @CCD(searchable = false)
+    private YesOrNo hasUnsubmittedEnforcementData;
 }

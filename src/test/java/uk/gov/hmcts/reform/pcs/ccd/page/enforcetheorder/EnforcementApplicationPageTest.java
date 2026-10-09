@@ -104,7 +104,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
+        assertThat(caseData.getHasUnsubmittedEnforcementData()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
