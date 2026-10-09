@@ -1,21 +1,16 @@
--- An order progresses from a judge's draft to an issued order on one row, orders, which holds where
--- it is and, once issued, how it is to be issued. Each change to the order appends an order_steps row
--- with the order as it then stood: its type, form and document, and on the issuing step its wording
--- as HTML. Attaching an issued order's generated document is not a change to the order and adds no step. The latest step is the current order; earlier steps are its history, which the audit log
--- also records against orders, but which the application can read from the steps. A step may carry a
--- note in case_note, such as the query a caseworker returns an order with.
+-- An order lives on one orders row, which holds where it is and, once issued, how it is to be issued.
+-- Each change to the order appends an order_steps row with the order as it then stood; the latest step
+-- is the current order, and its id is the order's version. A step may point at a case_note, such as the
+-- query a caseworker returns an order with.
 ALTER TABLE draft_orders RENAME TO orders;
 ALTER INDEX draft_orders_case_id_idx RENAME TO orders_case_id_idx;
 ALTER INDEX draft_orders_one_draft_per_author_idx RENAME TO orders_one_draft_per_author_idx;
-ALTER TABLE orders DROP CONSTRAINT draft_orders_state_check;
--- The latest step's id is the order's version: a change made from an older copy of the order is refused.
-ALTER TABLE orders DROP COLUMN version;
-ALTER TABLE orders ADD CONSTRAINT orders_state_check
-    CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED'));
 
--- The judge's name, for the order's document; how an issued order is to be issued; and its document
--- once Docmosis has rendered it.
 ALTER TABLE orders
+    DROP CONSTRAINT draft_orders_state_check,
+    ADD CONSTRAINT orders_state_check
+        CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED')),
+    -- The judge's name, for the order's document.
     ADD COLUMN author_name TEXT,
     ADD COLUMN seal TEXT CHECK (seal IN ('COUNTY_COURT', 'HIGH_COURT')),
     ADD COLUMN final_order BOOLEAN,
@@ -58,7 +53,9 @@ CREATE UNIQUE INDEX order_steps_one_issue_idx ON order_steps(order_id) WHERE sta
 INSERT INTO order_steps (order_id, state, actor_idam_user_id, order_type, form_data, docweave_snapshot)
 SELECT id, state, author_idam_user_id, order_type, form_data, docweave_snapshot FROM orders;
 
+-- The order's content and version now live on its steps.
 ALTER TABLE orders
+    DROP COLUMN version,
     DROP COLUMN order_type,
     DROP COLUMN form_data,
     DROP COLUMN docweave_snapshot;
