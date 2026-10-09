@@ -16,6 +16,12 @@ import java.math.BigDecimal;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
 
+/**
+ *  This class is retained only for backwards compatibility.
+ *
+ * @deprecated As of release 1.4
+ */
+@Deprecated
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)

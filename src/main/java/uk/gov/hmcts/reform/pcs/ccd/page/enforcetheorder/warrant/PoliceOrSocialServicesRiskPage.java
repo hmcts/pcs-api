@@ -28,7 +28,7 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("policeOrSocialServicesRisk", this::midEvent)
-                .pageLabel("Their history of police or social services visits to the property")
+                .pageLabel("Their history of police visits to the property")
                 .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\""
                     + " AND warrantAnyRiskToBailiff=\"YES\"")

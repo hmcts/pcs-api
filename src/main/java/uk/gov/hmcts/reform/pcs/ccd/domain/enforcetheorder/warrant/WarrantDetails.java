@@ -42,8 +42,14 @@ public class WarrantDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This model is retained only for backwards compatibility.
+     */
     @JsonUnwrapped
     @CCD
+    @Deprecated
     private PeopleToEvict peopleToEvict;
 
     @CCD(
@@ -63,9 +69,21 @@ public class WarrantDetails {
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
 
+    /**
+     * Not needed in R1.4
+     *
+     * @deprecated This field is retained only for backwards compatibility.
+     */
+    @Deprecated
     @CCD(searchable = false)
     private YesOrNo showPeopleYouWantToEvictPage;
 
@@ -91,28 +109,58 @@ public class WarrantDetails {
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private MoneyOwedByDefendants moneyOwedByDefendants;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private LandRegistryFees landRegistryFees;
 
+    /**
+     * This field is retained only for backwards compatibility.
+     *
+     * @deprecated As of release 1.4
+     */
+    @Deprecated
     @JsonUnwrapped
     @CCD
     private RepaymentCosts repaymentCosts;
 
+    /**
+     * Indicates whether the order is suspended.
+     *
+     * @deprecated As of release 1.4
+     */
     @CCD(
             label = "Is your order a suspended order?",
             hint = "If your order is suspended, you will see a different version of the statement of truth on the "
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
                     + "return to the case summary page, and then check the tab named 'Case File View'"
     )
+    @Deprecated
     private VerticalYesNo isSuspendedOrder;
 
     @JsonUnwrapped
