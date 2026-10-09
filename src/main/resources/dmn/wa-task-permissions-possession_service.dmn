@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-permissions-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.48.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="wa-permissions-definition" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.52.0">
   <decision id="wa-task-permissions-pcs-pcs" name="Task Permissions DMN" camunda:historyTimeToLive="P90D">
     <decisionTable id="DecisionTable_1pr5oic" hitPolicy="RULE ORDER">
       <input id="InputClause_12crj6e" label="Task Type" biodi:width="299" camunda:inputVariable="taskType">
@@ -138,6 +138,151 @@
         </outputEntry>
         <outputEntry id="LiteralExpression_0hssf3g">
           <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1arek6c">
+        <inputEntry id="UnaryTests_1u6seoe">
+          <text>"reviewSpecificAccessRequestJudiciary"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1me56e6">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0xjh6ya">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_04gmv26">
+          <text>"judge"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1ockg1h">
+          <text>"Read,Own"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1yxjf9p">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_13gulcc">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ko1stz">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_02j321b">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_16e4kbs">
+        <inputEntry id="UnaryTests_1mcevur">
+          <text>"reviewSpecificAccessRequestLegalOps"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_02ev0re">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_12usq3e">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1hn3k8h">
+          <text>"tribunal-caseworker"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hp3tmt">
+          <text>"Read,Own"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_06ncuca">
+          <text>"LEGAL_OPERATIONS"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ma0kqd">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0hemidt">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0trdi4k">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0z3fse7">
+        <inputEntry id="UnaryTests_1690a0p">
+          <text>"reviewSpecificAccessRequestLegalOps"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_13pobhy">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_10v5try">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1fu88n7">
+          <text>"senior-tribunal-caseworker"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0exrt10">
+          <text>"Read,Own"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0jzfziv">
+          <text>"LEGAL_OPERATIONS"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0wz9t97">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1wr4vpo">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0f6l6v3">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_14itjyg">
+        <inputEntry id="UnaryTests_0y6hc7r">
+          <text>"reviewSpecificAccessRequestAdmin"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1qtrzrj">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0hdz60r">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1jdix48">
+          <text>"national-business-centre"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0kaubdx">
+          <text>"Read,Own"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0wmxl81">
+          <text>"ADMIN"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0pxq5a5">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1e3fgkj">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1co0k0s">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_18262xm">
+        <inputEntry id="UnaryTests_18idf3t">
+          <text>"reviewSpecificAccessRequestAdmin"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1riz9f7">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_102c0b8">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1muei45">
+          <text>"hearing-centre-admin"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1pyfeul">
+          <text>"Read,Own"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1t7wqmn">
+          <text>"ADMIN"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1rub45p">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0t0f06k">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0lhngtu">
+          <text></text>
         </outputEntry>
       </rule>
     </decisionTable>
