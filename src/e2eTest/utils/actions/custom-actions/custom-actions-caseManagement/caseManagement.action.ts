@@ -789,8 +789,8 @@ export class CaseManagementAction implements IAction {
         text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
       });
       await performValidation('mainHeader', confirmJudicialNotes.mainHeader);
-      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedText});
-      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedText});
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.judicialNotesAddedParagraph});
+      await performValidation('text', { elementType: 'inlineText', text: confirmJudicialNotes.youDoNotNeedParagraph});
       await performAction('clickButton', confirmJudicialNotes.closeAndReturnToCaseOverviewButton);
     }
 
