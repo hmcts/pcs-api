@@ -44,7 +44,7 @@ public class ResumeDraftEnforcementOrder implements CCDConfig<PCSCase, State, Us
                 configBuilder
                         .decentralisedEvent(resumeEnforcementOrder.name(), this::submit)
                         .forState(State.CASE_ISSUED)
-                        .name("Resume Draft Application")
+                        .name("Resume draft application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.GA_CLAIMANT_SOLICITOR)
                         .grant(Permission.CRUD, UserRole.CLAIMANT)

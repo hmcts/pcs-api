@@ -80,7 +80,7 @@ class ResumeDraftEnforcementOrderTest extends BaseEventTest {
 
     @Test
     void shouldBeConfiguredWithExpectedName() {
-        assertThat(configuredEvent.getName()).isEqualTo("Resume Draft Application");
+        assertThat(configuredEvent.getName()).isEqualTo("Resume draft application");
     }
 
     @Test
