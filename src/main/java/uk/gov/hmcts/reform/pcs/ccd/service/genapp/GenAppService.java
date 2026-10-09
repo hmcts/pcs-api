@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
@@ -49,6 +50,7 @@ public class GenAppService {
     private final DocumentTypeMapper documentTypeMapper;
     private final DocumentRepository documentRepository;
     private final ClaimActivityLogService claimActivityLogService;
+    private final DocumentIdExtractor documentIdExtractor;
     private final GenAppDocumentGenerator genAppDocumentGenerator;
     private final NotificationService notificationService;
     private final GenAppWaTaskService genAppWaTaskService;
@@ -59,6 +61,7 @@ public class GenAppService {
                          DocumentTypeMapper documentTypeMapper,
                          DocumentRepository documentRepository,
                          ClaimActivityLogService claimActivityLogService,
+                         DocumentIdExtractor documentIdExtractor,
                          GenAppDocumentGenerator genAppDocumentGenerator,
                          NotificationService notificationService,
                          GenAppWaTaskService genAppWaTaskService,
@@ -69,6 +72,7 @@ public class GenAppService {
         this.documentTypeMapper = documentTypeMapper;
         this.documentRepository = documentRepository;
         this.claimActivityLogService = claimActivityLogService;
+        this.documentIdExtractor = documentIdExtractor;
         this.genAppDocumentGenerator = genAppDocumentGenerator;
         this.notificationService = notificationService;
         this.genAppWaTaskService = genAppWaTaskService;
@@ -305,6 +309,7 @@ public class GenAppService {
             .pcsCase(pcsCaseEntity)
             .generalApplication(genAppEntity)
             .url(document.getUrl())
+            .documentId(documentIdExtractor.extractDocumentId(document.getUrl()))
             .fileName(fileName)
             .binaryUrl(document.getBinaryUrl())
             .categoryId(categoryId)
