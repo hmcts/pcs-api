@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.testcasesupport;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
@@ -23,11 +24,11 @@ public class TestCaseDocumentService {
     private static final String DOCUMENT_URL =
         "http://dm-store/documents/" + PLACEHOLDER_DOCUMENT_ID;
 
-    private static final String BINARY_URL =
-        DOCUMENT_URL + "/binary";
-
     private final PcsCaseService pcsCaseService;
     private final DocumentRepository documentRepository;
+
+    @Value("${ORDERS_TEST_PDF_URL:http://localhost:3206/test-documents/Possession_Order_Document.pdf}")
+    private String testPdfUrl;
 
     @Transactional
     public void addPossessionOrderPlaceholder(long caseReference) {
@@ -35,18 +36,15 @@ public class TestCaseDocumentService {
 
         DocumentEntity possessionOrder = DocumentEntity.builder()
             .documentId(PLACEHOLDER_DOCUMENT_ID)
-            .fileName("Possession order.pdf")
+            .fileName("Possession_Order_Document.pdf")
             .url(DOCUMENT_URL)
-            .binaryUrl(BINARY_URL)
+            .binaryUrl(testPdfUrl)
             .type(DocumentType.POSSESSION_ORDER)
-            .categoryId(
-                CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId()
-            )
+            .categoryId(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId())
             .contentType("application/pdf")
             .build();
 
         pcsCaseEntity.addDocument(possessionOrder);
-
         documentRepository.save(possessionOrder);
     }
 }
