@@ -64,7 +64,7 @@ public class PaymentController {
                     value = """
                     {
                         "amount": 300.99,
-                        "language": "English",
+                        "language": "en",
                         "returnUrl": "https://some-frontend/payment-return-url"
                     }
                     """
