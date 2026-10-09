@@ -61,6 +61,7 @@ class CounterClaimFormPersistenceServiceTest {
     void buildsContextWithPayloadAndDefendantNumberWhenNotAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 2);
+        counterClaim.setRank(1);
         CounterClaimFormPayload payload = CounterClaimFormPayload.builder().build();
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
@@ -71,6 +72,7 @@ class CounterClaimFormPersistenceServiceTest {
 
         assertThat(context).isPresent();
         assertThat(context.get().payload()).isSameAs(payload);
+        assertThat(context.get().counterClaimRank()).isEqualTo(1);
         assertThat(context.get().defendantNumber()).isEqualTo(2);
     }
 
@@ -78,6 +80,7 @@ class CounterClaimFormPersistenceServiceTest {
     void returnsEmptyAndDoesNotBuildWhenAlreadyAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(true);
@@ -90,6 +93,7 @@ class CounterClaimFormPersistenceServiceTest {
     void defendantNumberFallsBackToOneWhenRankMissing() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, null);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(false);
@@ -98,6 +102,7 @@ class CounterClaimFormPersistenceServiceTest {
         Optional<CounterClaimFormRenderContext> context = underTest.buildContextIfNotAttached(COUNTER_CLAIM_ID);
 
         assertThat(context).isPresent();
+        assertThat(context.get().counterClaimRank()).isEqualTo(1);
         assertThat(context.get().defendantNumber()).isOne();
     }
 
@@ -105,6 +110,7 @@ class CounterClaimFormPersistenceServiceTest {
     void attachStoresTypeLinksDocumentAndLogsSuccess() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         PcsCaseEntity pcsCase = counterClaim.getPcsCase();
         DocumentEntity document = DocumentEntity.builder().build();
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
@@ -125,6 +131,7 @@ class CounterClaimFormPersistenceServiceTest {
     void attachSkipsWhenAlreadyAttached() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(true);
@@ -140,6 +147,7 @@ class CounterClaimFormPersistenceServiceTest {
     void recordGenerationFailureLogsAgainstFilingDefendantAndReturnsCaseReference() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, 1);
+        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
 
         long caseReference = underTest.recordGenerationFailure(COUNTER_CLAIM_ID, new RuntimeException("boom"), false);

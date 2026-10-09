@@ -83,9 +83,9 @@ class DocumentAssociationServiceTest {
 
     @Test
     void shouldAssociateDocumentWithCounterclaim() {
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(COUNTERCLAIM_ID).build();
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder().id(COUNTERCLAIM_ID).rank(1).build();
         when(counterClaimRepository.getReferenceById(COUNTERCLAIM_ID)).thenReturn(counterClaim);
-        when(documentNameService.appendCounterClaimPostfix("evidence.pdf", claimEntity, PARTY_ID))
+        when(documentNameService.appendCounterClaimPostfix("evidence.pdf", counterClaim, claimEntity, PARTY_ID))
             .thenReturn("evidence - Defendant 1.pdf");
 
         String fileName = underTest.applyAssociation(

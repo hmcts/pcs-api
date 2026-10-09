@@ -11,16 +11,17 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 public class CounterClaimFormDocumentGenerator {
     static final String LIP_TEMPLATE_ID = "CV-PCS-CLM-ENG-Counterclaim-Form.docx";
     static final String LR_TEMPLATE_ID = "CV-PCS-CLM-ENG-Counterclaim-Form-LR.docx";
-    static final String OUTPUT_FILENAME_PREFIX = "Counterclaim - Defendant ";
+    static final String OUTPUT_FILENAME_TEMPLATE = "Counterclaim CC%d - Defendant %d";
 
     private final DocAssemblyService docAssemblyService;
 
-    public String generate(CounterClaimFormPayload payload, int defendantNumber) {
+    public String generate(CounterClaimFormPayload payload, int counterClaimRank, int defendantNumber) {
+        String filename = String.format(OUTPUT_FILENAME_TEMPLATE, counterClaimRank, defendantNumber);
         return docAssemblyService.generateDocument(
             payload,
             getTemplateId(payload),
             OutputType.PDF,
-            OUTPUT_FILENAME_PREFIX + defendantNumber
+            filename
         );
     }
 

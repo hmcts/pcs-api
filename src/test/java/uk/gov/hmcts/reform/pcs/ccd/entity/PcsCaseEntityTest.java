@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -69,6 +70,45 @@ class PcsCaseEntityTest {
         // Then
         verify(genAppEntity).setRank(6);
         verify(genAppEntity).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldAddCounterClaimEntityAndSetCaseLevelRank() {
+        // Given
+        CounterClaimEntity counterClaim1 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim2 = mock(CounterClaimEntity.class);
+        CounterClaimEntity counterClaim3 = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.addCounterClaim(counterClaim1);
+        underTest.addCounterClaim(counterClaim2);
+        underTest.addCounterClaim(counterClaim3);
+
+        // Then
+        verify(counterClaim1).setRank(1);
+        verify(counterClaim1).setPcsCase(underTest);
+
+        verify(counterClaim2).setRank(2);
+        verify(counterClaim2).setPcsCase(underTest);
+
+        verify(counterClaim3).setRank(3);
+        verify(counterClaim3).setPcsCase(underTest);
+    }
+
+    @Test
+    void shouldContinueCounterClaimCaseLevelRankFromExistingCounterClaims() {
+        // Given
+        for (int i = 0; i < 3; i++) {
+            underTest.getCounterClaims().add(mock(CounterClaimEntity.class));
+        }
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+
+        // When
+        underTest.addCounterClaim(counterClaim);
+
+        // Then
+        verify(counterClaim).setRank(4);
+        verify(counterClaim).setPcsCase(underTest);
     }
 
     @Test
