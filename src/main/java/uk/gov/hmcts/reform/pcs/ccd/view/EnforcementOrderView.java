@@ -16,9 +16,8 @@ public class EnforcementOrderView {
     private final DraftCaseDataService draftCaseDataService;
 
     public void setCaseFields(PCSCase pcsCase, long caseReference, State state) {
-        if (pcsCase.getEnforcementOrder() == null && State.CASE_ISSUED == state) {
-            pcsCase.setEnforcementOrder(new EnforcementOrder());
-            pcsCase.getEnforcementOrder().setHasUnsubmittedEnforcementData(
+        if (State.CASE_ISSUED == state) {
+            pcsCase.setHasUnsubmittedEnforcementData(
                     hasEnforcementDraftData(caseReference) ? YesOrNo.YES : YesOrNo.NO);
         }
     }
