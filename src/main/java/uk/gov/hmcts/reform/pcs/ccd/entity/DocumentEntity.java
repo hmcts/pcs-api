@@ -121,8 +121,6 @@ public class DocumentEntity {
     @JoinColumn(name = "hearing_id")
     private HearingEntity hearing;
 
-    private boolean removed;
-
     private String removalReason;
 
     private LocalDateTime removedAt;
