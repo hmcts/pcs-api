@@ -34,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEn
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
@@ -51,9 +53,11 @@ import java.util.UUID;
 public class DefendantResponseReadMapper {
 
     private final AddressMapper addressMapper;
+    private final FeatureToggleService featureToggleService;
 
-    public DefendantResponseReadMapper(AddressMapper addressMapper) {
+    public DefendantResponseReadMapper(AddressMapper addressMapper, FeatureToggleService featureToggleService) {
         this.addressMapper = addressMapper;
+        this.featureToggleService = featureToggleService;
     }
 
     public PossessionClaimResponse toPossessionClaimResponse(
@@ -79,7 +83,10 @@ public class DefendantResponseReadMapper {
             .orElse(null);
     }
 
-    private static String toCounterclaimDocumentId(PcsCaseEntity pcsCase, UUID partyId) {
+    private String toCounterclaimDocumentId(PcsCaseEntity pcsCase, UUID partyId) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            return null;
+        }
         if (pcsCase == null || pcsCase.getCounterClaims() == null || partyId == null) {
             return null;
         }

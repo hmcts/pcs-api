@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseE
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
@@ -62,7 +64,7 @@ class DefendantResponseReadMapperTest {
             .claim(claim)
             .build();
 
-        DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(mock(AddressMapper.class));
+        DefendantResponseReadMapper underTest = mapper(mock(AddressMapper.class));
 
         PossessionClaimResponse response = underTest.toPossessionClaimResponse(entity, List.of());
 
@@ -85,7 +87,7 @@ class DefendantResponseReadMapperTest {
             .submissionDocument(DocumentEntity.builder().id(documentId).build())
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(entity, List.of());
 
         assertThat(response.getResponseDocumentId()).isEqualTo(documentId.toString());
@@ -113,7 +115,7 @@ class DefendantResponseReadMapperTest {
             .documents(List.of(unrelatedDocument, documentWithoutCounterclaim, linkedDocument))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isEqualTo(documentId.toString());
@@ -141,7 +143,7 @@ class DefendantResponseReadMapperTest {
             ))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(currentParty, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isEqualTo(currentDocumentId.toString());
@@ -155,7 +157,7 @@ class DefendantResponseReadMapperTest {
             .documents(List.of(DocumentEntity.builder().id(UUID.randomUUID()).build()))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -182,7 +184,7 @@ class DefendantResponseReadMapperTest {
             ))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -198,7 +200,7 @@ class DefendantResponseReadMapperTest {
             .documents(null)
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -220,7 +222,7 @@ class DefendantResponseReadMapperTest {
             ))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -245,7 +247,7 @@ class DefendantResponseReadMapperTest {
             ))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isEqualTo(formDocumentId.toString());
@@ -266,7 +268,23 @@ class DefendantResponseReadMapperTest {
             .documents(List.of(counterclaimForm(UUID.randomUUID(), counterClaim)))
             .build();
 
-        PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class))
+            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
+
+        assertThat(response.getCounterclaimDocumentId()).isNull();
+    }
+
+    @Test
+    void shouldNotMapCounterclaimDocumentIdWhenRelease14IsDisabled() {
+        UUID partyId = UUID.randomUUID();
+        PartyEntity party = partyWithId(partyId);
+        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
+        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
+            .counterClaims(List.of(counterClaim))
+            .documents(List.of(counterclaimForm(UUID.randomUUID(), counterClaim)))
+            .build();
+
+        PossessionClaimResponse response = mapper(mock(AddressMapper.class), false)
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -296,7 +314,7 @@ class DefendantResponseReadMapperTest {
         when(party.getAddress()).thenReturn(partyAddress);
 
         final PcsCaseEntity pcsCase = PcsCaseEntity.builder().propertyAddress(propertyAddress).build();
-        final DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(addressMapper);
+        final DefendantResponseReadMapper underTest = mapper(addressMapper);
 
         final RegularExpenseEntity householdBills = RegularExpenseEntity.builder()
             .expenseType(RegularExpenseType.HOUSEHOLD_BILLS)
@@ -376,7 +394,7 @@ class DefendantResponseReadMapperTest {
     @Test
     void shouldMapContactPreferencesAndStatementOfTruthAndUsePartyAddressWhenNotSameAsProperty() {
         final AddressMapper addressMapper = mock(AddressMapper.class);
-        final DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(addressMapper);
+        final DefendantResponseReadMapper underTest = mapper(addressMapper);
 
         final PartyEntity party = mock(PartyEntity.class);
         when(party.getId()).thenReturn(UUID.randomUUID());
@@ -419,7 +437,7 @@ class DefendantResponseReadMapperTest {
     @Test
     void shouldMarkUniversalCreditYesWhenNoUcApplicationDateAndNoUcIncomeItem() {
         final AddressMapper addressMapper = mock(AddressMapper.class);
-        final DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(addressMapper);
+        final DefendantResponseReadMapper underTest = mapper(addressMapper);
 
         final PartyEntity party = mock(PartyEntity.class);
         when(party.getId()).thenReturn(UUID.randomUUID());
@@ -485,7 +503,7 @@ class DefendantResponseReadMapperTest {
                 .build()
         );
 
-        final PossessionClaimResponse response = new DefendantResponseReadMapper(mock(AddressMapper.class))
+        final PossessionClaimResponse response = mapper(mock(AddressMapper.class))
             .toPossessionClaimResponse(entity, assertions);
 
         assertThat(response.getDefendantResponses().getTenancyType()).isEqualTo("Corrected tenancy type");
@@ -496,7 +514,7 @@ class DefendantResponseReadMapperTest {
     @Test
     void shouldMapCounterClaimAgainstPartiesWhenReadingSubmittedResponse() {
         final AddressMapper addressMapper = mock(AddressMapper.class);
-        final DefendantResponseReadMapper underTest = new DefendantResponseReadMapper(addressMapper);
+        final DefendantResponseReadMapper underTest = mapper(addressMapper);
 
         final UUID defendantPartyId = UUID.randomUUID();
         final UUID claimantPartyId = UUID.randomUUID();
@@ -557,6 +575,16 @@ class DefendantResponseReadMapperTest {
             .isEqualTo("Emma");
         assertThat(mappedCounterClaim.getCounterClaimAgainst().get(1).getValue().getLastName())
             .isEqualTo("Willis");
+    }
+
+    private static DefendantResponseReadMapper mapper(AddressMapper addressMapper) {
+        return mapper(addressMapper, true);
+    }
+
+    private static DefendantResponseReadMapper mapper(AddressMapper addressMapper, boolean release14Enabled) {
+        FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
+        return new DefendantResponseReadMapper(addressMapper, featureToggleService);
     }
 
     private static PartyEntity partyWithId(UUID partyId) {
