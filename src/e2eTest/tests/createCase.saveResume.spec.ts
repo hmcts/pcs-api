@@ -70,7 +70,7 @@ test.beforeEach(async ({ page, context }) => {
   });
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.claimantSolicitor);
+  await performAction('login', user.localAuthorityOrg1Usr1);
   await dismissCookieBanner(page, 'analytics');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
@@ -212,7 +212,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
-    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
@@ -224,7 +224,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performValidation('radioButtonChecked', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption, false);
     await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
-    await performAction('selectClaimType', claimType.noRadioOption);    
+    await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,

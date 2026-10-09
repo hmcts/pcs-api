@@ -295,8 +295,10 @@ test.describe('[Enforcement - Writ of Possession] @nightly', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
-      nextPage: confirmHCEOfficer.mainHeader
+      nextPage: defendantInBreathingSpace.mainHeader
     });
+    await performAction('isDefendantInBreathingSpace', {option: defendantInBreathingSpace.noRadioOption, nextPage: missedPayments.mainHeader});
+    await performAction('missedPayments', {option: missedPayments.noRadioOption, nextPage: confirmHCEOfficer.mainHeader});
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOfficer.haveYouHiredHCEOQuestion,
       option: confirmHCEOfficer.noRadioOption,
