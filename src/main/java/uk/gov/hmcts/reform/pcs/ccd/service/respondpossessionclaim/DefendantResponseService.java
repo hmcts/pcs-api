@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -219,16 +220,18 @@ public class DefendantResponseService {
         }
 
         // The defence form is scheduled for generation so we reference it by its deterministic filename.
+        List<DocumentEntity> documents = new ArrayList<>();
         if (generatesDefenceForm(journeyType)) {
-            responseDocuments.add(DocumentEntity.builder()
+            documents.add(DocumentEntity.builder()
                 .fileName(
                     expectedDefenceFormFilename(DefenceFormPersistenceService.defendantNumber(savedResponse))
                         + GENERATED_DOC_EXTENSION)
                 .build());
         }
 
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty,
-                                                                           responseDocuments);
+        documents.addAll(responseDocuments);
+
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
     private UUID requireCurrentUserId() {

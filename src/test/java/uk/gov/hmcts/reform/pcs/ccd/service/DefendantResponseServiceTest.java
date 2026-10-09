@@ -1263,7 +1263,7 @@ class DefendantResponseServiceTest {
         when(documentService.createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
             .thenReturn(List.of(activeDocument));
-        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
+        when(translationWAService.isTranslationRequired(languageUsed)).thenReturn(true);
 
         // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
