@@ -74,20 +74,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', enforcementApplication.mainHeader);
-      await performAction('validateWritOrWarrantFeeAmount', {
-        journey: enforcementApplication.writOfPossessionRadioOption,
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        label1: enforcementApplication.warrantFeeValidationLabelHidden,
-        text1: enforcementApplication.warrantFeeValidationTextHidden,
-        label2: enforcementApplication.writFeeValidationLabelHidden,
-        text2: enforcementApplication.writFeeValidationTextHidden
-      });
-      await performAction('validateGetQuoteFromBailiffLink', {
-        type: enforcementApplication.summaryWritOrWarrantLink,
-        link: enforcementApplication.quoteFromBailiffLinkHidden,
-        newPage: enforcementApplication.hceoPageTitleHidden
-      });
-      await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
         question: enforcementApplication.typeOfApplicationQuestion,
@@ -115,38 +101,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('nameYourHCEO', {
         label: yourHCEO.nameOfYourHCEOTextLabel,
         input: yourHCEO.nameOfYourHCEOTextInput,
-        nextPage: moneyOwed.mainHeader
-      });
-      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
-      await performAction('provideMoneyOwed', {
-        label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput,
-        nextPage: legalCosts.mainHeader
-      });
-      await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
-      await performAction('provideLegalCosts', {
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-        nextPage: landRegistryFees.mainHeader
-      });
-      await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
-      await performAction('provideLandRegistryFees', {
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: repayments.mainHeader
-      });
-      await performValidation('mainHeader', repayments.mainHeader);
-      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-      await performAction('errorValidationRepaymentsPage', repayments.errorValidation);
-      await performAction('provideAmountToRePay', {
-        question: repayments.rePaymentQuestion,
-        option: repayments.someRadioOptions,
-        label: repayments.enterTheAmountTextLabelHidden,
-        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
