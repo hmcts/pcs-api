@@ -58,7 +58,7 @@ class PartyAccessCodeLinkServiceTest {
     }
 
     private UserInfo createUser() {
-        return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
+        return new UserInfo(null, USER_ID, null, null, null, List.of());
     }
 
     private PartyEntity createParty(UUID partyId, String idamUserId) {
