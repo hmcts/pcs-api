@@ -362,7 +362,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -546,7 +546,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -616,7 +616,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -713,7 +713,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                             .build());
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         callStartHandler(caseData);

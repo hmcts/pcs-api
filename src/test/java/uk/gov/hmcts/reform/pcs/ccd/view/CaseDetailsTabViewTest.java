@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -300,7 +301,7 @@ class CaseDetailsTabViewTest {
                 )
             );
 
-        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false)).thenReturn(
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, null)).thenReturn(
             NoticeTabDetails.builder()
                 .noticeServed("Yes")
                 .noticeMethod("By email")
@@ -309,7 +310,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         assertThat(caseDetailsTab.getPropertyAddress()).isEqualTo(propertyAddress);
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getGrounds())
@@ -408,7 +409,7 @@ class CaseDetailsTabViewTest {
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
-        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, false)).thenReturn(
+        when(noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, null)).thenReturn(
             NoticeTabDetails.builder()
                 .noticeServed(noAnswer)
                 .noticeMethod(noAnswer)
@@ -417,7 +418,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getPropertyAddress()).isNull();
@@ -472,7 +473,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getMortgageDetails()).isEmpty();
@@ -498,7 +499,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getMortgageOneDetails().getNameKnown()).isEqualTo(noAnswer);
@@ -514,7 +515,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getSuspensionOfRightToBuyDetails().getHousingAct())
@@ -547,7 +548,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getOtherGroundsDescription())
             .isEqualTo("description");
@@ -573,7 +574,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getGroundsForPossessionDetails().getOtherGroundsDescription())
@@ -605,7 +606,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
@@ -638,7 +639,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress()).isEqualTo(claimantAddress);
@@ -657,7 +658,7 @@ class CaseDetailsTabViewTest {
         );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getClaimantAddress().getAddressLine1()).isEqualTo(noAnswer);
@@ -683,7 +684,7 @@ class CaseDetailsTabViewTest {
 
         try {
             // When
-            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
             // Then
             assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 July 2026, 6:02:31PM");
@@ -703,7 +704,7 @@ class CaseDetailsTabViewTest {
 
         try {
             // When
-            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+            CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
             // Then
             assertThat(caseDetailsTab.getDateClaimSubmitted()).isEqualTo("11 January 2026, 5:02:31PM");
@@ -726,7 +727,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDescription()).isNull();
@@ -740,6 +741,8 @@ class CaseDetailsTabViewTest {
         AddressUK claimantAddress = AddressUK.builder().postCode("L2 3RT").build();
         PCSCase pcsCase = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .release1dot4Enabled(VerticalYesNo.NO).build())
             .claimantType(
                 DynamicStringList.builder().value(
                         DynamicStringListElement.builder().code(COMMUNITY_LANDLORD.name()).build())
@@ -943,7 +946,7 @@ class CaseDetailsTabViewTest {
             );
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getPropertyAddress()).isEqualTo(propertyAddress);
@@ -1044,6 +1047,41 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
+    void shouldSetCaseDetailsTabFieldsForWalesWithoutExemptLandlordQuestion() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .featureFlags(FeatureFlags.builder()
+                .release1dot4Enabled(VerticalYesNo.YES).build())
+            .build();
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null,false);
+
+        // Then
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+       
+    }
+
+    @Test
+    void shouldNotSetClaimantRegistrationAndLicensingDetailsWhenFeatureFlagsAreNull() {
+        PCSCase pcsCase = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+
+        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
+            ClaimantInformationTabDetails.builder()
+                .claimantName("Claimant")
+                .build()
+        );
+
+        // When
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
+
+        // Then
+        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
+    }
+
+    @Test
     void shouldSetCaseDetailsTabFieldsWithNoDataWales() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
@@ -1051,7 +1089,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementType()).isEqualTo(noAnswer);
@@ -1079,7 +1117,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getAgreementTypeDescription()).isNull();
@@ -1094,7 +1132,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo(noAnswer);
@@ -1124,7 +1162,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getAntisocialAndConductDetails().getAntiSocialBehaviour()).isEqualTo("No");
@@ -1156,7 +1194,7 @@ class CaseDetailsTabViewTest {
                 .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getRequiredDocumentsDetails().getHasGasSafetyReport()).isEqualTo("Yes");
@@ -1191,7 +1229,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, true);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, true);
 
         // Then
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDocuments()).isEqualTo(tenancyDocuments);
@@ -1217,7 +1255,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getTenancyLicenceDetails().getTenancyLicenceDocuments()).isEqualTo(tenancyDocuments);
@@ -1240,7 +1278,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, true);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, true);
 
         // Then
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isEqualTo(licenceDocuments);
@@ -1263,7 +1301,7 @@ class CaseDetailsTabViewTest {
             .build();
 
         // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, false);
+        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
 
         // Then
         assertThat(caseDetailsTab.getOccupationContractLicenceDetails().getDocuments()).isEqualTo(licenceDocuments);
