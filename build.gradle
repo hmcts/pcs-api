@@ -474,7 +474,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.13'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.14'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.5'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.3'
@@ -621,6 +621,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'LAUNCHDARKLY_SDK_KEY', 'ignored'
   environment 'LAUNCHDARKLY_FILES', './featureFlags/flags.json'
   environment 'ENABLE_TESTING_SUPPORT', 'true'
+  environment 'PCS_API_ENV', 'local'
   environment 'IDAM_CLIENT_SECRET', 'dummy-secret-for-local'
   environment 'CASE_DOCUMENT_S2S_AUTHORISED_SERVICES', 'ccd_case_document_am_api,ccd_gw,xui_webapp,ccd_data,pcs_frontend,pcs_api'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api,wa_task_management_api,aac_manage_case_assignment'
@@ -697,9 +698,13 @@ dockerCompose.isRequiredBy bootWithCCD
 dockerCompose.isRequiredBy cftlibTest
 
 def cleanUpContainers = System.getenv("CI") != null
+def composeFiles = ['docker-compose-wiremock.yml']
+if (System.getenv("WA_FUNCTIONAL_TESTS_ENABLED") == "true") {
+  composeFiles.add('docker-compose-wa.yml')
+}
 
 dockerCompose {
-  useComposeFiles = ['docker-compose-wiremock.yml']
+  useComposeFiles = composeFiles
   stopContainers = cleanUpContainers
   removeContainers = cleanUpContainers
   forceRecreate = true
