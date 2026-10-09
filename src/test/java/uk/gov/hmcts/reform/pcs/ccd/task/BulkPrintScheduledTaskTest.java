@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimActivityLogRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.ClaimPackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.DefencePackSender;
 import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.GenAppPackSender;
+import uk.gov.hmcts.reform.pcs.ccd.service.bulkprint.HearingNoticePackSender;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
@@ -45,6 +46,8 @@ class BulkPrintScheduledTaskTest {
     private DefencePackSender defencePackSender;
     @Mock
     private GenAppPackSender genAppPackSender;
+    @Mock
+    private HearingNoticePackSender hearingNoticePackSender;
 
     @Test
     @DisplayName("Builds the task with the nightly default schedule")
@@ -165,6 +168,34 @@ class BulkPrintScheduledTaskTest {
         verify(genAppPackSender).sendGenAppPacks(failingCase);
     }
 
+    @Test
+    @DisplayName("Runs the hearing notice phase when Release 1.4 is on")
+    void shouldRunHearingNoticePhaseWhenRelease14On() {
+        UUID caseId = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseId));
+
+        runSweep(null);
+
+        verify(hearingNoticePackSender).sendHearingNoticePacks(caseId);
+    }
+
+    @Test
+    @DisplayName("Skips the hearing notice phase when Release 1.4 is off")
+    void shouldSkipHearingNoticePhaseWhenRelease14Off() {
+        UUID caseId = UUID.randomUUID();
+        when(featureToggleService.isEnabled(FeatureFlag.BULK_PRINT)).thenReturn(true);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        when(claimActivityLogRepository.findCaseIdsByActivityTypeAndStatus(
+            ClaimActivityType.DOCUMENTS_CREATED, ClaimActivityStatus.SUCCESS)).thenReturn(List.of(caseId));
+
+        runSweep(null);
+
+        verify(hearingNoticePackSender, never()).sendHearingNoticePacks(any());
+    }
+
     private void runSweep(Integer lookbackHours) {
         RecurringTask<Void> task = component("DAILY|02:00", lookbackHours).bulkPrintTask();
         task.execute(null, null);
@@ -173,6 +204,6 @@ class BulkPrintScheduledTaskTest {
     private BulkPrintScheduledTask component(String schedule, Integer lookbackHours) {
         return new BulkPrintScheduledTask(
             featureToggleService, claimActivityLogRepository, claimPackSender, defencePackSender, genAppPackSender,
-            schedule, lookbackHours);
+            hearingNoticePackSender, schedule, lookbackHours);
     }
 }
