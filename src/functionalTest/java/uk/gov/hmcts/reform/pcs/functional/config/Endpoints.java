@@ -9,7 +9,8 @@ public enum Endpoints {
     StartEventCallback("/callbacks/about-to-start"),
     SubmitEventCallback("/ccd-persistence/cases"),
     PaymentUpdate("/payment-update"),
-    GetPaymentInfoDetails("/testing-support/fee-payment-info/{caseReference}");
+    GetPaymentInfoDetails("/testing-support/fee-payment-info/{caseReference}"),
+    SdpExportRoundTrip("/testing-support/sdp-export/round-trip");
 
     private final String resource;
 

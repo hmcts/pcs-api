@@ -14,6 +14,7 @@ import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
 import org.awaitility.core.ConditionTimeoutException;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
@@ -126,6 +127,14 @@ public class ApiSteps {
             throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
         }
         response.then().assertThat().body(attribute, Matchers.equalTo(value));
+    }
+
+    @Step("the response body {0} matches {1}")
+    public void theResponseBodyAttributeMatches(String attribute, Matcher<?> matcher) {
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().body(attribute, matcher);
     }
 
     @Step("the response body matches the expected list")

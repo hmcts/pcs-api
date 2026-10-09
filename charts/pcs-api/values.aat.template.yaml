@@ -4,5 +4,6 @@ java:
   ingressHost: ${SERVICE_FQDN}
   environment:
     ENABLE_TESTING_SUPPORT: true
+    SDP_EXPORT_ENABLED: true
     CASE_TYPE_SUFFIX: "staging"
     LAUNCHDARKLY_ENV: "staging"
