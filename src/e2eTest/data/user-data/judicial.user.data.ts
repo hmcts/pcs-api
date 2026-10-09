@@ -6,7 +6,7 @@ export const judicial = {
   possession_Circuit_Judge_FeePaid_Judge_email: 'HHJ.Test.McGinn@judicialofficeelinkssw.onmicrosoft.com',
   possession_Salaried_Judge_email: 'ICCJudge.Barry@ejudiciary.net',
 
-  //challenged access judge user to test.
+  //challenged access judge users
   walesRegion_Judge_email: 'HHJ.Nicholas.Dominguez@ejudiciary.net',
   englandRegion_Judge_email: 'ChiefICCJudge.Nichols@ejudiciary.net',
   

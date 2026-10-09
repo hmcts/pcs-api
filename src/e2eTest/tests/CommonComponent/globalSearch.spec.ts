@@ -75,7 +75,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Common Component Global Search] - Challenged Access @nightly @CC @globalSearch', () => {
-  test('Wales Hearing Centre Team Leader Access an England case @rerun', async ({ page, context }) => {
+  test('Challenged access - Hearing centre team leader user can view the case after submitting a request', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
@@ -90,7 +90,7 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     });
   });
 
-  test('Wales Judge user Access an England case', async ({ page, context }) => {
+  test('Challenged access - Judge user can view the case after submitting a request', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
@@ -103,9 +103,10 @@ test.describe('[Common Component Global Search] - Challenged Access @nightly @CC
     await performAction('requestChallengedAccess', {
       option: whyDoYouNeedToAccessThisCase.toConsiderAnOrderForTransfer
     });
+    
   });
 
-  test('Wales Hearing Centre Administrator Access an England case ', async ({ page, context }) => {
+  test('Challenged access - Hearing centre administrator user can view the case after submitting a request', async ({ page, context }) => {
     await setupGlobalSearchUser(
       page,
       context,
