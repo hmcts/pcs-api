@@ -78,7 +78,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
     data: makeAnApplicationApiData.makeAnApplicationSomethingElseWithNoticePayload(
       defendantUserDetails[0].id, defendantUserDetails[0].name),
   });
-
 }
 
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -139,7 +138,7 @@ test.describe('Legal Representative - Upload Documents- e2e Journey @nightly', a
   });
 
   test('Upload documents when GenApps submitted - Single def SET_ASIDE @regression', async () => {
-    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedSetAsideHidden} ${getFormattedDate()}`;
+    let docRelatedToOption = `${confirmIfTheseDocumentsRelateToAnApplication.relatedToSetAsideRadioOptionHidden} ${getFormattedDate()}`;
     let fileName = confirmIfTheseDocumentsRelateToAnApplication.uploadDocHiddenOption[1];
     let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.uploadAdditionalDocuments });
