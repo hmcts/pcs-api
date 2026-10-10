@@ -83,6 +83,7 @@ public class GenAppsView {
                     .idamId(idamId != null ? idamId.toString() : null)
                     .firstName(partyEntity.getFirstName())
                     .lastName(partyEntity.getLastName())
+                    .orgName(partyEntity.getOrgName())
                     .build();
             })
             .orElse(null);
