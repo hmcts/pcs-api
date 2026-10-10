@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCom
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
 
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -114,7 +113,7 @@ public class NotificationPersonalisationFactory {
     public CounterclaimPaymentRequiredPersonalisation counterclaimPaymentRequired(
         DefendantResponseEntity defendantResponse
     ) {
-        String paymentUrl = Optional.ofNullable(defendantResponse)
+        String paymentUrl = Optional.of(defendantResponse)
             .map(DefendantResponseEntity::getPcsCase)
             .map(PcsCaseEntity::getCaseReference)
             .map(Object::toString)
@@ -164,9 +163,12 @@ public class NotificationPersonalisationFactory {
         PartyEntity emailRecipient,
         PcsCaseEntity pcsCaseEntity
     ) {
+        String recipientFirstName = emailRecipient.getFirstName() != null
+            ? emailRecipient.getFirstName() : emailRecipient.getOrgName();
+
         return buildPersonalisation(
-            emailRecipient.getFirstName() != null ? emailRecipient.getFirstName() : emailRecipient.getOrgName(),
-            Objects.toString(emailRecipient.getLastName(), ""),
+            recipientFirstName,
+            emailRecipient.getLastName(),
             pcsCaseEntity
         );
     }

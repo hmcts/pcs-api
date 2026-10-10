@@ -14,12 +14,6 @@ public class DefendantBasePersonalisation implements TemplatePersonalisation {
 
     @Override
     public Map<String, Object> toMap() {
-        return Map.of(
-            "firstName", firstName,
-            "lastName", lastName,
-            "caseNumber", caseNumber,
-            "claimantName", claimantName,
-            "primaryDefendantName", primaryDefendantName
-        );
+        return BasePersonalisation.buildBaseMap(firstName, lastName, caseNumber, claimantName, primaryDefendantName);
     }
 }
