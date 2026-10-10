@@ -5,11 +5,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaim;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.HouseholdCircumstances;
@@ -32,6 +34,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEn
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter.toYesOrNo;
 
@@ -49,9 +53,11 @@ import java.util.UUID;
 public class DefendantResponseReadMapper {
 
     private final AddressMapper addressMapper;
+    private final FeatureToggleService featureToggleService;
 
-    public DefendantResponseReadMapper(AddressMapper addressMapper) {
+    public DefendantResponseReadMapper(AddressMapper addressMapper, FeatureToggleService featureToggleService) {
         this.addressMapper = addressMapper;
+        this.featureToggleService = featureToggleService;
     }
 
     public PossessionClaimResponse toPossessionClaimResponse(
@@ -66,12 +72,44 @@ public class DefendantResponseReadMapper {
             .defendantResponses(toDefendantResponses(entity, party, assertions))
             .currentDefendantPartyId(party.getId() != null ? party.getId().toString() : null)
             .responseDocumentId(toResponseDocumentId(entity))
+            .counterclaimDocumentId(toCounterclaimDocumentId(pcsCase, party.getId()))
             .claimIssuedDate(toClaimIssuedDate(entity.getClaim()))
             .build();
     }
 
     private static String toResponseDocumentId(DefendantResponseEntity entity) {
         return Optional.ofNullable(entity.getSubmissionDocument())
+            .map(document -> document.getId().toString())
+            .orElse(null);
+    }
+
+    private String toCounterclaimDocumentId(PcsCaseEntity pcsCase, UUID partyId) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            return null;
+        }
+        if (pcsCase == null || pcsCase.getCounterClaims() == null || partyId == null) {
+            return null;
+        }
+
+        Optional<CounterClaimEntity> counterClaim = pcsCase.getCounterClaims().stream()
+            .filter(cc -> cc.getParty() != null && partyId.equals(cc.getParty().getId()))
+            .filter(cc -> cc.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED)
+            .findFirst();
+
+        if (counterClaim.isEmpty()) {
+            return null;
+        }
+
+        UUID counterClaimId = counterClaim.get().getId();
+        if (pcsCase.getDocuments() == null) {
+            return null;
+        }
+
+        return pcsCase.getDocuments().stream()
+            .filter(doc -> doc.getType() == DocumentType.COUNTERCLAIM)
+            .filter(doc -> doc.getCounterClaim() != null
+                && counterClaimId.equals(doc.getCounterClaim().getId()))
+            .findFirst()
             .map(document -> document.getId().toString())
             .orElse(null);
     }
