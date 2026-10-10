@@ -386,6 +386,9 @@ ccd:
 frontend:
   url: ${PCS_FRONTEND_URL:http://localhost:3209}
 
+exui:
+  url: ${MANAGE_CASE_URL:http://localhost:3000}
+
 docweave:
   templates:
     allowed-services: ${DOCWEAVE_TEMPLATES_ALLOWED_SERVICES:pcs_frontend}

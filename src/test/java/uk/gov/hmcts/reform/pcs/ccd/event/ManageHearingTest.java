@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ConfirmationBodyRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.event.hearing.ManageHearing;
 import uk.gov.hmcts.reform.pcs.ccd.page.managehearing.ManageHearingConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeDocumentGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -46,6 +47,7 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,6 +69,8 @@ public class ManageHearingTest extends BaseEventTest {
     @Mock
     private ConfirmationBodyRenderer confirmationBodyRenderer;
     @Mock
+    private HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     @InjectMocks
@@ -75,7 +79,8 @@ public class ManageHearingTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         underTest = new ManageHearing(manageHearingConfigurer, hearingService, locationReferenceService,
-                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer);
+                                      pcsCaseService, hearingSummaryRenderer, confirmationBodyRenderer,
+                                      hearingNoticeDocumentGenerator);
         setEventUnderTest(underTest);
     }
 
@@ -441,6 +446,66 @@ public class ManageHearingTest extends BaseEventTest {
             // Then
             verify(hearingService).cancelHearing(hearing);
             assertThat(submitResponse.getConfirmationBody()).isEqualTo(expectedConfirmationBody);
+            verifyNoInteractions(hearingNoticeDocumentGenerator);
+        }
+
+        @Test
+        void shouldGenerateHearingNoticesForAddedHearing() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.ADD)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .hearingLocation("Cardiff Civil and Family Justice Centre")
+                .build();
+            HearingEntity addedHearing = HearingEntity.builder().id(1).build();
+            when(hearingService.addHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(addedHearing);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+            // When
+            callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingNoticeDocumentGenerator)
+                .generateNotices(pcsCaseEntity, addedHearing, "Cardiff Civil and Family Justice Centre");
+        }
+
+        @Test
+        void shouldGenerateHearingNoticesForUpdatedHearing() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.EDIT)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .hearingLocation("Cardiff Civil and Family Justice Centre")
+                .build();
+            HearingEntity updatedHearing = HearingEntity.builder().id(2).build();
+            when(hearingService.updateHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(updatedHearing);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+            // When
+            callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingNoticeDocumentGenerator)
+                .generateNotices(pcsCaseEntity, updatedHearing, "Cardiff Civil and Family Justice Centre");
+        }
+
+        @Test
+        void shouldPassNoCourtNameWhenHearingLocationWasNotFound() {
+            // Given
+            PCSCase pcsCase = PCSCase.builder()
+                .manageHearingOption(ManageHearingOption.ADD)
+                .showManageHearingPage(VerticalYesNo.YES)
+                .hearingLocation("Unable to find hearing location")
+                .build();
+            HearingEntity addedHearing = HearingEntity.builder().id(1).build();
+            when(hearingService.addHearing(TEST_CASE_REFERENCE, pcsCase)).thenReturn(addedHearing);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+            // When
+            callSubmitHandler(pcsCase);
+
+            // Then
+            verify(hearingNoticeDocumentGenerator).generateNotices(pcsCaseEntity, addedHearing, null);
         }
     }
 

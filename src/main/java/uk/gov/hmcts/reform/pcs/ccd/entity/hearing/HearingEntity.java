@@ -23,6 +23,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
@@ -82,6 +83,11 @@ public class HearingEntity {
     @Builder.Default
     @JsonManagedReference
     private List<HearingNoticePartyEntity> hearingNoticeParties = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "hearing")
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> noticeDocuments = new ArrayList<>();
 
     private Boolean cancelled;
 

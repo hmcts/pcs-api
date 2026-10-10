@@ -438,6 +438,7 @@ public class DocumentService {
                  LEGAL_AID_CERTIFICATE ->
                 Optional.of(CaseFileCategory.CORRESPONDENCE);
             case NOTICE_OF_HEARING,
+                HEARING_NOTICE,
                 WITH_NOTICE_ORDER,
                 WITHOUT_NOTICE_ORDER,
                 NOTICE_OF_ALLOCATION_TO_TRACK ->
