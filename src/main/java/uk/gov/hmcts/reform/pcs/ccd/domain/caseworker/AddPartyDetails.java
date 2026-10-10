@@ -29,6 +29,14 @@ public class AddPartyDetails {
     )
     private ManagePartyOptions managePartyOptions;
 
+    @JsonProperty("addParty_ManagePartyOptions_1_3")
+    @CCD(label = "What change do you want to make?",
+        hint = "You must have judicial approval to add or remove a party",
+        typeOverride = FixedRadioList,
+        typeParameterOverride = "ManagePartyOptions13"
+    )
+    private ManagePartyOptions13 managePartyOptions13;
+
     @JsonProperty("addParty_AddPartyType")
     @CCD(
         label = "Which type of party are you adding?",

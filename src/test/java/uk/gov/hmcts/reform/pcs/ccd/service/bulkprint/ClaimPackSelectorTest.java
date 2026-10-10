@@ -144,6 +144,25 @@ class ClaimPackSelectorTest {
         assertThat(result.getFirst().documents()).containsExactly(claimForm, pinA);
     }
 
+    @Test
+    @DisplayName("Excludes removed parties from claim pack recipients")
+    void shouldExcludeRemovedPartiesFromClaimPackRecipients() {
+        defendantB.setRemoved(true);
+        DocumentEntity pinA = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantA);
+        DocumentEntity pinB = document(DocumentType.DEFENDANT_ACCESS_CODE, defendantB);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+        PcsCaseEntity pcsCase = caseWith(claimForm, List.of(pinA, pinB), List.of(
+            claimParty(claimant, PartyRole.CLAIMANT, 1),
+            claimParty(defendantA, PartyRole.DEFENDANT, 1),
+            claimParty(defendantB, PartyRole.DEFENDANT, 2)));
+
+        List<ClaimPackCandidate> result = underTest.findClaimPackCandidates(pcsCase);
+
+        assertThat(result)
+            .extracting(ClaimPackCandidate::party)
+            .containsExactly(claimant, defendantA);
+    }
+
     @ParameterizedTest
     @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
     @DisplayName("Does not send the claim pack when the claim requires translation")
