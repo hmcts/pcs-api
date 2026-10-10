@@ -32,9 +32,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +74,10 @@ class PartyServiceTest {
     private AddressMapper addressMapper;
     @Mock
     private OrganisationService organisationService;
+    @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
+    private PostcodeValidator postcodeValidator;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock
@@ -91,7 +98,9 @@ class PartyServiceTest {
             .organisationProfileIds(List.of("SOLICITOR_PROFILE"))
             .build();
         lenient().when(organisationService.getOrganisationDetailsForCurrentUser()).thenReturn(orgDetails);
-        underTest = new PartyService(partyRepository, addressMapper, organisationService);
+        lenient().when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        underTest = new PartyService(partyRepository, addressMapper, organisationService,
+                                     featureToggleService, postcodeValidator);
     }
 
     @Nested
@@ -765,7 +774,7 @@ class PartyServiceTest {
             // Given
             AddressUK organisationAddress = mock(AddressUK.class);
             AddressEntity mappedAddress = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(organisationAddress)).thenReturn(mappedAddress);
+            when(addressMapper.toCorrespondenceAddressEntity(organisationAddress)).thenReturn(mappedAddress);
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .organisationAddress(organisationAddress)
@@ -797,7 +806,7 @@ class PartyServiceTest {
             // Given
             AddressUK overriddenAddress = mock(AddressUK.class);
             AddressEntity mappedAddress = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(overriddenAddress)).thenReturn(mappedAddress);
+            when(addressMapper.toCorrespondenceAddressEntity(overriddenAddress)).thenReturn(mappedAddress);
 
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .overriddenClaimantContactAddress(overriddenAddress)
@@ -956,6 +965,79 @@ class PartyServiceTest {
             assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
+
+        @Test
+        void shouldUseNormalisedAddressWhenReleaseIsDisabled() {
+            // Given
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+
+            AddressUK address = mock(AddressUK.class);
+            AddressEntity mappedNormalisedAddress = mock(AddressEntity.class);
+            when(addressMapper.toAddressEntityAndNormalise(address)).thenReturn(mappedNormalisedAddress);
+
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .organisationAddress(address)
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+
+            ClaimantInformation claimantInformation = ClaimantInformation.builder()
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .claimantName("Claimant name")
+                .build();
+
+            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
+            PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedNormalisedAddress);
+            verify(addressMapper).toAddressEntityAndNormalise(address);
+            verify(addressMapper, never()).toCorrespondenceAddressEntity(any());
+        }
+
+        @Test
+        void shouldUseNormalisedAddressForValidUkPostcodeWhenReleaseIsEnabled() {
+            // Given
+            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+
+            AddressUK address = mock(AddressUK.class);
+            AddressEntity mappedNormalisedAddress = mock(AddressEntity.class);
+            when(address.getPostCode()).thenReturn("SW1A 1AA");
+            when(postcodeValidator.isValidPostcode("SW1A 1AA")).thenReturn(true);
+            when(addressMapper.toAddressEntityAndNormalise(address)).thenReturn(mappedNormalisedAddress);
+
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .organisationAddress(address)
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+
+            ClaimantInformation claimantInformation = ClaimantInformation.builder()
+                .isClaimantNameCorrect(VerticalYesNo.YES)
+                .claimantName("Claimant name")
+                .build();
+
+            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
+            PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedNormalisedAddress);
+            verify(postcodeValidator).isValidPostcode("SW1A 1AA");
+            verify(addressMapper).toAddressEntityAndNormalise(address);
+            verify(addressMapper, never()).toCorrespondenceAddressEntity(any());
+        }
     }
 
     @Nested
@@ -1003,7 +1085,7 @@ class PartyServiceTest {
             AddressUK correspondenceAddress = defendant1.getCorrespondenceAddress();
             if (correspondenceAddress != null) {
                 AddressEntity mapped = mock(AddressEntity.class);
-                when(addressMapper.toAddressEntityAndNormalise(correspondenceAddress)).thenReturn(mapped);
+                when(addressMapper.toCorrespondenceAddressEntity(correspondenceAddress)).thenReturn(mapped);
                 expectedPartyEntity.setAddress(mapped);
             }
 
@@ -1026,7 +1108,7 @@ class PartyServiceTest {
             // Given
             AddressUK defendant1Address = mock(AddressUK.class);
             AddressEntity mappedDefendant1Address = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(defendant1Address)).thenReturn(mappedDefendant1Address);
+            when(addressMapper.toCorrespondenceAddressEntity(defendant1Address)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -1103,7 +1185,7 @@ class PartyServiceTest {
             // Given
             AddressUK defendant1Address = mock(AddressUK.class);
             AddressEntity mappedDefendant1Address = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(defendant1Address)).thenReturn(mappedDefendant1Address);
+            when(addressMapper.toCorrespondenceAddressEntity(defendant1Address)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -1276,7 +1358,7 @@ class PartyServiceTest {
             AddressUK correspondenceAddress = underlessee1.getAddress();
             if (correspondenceAddress != null) {
                 AddressEntity mapped = mock(AddressEntity.class);
-                when(addressMapper.toAddressEntityAndNormalise(correspondenceAddress)).thenReturn(mapped);
+                when(addressMapper.toCorrespondenceAddressEntity(correspondenceAddress)).thenReturn(mapped);
                 expectedPartyEntity.setAddress(mapped);
             }
 
@@ -1301,11 +1383,13 @@ class PartyServiceTest {
 
             AddressUK underlessee1Address = mock(AddressUK.class);
             AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(underlessee1Address)).thenReturn(mappedUnderlessee1Address);
+            when(addressMapper.toCorrespondenceAddressEntity(underlessee1Address))
+                .thenReturn(mappedUnderlessee1Address);
 
             AddressUK underlessee3Address = mock(AddressUK.class);
             AddressEntity mappedUnderlessee3Address = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(underlessee3Address)).thenReturn(mappedUnderlessee3Address);
+            when(addressMapper.toCorrespondenceAddressEntity(underlessee3Address))
+                .thenReturn(mappedUnderlessee3Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -1377,7 +1461,8 @@ class PartyServiceTest {
 
             AddressUK underlessee1Address = mock(AddressUK.class);
             AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
-            when(addressMapper.toAddressEntityAndNormalise(underlessee1Address)).thenReturn(mappedUnderlessee1Address);
+            when(addressMapper.toCorrespondenceAddressEntity(underlessee1Address))
+                .thenReturn(mappedUnderlessee1Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)

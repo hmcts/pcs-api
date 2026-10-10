@@ -6,11 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 
 import java.util.stream.Stream;
 
@@ -27,9 +29,12 @@ class AddressMapperTest {
 
     private AddressMapper underTest;
 
+    private AddressMapper persistanceMapper;
+
     @BeforeEach
     void setUp() {
         underTest = new AddressMapper(modelMapper);
+        persistanceMapper = new AddressMapper(new MapperConfig().modelMapper());
     }
 
     @Test
@@ -84,6 +89,48 @@ class AddressMapperTest {
 
         // Then
         assertThat(normalisedAddressEntity.getPostcode()).isEqualTo(rawPostcode);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12345", "12345-6789", "A1B 0C1"})
+    void shouldPreserveInternationalPostalCode(String postalCode) {
+        // Given
+        AddressUK addressUK = mock(AddressUK.class);
+        AddressEntity mappedAddressEntity = AddressEntity.builder()
+            .country("France")
+            .postcode(postalCode)
+            .build();
+
+        when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(mappedAddressEntity);
+
+        // When
+        AddressEntity result = underTest.toCorrespondenceAddressEntity(addressUK);
+
+        // Then
+        assertThat(result.getPostcode()).isEqualTo(postalCode);
+        assertThat(result.getCountry()).isEqualTo("France");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12345", "12345-6789", "A1B 0C1"})
+    void shouldRetainCompleteInternationalAddressThroughPersistenceMapping(String postalCode) {
+        //Given
+        AddressUK addressUK = AddressUK.builder()
+            .addressLine1("10 some street")
+            .addressLine2("Flat 1")
+            .addressLine3("Apartment 2")
+            .postTown("Paris")
+            .county("Arr 2")
+            .country("France")
+            .postCode(postalCode)
+            .build();
+
+        // When
+        AddressEntity addressEntity = persistanceMapper.toCorrespondenceAddressEntity(addressUK);
+        AddressUK restoredAddress = persistanceMapper.toAddressUK(addressEntity);
+
+        // Then
+        assertThat(restoredAddress).usingRecursiveComparison().isEqualTo(addressUK);
     }
 
     private static Stream<Arguments> postcodeScenarios() {
