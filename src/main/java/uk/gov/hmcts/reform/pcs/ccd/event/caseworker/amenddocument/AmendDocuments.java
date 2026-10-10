@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event;
+package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.amenddocument;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,8 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.documentamend.DocumentAmendDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.AmendDocumentDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.documentamend.SelectDocumentPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.AmendDocumentDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend.SelectDocumentPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;

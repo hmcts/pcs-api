@@ -1499,21 +1499,21 @@ export class CreateCaseAction implements IAction {
 
       case 'Required Documents':
         caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
-        if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
+        if (submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
         } else {
           caseSummary.set(`Energy performance certificate`, formatUploadDocName(submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
-        if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
+        if (submitPayLoad.walesDocs_HasGasSafetyReport === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
-        }else {
-          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename));
+        } else {
+          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
-        if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
+        if (submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
-        }else {
+        } else {
           caseSummary.set(`Electrical Installation Condition Report (EICR)`, formatUploadDocName(submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename));
         }
 
@@ -1622,6 +1622,7 @@ export class CreateCaseAction implements IAction {
 
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
     const file =
       caseFile.caseWorkerUpload ??
@@ -1675,6 +1676,9 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        if (ccPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        }
         if (file) {
           userInputFiles.push(file as string);
         }
@@ -1754,15 +1758,19 @@ export class CreateCaseAction implements IAction {
       subArray.forEach(doc => {
         if (multiDocsLabel && multiDocsLabel !== 'All Files') {
           const valueLabel = doc.value?.documentType?.valueLabel;
-          const filename = doc.value?.document?.document_filename;
+          const filename = doc.value?.document?.document_filename ?? doc.value?.document_filename;
+
           if (multiDocsLabel === valueLabel && filename) {
             mainArray.push(filename);
           }
-        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
-          mainArray.push(doc.value.document.document_filename)
-        }
-        else if (doc.value?.document_filename) {
-          mainArray.push(doc.value.document_filename);
+        } else {
+          const filename =
+            doc.value?.document?.document_filename ??
+            doc.value?.document_filename;
+
+          if (filename) {
+            mainArray.push(filename);
+          }
         }
       });
     }
