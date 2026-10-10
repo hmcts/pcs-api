@@ -15,16 +15,21 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactD
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.legalrepresentative.ClaimPartyContactDetailsRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantPartyExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.LegalRepForDefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +46,12 @@ class LegalRepresentativeSummaryServiceTest {
 
     @Mock
     private ClaimPartyContactDetailsRepository claimPartyContactDetailsRepository;
+
+    @Mock
+    private LegalRepForDefendantAccessValidator legalRepForDefendantAccessValidator;
+
+    @Mock
+    private DefendantResponseRepository defendantResponseRepository;
 
     private static final String RESPOND_TO_CLAIM_MARKDOWN = """
         <h2 class="govuk-heading-m">What happens next</h2>
@@ -71,7 +82,9 @@ class LegalRepresentativeSummaryServiceTest {
     void setUp() {
         legalRepresentativeSummaryService = new LegalRepresentativeSummaryService(defendantPartyExtractor,
                                                                                  featureToggleService,
-                                                                                 claimPartyContactDetailsRepository);
+                                                                                 claimPartyContactDetailsRepository,
+                                                                                 legalRepForDefendantAccessValidator,
+                                                                                  defendantResponseRepository);
         ReflectionTestUtils.setField(legalRepresentativeSummaryService, "frontendUrl",
                                      "testUrl");
 
@@ -143,6 +156,8 @@ class LegalRepresentativeSummaryServiceTest {
                                               .build());
 
         when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(parties);
 
         PCSCase pcsCase = PCSCase.builder().build();
 
@@ -152,6 +167,47 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithLinkedAndActiveAndUpdatedDetails_withAllResponses_ReturnsEmptyMarkDown() {
+        // given
+        long caseRef = 1L;
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseRef)
+            .build();
+
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+        when(claimPartyContactDetailsRepository
+                 .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.YES)
+                                        .build()));
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(Collections.emptyList());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
@@ -246,6 +302,56 @@ class LegalRepresentativeSummaryServiceTest {
     }
 
     @Test
+    void handleLegalRepresentativeSummary_WithNoOrganisationAndActiveLink_DoesNotCheckDefendantResponses() {
+        // given
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+        List<PartyEntity> parties = List.of(PartyEntity.builder()
+                                                .claimPartyOrganisationList(List.of(
+                                                    ClaimPartyOrganisationEntity.builder()
+                                                        .active(YesOrNo.YES)
+                                                        .organisation(organisation)
+                                                        .build()))
+                                                .build());
+
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1L)
+            .build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, null);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isNull();
+        verifyNoInteractions(legalRepForDefendantAccessValidator);
+    }
+
+    @Test
+    void handleLegalRepresentativeSummary_WithNoClaim_DoesNotCheckDefendantResponses() {
+        // given
+        PCSCase pcsCase = PCSCase.builder().build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(1L)
+            .build();
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity))
+            .thenReturn(Collections.emptyList());
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+        verifyNoInteractions(legalRepForDefendantAccessValidator);
+    }
+
+    @Test
     void handleLegalRepresentativeSummary_WithNotLinkedAndActive_ReturnsEmptyMarkDown() {
         // given
         OrganisationEntity organisation =
@@ -301,6 +407,7 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+
     }
 
     @Test
@@ -336,6 +443,66 @@ class LegalRepresentativeSummaryServiceTest {
     }
 
     @Test
+    void allDefendantResponsesFoundInRepository_noUnsubmittedResponses() {
+        // given
+        long caseRef = 1L;
+        UUID id = UUID.randomUUID();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseRef)
+            .build();
+
+        mockClaimPartyContactDetailsRepository(caseRef, pcsCaseEntity);
+        List<PartyEntity> parties = setupParties(id);
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(parties);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseRef, id))
+            .thenReturn(true);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.NO);
+        assertThat(pcsCase.getLegalRepUpdatedDetails()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    @Test
+    void oneDefendantResponseNotFoundInRepository_hasRemainingSubmittedResponse() {
+        // given
+        long caseRef = 1L;
+        UUID id = UUID.randomUUID();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .caseReference(caseRef)
+            .build();
+
+        mockClaimPartyContactDetailsRepository(caseRef, pcsCaseEntity);
+        List<PartyEntity> parties = setupParties(id);
+
+        when(defendantPartyExtractor.summaryScreenSafeExtractDefendants(pcsCaseEntity)).thenReturn(parties);
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(
+            pcsCaseEntity, ORGANISATION_ID)).thenReturn(parties);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(caseRef, id))
+            .thenReturn(false);
+
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // when
+        legalRepresentativeSummaryService.handleLegalRepresentativeSummary(pcsCase, pcsCaseEntity,
+                                                                           State.CASE_ISSUED, ORGANISATION_ID);
+
+        // then
+        assertThat(pcsCase.getHasUnsubmittedDefendantResponses()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getLegalRepUpdatedDetails()).isEqualTo(YesOrNo.YES);
+        assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEqualTo(RESPOND_TO_CLAIM_MARKDOWN);
+    }
+
+    @Test
     void handleLegalRepresentativeSummary_WithCuiRespondToClaimLrDisabled_ReturnsEmptyMarkDown() {
         // given
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(false);
@@ -365,6 +532,31 @@ class LegalRepresentativeSummaryServiceTest {
 
         // then
         assertThat(pcsCase.getSummaryLegalRepresentativeMarkdown()).isEmpty();
+    }
+
+    private List<PartyEntity> setupParties(UUID id) {
+        OrganisationEntity organisation =
+            OrganisationEntity.builder()
+                .organisationId(ORGANISATION_ID)
+                .build();
+
+        return List.of(PartyEntity.builder()
+                           .id(id)
+                           .claimPartyOrganisationList(List.of(
+                               ClaimPartyOrganisationEntity.builder()
+                                   .active(YesOrNo.YES)
+                                   .organisation(organisation)
+                                   .build()))
+                           .build());
+    }
+
+    private void mockClaimPartyContactDetailsRepository(long caseRef, PcsCaseEntity pcsCaseEntity) {
+        when(claimPartyContactDetailsRepository
+                 .findFirstByOrganisationOrganisationIdAndPcsCaseCaseReferenceOrderByIdDesc(ORGANISATION_ID, caseRef))
+            .thenReturn(Optional.of(ClaimPartyContactDetailsEntity.builder()
+                                        .pcsCase(pcsCaseEntity)
+                                        .contactDetailsCorrectConfirmation(YesOrNo.YES)
+                                        .build()));
     }
 
 }
