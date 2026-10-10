@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -73,7 +72,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         return responseCase;
     }
 
-    private boolean hasSubmittedResponse(long caseReference, UUID userId) {
+    private boolean hasSubmittedResponse(long caseReference, String userId) {
         return userId != null
             && defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }

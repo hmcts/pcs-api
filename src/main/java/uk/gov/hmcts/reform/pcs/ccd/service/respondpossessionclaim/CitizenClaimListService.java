@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,7 @@ public class CitizenClaimListService {
 
     private final PartyRepository partyRepository;
 
-    public List<ClaimSummary> getClaimsAgainst(UUID idamId) {
+    public List<ClaimSummary> getClaimsAgainst(String idamId) {
         return partyRepository.findClaimsByIdamIdAndRole(idamId, PartyRole.DEFENDANT).stream()
             .map(claim -> ClaimSummary.builder()
                 .caseReference(String.valueOf(claim.getPcsCase().getCaseReference()))

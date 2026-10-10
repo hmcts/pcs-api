@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.model.JourneyType;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -44,7 +43,7 @@ public class CitizenSubmissionEventStrategy implements RespondPossessionClaimSub
 
     @Override
     public SubmitResponse<State> process(EventPayload<PCSCase, State> eventPayload) {
-        UUID currentUserIdamId = securityContextService.getCurrentUserId();
+        String currentUserIdamId = securityContextService.getCurrentUserId();
         if (currentUserIdamId == null) {
             log.error("Cannot save contact preferences: current user IDAM ID is null");
             throw new IllegalStateException("Current user IDAM ID is null");

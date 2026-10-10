@@ -54,7 +54,6 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.util.CaseAccessGroupsUtil.deriveCaseAccessGroups;
@@ -269,7 +268,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             return Optional.empty();
         }
 
-        UUID userId = securityContextService.getCurrentUserId();
+        String userId = securityContextService.getCurrentUserId();
 
         if (userId != null) {
             return pcsCaseEntity.getParties().stream()

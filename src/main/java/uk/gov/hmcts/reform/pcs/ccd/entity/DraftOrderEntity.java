@@ -18,8 +18,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.DraftOrderState;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIdUuidConverter;
 
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +47,8 @@ public class DraftOrderEntity {
     private PcsCaseEntity pcsCase;
 
     @Column(nullable = false, updatable = false)
-    private UUID authorIdamUserId;
+    @Type(IdamUserIdUuidConverter.class)
+    private String authorIdamUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

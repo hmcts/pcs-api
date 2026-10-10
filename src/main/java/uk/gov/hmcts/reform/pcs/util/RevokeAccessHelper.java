@@ -67,7 +67,7 @@ public class RevokeAccessHelper {
      */
     public void closeDefendantsSelfRepresentation(PcsCaseEntity caseEntity, PartyEntity defendantParty) {
         if (defendantParty.getIdamId() != null) {
-            scheduleDefendantRoleRevocation(caseEntity.getCaseReference(), defendantParty.getIdamId().toString());
+            scheduleDefendantRoleRevocation(caseEntity.getCaseReference(), defendantParty.getIdamId());
             draftCaseDataRepository.deleteByCaseReferenceAndEventIdAndIdamUserId(
                 caseEntity.getCaseReference(), respondPossessionClaim,
                 defendantParty.getIdamId()

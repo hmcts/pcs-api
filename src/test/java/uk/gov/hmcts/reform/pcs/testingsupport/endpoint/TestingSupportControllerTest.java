@@ -377,13 +377,13 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        UUID userUid = UUID.randomUUID();
+        String userUid = UUID.randomUUID().toString();
         String legalRepEmail = "solicitor@example.com";
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid.toString());
+        when(userInfo.getUid()).thenReturn(userUid);
         when(userInfo.getSub()).thenReturn(legalRepEmail);
-        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(organisationDetails);
+        when(organisationDetailsService.getOrganisationDetails(userUid)).thenReturn(organisationDetails);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 
@@ -408,11 +408,11 @@ class TestingSupportControllerTest {
         long caseReference = 111111111111L;
         String partyId = "abc";
         String authToken = "testAuth";
-        UUID userUid = UUID.randomUUID();
+        String userUid = UUID.randomUUID().toString();
         when(idamAuthenticator.validateAuthToken(authToken)).thenReturn(user);
         when(user.getUserDetails()).thenReturn(userInfo);
-        when(userInfo.getUid()).thenReturn(userUid.toString());
-        when(organisationDetailsService.getOrganisationDetails(userUid.toString())).thenReturn(null);
+        when(userInfo.getUid()).thenReturn(userUid);
+        when(organisationDetailsService.getOrganisationDetails(userUid)).thenReturn(null);
         when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_2)).thenReturn(true);
         when(featureToggleService.isEnabled(FeatureFlag.CUI_RESPOND_TO_CLAIM_LR)).thenReturn(true);
 

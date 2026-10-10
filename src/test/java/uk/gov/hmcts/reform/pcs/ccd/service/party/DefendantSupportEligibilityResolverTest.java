@@ -20,7 +20,7 @@ import static org.mockito.Mockito.lenient;
 @ExtendWith(MockitoExtension.class)
 class DefendantSupportEligibilityResolverTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
 
     @Mock
     private PartySupportOwnershipResolver partySupportOwnershipResolver;

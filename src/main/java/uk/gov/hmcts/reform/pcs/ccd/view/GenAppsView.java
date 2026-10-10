@@ -75,16 +75,12 @@ public class GenAppsView {
 
     private Party mapToSimpleParty(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getParty())
-            .map(partyEntity -> {
-                UUID idamId = partyEntity.getIdamId();
-
-                return Party.builder()
-                    .id(partyEntity.getId().toString())
-                    .idamId(idamId != null ? idamId.toString() : null)
-                    .firstName(partyEntity.getFirstName())
-                    .lastName(partyEntity.getLastName())
-                    .build();
-            })
+            .map(partyEntity -> Party.builder()
+                .id(partyEntity.getId().toString())
+                .idamId(partyEntity.getIdamId())
+                .firstName(partyEntity.getFirstName())
+                .lastName(partyEntity.getLastName())
+                .build())
             .orElse(null);
     }
 

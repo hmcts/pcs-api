@@ -340,7 +340,7 @@ class UploadDocumentsTest extends BaseEventTest {
 
         private PartyEntity stubCurrentUserParty() {
             PartyEntity currentUserParty = mock(PartyEntity.class);
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             given(securityContextService.getCurrentUserId()).willReturn(currentUserId);
             given(partyService.getPartyEntityByIdamId(currentUserId, TEST_CASE_REFERENCE))
                 .willReturn(currentUserParty);
@@ -355,12 +355,12 @@ class UploadDocumentsTest extends BaseEventTest {
         @Mock
         private PcsCaseEntity pcsCaseEntity;
 
-        private UUID currentUserId;
+        private String currentUserId;
 
         @BeforeEach
         void setUp() {
             given(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).willReturn(pcsCaseEntity);
-            currentUserId = UUID.randomUUID();
+            currentUserId = UUID.randomUUID().toString();
             lenient().when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
         }
 

@@ -24,6 +24,7 @@ import uk.gov.hmcts.ccd.sdk.api.noc.NocOrganisation;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmissionResponse;
 import uk.gov.hmcts.ccd.sdk.api.noc.NocSubmitContext;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -149,9 +150,9 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
     public NocSubmissionResponse submit(NocSubmitContext context, NocAnswersRequest request) {
         PcsCaseEntity pcsCase = loadCase(request.caseId());
         PartyEntity matchedParty = matchingDefendants(pcsCase, request).getFirst();
-        UUID currentUserId = currentUserId(context);
+        String currentUserId = currentUserId(context);
         OrganisationDetailsResponse organisationDetails =
-            organisationDetailsService.getOrganisationDetails(currentUserId.toString());
+            organisationDetailsService.getOrganisationDetails(currentUserId);
 
         if (isNull(organisationDetails)) {
             return NocSubmissionResponse.invalid(ORG_NOT_FOUND_CODE, ORG_NOT_FOUND_MESSAGE);
@@ -309,8 +310,8 @@ public class PcsNoticeOfChange implements CCDConfig<PCSCase, State, UserRole> {
         return value.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 
-    private UUID currentUserId(NocSubmitContext context) {
-        return UUID.fromString(context.userId());
+    private String currentUserId(NocSubmitContext context) {
+        return IdamUserIds.normalise(context.userId());
     }
 
     private record NocAccessChangePlan(List<NocAccessChangeTaskData> changes) {

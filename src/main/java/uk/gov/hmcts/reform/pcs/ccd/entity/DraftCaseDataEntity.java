@@ -15,8 +15,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIdUuidConverter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -41,7 +43,8 @@ public class DraftCaseDataEntity {
     @Enumerated(EnumType.STRING)
     private EventId eventId;
 
-    private UUID idamUserId;
+    @Type(IdamUserIdUuidConverter.class)
+    private String idamUserId;
 
     private UUID partyId;
 
