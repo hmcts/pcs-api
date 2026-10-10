@@ -12,11 +12,13 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
 
 @Builder
@@ -29,7 +31,10 @@ public class EnterGenAppRequest {
     @CCD(label = "What date was the application received?", hint = "For example, 16 4 2021")
     private LocalDate dateReceived;
 
-    @CCD(label = "Which type of application has the applicant made?")
+    @CCD(label = "Which type of application has the applicant made?", typeOverride = DynamicRadioList)
+    private DynamicStringList applicationTypeOptionList;
+
+    @CCD(searchable = false)
     private EnterGenAppType applicationTypeOption;
 
     @CCD(

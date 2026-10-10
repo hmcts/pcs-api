@@ -1,0 +1,44 @@
+{
+  "request": {
+    "urlPath": "/fees-register/fees/lookup",
+    "method": "GET",
+    "queryParameters": {
+      "service": {
+        "equalTo": "other"
+      },
+      "jurisdiction1": {
+        "equalTo": "civil"
+      },
+      "jurisdiction2": {
+        "equalTo": "civil"
+      },
+      "channel": {
+        "equalTo": "default"
+      },
+      "event": {
+        "equalTo": "miscellaneous"
+      },
+      "applicant_type": {
+        "equalTo": "all"
+      },
+      "amount_or_volume": {
+        "equalTo": "1"
+      },
+      "keyword": {
+        "equalTo": "AppnToVaryOrSuspend"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "FEE0458",
+      "description": "Application to vary a judgement or suspend enforcement",
+      "version": 4,
+      "fee_amount": 16.0
+    }
+  }
+}

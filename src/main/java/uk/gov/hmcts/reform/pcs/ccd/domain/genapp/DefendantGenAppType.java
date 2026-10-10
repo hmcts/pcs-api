@@ -6,9 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @Getter
 @AllArgsConstructor
-public enum GenAppType implements HasLabel {
-
-    SUSPEND("Suspend"),
+public enum DefendantGenAppType implements HasLabel {
 
     ADJOURN("Adjourn (delay) the hearing - You can apply to change the defendant’s court hearing "
                 + "until a later time or date"),
@@ -21,4 +19,7 @@ public enum GenAppType implements HasLabel {
 
     private final String label;
 
+    public GenAppType toGenAppType() {
+        return GenAppType.valueOf(name());
+    }
 }
