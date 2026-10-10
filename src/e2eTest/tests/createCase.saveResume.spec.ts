@@ -70,7 +70,7 @@ test.beforeEach(async ({ page, context }) => {
   });
 
   await dismissCookieBanner(page, 'additional');
-  await performAction('login', user.claimantSolicitor);
+  await performAction('login', user.localAuthorityOrg1Usr1);
   await dismissCookieBanner(page, 'analytics');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
