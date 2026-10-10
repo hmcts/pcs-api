@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingSummaryRenderer;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,12 +30,10 @@ class ManageHearingPageTest extends BasePageTest {
 
     @Mock
     private HearingService hearingService;
-    @Mock
-    private HearingSummaryRenderer hearingSummaryRenderer;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ManageHearingPage(hearingService, hearingSummaryRenderer));
+        setPageUnderTest(new ManageHearingPage(hearingService));
     }
 
     @Test
@@ -158,22 +155,21 @@ class ManageHearingPageTest extends BasePageTest {
             .build();
         PCSCase caseData = PCSCase.builder()
             .manageHearingOption(ManageHearingOption.CANCEL)
-            .hearingLocation("Central London County Court")
             .hearing(Hearing.builder()
+                .hearingSummaryMarkdown("summary already built by start callback")
                 .notes("edit page state")
                 .build())
             .build();
 
         when(hearingService.findEditableHearing(TEST_CASE_REFERENCE)).thenReturn(Optional.of(hearingEntity));
-        when(hearingSummaryRenderer.renderMarkdown(hearingEntity, "Central London County Court"))
-            .thenReturn("fresh summary");
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getData().getHearing().getHearingId()).isEqualTo(1);
-        assertThat(response.getData().getHearing().getHearingSummaryMarkdown()).isEqualTo("fresh summary");
+        assertThat(response.getData().getHearing().getHearingSummaryMarkdown())
+            .isEqualTo("summary already built by start callback");
         assertThat(response.getData().getHearing().getNotes()).isEqualTo("edit page state");
         verify(hearingService, never()).clearHearingForm(caseData);
     }
