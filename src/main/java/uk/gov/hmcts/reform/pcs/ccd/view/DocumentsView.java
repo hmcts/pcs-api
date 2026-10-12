@@ -93,17 +93,12 @@ public class DocumentsView {
         // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
         // account. CDAM only serves a document attached to a case to a user who can see it in the case.
         return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-                && !securityContextService.isIdamSystemUser()
-            || documentEntity.isRemoved();
+            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
         return ObjectUtils.isEmpty(documentEntity.getDescription())
                 || documentEntity.getDescription().trim().isEmpty();
-    }
-
-    public static boolean isNotRemoved(DocumentEntity documentEntity) {
-        return !documentEntity.isRemoved();
     }
 
     public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
