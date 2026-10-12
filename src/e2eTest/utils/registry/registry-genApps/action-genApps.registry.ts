@@ -1,4 +1,4 @@
-import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction } from "@utils/actions/custom-actions";
+import { LoginAction, NavigateToUrlAction, CreateCaseAPIAction, CreateCaseAction } from "@utils/actions/custom-actions";
 import { GenAppsAction } from "@utils/actions/custom-actions/custom-actions-genApps/genApps.action";
 import { RecordAnswers } from "@utils/actions/custom-actions/custom-actions-genApps/recordAnsweredFields.action";
 import { LinkSolicitorAPIAction } from "@utils/actions/custom-actions/linkSolicitorAPI.action";
@@ -56,6 +56,8 @@ export class ActionGenAppsRegistry {
     ['inputPaymentDetails', new GenAppsAction()],
     ['selectPaymentOptions', new GenAppsAction()],
     ['confirmPaymentGenApps', new GenAppsAction()],
+    ['validateCaseFileViewFolders', new CreateCaseAction()],
+    ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
