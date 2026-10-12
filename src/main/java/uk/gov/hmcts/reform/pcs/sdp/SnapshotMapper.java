@@ -14,7 +14,7 @@ import java.util.List;
  * Maps PCS claim source values into SDP snapshot model fields.
  */
 @Component
-public class ClaimSnapshotMapper {
+public class SnapshotMapper {
 
     private static final String CONTRACT_VERSION = "4.1.0";
     private static final String PRODUCER_SYSTEM = "possessions-ccd";

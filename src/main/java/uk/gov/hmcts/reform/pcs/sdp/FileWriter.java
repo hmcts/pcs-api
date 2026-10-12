@@ -15,11 +15,11 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class ClaimSnapshotFileWriter {
+public class FileWriter {
 
     private final ObjectMapper objectMapper;
 
-    public ClaimSnapshotFileWriter(ObjectMapper objectMapper) {
+    public FileWriter(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

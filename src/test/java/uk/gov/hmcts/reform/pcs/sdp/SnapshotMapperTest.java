@@ -14,10 +14,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimSnapshotMapperTest {
+class SnapshotMapperTest {
 
     @InjectMocks
-    private ClaimSnapshotMapper claimSnapshotMapper;
+    private SnapshotMapper claimSnapshotMapper;
 
     @Test
     void shouldMapSocialHousingDimensions() {

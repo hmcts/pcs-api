@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClaimSnapshotExportServiceTest {
+class ExportServiceTest {
 
     private static final Instant FIXED_INSTANT = Instant.parse("2026-03-09T12:00:00Z");
     private static final Clock FIXED_CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
