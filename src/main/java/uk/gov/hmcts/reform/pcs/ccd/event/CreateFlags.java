@@ -19,8 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+//import java.util.Set;
+//import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudicialHistoryRoles.JUDICIAL_HISTORY_ROLES;
 
@@ -57,11 +57,11 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
                 .pageLabel("Create case flags")
                 .label("caseworkerCaseFlag-lineSeparator", "---")
                 .optional(PCSCase::getCaseFlags, ShowConditions.NEVER_SHOW, true, true)
-                .optional(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW, true, true)
-                //.list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
-                //.optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
-                //.optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
-                //.done()
+                .optional(PCSCase::getParties, ShowConditions.NEVER_SHOW, true, true)
+                .list(PCSCase::getAllDefendants, ShowConditions.NEVER_SHOW)
+                .optional(Party::getDefendantFlags, ShowConditions.NEVER_SHOW, true)
+                .optional(Party::getPartyFlagsExternal, ShowConditions.NEVER_SHOW, true)
+                .done()
                 .optional(PCSCase::getFlagLauncherInternal,
                       null, null, null, null,
                       "#ARGUMENT(CREATE,VERSION2.1)");
@@ -74,13 +74,13 @@ public class CreateFlags implements CCDConfig<PCSCase, State, UserRole> {
             return pcsCase;
         }
 
-        Set<String> defendantIds = pcsCase.getAllDefendants().stream()
+        /*Set<String> defendantIds = pcsCase.getAllDefendants().stream()
             .map(this::partyId)
             .collect(Collectors.toSet());
 
         pcsCase.setParties(pcsCase.getParties().stream()
             .filter(party -> defendantIds.contains(partyId(party)))
-            .toList());
+            .toList());*/
 
         return pcsCase;
     }
