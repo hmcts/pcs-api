@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -60,6 +60,7 @@ public class HearingService {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         HearingEntity hearingEntity = populateHearingEntity(new HearingEntity(), pcsCase);
         pcsCaseEntity.addHearing(hearingEntity);
+        assignNoticeNumber(pcsCaseEntity, hearingEntity);
         return hearingRepository.save(hearingEntity);
     }
 
@@ -78,7 +79,20 @@ public class HearingService {
             ));
 
         populateHearingEntity(hearingEntity, pcsCase);
+        assignNoticeNumber(pcsCaseEntity, hearingEntity);
         return hearingRepository.save(hearingEntity);
+    }
+
+    private static void assignNoticeNumber(PcsCaseEntity pcsCaseEntity, HearingEntity hearingEntity) {
+        if (hearingEntity.getIssueNotice() != VerticalYesNo.YES) {
+            return;
+        }
+        int latestNoticeNumber = pcsCaseEntity.getHearings().stream()
+            .map(HearingEntity::getNoticeNumber)
+            .filter(Objects::nonNull)
+            .max(Integer::compare)
+            .orElse(0);
+        hearingEntity.setNoticeNumber(latestNoticeNumber + 1);
     }
 
     public void cancelHearing(Hearing hearing) {

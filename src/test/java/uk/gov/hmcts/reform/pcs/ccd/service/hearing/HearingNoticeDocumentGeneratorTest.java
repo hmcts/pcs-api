@@ -163,10 +163,8 @@ class HearingNoticeDocumentGeneratorTest {
 
         generateNotices(hearing);
 
-        verify(docAssemblyService).generateDocument(any(), eq(HearingNoticeDocumentGenerator.TEMPLATE_ID),
+        verify(docAssemblyService, times(3)).generateDocument(any(), eq(HearingNoticeDocumentGenerator.TEMPLATE_ID),
             eq(OutputType.PDF), eq("Notice of hearing 1"));
-        verify(docAssemblyService).generateDocument(any(), any(), any(), eq("Notice of hearing 2"));
-        verify(docAssemblyService).generateDocument(any(), any(), any(), eq("Notice of hearing 3"));
         verify(documentImportService, times(3))
             .addDocumentToCase(pcsCase, "document url", CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
         verify(claimActivityLogService).logGenerationSuccess(pcsCase, claimant);
@@ -175,7 +173,7 @@ class HearingNoticeDocumentGeneratorTest {
 
         assertThat(hearing.getNoticeDocuments()).hasSize(3)
             .allSatisfy(notice -> {
-                assertThat(notice.getType()).isEqualTo(DocumentType.HEARING_NOTICE);
+                assertThat(notice.getType()).isEqualTo(DocumentType.NOTICE_OF_HEARING);
                 assertThat(notice.getHearing()).isEqualTo(hearing);
             })
             .extracting(DocumentEntity::getParty)
@@ -193,15 +191,14 @@ class HearingNoticeDocumentGeneratorTest {
     }
 
     @Test
-    void shouldContinueNumberingFromExistingGeneratedNotices() {
-        pcsCase.getDocuments().add(DocumentEntity.builder().type(DocumentType.HEARING_NOTICE).build());
-        pcsCase.getDocuments().add(DocumentEntity.builder().type(DocumentType.NOTICE_OF_HEARING).build());
+    void shouldNameNoticesWithTheHearingsNoticeNumber() {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
+        hearing.setNoticeNumber(3);
         hearing.addParty(defendant1);
 
         generateNotices(hearing);
 
-        verify(docAssemblyService).generateDocument(any(), any(), any(), eq("Notice of hearing 2"));
+        verify(docAssemblyService).generateDocument(any(), any(), any(), eq("Notice of hearing 3"));
     }
 
     @Test
@@ -260,7 +257,8 @@ class HearingNoticeDocumentGeneratorTest {
     @Test
     void shouldNotEmailAnyoneWhenANoticeFailsToGenerate() {
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
-        when(docAssemblyService.generateDocument(any(), any(), any(), eq("Notice of hearing 2")))
+        when(docAssemblyService.generateDocument(any(), any(), any(), any()))
+            .thenReturn("document url")
             .thenThrow(new RuntimeException("docassembly 500"));
 
         assertThatThrownBy(() -> generateNotices(hearing)).isInstanceOf(RuntimeException.class);
@@ -277,6 +275,7 @@ class HearingNoticeDocumentGeneratorTest {
         return HearingEntity.builder()
             .id(HEARING_ID)
             .pcsCase(pcsCase)
+            .noticeNumber(1)
             .issueNotice(issueNotice)
             .isWithoutNotice(isWithoutNotice)
             .hearingDate(LocalDateTime.of(2026, 8, 15, 15, 40))

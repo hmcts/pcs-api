@@ -41,8 +41,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
 /**
  * Generates one notice of hearing per recipient and stores each in Case File View, linked to its hearing and
  * party. With-notice hearings go to every claimant and defendant; without-notice hearings only to the parties
- * selected on the hearing. Each notice gets the next number on the case plus the
- * recipient's label, e.g. "Notice of hearing 1 - Claimant 1", "Notice of hearing 2 - Defendant 1".
+ * selected on the hearing. Each issue gets the next number on the case, shared by every recipient's copy,
+ * plus the recipient's label, e.g. "Notice of hearing 1 - Claimant 1", "Notice of hearing 1 - Defendant 1".
  */
 @Service
 public class HearingNoticeDocumentGenerator {
@@ -103,7 +103,7 @@ public class HearingNoticeDocumentGenerator {
         List<PartyEntity> defendants = partiesByRole(claim, PartyRole.DEFENDANT);
         String allClaimantNames = joinNames(claimants);
         String allDefendantNames = joinNames(defendants);
-        int nextNumber = countGeneratedNotices(pcsCase) + 1;
+        int noticeNumber = hearing.getNoticeNumber();
 
         List<PartyEntity> recipients = recipientsOf(hearing, claimants, defendants);
         for (PartyEntity recipient : recipients) {
@@ -116,12 +116,12 @@ public class HearingNoticeDocumentGenerator {
                 isClaimant), recipientName, claimantName, defendantName, courtName);
 
             String filename = documentNameService.appendPartyPostfix(
-                OUTPUT_FILENAME_FORMAT.formatted(nextNumber++), claim, recipient.getId());
+                OUTPUT_FILENAME_FORMAT.formatted(noticeNumber), claim, recipient.getId());
             String documentUrl = docAssemblyService.generateDocument(payload, TEMPLATE_ID, OutputType.PDF, filename);
 
             DocumentEntity notice = documentImportService.addDocumentToCase(
                 pcsCase, documentUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
-            notice.setType(DocumentType.HEARING_NOTICE);
+            notice.setType(DocumentType.NOTICE_OF_HEARING);
             notice.setHearing(hearing);
             notice.setParty(recipient);
             hearing.getNoticeDocuments().add(notice);
@@ -200,11 +200,5 @@ public class HearingNoticeDocumentGenerator {
 
     private String joinNames(List<PartyEntity> parties) {
         return String.join(", ", parties.stream().map(recipientAddressResolver::resolveDisplayName).toList());
-    }
-
-    private static int countGeneratedNotices(PcsCaseEntity pcsCase) {
-        return (int) pcsCase.getDocuments().stream()
-            .filter(document -> document.getType() == DocumentType.HEARING_NOTICE)
-            .count();
     }
 }

@@ -168,7 +168,7 @@ class HearingNoticeGenerationComponentTest {
             .isInstanceOf(RuntimeException.class);
         verify(claimActivityLogService).logGenerationFailure(eq(CASE_REFERENCE), isNull(),
             argThat((GenerationDetails details) -> !details.terminal()
-                && details.documentType() == DocumentType.HEARING_NOTICE));
+                && details.documentType() == DocumentType.NOTICE_OF_HEARING));
     }
 
     @Test

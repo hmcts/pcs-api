@@ -66,7 +66,7 @@ public class HearingNoticeSelector {
 
     // A generated notice of hearing for a live hearing that issues a notice.
     private boolean isIssuedNotice(DocumentEntity document, HearingEntity hearing) {
-        return document.getType() == DocumentType.HEARING_NOTICE
+        return document.getType() == DocumentType.NOTICE_OF_HEARING
             && hearing != null
             && hearing.getIssueNotice() == VerticalYesNo.YES
             && !Boolean.TRUE.equals(hearing.getCancelled());

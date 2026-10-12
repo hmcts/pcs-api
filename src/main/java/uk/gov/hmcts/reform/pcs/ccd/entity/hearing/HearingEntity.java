@@ -20,9 +20,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -88,6 +88,8 @@ public class HearingEntity {
     @Builder.Default
     @JsonManagedReference
     private List<DocumentEntity> noticeDocuments = new ArrayList<>();
+
+    private Integer noticeNumber;
 
     private Boolean cancelled;
 

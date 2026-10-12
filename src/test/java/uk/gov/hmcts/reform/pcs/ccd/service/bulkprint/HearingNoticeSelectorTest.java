@@ -145,7 +145,7 @@ class HearingNoticeSelectorTest {
 
     private static DocumentEntity notice(HearingEntity hearing, PartyEntity recipient) {
         return DocumentEntity.builder().id(UUID.randomUUID())
-            .type(DocumentType.HEARING_NOTICE).hearing(hearing).party(recipient).build();
+            .type(DocumentType.NOTICE_OF_HEARING).hearing(hearing).party(recipient).build();
     }
 
     private ClaimActivityLogEntity sent(PartyEntity party, DocumentEntity document) {

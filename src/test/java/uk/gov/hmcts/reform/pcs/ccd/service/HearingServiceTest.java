@@ -136,6 +136,7 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getAdditionalInformation()).isEqualTo("additional information");
         assertThat(hearingEntity.getHearingNoticeParties()).hasSize(1);
         assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity);
+        assertThat(hearingEntity.getNoticeNumber()).isEqualTo(1);
     }
 
     @Test
@@ -1142,5 +1143,38 @@ public class HearingServiceTest {
         assertThat(hearingEntity.getHearingNoticeParties()).hasSize(2);
         assertThat(hearingEntity.getHearingNoticeParties().getFirst().getParty()).isEqualTo(partyEntity1);
         assertThat(hearingEntity.getHearingNoticeParties().getLast().getParty()).isEqualTo(partyEntity2);
+    }
+
+    @Test
+    void shouldGiveAnEditedHearingTheNextNoticeNumberOnTheCase() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.POSSESSION)
+            .date(LocalDateTime.of(2026, 3, 4, 10, 15, 0))
+            .durationDays(0)
+            .durationHours(1f)
+            .durationMinutes(0f)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.NO)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .hearing(hearing)
+            .build();
+
+        HearingEntity editedHearing = HearingEntity.builder().id(1).noticeNumber(1).build();
+        HearingEntity otherHearing = HearingEntity.builder().id(2).noticeNumber(2).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(editedHearing, otherHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        // Then
+        assertThat(editedHearing.getNoticeNumber()).isEqualTo(3);
+        assertThat(otherHearing.getNoticeNumber()).isEqualTo(2);
     }
 }

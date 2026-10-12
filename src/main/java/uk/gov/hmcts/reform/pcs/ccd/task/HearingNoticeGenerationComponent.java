@@ -98,7 +98,7 @@ public class HearingNoticeGenerationComponent {
     private void recordGenerationFailure(HearingNoticeTaskData data, Exception cause, boolean terminal) {
         try {
             claimActivityLogService.logGenerationFailure(data.getCaseReference(), null,
-                GenerationDetails.forFailure(DocumentType.HEARING_NOTICE, cause, terminal));
+                GenerationDetails.forFailure(DocumentType.NOTICE_OF_HEARING, cause, terminal));
         } catch (Exception e) {
             log.error("Failed to record hearing notice generation failure for hearing {}", data.getHearingId(), e);
         }
