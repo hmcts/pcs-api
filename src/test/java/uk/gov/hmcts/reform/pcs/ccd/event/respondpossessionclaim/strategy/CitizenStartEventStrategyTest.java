@@ -102,8 +102,8 @@ class CitizenStartEventStrategyTest {
             rentArrearsView
         );
 
-        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), 
-            any(Boolean.class))).thenReturn(CaseDetailsTab.builder().build());
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(CaseDetailsTab.builder().build());
     }
 
     @Test
@@ -153,8 +153,7 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
-            .thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -174,7 +173,7 @@ class CitizenStartEventStrategyTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
@@ -238,8 +237,7 @@ class CitizenStartEventStrategyTest {
             .thenReturn(PCSCase.builder()
                             .possessionClaimResponse(draftResponse)
                             .build());
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
-            .thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -257,7 +255,7 @@ class CitizenStartEventStrategyTest {
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(caseData, draftResponse);
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
     }
 
     @Test
