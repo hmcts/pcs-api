@@ -1,5 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bundling;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -7,350 +14,250 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
-import feign.FeignException;
-import feign.Request;
-import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
-import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
-import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentReason;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJob;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
-import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobState;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobWorker;
+import uk.gov.hmcts.ccd.sdk.bundling.job.ManagedCaseBundles;
 import uk.gov.hmcts.ccd.sdk.bundling.job.OutboxBundleJobService;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
-import uk.gov.hmcts.reform.ccd.document.am.model.Document;
-import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
-import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
+import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
+import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.view.BundleTabView;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
-import uk.gov.hmcts.reform.pcs.security.IdamTokenProvider;
+import uk.gov.hmcts.reform.pcs.config.IssuedCases;
+import uk.gov.hmcts.reform.pcs.config.PcsCcdEventTest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BooleanSupplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.awaitility.Awaitility.await;
 
-@SpringBootTest(properties = {
-    "ccd.bundling.job.enabled=true",
-    // The test drives the worker itself.
+/** Real PCS persistence and projection, real SDK rendering, and the SDK's existing CDAM fixture. */
+@PcsCcdEventTest
+@TestPropertySource(properties = {
+    "ccd.bundling.managed.enabled=true", "ccd.bundling.job.enabled=true",
     "ccd.bundling.job.worker.poll-delay=1h"
 })
-@ActiveProfiles("integration")
-@DisplayName("Always-current case bundle")
 class CaseBundleIT extends AbstractPostgresContainerIT {
-
     @Autowired
-    private PcsCaseRepository pcsCaseRepository;
+    private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
-    private DocumentRepository documentRepository;
+    private WebApplicationContext web;
     @Autowired
-    private BundleTabView bundleTabView;
+    private IssuedCases cases;
     @Autowired
-    private OutboxBundleJobService bundleJobs;
+    private PcsCaseRepository pcsCases;
+    @Autowired
+    private DocumentRepository documents;
+    @Autowired
+    private CaseBundles bundles;
+    @Autowired
+    private OutboxBundleJobService jobs;
     @Autowired
     private BundleJobWorker worker;
     @Autowired
     private NamedParameterJdbcTemplate jdbc;
     @Autowired
-    private PlatformTransactionManager transactionManager;
-
-    @MockitoBean
-    private CaseDocumentClientApi caseDocumentClientApi;
-    @MockitoBean
-    private AuthTokenGenerator authTokenGenerator;
-    @MockitoBean(name = "systemUpdateUserTokenProvider")
-    private IdamTokenProvider systemUpdateUserTokenProvider;
-    @MockitoBean
-    private CoreCaseDataApi coreCaseDataApi;
-
-    private TransactionTemplate tx;
-
-    @BeforeEach
-    void setUp() {
-        tx = new TransactionTemplate(transactionManager);
-        // The worker claims any waiting job, so start each test with an empty outbox.
-        jdbc.update("delete from bundling.bundle_job", Map.of());
-        when(authTokenGenerator.generate()).thenReturn("s2s");
-        when(systemUpdateUserTokenProvider.getAuthToken()).thenReturn("Bearer system");
-        when(coreCaseDataApi.startEvent(anyString(), anyString(), anyString(), anyString()))
-            .thenReturn(StartEventResponse.builder().token("event-token").build());
-    }
+    private TransactionTemplate transaction;
 
     @Test
-    @DisplayName("queues one job per case for any number of document changes, and none for a rollback")
-    void coalescesDocumentChangesIntoOneJobPerCase() {
-        UUID caseId = newCase();
-
-        tx.executeWithoutResult(status -> addDocuments(caseId,
-            document("witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10)),
-            document("claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
-        BundleJob queued = bundleJobs.findLatest(CaseBundleScope.coalesceKey(caseId)).orElseThrow();
-        assertThat(queued.state()).isEqualTo(BundleJobState.QUEUED);
-
-        tx.executeWithoutResult(status -> addDocuments(caseId,
-            document("photo.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 11))));
-        tx.executeWithoutResult(status -> {
-            addDocuments(caseId, document("never.pdf", CaseFileCategory.EVIDENCE, LocalDate.now()));
+    void documentHookCoalescesCascadedWritesAndRollbackQueuesNothing() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        var first = document("First.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        var second = document("Second.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 2));
+        transaction.executeWithoutResult(status -> {
+            add(reference, first, second);
             status.setRollbackOnly();
         });
-
-        assertThat(jobCount(caseId)).isEqualTo(1);
-        assertThat(bundleJobs.findLatest(CaseBundleScope.coalesceKey(caseId)).orElseThrow().externalId())
-            .isEqualTo(queued.externalId());
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.NONE);
+        transaction.executeWithoutResult(status -> add(reference, first, second));
+        assertThat(jdbc.queryForObject("select requested_revision from bundling.case_bundle where case_key = :key",
+            Map.of("key", key.toString()), Long.class)).isEqualTo(1);
+        assertThat(jobCount(key)).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("queues a regeneration when a document is amended")
-    void queuesARegenerationWhenADocumentIsAmended() {
-        UUID caseId = newCase();
-        DocumentEntity witness = document("witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10));
-        tx.executeWithoutResult(status -> addDocuments(caseId, witness));
-        jdbc.update("delete from bundling.bundle_job where coalesce_key = :key",
-                    Map.of("key", CaseBundleScope.coalesceKey(caseId)));
-
-        tx.executeWithoutResult(status -> pcsCaseRepository.findById(caseId).orElseThrow().getDocuments()
-            .getFirst().setFileName("Witness statement (amended).pdf"));
-
-        assertThat(jobCount(caseId)).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("queues a regeneration on soft deletion and excludes the deleted document")
-    void queuesARegenerationWhenADocumentIsRemoved() {
-        UUID caseId = newCase();
-        DocumentEntity witness = document("witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10));
-        tx.executeWithoutResult(status -> addDocuments(caseId, witness));
-        jdbc.update("delete from bundling.bundle_job where coalesce_key = :key",
-                    Map.of("key", CaseBundleScope.coalesceKey(caseId)));
-
-        UUID documentId = tx.execute(status -> pcsCaseRepository.findById(caseId).orElseThrow()
-            .getDocuments().getFirst().getId());
-
-        tx.executeWithoutResult(status -> {
-            documentRepository.deleteById(documentId);
-            status.setRollbackOnly();
-        });
-        assertThat(jobCount(caseId)).isZero();
-        assertThat(documentRepository.findById(documentId)).isPresent();
-
-        tx.executeWithoutResult(status -> documentRepository.deleteById(documentId));
-
-        assertThat(jobCount(caseId)).isEqualTo(1);
-        assertThat(documentRepository.findById(documentId)).isEmpty();
-        tx.executeWithoutResult(status -> assertThat(pcsCaseRepository.findById(caseId).orElseThrow()
-            .getDocuments()).isEmpty());
-    }
-
-    @Test
-    @DisplayName("ignores documents that never go in the bundle")
-    void ignoresDocumentsOutsideTheBundle() {
-        final UUID caseId = newCase();
-
-        DocumentEntity accessCode = document("access-code.pdf", CaseFileCategory.UNCATEGORISED_DOCUMENTS, null);
-        accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
-        DocumentEntity bundle = document("old-bundle.pdf", CaseFileCategory.UNCATEGORISED_DOCUMENTS, null);
-        bundle.setType(DocumentType.CASE_BUNDLE);
-        bundle.setCategoryId(CaseBundleScope.BUNDLES_CATEGORY_ID);
-        tx.executeWithoutResult(status -> addDocuments(caseId, accessCode, bundle));
-
-        assertThat(jobCount(caseId)).isZero();
-    }
-
-    @Test
-    @DisplayName("renders the case into a bundle, stores it, and replaces it when a document arrives")
-    void regeneratesTheBundleInPlaceWhenADocumentIsAdded() throws Exception {
-        stubCdam();
-        UUID caseId = newCase();
-        tx.executeWithoutResult(status -> addDocuments(caseId,
-            document("Witness statement.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10)),
-            document("Inspection report.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 5)),
-            document("Claim form.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
-
-        BundleJob firstJob = runQueuedJob(caseId);
-
-        DocumentEntity first = storedBundle(caseId);
-        assertThat(first.getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
-        assertThat(first.getBundleJobId()).isEqualTo(firstJob.externalId());
-        BundleJobReport firstReport = bundleJobs.findReport(firstJob.externalId()).orElseThrow();
-        assertThat(titles(firstReport, "Evidence")).containsExactly("Inspection report.pdf", "Witness statement.pdf");
-        assertThat(titles(firstReport, "Statements of case")).containsExactly("Claim form.pdf");
-        assertThat(firstReport.request().root().sections()).hasSize(CaseFileCategory.values().length);
-        assertThat(firstReport.documents()).hasSize(3)
-            .allSatisfy(placed -> assertThat(placed.startPage()).isPositive());
-        assertThat(firstReport.missingDocuments()).isEmpty();
-        // Storing the bundle's own document did not queue another bundle.
-        assertThat(waitingJob(caseId)).isFalse();
-
-        ArgumentCaptor<CaseDataContent> attach = ArgumentCaptor.forClass(CaseDataContent.class);
-        verify(coreCaseDataApi).createEvent(anyString(), anyString(), anyString(), attach.capture());
-        assertThat(attach.getValue().getEvent().getId()).isEqualTo("attachCaseBundle");
-        assertThat(attach.getValue().getData().toString()).contains("document_hash=hash-");
-        assertThat(uploadedBundleText()).contains("Inspection report.pdf", "Witness statement.pdf", "Claim form.pdf",
-                                                  "Content of Claim form.pdf");
-        verify(caseDocumentClientApi, never()).deleteDocument(anyString(), anyString(), any(UUID.class),
-                                                              any(Boolean.class));
-
-        tx.executeWithoutResult(status -> addDocuments(caseId,
-            document("Late evidence.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 2, 1))));
-        BundleJob secondJob = runQueuedJob(caseId);
-
-        DocumentEntity second = storedBundle(caseId);
-        assertThat(second.getId()).as("replaced in place").isEqualTo(first.getId());
-        assertThat(second.getDocumentId()).isNotEqualTo(first.getDocumentId());
-        assertThat(second.getBundleJobId()).isEqualTo(secondJob.externalId());
-        assertThat(titles(bundleJobs.findReport(secondJob.externalId()).orElseThrow(), "Evidence"))
-            .containsExactly("Inspection report.pdf", "Witness statement.pdf", "Late evidence.pdf");
-        verify(caseDocumentClientApi).deleteDocument("Bearer system", "s2s", first.getDocumentId(), true);
-    }
-
-    @Test
-    @DisplayName("replaces a document that cannot be fetched with a placeholder, and lists it in the Bundle tab")
-    void listsMissingDocumentsInTheBundleTab() throws Exception {
-        stubCdam();
-        UUID caseId = newCase();
-        DocumentEntity deleted = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 3));
-        when(caseDocumentClientApi.getDocumentBinary(anyString(), anyString(), eq(deleted.getDocumentId())))
-            .thenThrow(FeignException.errorStatus("getDocumentBinary", notFound()));
-        tx.executeWithoutResult(status -> addDocuments(caseId,
-            document("Claim form.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2)), deleted));
-
-        BundleJob job = runQueuedJob(caseId);
-
-        assertThat(bundleJobs.findReport(job.externalId()).orElseThrow().missingDocuments())
-            .singleElement()
-            .satisfies(missing -> assertThat(missing.reason()).isEqualTo(MissingDocumentReason.NOT_FOUND));
-        assertThat(uploadedBundleText()).contains("Deleted.pdf (missing)", MissingDocumentReason.NOT_FOUND.message());
-
-        BundleTab tab = tx.execute(status -> {
-            PCSCase pcsCase = PCSCase.builder().build();
-            bundleTabView.setCaseFields(pcsCase, pcsCaseRepository.findById(caseId).orElseThrow());
-            return pcsCase.getBundleTab();
-        });
-        assertThat(tab.getStatus()).isEqualTo("The bundle is up to date, but some documents could not be "
-                                                  + "included. Each has a page in the bundle explaining why.");
-        assertThat(tab.getBundle().getCategoryId()).isEqualTo(CaseBundleScope.BUNDLES_CATEGORY_ID);
-        assertThat(tab.getPages()).isPositive();
-        assertThat(tab.getMissingDocuments()).extracting(listValue -> listValue.getValue())
-            .singleElement().satisfies(missing -> {
-                assertThat(missing.getDocumentName()).isEqualTo("Deleted.pdf");
-                assertThat(missing.getFolder()).isEqualTo("Evidence");
-                assertThat(missing.getReason()).isEqualTo(MissingDocumentReason.NOT_FOUND.message());
-                assertThat(missing.getPage()).isPositive();
-            });
-    }
-
-    private BundleJob runQueuedJob(UUID caseId) {
-        BundleJob job = bundleJobs.findLatest(CaseBundleScope.coalesceKey(caseId)).orElseThrow();
-        worker.poll();
-        waitUntil(() -> bundleJobs.find(job.externalId()).orElseThrow().state().terminal());
-        BundleJob finished = bundleJobs.find(job.externalId()).orElseThrow();
-        assertThat(finished.failure()).as("job failure").isEmpty();
-        assertThat(finished.state()).isIn(BundleJobState.COMPLETED, BundleJobState.COMPLETED_WITH_WARNINGS);
-        return finished;
-    }
-
-    private UUID newCase() {
-        return tx.execute(status -> {
-            PcsCaseEntity pcsCase = new PcsCaseEntity();
-            pcsCase.setCaseReference(ThreadLocalRandom.current().nextLong(1_000_000_000_000_000L,
-                                                                           9_999_999_999_999_999L));
-            return pcsCaseRepository.saveAndFlush(pcsCase).getId();
-        });
-    }
-
-    private void addDocuments(UUID caseId, DocumentEntity... documents) {
-        PcsCaseEntity pcsCase = pcsCaseRepository.findById(caseId).orElseThrow();
-        pcsCase.addDocuments(List.of(documents));
-        pcsCaseRepository.save(pcsCase);
-    }
-
-    private static DocumentEntity document(String fileName, CaseFileCategory category, LocalDate issueDate) {
-        UUID cdamId = UUID.randomUUID();
-        return DocumentEntity.builder()
-            .documentId(cdamId)
-            .fileName(fileName)
-            .categoryId(category.getId())
-            .contentType("application/pdf")
-            .url("http://cdam/cases/documents/" + cdamId)
-            .binaryUrl("http://cdam/cases/documents/" + cdamId + "/binary")
-            .issueDate(issueDate)
-            .build();
-    }
-
-    private void stubCdam() throws IOException {
-        when(caseDocumentClientApi.getDocumentBinary(anyString(), anyString(), any(UUID.class)))
-            .thenAnswer(invocation -> {
-                UUID cdamId = invocation.getArgument(2);
-                String fileName = documentRepository.findByDocumentId(cdamId).orElseThrow().getFileName();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                headers.add("OriginalFileName", fileName);
-                Resource body = new ByteArrayResource(pdf("Content of " + fileName));
-                return ResponseEntity.ok().headers(headers).body(body);
-            });
-        when(caseDocumentClientApi.uploadDocuments(anyString(), anyString(), any(DocumentUploadRequest.class)))
-            .thenAnswer(invocation -> {
-                UUID stored = UUID.randomUUID();
-                Document document = Document.builder()
-                    .links(new Document.Links())
-                    .hashToken("hash-" + stored)
-                    .build();
-                document.links.self = new Document.Link();
-                document.links.self.href = "http://cdam/cases/documents/" + stored;
-                document.links.binary = new Document.Link();
-                document.links.binary.href = document.links.self.href + "/binary";
-                return new UploadResponse(List.of(document));
-            });
-    }
-
-    private String uploadedBundleText() throws IOException {
-        ArgumentCaptor<DocumentUploadRequest> upload = ArgumentCaptor.forClass(DocumentUploadRequest.class);
-        verify(caseDocumentClientApi, atLeastOnce()).uploadDocuments(anyString(), anyString(), upload.capture());
-        try (PDDocument bundle = Loader.loadPDF(upload.getValue().getFiles().getFirst().getBytes())) {
-            return new PDFTextStripper().getText(bundle);
+    void rendersAndReplacesTheJudgesBundleWithoutAddingItToTheDocumentTable() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10)),
+            document("Inspection.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 5)),
+            document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
+        run(key);
+        var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
+        assertThat(events.documents().caseReference(first.document())).hasValue(reference);
+        try (PDDocument pdf = Loader.loadPDF(events.documents().content(first.document()))) {
+            assertThat(new PDFTextStripper().getText(pdf)).contains("Content of Claim.pdf", "Witness.pdf");
         }
+        assertThat(first.report().request().root().sections().stream()
+            .filter(folder -> folder.title().equals("Evidence")).findFirst().orElseThrow().documents())
+            .extracting(source -> source.title()).containsExactly("Inspection.pdf", "Witness.pdf");
+        var projected = projected(reference, "judge");
+        assertThat(projected.path("bundleTab_Bundle").path("document_url").asText())
+            .isEqualTo(first.document().getUrl());
+        assertThat(projected.path("allDocuments").toString()).doesNotContain(first.document().getUrl());
+        var nonJudge = projected(reference, "hearing-centre-admin");
+        assertThat(nonJudge.properties()).noneMatch(field -> field.getKey().startsWith("bundleTab_"));
+        assertThat(nonJudge.toString()).doesNotContain(first.document().getUrl());
+        transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
+            .getDocuments()).hasSize(3));
+
+        transaction.executeWithoutResult(status -> add(reference,
+            document("Late evidence.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 2, 1))));
+        run(key);
+        var second = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
+        assertThat(second.document().getUrl()).isNotEqualTo(first.document().getUrl());
+        ((ManagedCaseBundles) bundles).cleanUp();
+        assertThat(events.documents().stored()).extracting(Document::getUrl)
+            .doesNotContain(first.document().getUrl()).contains(second.document().getUrl());
+        assertThat(events.history(reference)).extracting(audit -> audit.eventId())
+            .containsExactly("caseBundleGenerated", "caseBundleGenerated");
+    }
+
+    @Test
+    void amendmentsAndSoftDeletionInvalidateTheBundleThroughTheSameDocumentHook() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        var source = document("Witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        transaction.executeWithoutResult(status -> add(reference, source));
+        run(key);
+        UUID sourceId = documents.findByDocumentId(source.getDocumentId()).orElseThrow().getId();
+        transaction.executeWithoutResult(status -> documents.findById(sourceId).orElseThrow()
+            .setFileName("Amended witness.pdf"));
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
+        run(key);
+        transaction.executeWithoutResult(status -> {
+            documents.deleteById(sourceId);
+            status.setRollbackOnly();
+        });
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.UP_TO_DATE);
+        transaction.executeWithoutResult(status -> documents.deleteById(sourceId));
+        run(key);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
+            .report().documents()).isEmpty();
+    }
+
+    @Test
+    void issuingACounterclaimInvalidatesItsPreviouslyHiddenDocuments() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        UUID claimId = transaction.execute(status -> {
+            var pcsCase = pcsCases.findByCaseReference(reference).orElseThrow();
+            var counterclaim = CounterClaimEntity.builder().party(pcsCase.getParties().iterator().next())
+                .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED).build();
+            pcsCase.addCounterClaim(counterclaim);
+            var source = document("Counterclaim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 1));
+            source.setCounterClaim(counterclaim);
+            pcsCase.addDocuments(List.of(source));
+            return pcsCases.saveAndFlush(pcsCase).getCounterClaims().getFirst().getId();
+        });
+        run(key);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
+            .report().request().allDocuments()).isEmpty();
+        transaction.executeWithoutResult(status -> pcsCases.findByCaseReference(reference).orElseThrow()
+            .getCounterClaims().stream().filter(claim -> claim.getId().equals(claimId)).findFirst().orElseThrow()
+            .setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED));
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.UPDATING);
+        run(key);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow()
+            .report().request().allDocuments()).extracting(source -> source.title())
+            .containsExactly("Counterclaim.pdf");
+    }
+
+    @Test
+    void missingSourcesAppearInThePdfAndInTheJudgesTab() throws Exception {
+        long reference = cases.issue();
+        UUID key = caseKey(reference);
+        var missing = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        Document stored = events.documents().stored().stream()
+            .filter(document -> document.getUrl().equals(missing.getUrl())).findFirst().orElseThrow();
+        events.documents().delete(stored);
+        transaction.executeWithoutResult(status -> add(reference, missing));
+        run(key);
+        var missingDetails = projected(reference, "judge").path("bundleTab_MissingDocuments");
+        assertThat(missingDetails).hasSize(1);
+        var value = missingDetails.path(0).path("value");
+        assertThat(value.path("documentName").asText()).isEqualTo("Deleted.pdf");
+        assertThat(value.path("folder").asText()).isEqualTo("Evidence");
+        assertThat(value.path("page").asInt()).isPositive();
+    }
+
+    private JsonNode projected(long reference, String role) throws Exception {
+        var actor = events.registerActor("Bundle", "Reader", "caseworker-pcs", role);
+        var response = projectionMvc().perform(get("/ccd-persistence/cases")
+            .param("case-refs", String.valueOf(reference))
+            .header("Authorization", actor.authorisation()))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        return new ObjectMapper().readTree(response)
+            .path(0).path("case_details").path("case_data");
+    }
+
+    private MockMvc projectionMvc() {
+        var builder = MockMvcBuilders.webAppContextSetup(web);
+        var customizer = new SpringBootMockMvcBuilderCustomizer(web);
+        customizer.setPrint(MockMvcPrint.NONE);
+        customizer.customize(builder);
+        return builder.build();
+    }
+
+    private void run(UUID key) {
+        UUID id = jobs.findLatest(ManagedCaseBundles.key(CaseBundleDefinition.NAME, key.toString()))
+            .orElseThrow().externalId();
+        worker.poll();
+        await().atMost(Duration.ofSeconds(30)).until(() -> jobs.find(id).orElseThrow().state().terminal());
+        assertThat(jobs.find(id).orElseThrow().failure()).isEmpty();
+    }
+
+    private UUID caseKey(long reference) {
+        return pcsCases.findByCaseReference(reference).orElseThrow().getId();
+    }
+
+    private void add(long reference, DocumentEntity... sources) {
+        PcsCaseEntity pcsCase = pcsCases.findByCaseReference(reference).orElseThrow();
+        pcsCase.addDocuments(List.of(sources));
+        pcsCases.save(pcsCase);
+    }
+
+    @lombok.SneakyThrows
+    private DocumentEntity document(String filename, CaseFileCategory category, LocalDate date) {
+        Document stored = events.documents().store(filename, "application/pdf", pdf("Content of " + filename));
+        UUID id = UUID.fromString(stored.getUrl().substring(stored.getUrl().lastIndexOf('/') + 1));
+        return DocumentEntity.builder().documentId(id).url(stored.getUrl()).binaryUrl(stored.getBinaryUrl())
+            .fileName(filename).contentType("application/pdf").categoryId(category.getId()).issueDate(date)
+            .type(DocumentType.WITNESS_STATEMENT).build();
+    }
+
+    private int jobCount(UUID key) {
+        return jdbc.queryForObject("select count(*) from bundling.bundle_job where coalesce_key = :key",
+            Map.of("key", ManagedCaseBundles.key(CaseBundleDefinition.NAME, key.toString())), Integer.class);
     }
 
     private static byte[] pdf(String text) throws IOException {
@@ -369,54 +276,4 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         }
     }
 
-    private DocumentEntity storedBundle(UUID caseId) {
-        return documentRepository.findByPcsCase_IdAndType(caseId, DocumentType.CASE_BUNDLE).orElseThrow();
-    }
-
-    private static List<String> titles(BundleJobReport report, String folder) {
-        return report.request().root().sections().stream()
-            .filter(section -> section.title().equals(folder))
-            .map(BundleSection::documents)
-            .findFirst()
-            .orElseThrow()
-            .stream()
-            .map(BundleDocument::title)
-            .toList();
-    }
-
-    private static feign.Response notFound() {
-        return feign.Response.builder()
-            .status(404)
-            .reason("Not Found")
-            .request(Request.create(Request.HttpMethod.GET, "http://cdam", Map.of(), null, StandardCharsets.UTF_8,
-                                    null))
-            .headers(Map.of())
-            .build();
-    }
-
-    private int jobCount(UUID caseId) {
-        return jdbc.queryForObject("select count(*) from bundling.bundle_job where coalesce_key = :key",
-                                   Map.of("key", CaseBundleScope.coalesceKey(caseId)), Integer.class);
-    }
-
-    private boolean waitingJob(UUID caseId) {
-        return jdbc.queryForObject("select count(*) from bundling.bundle_job where coalesce_key = :key "
-                                       + "and state = 'QUEUED'",
-                                   Map.of("key", CaseBundleScope.coalesceKey(caseId)), Integer.class) > 0;
-    }
-
-    private static void waitUntil(BooleanSupplier condition) {
-        long deadline = System.currentTimeMillis() + 30_000;
-        while (!condition.getAsBoolean()) {
-            if (System.currentTimeMillis() > deadline) {
-                throw new AssertionError("Timed out waiting for the bundle job");
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new AssertionError(e);
-            }
-        }
-    }
 }

@@ -100,6 +100,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final LegalRepresentativeSummaryService legalRepresentativeSummaryService;
     private final OrganisationService organisationService;
 
+    @Override
+    @Transactional(readOnly = true)
+    public PCSCase getCase(CaseViewRequest<State> request, PCSCase blobCase) {
+        return getCase(request);
+    }
+
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param request encapsulates the CCD case reference and state

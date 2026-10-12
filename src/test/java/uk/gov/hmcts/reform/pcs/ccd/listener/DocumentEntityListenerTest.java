@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
@@ -26,6 +27,9 @@ class DocumentEntityListenerTest {
 
     @Mock
     private SchedulerClient schedulerClient;
+
+    @Mock
+    private CaseBundleInvalidation bundles;
 
     @InjectMocks
     private DocumentEntityListener underTest;

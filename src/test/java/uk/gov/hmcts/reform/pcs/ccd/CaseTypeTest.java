@@ -188,7 +188,9 @@ class CaseTypeTest {
         assertThat(supportTab.getForRoles()).doesNotHaveDuplicates();
         verify(builder).omitHistoryForRoles(CaseType.NON_INTERNAL_HISTORY_ROLES);
 
-        assertThat(bundleTab.getForRoles()).containsExactlyInAnyOrder(CaseType.INTERNAL_TAB_ROLES);
+        assertThat(bundleTab.getForRoles()).containsExactlyInAnyOrder(
+            AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE,
+            AccessProfile.CIRCUIT_JUDGE, AccessProfile.LEADERSHIP_JUDGE);
         assertThat(bundleTab.getShowCondition()).isEqualTo("bundleTab_Status=\"*\"");
         assertThat(bundleTab.getFields()).extracting(TabField::getId).containsExactly(
             "bundleTab_Status", "bundleTab_Bundle", "bundleTab_LastUpdated", "bundleTab_Pages",

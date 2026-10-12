@@ -42,7 +42,6 @@ public enum DocumentType implements HasLabel {
     WITHOUT_NOTICE_ORDER("Without notice order"),
     NOTICE_OF_ALLOCATION_TO_TRACK("Notice of allocation to track"),
     GENERAL_APPLICATION("General application"),
-    CASE_BUNDLE("Case bundle"),
     OTHER("Other document");
 
     private final String label;

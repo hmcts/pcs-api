@@ -383,9 +383,11 @@ ccd:
       first-name: PCS
       last-name: System
   bundling:
+    managed:
+      enabled: ${CASE_BUNDLE_ENABLED:false}
     job:
       # Regenerates the case bundle whenever a document that belongs in it is added, removed or
-      # restored (CaseBundleTrigger). Off until the document-bundling module is published.
+      # restored. Managed publication is provided by the CCD SDK.
       enabled: ${CASE_BUNDLE_ENABLED:false}
     docmosis:
       # Office documents (Word, Excel, ...) are converted through the shared Docmosis service; with

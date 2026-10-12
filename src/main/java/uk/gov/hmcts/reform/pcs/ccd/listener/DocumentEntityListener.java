@@ -2,10 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.listener;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
+import jakarta.persistence.PostRemove;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
 import uk.gov.hmcts.reform.pcs.ccd.model.AttachDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.AttachDocumentTaskComponent;
 
@@ -28,9 +31,11 @@ public class DocumentEntityListener {
         "/documents/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})");
 
     private final SchedulerClient schedulerClient;
+    private final CaseBundleInvalidation bundles;
 
     @PostPersist
     public void onPostPersist(DocumentEntity entity) {
+        onDocumentChanged(entity);
         if (entity.getPcsCase() == null) {
             log.warn("Not attaching document {} to its case, as it has no case", entity.getId());
             return;
@@ -51,6 +56,12 @@ public class DocumentEntityListener {
                           .build())
                 .scheduledTo(Instant.now())
         );
+    }
+
+    @PostUpdate
+    @PostRemove
+    public void onDocumentChanged(DocumentEntity entity) {
+        bundles.changed(entity);
     }
 
     private static Optional<UUID> dmStoreDocumentId(DocumentEntity entity) {

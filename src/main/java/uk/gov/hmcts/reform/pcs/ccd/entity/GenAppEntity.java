@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import jakarta.persistence.EntityListeners;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
@@ -40,6 +43,7 @@ import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@EntityListeners(CaseBundleInvalidation.class)
 @Builder
 @Getter
 @Setter

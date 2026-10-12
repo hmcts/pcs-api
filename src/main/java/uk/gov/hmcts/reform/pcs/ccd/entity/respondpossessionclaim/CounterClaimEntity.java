@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim;
 
+import jakarta.persistence.EntityListeners;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleInvalidation;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
@@ -41,6 +44,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@EntityListeners(CaseBundleInvalidation.class)
 @Table(name = "counter_claim")
 @Getter
 @Setter

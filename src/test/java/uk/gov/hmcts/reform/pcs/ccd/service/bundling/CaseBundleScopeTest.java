@@ -13,11 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CaseBundleScopeTest {
 
@@ -46,20 +44,12 @@ class CaseBundleScopeTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DocumentType.class, names = {"CASE_BUNDLE", "DEFENDANT_ACCESS_CODE"})
-    void shouldLeaveOutBundlesAndAccessCodeLetters(DocumentType type) {
+    @EnumSource(value = DocumentType.class, names = {"DEFENDANT_ACCESS_CODE"})
+    void shouldLeaveOutAccessCodeLetters(DocumentType type) {
         DocumentEntity excluded = document();
         excluded.setType(type);
 
         assertThat(CaseBundleScope.isBundleable(excluded)).isFalse();
-    }
-
-    @Test
-    void shouldLeaveOutAnythingFiledUnderBundles() {
-        DocumentEntity filedAsBundle = document();
-        filedAsBundle.setCategoryId(CaseBundleScope.BUNDLES_CATEGORY_ID);
-
-        assertThat(CaseBundleScope.isBundleable(filedAsBundle)).isFalse();
     }
 
     @Test
@@ -89,22 +79,7 @@ class CaseBundleScopeTest {
         assertThat(CaseBundleScope.isVisibleToInternalReaders(issued)).isTrue();
     }
 
-    @Test
-    void shouldKeyJobsAndParametersByCase() {
-        UUID caseId = UUID.randomUUID();
 
-        assertThat(CaseBundleScope.coalesceKey(caseId)).isEqualTo("pcs-case-bundle:" + caseId);
-        assertThat(CaseBundleScope.caseId(CaseBundleScope.selectorParameters(caseId))).isEqualTo(caseId);
-    }
-
-    @Test
-    void shouldRejectAJobWithNoCase() {
-        Map<String, String> noCase = Map.of();
-
-        assertThatThrownBy(() -> CaseBundleScope.caseId(noCase))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining(CaseBundleScope.CASE_ID_PARAMETER);
-    }
 
     private static DocumentEntity document() {
         return DocumentEntity.builder()

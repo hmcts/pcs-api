@@ -43,13 +43,7 @@ public class DocumentsView {
         UserRoles userRoles =
             userRoleService.getCurrentUserCaseRoles(pcsCaseEntity.getCaseReference());
 
-        // The case bundle holds every document on the case (one-click bundle requirement 9), so
-        // only internal (caseworker or judicial) users see it. caseworker-pcs alone does not
-        // count: professional users hold it too.
-        boolean showBundle = genAppVisibilityService.isInternalUser(userRoles.roles());
-
         return pcsCaseEntity.getDocuments().stream()
-            .filter(documentEntity -> documentEntity.getType() != DocumentType.CASE_BUNDLE || showBundle)
             .filter(documentEntity -> this.isDocumentVisibleToUser(documentEntity, userRoles,
                                                                    organisationId))
             .map(entity -> ListValue.<Document>builder()

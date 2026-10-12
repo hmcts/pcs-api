@@ -33,6 +33,5 @@ public enum EventId {
     legalRepDocumentUpload,
     manageParties,
     defendantPaperResponse,
-    legalRepresentativeContactDetails,
-    attachCaseBundle
+    legalRepresentativeContactDetails
 }

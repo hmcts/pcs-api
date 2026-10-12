@@ -22,7 +22,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.5.0.8588'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityPluginVersion"
-  id 'hmcts.ccd.sdk' version 'document-bundling-missing-docs-7x-20261012'
+  id 'hmcts.ccd.sdk' version 'managed-case-bundles-7x-181.1-50988be3'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.2419'
   id 'io.freefair.lombok' version '9.5.0'
   id 'au.com.dius.pact' version '4.7.5'
@@ -209,7 +209,6 @@ tasks.register('integration', Test) {
   group = "Verification"
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
-  // Spring caches each distinct test context; the default 512m runs out once they all load.
   maxHeapSize = '1g'
   failFast = true
 }
@@ -596,10 +595,6 @@ tasks.named('integration') {
   }
 }
 
-// LOCAL_DOCUMENT_STORE=true runs a real dm-store locally so documents can be uploaded and opened
-// in XUI against cftlib (bootWithCCD); otherwise XUI's document API points at AAT.
-def localDocumentStore = System.getenv('LOCAL_DOCUMENT_STORE') == 'true'
-
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
@@ -634,16 +629,7 @@ tasks.withType(CftlibExec).configureEach {
 
   // ExUI config overrides
   environment 'XUI_JURISDICTIONS', 'PCS'
-  if (localDocumentStore) {
-    // AAT's CDAM rejects tokens from the local IDAM simulator, so documents go through cftlib's
-    // own CDAM (4455) backed by the dm-store in docker-compose-dm-store.yml (5005)
-    environment 'XUI_DOCUMENTS_API', 'http://host.docker.internal:5005'
-    environment 'XUI_DOCUMENTS_API_V2', 'http://host.docker.internal:4455'
-    environment 'DM_STORE_BASE_URL', 'http://localhost:5005'
-    environment 'CCD_DOCUMENT_URL_PATTERN', '.*'
-  } else {
-    environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-  }
+  environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   // Point XUI's common data (case-linking reason codes) at the local wiremock stub
   environment 'SERVICES_PRD_COMMONDATA_API', 'http://host.docker.internal:8083'
   environment 'STAFF_SUPPORTED_JURISDICTIONS', 'PCS'
@@ -715,10 +701,6 @@ def cleanUpContainers = System.getenv("CI") != null
 def composeFiles = ['docker-compose-wiremock.yml']
 if (System.getenv("WA_FUNCTIONAL_TESTS_ENABLED") == "true") {
   composeFiles.add('docker-compose-wa.yml')
-}
-
-if (localDocumentStore) {
-  composeFiles.add('docker-compose-dm-store.yml')
 }
 
 dockerCompose {

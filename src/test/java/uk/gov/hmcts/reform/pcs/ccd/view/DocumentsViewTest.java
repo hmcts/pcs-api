@@ -378,46 +378,4 @@ class DocumentsViewTest {
         );
     }
 
-    @Test
-    void shouldShowTheCaseBundleToInternalUsers() {
-        // Given
-        DocumentEntity evidence = documentOfType(DocumentType.WITNESS_STATEMENT);
-        DocumentEntity bundle = documentOfType(DocumentType.CASE_BUNDLE);
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(evidence, bundle));
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of("hearing-centre-admin")));
-        when(genAppVisibilityService.isInternalUser(List.of("hearing-centre-admin"))).thenReturn(true);
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).extracting(ListValue::getId)
-            .containsExactly(evidence.getId().toString(), bundle.getId().toString());
-    }
-
-    @Test
-    void shouldHideCaseBundlesFromUsersWhoAreNotInternal() {
-        // Given
-        DocumentEntity evidence = documentOfType(DocumentType.WITNESS_STATEMENT);
-        DocumentEntity bundle = documentOfType(DocumentType.CASE_BUNDLE);
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(evidence, bundle));
-        when(userRoleService.getCurrentUserCaseRoles(TEST_CASE_REFERENCE))
-            .thenReturn(new UserRoles(CURRENT_USER_ID, List.of("caseworker-pcs", "caseworker-pcs-solicitor")));
-
-        // When
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        // Then
-        assertThat(pcsCase.getAllDocuments()).extracting(ListValue::getId)
-            .containsExactly(evidence.getId().toString());
-    }
-
-    private static DocumentEntity documentOfType(DocumentType type) {
-        return DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .type(type)
-            .fileName(type.name() + ".pdf")
-            .build();
-    }
 }

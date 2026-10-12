@@ -1,6 +1,5 @@
 pluginManagement {
-    // document-bundling is not published yet: point this at a dtsse-ccd-config-generator checkout's
-    // sdk directory (-PccdSdkLocalPath=... or CCD_SDK_LOCAL_PATH) to build the SDK from source.
+    // Optionally build against a local SDK checkout with -PccdSdkLocalPath=... or CCD_SDK_LOCAL_PATH.
     def ccdSdkLocalPath = settings.providers.gradleProperty('ccdSdkLocalPath')
         .orElse(settings.providers.environmentVariable('CCD_SDK_LOCAL_PATH')).getOrNull()
     if (ccdSdkLocalPath) {

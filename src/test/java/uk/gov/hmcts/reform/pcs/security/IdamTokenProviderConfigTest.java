@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
@@ -25,9 +24,6 @@ class IdamTokenProviderConfigTest {
     @Mock
     private OAuth2AuthorizedClientManager authorizedClientManager;
 
-    @Mock
-    private OAuth2AuthorizedClientService authorizedClientService;
-
     @Captor
     private ArgumentCaptor<OAuth2AuthorizeRequest> authorizeRequestCaptor;
 
@@ -36,7 +32,7 @@ class IdamTokenProviderConfigTest {
     @Test
     void systemUpdateUserTokenProviderShouldAuthorizeWithSystemUserRegistrationAndCredentials() {
         IdamTokenProvider provider = underTest.systemUpdateUserTokenProvider(
-            authorizedClientManager, authorizedClientService, "system-user@test.com", "system-secret");
+            authorizedClientManager, "system-user@test.com", "system-secret");
 
         OAuth2AuthorizeRequest request = captureAuthorizeRequestFrom(provider);
 
@@ -48,7 +44,7 @@ class IdamTokenProviderConfigTest {
     @Test
     void prdAdminTokenProviderShouldAuthorizeWithPrdAdminRegistrationAndCredentials() {
         IdamTokenProvider provider = underTest.prdAdminTokenProvider(
-            authorizedClientManager, authorizedClientService, "prd-admin@test.com", "prd-secret");
+            authorizedClientManager, "prd-admin@test.com", "prd-secret");
 
         OAuth2AuthorizeRequest request = captureAuthorizeRequestFrom(provider);
 

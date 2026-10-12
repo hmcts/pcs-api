@@ -98,9 +98,6 @@ public class DocumentEntity {
 
     private LocalDate issueDate;
 
-    // For a CASE_BUNDLE, the document-bundling job that rendered it.
-    private UUID bundleJobId;
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "claim_id")
     private ClaimEntity claim;

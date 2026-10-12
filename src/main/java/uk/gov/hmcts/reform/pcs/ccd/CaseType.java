@@ -248,7 +248,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
     private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
         builder.tab("bundle", "Bundle")
-            .forRoles(INTERNAL_TAB_ROLES)
+            .forRoles(AccessProfile.JUDGE, AccessProfile.FEE_PAID_JUDGE,
+                      AccessProfile.CIRCUIT_JUDGE, AccessProfile.LEADERSHIP_JUDGE)
             .showCondition("bundleTab_Status=\"*\"")
             .field("bundleTab_Status")
             .field("bundleTab_Bundle")

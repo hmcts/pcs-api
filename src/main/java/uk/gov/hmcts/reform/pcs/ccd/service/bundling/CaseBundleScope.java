@@ -8,13 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
-import java.util.Map;
-import java.util.UUID;
 
 /**
- * What goes in the case bundle and how its outbox jobs are keyed. Until the business defines the
- * bundle's folders, it holds every document in case file view (from the system user's point of
- * view), one folder per case file category.
+ * Documents included in the judges' bundle, grouped by case file category.
  */
 public final class CaseBundleScope {
 
@@ -29,10 +25,6 @@ public final class CaseBundleScope {
     public static final String BUNDLES_CATEGORY_ID = "bundles";
     public static final String BUNDLES_CATEGORY_LABEL = "Bundles";
 
-    /** Selector parameter naming the pcs_case row a job bundles. */
-    public static final String CASE_ID_PARAMETER = "caseId";
-
-    private static final String COALESCE_KEY_PREFIX = "pcs-case-bundle:";
 
     private CaseBundleScope() {
     }
@@ -65,25 +57,7 @@ public final class CaseBundleScope {
     /** Whether this kind of document goes in the bundle when it is not removed. */
     public static boolean isBundleable(DocumentEntity document) {
         return document.getDocumentId() != null
-            && document.getType() != DocumentType.CASE_BUNDLE
-            && document.getType() != DocumentType.DEFENDANT_ACCESS_CODE
-            && !BUNDLES_CATEGORY_ID.equals(document.getCategoryId());
+            && document.getType() != DocumentType.DEFENDANT_ACCESS_CODE;
     }
 
-    /** One waiting job per case: changes made before it is claimed collapse onto it. */
-    public static String coalesceKey(UUID caseId) {
-        return COALESCE_KEY_PREFIX + caseId;
-    }
-
-    public static Map<String, String> selectorParameters(UUID caseId) {
-        return Map.of(CASE_ID_PARAMETER, caseId.toString());
-    }
-
-    public static UUID caseId(Map<String, String> selectorParameters) {
-        String caseId = selectorParameters.get(CASE_ID_PARAMETER);
-        if (caseId == null) {
-            throw new IllegalStateException("Case bundle job has no " + CASE_ID_PARAMETER + " parameter");
-        }
-        return UUID.fromString(caseId);
-    }
 }

@@ -23,7 +23,7 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseBundleAttachmentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseDetailsTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
@@ -668,11 +668,6 @@ public class PCSCase {
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
-    // Carries a generated case bundle into the attachCaseBundle event, so that the data store
-    // attaches it to the case in CDAM. Never stored or shown.
-    @CCD(label = "Case bundle", access = CaseBundleAttachmentAccess.class)
-    private Document caseBundleAttachment;
-
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -779,7 +774,7 @@ public class PCSCase {
     private CaseDetailsTab caseDetailsTab;
 
     @JsonUnwrapped(prefix = "bundleTab_")
-    @CCD(searchable = false, access = {InternalTabAccess.class})
+    @CCD(searchable = false, access = {JudgeBundleAccess.class})
     private BundleTab bundleTab;
 
     @CCD(
