@@ -7401,3 +7401,49 @@ Give details about your reasons for claiming possession (Condition 3 of Section 
 Give details about your reasons for claiming possession (Condition 4 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 4 o Adran 84A Deddf Tai 1985)
 Give details about your reasons for claiming possession (Condition 5 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 5 o Adran 84A Deddf Tai 1985)
 "<p class=""govuk-body"">The claim fee is £415. You can pay by card or through Payment By Account (PBA).</p>","<p class=""govuk-body"">Y ffi hawlio yw £415. Gallwch dalu gyda cherdyn neu gyda Thaliad Drwy Gyfrif (PBA).</p>"
+"---
+ <p class=""govuk-body"" tabindex=""0"">
+ You can use this section to provide any information about the defendant’s circumstances.
+ </p>
+ <p class=""govuk-body"">
+ You must give details if any of the following apply:
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ the defendant receives any social security benefits</li>
+ <li class=""govuk-!-font-size-19"">
+ payments are made on their behalf directly to you, under the Social Security Contributions
+ and Benefits Act 1992</li>
+ </ul>
+ </p>
+ """""",typeOverride = FieldType.Label
+)
+private String defendantCircumstancesLabel;
+
+@CCD(label = """"""
+ ---
+ <p class=""govuk-body"" tabindex=""0"">
+ You can use this section to provide any information about the defendants’ circumstances.
+ </p>
+ <p class=""govuk-body"">
+ You must give details if any of the following apply:
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ the defendant receives any social security benefits</li>
+ <li class=""govuk-!-font-size-19"">
+ payments are made on their behalf directly to you, under the Social Security Contributions
+ and Benefits Act 1992</li>
+ </ul>
+ </p>","---
+<p class=""govuk-body"" tabindex=""0"">
+ Gallwch ddefnyddio'r adran hon i roi unrhyw wybodaeth am amgylchiadau’r diffynyddion.
+</p>
+<p class=""govuk-body"">
+Rhaid i chi roi manylion os yw unrhyw un o'r canlynol yn berthnasol:
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+    mae'r diffynnydd yn cael unrhyw fudd-dal nawdd cymdeithasol</li>
+    <li class=""govuk-!-font-size-19"">
+    gwneir taliadau ar eu rhan yn uniongyrchol i chi, o dan Ddeddf Cyfraniadau a Budd-daliadau Nawdd Cymdeithasol 1992</li>
+</ul>
+</p>"
+Give details about the defendants’ circumstances,Rhowch fanylion am amgylchiadau’r diffynyddion
