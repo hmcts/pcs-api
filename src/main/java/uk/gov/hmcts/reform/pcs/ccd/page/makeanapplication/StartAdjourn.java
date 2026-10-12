@@ -45,15 +45,9 @@ public class StartAdjourn implements CcdPageConfiguration {
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
         <p class="govuk-body">It’s free to apply if the defendant’s court hearing is at least 14 days away.</p>
-        """;
-
-    private static final String FEE_MARKDOWN = """
         <p class="govuk-body">If your court hearing is sooner, they will need to
         pay ${xui_genapp_StandardFee}.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>
-        """;
-
-    private static final String INFO_MARKDOWN_AFTER_FEE = """
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are making
           this application, and</li>
@@ -92,9 +86,7 @@ public class StartAdjourn implements CcdPageConfiguration {
             .pageLabel("Ask to adjourn (delay) the court hearing on behalf of a defendant")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
             .label("startAdjourn-lineSeparator", "---")
-            .label("startAdjourn-info", INFO_MARKDOWN)
-            .label("startAdjourn-info-fee", FEE_MARKDOWN)
-            .label("startAdjourn-info-after-fee", INFO_MARKDOWN_AFTER_FEE);
+            .label("startAdjourn-info", INFO_MARKDOWN);
     }
 
 

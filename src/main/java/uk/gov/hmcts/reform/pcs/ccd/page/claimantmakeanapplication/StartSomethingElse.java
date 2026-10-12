@@ -66,14 +66,8 @@ public class StartSomethingElse implements CcdPageConfiguration {
         answers so that you can return to them later.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
-        """;
-
-    private static final String FEE_MARKDOWN = """
         <p class="govuk-body">It usually costs ${xui_genapp_StandardFee} to apply.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">The fee will increase to ${xui_genapp_MaxFee} if:</p>
-        """;
-
-    private static final String INFO_MARKDOWN_AFTER_FEE = """
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">you have already told the other party that you are making
           this application, and</li>
@@ -106,9 +100,7 @@ public class StartSomethingElse implements CcdPageConfiguration {
             .pageLabel("Ask the court to make an order")
             .showCondition(ShowConditions.fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE))
             .label("cma-startSomethingElse-lineSeparator", "---")
-            .label("cma-startSomethingElse-info", INFO_MARKDOWN)
-            .label("cma-startSomethingElse-info-fee", FEE_MARKDOWN)
-            .label("cma-startSomethingElse-info-after-fee", INFO_MARKDOWN_AFTER_FEE);
+            .label("cma-startSomethingElse-info", INFO_MARKDOWN);
     }
 
 }

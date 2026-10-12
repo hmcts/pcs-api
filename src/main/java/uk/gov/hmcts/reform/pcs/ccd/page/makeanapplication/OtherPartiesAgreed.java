@@ -17,13 +17,7 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
         <p class="govuk-body">Every other party will need to agree to let them make this application, if they
         don’t agree, the defendant may need to pay a higher fee.</p>
         <h2 class="govuk-heading-m">If the other parties do not agree</h2>
-        """;
-
-    private static final String FEE_MARKDOWN = """
         <p class="govuk-body govuk-!-margin-bottom-1">The application fee will increase to ${xui_genapp_MaxFee} if:</p>
-        """;
-
-    private static final String INFO_MARKDOWN_AFTER_FEE = """
         <ul class="govuk-list govuk-list--bullet">
           <li class="govuk-!-font-size-19">the defendant has already told the other party that they are
            making this application, and</li>
@@ -51,8 +45,6 @@ public class OtherPartiesAgreed implements CcdPageConfiguration {
             .pageLabel("Has the defendant asked the other parties if they agree to this application?")
             .label("otherPartiesAgreed-lineSeparator", "---")
             .label("otherPartiesAgreed-info", INFO_MARKDOWN)
-            .label("otherPartiesAgreed-info-fee", FEE_MARKDOWN)
-            .label("otherPartiesAgreed-info-after-fee", INFO_MARKDOWN_AFTER_FEE)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getOtherPartiesAgreed)
             .done();
