@@ -52,7 +52,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.AdditionalDefendantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.ClaimantInformationTabDetailsBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.view.builder.DefendantInformationTabDetailsBuilder;
@@ -92,11 +91,11 @@ public class CaseDetailsTabView {
     private final UploadedDocumentsChecklistTabDetailsBuilder uploadedDocumentsChecklistTabDetailsBuilder;
     private final NoticeDetailsBuilder noticeDetailsBuilder;
 
-    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, boolean isSubmitted) {
+    public CaseDetailsTab buildCaseDetailsTab(PCSCase pcsCase, boolean isSubmitted) {
         ClaimTabDetails claimTabDetails = buildClaimTabDetails(pcsCase);
         GroundsForPossessionTabDetails groundsForPossessionTabDetails = buildGroundsForPossessionTabDetails(pcsCase);
         TenancyLicenceTabDetails tenancyLicenceTabDetails = buildTenancyLicenceTabDetails(pcsCase, isSubmitted);
-        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, pcsCaseEntity);
+        NoticeTabDetails noticeTabDetails = noticeDetailsBuilder.buildNoticeTabDetails(pcsCase, isSubmitted);
         ActionsTakenTabDetails actionsTakenTabDetails = buildActionsTakenTabDetails(pcsCase);
         RentArrearsTabDetails rentArrearsTabDetails =
             rentArrearsTabDetailsBuilder.buildDetailedRentArrearsTabDetails(pcsCase, isSubmitted);
@@ -542,12 +541,6 @@ public class CaseDetailsTabView {
         PCSCase pcsCase
     ) {
         if (pcsCase.getLegislativeCountry() != LegislativeCountry.WALES) {
-            return null;
-        }
-
-        // The exempt-landlord question is removed when release 1.4 is enabled.
-        if (pcsCase.getFeatureFlags() == null
-            || pcsCase.getFeatureFlags().getRelease1dot4Enabled() != VerticalYesNo.NO) {
             return null;
         }
 

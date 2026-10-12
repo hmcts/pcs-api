@@ -1,22 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.view.builder;
 
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.view.DocumentsView;
-import uk.gov.hmcts.reform.pcs.ccd.view.UploadTimestampProvider;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
@@ -28,20 +20,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.NO_ANSWER;
 import static uk.gov.hmcts.reform.pcs.ccd.view.CaseDetailsTabUtil.formatDateTime;
 
 @Component
-@RequiredArgsConstructor
 public class NoticeDetailsBuilder {
 
-    private final UploadTimestampProvider uploadTimestampProvider;
-    
-    public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    public NoticeTabDetails buildNoticeTabDetails(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return buildNoticeTabDetailsWales(pcsCase, pcsCaseEntity);
+            return buildNoticeTabDetailsWales(pcsCase, isSubmitted);
         }
 
-        return buildNoticeTabDetailsEngland(pcsCase, pcsCaseEntity);
+        return buildNoticeTabDetailsEngland(pcsCase, isSubmitted);
     }
 
-    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private NoticeTabDetails buildNoticeTabDetailsEngland(PCSCase pcsCase, boolean isSubmitted) {
         if (pcsCase.getNoticeServed() == null) {
             return NoticeTabDetails.builder()
                     .noticeServed(NO_ANSWER)
@@ -58,13 +47,13 @@ public class NoticeDetailsBuilder {
                 .build();
 
         if (noticeServed == YesOrNo.YES) {
-            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), pcsCaseEntity);
+            populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
         }
 
         return noticeTabDetails;
     }
 
-    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private NoticeTabDetails buildNoticeTabDetailsWales(PCSCase pcsCase, boolean isSubmitted) {
         WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
 
         if (walesNoticeDetails == null) {
@@ -85,21 +74,20 @@ public class NoticeDetailsBuilder {
                 .noticeDate(NO_ANSWER)
                 .build();
 
-        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails(), pcsCaseEntity);
+        populateNoticeDetails(noticeTabDetails, pcsCase.getNoticeServedDetails());
 
         return noticeTabDetails;
     }
 
     private void populateNoticeDetails(
         NoticeTabDetails noticeTabDetails,
-        NoticeServedDetails noticeServedDetails,
-        PcsCaseEntity pcsCaseEntity
+        NoticeServedDetails noticeServedDetails
     ) {
         if (noticeServedDetails == null || noticeServedDetails.getServiceMethod() == null) {
             return;
         }
 
-        List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
+        List<ListValue<Document>> documents = noticeServedDetails.getDocuments();
         noticeTabDetails.setNoticeDocuments(documents);
         noticeTabDetails.setNoticeUploaded(String.valueOf(noticeServedDetails.getAbleToUploadDocument()));
         noticeTabDetails.setReasonsForNoNoticeDocument(noticeServedDetails.getUnableToUploadReason());
@@ -159,36 +147,5 @@ public class NoticeDetailsBuilder {
         String explanation = noticeServedDetails.getOtherExplanation();
         noticeTabDetails.setNoticeDate(dateTime != null ? formatDateTime(dateTime) : NO_ANSWER);
         noticeTabDetails.setNoticeOtherExplanation(explanation != null ? explanation : NO_ANSWER);
-    }
-
-    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
-        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
-            return List.of();
-        }
-
-        return pcsCaseEntity.getDocuments().stream()
-            .filter(NoticeDetailsBuilder::isNoticeStatement)
-            .filter(DocumentsView::isNotGenAppDocument)
-            .filter(DocumentsView::isDescriptionEmpty)
-            .map(this::toDocument)
-            .toList();
-    }
-
-    private static boolean isNoticeStatement(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.POSSESSION_NOTICE;
-    }
-
-    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
-        return ListValue.<Document>builder()
-            .id(documentEntity.getId().toString())
-            .value(
-                Document.builder()
-                    .url(documentEntity.getUrl())
-                    .filename(documentEntity.getFileName())
-                    .binaryUrl(documentEntity.getBinaryUrl())
-                    .categoryId(documentEntity.getCategoryId())
-                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
-                    .build()
-            ).build();
     }
 }
