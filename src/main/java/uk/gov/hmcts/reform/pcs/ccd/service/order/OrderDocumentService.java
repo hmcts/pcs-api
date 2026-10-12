@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.order;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.ActorAttribution;
 import uk.gov.hmcts.ccd.sdk.SystemEventExecutor;
 import uk.gov.hmcts.ccd.sdk.SystemEventResult;
@@ -30,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -44,8 +42,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.ISSUED;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 /**
- * Renders an issued order's document and adds it to the case in a system event on behalf of the
- * caseworker who issued it. A re-run never adds a second document.
+ * An issued order's document: what it says, fixed as the order is issued, and rendering it and adding it
+ * to the case in a system event on behalf of the caseworker who issued it. A re-run never adds a second
+ * document.
  */
 @Service
 @Slf4j
@@ -66,54 +65,34 @@ public class OrderDocumentService {
     private final AddressMapper addressMapper;
     private final AddressFormatter addressFormatter;
     private final CaseReferenceFormatter caseReferenceFormatter;
-    private final TransactionTemplate transactionTemplate;
 
     public void generateAndAttach(OrderDocumentTaskData generation) {
-        Optional<Rendering> rendering = transactionTemplate.execute(status -> rendering(generation.getOrderId()));
-        if (rendering.isEmpty()) {
+        UUID orderId = generation.getOrderId();
+        if (orderRepository.existsByIdAndDocumentIsNotNull(orderId)) {
             return;
         }
-        OrderDocumentPayload payload = rendering.get().payload();
+        OrderDocumentPayload payload = generation.getPayload();
         String dmStoreUrl = docAssemblyService.generateDocument(
             payload, TEMPLATE_ID, OutputType.PDF, payload.getOrderTitle());
         try {
-            systemEventExecutor.execute(rendering.get().caseReference(), caseworker(generation),
-                generation.getOrderId(), context -> attach(rendering.get(), generation.getOrderId(), dmStoreUrl));
+            systemEventExecutor.execute(generation.getCaseReference(), caseworker(generation), orderId,
+                context -> attach(orderId, dmStoreUrl));
         } catch (Exception e) {
-            deleteOrphanedDocument(generation.getOrderId(), dmStoreUrl);
+            deleteOrphanedDocument(orderId, dmStoreUrl);
             throw e;
         }
     }
 
-    private record Rendering(long caseReference, LocalDate issuedOn, OrderDocumentPayload payload) {
-    }
-
-    /** What to render, or nothing when the order already has its document. */
-    private Optional<Rendering> rendering(UUID orderId) {
-        OrderEntity order = issuedOrder(orderId);
-        if (order.getDocument() != null) {
-            return Optional.empty();
-        }
-        // The order is issued, so its latest step is the issuing one.
-        OrderStepEntity issued = orderSteps.latest(order);
-        LocalDate issuedOn = issued.getCreatedAt().atZone(UK_ZONE_ID).toLocalDate();
-        return Optional.of(new Rendering(order.getPcsCase().getCaseReference(), issuedOn,
-            payload(order, issued, issuedOn)));
-    }
-
-    private OrderEntity issuedOrder(UUID orderId) {
-        return orderRepository.findById(orderId)
-            .filter(order -> order.getState() == ISSUED)
-            .orElseThrow(() -> new IllegalStateException("No issued order " + orderId));
-    }
-
     /** Adds the document to the case; the system event's idempotency key means this runs once per order. */
-    private SystemEventResult attach(Rendering rendering, UUID orderId, String dmStoreUrl) {
-        OrderEntity order = issuedOrder(orderId);
+    private SystemEventResult attach(UUID orderId, String dmStoreUrl) {
+        OrderEntity order = orderRepository.findById(orderId)
+            .filter(issued -> issued.getState() == ISSUED)
+            .orElseThrow(() -> new IllegalStateException("No issued order " + orderId));
         DocumentEntity document = documentImportService.addDocumentToCase(
             order.getPcsCase(), dmStoreUrl, CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS);
         document.setType(DocumentType.ORDER);
-        document.setIssueDate(rendering.issuedOn());
+        // The order is issued, so its latest step is the issuing one.
+        document.setIssueDate(orderSteps.latest(order).getCreatedAt().atZone(UK_ZONE_ID).toLocalDate());
         order.setDocument(document);
         return SystemEventResult.withoutStateTransition("orderDocumentGenerated", "Order document generated");
     }
@@ -123,7 +102,8 @@ public class OrderDocumentService {
             generation.getCaseworkerLastName());
     }
 
-    private OrderDocumentPayload payload(OrderEntity order, OrderStepEntity issued, LocalDate issuedOn) {
+    /** What the document of an order being issued says, from the case as it stands; it does not change after. */
+    public OrderDocumentPayload payload(OrderEntity order, OrderStepEntity issued) {
         PcsCaseEntity pcsCase = order.getPcsCase();
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
         Optional<CourtVenue> court = court(pcsCase);
@@ -140,7 +120,7 @@ public class OrderDocumentService {
             .propertyAddress(addressFormatter.formatFullAddressWithoutCountry(
                 addressMapper.toAddressUK(pcsCase.getPropertyAddress()), AddressFormatter.COMMA_DELIMITER))
             .judgeName(Optional.ofNullable(order.getAuthorName()).orElse("the Judge"))
-            .orderDate(ORDER_DATE.format(issuedOn))
+            .orderDate(ORDER_DATE.format(issued.getCreatedAt().atZone(UK_ZONE_ID)))
             .orderHtml(issued.getOrderHtml())
             .sealName(order.getSeal() == OrderSeal.HIGH_COURT ? "High Court" : countyCourt(court))
             .countyCourtSeal(order.getSeal() == OrderSeal.COUNTY_COURT)

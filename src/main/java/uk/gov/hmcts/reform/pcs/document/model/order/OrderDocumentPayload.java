@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.document.model.order;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.List;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderDocumentPayload implements FormPayload {
 
     private String caseNumber;

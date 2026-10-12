@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.OrderDocumentTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseNoteService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
+import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
@@ -49,8 +50,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.
 
 /**
  * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
- * returns it to the judge with a query or issues it, with any changes they made. Issuing generates the
- * order's document; serving it is not built yet.
+ * returns it to the judge with a query or issues it, with any changes they made. Issuing fixes what the
+ * order's document says and schedules its generation; serving it is not built yet.
  */
 @Component
 @AllArgsConstructor
@@ -69,6 +70,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     private final OrderTasks orderTasks;
     private final TaskCompletionService taskCompletionService;
     private final CaseNoteService caseNoteService;
+    private final OrderDocumentService orderDocumentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -124,15 +126,17 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
         order.setSeal(issue.seal());
-        orderSteps.append(order, ISSUED, UUID.fromString(caseworker.getUid()), OrderStepEntity.builder()
-            .orderType(issue.order().orderType())
-            .formData(issue.order().formData())
-            .docweaveSnapshot(issue.order().docweaveSnapshot())
-            .orderHtml(issue.order().html()));
+        OrderStepEntity issued = orderSteps.append(order, ISSUED, UUID.fromString(caseworker.getUid()),
+            OrderStepEntity.builder()
+                .orderType(issue.order().orderType())
+                .formData(issue.order().formData())
+                .docweaveSnapshot(issue.order().docweaveSnapshot())
+                .orderHtml(issue.order().html()));
         schedulerClient.scheduleIfNotExists(ORDER_DOCUMENT_TASK_DESCRIPTOR
             .instance(order.getId().toString())
-            .data(new OrderDocumentTaskData(order.getId(), caseworker.getUid(), caseworker.getGivenName(),
-                caseworker.getFamilyName()))
+            .data(new OrderDocumentTaskData(order.getId(), order.getPcsCase().getCaseReference(),
+                caseworker.getUid(), caseworker.getGivenName(), caseworker.getFamilyName(),
+                orderDocumentService.payload(order, issued)))
             .scheduledTo(Instant.now()));
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(order.getPcsCase().getCaseReference(),

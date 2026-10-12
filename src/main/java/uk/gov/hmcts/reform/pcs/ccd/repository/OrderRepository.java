@@ -17,4 +17,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
         UUID id, long caseReference, UUID authorIdamUserId, Collection<OrderState> states);
 
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndState(UUID id, long caseReference, OrderState state);
+
+    boolean existsByIdAndDocumentIsNotNull(UUID id);
 }

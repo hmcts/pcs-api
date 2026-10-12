@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.config;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskManagementApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
@@ -18,10 +18,11 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 
 /**
- * The order events' tests share one application context, and so one scheduler: each stubs the same
- * services outside pcs-api.
+ * The order events' tests share one application context, stubbing the same services outside pcs-api.
+ * No scheduler runs the jobs an event schedules; a test runs them itself, so it knows when they ran.
  */
 @PcsCcdEventTest
+@TestPropertySource(properties = "db-scheduler.executor-enabled=false")
 public abstract class OrderEventIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
@@ -30,12 +31,10 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected TaskManagementApi taskManagementApi;
     @MockitoBean
     protected DocAssemblyService docAssemblyService;
-    @MockitoBean
-    protected CaseDocumentClientApi caseDocumentClientApi;
     @Autowired
     protected JdbcTemplate jdbcTemplate;
 
-    /** The documents a test's issued orders left for the scheduler are its own, not the next test's. */
+    /** The jobs a test's events scheduled are its own, not the next test's. */
     @AfterEach
     void dropLeftoverJobs() {
         jdbcTemplate.update("DELETE FROM scheduled_tasks WHERE task_name = 'order-document-generation'");
