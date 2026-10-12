@@ -37,7 +37,7 @@ export const statementOfTruth = {
       { type: `none`, input: ``, errMessage: `Field is required` }
     ],
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `Completed by is required` }
+      { type: `none`, input: ``, errMessage: `Field is required` }
     ],
     errorTextField1: [
       { type: `moreThanMax`, input: 100, errMessage: `Full name exceeds the maximum length` },
