@@ -7146,3 +7146,79 @@ Bydd arnoch angen gwybod:
 atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
 
 <h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
+"<p class=""govuk-body"">
+ You should only upload documents that are relevant to the claim.
+</p>
+
+<p class=""govuk-body"">
+ Before you upload the document, give it a name that tells the court what it is,
+ for example ‘witness statement’, or ‘tenancy agreement’.
+</p>
+
+<p class=""govuk-body"">
+ You can upload the following file types: DOC/DOCX (Word), XLS/XLSX
+ (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
+ TIF/TIFF.
+</p>
+
+<p class=""govuk-body govuk-!-font-weight-bold govuk-!-margin-0"">
+ Before you upload your documents
+</p>
+
+<p class=""govuk-body"">
+ Give your document a name that explains what it is.
+</p>","<p class=""govuk-body"">
+    Dylech ond uwchlwytho dogfennau sy’n berthnasol i'r hawliad.
+</p>
+
+<p class=""govuk-body"">
+    Cyn i chi uwchlwytho'r ddogfen, rhowch enw iddi sy'n dweud wrth y llys beth ydyw,
+    er enghraifft, 'datganiad tyst' neu 'gytundeb tenantiaeth'.
+</p>
+
+<p class=""govuk-body"">
+   Gallwch uwchlwytho'r mathau canlynol o ffeiliau: DOC/DOCX (Word), XLS/XLSX
+   (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
+   TIF/TIFF.
+</p>
+
+<p class=""govuk-body govuk-!-font-weight-bold govuk-!-margin-0"">
+    Cyn ichi uwchlwytho eich dogfennau
+</p>
+
+<p class=""govuk-body"">
+    Rhowch enw i'ch dogfen sy'n egluro beth ydyw.
+</p>"
+"<p class=""govuk-body govuk-!-margin-bottom-0"">You can upload the following file types:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">DOC/DOCX(Word)</li>
+ <li class=""govuk-!-font-size-19"">XLS/XLSX(Excel)</li>
+ <li class=""govuk-!-font-size-19"">PPT/PPTX(PowerPoint)</li>
+ <li class=""govuk-!-font-size-19"">PDF</li>
+ <li class=""govuk-!-font-size-19"">RTF</li>
+ <li class=""govuk-!-font-size-19"">TXT</li>
+ <li class=""govuk-!-font-size-19"">CSV</li>
+ <li class=""govuk-!-font-size-19"">JPG/JPEG</li>
+ <li class=""govuk-!-font-size-19"">PNG</li>
+ <li class=""govuk-!-font-size-19"">BMP</li>
+ <li class=""govuk-!-font-size-19"">TIF/TIFF</li>
+</ul>
+<p class=""govuk-body"">
+ You cannot upload video or audio files.
+</p>","<p class=""govuk-body govuk-!-margin-bottom-0"">Gallwch uwchlwytho'r mathau canlynol o ffeiliau:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">DOC/DOCX(Word)</li>
+ <li class=""govuk-!-font-size-19"">XLS/XLSX(Excel)</li>
+ <li class=""govuk-!-font-size-19"">PPT/PPTX(PowerPoint)</li>
+ <li class=""govuk-!-font-size-19"">PDF</li>
+ <li class=""govuk-!-font-size-19"">RTF</li>
+ <li class=""govuk-!-font-size-19"">TXT</li>
+ <li class=""govuk-!-font-size-19"">CSV</li>
+ <li class=""govuk-!-font-size-19"">JPG/JPEG</li>
+ <li class=""govuk-!-font-size-19"">PNG</li>
+ <li class=""govuk-!-font-size-19"">BMP</li>
+ <li class=""govuk-!-font-size-19"">TIF/TIFF</li>
+</ul>
+<p class=""govuk-body"">
+ Ni allwch uwchlwytho ffeiliau sain neu fideo.
+</p>"
