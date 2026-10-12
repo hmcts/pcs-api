@@ -143,7 +143,6 @@ ccd:
       environment:
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
         ALLOW_CONFIG_MUTATIONS: true
-        SESSION_KEYS: '${SESSION_KEYS}'
       ingressHost: gateway-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -151,7 +150,6 @@ ccd:
             - ccd-api-gateway-oauth2-client-secret
             - postcode-info-address-lookup-token
             - microservicekey-ccd-gw
-            - session-keys
   ccd-admin-web:
     nodejs:
       image: hmctsprod.azurecr.io/ccd/admin-web:latest
