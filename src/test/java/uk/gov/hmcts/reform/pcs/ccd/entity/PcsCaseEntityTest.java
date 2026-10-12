@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
@@ -74,25 +73,9 @@ class PcsCaseEntityTest {
     }
 
     @Test
-    void shouldNotAssignRankToPendingCounterClaim() {
-        CounterClaimEntity counterClaim = CounterClaimEntity.builder()
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-
-        underTest.addCounterClaim(counterClaim);
-
-        assertThat(counterClaim.getRank()).isNull();
-        assertThat(counterClaim.getPcsCase()).isSameAs(underTest);
-    }
-
-    @Test
-    void shouldAssignRankWhenIssuedCounterClaimAdded() {
-        CounterClaimEntity counterClaim1 = CounterClaimEntity.builder()
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .build();
-        CounterClaimEntity counterClaim2 = CounterClaimEntity.builder()
-            .status(CounterClaimState.COUNTER_CLAIM_ISSUED)
-            .build();
+    void shouldAddCounterClaimEntityAndSetCaseLevelRank() {
+        CounterClaimEntity counterClaim1 = CounterClaimEntity.builder().build();
+        CounterClaimEntity counterClaim2 = CounterClaimEntity.builder().build();
 
         underTest.addCounterClaim(counterClaim1);
         underTest.addCounterClaim(counterClaim2);
@@ -105,17 +88,14 @@ class PcsCaseEntityTest {
     }
 
     @Test
-    void shouldAssignRankToCounterClaimWhenIssuedLater() {
-        CounterClaimEntity pendingCounterClaim = CounterClaimEntity.builder()
-            .status(CounterClaimState.PENDING_COUNTER_CLAIM_ISSUED)
-            .build();
-        underTest.addCounterClaim(pendingCounterClaim);
-        assertThat(pendingCounterClaim.getRank()).isNull();
+    void shouldAssignRankToCounterClaimWhenRankIsNull() {
+        CounterClaimEntity counterClaim = CounterClaimEntity.builder().build();
+        underTest.getCounterClaims().add(counterClaim);
+        assertThat(counterClaim.getRank()).isNull();
 
-        pendingCounterClaim.setStatus(CounterClaimState.COUNTER_CLAIM_ISSUED);
-        underTest.assignCounterClaimRank(pendingCounterClaim);
+        underTest.assignCounterClaimRank(counterClaim);
 
-        assertThat(pendingCounterClaim.getRank()).isEqualTo(1);
+        assertThat(counterClaim.getRank()).isEqualTo(1);
     }
 
     @Test

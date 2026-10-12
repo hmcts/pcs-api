@@ -78,12 +78,27 @@ public class DocumentNameService {
 
         // Example label: Evidence CC1 - Defendant 1.pdf
         String partyLabel = partyService.getPartyLabel(claim, partyId);
-        Integer rank = counterClaimEntity != null ? counterClaimEntity.getRank() : null;
-        String filename = (rank != null) 
-            ? "%s CC%d".formatted(baseName, rank)
-            : baseName; // Fallback for legacy data without rank
+        int rank = resolveCounterClaimRank(counterClaimEntity);
+        String filename = "%s CC%d".formatted(baseName, rank);
 
         return buildFilename(filename, extension, partyLabel);
+    }
+
+    private int resolveCounterClaimRank(CounterClaimEntity counterClaimEntity) {
+        if (counterClaimEntity == null) {
+            return 1;
+        }
+        if (counterClaimEntity.getRank() != null) {
+            return counterClaimEntity.getRank();
+        }
+        if (counterClaimEntity.getPcsCase() != null && counterClaimEntity.getPcsCase().getCounterClaims() != null) {
+            int index = counterClaimEntity.getPcsCase().getCounterClaims().indexOf(counterClaimEntity);
+            if (index >= 0) {
+                return index + 1;
+            }
+            return counterClaimEntity.getPcsCase().getCounterClaims().size() + 1;
+        }
+        return 1;
     }
 
     public String appendPartyPostfix(String originalFilename,

@@ -1371,6 +1371,69 @@ class DocumentServiceTest {
         }
 
         @Test
+        void shouldSaveLegalRepDocumentsForCounterClaim() {
+            String description = "test description";
+            String docUrl = "test url";
+            String fileName = "test-filename.pdf";
+
+            Document document = Document.builder()
+                .filename(fileName)
+                .url(docUrl)
+                .binaryUrl("test binary url")
+                .categoryId(CaseFileCategory.EVIDENCE.getId())
+                .build();
+
+            LegalRepDocument legalRepDocument = LegalRepDocument.builder()
+                .document(document)
+                .defendantDocumentType(DefendantDocumentType.PHOTOGRAPHIC_EVIDENCE)
+                .description(description)
+                .contentType("application/pdf")
+                .sizeInBytes(123L)
+                .build();
+
+            DocumentType expectedDocumentType = mock(DocumentType.class);
+            when(documentTypeMapper.mapToDocumentType(DefendantDocumentType.PHOTOGRAPHIC_EVIDENCE))
+                .thenReturn(expectedDocumentType);
+
+            UUID partyId = UUID.randomUUID();
+            when(party.getId()).thenReturn(partyId);
+
+            final List<LegalRepDocument> legalRepDocList = List.of(legalRepDocument);
+
+            UUID expectedDocumentId = UUID.fromString("bf112cdf-76d7-4d15-bb92-cd7c3483a7ef");
+            when(documentIdExtractor.extractDocumentId(docUrl)).thenReturn(expectedDocumentId);
+
+            CounterClaimEntity selectedCounterClaim = mock(CounterClaimEntity.class);
+
+            String expectedRenamedFile = "test-filename CC1 - Defendant 1.pdf";
+            when(documentNameService.appendCounterClaimPostfix(fileName, selectedCounterClaim, mainClaim, partyId))
+                .thenReturn(expectedRenamedFile);
+
+            // When
+            documentService.createDocumentEntitiesFromLegalRepDocuments(
+                legalRepDocList, pcsCaseEntity, party, null, selectedCounterClaim
+            );
+
+            // Then
+            verify(pcsCaseEntity).addDocuments(listCaptor.capture());
+
+            List<DocumentEntity> capturedDocumentList = listCaptor.getValue();
+            assertThat(capturedDocumentList).hasSize(1);
+
+            DocumentEntity documentEntity = capturedDocumentList.getFirst();
+
+            assertThat(documentEntity.getUrl()).isEqualTo(docUrl);
+            assertThat(documentEntity.getDocumentId()).isEqualTo(expectedDocumentId);
+            assertThat(documentEntity.getFileName()).isEqualTo(expectedRenamedFile);
+            assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
+            assertThat(documentEntity.getDescription()).isEqualTo(description);
+            assertThat(documentEntity.getContentType()).isEqualTo("application/pdf");
+            assertThat(documentEntity.getSize()).isEqualTo(123L);
+            assertThat(documentEntity.getCounterClaim()).isEqualTo(selectedCounterClaim);
+            assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.STATEMENTS_OF_CASE.getId());
+        }
+
+        @Test
         void shouldCreateWATaskForLegalRepClaimAdditionalDocuments() {
             // Given
             GenAppEntity selectedGenApp = null;

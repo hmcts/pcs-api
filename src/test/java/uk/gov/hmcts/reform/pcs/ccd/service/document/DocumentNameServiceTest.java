@@ -10,12 +10,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -231,5 +233,41 @@ class DocumentNameServiceTest {
 
         assertThatThrownBy(() -> underTest.appendCounterClaimPostfix("file.pdf", counterClaim, mainClaim, partyId))
             .isEqualTo(expectedException);
+    }
+
+    @Test
+    void shouldDefaultToCC1WhenCounterClaimRankIsNull() {
+        UUID partyId = UUID.randomUUID();
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        when(counterClaim.getRank()).thenReturn(null);
+        when(counterClaim.getPcsCase()).thenReturn(null);
+
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Defendant 1");
+
+        String updatedFilename = underTest.appendCounterClaimPostfix(
+            "Allure-report.png", counterClaim, mainClaim, partyId);
+
+        assertThat(updatedFilename).isEqualTo("Allure-report CC1 - Defendant 1.png");
+    }
+
+    @Test
+    void shouldResolveRankFromCaseWhenCounterClaimRankIsNull() {
+        UUID partyId = UUID.randomUUID();
+        CounterClaimEntity cc1 = mock(CounterClaimEntity.class);
+        CounterClaimEntity cc2 = mock(CounterClaimEntity.class);
+        when(cc2.getRank()).thenReturn(null);
+
+        PcsCaseEntity pcsCase = mock(PcsCaseEntity.class);
+        when(pcsCase.getCounterClaims()).thenReturn(List.of(cc1, cc2));
+        when(cc2.getPcsCase()).thenReturn(pcsCase);
+
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn("Defendant 2");
+
+        String updatedFilename = underTest.appendCounterClaimPostfix(
+            "evidence.pdf", cc2, mainClaim, partyId);
+
+        assertThat(updatedFilename).isEqualTo("evidence CC2 - Defendant 2.pdf");
     }
 }

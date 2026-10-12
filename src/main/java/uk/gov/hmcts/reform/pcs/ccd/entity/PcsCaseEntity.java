@@ -21,7 +21,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -183,8 +182,8 @@ public class PcsCaseEntity {
     }
 
     public void addCounterClaim(CounterClaimEntity counterClaim) {
-        if (counterClaim.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED && counterClaim.getRank() == null) {
-            counterClaim.setRank(countIssuedRankedCounterClaims() + 1);
+        if (counterClaim.getRank() == null) {
+            counterClaim.setRank(counterClaims.size() + 1);
         }
         counterClaims.add(counterClaim);
         counterClaim.setPcsCase(this);
@@ -192,16 +191,9 @@ public class PcsCaseEntity {
 
     public void assignCounterClaimRank(CounterClaimEntity counterClaim) {
         if (counterClaim.getRank() == null) {
-            counterClaim.setRank(countIssuedRankedCounterClaims() + 1);
+            int index = counterClaims.indexOf(counterClaim);
+            counterClaim.setRank(index >= 0 ? index + 1 : counterClaims.size() + 1);
         }
-    }
-
-    private int countIssuedRankedCounterClaims() {
-        return (int) counterClaims.stream()
-            .filter(cc -> cc != null
-                && cc.getStatus() == CounterClaimState.COUNTER_CLAIM_ISSUED
-                && cc.getRank() != null)
-            .count();
     }
 
     public void addCaseNote(CaseNoteEntity caseNote) {
