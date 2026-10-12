@@ -67,7 +67,7 @@ import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatU
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
-import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
@@ -167,7 +167,7 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
-  
+
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);
@@ -397,11 +397,6 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        // await performAction('clickRadioButton', {
-        //   question: nameQuestion,
-        //   option: nameOption,
-        //   index,
-        // });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
