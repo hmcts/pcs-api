@@ -419,7 +419,7 @@ class PCSCaseViewTest {
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
+        verify(caseTabView).setCaseTabFields(pcsCase);
         verify(caseFileDocumentDeduplicationService).removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
     }
 
@@ -438,8 +438,8 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
-        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData, pcsCaseEntity);
-        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        verify(caseTabView).setDraftCaseTabFields(pcsCase, draftCaseData);
+        verify(caseTabView, never()).setCaseTabFields(any(PCSCase.class));
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
 
@@ -457,9 +457,8 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class), 
-            any(PcsCaseEntity.class));
-        verify(caseTabView).setCaseTabFields(pcsCase, pcsCaseEntity);
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
+        verify(caseTabView).setCaseTabFields(pcsCase);
         assertThat(pcsCase.getNextStepsMarkdown()).contains("Resume claim");
     }
 
@@ -471,9 +470,8 @@ class PCSCaseViewTest {
         // Then
         verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, resumePossessionClaim);
         verify(draftCaseDataService, never()).getUnsubmittedCaseData(any(Long.class), any());
-        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class), 
-            any(PcsCaseEntity.class));
-        verify(caseTabView).setCaseTabFields(any(PCSCase.class), any(PcsCaseEntity.class));
+        verify(caseTabView, never()).setDraftCaseTabFields(any(PCSCase.class), any(PCSCase.class));
+        verify(caseTabView).setCaseTabFields(any(PCSCase.class));
     }
 
     @Test
