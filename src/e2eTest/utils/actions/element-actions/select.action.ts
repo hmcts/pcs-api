@@ -9,7 +9,8 @@ export class SelectAction implements IAction {
                                   select[name="${fieldName}"]`)
       : page.locator(`:has-text("${fieldName.dropdown}") + select,
                                   :has-text("${fieldName.dropdown}") ~ select,
-                                  select[name="${fieldName.dropdown}"]`).nth(Number(fieldName.index));
+                                  select[name="${fieldName.dropdown}"]`).filter({visible : true}).nth(Number(fieldName.index));
+                                  
     if (typeof option === 'number') {
       await locator.selectOption({ index: option });
     } else {
