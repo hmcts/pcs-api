@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.DocumentUploadC
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -114,6 +116,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             organisationService,
             legalRepPartySelectionService,
             partyService,
+            new ExistingApplicationDocumentLinkBuilder(partyService),
             new CounterClaimDetailsHydrator(partyService));
 
         setEventUnderTest(legalRepDocumentUpload);
