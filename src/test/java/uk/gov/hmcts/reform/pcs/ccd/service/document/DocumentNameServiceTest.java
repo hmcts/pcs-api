@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -35,11 +37,15 @@ class DocumentNameServiceTest {
     @Mock(strictness = LENIENT)
     private PartyService partyService;
 
+    @Mock(strictness = LENIENT)
+    private FeatureToggleService featureToggleService;
+
     private DocumentNameService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DocumentNameService(partyService);
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
+        underTest = new DocumentNameService(partyService, featureToggleService);
     }
 
     @ParameterizedTest
@@ -133,6 +139,20 @@ class DocumentNameServiceTest {
 
         // Then
         assertThat(updatedFilename).isEqualTo(expectedFilename);
+    }
+
+    @Test
+    void shouldOmitCounterClaimRankWhenRelease14IsOff() {
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
+        UUID partyId = UUID.randomUUID();
+        CounterClaimEntity counterClaim = mock(CounterClaimEntity.class);
+        lenient().when(counterClaim.getRank()).thenReturn(1);
+        ClaimEntity mainClaim = mock(ClaimEntity.class);
+        when(partyService.getPartyLabel(mainClaim, partyId)).thenReturn(PARTY_LABEL);
+
+        String updatedFilename = underTest.appendCounterClaimPostfix("sample.pdf", counterClaim, mainClaim, partyId);
+
+        assertThat(updatedFilename).isEqualTo("sample - %s.pdf".formatted(PARTY_LABEL));
     }
 
     private static Stream<Arguments> counterClaimNamingScenarios() {

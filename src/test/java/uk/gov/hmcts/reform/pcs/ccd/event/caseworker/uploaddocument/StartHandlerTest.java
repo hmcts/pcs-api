@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -56,6 +58,8 @@ class StartHandlerTest {
     @Mock
     private PartyService partyService;
     @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private ClaimEntity mainClaim;
@@ -67,7 +71,8 @@ class StartHandlerTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(pcsCaseEntity.getMainClaim()).thenReturn(mainClaim);
 
-        underTest = new StartHandler(pcsCaseService, new CaseworkerDocumentListService(partyService));
+        underTest = new StartHandler(
+            pcsCaseService, new CaseworkerDocumentListService(partyService, featureToggleService));
     }
 
     @ParameterizedTest
@@ -126,6 +131,7 @@ class StartHandlerTest {
             .legislativeCountry(ENGLAND)
             .build();
 
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         when(pcsCaseEntity.getCounterClaims())
             .thenReturn(List.of(counterClaimEntity1, counterClaimEntity2, counterClaimEntity3, counterClaimEntity4));
 
