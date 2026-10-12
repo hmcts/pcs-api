@@ -7259,3 +7259,144 @@ Bydd arnoch angen gwybod:
 atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
 
 <h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
+Choose an application,Dewis cais
+Confirm if you want to upload documents to support your application,Cadarnhewch os ydych chi eisiau uwchlwytho dogfennau i gefnogi eich cais
+Is the court hearing in the next 14 days?,A yw’r gwrandawiad llys yn ystod y 14 diwrnod nesaf?
+Have the other parties agreed to this application?,A yw’r partïon eraill wedi cydsynio i’r cais hwn?
+"If you ask the court for more than one thing, this answer will apply to all of them","Os ydych yn gofyn i’r llys am fwy nag un peth, bydd yr ateb hwn yn berthnasol i bob un ohonynt."
+Are there any reasons that this application should not be shared with the other parties?,A oes yna unrhyw resymau pam na ddylid rhannu’r cais hwn gyda’r partïon eraill?
+Ask to adjourn (delay) the court hearing,Gofyn i ohirio (oedi) y gwrandawiad llys
+Ask the court to make an order,Gofyn i’r llys wneud gorchymyn
+Upload documents to support your application,Uwchlwythwch ddogfennau i gefnogi eich cais
+"What order do you want the court to make, and why?","Pa orchymyn ydych chi eisiau i’r llys ei wneud, a pham?"
+Confirm if these documents relate to an existing application,Cadarnhewch os yw’r dogfennau hyn yn ymwneud â chais presennol
+Do these documents relate to an existing application?,A yw’r dogfennau hyn yn ymwneud â chais presennol?
+Electrical Installation Condition Report (EICR),Adroddiad Cyflwr Gosod Trydanol (EICR)
+Exempt landlord,Landlord wedi’i eithrio
+Notice,Hysbysiad
+"---
+<section tabindex=""0"">
+ <p class=""govuk-body govuk-!-margin-bottom-3"">
+ Registered providers of social housing should follow the pre-action protocol
+ before making a housing possession claim. You should have:
+ </p>
+
+ <ul class=""govuk-list govuk-list--bullet govuk-!-margin-bottom-3"">
+ <li class=""govuk-!-font-size-19"">contacted, or attempted to contact, the defendants</li>
+ </ul>
+
+ <p class=""govuk-body govuk-!-margin-bottom-3"">
+ If your claim is on the grounds of rent arrears, you should have:
+ </p>
+
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">tried to agree a repayment plan</li>
+ <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">applied for arrears to be paid by the
+ Department for Work and Pensions (DWP) by deductions from the defendants’ benefits</li>
+ <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">
+ offered to assist the defendants in a claim for housing benefit or Universal Credit
+ </li>
+ </ul>
+
+ <div class=""govuk-warning-text"">
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ Your case could be delayed or rejected if you have not followed
+ the pre-action protocol and completed all the steps.
+ </strong>
+ </div>
+</section>","---
+<section tabindex=""0"">
+  <p class=""govuk-body govuk-!-margin-bottom-3"">
+  Dylai darparwyr cofrestredig tai cymdeithasol ddilyn y protocol cyn-gweithredu
+  cyn gwneud hawliad i feddiannu eiddo. Dylech fod wedi:
+  </p>
+
+  <ul class=""govuk-list govuk-list--bullet govuk-!-margin-bottom-3"">
+      <li class=""govuk-!-font-size-19"">Cysylltu neu geisio cysylltu â'r diffynnydd</li>
+  </ul>
+
+  <p class=""govuk-body govuk-!-margin-bottom-3"">
+      Os yw eich hawliad yn seiliedig ar ôl-ddyledion rhent, dylech fod wedi:
+  </p>
+
+  <ul class=""govuk-list govuk-list--bullet"">
+      <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">Ceisio cytuno ar gynllun ad-dalu</li>
+      <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">Gwneud cais i ôl-ddyledion gael eu talu gan yr
+          Adran Gwaith a Phensiynau (DWP) drwy ddidyniadau o fudd-daliadau'r diffynnydd</li>
+      <li class=""govuk-!-font-size-19 govuk-!-margin-bottom-3"">
+          Cynnig cynorthwyo'r diffynnydd gyda hawliad ar gyfer budd-dal tai neu Gredyd Cynhwysol
+      </li>
+  </ul>
+
+  <div class=""govuk-warning-text"">
+      <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+      <strong class=""govuk-warning-text__text"">
+          <span class=""govuk-visually-hidden"">Rhybudd</span>
+          Gall eich achos gael ei ohirio neu ei wrthod os nad ydych wedi dilyn y protocol cyn-gweithredu
+          a chwblhau'r holl gamau.
+      </strong>
+  </div>
+</section>
+
+"
+"<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Condition 1 of Section 84A of the Housing Act 1985
+</h2>
+ <h3 class=""govuk-heading-m"" tabindex=""0"">
+ Why are you making a claim for possession under this ground?
+ </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Amod 1 o Adran 84A Deddf Tai 1985
+</h2>
+ <h3 class=""govuk-heading-m"" tabindex=""0"">
+ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
+ </h3>"
+"<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Condition 2 of Section 84A of the Housing Act 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Why are you making a claim for possession under this ground?
+</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Amod 2 o Adran 84A Deddf Tai 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
+</h3>"
+"<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Condition 3 of Section 84A of the Housing Act 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Why are you making a claim for possession under this ground?
+</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Amod 3 o Adran 84A Deddf Tai 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
+</h3>"
+"<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Condition 4 of Section 84A of the Housing Act 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Why are you making a claim for possession under this ground?
+</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Amod 4 o Adran 84A Deddf Tai 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
+</h3>"
+"<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Condition 5 of Section 84A of the Housing Act 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Why are you making a claim for possession under this ground?
+</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
+ Amod 5 o Adran 84A Deddf Tai 1985
+</h2>
+<h3 class=""govuk-heading-m"" tabindex=""0"">
+ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
+</h3>"
+Give details about your reasons for claiming possession (Condition 2 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 2 o Adran 84A Deddf Tai 1985)
+Give details about your reasons for claiming possession (Condition 3 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 3 o Adran 84A Deddf Tai 1985)
+Give details about your reasons for claiming possession (Condition 4 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 4 o Adran 84A Deddf Tai 1985)
+Give details about your reasons for claiming possession (Condition 5 of Section 84A of the Housing Act 1985),Rhowch fanylion eich rhesymau dros hawlio meddiant (Amod 5 o Adran 84A Deddf Tai 1985)
