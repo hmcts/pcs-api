@@ -40,34 +40,67 @@ class GroupAccessTypeTest {
     }
 
     @Test
+    void shouldReturnEmptyWhenPartyRoleIsNull() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("SOLICITOR_PROFILE", null, "ORG123")).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyForUnmappedDefendantProfile() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("LOCALAUTH_PROFILE", PartyRole.DEFENDANT, "ORG123"))
+            .isEmpty();
+    }
+
+    @Test
     void shouldBuildCaseAccessGroupIdTemplateInJurisdictionCaseTypeAccessTypeRoleOrgidFormat() {
         assertThat(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS.getCaseAccessGroupIdTemplate())
             .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$");
+        assertThat(GroupAccessType.PROFESSIONAL_ORG_CLAIMANT_ACCESS.getCaseAccessGroupIdTemplate())
+            .isEqualTo("PCS:PCS:prof-org-claimant-access:claimant:$ORGID$");
+    }
+
+    @Test
+    void shouldExposeFarFutureLiveToDateRequiredByDefinitionImport() {
+        assertThat(GroupAccessType.PROFESSIONAL_ORG_CLAIMANT_ACCESS.getLiveTo()).isEqualTo("01/01/2099");
     }
 
     @Test
     void shouldResolveClaimantAccessForGenericOrganisationProfile() {
-        assertThat(GroupAccessType.caseAccessGroupIdFor("ORGANISATION_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.ORGANISATION_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
     }
 
     @Test
     void shouldResolveClaimantAccessForStampedSpecificOrganisationProfiles() {
-        assertThat(GroupAccessType.caseAccessGroupIdFor("LOCALAUTH_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.LOCALAUTH_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_REALT_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.OTHER_REALT_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_PROP_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.OTHER_PROP_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_NFP_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.OTHER_NFP_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
-        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_CHARITY_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.OTHER_CHARITY_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
     }
 
     @Test
     void shouldStillPreferSolicitorClaimantAccessOverProfessionalOrgFallback() {
-        assertThat(GroupAccessType.caseAccessGroupIdFor("SOLICITOR_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+        assertThat(GroupAccessType.caseAccessGroupIdFor(
+            OrganisationProfile.SOLICITOR_PROFILE.getId(), PartyRole.CLAIMANT, "ORG123"))
             .contains("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:ORG123");
+    }
+
+    @Test
+    void shouldExposeOrganisationProfileIdsFromEnumConstants() {
+        assertThat(GroupAccessType.PROFESSIONAL_ORG_CLAIMANT_ACCESS.getOrganisationProfileId())
+            .isEqualTo(OrganisationProfile.ORGANISATION_PROFILE.getId());
+        assertThat(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS.getOrganisationProfileId())
+            .isEqualTo(OrganisationProfile.SOLICITOR_PROFILE.getId());
     }
 }

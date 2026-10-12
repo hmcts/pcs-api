@@ -122,6 +122,23 @@ class OrganisationServiceTest {
     }
 
     @Test
+    @DisplayName("Should return null when organisation details themselves are null")
+    void shouldReturnNullWhenOrganisationDetailsAreNull() {
+        assertThat(organisationService.getOrgProfileId(null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when profile id list is empty")
+    void shouldReturnNullWhenProfileIdListIsEmpty() {
+        OrganisationDetailsResponse details = OrganisationDetailsResponse.builder()
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .organisationProfileIds(List.of())
+            .build();
+
+        assertThat(organisationService.getOrgProfileId(details)).isNull();
+    }
+
+    @Test
     @DisplayName("Should return null profile ids when absent from the organisation details")
     void shouldReturnNullWhenProfileIdsAbsent() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
