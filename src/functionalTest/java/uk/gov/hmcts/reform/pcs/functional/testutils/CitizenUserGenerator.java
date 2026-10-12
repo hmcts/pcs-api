@@ -16,14 +16,15 @@ public class CitizenUserGenerator {
         = "Bearer " + PcsIdamTokenClient.generateToken(PcsIdamTokenClient.UserType.systemUser);
 
     public static String createCitizenUser() {
-
         String email = "pcs-citizen-" + System.currentTimeMillis() + "@test.com";
+        return createCitizenUser(email, "PCS", "Citizen");
+    }
 
-
+    public static String createCitizenUser(String email, String forename, String surname) {
         Map<String, Object> user = Map.of(
             "email", email,
-            "forename", "PCS",
-            "surname", "Citizen",
+            "forename", forename,
+            "surname", surname,
             "roleNames", new String[]{"citizen"}
         );
 
@@ -40,7 +41,7 @@ public class CitizenUserGenerator {
             .body(requestBody)
             .post("/test/idam/users");
 
-        if (response.getStatusCode() != 201) {
+        if (response.getStatusCode() != 201 && response.getStatusCode() != 409) {
             throw new RuntimeException(String.format(
                 "Failed to generate Citizen User '%s'. Status code: %d.%nResponse: %s",
                 email,

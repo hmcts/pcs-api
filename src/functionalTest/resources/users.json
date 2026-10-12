@@ -1,0 +1,38 @@
+{
+    "ORG_LOCALAUTHORITY":{
+        "solicitor1": {
+            "username": "pcs.local.auth1@hmcts.net",
+            "idamId": "8f796205-6434-40cc-9f93-9822580ed24f"
+        },
+        "solicitor2": {
+            "username": "",
+            "idamId": ""
+        }
+    },
+    "ORG_SOLICITOR":{
+        "solicitor1": {
+            "username": "pcs.solicitor.org1@hmcts.net",
+            "idamId": ""
+        },
+        "solicitor2": {
+            "username": "",
+            "idamId": ""
+        }
+    },
+    "CASEWORKER": {
+        "hearingCenterAdmin": {
+            "username": "",
+            "idamId": ""
+        },
+        "hearingCenterteamleader": {
+            "username": "",
+            "idamId": ""
+        }
+    },
+  "DEFENDANT": {
+    "CITIZEN_1": {
+      "username": "PCS_citizen@gmail.com",
+      "idamId": ""
+    }
+  }
+}
