@@ -101,7 +101,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
@@ -215,7 +215,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
