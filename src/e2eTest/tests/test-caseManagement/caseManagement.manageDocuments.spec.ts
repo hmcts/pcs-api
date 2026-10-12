@@ -43,7 +43,6 @@ test.beforeEach(async ({ page, context }, testInfo) => {
       ),
     });
   };
-  
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await dismissCookieBanner(page, 'additional');
   await performAction('login', user.hearingCenterAdmin);
@@ -202,7 +201,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
@@ -281,7 +280,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
@@ -329,7 +328,7 @@ test.describe('Case management - Manage documents e2e Journey @nightly', async (
     const firstTab = pages[0];
     await firstTab.bringToFront();
     await dismissCookieBanner(page, 'additional');
-    await performAction('login', { email: user.claimantSolicitor.email, password: process.env.IDAM_PCS_USER_PASSWORD });
+    await performAction('login', { email: user.localAuthorityOrg1Usr1.email, password: process.env.IDAM_PCS_USER_PASSWORD });
     await dismissCookieBanner(page, 'analytics');
     await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
     await performValidation('mainHeader', home.caseSummary);
