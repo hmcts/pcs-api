@@ -557,7 +557,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_10oxlrc">
-          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestAdmin"</text>
+          <text>"reviewSpecificAccessRequestJudiciary","reviewSpecificAccessRequestLegalOps","reviewSpecificAccessRequestAdmin"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0dvlm9l">
           <text>"workType"</text>
@@ -586,6 +586,26 @@ Short name</description>
           <text>"LEGAL_OPERATIONS"</text>
         </outputEntry>
         <outputEntry id="LiteralExpression_0mgamxz">
+          <text></text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1uk76yu">
+        <inputEntry id="UnaryTests_126mv9i">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ldisw8">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1elgiy3">
+          <text>"reviewSpecificAccessRequestAdmin"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1y0aqjb">
+          <text>"roleCategory"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ua6s7q">
+          <text>"ADMIN"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0ng2peu">
           <text></text>
         </outputEntry>
       </rule>
