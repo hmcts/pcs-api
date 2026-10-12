@@ -71,8 +71,8 @@ withPipeline(type, product, component) {
     env.INTEGRATION_TESTS_ENABLED = "false"
 
     enablePactAs([
-      AppPipelineDsl.PactRoles.CONSUMER,
-      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+      AppPipelineDsl.PactRoles.CONSUMER
+      // AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
     setPreviewEnvVars(githubApi)
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
