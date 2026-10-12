@@ -137,6 +137,14 @@ public enum TaskType {
             Court staff returned your order with a query. Change the order and submit it for review again.
             The task will close when you submit it.
             """
+    ),
+    DECIDE_GEN_APP(
+        "DecideGenApp",
+        "Decide application",
+        """
+            Court staff referred a general application to you. Read it, then make an order deciding it.
+            The task will close when you send the order to court staff for review.
+            """
     );
 
     private final String id;

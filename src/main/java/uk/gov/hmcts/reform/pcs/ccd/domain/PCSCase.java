@@ -714,6 +714,20 @@ public class PCSCase {
     )
     private DynamicList partyRadioList;
 
+    @CCD(label = "Which application are you referring to a judge?",
+        searchable = false,
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList referGenAppList;
+
+    @CCD(label = "Note for the judge",
+        hint = "For example, anything the judge should know before deciding the application. "
+            + "It is also added to the case notes.",
+        searchable = false,
+        typeOverride = TextArea
+    )
+    private String referGenAppNote;
+
     @CCD(
         label = "Search Criteria",
         access = {GlobalSearchAccess.class}

@@ -43,7 +43,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     /** A judge saves a first draft, which has no id yet. */
     protected static MakeOrderRequest startDraft(String notes) {
         return new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), null), null);
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of("notes", notes), null, null), null);
     }
 
     /** The judge acts on the order as they last saw it, with a new note. */
@@ -55,6 +55,7 @@ public abstract class OrderEventIT extends AbstractPostgresContainerIT {
     protected static MakeOrderRequest change(MakeOrderRequest.Action action, Order order, String notes,
                                              String taskId) {
         return new MakeOrderRequest(action, new OrderChange(
-            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot()), taskId);
+            order.id(), order.version(), order.orderType(), Map.of("notes", notes), order.docweaveSnapshot(), null),
+            taskId);
     }
 }

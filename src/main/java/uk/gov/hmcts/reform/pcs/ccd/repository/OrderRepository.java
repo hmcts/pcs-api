@@ -10,8 +10,9 @@ import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-        long caseReference, String authorIdamUserId, OrderState state);
+    /** A judge's draft for the case, or for one of its applications; a null application finds the case's. */
+    Optional<OrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
+        long caseReference, String authorIdamUserId, OrderState state, UUID genAppId);
 
     Optional<OrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
         UUID id, long caseReference, String authorIdamUserId, Collection<OrderState> states);

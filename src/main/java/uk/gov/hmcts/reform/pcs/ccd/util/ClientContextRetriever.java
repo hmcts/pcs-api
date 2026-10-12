@@ -57,6 +57,17 @@ public class ClientContextRetriever {
         }
     }
 
+    /** The general application named in the Client-Context header, as for an order. */
+    public Optional<UUID> getGenAppId() {
+        ClientContext clientContext = getClientContext();
+        try {
+            return Optional.ofNullable(clientContext == null ? null : clientContext.getGenAppId())
+                .map(UUID::fromString);
+        } catch (IllegalArgumentException e) {
+            throw ExternalRejection.because("The link to the application is not valid");
+        }
+    }
+
     private HttpServletRequest getRequest() {
         return ((ServletRequestAttributes)
             Objects.requireNonNull(requestAttributesSupplier.get())

@@ -48,6 +48,10 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
 
+    /** The general application the order decides, when the judge started it from their task to decide one. */
+    @Column(updatable = false)
+    private UUID genAppId;
+
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)
     private String authorName;

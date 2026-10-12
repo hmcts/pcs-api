@@ -202,7 +202,7 @@ class MakeOrderIT extends OrderEventIT {
         var document = TextNode.valueOf("the order document");
 
         asFirstJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT, new OrderChange(draft.id(),
-            draft.version(), OrderType.SUSPENDED_POSSESSION, Map.of("notes", "second version"), document), null));
+            draft.version(), OrderType.SUSPENDED_POSSESSION, Map.of("notes", "second version"), document, null), null));
 
         Order saved = asFirstJudge.start().order();
         assertThat(saved.orderType()).isEqualTo(OrderType.SUSPENDED_POSSESSION);

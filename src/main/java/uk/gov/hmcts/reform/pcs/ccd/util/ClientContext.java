@@ -11,4 +11,7 @@ public class ClientContext {
 
     /** The order a caseworker is to review, or a judge to change, named by the link in their task. */
     private String orderId;
+
+    /** The general application a judge is to decide, named by the link in their task. */
+    private String genAppId;
 }
