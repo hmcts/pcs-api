@@ -352,20 +352,13 @@ export class ErrorValidationAction implements IAction {
 
   private async errorValidationSOTWritPage(validationReq: string) {
     if (validationReq === 'YES') {
-      await performAction('inputErrorValidation', {
-
-        validationType: statementOfTruth.errorValidationType.three,
-        inputArray: statementOfTruth.errorValidationField.errorRadioOption,
-        question: statementOfTruth.completedByParagraph,
-        option: statementOfTruth.claimantRadioOption,
-        button: statementOfTruth.continueButton
-      });
+      await performAction('clickRadioButton', {option:statementOfTruth.claimantRadioOption} );
       await performAction('inputErrorValidation', {
 
         validationType: statementOfTruth.errorValidationType.four,
         inputArray: statementOfTruth.errorValidationField.errorCheckBoxOption,
         label: statementOfTruth.checkBoxGenericErrorMessageHeader,
-        checkBox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        checkBox: statementOfTruth.iCertifyCheckboxDynamic,
         button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -384,14 +377,14 @@ export class ErrorValidationAction implements IAction {
         label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruth.continueButton
       });
-      await performAction('inputErrorValidation', {
+      // await performAction('inputErrorValidation', {
 
-        validationType: statementOfTruth.errorValidationType.two,
-        inputArray: statementOfTruth.errorValidationField.errorTextField2,
-        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
-        label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-        button: statementOfTruth.continueButton
-      });
+      //   validationType: statementOfTruth.errorValidationType.two,
+      //   inputArray: statementOfTruth.errorValidationField.errorTextField2,
+      //   header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+      //   label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+      //   button: statementOfTruth.continueButton
+      // });
     }
   }
 
