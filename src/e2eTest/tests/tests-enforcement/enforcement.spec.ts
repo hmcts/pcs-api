@@ -49,11 +49,11 @@ test.beforeEach(async ({ page }, testInfo) => {
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants()});
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants().addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants()
     });
   } else if (testInfo.title.includes('@onlyMain')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
@@ -67,11 +67,12 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
     await performAction('getDefendantDetails', {
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
       payLoad: submitCaseApiData.submitCasePayload
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -92,7 +93,7 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 // It will be enabled once the feature is included in the execution scope.
-test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
+test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
@@ -122,7 +123,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('errorValidationConfirmDefendantsDOBPage', confirmDefendantsDOB.errorValidation);
@@ -302,7 +303,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -418,7 +419,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       nextPage: confirmDefendantsDOB.mainHeader
     });
     await performAction('confirmDefendantsDOB', {
@@ -537,7 +538,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: changeNameAddress.mainHeader
       });
       await performAction('clickButton', changeNameAddress.continueButton);
@@ -565,7 +566,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader
       });
       await performAction('confirmDefendantsDOB', {
@@ -700,7 +701,7 @@ test.describe.skip('[Enforcement - Warrant of Possession]', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
-        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
         nextPage: confirmDefendantsDOB.mainHeader,
       });
       await performAction('confirmDefendantsDOB', {
