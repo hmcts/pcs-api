@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.RequiredDocumentsTabDetails;
@@ -273,6 +274,44 @@ class CaseFileDocumentDeduplicationServiceTest {
 
         // Then
         assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
+    }
+
+    @Test
+    void shouldRemoveTheCaseBundleFromAllDocumentsWhenItIsShownInTheBundleTab() {
+        // Given
+        Document bundle = Document.builder()
+            .url("http://cdam/cases/documents/bundle")
+            .binaryUrl("http://cdam/cases/documents/bundle/binary")
+            .filename("case-bundle.pdf")
+            .build();
+        ListValue<Document> bundleInCaseFile = ListValue.<Document>builder().id("bundle-row-id").value(bundle).build();
+        ListValue<Document> otherDocument = documentListValue("other-document-id", "genApps.docx");
+        PCSCase pcsCase = PCSCase.builder()
+            .allDocuments(List.of(bundleInCaseFile, otherDocument))
+            .bundleTab(BundleTab.builder().bundle(bundle).build())
+            .build();
+
+        // When
+        underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(otherDocument);
+    }
+
+    @Test
+    void shouldKeepAllDocumentsWhenTheBundleTabHasNoBundle() {
+        // Given
+        ListValue<Document> document = documentListValue("document-id", "genApps.docx");
+        PCSCase pcsCase = PCSCase.builder()
+            .allDocuments(List.of(document))
+            .bundleTab(BundleTab.builder().status("The bundle is being prepared.").build())
+            .build();
+
+        // When
+        underTest.removeDocumentsAlreadyPresentInOtherCaseFields(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).containsExactly(document);
     }
 
     private static ListValue<Document> documentListValue(String id, String filename) {

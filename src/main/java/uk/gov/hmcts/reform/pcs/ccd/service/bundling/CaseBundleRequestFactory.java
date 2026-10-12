@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.bundling.api.BundleSection;
 import uk.gov.hmcts.ccd.sdk.bundling.api.DocumentReference;
 import uk.gov.hmcts.ccd.sdk.bundling.api.EmptySectionPolicy;
 import uk.gov.hmcts.ccd.sdk.bundling.api.MediaPlaceholder;
+import uk.gov.hmcts.ccd.sdk.bundling.api.MissingDocumentPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -57,6 +58,8 @@ public class CaseBundleRequestFactory {
             .fileName(pcsCase.getCaseReference() + "-case-bundle.pdf")
             .root(root.build())
             .presentation(BundlePresentation.courtDefault())
+            // A document that cannot be included gets a page saying so, rather than no bundle.
+            .missingDocuments(MissingDocumentPolicy.PLACEHOLDER)
             .build();
     }
 
