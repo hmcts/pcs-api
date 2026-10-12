@@ -1,0 +1,32 @@
+{
+  "possessionClaimResponse": {
+    "draftVersion": ${draftVersion},
+    "defendantResponses": {
+      "tenancyTypeConfirmation": "YES",
+      "rentArrearsAmountConfirmation": "YES",
+      "contactByPhone": "NO",
+      "contactByEmail": "YES",
+      "contactByPost": "NO",
+      "freeLegalAdvice": "NO",
+      "defendantNameConfirmation": "YES",
+      "correspondenceAddressConfirmation": "YES",
+      "householdCircumstances": {
+        "dependantChildren": "No",
+        "shareAdditionalCircumstances": "No",
+        "exceptionalHardship": "No",
+        "otherDependants": "No",
+        "otherTenants": "No",
+        "alternativeAccommodation": "NO",
+        "shareIncomeExpenseDetails": "No"
+      },
+      "paymentAgreement": {
+        "anyPaymentsMade": "NO",
+        "repaymentPlanAgreed": "NO",
+        "repayArrearsInstalments": "NO"
+      },
+      "languageUsed": "ENGLISH",
+      "otherConsiderations": "NO",
+      "makeCounterClaim": "NO"
+    }
+  }
+}
