@@ -3,10 +3,12 @@ package uk.gov.hmcts.reform.pcs.contract;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
+import au.com.dius.pact.consumer.junit5.PactIgnore;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -39,6 +41,8 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @PactTestFor(providerName = "payment_accounts", port = "8080")
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = ALL)
+
+@Disabled("until pact test fixed on fee and pay side - HDPI-9487")
 public class PaymentsServiceRequestConsumerTest {
     private final PaymentsApi paymentsApi;
 
@@ -128,7 +132,7 @@ public class PaymentsServiceRequestConsumerTest {
             .toPact(V4Pact.class);
     }
 
-    //@Test Disbaled to run PACT tests and get green pipeline - fixed under Task number HDPI-9487 to reenable
+    @Test
     @PactTestFor(pactMethod = "createServiceRequestPact")
     void shouldReturnServiceRequestReference() {
         //Initialising CreateServiceRequestDTO to fulfill type expectations for createServiceRequest method.
