@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,6 +35,7 @@ public class UserNameEntity {
 
     private String name;
 
+    @Column(nullable = false, unique = true)
     private UUID idamId;
 
     @OneToMany(mappedBy = "user", fetch = LAZY)
