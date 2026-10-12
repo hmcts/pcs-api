@@ -39,7 +39,7 @@ async function clearBrowserSession(page: Page, context: BrowserContext): Promise
 test.beforeEach(async ({ page, context }) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants() });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await clearBrowserSession(page, context);
   await dismissCookieBanner(page, 'additional');

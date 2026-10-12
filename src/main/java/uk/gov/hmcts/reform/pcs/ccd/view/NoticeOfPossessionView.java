@@ -102,7 +102,6 @@ public class NoticeOfPossessionView {
             .filter(NoticeOfPossessionView::isNoticeStatement)
             .filter(DocumentsView::isNotGenAppDocument)
             .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
             .map(this::toDocument)
             .toList();
     }
