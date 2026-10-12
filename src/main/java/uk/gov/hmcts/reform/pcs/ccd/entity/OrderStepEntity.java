@@ -15,8 +15,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SourceType;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
@@ -49,7 +51,8 @@ public class OrderStepEntity {
     @Column(nullable = false)
     private OrderState state;
 
-    @Column(nullable = false)
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     @Column(nullable = false)

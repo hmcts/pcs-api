@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 
-import java.time.Clock;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +24,6 @@ public class OrderSteps {
 
     private final OrderRepository orderRepository;
     private final OrderStepRepository orderStepRepository;
-    private final Clock utcClock;
 
     public OrderStepEntity latest(OrderEntity order) {
         return orderStepRepository.findFirstByOrderIdOrderByIdDesc(order.getId()).orElseThrow();
@@ -55,7 +52,6 @@ public class OrderSteps {
             .order(order)
             .state(to)
             .actorIdamUserId(actor)
-            .createdAt(Instant.now(utcClock))
             .build());
     }
 }

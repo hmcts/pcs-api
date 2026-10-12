@@ -57,7 +57,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 @DisplayName("Confirm order review")
 class ConfirmOrderReviewIT extends OrderEventIT {
 
-    private static final String WORDING = "<p>IT IS ORDERED THAT:</p><ol><li><p>Possession.</p></li></ol>";
     private static final String QUERY = "Which defendant does paragraph 2 mean?";
 
     @Autowired
@@ -155,7 +154,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     void issuesTheOrder() {
         Order order = judgeSubmitsOrder("the judge's order");
         var changed = new IssuedOrder(OrderType.SUSPENDED_POSSESSION, Map.of("notes", "the caseworker's order"), null,
-            WORDING);
+            "the caseworker's wording");
         var reviewDate = new ReviewDateEntry(LocalDate.of(2027, 1, 15), GENERAL_ORDER, "Check the rent is paid");
 
         var outcome = asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, order.id(),

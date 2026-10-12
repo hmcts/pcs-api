@@ -48,8 +48,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.
 @DisplayName("Issued order document")
 class OrderDocumentIT extends OrderEventIT {
 
-    private static final String WORDING = "<p>IT IS ORDERED THAT:</p><ol><li><p>Possession.</p></li></ol>";
-
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
     @Autowired
@@ -79,8 +77,9 @@ class OrderDocumentIT extends OrderEventIT {
 
         asCaseworker.submitExpectingSuccess(new ConfirmOrderReviewRequest(ISSUE, submitted.id(),
             submitted.version(), "staff-review", null,
-            new Issue(new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, WORDING), List.of(),
-                COUNTY_COURT)));
+            new Issue(
+                new IssuedOrder(OrderType.OUTRIGHT_POSSESSION, Map.of(), null, "the caseworker's wording"),
+                List.of(), COUNTY_COURT)));
         OrderDocumentTaskData job = scheduledGeneration();
         assertThat(job).extracting(OrderDocumentTaskData::getOrderId, OrderDocumentTaskData::getCaseReference,
                 OrderDocumentTaskData::getCaseworkerId, OrderDocumentTaskData::getCaseworkerFirstName,
@@ -90,7 +89,7 @@ class OrderDocumentIT extends OrderEventIT {
         assertThat(issued.getJudgeName()).isEqualTo("Sarah Hughes");
         assertThat(issued.isCountyCourtSeal()).isTrue();
         assertThat(issued.isHighCourtSeal()).isFalse();
-        assertThat(issued.getOrderHtml()).isEqualTo(WORDING);
+        assertThat(issued.getOrderHtml()).isEqualTo("the caseworker's wording");
         assertThat(issued.getParties()).contains(new OrderParty(IssuedCases.DEFENDANT, "Defendant"));
 
         orderDocumentService.generateAndAttach(job);

@@ -74,13 +74,8 @@ public class OrderDocumentService {
         OrderDocumentPayload payload = generation.getPayload();
         String dmStoreUrl = docAssemblyService.generateDocument(
             payload, TEMPLATE_ID, OutputType.PDF, payload.getOrderTitle());
-        try {
-            systemEventExecutor.execute(generation.getCaseReference(), caseworker(generation), orderId,
-                context -> attach(orderId, dmStoreUrl));
-        } catch (Exception e) {
-            deleteOrphanedDocument(orderId, dmStoreUrl);
-            throw e;
-        }
+        systemEventExecutor.execute(generation.getCaseReference(), caseworker(generation), orderId,
+            context -> attach(orderId, dmStoreUrl));
     }
 
     /** Adds the document to the case; the system event's idempotency key means this runs once per order. */
@@ -107,9 +102,10 @@ public class OrderDocumentService {
         PcsCaseEntity pcsCase = order.getPcsCase();
         Optional<ClaimEntity> claim = pcsCase.getClaims().stream().findFirst();
         Optional<CourtVenue> court = court(pcsCase);
+        String courtName = court.map(CourtVenue::courtName).orElse(null);
         return OrderDocumentPayload.builder()
             .caseNumber(caseReferenceFormatter.formatCaseReferenceWithDashes(pcsCase.getCaseReference()))
-            .courtName(court.map(CourtVenue::courtName).orElse(null))
+            .courtName(courtName)
             .courtAddress(court.map(venue -> Stream.of(venue.courtAddress(), venue.postcode())
                 .filter(part -> part != null && !part.isBlank())
                 .collect(Collectors.joining(", "))).orElse(null))
@@ -122,17 +118,11 @@ public class OrderDocumentService {
             .judgeName(Optional.ofNullable(order.getAuthorName()).orElse("the Judge"))
             .orderDate(ORDER_DATE.format(issued.getCreatedAt().atZone(UK_ZONE_ID)))
             .orderHtml(issued.getOrderHtml())
-            .sealName(order.getSeal() == OrderSeal.HIGH_COURT ? "High Court" : countyCourt(court))
+            .sealName(order.getSeal() == OrderSeal.HIGH_COURT
+                ? "High Court" : Optional.ofNullable(courtName).orElse("County Court"))
             .countyCourtSeal(order.getSeal() == OrderSeal.COUNTY_COURT)
             .highCourtSeal(order.getSeal() == OrderSeal.HIGH_COURT)
             .build();
-    }
-
-    /** The county court by name, as "County Court at Luton" when its venue name does not say so. */
-    private static String countyCourt(Optional<CourtVenue> court) {
-        return court.map(CourtVenue::courtName)
-            .map(name -> name.contains("County Court") ? name : "County Court at " + name)
-            .orElse("County Court");
     }
 
     /** The claim's parties in a role, numbered when there is more than one: "Defendant 1", "Defendant 2". */
@@ -156,14 +146,6 @@ public class OrderDocumentService {
         } catch (Exception e) {
             log.warn("No court venue for case {}", pcsCase.getCaseReference(), e);
             return Optional.empty();
-        }
-    }
-
-    private void deleteOrphanedDocument(UUID orderId, String dmStoreUrl) {
-        try {
-            documentImportService.deleteDocument(dmStoreUrl);
-        } catch (Exception e) {
-            log.error("Failed to delete orphaned order document for order {}: {}", orderId, dmStoreUrl, e);
         }
     }
 }
