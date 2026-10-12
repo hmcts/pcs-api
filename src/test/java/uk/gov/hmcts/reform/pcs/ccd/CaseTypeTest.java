@@ -98,9 +98,9 @@ class CaseTypeTest {
         final Tab.TabBuilder<PCSCase, AccessProfile> caseNotesTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseLinksTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> caseFileViewTabBuilder = TabBuilder.builder(PCSCase.class, utils);
+        final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final TabBuilder<PCSCase, AccessProfile> casePartiesTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseFlagsTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
-        final TabBuilder<PCSCase, AccessProfile> ordersTabBuilder = TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> supportTabBuilder = Tab.TabBuilder.builder(PCSCase.class, utils);
         final Tab.TabBuilder<PCSCase, AccessProfile> caseDetailsTabBuilder =
             Tab.TabBuilder.builder(PCSCase.class, utils);
@@ -148,9 +148,9 @@ class CaseTypeTest {
         final Tab<PCSCase, AccessProfile> caseLinksTab = caseLinksTabBuilder.build();
         final Tab<PCSCase, AccessProfile> casePartiesTab = casePartiesTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFileViewTab = caseFileViewTabBuilder.build();
+        final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseDetailsTab = caseDetailsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseNotesTab = caseNotesTabBuilder.build();
-        final Tab<PCSCase, AccessProfile> ordersTab = ordersTabBuilder.build();
         final Tab<PCSCase, AccessProfile> caseFlagsTab = caseFlagsTabBuilder.build();
         final Tab<PCSCase, AccessProfile> supportTab = supportTabBuilder.build();
 
@@ -172,7 +172,11 @@ class CaseTypeTest {
         assertThat(caseFileViewTab.getFields()).hasSize(1);
         assertThat(casePartiesTab.getFields()).extracting(TabField::getId).contains("casePartiesTab_ClaimantDetails");
         assertThat(ordersTab.getFields()).extracting(TabField::getId)
-            .containsExactly("ordersTab_PossessionOrder", "ordersTab_PossessionOrderUploadedDate");
+            .containsExactly("ordersTableLabel", "ordersTab_TableMarkup");
+        assertThat(ordersTab.getFields()).extracting(TabField::getShowCondition)
+            .containsExactly(null, ShowConditions.NEVER_SHOW);
+        assertThat(ordersTab.getShowCondition())
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
