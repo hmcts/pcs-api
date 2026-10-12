@@ -170,7 +170,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
     }
 
     private List<GenAppEntity> existingApplications(PcsCaseEntity pcsCaseEntity,
-                                                    UUID currentUserId,
+                                                    String currentUserId,
                                                     String organisationId) {
         return Arrays.stream(DocumentUploadCategory.values())
             .filter(category -> category != DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM)
