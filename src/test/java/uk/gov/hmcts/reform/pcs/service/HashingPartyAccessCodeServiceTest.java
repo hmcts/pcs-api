@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 
 import java.util.List;
@@ -37,7 +38,9 @@ class HashingPartyAccessCodeServiceTest {
         PartyAccessCodeRepository repository = mock(PartyAccessCodeRepository.class);
         UUID caseId = UUID.randomUUID();
         PartyAccessCodeEntity entity = PartyAccessCodeEntity.builder()
-            .partyId(UUID.randomUUID())
+            .party(PartyEntity.builder()
+                    .id(UUID.randomUUID())
+                    .build())
             .code(hash)
             .build();
         when(repository.findAllByPcsCase_Id(caseId)).thenReturn(List.of(entity));

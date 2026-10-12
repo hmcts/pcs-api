@@ -77,7 +77,7 @@ public class CaseNotification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id")
-    private ClaimEntity claimId;
+    private ClaimEntity claim;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "claim_type", nullable = false)
