@@ -55,7 +55,7 @@ public class StartSuspend implements CcdPageConfiguration {
         answers so that you can return to them later.</p>
 
         <h2 class="govuk-heading-m">How much it will cost</h2>
-        <p class="govuk-body">It costs £15 / ${xui_genapp_StandardFee} to apply to suspend
+        <p class="govuk-body">It costs £15 / ${xui_genapp_StandardFee}/ ${xui_genapp_SuspendFee} to apply to suspend
         an eviction.</p>
 
         <h2 class="govuk-heading-m">If you are worried about the defendant paying fees</h2>

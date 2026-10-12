@@ -72,6 +72,12 @@ public class StartEventHandler implements Start<PCSCase, State> {
             FeeType.GEN_APP_MAX_FEE,
             (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest().setMaxFee(feeString)
         );
+        feeApplier.applyFeeAmount(
+            caseData,
+            FeeType.GEN_APP_SUSPEND_FEE,
+            (suppliedCaseData, feeString) -> suppliedCaseData.getXuiGenAppRequest()
+                .setSuspendFee(feeString)
+        );
     }
 
 }

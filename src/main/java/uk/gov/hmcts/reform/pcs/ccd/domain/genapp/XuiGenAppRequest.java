@@ -138,6 +138,9 @@ public class XuiGenAppRequest implements GenAppRequest {
     private String standardFee;
 
     @CCD(searchable = false)
+    private String suspendFee;
+
+    @CCD(searchable = false)
     private String maxFee;
 
     @CCD(searchable = false)
