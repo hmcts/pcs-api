@@ -105,6 +105,22 @@ class ShowConditionsTest {
 
     @ParameterizedTest
     @MethodSource("unsupportedFeatureFlags")
+    @EnumSource(value = FeatureFlag.class,
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
+            "CUI_RESPOND_TO_CLAIM_LR", "MAKE_ORDER"},
+        mode = INCLUDE)
+    void shouldNotThrowExceptionForFeatureFlagWithCcdField(FeatureFlag featureFlag) {
+        // When / Then
+        assertThatNoException().isThrownBy(() -> ShowConditions.featureFlagsEnabled(featureFlag));
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+        value = FeatureFlag.class,
+        names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
+            "CUI_RESPOND_TO_CLAIM_LR", "MAKE_ORDER"},
+        mode = EXCLUDE
+    )
     void shouldThrowExceptionForFeatureFlagWithNoCcdField(FeatureFlag featureFlag) {
         assertThatThrownBy(() -> ShowConditions.featureFlagsEnabled(featureFlag))
             .isInstanceOf(IllegalArgumentException.class)
@@ -139,6 +155,42 @@ class ShowConditionsTest {
                         List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3, WALES_MAKE_A_CLAIM),
                         enabled(RELEASE_1_DOT_2) + " AND " + enabled(RELEASE_1_DOT_3)
                             + " AND " + enabled(WALES_MAKE_A_CLAIM))
+            // Feature flag(s), expected show condition
+            arguments(List.of(),
+                      ""),
+            arguments(List.of(RELEASE_1_DOT_2),
+                      "featureFlags.release1dot2Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3),
+                      "featureFlags.release1dot3Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_4),
+                      "featureFlags.release1dot4Enabled=\"YES\""),
+            arguments(List.of(CASEWORKER_EVENTS),
+                      "featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(WALES_MAKE_A_CLAIM),
+                      "featureFlags.walesMakeAClaimEnabled=\"YES\""),
+            arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot3Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, RELEASE_1_DOT_3, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, CASEWORKER_EVENTS),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.caseWorkerEventsEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_2, WALES_MAKE_A_CLAIM),
+                      "featureFlags.release1dot2Enabled=\"YES\" AND featureFlags.walesMakeAClaimEnabled=\"YES\""),
+            arguments(List.of(CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.cuiRespondToClaimLrEnabled=\"YES\""),
+            arguments(List.of(RELEASE_1_DOT_3, CUI_RESPOND_TO_CLAIM_LR),
+                      "featureFlags.release1dot3Enabled=\"YES\" "
+                          + "AND featureFlags.cuiRespondToClaimLrEnabled=\"YES\"")
         );
     }
 

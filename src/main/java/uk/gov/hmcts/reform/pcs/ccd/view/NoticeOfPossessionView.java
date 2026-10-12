@@ -2,49 +2,37 @@ package uk.gov.hmcts.reform.pcs.ccd.view;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.List;
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class NoticeOfPossessionView {
 
-    private final UploadTimestampProvider uploadTimestampProvider;
-
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         getMainClaim(pcsCaseEntity)
             .map(ClaimEntity::getNoticeOfPossession)
             .ifPresent(noticeOfPossession ->
-                           setNoticeOfPossessionFields(pcsCase, noticeOfPossession, pcsCaseEntity));
+                           setNoticeOfPossessionFields(pcsCase, noticeOfPossession));
     }
 
-    private void setNoticeOfPossessionFields(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity,
-                                             PcsCaseEntity pcsCaseEntity) {
+    private void setNoticeOfPossessionFields(PCSCase pcsCase, NoticeOfPossessionEntity noticeOfPossessionEntity) {
         NoticeServedDetails noticeServedDetails = new NoticeServedDetails();
 
         NoticeServiceMethod servingMethod = noticeOfPossessionEntity.getServingMethod();
         noticeServedDetails.setServiceMethod(servingMethod);
         setAbletoUploadDocument(noticeServedDetails, noticeOfPossessionEntity);
         noticeServedDetails.setUnableToUploadReason(noticeOfPossessionEntity.getUnableToUploadReason());
-
-        List<ListValue<Document>> documents = getNoticeStatement(pcsCaseEntity);
-        noticeServedDetails.setDocuments(documents);
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
@@ -91,38 +79,6 @@ public class NoticeOfPossessionView {
     private static Optional<ClaimEntity> getMainClaim(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getClaims().stream()
             .findFirst();
-    }
-
-    private List<ListValue<Document>> getNoticeStatement(PcsCaseEntity pcsCaseEntity) {
-        if (CollectionUtils.isEmpty(pcsCaseEntity.getDocuments())) {
-            return List.of();
-        }
-
-        return pcsCaseEntity.getDocuments().stream()
-            .filter(NoticeOfPossessionView::isNoticeStatement)
-            .filter(DocumentsView::isNotGenAppDocument)
-            .filter(DocumentsView::isDescriptionEmpty)
-            .filter(DocumentsView::isNotRemoved)
-            .map(this::toDocument)
-            .toList();
-    }
-
-    private static boolean isNoticeStatement(DocumentEntity documentEntity) {
-        return documentEntity.getType() == DocumentType.POSSESSION_NOTICE;
-    }
-
-    private ListValue<Document> toDocument(DocumentEntity documentEntity) {
-        return ListValue.<Document>builder()
-            .id(documentEntity.getId().toString())
-            .value(
-                Document.builder()
-                    .url(documentEntity.getUrl())
-                    .filename(documentEntity.getFileName())
-                    .binaryUrl(documentEntity.getBinaryUrl())
-                    .categoryId(documentEntity.getCategoryId())
-                    .uploadTimestamp(uploadTimestampProvider.uploadTimestamp(documentEntity))
-                    .build()
-            ).build();
     }
 
     private static void setAbletoUploadDocument(NoticeServedDetails noticeServedDetails,
