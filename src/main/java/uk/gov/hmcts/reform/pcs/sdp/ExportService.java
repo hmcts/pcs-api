@@ -37,22 +37,22 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-public class ClaimSnapshotExportService {
+public class ExportService {
 
     private static final int DEFAULT_SNAPSHOT_VERSION = 1;
 
     private final ClaimRepository claimRepository;
     private final ClaimActivityLogRepository claimActivityLogRepository;
-    private final ClaimSnapshotMapper claimSnapshotMapper;
-    private final ClaimSnapshotFileWriter claimSnapshotFileWriter;
+    private final SnapshotMapper claimSnapshotMapper;
+    private final FileWriter claimSnapshotFileWriter;
     private final Clock utcClock;
     private final String environment;
     private final Path outputDirectory;
 
-    public ClaimSnapshotExportService(ClaimRepository claimRepository,
+    public ExportService(ClaimRepository claimRepository,
                                       ClaimActivityLogRepository claimActivityLogRepository,
-                                      ClaimSnapshotMapper claimSnapshotMapper,
-                                      ClaimSnapshotFileWriter claimSnapshotFileWriter,
+                                      SnapshotMapper claimSnapshotMapper,
+                                      FileWriter claimSnapshotFileWriter,
                                       @Qualifier("utcClock") Clock utcClock,
                                       @Value("${sdp.export.environment}") String environment,
                                       @Value("${sdp.export.output-directory}") String outputDirectory) {
@@ -69,7 +69,7 @@ public class ClaimSnapshotExportService {
      * Runs a full claim snapshot extract and writes JSON under the configured output directory.
      */
     @Transactional(readOnly = true)
-    public ClaimSnapshotExportResult exportAllClaims() {
+    public ExportResult exportAllClaims() {
         List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExport();
         String extractDate = LocalDate.now(utcClock).format(DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -83,7 +83,7 @@ public class ClaimSnapshotExportService {
         claimSnapshotFileWriter.write(records, outputPath);
 
         log.info("SDP claim snapshot export complete: {} record(s) -> {}", records.size(), outputPath);
-        return new ClaimSnapshotExportResult(outputPath, records.size());
+        return new ExportResult(outputPath, records.size());
     }
 
     private ClaimSnapshotRecord mapClaim(ClaimEntity claim, String extractDate) {
