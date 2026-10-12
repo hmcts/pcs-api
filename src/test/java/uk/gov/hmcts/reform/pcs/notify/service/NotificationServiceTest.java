@@ -13,6 +13,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyContactDetailsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.OrganisationEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
@@ -52,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.notify.template.personalisation.ClaimantBasePerso
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentRequiredPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.CounterclaimPaymentSuccessPersonalisationLegalRep;
+import uk.gov.hmcts.reform.pcs.notify.template.personalisation.HearingNoticePersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompleteLegalRepPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeCompletedPersonalisation;
 import uk.gov.hmcts.reform.pcs.notify.template.personalisation.NoticeOfChangeNoLongerRepresentingPersonalisation;
@@ -1704,5 +1707,93 @@ class NotificationServiceTest {
             .claimantInformation(claimantInformation)
             .defendant1(defendant)
             .build();
+    }
+
+    @Nested
+    @DisplayName("Hearing Notice Tests")
+    class HearingNoticeTests {
+
+        private static final String HEARING_TEMPLATE_ID = "hearing-template";
+        private static final String PARTY_EMAIL = "party@example.com";
+        private static final String LEGAL_REP_EMAIL = "legalrep@example.com";
+
+        private PcsCaseEntity pcsCase;
+        private PartyEntity party;
+
+        @BeforeEach
+        void setUp() {
+            pcsCase = PcsCaseEntity.builder().id(UUID.randomUUID()).claims(List.of(ClaimEntity.builder().build()))
+                .build();
+            party = PartyEntity.builder().id(UUID.randomUUID()).emailAddress(PARTY_EMAIL).build();
+            lenient().when(notificationPersonalisationFactory.hearingNotice())
+                .thenReturn(HearingNoticePersonalisation.builder().loginUrl("https://pcs.example").build());
+            lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_HEARING))
+                .thenReturn(HEARING_TEMPLATE_ID);
+            lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
+        }
+
+        @Test
+        @DisplayName("Should email an unrepresented defendant who wants email")
+        void shouldEmailUnrepresentedDefendant() {
+            when(partyService.canSendEmailNotification(party, PartyRole.DEFENDANT)).thenReturn(true);
+
+            notificationService.sendHearingNoticeEmail(pcsCase, party, PartyRole.DEFENDANT);
+
+            assertScheduledEmailTo(PARTY_EMAIL);
+        }
+
+        @Test
+        @DisplayName("Should not email an unrepresented defendant who does not want email")
+        void shouldNotEmailDefendantWhoDoesNotWantEmail() {
+            when(partyService.canSendEmailNotification(party, PartyRole.DEFENDANT)).thenReturn(false);
+
+            notificationService.sendHearingNoticeEmail(pcsCase, party, PartyRole.DEFENDANT);
+
+            verify(schedulerClient, never()).scheduleIfNotExists(any());
+        }
+
+        @Test
+        @DisplayName("Should email a represented defendant's legal rep instead of the defendant")
+        void shouldEmailRepresentedDefendantsLegalRep() {
+            representBy(party, LEGAL_REP_EMAIL);
+
+            notificationService.sendHearingNoticeEmail(pcsCase, party, PartyRole.DEFENDANT);
+
+            assertScheduledEmailTo(LEGAL_REP_EMAIL);
+            verify(partyService, never()).canSendEmailNotification(any(), any());
+        }
+
+        @Test
+        @DisplayName("Should email the claimant legal rep")
+        void shouldEmailClaimantLegalRep() {
+            representBy(party, LEGAL_REP_EMAIL);
+            when(partyService.canSendEmailNotification(party, PartyRole.CLAIMANT)).thenReturn(true);
+
+            notificationService.sendHearingNoticeEmail(pcsCase, party, PartyRole.CLAIMANT);
+
+            assertScheduledEmailTo(PARTY_EMAIL);
+        }
+
+        private void representBy(PartyEntity represented, String legalRepEmail) {
+            OrganisationEntity legalRep = OrganisationEntity.builder()
+                .claimPartyContactDetails(List.of(ClaimPartyContactDetailsEntity.builder()
+                    .pcsCase(pcsCase)
+                    .emailAddress(legalRepEmail)
+                    .build()))
+                .build();
+            represented.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder()
+                .party(represented)
+                .organisation(legalRep)
+                .active(YesOrNo.YES)
+                .build());
+        }
+
+        private void assertScheduledEmailTo(String email) {
+            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            SendEmailTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
+            assertThat(taskData.getEmailAddress()).isEqualTo(email);
+            assertThat(taskData.getTemplateId()).isEqualTo(HEARING_TEMPLATE_ID);
+            assertThat(taskData.getPersonalisation()).containsEntry("loginUrl", "https://pcs.example");
+        }
     }
 }

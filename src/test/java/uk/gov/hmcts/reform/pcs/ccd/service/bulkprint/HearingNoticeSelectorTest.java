@@ -119,6 +119,14 @@ class HearingNoticeSelectorTest {
         assertThat(underTest.findHearingNoticePackCandidates(PcsCaseEntity.builder().id(CASE_ID).build())).isEmpty();
     }
 
+    @Test
+    @DisplayName("Skips a defendant who has not chosen post")
+    void shouldSkipDefendantWithoutPostPreference() {
+        defendant.setContactPreferences(null);
+
+        assertThat(select(notice(hearing, defendant))).isEmpty();
+    }
+
     private List<HearingNoticePackCandidate> select(DocumentEntity... documents) {
         return underTest.findHearingNoticePackCandidates(caseWith(documents));
     }
@@ -155,6 +163,8 @@ class HearingNoticeSelectorTest {
     }
 
     private static PartyEntity party() {
-        return PartyEntity.builder().id(UUID.randomUUID()).build();
+        return PartyEntity.builder().id(UUID.randomUUID())
+            .contactPreferences(ContactPreferencesEntity.builder().contactByPost(VerticalYesNo.YES).build())
+            .build();
     }
 }

@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.document.model.hearingnotice.HearingNoticePayload
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class HearingNoticeDocumentGenerator {
     private final RecipientAddressResolver recipientAddressResolver;
     private final DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     private final AddressMapper addressMapper;
+    private final NotificationService notificationService;
     private final String portalUrl;
 
     public HearingNoticeDocumentGenerator(HearingRepository hearingRepository,
@@ -71,6 +73,7 @@ public class HearingNoticeDocumentGenerator {
                                           RecipientAddressResolver recipientAddressResolver,
                                           DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver,
                                           AddressMapper addressMapper,
+                                          NotificationService notificationService,
                                           @Value("${frontend.url}") String portalUrl) {
         this.hearingRepository = hearingRepository;
         this.locationReferenceService = locationReferenceService;
@@ -82,6 +85,7 @@ public class HearingNoticeDocumentGenerator {
         this.recipientAddressResolver = recipientAddressResolver;
         this.defenceCorrespondenceAddressResolver = defenceCorrespondenceAddressResolver;
         this.addressMapper = addressMapper;
+        this.notificationService = notificationService;
         this.portalUrl = portalUrl;
     }
 
@@ -101,7 +105,8 @@ public class HearingNoticeDocumentGenerator {
         String allDefendantNames = joinNames(defendants);
         int nextNumber = countGeneratedNotices(pcsCase) + 1;
 
-        for (PartyEntity recipient : recipientsOf(hearing, claimants, defendants)) {
+        List<PartyEntity> recipients = recipientsOf(hearing, claimants, defendants);
+        for (PartyEntity recipient : recipients) {
             boolean isClaimant = claimants.contains(recipient);
             String recipientName = recipientAddressResolver.resolveDisplayName(recipient);
             // The recipient alone on their own side of the heading, every party on the other side.
@@ -122,6 +127,12 @@ public class HearingNoticeDocumentGenerator {
             hearing.getNoticeDocuments().add(notice);
 
             claimActivityLogService.logGenerationSuccess(pcsCase, recipient);
+        }
+
+        // Only once every notice exists, so a failed attempt emails nobody.
+        for (PartyEntity recipient : recipients) {
+            PartyRole role = claimants.contains(recipient) ? PartyRole.CLAIMANT : PartyRole.DEFENDANT;
+            notificationService.sendHearingNoticeEmail(pcsCase, recipient, role);
         }
     }
 

@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.document.model.hearingnotice.HearingNoticePayload
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -79,6 +80,8 @@ class HearingNoticeDocumentGeneratorTest {
     private DefenceCorrespondenceAddressResolver defenceCorrespondenceAddressResolver;
     @Mock
     private AddressMapper addressMapper;
+    @Mock
+    private NotificationService notificationService;
     @Captor
     private ArgumentCaptor<FormPayload> payloadCaptor;
 
@@ -95,7 +98,8 @@ class HearingNoticeDocumentGeneratorTest {
     void setUp() {
         underTest = new HearingNoticeDocumentGenerator(hearingRepository, locationReferenceService, docAssemblyService,
             documentImportService, documentNameService, claimActivityLogService, new CaseReferenceFormatter(),
-            recipientAddressResolver, defenceCorrespondenceAddressResolver, addressMapper, PORTAL_URL);
+            recipientAddressResolver, defenceCorrespondenceAddressResolver, addressMapper, notificationService,
+            PORTAL_URL);
 
         ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
             ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
@@ -128,7 +132,7 @@ class HearingNoticeDocumentGeneratorTest {
 
         generateNotices(hearing);
 
-        verifyNoInteractions(docAssemblyService, documentImportService, claimActivityLogService);
+        verifyNoInteractions(docAssemblyService, documentImportService, claimActivityLogService, notificationService);
     }
 
     @Test
@@ -240,6 +244,28 @@ class HearingNoticeDocumentGeneratorTest {
         assertThat(payload.getClaimantName()).isEqualTo("Acme Ltd");
         assertThat(payload.getDefendantName()).isEqualTo("Bob Tenant, Jo Tenant");
         assertThat(payload.getUrl()).isEqualTo(PORTAL_URL);
+    }
+
+    @Test
+    void shouldEmailEveryRecipientWithTheirRole() {
+        HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
+
+        generateNotices(hearing);
+
+        verify(notificationService).sendHearingNoticeEmail(pcsCase, claimant, PartyRole.CLAIMANT);
+        verify(notificationService).sendHearingNoticeEmail(pcsCase, defendant1, PartyRole.DEFENDANT);
+        verify(notificationService).sendHearingNoticeEmail(pcsCase, defendant2, PartyRole.DEFENDANT);
+    }
+
+    @Test
+    void shouldNotEmailAnyoneWhenANoticeFailsToGenerate() {
+        HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.NO);
+        when(docAssemblyService.generateDocument(any(), any(), any(), eq("Notice of hearing 2")))
+            .thenThrow(new RuntimeException("docassembly 500"));
+
+        assertThatThrownBy(() -> generateNotices(hearing)).isInstanceOf(RuntimeException.class);
+
+        verifyNoInteractions(notificationService);
     }
 
     private void generateNotices(HearingEntity hearing) {
