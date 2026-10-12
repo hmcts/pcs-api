@@ -96,14 +96,27 @@ public enum GroupAccessType implements CCDAccessGroup {
      * The group ID template for an organisation profile acting in a party role, empty where the
      * combination has no access type. Keyed lookup, so selection does not depend on the order these
      * constants are declared in.
+     *
+     * <p>MyHMCTS grants claimant access against the generic {@code ORGANISATION_PROFILE}, but parties
+     * may still carry a specific PRD profile (for example {@code LOCALAUTH_PROFILE}). Unmapped claimant
+     * profiles therefore fall back to {@link #PROFESSIONAL_ORG_CLAIMANT_ACCESS}.
      */
     public static Optional<String> caseAccessGroupIdFor(String orgProfileId, PartyRole partyRole,
                                                         String organisationId) {
-        return Optional.ofNullable(orgProfileId)
-            .map(profileId -> new Key(profileId, partyRole))
-            .map(CASE_ACCESS_GROUP_MAP::get)
-            .map(groupAccessType ->
-                     groupAccessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
+        if (orgProfileId == null || partyRole == null) {
+            return Optional.empty();
+        }
+
+        GroupAccessType accessType = CASE_ACCESS_GROUP_MAP.get(new Key(orgProfileId, partyRole));
+        if (accessType == null && partyRole == CLAIMANT) {
+            accessType = PROFESSIONAL_ORG_CLAIMANT_ACCESS;
+        }
+        if (accessType == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+            accessType.getCaseAccessGroupIdTemplate().replace(ORG_IDENTIFIER_TEMPLATE, organisationId));
     }
 
     /**

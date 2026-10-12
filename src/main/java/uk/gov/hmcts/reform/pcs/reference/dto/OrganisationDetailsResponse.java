@@ -69,8 +69,7 @@ public class OrganisationDetailsResponse {
             .toList();
 
         if (orgProfileIds.isEmpty()) {
-            throw new IllegalArgumentException("No valid organisation profile id found for organisation "
-                                                   + getOrganisationIdentifier());
+            return ORGANISATION_PROFILE;
         }
         if (orgProfileIds.size() > 1) {
             throw new IllegalArgumentException(

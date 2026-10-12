@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,5 +43,31 @@ class GroupAccessTypeTest {
     void shouldBuildCaseAccessGroupIdTemplateInJurisdictionCaseTypeAccessTypeRoleOrgidFormat() {
         assertThat(GroupAccessType.SOLICITOR_ORG_CLAIMANT_ACCESS.getCaseAccessGroupIdTemplate())
             .isEqualTo("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:$ORGID$");
+    }
+
+    @Test
+    void shouldResolveClaimantAccessForGenericOrganisationProfile() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("ORGANISATION_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+    }
+
+    @Test
+    void shouldResolveClaimantAccessForStampedSpecificOrganisationProfiles() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("LOCALAUTH_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_REALT_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_PROP_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_NFP_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+        assertThat(GroupAccessType.caseAccessGroupIdFor("OTHER_CHARITY_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:prof-org-claimant-access:claimant:ORG123");
+    }
+
+    @Test
+    void shouldStillPreferSolicitorClaimantAccessOverProfessionalOrgFallback() {
+        assertThat(GroupAccessType.caseAccessGroupIdFor("SOLICITOR_PROFILE", PartyRole.CLAIMANT, "ORG123"))
+            .contains("PCS:PCS:solicitor-org-claimant-access:claimant-solicitor:ORG123");
     }
 }
