@@ -30,14 +30,14 @@ export const statementOfTruth = {
   theClaimantBelievesHiddenCheckBox: `The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.`,
   thereIsAProblemErrorMessageHeader: `There is a problem`,
   checkBoxGenericErrorMessageHeader: `Field is required`,
-  errorValidation: `NO`,//set it to `NO` before raising a PR
+  errorValidation: `YES`,//set it to `NO` before raising a PR
   errorValidationType: { one: `moneyField`, two: `textField`, three: `radioOptions`, four: `checkBox`, five: `moneyFieldAndRadioOption` },
   errorValidationField: {
     errorCheckBoxOption: [
       { type: `none`, input: ``, errMessage: `Field is required` }
     ],
     errorRadioOption: [
-      { type: `none`, input: ``, errMessage: `Field is required` }
+      { type: `none`, input: ``, isSOT: true, errInlineMessage: `Field is required`, errMessage: `Field is required` }
     ],
     errorTextField1: [
       { type: `moreThanMax`, input: 100, errMessage: `Full name exceeds the maximum length` },

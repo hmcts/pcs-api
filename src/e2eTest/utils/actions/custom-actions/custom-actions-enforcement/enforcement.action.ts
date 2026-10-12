@@ -510,9 +510,13 @@ export class EnforcementAction implements IAction {
 
             case 'radioOptions':
               await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errInlineMessage);
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
-              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              if ('isSOT' in validationArr) {
+                await performAction('clickRadioButton', { option: validationArr.option });
+              } else {
+                await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              }
               break;
 
             case 'moneyField':

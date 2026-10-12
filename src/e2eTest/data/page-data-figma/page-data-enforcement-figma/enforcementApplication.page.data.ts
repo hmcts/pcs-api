@@ -44,7 +44,7 @@ export const enforcementApplication = {
   errorValidationField: {
     errorRadioOption: [
         //updated the error message from `What do you want to apply for? is required`  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
-      { type: `none`, input: ``, errMessage: `Field is required` },
+      { type: `none`, input: ``, errInlineMessage: `Field is required`,errMessage:`What do you want to apply for? is required` },
     ],
   },
   yesRadioOptionHidden: `Yes`,

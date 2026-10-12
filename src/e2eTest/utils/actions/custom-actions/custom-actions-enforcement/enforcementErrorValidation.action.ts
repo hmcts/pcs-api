@@ -352,7 +352,14 @@ export class ErrorValidationAction implements IAction {
 
   private async errorValidationSOTWritPage(validationReq: string) {
     if (validationReq === 'YES') {
-      await performAction('clickRadioButton', {option:statementOfTruth.claimantRadioOption} );
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruth.errorValidationType.three,
+        inputArray: statementOfTruth.errorValidationField.errorRadioOption,
+        question: statementOfTruth.claimantRadioOption,
+        option: statementOfTruth.claimantRadioOption,
+        button: statementOfTruth.continueButton
+      });
       await performAction('inputErrorValidation', {
 
         validationType: statementOfTruth.errorValidationType.four,
