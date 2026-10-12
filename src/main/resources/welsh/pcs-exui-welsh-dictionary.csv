@@ -6413,3 +6413,849 @@ Your request was rate limited. Please wait a few seconds before retrying your do
 Your registered email address is:,Eich cyfeiriad e-bost cofrestredig yw:
 Energy performance certificate,Tystysgrif perfformiad ynni
 Current gas safety report,Adroddiad diogelwch nwy presennol
+"<p class=""govuk-body govuk-!-font-weight-bold"">
+ Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
+</p>","<p class=""govuk-body govuk-!-font-weight-bold"">
+  Cwblhawyd gan gynrychiolydd cyfreithiol y diffynnydd  (fel y’i diffinnir gan CPR 2.3(1))
+</p>"
+Defendant:,Y Diffynnydd:
+"---
+<h2 class=""govuk-heading-m"">Notifications</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-1"">
+ You’ll receive updates about your claim by email. For example, when a hearing
+ has been scheduled or when a document is ready to view.
+</p>","---
+<h2 class=""govuk-heading-m"">Hysbysiadau</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-1"">
+    Byddwch yn cael diweddariadau am eich hawliad drwy e-bost. Er enghraifft, pan fydd gwrandawiad
+    wedi'i drefnu neu pan fydd dogfen yn barod i'w gweld.
+</p>"
+Your My HMCTS registered email address is:,Eich cyfeiriad e-bost cofrestredig My HMCTS yw:
+Your organisation’s My HMCTS registered address is:,Cyfeiriad cofrestredig My HMCTS eich sefydliad yw:
+"---
+<p class=""govuk-body"" tabindex=""0"">
+ You can use this section to provide any information about the defendant’s circumstances.
+</p>
+<p class=""govuk-body"">
+You must give details if any of the following apply:
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ the defendant receives any social security benefits</li>
+ <li class=""govuk-!-font-size-19"">
+ payments are made on their behalf directly to you, under the Social Security Contributions
+ and Benefits Act 1992</li>
+</ul>
+</p>","---
+<p class=""govuk-body"" tabindex=""0"">
+ Gallwch ddefnyddio'r adran hon i roi unrhyw wybodaeth am amgylchiadau'r diffynnydd.
+</p>
+<p class=""govuk-body"">
+Rhaid i chi roi manylion os yw unrhyw un o'r canlynol yn berthnasol:
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+    mae'r diffynnydd yn cael unrhyw fudd-dal nawdd cymdeithasol</li>
+    <li class=""govuk-!-font-size-19"">
+    gwneir taliadau ar eu rhan yn uniongyrchol i chi, o dan Ddeddf Cyfraniadau a Budd-daliadau Nawdd Cymdeithasol 1992</li>
+</ul>
+</p>"
+"<p class=""govuk-body"">The ‘other parties’ are the other people or organisations named on the claim form.
+For example a tenant, landlord, housing association, or mortgage lender.</p>
+<p class=""govuk-body"">Every other party will need to agree to let you make this application, if they
+don’t agree, you may need to pay a higher fee.</p>
+<h2 class=""govuk-heading-m"">If the other parties do not agree</h2>","<p class=""govuk-body"">Y 'partïon eraill' yw'r bobl neu'r sefydliadau eraill a enwir ar y ffurflen hawlio.
+Er enghraifft, tenant, landlord, cymdeithas dai neu fenthyciwr morgeisi.</p>
+<p class=""govuk-body"">Bydd angen i bob parti arall gytuno i adael i chi wneud y cais hwn. Os na
+fyddant, mae'n bosib y bydd angen i chi dalu ffi uwch.</p>
+<h2 class=""govuk-heading-m"">Os na fydd y partïon eraill yn cytuno</h2>"
+"<p class=""govuk-body govuk-!-margin-bottom-1"">The application fee will increase to ${xui_genapp_MaxFee} if:</p>","<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd ffi'r cais yn cynyddu i ${xui_genapp_MaxFee} os:</p>"
+"<p class=""govuk-body govuk-!-margin-bottom-1"">The application fee will increase to £321 if:</p>","<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd ffi'r cais yn cynyddu i £321 os:</p>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">you have already told the other party that they are
+ making this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<h2 class=""govuk-heading-m"">What you need to do</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">You will need to upload evidence for the court, to show that:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">you have told the other parties, and</li>
+ <li class=""govuk-!-font-size-19"">they agreed to it</li>
+</ul>
+<p class=""govuk-body"">For example a copy of a letter, email or a signed consent order.
+ We will ask you to upload this evidence later in this application. </p>
+<p class=""govuk-body"">If you were not able to contact the other parties, or you attempted to contact them
+but the other party did not respond, select ‘No’.</p>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">ydych eisoes wedi dweud wrth y parti arall eu bod yn
+   gwneud y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">eich bod wedi dweud wrth y partïon eraill, a'u bod</li>
+  <li class=""govuk-!-font-size-19"">wedi cytuno iddo</li>
+</ul>
+<p class=""govuk-body"">Er enghraifft copi o lythyr, e-bost neu orchymyn cydsynio wedi'i lofnodi.
+ Byddwn yn gofyn i chi uwchlwytho'r dystiolaeth hon yn hwyrach ymlaen yn y cais hwn. </p>
+<p class=""govuk-body"">Os nad oeddech chi'n gallu cysylltu â'r partïon eraill, neu os gwnaethoch geisio cysylltu â nhw
+ond na wnaeth y parti arall ymateb, dewiswch 'Na'.</p>"
+"<p class=""govuk-body"">
+You can ask the court to adjourn (delay) the court hearing (move it to a later date or time).
+This means that you can ask to change the date and time when the hearing is due to take place.
+</p>
+
+<p class=""govuk-body"">
+You will need to provide a good reason to delay the hearing, and you may not be successful.
+</p>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">why you are asking the court to delay the hearing</li>
+ <li class=""govuk-!-font-size-19"">when you are proposing the hearing be moved to (if applicable)</li>
+</ul>
+<p class=""govuk-body"">You may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How long it takes</h2>
+<p class=""govuk-body"">Your application will be assessed on an urgency basis and will be considered
+by a judge before the hearing date.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>
+<p class=""govuk-body"">It’s free to apply if the court hearing is at least 14 days away.</p>","<p class=""govuk-body"">
+Gallwch ofyn i'r llys ohirio (oedi) y gwrandawiad llys (ei symud i ddyddiad neu amser diweddarach).
+Mae hyn yn golygu y gallwch ofyn i newid dyddiad ac amser y gwrandawiad.
+</p>
+
+<p class=""govuk-body"">
+Bydd angen i chi roi rheswm da dros ohirio'r gwrandawiad, ac efallai na fyddwch yn llwyddiannus.
+</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">pam eich bod yn gofyn i'r llys ohirio'r gwrandawiad</li>
+  <li class=""govuk-!-font-size-19"">i pryd ydych chi'n cynnig bod y gwrandawiad yn cael ei symud (os yn berthnasol)</li>
+</ul>
+<p class=""govuk-body"">Efallai y bydd angen i chi ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Pa mor hir fydd yn cymryd</h2>
+<p class=""govuk-body"">Bydd eich cais yn cael ei asesu ar pa mor frys ydyw a bydd yn cael ei ystyried
+gan farnwr cyn dyddiad y gwrandawiad.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>
+<p class=""govuk-body"">Gellir gwneud cais am ddim os yw'r gwrandawiad llys o leiaf 14 diwrnod i ffwrdd.</p>"
+"<p class=""govuk-body"">If your court hearing is sooner, you will need to
+pay ${xui_genapp_StandardFee}.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>","<p class=""govuk-body"">Os yw eich gwrandawiad llys yn gynt, byddwch angen
+talu ${xui_genapp_StandardFee}.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i ${xui_genapp_MaxFee} os:</p>"
+"<p class=""govuk-body"">If your court hearing is sooner, you will need to
+pay £126.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to £321 if:</p>","<p class=""govuk-body"">Os yw eich gwrandawiad llys yn gynt, byddwch angen
+talu £126.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i £321 os:</p>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+<h2 class=""govuk-heading-m"">Apply by post</h2>
+<p class=""govuk-body"">You cannot apply to suspend (stop or delay) the eviction online.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">You must apply by post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
+</ul>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">ydych eisoes wedi dweud wrth y parti arall eich bod yn gwneud
+  y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
+<p class=""govuk-body"">Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Rhaid i chi wneud cais drwy'r post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+    </li>
+    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+        rel=""noopener noreferrer"" class=""govuk-link"">chwiliwch am fanylion eich llys lleol</a>
+    </li>
+    <li class=""govuk-!-font-size-19"">
+        anfonwch y ffurflen wedi’i llenwi i’r llys
+    </li>
+</ul>"
+"<p class=""govuk-body"">
+You can ask the court to set aside (cancel) an order if you have a good reason.
+</p>
+
+<p class=""govuk-body"">
+You will need to provide a good reason to ask the court to set aside the order, and you may not be successful.
+</p>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">why you are asking the court to set aside the original decision</li>
+</ul>
+<p class=""govuk-body"">You may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>","<p class=""govuk-body"">
+Gallwch ofyn i'r llys roi gorchymyn o'r naill du (ei ganslo) os oes gennych reswm da.
+</p>
+
+<p class=""govuk-body"">
+Bydd angen i chi roi rheswm da dros ofyn i'r llys roi'r gorchymyn o'r naill du, ac efallai na fyddwch yn llwyddiannus.
+</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">pam eich bod yn gofyn i'r llys roi'r penderfyniad gwreiddiol o'r naill du</li>
+</ul>
+<p class=""govuk-body"">Efallai y bydd angen i chi ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
+"<p class=""govuk-body govuk-!-margin-bottom-1"">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
+increase to ${xui_genapp_MaxFee} if:</p>","<p class=""govuk-body govuk-!-margin-bottom-1"">Fel arfer mae'n costio ${xui_genapp_StandardFee} i wneud cais. Bydd y ffi yn
+cynyddu i ${xui_genapp_MaxFee} os:</p>"
+"<p class=""govuk-body govuk-!-margin-bottom-1"">It usually costs £126 to apply. The fee will
+increase to £321 if:</p>","<p class=""govuk-body govuk-!-margin-bottom-1"">Fel arfer mae'n costio £126 i wneud cais. Bydd y ffi yn
+cynyddu i £321 os:</p>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<h2 class=""govuk-heading-m"">Apply by post</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
+</ul>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">ydych eisoes wedi dweud wrth y parti arall eich bod yn gwneud
+  y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Os byddai'n well gennych ymateb drwy'r post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+    </li>
+    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+        rel=""noopener noreferrer"" class=""govuk-link"">chwiliwch am fanylion eich llys lleol</a>
+    </li>
+    <li class=""govuk-!-font-size-19"">
+        anfonwch y ffurflen wedi’i llenwi i’r llys
+    </li>
+</ul>"
+"<p class=""govuk-body"">
+You can ask the court to make a decision at any point during your case.
+This is called an application.
+</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">For example, you can use this to:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+<li class=""govuk-!-font-size-19"">add someone as an extra party to your claim</li>
+<li class=""govuk-!-font-size-19"">ask the court not to punish you for
+ breaching an order (relief from sanctions)</li>
+<li class=""govuk-!-font-size-19"">serve a claim outside England & Wales</li>
+<li class=""govuk-!-font-size-19"">transfer to the High Court for enforcement by a writ of possession</li>
+</ul>
+
+<div class=""govuk-warning-text govuk-!-margin-bottom-1"">
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ You cannot apply to suspend (stop or delay) the eviction online.
+ </strong>
+</div>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">To apply by post:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+ class=""govuk-link"">read the guidance explaining how to suspend an eviction
+ (GOV.UK, opens in a new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+</ul>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">what you want the court to do</li>
+ <li class=""govuk-!-font-size-19"">why you are asking the court to do it, for example any evidence
+ you have to support your application</li>
+</ul>
+
+<p class=""govuk-body"">You may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>","<p class=""govuk-body"">
+Gallwch ofyn i'r llys wneud penderfyniad ar unrhyw bwynt yn ystod eich achos.
+Gelwir hyn yn gais.
+</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Er enghraifft, gallwch ddefnyddio hwn i:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+<li class=""govuk-!-font-size-19"">ychwanegu rhywun fel parti ychwanegol i'ch hawliad</li>
+<li class=""govuk-!-font-size-19"">gofyn i'r llys beidio â'ch cosbi am
+   dorri gorchymyn (rhyddhad o sancsiynau)</li>
+<li class=""govuk-!-font-size-19"">cyflwyno hawliad y tu allan i Gymru a Lloegr</li>
+<li class=""govuk-!-font-size-19"">trosglwyddo'r achos i'r Uchel Lys ar gyfer gorfodi drwy writ meddiant</li>
+</ul>
+
+<div class=""govuk-warning-text govuk-!-margin-bottom-1"">
+  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+  <strong class=""govuk-warning-text__text"">
+    <span class=""govuk-visually-hidden"">Rhybudd</span>
+    Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.
+  </strong>
+</div>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">I wneud cais drwy'r post:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+        class=""govuk-link"">darllenwch y canllawiau yn egluro sut i ohirio troi allan
+         (GOV.UK,  yn agor mewn tab newydd)</a>
+    </li>
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+    </li>
+</ul>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">beth rydych eisiau i’r llys ei wneud</li>
+  <li class=""govuk-!-font-size-19"">pam ydych chi'n gofyn i'r llys ei wneud, er enghraifft unrhyw dystiolaeth
+  sydd gennych i gefnogi eich cais</li>
+</ul>
+
+<p class=""govuk-body"">Efallai y bydd angen i chi ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
+"<p class=""govuk-body"">It usually costs ${xui_genapp_StandardFee} to apply.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>","<p class=""govuk-body"">Fel arfer mae'n costio ${xui_genapp_StandardFee} i wneud cais.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i ${xui_genapp_MaxFee} os:</p>"
+"<p class=""govuk-body"">It usually costs £126 to apply.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to £321 if:</p>","<p class=""govuk-body"">Fel arfer mae'n costio £126 i wneud cais.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i £321 os:</p>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">The defendant may be able to get help paying the fee
+if they (one or more of the following):</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">are on certain benefits</li>
+ <li class=""govuk-!-font-size-19"">have little or no savings</li>
+ <li class=""govuk-!-font-size-19"">have low income</li>
+</ul>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">bydd y diffynnydd eisoes wedi dweud wrth y parti arall eu bod yn gwneud
+  y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">Efallai gall y diffynnydd gael help i dalu'r ffi
+os ydynt (os yw un neu fwy o’r canlynol yn berthnasol):</p>
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">yn cael budd-daliadau penodol</li>
+    <li class=""govuk-!-font-size-19"">gyda dim ond ychydig neu dim cynilion</li>
+    <li class=""govuk-!-font-size-19"">ar incwm isel</li>
+</ul>"
+"<p class=""govuk-body"">The ‘other party’ is the other side involved in the defendant’s case.
+ For example their landlord, housing association, or mortgage lender.</p>
+<p class=""govuk-body"">Every other party will need to agree to let them make this application, if they
+don’t agree, the defendant may need to pay a higher fee.</p>
+<h2 class=""govuk-heading-m"">If the other parties do not agree</h2>","<p class=""govuk-body"">Y 'parti arall' yw'r ochr arall sy'n ymwneud ag achos y diffynnydd.
+ Er enghraifft, eu landlord, cymdeithas dai neu fenthyciwr morgeisi.</p>
+<p class=""govuk-body"">Bydd angen i bob parti arall gytuno i adael iddynt wneud y cais hwn. Os na
+fyddant yn cytuno, mae'n bosib y bydd rhaid i'r diffynnydd dalu ffi uwch.</p>
+<h2 class=""govuk-heading-m"">Os na fydd y partïon eraill yn cytuno</h2>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are
+ making this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<h2 class=""govuk-heading-m"">What you need to do</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">You will need to upload evidence for the court, to show that:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">the defendant has told the other parties, and</li>
+ <li class=""govuk-!-font-size-19"">they agreed to it</li>
+</ul>
+<p class=""govuk-body""> For example a copy of a letter, email or a signed consent order.
+ We will ask you to upload this evidence later in this application. </p>
+<p class=""govuk-body"">If the defendant was not able to contact the other parties, or they attempted to
+ contact them but the other party did not respond, select ‘No’.</p>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">bydd y diffynnydd eisoes wedi dweud wrth y parti arall eu bod yn
+   gwneud y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">bod y diffynnydd wedi dweud wrth y partïon eraill, a'u bod</li>
+  <li class=""govuk-!-font-size-19"">wedi cytuno iddo</li>
+</ul>
+<p class=""govuk-body""> Er enghraifft copi o lythyr, e-bost neu orchymyn cydsynio wedi'i lofnodi.
+ Byddwn yn gofyn i chi uwchlwytho'r dystiolaeth hon yn hwyrach ymlaen yn y cais hwn. </p>
+<p class=""govuk-body"">Os nad oedd y diffynnydd yn gallu cysylltu â'r partïon eraill, neu os gwnaethant geisio
+ cysylltu â nhw ond na wnaeth y parti arall ymateb, dewiswch 'Na'.</p>"
+"<p class=""govuk-body"">
+You can ask the court to adjourn (delay) the defendant’s court hearing (move it to a later date or time).
+This means that you can ask to change the date and time when the hearing is due to take place.
+</p>
+
+<p class=""govuk-body"">
+You will need to show that the defendant has a good reason to delay the hearing, and they may not be successful.
+</p>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
+ Fees (help to pay court fees)</li>
+ <li class=""govuk-!-font-size-19"">why the defendant is asking the court to delay the hearing</li>
+ <li class=""govuk-!-font-size-19"">when they are proposing the hearing be moved to (if applicable)</li>
+</ul>
+<p class=""govuk-body"">They may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How long it takes</h2>
+<p class=""govuk-body"">Your application will be assessed on an urgency basis and will be considered
+by a judge before the hearing date.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>
+<p class=""govuk-body"">It’s free to apply if the defendant’s court hearing is at least 14 days away.</p>","<p class=""govuk-body"">
+Gallwch ofyn i'r llys ohirio (oedi) gwrandawiad llys y diffynnydd (ei symud i ddyddiad neu amser diweddarach).
+Mae hyn yn golygu y gallwch ofyn i newid dyddiad ac amser y gwrandawiad.
+</p>
+
+<p class=""govuk-body"">
+Bydd angen i chi ddangos bod gan y diffynnydd reswm da dros ohirio'r gwrandawiad, ac efallai na fyddant yn llwyddiannus.
+</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">os gall y diffynnydd dalu ffi'r llys, neu os ydynt angen Help i Dalu
+ Ffioedd (help i dalu ffioedd llys)</li>
+ <li class=""govuk-!-font-size-19"">pam fod y diffynnydd yn gofyn i'r llys ohirio'r gwrandawiad</li>
+ <li class=""govuk-!-font-size-19"">i pryd maent yn cynnig bod y gwrandawiad yn cael ei symud (os yn berthnasol)</li>
+</ul>
+<p class=""govuk-body"">Efallai y bydd angen iddynt ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Pa mor hir fydd yn cymryd</h2>
+<p class=""govuk-body"">Bydd eich cais yn cael ei asesu ar pa mor frys ydyw a bydd yn cael ei ystyried
+gan farnwr cyn dyddiad y gwrandawiad.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>
+<p class=""govuk-body"">Gellir gwneud cais am ddim os yw gwrandawiad llys y diffynnydd o leiaf 14 diwrnod i ffwrdd.</p>"
+"<p class=""govuk-body"">If your court hearing is sooner, they will need to
+pay ${xui_genapp_StandardFee}.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>","<p class=""govuk-body"">Os yw eich gwrandawiad llys yn gynt, byddant angen
+talu ${xui_genapp_StandardFee}.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i ${xui_genapp_MaxFee} os:</p>"
+"<p class=""govuk-body"">If your court hearing is sooner, they will need to
+pay £126.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to £321 if:</p>","<p class=""govuk-body"">Os yw eich gwrandawiad llys yn gynt, byddant angen
+talu £126.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Bydd y ffi yn cynyddu i £321 os:</p>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<h2 class=""govuk-heading-m"">If you are worried about the defendant paying fees</h2>
+<p class=""govuk-body"">They may be eligible to apply for
+<a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank"" rel=""noopener noreferrer""
+class=""govuk-link"">help with fees (GOV.UK, opens in a new tab)</a>.
+We will ask you if they want to do this when you apply.
+<h2 class=""govuk-heading-m"">Apply by post</h2>
+<p class=""govuk-body"">You cannot apply to suspend (stop or delay) the eviction online.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">You must apply by post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
+</ul>","<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">bydd y diffynnydd eisoes wedi dweud wrth y parti arall eu bod yn gwneud
+ y cais hwn, ac</li>
+ <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+ (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
+<p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
+<a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank"" rel=""noopener noreferrer""
+class=""govuk-link"">Help i Dalu Ffioedd (GOV.UK, yn agor mewn tab newydd)</a>.
+Byddwn yn gofyn i chi os ydynt eisiau gwneud hyn pan fyddwch yn gwneud cais.
+<h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
+<p class=""govuk-body"">Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Rhaid i chi wneud cais drwy'r post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">chwiliwch am fanylion llys lleol y diffynnydd</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ anfonwch y ffurflen wedi’i llenwi i’r llys
+ </li>
+</ul>"
+"<p class=""govuk-body"">
+You can ask the court to set aside (cancel) an order if the defendant has a good reason. For example, if they
+were unable to attend the original court hearing, because they were ill.
+</p>
+
+<p class=""govuk-body"">
+You will need to show that the defendant has a good reason to ask the court to set aside the order, and
+they may not be successful.
+</p>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
+ Fees (help to pay court fees)</li>
+ <li class=""govuk-!-font-size-19"">why the defendant is asking the court to set aside the original decision</li>
+</ul>
+<p class=""govuk-body"">They may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>","<p class=""govuk-body"">
+Gallwch ofyn i'r llys roi orchymyn o'r naill du (canslo) os oes gan y diffynnydd reswm da. Er enghraifft, os nad
+oeddent yn gallu mynychu'r gwrandawiad llys gwreiddiol, oherwydd eu bod yn sâl.
+</p>
+
+<p class=""govuk-body"">
+Byddwch angen dangos bod gan y diffynnydd reswm da dros ofyn i'r llys roi'r gorchymyn o'r naill du, ac
+efallai na fyddant yn llwyddiannus.
+</p>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">os gall y diffynnydd dalu ffi'r llys, neu os ydynt angen Help i Dalu
+   Ffioedd (help i dalu ffioedd llys)</li>
+  <li class=""govuk-!-font-size-19"">pam fod y diffynnydd yn gofyn i'r llys roi'r penderfyniad gwreiddiol o'r naill du</li>
+</ul>
+<p class=""govuk-body"">Efallai y bydd angen iddynt ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
+"<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
+</ul>
+<p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
+
+<h2 class=""govuk-heading-m"">If you are worried about the defendant paying fees</h2>
+<p class=""govuk-body"">They may be eligible to apply for
+<a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank"" rel=""noopener noreferrer""
+class=""govuk-link"">help with fees (GOV.UK, opens in a new tab)</a>.
+We will ask you if they want to do this when you apply.
+
+<h2 class=""govuk-heading-m"">Apply by post</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
+</ul>","<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">bydd y diffynnydd eisoes wedi dweud wrth y parti arall eu bod yn gwneud
+  y cais hwn, ac</li>
+  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
+  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
+</ul>
+<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+
+<h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
+<p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
+<a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank"" rel=""noopener noreferrer""
+class=""govuk-link"">Help i Dalu Ffioedd (GOV.UK, yn agor mewn tab newydd)</a>.
+Byddwn yn gofyn i chi os ydynt eisiau gwneud hyn pan fyddwch yn gwneud cais.
+
+<h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Os byddai'n well gennych ymateb drwy'r post:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+    </li>
+    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+        rel=""noopener noreferrer"" class=""govuk-link"">chwiliwch am fanylion llys lleol y diffynnydd</a>
+    </li>
+    <li class=""govuk-!-font-size-19"">
+        anfonwch y ffurflen wedi’i llenwi i’r llys
+    </li>
+</ul>"
+"<p class=""govuk-body"">
+The defendant can ask the court to make a decision at any point during their case.
+This is called an application.
+</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">For example, they can use this to:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+<li class=""govuk-!-font-size-19"">add someone as an extra party to their claim</li>
+<li class=""govuk-!-font-size-19"">ask the court not to punish them for
+ breaching an order (relief from sanctions)</li>
+<li class=""govuk-!-font-size-19"">serve a claim outside England & Wales</li>
+<li class=""govuk-!-font-size-19"">transfer to the High Court for enforcement by a writ of possession</li>
+</ul>
+
+<div class=""govuk-warning-text govuk-!-margin-bottom-1"">
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ You cannot apply to suspend (stop or delay) the eviction online.
+ </strong>
+</div>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">To apply by post:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+ class=""govuk-link"">read the guidance explaining how to suspend an eviction
+ (GOV.UK, opens in a new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+</ul>
+
+<h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+You’ll need to know:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
+ Fees (help to pay court fees)</li>
+ <li class=""govuk-!-font-size-19"">what they want the court to do</li>
+ <li class=""govuk-!-font-size-19"">why they are asking the court to do it, for example any evidence
+ they have to support their application</li>
+</ul>
+
+<p class=""govuk-body"">They may need to provide some evidence for the court.</p>
+
+<h2 class=""govuk-heading-m"">Before you start</h2>
+<p class=""govuk-body"">Make sure that you have all of the evidence you need to apply.</p>
+<p class=""govuk-body"">Once you start the application, you cannot save your progress as a draft.</p>
+<p class=""govuk-body"">This means that if you leave the application before submitting, we will not save your
+answers so that you can return to them later.</p>
+
+<h2 class=""govuk-heading-m"">How much it will cost</h2>","<p class=""govuk-body"">
+Gall y diffynnydd ofyn i'r llys wneud penderfyniad ar unrhyw bwynt yn ystod eu hachos.
+Gelwir hyn yn gais.
+</p>
+<p class=""govuk-body govuk-!-margin-bottom-1"">Er enghraifft, gallant ddefnyddio hwn i:</p>
+
+<ul class=""govuk-list govuk-list--bullet"">
+<li class=""govuk-!-font-size-19"">ychwanegu rhywun fel parti ychwanegol i'w hawliad</li>
+<li class=""govuk-!-font-size-19"">gofyn i'r llys beidio eu cosbi am
+   dorri gorchymyn (rhyddhad o sancsiynau)</li>
+<li class=""govuk-!-font-size-19"">cyflwyno hawliad y tu allan i Gymru a Lloegr</li>
+<li class=""govuk-!-font-size-19"">trosglwyddo'r achos i'r Uchel Lys ar gyfer gorfodi drwy writ meddiant</li>
+</ul>
+
+<div class=""govuk-warning-text govuk-!-margin-bottom-1"">
+  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+  <strong class=""govuk-warning-text__text"">
+    <span class=""govuk-visually-hidden"">Rhybudd</span>
+    Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.
+  </strong>
+</div>
+
+<p class=""govuk-body govuk-!-margin-bottom-1"">I wneud cais drwy'r post:</p>
+<ul class=""govuk-list govuk-list--bullet"">
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+        class=""govuk-link"">darllenwch y canllawiau yn egluro sut i ohirio troi allan
+         (GOV.UK,  yn agor mewn tab newydd)</a>
+    </li>
+    <li class=""govuk-!-font-size-19"">
+        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">llenwch ffurflen N244</a>
+    </li>
+</ul>
+
+<h2 class=""govuk-heading-m"">Beth sydd ei angen arnoch i wneud cais</h2>
+<p class=""govuk-body govuk-!-margin-bottom-1"">
+Bydd arnoch angen gwybod:
+</p>
+<ul class=""govuk-list govuk-list--bullet"">
+  <li class=""govuk-!-font-size-19"">os gall y diffynnydd dalu ffi'r llys, neu os ydynt angen Help i Dalu
+   Ffioedd (help i dalu ffioedd llys)</li>
+  <li class=""govuk-!-font-size-19"">beth maent eisiau i’r llys ei wneud</li>
+  <li class=""govuk-!-font-size-19"">pam maent yn gofyn i'r llys ei wneud, er enghraifft unrhyw dystiolaeth
+  sydd ganddynt i gefnogi eu cais</li>
+</ul>
+
+<p class=""govuk-body"">Efallai y bydd angen iddynt ddarparu tystiolaeth i'r llys.</p>
+
+<h2 class=""govuk-heading-m"">Cyn ichi ddechrau</h2>
+<p class=""govuk-body"">Gwnewch yn siŵr fod gennych yr holl dystiolaeth rydych ei hangen i wneud cais.</p>
+<p class=""govuk-body"">Unwaith y byddwch wedi dechrau'r cais, ni allwch ei gadw fel drafft.</p>
+<p class=""govuk-body"">Mae hyn yn golygu os byddwch yn gadael y cais cyn ei gyflwyno, ni fyddwn yn cadw eich
+atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
+
+<h2 class=""govuk-heading-m"">Beth fydd y gost</h2>"
