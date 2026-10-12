@@ -29,5 +29,5 @@ export const caseSummary = {
   enterAGenApp: 'Enter a general application',
   manageParties: 'Manage parties',
   manageHearing: 'Manage hearing',
-  deleteDraftApplication: 'Delete draft application'
+  deleteDraftApplicationEvent: 'Delete draft application'
 }
