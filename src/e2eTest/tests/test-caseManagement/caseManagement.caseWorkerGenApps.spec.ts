@@ -3,7 +3,7 @@ import { initializeExecutor } from '@utils/controller';
 import test from '@playwright/test';
 import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { caseSummary, user } from '@data/page-data';
+import { caseSummary, home, user } from '@data/page-data';
 import { dismissCookieBanner } from '@config/cookie-banner';
 import { initializeCMExecutor, performAction, performValidation } from '@utils/controller-caseManagement';
 import { allPartyDetails } from '@utils/actions/custom-actions/custom-actions-caseManagement';
@@ -274,13 +274,14 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
   });
 
   test('Case management - As a Case Worker I want to Enter a General application Details for SUSPEND @CM', async () => {
-    let fileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
+    let uploadFileName = enterGenAppUploadGeneralApplication.uploadDocHiddenOption[2];
+    let fileName = (enterGenAppUploadGeneralApplication.uploadDocHiddenOption)[4].replace(/\s+-\s+(?:Claimant|Defendant)\s+\d+(?=\.[^.]+$|$)/i, '')
     let date = CaseManagementCommonUtils.getRandomDate(enterGenappApplication.dateTypeHiddenUserInput);
-    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[2];
+    let appType = CaseManagementCommonUtils.getGenApplicationType(defendantUserDetails.length)[0];
     await performAction('selectAnEvent', { eventType: caseSummary.enterAGenApp });
     await performValidation('mainHeader', enterGenappApplication.mainHeader);
     await performAction('enterApplicationDetails', {
-      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[2],
+      question1: enterGenappApplication.whichPartyMadeAppQuestion, option1: allPartyDetails[0],
       question2: enterGenappApplication.typeOfAppQuestion, option2: enterGenappApplication.suspendRadioOption,
       label: enterGenappApplication.whichCategoriesHiddenTextLabel,
       input: enterGenappApplication.whichCategoriesHiddenTextInput,
@@ -299,7 +300,7 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
     });
     await performAction('uploadADocument', {
       label: enterGenAppUploadGeneralApplication.uploadADocumentParagraph,
-      file: fileName
+      file: uploadFileName
     });
     await performAction('reTryOnCallBackError', enterGenAppUploadGeneralApplication.continueButton, enterGenAppUploadRelatedEvidence.mainHeader);
     await performAction('uploadRelativeEvidence', {
@@ -309,9 +310,10 @@ test.describe('Case management - As a Case Worker i want to test as all Four Gen
     await performAction('clickButton', genAppsCheckYourAnswers.submitButton);
     await performAction('verifyGenAppConfirm');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Enter a general application');
+    await performAction('clickTab', home.caseFileView);
+    await performAction('validateCaseFileViewFolders', home.caseFileFolders);
     await performAction('validateCaseFileViewIndividualFolder', {
       folder: 'Applications',
-      submitPayload: submitCaseApiData.submitCasePayloadCaseFileView(),
       caseWorkerUpload: CaseManagementCommonUtils.renameDocument(fileName, '', appType)
     });
   });

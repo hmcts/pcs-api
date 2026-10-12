@@ -1626,7 +1626,7 @@ export class CreateCaseAction implements IAction {
   public async validateCaseFileViewIndividualFolder(page: Page ,caseFile: actionRecord){
 
     const folderName = caseFile.folder as string;
-    let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    let submitPayLoad = caseFile.submitPayload  as Record<string, any> | undefined;
     let userInputFiles:string[]= [];
     const file =
       caseFile.caseWorkerUpload ??
@@ -1635,13 +1635,13 @@ export class CreateCaseAction implements IAction {
 
     switch (folderName) {
       case 'Property documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.notice_Documents);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.rentArrears_StatementDocuments);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_EnergyPerformance);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_GasSafetyReport);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.walesDocs_ElectricalInstallation);
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.licenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.tenancy_TenancyLicenceDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.notice_Documents);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.rentArrears_StatementDocuments);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_EnergyPerformance);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_GasSafetyReport);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.walesDocs_ElectricalInstallation);
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.licenceDocuments);
         if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
@@ -1657,11 +1657,11 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Statements of case':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Notice for service out of the jurisdiction');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Notice for service out of the jurisdiction');
         break;
 
       case 'Evidence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Inspection or report');
         if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
@@ -1675,19 +1675,19 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Correspondence':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Legal aid certificate');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Legal aid certificate');
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
         if (file) {
           userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
-        if(caseFile.genApp){
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
+        if(submitPayLoad){
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.xui_genapp_UploadedDocuments, 'All Files');
         userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
         }
         if (file) {
