@@ -28,7 +28,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Enforcement - Delete Draft Application]', () => {
+test.describe('[Enforcement - Delete Draft Application] @enforcement @rerun', () => {
   test('delete draft application',async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
