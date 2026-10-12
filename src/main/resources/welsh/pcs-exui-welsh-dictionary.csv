@@ -86,50 +86,6 @@ Add underlessee or mortgagee,Ychwanegu is-brydleswr neu deilydd morgais
   lle gan y gorchymyn israddio.
 </p>
 "
-"---
-<p class=""govuk-body govuk-!-margin-bottom-1"" tabindex=""0"">
-  If a judge decides that possession is not reasonable at this time, they may instead decide
-  to order a demotion of tenancy (demotion order) or a suspension of the defendants’ right
-  to buy (suspension order), if they’re not already in place.
-</p>
-
-<h2 class=""govuk-heading-l govuk-!-margin-top-1"" tabindex=""0"">Suspension of right to buy</h2>
-
-<p class=""govuk-body govuk-!-margin-bottom-1"" tabindex=""0"">
-  A suspension order means that the defendants will not have a right to buy the premises
-  during the suspension.
-</p>
-
-<h2 class=""govuk-heading-l govuk-!-margin-top-1"" tabindex=""0"">Demotion of tenancy</h2>
-
-<p class=""govuk-body"" tabindex=""0"">
-  A demotion order means that the defendants’ current tenancy will be replaced with a
-  demoted tenancy. During this period (usually 12 months) they will lose some rights they
-  currently have. The claimant is able to propose a new set of terms that will be put in
-  place by the demotion order.
-</p>","---
-<p class=""govuk-body govuk-!-margin-bottom-1"" tabindex=""0"">
-  Os bydd barnwr yn penderfynu nad yw meddiannu yn rhesymol ar hyn o bryd, gallant yn hytrach benderfynu
-  gorchymyn tenantiaeth isradd (gorchymyn israddio) neu atal hawl y diffynnydd
-  i brynu (gorchymyn atal) os nad ydynt yn bodoli'n barod.
-</p>
-
-<h2 class=""govuk-heading-l govuk-!-margin-top-1"" tabindex=""0"">Atal yr hawl i brynu</h2>
-
-<p class=""govuk-body govuk-!-margin-bottom-1"" tabindex=""0"">
-  Mae gorchymyn atal yn golygu na fydd gan y diffynnydd hawl i brynu'r eiddo
-  yn ystod cyfnod y gorchymyn atal.
-</p>
-
-<h2 class=""govuk-heading-l govuk-!-margin-top-1"" tabindex=""0"">Tenantiaeth isradd</h2>
-
-<p class=""govuk-body"" tabindex=""0"">
-  Mae gorchymyn israddio yn golygu y bydd tenantiaeth gyfredol y diffynnydd yn cael ei newid i fod yn
-  denantiaeth isradd. Yn ystod y cyfnod hwn (fel arfer 12 mis) byddant yn colli rhai hawliau
-  sydd ganddynt ar hyn o bryd. Mae'r hawlydd yn gallu cynnig set newydd o delerau a roddir mewn
-  lle gan y gorchymyn israddio.
-</p>
-"
 Give details about your reasons for claiming possession (Antisocial behaviour),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Ymddygiad gwrthgymdeithasol) 
 Give details about your reasons for claiming possession (Antisocial behaviour (ground 7A)),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Ymddygiad gwrthgymdeithasol (sail 7A))
 Are you planning to make an application at the same time as your claim?,A ydych yn bwriadu gwneud cais yr un pryd â'ch hawliad? 
@@ -276,47 +232,6 @@ Give details about your reasons for claiming possession (Charitable landlords (g
 </div>
 </section>
 "
-"---
-<section tabindex=""0"">
-<p class=""govuk-body"">
-    You may have already served the defendants with notice of your intention to begin
-    possession proceedings. Notice periods vary between grounds and some do not
-    require any notice to be served. You should read the
-    <a href=""https://www.gov.uk/government/publications/understanding-the-possession-action-process-guidance-for-landlords-and-tenants/understanding-the-possession-action-process-a-guide-for-private-landlords-in-england-and-wales""
-     rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""> guidance on
-    possession notice periods (opens in new tab)</a>
-    to make sure your claim is valid.
-</p>
-
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-          A judge might not grant a possession order if you have not
-          followed the correct notice procedure
-  </strong>
-</div>
-</section>","---
-<section tabindex=""0"">B70:B72<p class=""govuk-body"">
-    Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
-    achos meddiannu. Mae cyfnodau hysbysu yn amrywio gan ddibynnu ar y seiliau, ac nid yw rhai yn
-    gofyn bod hysbysiad yn cael ei gyflwyno o gwbl. Dylech ddarllen y
-    <a href=""https://www.gov.uk/government/publications/understanding-the-possession-action-process-guidance-for-landlords-and-tenants/understanding-the-possession-action-process-a-guide-for-private-landlords-in-england-and-wales""
-     rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""> canllawiau ar
-    gyfnodau hysbysu meddiannu (yn agor mewn tab newydd)</a>
-    i sicrhau bod eich hawliad yn ddilys.
-</p>
-
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Rhybudd</span>
-          Efallai na fydd barnwr yn caniatáu gorchymyn meddiannu os nad ydych
-          wedi dilyn y drefn hysbysu gywir
-  </strong>
-</div>
-</section>
-"
 What do you want to apply for?,Beth ydych chi eisiau gwneud cais amdano?
 Do your grounds for possession include rent arrears?,A yw eich seiliau dros feddiannu yn cynnwys ôl-ddyledion rhent?,true,,
 Enter phone number,Nodwch rif ffôn
@@ -366,24 +281,6 @@ What would you like to do next?,Beth hoffech ei wneud nesaf?
 "----
 <h2 class=""govuk-heading-m"">Service address</h2>
 <p class=""govuk-body-m"">
-    Court documents like orders and notices will be sent by post to the address registered with
-    My HMCTS.
-</p>
-<p class=""govuk-body-m"">
-    You can change this service address if, for example, you work in a different address with My HMCTS.
-</p>","----
-<h2 class=""govuk-heading-m"">Cyfeiriad cyflwyno</h2>
-<p class=""govuk-body-m"">
-        Caiff dogfennau llys fel gorchmynion a hysbysiadau eu hanfon drwy'r post i'r cyfeiriad cofrestredig gyda
-    My HMCTS.
-</p>
-<p class=""govuk-body-m"">
-    Gallwch newid y cyfeiriad cyflwyno hwn os, er enghraifft, rydych chi’n gweithio mewn cyfeiriad gwahanol i'r un sydd wedi'i gofrestru gyda My HMCTS.
-</p>
-"
-"----
-<h2 class=""govuk-heading-m"">Service address</h2>
-<p class=""govuk-body-m"">
  Court documents like orders and notices will be sent by post to the address registered with
  My HMCTS.
 </p>
@@ -397,22 +294,6 @@ What would you like to do next?,Beth hoffech ei wneud nesaf?
 </p>
 <p class=""govuk-body-m"">
     Gallwch newid y cyfeiriad cyflwyno hwn os, er enghraifft, rydych chi’n gweithio mewn cyfeiriad gwahanol i'r un sydd wedi'i gofrestru gyda My HMCTS.
-</p>
-"
-"----
-<h2 class=""govuk-heading-m"">Service address</h2>
-<p class=""govuk-body-m"">
-    Court documents like orders and notices will be sent by post to the address registered with
-    My HMCTS.<br><br>
-    You can change this service address if, for example, you work in a different office from
-    the address registered with My HMCTS.
-</p>","----
-<h2 class=""govuk-heading-m"">Cyfeiriad cyflwyno</h2>
-<p class=""govuk-body-m"">
-    Caiff dogfennau llys fel gorchmynion a hysbysiadau eu hanfon drwy'r post i'r cyfeiriad cofrestredig gyda
-    My HMCTS.<br><br>
-    Gallwch newid y cyfeiriad cyflwyno hwn os, er enghraifft, rydych chi’n gweithio mewn swyddfa wahanol i’r
-    cyfeiriad sydd wedi’i gofrestru gyda My HMCTS.
 </p>
 "
 "----
@@ -455,30 +336,6 @@ What would you like to do next?,Beth hoffech ei wneud nesaf?
 <p class=""govuk-body-s govuk-!-margin-top-1"">
     ${formattedClaimantContactAddress}
 </p>"
-"---
-<h2 class=""govuk-heading-m"">Notifications</h2>
-<p class=""govuk-body-m govuk-!-margin-bottom-1"">
-    You’ll receive updates about your claim by email. For example, when a hearing
-    has been scheduled or when a document is ready to view.
-</p>
-  <h3 class=""govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
-    Your My HMCTS registered email address is:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    ${claimantContactEmail}
-</p>","---
-<h2 class=""govuk-heading-m"">Hysbysiadau</h2>
-<p class=""govuk-body-m govuk-!-margin-bottom-1"">
-    Byddwch yn cael diweddariadau am eich hawliad drwy e-bost. Er enghraifft, pan fydd gwrandawiad
-    wedi'i drefnu neu pan fydd dogfen yn barod i'w gweld.
-</p>
-  <h3 class=""govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
-    Eich cyfeiriad e-bost cofrestredig My HMCTS yw:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    ${claimantContactEmail}
-</p>
-"
 "---
 <h2 class=""govuk-heading-m"">Notifications</h2>
 <p class=""govuk-body-m govuk-!-margin-bottom-1"">
@@ -556,60 +413,16 @@ cyfeiriad yn y gofrestr tir ac eiddo.
 </div>
 </section>
 "
-"---
-<section tabindex=""0"">
-<p class=""govuk-body"">
-Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
-which country your property is in, as the law is different in each country.
-</p>
-
-<p class=""govuk-body"">
-If you’re not sure which country your property is in, try searching for your
-address on the land and property register.
-</p>
-
-<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Warning</span>
-    <span id=""warning-message"">
-      Your case could be delayed or rejected if you select the wrong country.
-    </span>
-  </strong>
-</div>
-</section>","---
-<section tabindex=""0"">
-<p class=""govuk-body"">
-Mae eich cod post yn cynnwys eiddo yn  ${crossBorderCountry1} a ${crossBorderCountry2}. Rydym angen gwybod
-ym mha wlad mae eich eiddo, gan fod y gyfraith yn wahanol ym mhob gwlad.
-</p>
-
-<p class=""govuk-body"">
-Os nad ydych yn siŵr ym mha wlad mae eich eiddo, ceisiwch chwilio am eich
-cyfeiriad yn y gofrestr tir ac eiddo.
-</p>
-
-<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Rhybudd</span>
-    <span id=""warning-message"">
-      Os byddwch yn dewis y wlad anghywir gall achosi oedi neu i'ch achos gael ei wrthod.
-    </span>
-  </strong>
-</div>
-</section>
-"
 Give details about the ${defendantTermPossessive} circumstances,Rhowch fanylion am amgylchiadau'r ${defendantTermPossessive}
 "---
 <h2>Additional defendants</h2>","---
 <h2>Diffynyddion ychwanegol</h2>"
 Which section of the Housing Act is the claim for demotion of tenancy made under?,O dan pa adran o'r Ddeddf Tai a wneir yr hawliad ar gyfer tenantiaeth isradd?
 "---
-  <ul tabindex=""0"">
-    <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
-    <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
-  </ul>","---
+ <ul tabindex=""0"">
+ <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
+ <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
+ </ul>","---
 <ul tabindex=""0"">
     <li>Mae Adran 82A(2) o Ddeddf Tai 1985 yn ymwneud â thenantiaethau diogel.</li>
     <li>Mae Adran 6A(2) o Ddeddf Tai 1988 yn ymwneud â thenantiaethau sicr.</li>
@@ -640,22 +453,6 @@ Give details about your reasons for claiming possession (Deterioration of furnit
 </p>
 "
 "---
-<p class=""govuk-body"">You may have already given the defendants notice of your intention to begin
-    possession proceedings. If you have, you should have written the grounds you’re making your
-    claim under. You should select these grounds here and any extra grounds you’d like to add to
-    your claim, if you need to.</p>
-<p class=""govuk-body"">
-  <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">More information about possession grounds (opens in new tab)</a>.
-</p>","---
-<p class=""govuk-body"">Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
-    achos meddiannu. Os ydych wedi, dylech fod wedi ysgrifennu ar ba sail rydych yn gwneud eich
-    hawliad. Dylech ddewis y seiliau hyn yma ac unrhyw seiliau ychwanegol yr hoffech eu hychwanegu
-    at eich hawliad, os ydych angen.</p>
-<p class=""govuk-body"">
-  <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiant (yn agor mewn tab newydd)</a>.
-</p>
-"
-"---
  <p>You may have already given the defendants notice of your intention to begin possession
  proceedings. If you have, you should have written the grounds you’re making your claim under.
  You should select these grounds here and select any extra grounds you’d like to add to your claim,
@@ -663,22 +460,6 @@ Give details about your reasons for claiming possession (Deterioration of furnit
  <p class=""govuk-body"">
  <a href=""https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">More information about possession grounds (opens in new tab)</a>.
  </p>","---
-<p>Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
-  achos meddiannu. Os ydych wedi, dylech fod wedi ysgrifennu ar pa sail rydych yn gwneud eich hawliad.
-  Dylech ddewis y seiliau hyn yma ac unrhyw seiliau ychwanegol yr hoffech eu hychwanegu at eich hawliad,
-  os ydych angen.</p>
-  <p class=""govuk-body"">
-    <a href=""https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiant (yn agor mewn tab newydd)</a>.
-  </p>
-"
-"---
-  <p>You may have already given the defendants notice of your intention to begin possession
-  proceedings. If you have, you should have written the grounds you’re making your claim under.
-  You should select these grounds here and select any extra grounds you’d like to add to your claim,
-  if you need to.</p>
-  <p class=""govuk-body"">
-    <a href=""https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">More information about possession grounds (opens in new tab)</a>.
-  </p>","---
 <p>Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
   achos meddiannu. Os ydych wedi, dylech fod wedi ysgrifennu ar pa sail rydych yn gwneud eich hawliad.
   Dylech ddewis y seiliau hyn yma ac unrhyw seiliau ychwanegol yr hoffech eu hychwanegu at eich hawliad,
@@ -720,34 +501,6 @@ Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i dde
  <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiant (yn agor mewn tab newydd)</a>.
 </p>
 "
-"---
-<p class=""govuk-body"" tabindex=""0"">In some cases, a claimant can make a claim for possession of a
- property without having to rely on a specific ground. If your claim meets these
-requirements, you can select that you have no grounds for possession.
-
-You may have already given the defendants notice of your intention to begin
- possession proceedings.
- If you have, you should have written the grounds you’re making your claim under.
-  You should select these grounds here and any extra grounds you’d like to add to your claim,
-  if you need to.
-</p>
-<p class=""govuk-body"">
- <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">More information about possession grounds (opens in new tab)</a>.
-</p>","---
-<p class=""govuk-body"" tabindex=""0"">Mewn rhai achosion, gall hawlydd wneud hawliad ar gyfer cymryd meddiant
- o eiddo heb orfod dibynnu ar sail benodol.  Os bydd eich hawliad yn bodloni'r
-gofynion hyn, gallwch ddewis nad oes gennych unrhyw seiliau ar gyfer meddiannu.
-
-Efallai eich bod eisoes wedi cyflwyno hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
-  achos meddiannu.
- Os ydych wedi, dylech fod wedi ysgrifennu ar pa sail rydych yn gwneud eich hawliad.
-  Dylech ddewis y seiliau hyn yma ac unrhyw seiliau ychwanegol yr hoffech eu hychwanegu at eich hawliad,
-  os ydych angen.
-</p>
-<p class=""govuk-body"">
- <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiant (yn agor mewn tab newydd)</a>.
-</p>
-"
 Enter your grounds for possession,Nodwch eich seiliau ar gyfer meddiannu
 "---
 <h2 class=""govuk-heading-l"" tabindex=""0"">Absolute grounds</h2>
@@ -766,29 +519,9 @@ Enter your grounds for possession,Nodwch eich seiliau ar gyfer meddiannu
 </h3>
 "
 "---
-<h2 class=""govuk-heading-l"" tabindex=""0"">Antisocial behaviour</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"" >
-    Why are you making a claim for possession under this ground?
-</h3>","---
-<h2 class=""govuk-heading-l"" tabindex=""0"">Ymddygiad gwrthgymdeithasol</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"" >
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"---
 <h2 class=""govuk-heading-l"" tabindex=""0"">Breach of the tenancy</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
-</h3>","---
-<h2 class=""govuk-heading-l"" tabindex=""0"">Torri'r denantiaeth</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"---
-<h2 class=""govuk-heading-l"" tabindex=""0"">Breach of the tenancy</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
 </h3>","---
 <h2 class=""govuk-heading-l"" tabindex=""0"">Torri'r denantiaeth</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -827,21 +560,6 @@ What date did the occupation contract or licence begin?,Pa ddyddiad wnaeth y con
 Have you attempted mediation with the defendants?,A ydych wedi rhoi cynnig ar gyfryngu gyda'r diffynnydd?
 Give details about the attempted mediation and what the outcome was,Rhowch fanylion am y cynnig i gyfryngu a beth oedd y canlyniad
 Give details about your reasons for claiming possession (No grounds),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Dim seiliau)
-"---
-<p>You may have already given the defendants notice of your intention to begin possession
-proceedings. If you have, you should have written the grounds you’re making your claim under.
-You should select these grounds here and any extra grounds you’d like to add to your claim,
-if you need to.</p>
-<p class=""govuk-body"">
-  <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">More information about possession grounds (opens in new tab)</a>.
-</p>","---
-<p>Efallai eich bod eisoes wedi rhoi hysbysiad i'r diffynnydd o'ch bwriad i ddechrau achos
-meddiannu. Os ydych wedi, dylech fod wedi ysgrifennu ar pa sail rydych yn gwneud eich hawliad.
-Dylech ddewis y seiliau hyn yma ac unrhyw seiliau ychwanegol yr hoffech eu hychwanegu at eich hawliad,
-os ydych angen.</p>
-<p class=""govuk-body"">
-  <a href=""https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiannu (yn agor mewn tab newydd)</a>.
-</p>"
 "---
 <p>You may have already given the defendants notice of your intention to begin possession
 proceedings. If you have, you should have written the grounds you’re making your claim under.
@@ -904,24 +622,6 @@ Party,Parti
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Adapted accommodation (ground 13)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Llety wedi'i addasu (sail 13)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Breach of the tenancy (ground 1)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-Why are you making a claim for possession under this ground?</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Torri'r denantiaeth (sail 1)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
-"
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
  Breach of the tenancy (ground 1)
 </h2>
@@ -934,14 +634,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Charitable landlords (ground 11)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Landlordiaid elusennol (sail 11)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Charitable landlords (ground 11)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Landlordiaid elusennol (sail 11)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -950,24 +642,8 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Domestic violence (ground 2A)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Trais domestig (sail 2A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Domestic violence (ground 2A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Trais domestig (sail 2A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Deterioration of furniture (ground 4)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Dirywiad dodrefn (sail 4)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
@@ -992,29 +668,9 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Housing association special circumstances accommodation (ground 14)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Llety amgylchiadau arbennig cymdeithas dai (sail 14)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Landlord’s works (ground 10)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Gwaith y landlord (sail 10)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Landlord’s works (ground 10)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Gwaith y landlord (sail 10)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
@@ -1032,44 +688,12 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Nuisance, annoyance, illegal or immoral use of the property (ground 2)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Niwsans, dicter, defnydd anghyfreithlon neu anfoesol o'r eiddo (sail 2)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Overcrowding (ground 9)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Eiddo gorlawn (sail 9)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Overcrowding (ground 9)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Eiddo gorlawn (sail 9)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-  Premium paid in connection with mutual exchange (ground 6)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-  Premiwm a dalwyd mewn cysylltiad â chyfnewid cydfuddiannol (sail 6)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-  Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
@@ -1082,18 +706,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Deterioration in the condition of the property (ground 3)
-   </h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Dirywiad yng nghyflwr yr eiddo (sail 3)
-   </h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
@@ -1116,26 +728,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Property sold for redevelopment (ground 10A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Eiddo wedi'i werthu ar gyfer ailddatblygu (sail 10A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Refusal to move back to main home after works completed (ground 8)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Gwrthod symud yn ôl i'r prif gartref ar ôl i'r gwaith gael ei gwblhau (sail 8)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
  Refusal to move back to main home after works completed (ground 8)
 </h2>
@@ -1150,14 +742,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Offence during a riot (ground 2ZA)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Trosedd yn ystod cythrwfl (sail 2ZA)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-  Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Offence during a riot (ground 2ZA)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Trosedd yn ystod cythrwfl (sail 2ZA)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -1170,22 +754,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Llety ar gyfer unigolion ag anghenion arbennig (sail 15)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Special needs accommodation (ground 15)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Llety ar gyfer unigolion ag anghenion arbennig (sail 15)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Tenancy obtained by false statement (ground 5)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Tenantiaeth drwy ddatganiad anwir (sail 5)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">Tenancy obtained by false statement (ground 5)</h2>
@@ -1204,26 +772,6 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
    Angen llety clwm ar gyfer gweithiwr arall (sail 12)
 </h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Tied accommodation needed for another employee (ground 12)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-   Angen llety clwm ar gyfer gweithiwr arall (sail 12)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">Under occupying after succession (ground 15A)</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-   Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">Tan feddiannu yn dilyn olyniaeth (sail 15A)</h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
@@ -1248,40 +796,12 @@ Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?</h3>
     Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-  Unreasonable conduct in tied accommodation (ground 7)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Ymddygiad afresymol mewn llety clwm (sail 7)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
 "<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
  <span class=""govuk-visually-hidden"">Warning</span>
  <span id=""warning-message"">To exit back to the case list, select ‘Cancel’</span>
  </strong>
-</div>
-</section>","<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-    <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-    <strong class=""govuk-warning-text__text"">
-        <span class=""govuk-visually-hidden"">Rhybudd</span>
-        <span id=""warning-message"">I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'</span>
-    </strong>
-</div>
-</section>
-"
-"<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-    <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-    <strong class=""govuk-warning-text__text"">
-        <span class=""govuk-visually-hidden"">Warning</span>
-        <span id=""warning-message"">To exit back to the case list, select ‘Cancel’</span>
-    </strong>
 </div>
 </section>","<div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
     <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
@@ -1325,9 +845,9 @@ Have you followed the pre-action protocol?,A ydych chi wedi dilyn y protocol cyn
 Give details about your reasons for claiming possession (Premium paid in connection with mutual exchange (ground 6)),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Premiwm wedi'i dalu mewn cysylltiad â chyfnewid cydfuddiannol (sail 6))
 "---
 <p class=""govuk-body"" tabindex=""0"">
-    If a judge decides that possession is not reasonable at this time,
-    they may instead decide to make an order imposing a prohibited
-    conduct standard contract.
+ If a judge decides that possession is not reasonable at this time,
+ they may instead decide to make an order imposing a prohibited
+ conduct standard contract.
 </p>
 <p class=""govuk-body"" tabindex=""0"">This is a 12-month probationary contract.</p>","---
 <p class=""govuk-body"" tabindex=""0"">
@@ -1340,32 +860,6 @@ Give details about your reasons for claiming possession (Premium paid in connect
 Why are you making this claim?,Pam ydych chi'n gwneud yr hawliad hwn?
 Property address,Cyfeiriad yr eiddo
 Give details about your reasons for claiming possession (Deterioration in the condition of the property (ground 3)),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Dirywiad yng nghyflwr yr eiddo (sail 3))
-"<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<p class=""govuk-body"">
-  This service is only available for claimants claiming possession of a property in England or Wales.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-      To exit back to the case list, select ‘Cancel’
-  </strong>
-</div>
-</section>","<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<p class=""govuk-body"">
-  Mae'r gwasanaeth hwn ar gael i hawlwyr sy'n hawlio meddiant eiddo yng Nghymru neu Loegr yn unig.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Rhybudd</span>
-      I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
-  </strong>
-</div>
-</section>
-"
 "<section tabindex=""0"">
 <hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
 <p class=""govuk-body"">
@@ -1382,42 +876,6 @@ Give details about your reasons for claiming possession (Deterioration in the co
 <hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
 <p class=""govuk-body"">
   Mae'r gwasanaeth hwn ar gael i hawlwyr sy'n hawlio meddiant eiddo yng Nghymru neu Loegr yn unig.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Rhybudd</span>
-      I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
-  </strong>
-</div>
-</section>
-"
-"<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<h2 class=""govuk-heading-m"">What to do next</h2>
-<p class=""govuk-body"">
-  This service is only available for claimants claiming possession of a property in England or Wales.
-</p>
-<p class=""govuk-body"">
-  To make a claim in Northern Ireland, you can use the
-  <a class=""govuk-link"" href=""https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"" target=""_blank"" rel=""noopener noreferrer"">Enforcement of Judgments Office (EJO) (opens in new tab)</a>.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-      To exit back to the case list, select ‘Cancel’
-  </strong>
-</div>
-</section>","<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<h2 class=""govuk-heading-m"">Beth i'w wneud nesaf</h2>
-<p class=""govuk-body"">
-  Mae'r gwasanaeth hwn ar gael i hawlwyr sy'n hawlio meddiant eiddo yng Nghymru neu Loegr yn unig.
-</p>
-<p class=""govuk-body"">
-    I wneud hawliad yng Ngogledd Iwerddon, gallwch ddefnyddio'r
-  <a class=""govuk-link"" href=""https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"" target=""_blank"" rel=""noopener noreferrer"">Swyddfa Gorfodi Dyfarniadau (EJO) (yn agor mewn tab newydd)</a>.
 </p>
 <div class=""govuk-warning-text"">
   <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
@@ -1454,42 +912,6 @@ Give details about your reasons for claiming possession (Deterioration in the co
 <p class=""govuk-body"">
     I wneud hawliad yng Ngogledd Iwerddon, gallwch ddefnyddio'r
   <a class=""govuk-link"" href=""https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"" target=""_blank"" rel=""noopener noreferrer"">Swyddfa Gorfodi Dyfarniadau (EJO) (yn agor mewn tab newydd)</a>.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Rhybudd</span>
-      I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
-  </strong>
-</div>
-</section>
-"
-"<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<h2 class=""govuk-heading-m"">What to do next</h2>
-<p class=""govuk-body"">
-  This service is only available for claimants claiming possession of a property in England or Wales.
-</p>
-<p class=""govuk-body"">
-  To make a claim in Scotland, you can use your
-  <a class=""govuk-link"" href=""https://www.scotcourts.gov.uk/home"" target=""_blank"" rel=""noopener noreferrer"">local sheriff court (opens in new tab)</a>.
-</p>
-<div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-      To exit back to the case list, select ‘Cancel’
-  </strong>
-</div>
-</section>","<section tabindex=""0"">
-<hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
-<h2 class=""govuk-heading-m"">Beth i'w wneud nesaf</h2>
-<p class=""govuk-body"">
-  Mae'r gwasanaeth hwn ar gael i hawlwyr sy'n hawlio meddiant eiddo yng Nghymru neu Loegr yn unig.
-</p>
-<p class=""govuk-body"">
-  I wneud hawliad yn yr Alban, gallwch ddefnyddio eich
-  <a class=""govuk-link"" href=""https://www.scotcourts.gov.uk/home"" target=""_blank"" rel=""noopener noreferrer"">llys siryf lleol (yn agor mewn tab newydd)</a>.
 </p>
 <div class=""govuk-warning-text"">
   <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
@@ -1552,30 +974,6 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Antisocial behaviour (ground 7A)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Ymddygiad gwrthgymdeithasol (sail 7A)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Breach of tenancy conditions (ground 12)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Torri amodau tenantiaeth (sail 12)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Breach of tenancy conditions (ground 12)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -1600,34 +998,10 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Death of the tenant (ground 7)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Marwolaeth y tenant (sail 7)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Domestic violence (ground 14A)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Trais domestig (sail 14A)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Domestic violence (ground 14A)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Trais domestig (sail 14A)
 </h2>
@@ -1648,30 +1022,6 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Employee of the landlord (ground 16)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Cyflogai y landlord (sail 16)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Deterioration of furniture (ground 15)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Dirywiad dodrefn (sail 15)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Deterioration of furniture (ground 15)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -1681,18 +1031,6 @@ Region Id,ID Rhanbarth
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
         Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Holiday let (ground 3)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Llety gwyliau (sail 3)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
@@ -1708,36 +1046,12 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Property required for minister of religion (ground 5)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Angen yr eiddo ar gyfer gweinidog crefydd (sail 5)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Property required for minister of religion (ground 5)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Angen yr eiddo ar gyfer gweinidog crefydd (sail 5)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Tenant does not have a right to rent (ground 7B)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Nid oes gan y tenant hawl i rentu (sail 7B)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
     Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
@@ -1768,34 +1082,10 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Nuisance, annoyance, illegal or immoral use of the property (ground 14)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Niwsans, dicter, defnydd anghyfreithlon neu anfoesol o'r eiddo (sail 14)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Offence during a riot (ground 14ZA)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Trosedd yn ystod cythrwfl (sail 14ZA)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Offence during a riot (ground 14ZA)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Trosedd yn ystod cythrwfl (sail 14ZA)
 </h2>
@@ -1816,30 +1106,6 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Owner occupier (ground 1)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Perchen-feddiannydd (sail 1)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Deterioration in the condition of the property (ground 13)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Dirywiad yng nghyflwr yr eiddo (sail 13)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Deterioration in the condition of the property (ground 13)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -1852,18 +1118,6 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Property required for redevelopment (ground 6)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-       Angen yr eiddo ar gyfer ailddatblygu (sail 6)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Property required for redevelopment (ground 6)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
@@ -1873,18 +1127,6 @@ Region Id,ID Rhanbarth
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
     Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Repossession by the landlord’s mortgage lender (ground 2)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Ailfeddiannu gan fenthyciwr morgais y landlord (sail 2) 
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
@@ -1912,34 +1154,10 @@ Region Id,ID Rhanbarth
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Student let (ground 4)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Llety myfyrwyr (sail 4)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
  Suitable alternative accommodation (ground 9)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
  Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Llety amgen addas (sail 9)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Suitable alternative accommodation (ground 9)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Llety amgen addas (sail 9)
 </h2>
@@ -1959,63 +1177,7 @@ Region Id,ID Rhanbarth
         Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
 </h3>
 "
-"<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Tenancy obtained by false statement (ground 17)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
-</h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
-        Tenantiaeth drwy ddatganiad anwir (sail 17)
-</h2>
-<h3 class=""govuk-heading-m"" tabindex=""0"">
-        Pam ydych chi'n gwneud hawliad meddiannu o dan y sail hwn?
-</h3>
-"
 What does your ground 1 claim involve?,Beth mae eich hawliad sail 1 yn ei gynnwys?
-"---
-<p class=""govuk-body"">You may have already given the defendants notice of your intention to begin
-    possession proceedings and written which grounds you’re making the possession claim under.
-     You should select these grounds here.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Serious rent arrears (ground 8)</h2>
-<p class=""govuk-body"">Mandatory ground. Can be used if the defendants owe at least:</p>
-<ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">eight weeks’ rent if they pay
-        weekly or fortnightly</li>
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">two months’ rent if they pay
-        monthly</li>
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">three months’ rent if they pay
-        quarterly or yearly</li>
-</ul>
-<p class=""govuk-body"">The defendants must owe the rent when the notice is served and at the time of the
-    hearing.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Rent arrears (ground 10)</h2>
-<p class=""govuk-body"">Discretionary ground. The defendants are in any amount of arrears.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Persistent delay in paying rent
-    (ground 11)</h2>
-<p class=""govuk-body"">Discretionary ground. The defendants have persistently delayed paying their
-    rent.</p>","---
-<p class=""govuk-body"">Efallai eich bod eisoes wedi rhoi hysbysiad i'r diffynnydd o'ch bwriad i ddechrau
-        achos meddiannu ac wedi ysgrifennu ar ba sail rydych yn gwneud yr hawliad.
-     Dylech ddewis y seiliau hyn yma.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Ôl-ddyledion rhent difrifol (sail 8)</h2>
-<p class=""govuk-body"">Sail gorfodol. Gellir ei ddefnyddio os oes gan y diffynnydd o leiaf ddyled o:</p>
-<ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">wyth wythnos o rent os ydynt yn talu'n
-        wythnosol neu bob pythefnos</li>
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">dau fis o rent os ydynt yn talu'n
-        fisol</li>
-    <li class=""govuk-list govuk-!-font-size-19 govuk-!-margin-0"">tri mis o rent os ydynt yn talu'n
-        chwarterol neu'n flynyddol</li>
-</ul>
-<p class=""govuk-body"">Rhaid i'r rhent fod yn ddyledus gan y diffynnydd pan gyflwynir yr hysbysiad ac ar adeg y
-    gwrandawiad.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Ôl-ddyledion rhent (sail 10)</h2>
-<p class=""govuk-body"">Sail dewisol. Mae gan y diffynnydd unrhyw faint o ôl-ddyledion.</p>
-<h2 class=""govuk-!-font-size-19 govuk-!-margin-bottom-1"">Oedi cyson wrth dalu rhent 
-   (sail 11)</h2>
-<p class=""govuk-body"">Sail yn ôl disgresiwn. Mae'r diffynnydd wedi oedi cyn talu rhent yn
-    gyson.</p>
-"
 "---
 <p class=""govuk-body"">You may have already given the defendants notice of your intention to begin
  possession proceedings and written which grounds you’re making the possession claim under.
@@ -2060,51 +1222,6 @@ What does your ground 1 claim involve?,Beth mae eich hawliad sail 1 yn ei gynnwy
 <p class=""govuk-body"">Sail yn ôl disgresiwn. Mae'r diffynnydd wedi oedi cyn talu rhent yn
     gyson.</p>
 "
-"<section tabindex=""0"">
- <h3 class=""govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
- Upload the rent statement
- </h3>
- <p class=""govuk-body"">The rent statement must show:</p>
- <ul class=""govuk-list govuk-list--bullet"">
- <li class=""govuk-!-font-size-19"">
- every date when a payment was supposed to be made
- </li>
- <li class=""govuk-!-font-size-19"">the amount that was due on each of those dates</li>
- <li class=""govuk-!-font-size-19"">the actual payments that were made,
- and when they were made</li>
- <li class=""govuk-!-font-size-19"">the total rent arrears</li>
- </ul>
-
- <p class=""govuk-body"">It must cover the time period of either:</p>
- <ul class=""govuk-list govuk-list--bullet"">
- <li class=""govuk-!-font-size-19"">from the first date the defendants
- missed a payment, or</li>
- <li class=""govuk-!-font-size-19"">the last two years of payments, if the first date
- of their missed payment was more than two years ago</li>
- </ul>
-</section>","<section tabindex=""0"">
-  <h3 class=""govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
-    Uwchlwythwch y datganiad rhent
-  </h3>
-  <p class=""govuk-body"">Dylai'r datganiad rhent ddangos:</p>
-  <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-      pob dyddiad pan oedd taliad i fod i gael ei wneud
-    </li>
-    <li class=""govuk-!-font-size-19"">y swm oedd yn ddyledus ar bob un o'r dyddiadau hynny</li>
-    <li class=""govuk-!-font-size-19"">yr union daliadau a wnaed,
-    a phryd y gwnaed nhw</li>
-    <li class=""govuk-!-font-size-19"">y cyfanswm ôl-ddyledion rhent/li>
-  </ul>
-
-  <p class=""govuk-body"">Dylai gynnwys y cyfnod naill ai:</p>
-  <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">o'r dyddiad cyntaf wnaeth y diffynnydd
- fethu taliad, neu'r</li>
-    <li class=""govuk-!-font-size-19"">ddwy flynedd ddiwethaf o daliadau, os oedd dyddiad cyntaf
-    y taliad a fethwyd yn fwy na dwy flynedd yn ôl</li>
-  </ul>
-</section>"
 Total rent arrears,Cyfanswm ôl-ddyledion rhent
 Enter amount per day that unpaid rent should be charged at,Nodwch y swm fesul diwrnod y dylid codi tâl am rent heb ei dalu
 How much is the rent?,Faint yw'r rhent?
@@ -2120,34 +1237,6 @@ Your previous answers have been saved. You can either:
 <ul class=""govuk-list"">
  <li class=""govuk-!-font-size-19"">resume your claim using your saved answers</li>
  <li class=""govuk-!-font-size-19"">start your claim again from the beginning</li>
-</ul>
-
-If you resume your claim using your saved answers, you must select ‘Continue’ at the bottom of each
-page until you reach the question you’d like to continue your claim from.
-
-</p>","---
-<p class=""govuk-body"">
-
-Mae eich atebion blaenorol wedi eu cadw. Gallwch naill ai:
-
-<ul class=""govuk-list"">
-  <li class=""govuk-!-font-size-19"">barhau â'ch hawliad gan ddefnyddio'ch atebion a gadwyd</li>
-  <li class=""govuk-!-font-size-19"">dechrau eich hawliad eto o'r dechrau</li>
-</ul>
-
-Os byddwch yn parhau â'ch hawliad gan ddefnyddio'ch atebion a gadwyd, dylech ddewis 'Parhau' ar waelod pob
-tudalen nes byddwch wedi cyrraedd y cwestiwn yr hoffech barhau â'ch hawliad ohono.
-
-</p>
-"
-"---
-<p class=""govuk-body"">
-
-Your previous answers have been saved. You can either:
-
-<ul class=""govuk-list"">
-  <li class=""govuk-!-font-size-19"">resume your claim using your saved answers</li>
-  <li class=""govuk-!-font-size-19"">start your claim again from the beginning</li>
 </ul>
 
 If you resume your claim using your saved answers, you must select ‘Continue’ at the bottom of each
@@ -2191,27 +1280,15 @@ Give details about your reasons for claiming possession (Special needs accommoda
     a ddilysir gan ddatganiad gwirionedd heb gredu'n onest ei fod yn wir.
 </p>
 "
-"---
-<p class=""govuk-body"">
-  I understand that proceedings for contempt of court may be brought against
-  anyone who makes, or causes to be made, a false statement in a document
-  verified by a statement of truth without an honest belief in its truth.
-</p>","---
-<p class=""govuk-body"">
-   Deallaf y gellir dwyn achos dirmyg llys yn erbyn 
-  unrhyw un sy'n gwneud datganiad anwir, neu sy'n achosi i ddatganiad anwir gael ei wneud mewn dogfen
-    a ddilysir gan ddatganiad gwirionedd heb gredu'n onest ei fod yn wir.
-</p>
-"
 Which section of the Housing Act is the suspension of right to buy claim made under?,O dan pa adran o'r Ddeddf Tai a wneir yr hawliad ar gyfer atal yr hawl i brynu?
 "---
-  <ul tabindex=""0"">
-    <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
-    <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
-    <li>Section 121A of the Housing Act 1985 relates to an order suspending the right to buy for
-        secure tenancies.
-    </li>
-  </ul>","---
+ <ul tabindex=""0"">
+ <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
+ <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
+ <li>Section 121A of the Housing Act 1985 relates to an order suspending the right to buy for
+ secure tenancies.
+ </li>
+ </ul>","---
 <ul tabindex=""0"">
     <li>Mae Adran 82A(2) o Ddeddf Tai 1985 yn ymwneud â thenantiaethau diogel.</li>
     <li>Mae Adran 6A(2) o Ddeddf Tai 1988 yn ymwneud â thenantiaethau sicr.</li>
@@ -2258,10 +1335,10 @@ Give details about your reasons for claiming possession (Contract-holder under a
 Give details about your reasons for claiming possession (Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)),Rhowch fanylion am eich rhesymau dros wneud hawliad i feddiannu (Deilydd contract o dan gontract cyfnodol safonol gydag ôl-ddyledion rhent difrifol (adran 181))
 What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Building works (ground A)
+ Building works (ground A)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Gwaith adeiladu (sail A)
 </h2>
@@ -2270,10 +1347,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Charities (ground C)
+ Charities (ground C)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Elusennau (sail C)
 </h2>
@@ -2282,11 +1359,11 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Notice given in relation to end of converted fixed term standard contract
-    (paragraph 25B(2) of Schedule 12)
+ Notice given in relation to end of converted fixed term standard contract
+ (paragraph 25B(2) of Schedule 12)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Rhoddwyd hysbysiad mewn perthynas â diwedd contract safonol cyfnod penodol wedi'i addasu
     (paragraff 25B(2) o Atodlen 12)
@@ -2296,10 +1373,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Dwelling suitable for disabled people (ground D)
+ Dwelling suitable for disabled people (ground D)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Eiddo addas ar gyfer pobl anabl (sail D)
 </h2>
@@ -2308,11 +1385,11 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Failure to give up possession on date specified in
-    contract-holder’s break clause notice (section 191)
+ Failure to give up possession on date specified in
+ contract-holder’s break clause notice (section 191)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Methu rhoi'r gorau i feddiannu ar y dyddiad a nodwyd 
         yn hysbysiad cymal terfynu deilydd y contract (adran 191)
@@ -2322,11 +1399,11 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Failure to give up possession on date specified in contract-holder’s break
-    clause notice (section 191)
+ Failure to give up possession on date specified in contract-holder’s break
+ clause notice (section 191)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Methu rhoi'r gorau i feddiannu ar y dyddiad a nodwyd 
         yn hysbysiad cymal terfynu deilydd y contract (adran 191)
@@ -2336,10 +1413,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Failure to give up possession on date specified in contract-holder’s notice (section 170)
+ Failure to give up possession on date specified in contract-holder’s notice (section 170)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Methu rhoi'r gorau i feddiannu ar y dyddiad a nodwyd yn hysbysiad deilydd y contract (adran 170)
 </h2>
@@ -2348,10 +1425,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Housing associations and housing trusts: people difficult to house (ground E)
+ Housing associations and housing trusts: people difficult to house (ground E)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Cymdeithasau tai ac ymddiriedolaethau tai: pobl sy'n anodd i'w cartrefu (sail E)
 </h2>
@@ -2360,10 +1437,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Joint contract-holders (ground H)
+ Joint contract-holders (ground H)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Deiliaid contract ar y cyd (sail H)
 </h2>
@@ -2372,10 +1449,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Notice given under a landlord’s break clause (section 199)
+ Notice given under a landlord’s break clause (section 199)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Hysbysiad wedi'i roi o dan gymal terfynu landlord (adran 199)
 </h2>
@@ -2384,10 +1461,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Landlord’s notice in connection with end of fixed term given (section 186)
+ Landlord’s notice in connection with end of fixed term given (section 186)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Hysbysiad landlord mewn cysylltiad â diwedd tymor penodol wedi'i roi (adran 186)
 </h2>
@@ -2396,10 +1473,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Landlord’s notice given in relation to periodic standard contract (section 178)
+ Landlord’s notice given in relation to periodic standard contract (section 178)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
     Hysbysiad landlord a roddwyd mewn perthynas â chontract cyfnodol safonol (adran 178)
 </h2>
@@ -2408,10 +1485,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Other breach of contract (section 157)
+ Other breach of contract (section 157)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Tor-contract arall (adran 157)
 </h2>
@@ -2420,10 +1497,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Other estate management reasons (ground I)
+ Other estate management reasons (ground I)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Rhesymau rheoli ystad eraill (sail I)
 </h2>
@@ -2432,10 +1509,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Redevelopment schemes (ground B)
+ Redevelopment schemes (ground B)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Cynlluniau ailddatblygu (sail B)
 </h2>
@@ -2444,10 +1521,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Reserve successors (ground G)
+ Reserve successors (ground G)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Olynwyr wrth gefn (sail G)
 </h2>
@@ -2456,10 +1533,10 @@ What type of notice did you serve?,Pa fath o hysbysiad wnaethoch gyflwyno?
 </h3>
 "
 "<h2 class=""govuk-heading-l"" tabindex=""0"">
-    Groups of dwellings for people with special needs (ground F)
+ Groups of dwellings for people with special needs (ground F)
 </h2>
 <h3 class=""govuk-heading-m"" tabindex=""0"">
-    Why are you making a claim for possession under this ground?
+ Why are you making a claim for possession under this ground?
 </h3>","<h2 class=""govuk-heading-l"" tabindex=""0"">
         Grwpiau o eiddo i bobl ag anghenion arbennig (sail F)
 </h2>
@@ -2884,117 +1961,6 @@ Back,Yn ôl
 Note,Nodyn
 "Add note detail, including relevant dates and people involved","Ychwanegwch nodyn, gan gynnwys dyddiadau perthnasol a phobl gysylltiedig"
 Submit,Cyflwyno
-"<details class=""govuk-details"">
-    <summary class=""govuk-details__summary"">
-        <span class=""govuk-details__summary-text"">
-            I want to save this application and return to it later
-        </span>
-    </summary>
-    <div class=""govuk-details__text"">
-        If you want to save your application and return to it later:
-        <ol class=""govuk-list govuk-list--number"">
-            <li class=""govuk-!-static-margin-0"">Choose ‘Continue’.</li>
-            <li>On the next page choose ‘Cancel’.</li>
-        </ol>
-        <p>This will save your progress and take you to the case overview.</p>
-    </div>
-</details>","<details class=""govuk-details"">
-    <summary class=""govuk-details__summary"">
-        <span class=""govuk-details__summary-text"">
-            Rwyf eisiau cadw'r cais hwn a dychwelyd ato'n ddiweddarach
-        </span>
-    </summary>
-    <div class=""govuk-details__text"">
-       Os ydych eisiau cadw eich cais a dychwelyd ato'n ddiweddarach:
-        <ol class=""govuk-list govuk-list--number"">
-            <li class=""govuk-!-static-margin-0"">Dewiswch ‘Parhau’.</li>
-            <li>Ar y dudalen nesaf dewiswch ‘Canslo’.</li>
-        </ol>
-        <p>Bydd hyn yn cadw eich cynnydd ac yn mynd â chi i'r trosolwg o'r achos.</p>
-    </div>
-</details>"
-"<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    We could not retrieve the claimant name linked to your My HMCTS account
-</h3>
-<p class=""govuk-hint govuk-!-margin-top-1"">
-    You must enter the claimant name you’d like to use for this claim
-</p>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Nid oeddem yn gallu adfer enw'r hawlydd a gysylltwyd â'ch cyfrif My HMCTS
-</h3>
-<p class=""govuk-hint govuk-!-margin-top-1"">
-    Rhaid i chi roi enw'r hawlydd yr hoffech ei ddefnyddio ar gyfer yr hawliad hwn
-</p>"
-"<p class=""govuk-body"">
-  There are two options for what to do next:
-</p>
-<ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">
-    sign the statement of truth, check your answers, then
-    submit and pay for your claim now.
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    check your answers and save your claim as a draft.
-    You can return later to sign the statement of truth
-    and submit and pay.
-  </li>
-</ul>","<p class=""govuk-body"">
-  Mae yna ddau ddewis ar gyfer beth i'w wneud nesaf:
-</p>
-<ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">
-    llofnodi'r datganiad gwirionedd, gwirio eich atebion, yna
-    cyflwyno a thalu am eich hawliad nawr.
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    gwirio eich atebion a chadw eich hawliad fel drafft.
-    Gallwch ddychwelyd nes ymlaen i lofnodi eich datganiad gwirionedd
-    a chyflwyno a thalu.
-  </li>
-</ul>"
-"<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    We could not retrieve your organisation’s service address that’s linked to your My
-    HMCTS account
-</h3>
-<p class=""govuk-hint govuk-!-margin-top-1"">
-    You must enter the service address you’d like to receive documents to
-</p>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Nid oeddem yn gallu adfer cyfeiriad gwasanaeth eich sefydliad sy'n gysylltiedig â'ch cyfrif My
-    HMCTS
-</h3>
-<p class=""govuk-hint govuk-!-margin-top-1"">
-    Dylech roi'r cyfeiriad cyflwyno ble'r hoffech gael dogfennau yno
-</p>"
-"<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Your organisation’s My HMCTS registered address is:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    ${formattedClaimantContactAddress}
-</p>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Cyfeiriad cofrestredig My HMCTS eich sefydliad yw:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    ${formattedClaimantContactAddress}
-</p>"
-"----
-<h2 class=""govuk-heading-m"">Contact phone number</h2>
-<p class=""govuk-body-m "">
-    You should provide a phone number so we can contact you if there are urgent updates.
-</p>","----
-<h2 class=""govuk-heading-m"">Rhif ffôn cyswllt</h2>
-<p class=""govuk-body-m "">
-    Dylech ddarparu rhif ffôn fel y gallwn gysylltu â chi os oes diweddariadau brys.
-</p>"
-"---
-<section tabindex=""0"">
-    <p class=""govuk-body"">
-        Mediation is when an impartial professional (the mediator) helps both sides work out         an agreement.
-    </p>
-</section>","---
-<section tabindex=""0"">
-    <p class=""govuk-body"">
-        Cyfryngu yw pan fydd gweithiwr proffesiynol diduedd (y cyfryngwr) yn helpu'r ddwy ochr i ddod i          gytundeb.
-    </p>
-</section>"
 "<h3 class=""govuk-heading-s"">By delivering it to or leaving it at a permitted place</h3>","<h3 class=""govuk-heading-s"">Drwy ei ddanfon i neu ei adael mewn man a ganiateir</h3>"
 "<h3 class=""govuk-heading-s"">By email</h3>","<h3 class=""govuk-heading-s"">Drwy e-bost</h3>"
 "<h3 class=""govuk-heading-s"">By first class post or other service which provides for
@@ -3004,27 +1970,27 @@ delivery on the next business day</h3>","<h3 class=""govuk-heading-s"">Drwy bost
 "<h3 class=""govuk-heading-s"">By personally handing it to or leaving it with someone</h3>","<h3 class=""govuk-heading-s"">Drwy ei ddanfon yn bersonol neu ei adael gyda rhywun</h3>"
 "<h2 class=""govuk-heading-m govuk-!-margin-bottom-2"">Rent statement</h2>","<h2 class=""govuk-heading-m govuk-!-margin-bottom-2"">Datganiad rhent</h2>"
 "<section tabindex=""0"">
-  <h3 class=""govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
-    Upload the rent statement
-  </h3>
-  <p class=""govuk-body"">The rent statement must show:</p>
-  <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-      every date when a payment was supposed to be made
-    </li>
-    <li class=""govuk-!-font-size-19"">the amount that was due on each of those dates</li>
-    <li class=""govuk-!-font-size-19"">the actual payments that were made,
-    and when they were made</li>
-    <li class=""govuk-!-font-size-19"">the total rent arrears</li>
-  </ul>
+ <h3 class=""govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
+ Upload the rent statement
+ </h3>
+ <p class=""govuk-body"">The rent statement must show:</p>
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">
+ every date when a payment was supposed to be made
+ </li>
+ <li class=""govuk-!-font-size-19"">the amount that was due on each of those dates</li>
+ <li class=""govuk-!-font-size-19"">the actual payments that were made,
+ and when they were made</li>
+ <li class=""govuk-!-font-size-19"">the total rent arrears</li>
+ </ul>
 
-  <p class=""govuk-body"">It must cover the time period of either:</p>
-  <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">from the first date the defendants
-    missed a payment, or</li>
-    <li class=""govuk-!-font-size-19"">the last two years of payments, if the first date
-    of their missed payment was more than two years ago</li>
-  </ul>
+ <p class=""govuk-body"">It must cover the time period of either:</p>
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19"">from the first date the defendants
+ missed a payment, or</li>
+ <li class=""govuk-!-font-size-19"">the last two years of payments, if the first date
+ of their missed payment was more than two years ago</li>
+ </ul>
 </section>","<section tabindex=""0"">
   <h3 class=""govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1"">
     Uwchlwythwch y datganiad rhent
@@ -3140,14 +2106,13 @@ later.
 <br>
 <br>
 <a href=""/cases/case-details/{[CASE_REFERENCE]}/trigger/resumePossessionClaim""
-   role=""button""
-   class=""govuk-button govuk-link govuk-link--no-visited-state"">
-  Continue
+ role=""button""
+ class=""govuk-button govuk-link govuk-link--no-visited-state"">
+ Continue
 </a>
 <p class=""govuk-body govuk-!-font-size-19"">
 <span><a class=""govuk-link--no-visited-state"" href=""/cases"">Cancel</a></span>
-</p>
-","<h2 class=""govuk-heading-m"">Rhowch mwy o fanylion am eich achos</h2>
+</p>","<h2 class=""govuk-heading-m"">Rhowch mwy o fanylion am eich achos</h2>
 Caiff eich atebion eu cadw o'r pwynt hwn fel y gallwch ddychwelyd at eich drafft\yn nes ymlaen.
 <br>
 <br>
@@ -3167,17 +2132,6 @@ Registered provider of social housing or local authority,Darparwr cofrestredig t
 Mortgage lender,Benthycwr morgeisi
 Private landlord,Landlord preifat
 Is your claim a trespass claim?,A yw eich hawliad yn hawliad tresmasu?
-"<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Your organisation’s My HMCTS registered address is:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ
-</p>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    Cyfeiriad cofrestredig My HMCTS eich sefydliad yw:
-</h3>
-<p class=""govuk-body-s govuk-!-margin-top-1"">
-    Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ
-</p>"
 Postcode/Zipcode,Cod Post/Rhif ardal
 Is the defendant’s address for service the same as the address of the property you’re claiming possession of?,A yw cyfeiriad y diffynnydd ar gyfer cyflwyno yr un fath â chyfeiriad yr eiddo yr ydych yn hawlio meddiant ohono?
 "---
@@ -3199,17 +2153,6 @@ Condition 3 of Section 84A of the Housing Act 1985,Amod 3 o Adran 84A Deddf Tai 
 Condition 1 of Section 84A of the Housing Act 1985,Amod 1 o Adran 84A Deddf Tai 1985
 Condition 2 of Section 84A of the Housing Act 1985,Amod 2 o Adran 84A Deddf Tai 1985
 Explain why you have not followed the pre-action protocol,Eglurwch pam nad ydych wedi dilyn y protocol cyn-gweithredu
-"---
-<section tabindex=""0"">
-    <p class=""govuk-body"">
-        If your claim is on the grounds of rent arrears, this includes any steps you’ve taken         to agree a repayment plan.
-    </p>
-</section>","---
-<section tabindex=""0"">
-    <p class=""govuk-body"">
-        Os yw eich hawliad ar sail ôl-ddyledion rhent, mae hyn yn cynnwys unrhyw gamau a gymerwyd gennych i gytuno ar gynllun ad-dalu.
-    </p>
-</section>"
 Why can you not upload a copy of the notice you served?,Pam na allwch uwchlwytho copi o'r hysbysiad a gyflwynwyd gennych?
 "No, I cannot upload a copy of the notice served","Na, ni allaf uwchlwytho copi o'r hysbysiad a gyflwynwyd"
 Date and time the document was emailed,Dyddiad ac amser e-bostio'r ddogfen
@@ -5094,19 +4037,19 @@ Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?,A y
 <p class=""govuk-body"">
 A trespass claim can be made against someone who:
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-    entered or remained in the property without your consent</li>
-    <li class=""govuk-!-font-size-19"">
-    is not a tenant, sub-tenant or licensee (even if a tenancy or licence has ended)</li>
+ <li class=""govuk-!-font-size-19"">
+ entered or remained in the property without your consent</li>
+ <li class=""govuk-!-font-size-19"">
+ is not a tenant, sub-tenant or licensee (even if a tenancy or licence has ended)</li>
 </ul>
 </p>
 <p class=""govuk-body"">
 This includes someone who:
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-    had the licence terminated</li>
-    <li class=""govuk-!-font-size-19"">
-    who has no right to occupy because they did not succeed to the tenancy after a death</li>
+ <li class=""govuk-!-font-size-19"">
+ had the licence terminated</li>
+ <li class=""govuk-!-font-size-19"">
+ who has no right to occupy because they did not succeed to the tenancy after a death</li>
 </ul>
 </p>","---
 <h3 class=""govuk-heading-s govuk-!-font-size-19"">Hawliad tresmasu</h3>
@@ -5136,11 +4079,11 @@ Add additional defendant 2,Ychwanegu diffynnydd ychwanegol 2
 <p class=""govuk-body"">
 You must give details if any of the following apply:
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-    the defendant receives any social security benefits</li>
-    <li class=""govuk-!-font-size-19"">
-    payments are made on their behalf directly to you, under the Social Security Contributions
-    and Benefits Act 1992</li>
+ <li class=""govuk-!-font-size-19"">
+ the defendant receives any social security benefits</li>
+ <li class=""govuk-!-font-size-19"">
+ payments are made on their behalf directly to you, under the Social Security Contributions
+ and Benefits Act 1992</li>
 </ul>
 </p>","---
 <p class=""govuk-body"" tabindex=""0"">
@@ -5371,36 +4314,36 @@ Defnyddiwch ffurflen N5 a'r ffurflen manylion yr hawliad gywir.
 <hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
 <h2 class=""govuk-heading-m"">What to do next</h2>
 <p class=""govuk-body"">
-  This service is not available in your area yet.
+ This service is not available in your area yet.
 </p>
 <p class=""govuk-body"">If you’re making a claim in another area:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">
-    for rent or mortgage arrears claims in England,
-    use the <a class=""govuk-link"" href=""https://www.gov.uk/possession-claim-online-recover-property"" target=""_blank"" rel=""noopener noreferrer"">
-    Possession Claim Online (PCOL) service (opens in new tab)</a>
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    for other types of claims in England, use form N5 and the correct particulars of claim form
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    for claims in Wales, use form N5 Wales and the correct particulars of claim form
-  </li>
+ <li class=""govuk-!-font-size-19"">
+ for rent or mortgage arrears claims in England,
+ use the <a class=""govuk-link"" href=""https://www.gov.uk/possession-claim-online-recover-property"" target=""_blank"" rel=""noopener noreferrer"">
+ Possession Claim Online (PCOL) service (opens in new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ for other types of claims in England, use form N5 and the correct particulars of claim form
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ for claims in Wales, use form N5 Wales and the correct particulars of claim form
+ </li>
 </ul>
 
 <p class=""govuk-body"">
-  <a class=""govuk-link"" href=""https://www.gov.uk/government/collections/property-possession-forms"" target=""_blank"" rel=""noopener noreferrer"">
-    View the full list of property possessions forms (opens in new tab)
-  </a>.
+ <a class=""govuk-link"" href=""https://www.gov.uk/government/collections/property-possession-forms"" target=""_blank"" rel=""noopener noreferrer"">
+ View the full list of property possessions forms (opens in new tab)
+ </a>.
 </p>
 
 <div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-      To exit back to the case list, select ‘Cancel’
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ To exit back to the case list, select ‘Cancel’
+ </strong>
 </div>
 </section>","<section tabindex=""0"">
 <hr class=""govuk-section-break govuk-section-break--l govuk-section-break--visible"">
@@ -5439,30 +4382,30 @@ Defnyddiwch ffurflen N5 a'r ffurflen manylion yr hawliad gywir.
 </div>
 </section>"
 "<ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for rent or mortgage arrears claims in England, use the <a href=""https://www.gov.uk/possession-claim-online-recover-property""
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for rent or mortgage arrears claims in England, use the <a href=""https://www.gov.uk/possession-claim-online-recover-property""
 rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""
 aria-label=""Go to Possession Claim Online service (opens in new tab)"">
 Possession Claim Online (PCOL) service (opens in new tab)</a>
-    </li>
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for other claim types in England, fill in form N5 and the correct particulars of claim form
-    </li>
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for claims in Wales, use form N5 Wales and the correct particulars of claim form
-    </li>
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for claims in Scotland, use your <a href=""https://www.scotcourts.gov.uk/home"" rel=""noreferrer noopener"" target=""_blank""
+ </li>
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for other claim types in England, fill in form N5 and the correct particulars of claim form
+ </li>
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for claims in Wales, use form N5 Wales and the correct particulars of claim form
+ </li>
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for claims in Scotland, use your <a href=""https://www.scotcourts.gov.uk/home"" rel=""noreferrer noopener"" target=""_blank""
 class=""govuk-link"" aria-label=""Go to Scottish Courts website (opens in new tab)"">
 local sheriff court (opens in new tab)</a>
-    </li>
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for claims in Northern Ireland, use the
-        <a href=""https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland""
-        rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""
-        aria-label=""Go to Enforcement of Judgments Office website (opens in new tab)"">
-        Enforcement of Judgments Office (EJO) (opens in new tab)</a>
-    </li>
+ </li>
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for claims in Northern Ireland, use the
+ <a href=""https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland""
+ rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""
+ aria-label=""Go to Enforcement of Judgments Office website (opens in new tab)"">
+ Enforcement of Judgments Office (EJO) (opens in new tab)</a>
+ </li>
 </ul>","<ul class=""govuk-list govuk-list--bullet"">
     <li class=""govuk-list govuk-!-font-size-19"">
         ar gyfer hawliadau ôl-ddyledion rhent neu forgais yn Lloegr, defnyddiwch y <a href=""https://www.gov.uk/possession-claim-online-recover-property""
@@ -5490,15 +4433,15 @@ llys siryf lleol (yn agor mewn tab newydd)</a>
     </li>
 </ul>"
 "<ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for rent or mortgage arrears claims, use the <a href=""https://www.gov.uk/possession-claim-online-recover-property""
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for rent or mortgage arrears claims, use the <a href=""https://www.gov.uk/possession-claim-online-recover-property""
 rel=""noreferrer noopener"" target=""_blank"" class=""govuk-link""
 aria-label=""Go to Possession Claim Online service (opens in new tab)"">
 Possession Claim Online (PCOL) service (opens in new tab)</a>
-    </li>
-    <li class=""govuk-list govuk-!-font-size-19"">
-        for other types of claims, fill in form N5 and the correct particulars of claim form
-    </li>
+ </li>
+ <li class=""govuk-list govuk-!-font-size-19"">
+ for other types of claims, fill in form N5 and the correct particulars of claim form
+ </li>
 </ul>","<ul class=""govuk-list govuk-list--bullet"">
     <li class=""govuk-list govuk-!-font-size-19"">
         ar gyfer hawliadau ôl-ddyledion rhent neu forgais, defnyddiwch y <a href=""https://www.gov.uk/possession-claim-online-recover-property""
@@ -5513,10 +4456,10 @@ gwasanaeth Hawliadau Meddiannu Ar-lein (PCOL) (yn agor mewn tab newydd)</a>
 Reasons for requesting a demotion of tenancy,Rhesymau dros wneud cais am denantiaeth isradd
 Upload required documents,Uwchlwytho dogfennau gofynnol
 "<p class=""govuk-body"" tabindex=""0"">
-  You can upload documents that give more details about the antisocial
-  behaviour or illegal or prohibited conduct you’re describing or evidence of
-  this behaviour later on.
-  </p>","<p class=""govuk-body"" tabindex=""0"">
+ You can upload documents that give more details about the antisocial
+ behaviour or illegal or prohibited conduct you’re describing or evidence of
+ this behaviour later on.
+ </p>","<p class=""govuk-body"" tabindex=""0"">
   Gallwch uwchlwytho dogfennau sy'n rhoi mwy o fanylion am yr ymddygiad gwrthgymdeithasol
   neu ymddygiad anghyfreithlon neu a waharddwyd a ddisgrifir gennych neu dystiolaeth o'r
   ymddygiad hwn nes ymlaen.
@@ -5530,18 +4473,18 @@ You cannot make a trespass claim using this service.
 Use form N5 Wales and the correct particulars of claim form.
 
 <a href=""https://www.gov.uk/government/collections/property-possession-forms"" rel=""noreferrer noopener""
-    target=""_blank""
-    class=""govuk-link"">View the full list of property possessions forms (opens in a new tab)</a>
+ target=""_blank""
+ class=""govuk-link"">View the full list of property possessions forms (opens in a new tab)</a>
 </p>
 
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Warning</span>
-    <span id=""warning-message"">
-      To exit to the case list, select ‘Cancel’
-    </span>
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span id=""warning-message"">
+ To exit to the case list, select ‘Cancel’
+ </span>
+ </strong>
 </div>","---
 <p class=""govuk-body"">
 Ni allwch ddefnyddio'r gwasanaeth hwn i wneud hawliad tresmasu.
@@ -5573,18 +4516,18 @@ This service is currently only available for community landlords.
 Use form N5 Wales and the correct particulars of claim form.
 
 <a href=""https://www.gov.uk/government/collections/property-possession-forms"" rel=""noreferrer noopener""
-    target=""_blank""
-    class=""govuk-link"">View the full list of property possessions forms (opens in a new tab)</a>
+ target=""_blank""
+ class=""govuk-link"">View the full list of property possessions forms (opens in a new tab)</a>
 </p>
 
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Warning</span>
-    <span id=""warning-message"">
-      To exit to the case list, select ‘Cancel’
-    </span>
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span id=""warning-message"">
+ To exit to the case list, select ‘Cancel’
+ </span>
+ </strong>
 </div>","---
 <p class=""govuk-body"">
 Mae'r gwasanaeth hwn ar gael i landlordiaid cymunedol yn unig ar hyn o bryd.
@@ -5670,9 +4613,9 @@ Which documents have you uploaded as part of your claim?,Pa ddogfennau ydych chi
 "---
 <p class=""govuk-body"">You must upload copies of the following documents:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">energy performance certificate</li>
-    <li class=""govuk-!-font-size-19"">current gas safety report</li>
-    <li class=""govuk-!-font-size-19"">current Electrical Installation Condition Report (EICR)</li>
+ <li class=""govuk-!-font-size-19"">energy performance certificate</li>
+ <li class=""govuk-!-font-size-19"">current gas safety report</li>
+ <li class=""govuk-!-font-size-19"">current Electrical Installation Condition Report (EICR)</li>
 </ul>
 <p class=""govuk-body"">If you cannot upload a copy of a document, you must explain why.</p>","---
 <p class=""govuk-body"">Rhaid i chi uwchlwytho copïau o'r dogfennau canlynol:</p>
@@ -5685,17 +4628,17 @@ Which documents have you uploaded as part of your claim?,Pa ddogfennau ydych chi
 "---
 <section tabindex=""0"">
 <p class=""govuk-body"">
-    If this is a possession claim under an occupation contract, you must have
-    <br> already served the defendant with notice seeking possession.
+ If this is a possession claim under an occupation contract, you must have
+ <br> already served the defendant with notice seeking possession.
 </p>
 
 <div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-          Each ground requires a different notice period before a possession
-          <br> claim may be made. Some do not require any notice period.
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ Each ground requires a different notice period before a possession
+ <br> claim may be made. Some do not require any notice period.
+ </strong>
 </div>
 </section>","---
 <section tabindex=""0"">
@@ -5725,18 +4668,18 @@ Why can you not upload a copy of the gas safety report?,Pam na allwch chi uwchlw
 Enter statement,Rhowch eich datganiad
 "<section tabindex=""0"">
 <p class=""govuk-body"">
-    You must make a statement that includes:
-    <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19""> the type of tenancy or licence that is in place for this
-    claim </li>
-    <li class=""govuk-!-font-size-19""> how you have complied with the applicable possession
-    procedures </li>
-    </ul>
+ You must make a statement that includes:
+ <ul class=""govuk-list govuk-list--bullet"">
+ <li class=""govuk-!-font-size-19""> the type of tenancy or licence that is in place for this
+ claim </li>
+ <li class=""govuk-!-font-size-19""> how you have complied with the applicable possession
+ procedures </li>
+ </ul>
 </p>
 <p class=""govuk-body"">
-    Start your statement with:
-    <br>""I am a landlord under a tenancy or license which is not an occupation
-    <br>contract because:""
+ Start your statement with:
+ <br>""I am a landlord under a tenancy or license which is not an occupation
+ <br>contract because:""
 </p>
 </section>","<section tabindex=""0"">
 <p class=""govuk-body"">
@@ -5784,10 +4727,10 @@ Save defendants response as draft or to a case based on flag,Cadw ymateb y diffy
 "----
 <h2 class=""govuk-heading-m"">Correspondence address</h2>
 <p class=""govuk-body-m"">
-    Court documents like orders and notices will be sent by post to the address registered with
-    My HMCTS.<br><br>
-    You can change this correspondence address if, for example, you work in a
-    different office from the address registered with My HMCTS.
+ Court documents like orders and notices will be sent by post to the address registered with
+ My HMCTS.<br><br>
+ You can change this correspondence address if, for example, you work in a
+ different office from the address registered with My HMCTS.
 </p>","----
 <h2 class=""govuk-heading-m"">Cyfeiriad ar gyfer anfon gohebiaeth</h2>
 <p class=""govuk-body-m"">
@@ -5797,11 +4740,11 @@ Save defendants response as draft or to a case based on flag,Cadw ymateb y diffy
     swyddfa wahanol i'r cyfeiriad sydd wedi'i gofrestru gyda My HMCTS.
 </p>"
 "<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
-    We could not retrieve your service address that’s linked to your My
-    HMCTS account
+ We could not retrieve your service address that’s linked to your My
+ HMCTS account
 </h3>
 <p class=""govuk-hint govuk-!-margin-top-1"">
-    You must enter the service address you’d like to receive documents to
+ You must enter the service address you’d like to receive documents to
 </p>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
     Nid oeddem yn gallu adfer eich cyfeiriad cyflwyno sy'n gysylltiedig â'ch cyfrif My
     HMCTS
@@ -5887,21 +4830,21 @@ Upload documents to support the defendant’s application,Uwchlwytho dogfennau i
 "<p class=""govuk-body"">You cannot apply to suspend (stop or delay) an eviction online.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">You must apply by post:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
-        class=""govuk-link"">read the guidance explaining how to suspend an eviction
-         (GOV.UK, opens in a new tab)</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court, or deliver it by hand
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+ class=""govuk-link"">read the guidance explaining how to suspend an eviction
+ (GOV.UK, opens in a new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court, or deliver it by hand
+ </li>
 </ul>","<p class=""govuk-body"">Ni allwch wneud cais i atal (stopio neu ohirio) troi allan ar-lein.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Rhaid i chi wneud cais drwy'r post:</p>
 <ul class=""govuk-list govuk-list--bullet"">
@@ -5928,18 +4871,18 @@ don’t agree, you may need to pay a higher fee.</p>
 <h2 class=""govuk-heading-m"">If the other parties do not agree</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">The application fee will increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">you have already told the other party that they are
-   making this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-   (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">you have already told the other party that they are
+ making this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
 <h2 class=""govuk-heading-m"">What you need to do</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">You will need to upload evidence for the court, to show that:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">you have told the other parties, and</li>
-  <li class=""govuk-!-font-size-19"">they agreed to it</li>
+ <li class=""govuk-!-font-size-19"">you have told the other parties, and</li>
+ <li class=""govuk-!-font-size-19"">they agreed to it</li>
 </ul>
 <p class=""govuk-body"">For example a copy of a letter, email or a signed consent order.
  We will ask you to upload this evidence later in this application. </p>
@@ -5977,24 +4920,24 @@ ond na wnaeth y parti arall ymateb, dewiswch 'Na'.</p>"
  without telling the other party first.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">For example, if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">
-    it is so urgent that there is not enough time to give notice
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    giving someone notice could undermine the order that you want the court to grant
-  </li>
-  <li class=""govuk-!-font-size-19"">
-    you believe that you or your client are at risk from the other party
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ it is so urgent that there is not enough time to give notice
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ giving someone notice could undermine the order that you want the court to grant
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ you believe that you or your client are at risk from the other party
+ </li>
 </ul>
 </ul>
 <div class=""govuk-warning-text"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-    We will ask you to provide the reason. The court will consider the reason, and
-    you may not be successful.
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ We will ask you to provide the reason. The court will consider the reason, and
+ you may not be successful.
+ </strong>
 </div>","<h2 class=""govuk-heading-m"">Os na fydd y partïon eraill yn cytuno</h2>
 <p class=""govuk-body"">Fel arfer rydym yn anfon copi o'r cais at y partïon eraill
 (y tenant, landlord, cymdeithas dai neu fenthyciwr morgeisi). Mae hyn yn rhoi cyfle i'r parti arall
@@ -6037,8 +4980,8 @@ You will need to provide a good reason to delay the hearing, and you may not be 
 You’ll need to know:
 </p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">why you are asking the court to delay the hearing</li>
-  <li class=""govuk-!-font-size-19"">when you are proposing the hearing be moved to (if applicable)</li>
+ <li class=""govuk-!-font-size-19"">why you are asking the court to delay the hearing</li>
+ <li class=""govuk-!-font-size-19"">when you are proposing the hearing be moved to (if applicable)</li>
 </ul>
 <p class=""govuk-body"">You may need to provide some evidence for the court.</p>
 
@@ -6058,10 +5001,10 @@ by a judge before the hearing date.</p>
 pay ${xui_genapp_StandardFee}.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 <h2 class=""govuk-heading-m"">Apply by post</h2>
@@ -6069,16 +5012,16 @@ pay ${xui_genapp_StandardFee}.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">You must apply by post:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
 </ul>","<p class=""govuk-body"">
 Gallwch ofyn i'r llys ohirio (oedi) y gwrandawiad llys (ei symud i ddyddiad neu amser diweddarach).
 Mae hyn yn golygu y gallwch ofyn i newid dyddiad ac amser y gwrandawiad.
@@ -6149,7 +5092,7 @@ You will need to provide a good reason to ask the court to set aside the order, 
 You’ll need to know:
 </p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">why you are asking the court to set aside the original decision</li>
+ <li class=""govuk-!-font-size-19"">why you are asking the court to set aside the original decision</li>
 </ul>
 <p class=""govuk-body"">You may need to provide some evidence for the court.</p>
 
@@ -6163,10 +5106,10 @@ answers so that you can return to them later.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
 increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
@@ -6174,16 +5117,16 @@ increase to ${xui_genapp_MaxFee} if:</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
 </ul>","<p class=""govuk-body"">
 Gallwch ofyn i'r llys roi gorchymyn o'r naill du (ei ganslo) os oes gennych reswm da.
 </p>
@@ -6242,30 +5185,30 @@ This is called an application.
 <ul class=""govuk-list govuk-list--bullet"">
 <li class=""govuk-!-font-size-19"">add someone as an extra party to your claim</li>
 <li class=""govuk-!-font-size-19"">ask the court not to punish you for
-   breaching an order (relief from sanctions)</li>
+ breaching an order (relief from sanctions)</li>
 <li class=""govuk-!-font-size-19"">serve a claim outside England & Wales</li>
 <li class=""govuk-!-font-size-19"">transfer to the High Court for enforcement by a writ of possession</li>
 </ul>
 
 <div class=""govuk-warning-text govuk-!-margin-bottom-1"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-    You cannot apply to suspend (stop or delay) the eviction online.
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ You cannot apply to suspend (stop or delay) the eviction online.
+ </strong>
 </div>
 
 <p class=""govuk-body govuk-!-margin-bottom-1"">To apply by post:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
-        class=""govuk-link"">read the guidance explaining how to suspend an eviction
-         (GOV.UK, opens in a new tab)</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+ class=""govuk-link"">read the guidance explaining how to suspend an eviction
+ (GOV.UK, opens in a new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
 </ul>
 
 <h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
@@ -6273,9 +5216,9 @@ This is called an application.
 You’ll need to know:
 </p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">what you want the court to do</li>
-  <li class=""govuk-!-font-size-19"">why you are asking the court to do it, for example any evidence
-  you have to support your application</li>
+ <li class=""govuk-!-font-size-19"">what you want the court to do</li>
+ <li class=""govuk-!-font-size-19"">why you are asking the court to do it, for example any evidence
+ you have to support your application</li>
 </ul>
 
 <p class=""govuk-body"">You may need to provide some evidence for the court.</p>
@@ -6290,10 +5233,10 @@ answers so that you can return to them later.</p>
 <p class=""govuk-body"">It usually costs ${xui_genapp_StandardFee} to apply.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">you have already told the other party that you are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
@@ -6301,16 +5244,16 @@ answers so that you can return to them later.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find your local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
 </ul>","<p class=""govuk-body"">
 Gallwch ofyn i'r llys wneud penderfyniad ar unrhyw bwynt yn ystod eich achos.
 Gelwir hyn yn gais.
@@ -6391,8 +5334,8 @@ atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
     </li>
 </ul>"
 "<p class=""govuk-body"">
-  I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
-  made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
+ I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
+ made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
 </p>","<p class=""govuk-body"">
   Deallaf y gellir dwyn achos dirmyg llys yn erbyn unrhyw un sy’n gwneud datganiad anwir, neu sy’n achosi i
   ddatganiad anwir gael ei wneud mewn dogfen a ddilysir gan ddatganiad gwirionedd heb gredu'n onest ei fod yn wir.
@@ -6457,19 +5400,19 @@ hystyried pan fydd yn gwneud penderfyniad. Gallwch uwchlwytho'r dystiolaeth ar y
 "<p class=""govuk-body govuk-!-margin-bottom-1"">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
 increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
 <p class=""govuk-body govuk-!-margin-bottom-1"">The defendant may be able to get help paying the fee
 if they (one or more of the following):</p>
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">are on certain benefits</li>
-    <li class=""govuk-!-font-size-19"">have little or no savings</li>
-    <li class=""govuk-!-font-size-19"">have low income</li>
+ <li class=""govuk-!-font-size-19"">are on certain benefits</li>
+ <li class=""govuk-!-font-size-19"">have little or no savings</li>
+ <li class=""govuk-!-font-size-19"">have low income</li>
 </ul>","<p class=""govuk-body govuk-!-margin-bottom-1"">Fel arfer mae'n costio ${xui_genapp_StandardFee} i wneud cais. Bydd y ffi yn
 cynyddu i ${xui_genapp_MaxFee} os:</p>
 <ul class=""govuk-list govuk-list--bullet"">
@@ -6488,26 +5431,26 @@ os ydynt (os yw un neu fwy o’r canlynol yn berthnasol):</p>
     <li class=""govuk-!-font-size-19"">ar incwm isel</li>
 </ul>"
 "<p class=""govuk-body"">
-    The defendant needs to <a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank""
-    rel=""noopener noreferrer"" class=""govuk-link"">apply for Help with Fees (GOV.UK, opens in new tab)</a>
-    before you can continue with this application. If you are applying for Help with Fees on the defendant’s
-    behalf, you should do that now before you continue with this application.
+ The defendant needs to <a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">apply for Help with Fees (GOV.UK, opens in new tab)</a>
+ before you can continue with this application. If you are applying for Help with Fees on the defendant’s
+ behalf, you should do that now before you continue with this application.
 </p>
 <p class=""govuk-body"">
-    Enter the court form number 'N244' when asked. This will be one of the first questions
-    when you (or they) apply for Help with Fees.
+ Enter the court form number 'N244' when asked. This will be one of the first questions
+ when you (or they) apply for Help with Fees.
 </p>
 <p class=""govuk-body"">
-    After you (or they) have applied you (or they) will receive a Help With Fees reference number.
-    Enter the reference number when you return to this application.
+ After you (or they) have applied you (or they) will receive a Help With Fees reference number.
+ Enter the reference number when you return to this application.
 </p>
 <p class=""govuk-body"">
-    If they receive any benefit that qualifies them for Help with Fees, you (or they) must include
-    evidence of it when you (or they) apply online for Help with Fees.
+ If they receive any benefit that qualifies them for Help with Fees, you (or they) must include
+ evidence of it when you (or they) apply online for Help with Fees.
 </p>
 <p class=""govuk-body"">
-    If you already have their Help with Fees reference number, you can return to the previous screen
-    and enter it there.
+ If you already have their Help with Fees reference number, you can return to the previous screen
+ and enter it there.
 </p>","<p class=""govuk-body"">
     Mae angen i'r diffynnydd <a href=""https://www.gov.uk/get-help-with-court-fees"" target=""_blank""
     rel=""noopener noreferrer"" class=""govuk-link"">wneud cais am Help i Dalu Ffioedd (GOV.UK, yn agor mewn tab newydd)</a>
@@ -6537,18 +5480,18 @@ don’t agree, the defendant may need to pay a higher fee.</p>
 <h2 class=""govuk-heading-m"">If the other parties do not agree</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">The application fee will increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are
-   making this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-   (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are
+ making this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
 <h2 class=""govuk-heading-m"">What you need to do</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">You will need to upload evidence for the court, to show that:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">the defendant has told the other parties, and</li>
-  <li class=""govuk-!-font-size-19"">they agreed to it</li>
+ <li class=""govuk-!-font-size-19"">the defendant has told the other parties, and</li>
+ <li class=""govuk-!-font-size-19"">they agreed to it</li>
 </ul>
 <p class=""govuk-body""> For example a copy of a letter, email or a signed consent order.
  We will ask you to upload this evidence later in this application. </p>
@@ -6776,9 +5719,9 @@ they may not be successful.
 You’ll need to know:
 </p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
-   Fees (help to pay court fees)</li>
-  <li class=""govuk-!-font-size-19"">why the defendant is asking the court to set aside the original decision</li>
+ <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
+ Fees (help to pay court fees)</li>
+ <li class=""govuk-!-font-size-19"">why the defendant is asking the court to set aside the original decision</li>
 </ul>
 <p class=""govuk-body"">They may need to provide some evidence for the court.</p>
 
@@ -6792,10 +5735,10 @@ answers so that you can return to them later.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
 increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
@@ -6809,16 +5752,16 @@ We will ask you if they want to do this when you apply.
 <p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
 </ul>","<p class=""govuk-body"">
 Gallwch ofyn i'r llys roi orchymyn o'r naill du (canslo) os oes gan y diffynnydd reswm da. Er enghraifft, os nad
 oeddent yn gallu mynychu'r gwrandawiad llys gwreiddiol, oherwydd eu bod yn sâl.
@@ -6887,30 +5830,30 @@ This is called an application.
 <ul class=""govuk-list govuk-list--bullet"">
 <li class=""govuk-!-font-size-19"">add someone as an extra party to their claim</li>
 <li class=""govuk-!-font-size-19"">ask the court not to punish them for
-   breaching an order (relief from sanctions)</li>
+ breaching an order (relief from sanctions)</li>
 <li class=""govuk-!-font-size-19"">serve a claim outside England & Wales</li>
 <li class=""govuk-!-font-size-19"">transfer to the High Court for enforcement by a writ of possession</li>
 </ul>
 
 <div class=""govuk-warning-text govuk-!-margin-bottom-1"">
-  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
-  <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-visually-hidden"">Warning</span>
-    You cannot apply to suspend (stop or delay) the eviction online.
-  </strong>
+ <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
+ <strong class=""govuk-warning-text__text"">
+ <span class=""govuk-visually-hidden"">Warning</span>
+ You cannot apply to suspend (stop or delay) the eviction online.
+ </strong>
 </div>
 
 <p class=""govuk-body govuk-!-margin-bottom-1"">To apply by post:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
-        class=""govuk-link"">read the guidance explaining how to suspend an eviction
-         (GOV.UK, opens in a new tab)</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/repossession/delay-eviction"" target=""_blank"" rel=""noopener noreferrer""
+ class=""govuk-link"">read the guidance explaining how to suspend an eviction
+ (GOV.UK, opens in a new tab)</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
 </ul>
 
 <h2 class=""govuk-heading-m"">What you’ll need to apply</h2>
@@ -6918,11 +5861,11 @@ This is called an application.
 You’ll need to know:
 </p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
-   Fees (help to pay court fees)</li>
-  <li class=""govuk-!-font-size-19"">what they want the court to do</li>
-  <li class=""govuk-!-font-size-19"">why they are asking the court to do it, for example any evidence
-  they have to support their application</li>
+ <li class=""govuk-!-font-size-19"">if the defendant can pay the court fee, or if they need Help with
+ Fees (help to pay court fees)</li>
+ <li class=""govuk-!-font-size-19"">what they want the court to do</li>
+ <li class=""govuk-!-font-size-19"">why they are asking the court to do it, for example any evidence
+ they have to support their application</li>
 </ul>
 
 <p class=""govuk-body"">They may need to provide some evidence for the court.</p>
@@ -6937,10 +5880,10 @@ answers so that you can return to them later.</p>
 <p class=""govuk-body"">It usually costs ${xui_genapp_StandardFee} to apply.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">The fee will increase to ${xui_genapp_MaxFee} if:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-  <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
-  this application, and</li>
-  <li class=""govuk-!-font-size-19"">the other party did not agree to it
-  (this means that they objected to it)</li>
+ <li class=""govuk-!-font-size-19"">the defendant has already told the other party that they are making
+ this application, and</li>
+ <li class=""govuk-!-font-size-19"">the other party did not agree to it
+ (this means that they objected to it)</li>
 </ul>
 <p class=""govuk-body"">You’ll see the final application fee before you pay.</p>
 
@@ -6954,16 +5897,16 @@ We will ask you if they want to do this when you apply.
 <p class=""govuk-body govuk-!-margin-bottom-1"">If you’d prefer to respond by post:</p>
 
 <ul class=""govuk-list govuk-list--bullet"">
-    <li class=""govuk-!-font-size-19"">
-        <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
-        target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
-    </li>
-    <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
-        rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
-    </li>
-    <li class=""govuk-!-font-size-19"">
-        send the completed form to the court
-    </li>
+ <li class=""govuk-!-font-size-19"">
+ <a href=""https://www.gov.uk/government/publications/form-n244-application-notice""
+ target=""_blank"" rel=""noopener noreferrer"" class=""govuk-link"">fill in the N244 form</a>
+ </li>
+ <li class=""govuk-!-font-size-19""><a href=""https://www.gov.uk/find-court-tribunal"" target=""_blank""
+ rel=""noopener noreferrer"" class=""govuk-link"">find the defendant’s local court</a>
+ </li>
+ <li class=""govuk-!-font-size-19"">
+ send the completed form to the court
+ </li>
 </ul>","<p class=""govuk-body"">
 Gall y diffynnydd ofyn i'r llys wneud penderfyniad ar unrhyw bwynt yn ystod eu hachos.
 Gelwir hyn yn gais.
@@ -7052,14 +5995,14 @@ Byddwn yn gofyn i chi os ydynt eisiau gwneud hyn pan fyddwch yn gwneud cais.
     </li>
 </ul>"
 "<p class=""govuk-body"">
-  I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
-  made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
+ I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be
+ made, a false statement in a document verified by a statement of truth without an honest belief in its truth.
 </p>
 <p class=""govuk-body"">
-  Defendant: ${currentRepresentedPartyName}
+ Defendant: ${currentRepresentedPartyName}
 </p>
 <p class=""govuk-body govuk-!-font-weight-bold"">
-  Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
+ Completed by the defendant’s legal representative (as defined by CPR 2.3 (1))
 </p>","<p class=""govuk-body"">
   Deallaf y gellir dwyn achos dirmyg llys yn erbyn unrhyw un sy’n gwneud datganiad anwir, neu sy’n achosi i
   ddatganiad anwir gael ei wneud mewn dogfen a ddilysir gan ddatganiad gwirionedd heb gredu'n onest ei fod yn wir.
@@ -7148,12 +6091,12 @@ Launch the external flags screen,Lansio’r sgrin fflagiau allanol
 Party support,Cymorth partïon
 Support,Cymorth
 "<p class=""govuk-body"">
-    We usually share anything you upload with the other parties, for example
-    a tenant, landlord, housing association, or mortgage lender.
+ We usually share anything you upload with the other parties, for example
+ a tenant, landlord, housing association, or mortgage lender.
 </p>
  <p class=""govuk-body"">
-    If your application is ‘without notice’ (where you have asked us to consider your application
-    without telling the other party) we will not share anything with them.
+ If your application is ‘without notice’ (where you have asked us to consider your application
+ without telling the other party) we will not share anything with them.
 </p>","<p class=""govuk-body"">
     Rydym fel arfer yn rhannu unrhyw beth rydych yn ei uwchlwytho gyda'r partïon arall, er enghraifft
     tenant, landlord, cymdeithas dai neu fenthyciwr morgeisi.
@@ -7163,26 +6106,26 @@ Support,Cymorth
     heb ddweud wrth y parti arall) ni fyddwn yn rhannu unrhyw beth gyda nhw.
 </p>"
 "<p class=""govuk-body"">
-    You should only upload documents that are relevant to the claim.
+ You should only upload documents that are relevant to the claim.
 </p>
 
 <p class=""govuk-body"">
-    Before you upload the document, give it a name that tells the court what it is,
-    for example  ‘witness statement’, or ‘tenancy agreement’.
+ Before you upload the document, give it a name that tells the court what it is,
+ for example ‘witness statement’, or ‘tenancy agreement’.
 </p>
 
 <p class=""govuk-body"">
-   You can upload the following file types: DOC/DOCX (Word), XLS/XLSM
-   (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
-   TIF/TIFF.
+ You can upload the following file types: DOC/DOCX (Word), XLS/XLSM
+ (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP,
+ TIF/TIFF.
 </p>
 
 <p class=""govuk-body govuk-!-font-weight-bold govuk-!-margin-0"">
-    Before you upload your documents
+ Before you upload your documents
 </p>
 
 <p class=""govuk-body"">
-    Give your document a name that explains what it is.
+ Give your document a name that explains what it is.
 </p>","<p class=""govuk-body"">
     Dylech ond uwchlwytho dogfennau sy’n berthnasol i'r hawliad.
 </p>
@@ -7206,37 +6149,37 @@ Support,Cymorth
     Rhowch enw i'ch dogfen sy'n egluro beth ydyw.
 </p>"
 "<p class=""govuk-body"">
-    You can upload a document to support an application, or to show proof that
-    you have done something.
+ You can upload a document to support an application, or to show proof that
+ you have done something.
 </p>
 
 <div class=""govuk-details__text govuk-!-margin-bottom-5"">
-    <p class=""govuk-body"">
-        We usually share anything you upload with the other party, for example your tenant
-        or the mortgage payer.
-    </p>
-    <p class=""govuk-body"">
-        If your application is ‘without notice’ (where you have asked us to consider your
-        application without telling the other party) we will not share anything with them.
-    </p>
+ <p class=""govuk-body"">
+ We usually share anything you upload with the other party, for example your tenant
+ or the mortgage payer.
+ </p>
+ <p class=""govuk-body"">
+ If your application is ‘without notice’ (where you have asked us to consider your
+ application without telling the other party) we will not share anything with them.
+ </p>
 </div>
 <p class=""govuk-body govuk-!-font-weight-bold govuk-!-font-size-24"">What you can upload
 </p>
 
 <p class=""govuk-body"">
-    You can upload any documents that you think are relevant.
+ You can upload any documents that you think are relevant.
 </p>
 
 <p class=""govuk-body govuk-!-margin-bottom-0"">For example, you can share:</p>
 <ul class=""govuk-list govuk-list--bullet"">
-   <li class=""govuk-!-font-size-19"">proof that you have cancelled an eviction</li>
-   <li class=""govuk-!-font-size-19"">evidence that a judge has asked for, like a witness
-   statement, or a tenancy agreement</li>
-   <li class=""govuk-!-font-size-19"">an inspection of the property, or a report done
-   by a surveyor</li>
-   <li class=""govuk-!-font-size-19"">photographs of damage to the property</li>
-   <li class=""govuk-!-font-size-19"">letters, emails and text messages from
-   the defendant</li>
+ <li class=""govuk-!-font-size-19"">proof that you have cancelled an eviction</li>
+ <li class=""govuk-!-font-size-19"">evidence that a judge has asked for, like a witness
+ statement, or a tenancy agreement</li>
+ <li class=""govuk-!-font-size-19"">an inspection of the property, or a report done
+ by a surveyor</li>
+ <li class=""govuk-!-font-size-19"">photographs of damage to the property</li>
+ <li class=""govuk-!-font-size-19"">letters, emails and text messages from
+ the defendant</li>
 </ul>","<p class=""govuk-body"">
     Gallwch uwchlwytho dogfen i gefnogi cais, neu i brofi eich bod wedi
     gwneud rhywbeth.
