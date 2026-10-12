@@ -6314,3 +6314,12 @@ Support,Cymorth
  Ni allwch uwchlwytho ffeiliau sain neu fideo.
 </p>"
 Your request was rate limited. Please wait a few seconds before retrying your document upload,Roedd cyfyngiad ar gyfradd eich cais. Arhoswch ychydig eiliadau cyn ceisio uwchlwytho eich dogfen eto
+"---
+<h2 class=""govuk-heading-m"">Reference</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-1"">
+ You should provide a reference number.
+</p>","---
+<h2 class=""govuk-heading-m"">Cyfeirnod</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-1"">
+ Dylech ddarparu cyfeirnod
+</p>"
