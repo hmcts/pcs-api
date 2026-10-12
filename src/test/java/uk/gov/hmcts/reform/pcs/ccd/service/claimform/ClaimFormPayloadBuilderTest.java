@@ -33,8 +33,6 @@ import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormGround;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormPayload;
 import uk.gov.hmcts.reform.pcs.document.model.claimform.ClaimFormUnderlesseeRow;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -48,8 +46,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ClaimFormPayloadBuilderTest {
 
@@ -58,18 +54,13 @@ class ClaimFormPayloadBuilderTest {
         Clock.fixed(Instant.parse("2026-07-16T08:00:00Z"), ZoneId.of("Europe/London"));
 
     private ClaimFormPayloadBuilder builder;
-    private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
-        featureToggleService = mock(FeatureToggleService.class);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
-
         builder = new ClaimFormPayloadBuilder(
             new CaseReferenceFormatter(),
             new ClaimFormPartyMapper(new CaseNameFormatter()),
-            UK_CLOCK,
-            featureToggleService
+            UK_CLOCK
         );
     }
 
@@ -109,7 +100,6 @@ class ClaimFormPayloadBuilderTest {
             ClaimFormPayload payload = builder.build(pcsCase);
             assertThat(payload.getReferenceNumber()).isEqualTo("1234-5678-1234-5678");
         }
-
     }
 
     @Nested
@@ -910,28 +900,6 @@ class ClaimFormPayloadBuilderTest {
 
             assertThat(payload.isShowDescriptionOfGrounds()).isFalse();
             assertThat(payload.getWhyClaimingPossessionGrounds()).isEmpty();
-        }
-
-        @Test
-        void walesCaseHidesExemptLandlordQuestionWhenFeatureFlagEnabled() {
-            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
-
-            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
-            ClaimFormPayload payload = builder.build(pcsCase);
-
-            assertThat(payload.isWales()).isTrue();
-            assertThat(payload.isShowExemptLandlordQuestion()).isFalse();
-        }
-
-        @Test
-        void walesCaseShowsExemptLandlordQuestionWhenFeatureFlagDisabled() {
-            when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(false);
-
-            PcsCaseEntity pcsCase = minimalCase(LegislativeCountry.WALES);
-            ClaimFormPayload payload = builder.build(pcsCase);
-
-            assertThat(payload.isWales()).isTrue();
-            assertThat(payload.isShowExemptLandlordQuestion()).isTrue();
         }
     }
 
