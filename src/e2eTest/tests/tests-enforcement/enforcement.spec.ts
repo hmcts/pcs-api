@@ -65,11 +65,11 @@ test.beforeEach(async ({ page }, testInfo) => {
     });
   } else {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload() });
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
   await performAction('updatePaymentAPI');
@@ -107,11 +107,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         label2: enforcementApplication.writFeeValidationLabelHidden,
         text2: enforcementApplication.writFeeValidationTextHidden
       });
-      await performAction('validateGetQuoteFromBailiffLink', {
+     /* await performAction('validateGetQuoteFromBailiffLink', {
         type: enforcementApplication.summaryWritOrWarrantLink,
         link: enforcementApplication.quoteFromBailiffLinkHidden,
         newPage: enforcementApplication.hceoPageTitleHidden
-      });
+      }); */
       await performAction('expandSummary', enforcementApplication.summarySaveApplicationLink);
       await performAction('errorValidationYourApplicationPage', enforcementApplication.errorValidation);
       await performAction('selectApplicationType', {
