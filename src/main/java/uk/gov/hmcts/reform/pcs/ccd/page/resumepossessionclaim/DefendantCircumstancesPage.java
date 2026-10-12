@@ -23,6 +23,9 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
+    private static final String SINGLE_DEFENDANT = "defendantTermPossessive=\"defendant’s\"";
+    private static final String MULTIPLE_DEFENDANTS = "defendantTermPossessive=\"defendants’\"";
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -30,7 +33,8 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .pageLabel("Defendants’ circumstances")
             .complex(PCSCase::getDefendantCircumstances)
             .mandatory(DefendantCircumstances::getDefendantTermPossessive,NEVER_SHOW)
-            .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel)
+            .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel, SINGLE_DEFENDANT)
+            .readonlyNoSummary(DefendantCircumstances::getDefendantsCircumstancesLabel, MULTIPLE_DEFENDANTS)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
             .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
                        "hasDefendantCircumstancesInfo=\"YES\"")

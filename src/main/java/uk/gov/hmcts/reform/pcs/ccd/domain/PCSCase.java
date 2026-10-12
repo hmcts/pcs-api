@@ -144,7 +144,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private String currentRepresentedPartyId;
 
-    @CCD(searchable = false)
+    @CCD(label = "Defendant:", searchable = false)
     private String currentRepresentedPartyName;
 
     @CCD(searchable = false)
