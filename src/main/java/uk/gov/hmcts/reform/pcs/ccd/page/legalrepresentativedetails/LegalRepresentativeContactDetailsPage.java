@@ -48,7 +48,6 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     """)
 
             .optional(LegalRepresentativeDetails::getReference)
-            .readonly(LegalRepresentativeDetails::getOriginalEmailAddress, NEVER_SHOW)
             .label("legalRepresentativeDetails-email",  """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
@@ -56,18 +55,12 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         You’ll receive updates about the claim by email. For example when a hearing
                         has been scheduled or when a document is ready to view.
                     </p>
-                    <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
-                        Your registered email address is:
-                    </p>
                     """)
-            .label("legalRepresentativeDetails-email-value", """
-                    <p class="govuk-body-m govuk-!-margin-bottom-2">${originalEmailAddress}</p>
-                    """)
+            .readonly(LegalRepresentativeDetails::getOriginalEmailAddress)
             .mandatory(LegalRepresentativeDetails::getUseEmailAddress)
             .mandatory(LegalRepresentativeDetails::getEmailAddress, "useEmailAddress=\"NO\"")
             .readonly(LegalRepresentativeDetails::getOrganisationAddressFound, NEVER_SHOW)
             .readonly(LegalRepresentativeDetails::getLegalRepresentativeOrganisationAddress, NEVER_SHOW, true)
-            .readonly(LegalRepresentativeDetails::getFormattedContactAddress, NEVER_SHOW)
             .readonly(LegalRepresentativeDetails::getOrganisationId, NEVER_SHOW)
             .label("legalRepresentativeDetails-address-info-yes", """
                     ----
@@ -79,14 +72,7 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                         different office from the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .label("legalRepresentativeDetails-address-registered", """
-                    <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        Your registered address is:
-                    </h3>
-                    """, ORG_ADDRESS_FOUND)
-            .label("legalRepresentativeDetails-address-registered-value", """
-                    <p class="govuk-body-s govuk-!-margin-top-1">${formattedContactAddress}</p>
-                    """, ORG_ADDRESS_FOUND)
+            .readonly(LegalRepresentativeDetails::getFormattedContactAddress, ORG_ADDRESS_FOUND)
 
             // Address not found
             .label("legalRepresentativeDetails-address-info-no", """
