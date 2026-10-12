@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.FileUploadValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private final FileUploadValidationService fileUploadValidationService;
     private static final String DESCRIPTION_LABEL = "short description";
 
     @Override
@@ -46,7 +48,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
-            .mandatory(PCSCase::getAdditionalDocuments)
+            .optional(PCSCase::getAdditionalDocuments)
             .label("uploadAdditionalDocuments-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -55,6 +57,9 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
+
+        errors.addAll(fileUploadValidationService.validateRequiredAdditionalDocuments(
+            caseData.getAdditionalDocuments(), FileUploadValidationService.ADDITIONAL_DOCUMENT_REQUIRED));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
@@ -67,6 +72,10 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         String sectionLabel) {
 
         List<String> validationErrors = new ArrayList<>();
+
+        if (additionalDocuments == null) {
+            return validationErrors;
+        }
 
         for (int i = 0; i < additionalDocuments.size(); i++) {
             String docDescription = additionalDocuments.get(i).getValue().getDescription();

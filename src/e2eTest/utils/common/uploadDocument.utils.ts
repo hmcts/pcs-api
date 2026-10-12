@@ -115,6 +115,9 @@ export async function uploadTestDocument(fileName: string): Promise<CcdDocument>
  * S2S tokens are in place.
  */
 export async function uploadTestDocuments(): Promise<void> {
+
+  console.log(`\nAS PART OF GLOBAL SETUP UPLOAD TEST DOCUMENTS AND GENERATE MANIFEST\n`);
+
   if (!process.env.CDAM_URL) {
     throw new Error('CDAM_URL is not set (applyPlaywrightServiceUrls should have defaulted it)');
   }

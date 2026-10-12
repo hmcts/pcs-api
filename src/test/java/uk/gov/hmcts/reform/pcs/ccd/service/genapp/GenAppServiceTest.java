@@ -38,13 +38,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.genapp.GenAppWaTaskService;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GenAppRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentTypeMapper;
 import uk.gov.hmcts.reform.pcs.exception.GenAppException;
 import uk.gov.hmcts.reform.pcs.exception.GenAppNotFoundException;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -70,6 +73,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.PENDING_GEN_APP_ISSUED;
@@ -90,6 +94,14 @@ class GenAppServiceTest {
     private DocumentRepository documentRepository;
     @Mock
     private ClaimActivityLogService claimActivityLogService;
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
+    @Mock
+    private GenAppDocumentGenerator genAppDocumentGenerator;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private GenAppWaTaskService genAppWaTaskService;
     @Mock(strictness = LENIENT)
     private Clock utcClock;
     @Mock(strictness = LENIENT)
@@ -113,7 +125,9 @@ class GenAppServiceTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaim));
 
         underTest = new GenAppService(genAppRepository, documentNameService, documentTypeMapper,
-                                      documentRepository, claimActivityLogService, utcClock
+                                      documentRepository, claimActivityLogService, documentIdExtractor,
+                                      genAppDocumentGenerator,
+                                      notificationService, genAppWaTaskService, utcClock
         );
     }
 
@@ -361,6 +375,8 @@ class GenAppServiceTest {
                 .url("test url")
                 .binaryUrl("test binary url")
                 .build();
+            UUID documentId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            when(documentIdExtractor.extractDocumentId("test url")).thenReturn(documentId);
 
             UUID applicantPartyId = UUID.randomUUID();
             when(applicantParty.getId()).thenReturn(applicantPartyId);
@@ -402,6 +418,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
             assertThat(documentEntity.getFileName()).isEqualTo(modifiedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("test url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
             assertThat(documentEntity.getType()).isEqualTo(expectedDocumentType);
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
@@ -1005,6 +1022,8 @@ class GenAppServiceTest {
                 .url("test url")
                 .binaryUrl("test binary url")
                 .build();
+            UUID documentId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            when(documentIdExtractor.extractDocumentId("test url")).thenReturn(documentId);
 
             // When
             underTest.createGenAppEntity(
@@ -1019,6 +1038,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityCaptor.getValue();
             assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("test url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("test binary url");
             assertThat(documentEntity.getType()).isEqualTo(DocumentType.GENERAL_APPLICATION);
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.APPLICATIONS.getId());
@@ -1061,6 +1081,8 @@ class GenAppServiceTest {
                                                          eq(mainClaim), eq(applicantPartyId)
             ))
                 .thenReturn(renamedFilename);
+            UUID documentId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            when(documentIdExtractor.extractDocumentId("evidence url")).thenReturn(documentId);
 
             List<DocumentEntity> savedDocumentEntities = List.of(mock(DocumentEntity.class));
             when(documentRepository.saveAll(anyList())).thenReturn(savedDocumentEntities);
@@ -1084,6 +1106,7 @@ class GenAppServiceTest {
             DocumentEntity documentEntity = documentEntityListCaptor.getValue().getFirst();
             assertThat(documentEntity.getFileName()).isEqualTo(renamedFilename);
             assertThat(documentEntity.getUrl()).isEqualTo("evidence url");
+            assertThat(documentEntity.getDocumentId()).isEqualTo(documentId);
             assertThat(documentEntity.getBinaryUrl()).isEqualTo("evidence binary url");
             assertThat(documentEntity.getType()).isNull();
             assertThat(documentEntity.getCategoryId()).isEqualTo(CaseFileCategory.UNCATEGORISED_DOCUMENTS.getId());
@@ -1108,6 +1131,81 @@ class GenAppServiceTest {
             verify(documentRepository, never()).saveAll(anyList());
         }
 
+    }
+
+    @Nested
+    @DisplayName("Generate submission document")
+    class GenerateSubmissionDocumentTests {
+
+        private static final long CASE_REFERENCE = 1234567812345678L;
+
+        @Test
+        void shouldGenerateWhenNoSubmissionDocumentAttached() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(null);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            verify(notificationService).sendGenAppReceivedEmail(genAppEntity);
+            verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
+            verify(genAppWaTaskService).createTranslationTaskForGenApp(genAppEntity);
+        }
+
+        @Test
+        void shouldCreateWorkAllocationTaskOnlyAfterDocumentGenerated() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(null);
+            when(genAppEntity.getPcsCase()).thenReturn(pcsCaseEntity);
+            when(pcsCaseEntity.getCaseReference()).thenReturn(CASE_REFERENCE);
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            InOrder inOrder = inOrder(genAppDocumentGenerator, genAppWaTaskService);
+            inOrder.verify(genAppDocumentGenerator).createSubmissionDocument(CASE_REFERENCE, genAppEntity);
+            inOrder.verify(genAppWaTaskService).createReviewGenAppTask(CASE_REFERENCE, genAppEntity);
+        }
+
+        @Test
+        void shouldNotGenerateWhenSubmissionDocumentAlreadyAttached() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            GenAppEntity genAppEntity = mock(GenAppEntity.class);
+            when(genAppEntity.getSubmissionDocument()).thenReturn(mock(DocumentEntity.class));
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.of(genAppEntity));
+
+            // When
+            underTest.generateSubmissionDocument(genAppId);
+
+            // Then
+            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
+        }
+
+        @Test
+        void shouldThrowExceptionForUnknownGenAppId() {
+            // Given
+            UUID genAppId = UUID.randomUUID();
+            when(genAppRepository.findById(genAppId)).thenReturn(Optional.empty());
+
+            // When
+            Throwable throwable = catchThrowable(() -> underTest.generateSubmissionDocument(genAppId));
+
+            // Then
+            assertThat(throwable).isInstanceOf(GenAppNotFoundException.class);
+            verifyNoInteractions(genAppDocumentGenerator, notificationService, genAppWaTaskService);
+        }
     }
 
     private GenAppEntity getSavedGenAppEntity() {
