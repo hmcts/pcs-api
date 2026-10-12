@@ -29,7 +29,7 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer
+  confirmHCEOfficer, 
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -49,6 +49,13 @@ export class EnforcementAction implements IAction {
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
+      ['verifyRadioOptions', () => this.verifyRadioOptions(fieldName as actionRecord, page)],
+      ['verifySaveAndReturnToggle', () => this.verifySaveAndReturnToggle(fieldName as actionRecord, page)],
+      ['selectBreathingSpace', () => this.selectBreathingSpace(fieldName as actionRecord, page)],
+      ['selectMissedPayments', () => this.selectMissedPayments(fieldName as actionRecord, page)],
+      ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord, page)],
+      ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord, page)],
+      ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
       ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
       ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
       ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
@@ -103,7 +110,15 @@ export class EnforcementAction implements IAction {
     await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
     await performAction('expandSummary', bailiffQuote.type);
   }
+private async selectBreathingSpace(data: actionRecord, page: Page) {
+  await performAction('clickRadioButton', { question: data.question, option: data.option });
+  await performAction('reTryOnCallBackError', enforcementApplication.continueButton, data.nextPage as string);
+}
 
+private async selectMissedPayments(data: actionRecord, page: Page) {
+  await performAction('clickRadioButton', { question: data.question, option: data.option });
+  await performAction('reTryOnCallBackError', enforcementApplication.continueButton, data.nextPage as string);
+}
   private async selectApplicationType(applicationType: actionRecord, page: Page) {
     await this.addFieldsToMap(applicationType);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
@@ -112,12 +127,68 @@ export class EnforcementAction implements IAction {
     if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
+    } else if (applicationType.option === 'Warrant of possession') {
+       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
+    } else if (applicationType.option === 'Warrant of restitution') {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
   }
+     private async verifyRadioOptions(data: actionRecord, page: Page) {
+      const options = data.options as string[];
+      const group = page.getByRole('group', { name: data.question as string });
+      await expect(group).toBeVisible();
 
+      const radios = group.getByRole('radio');
+      await expect(radios).toHaveCount(options.length);
+
+      for (const option of options) {
+        await expect(group.getByRole('radio', { name: option, exact: true })).toBeVisible();
+      }
+}
+private async verifySaveAndReturnToggle(data: actionRecord, page: Page) {
+  const summaryLocator = page.locator('summary.govuk-details__summary');
+  const detailsTextLocator = page.locator('.govuk-details__text');
+
+  // 1. Validate that the summary text initially matches what we expect
+  await summaryLocator.waitFor({ state: 'visible', timeout: 15000 });
+  await expect(summaryLocator).toContainText(data.label as string, { ignoreCase: true });
+
+  // 2. Expand the toggle
+  await summaryLocator.click();
+  
+  // 3. Validate that the hidden content block appears AND contains the expected body text
+  await expect(detailsTextLocator).toBeVisible();
+  await expect(detailsTextLocator).toContainText(data.text as string, { ignoreCase: true });
+  
+  // 4. Validate that the label text when open matches data.hideLabel 
+  // (In GOV.UK elements this is usually the same string, but we verify it here)
+  await expect(summaryLocator).toContainText(data.hideLabel as string, { ignoreCase: true });
+
+  // 5. Collapse the toggle and verify it is hidden
+  await summaryLocator.click();
+  await expect(detailsTextLocator).toBeHidden();
+}
+
+
+private async errorValidationMissedPayments(data: actionRecord, page: Page) {
+  await expect(page.getByRole('heading', { name: 'There is a problem' })).toBeVisible();
+  await expect(page.getByText(data.errorMessage as string).first()).toBeVisible();
+}
+
+private async verifyPermissionScreen(data: actionRecord, page: Page) {
+  await expect(page.getByText(data.text as string)).toBeVisible();
+  const link = page.getByRole('link', { name: data.linkName as string });
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute('target', '_blank');
+}
+
+private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
+  await page.getByRole('button', { name: 'Previous' }).click();
+  await expect(page.getByRole('heading', { name: data.nextPage as string })).toBeVisible();
+  const group = page.getByRole('group', { name: data.question as string });
+  await expect(group.getByRole('radio', { name: data.option as string })).toBeChecked();
+}
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
     await performAction('clickRadioButton', { question: question1, option: enforcementApplication.yesRadioOptionHidden });
     await performAction('clickRadioButton', { question: question2, option: enforcementApplication.noRadioOptionHidden });

@@ -93,7 +93,15 @@ export class ActionEnforcementRegistry {
     ['errorValidationPeopleWhoWillBeEvictedPage', new ErrorValidationAction()],
     ['uploadFile', new UploadFileAction()],
     ['validatePrePopulatedData', new EnforcementAction()],
-  ]);
+    ['selectApplicationType', new EnforcementAction()],
+    ['selectBreathingSpace', new EnforcementAction()],
+    ['selectMissedPayments', new EnforcementAction()],
+    ['verifyRadioOptions', new EnforcementAction()],
+    ['verifySaveAndReturnToggle', new EnforcementAction()],
+    ['errorValidationMissedPayments', new EnforcementAction()],
+    ['verifyPermissionScreen', new EnforcementAction()],
+    ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],
+    ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
