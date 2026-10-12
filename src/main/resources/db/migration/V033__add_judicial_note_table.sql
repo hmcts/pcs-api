@@ -4,6 +4,8 @@ CREATE TABLE public.user_name (
   idam_id uuid NOT NULL
 );
 
+CREATE UNIQUE INDEX ux_user_name_idam_id ON public.user_name (idam_id);
+
 CREATE TABLE public.judicial_note (
   id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
   created_on timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
