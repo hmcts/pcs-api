@@ -8,6 +8,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostDeleteEvent;
 import org.hibernate.event.spi.PostInsertEvent;
 import org.hibernate.event.spi.PostUpdateEvent;
 import org.hibernate.persister.entity.EntityPersister;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
+import java.time.LocalDateTime;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,7 +55,7 @@ import static org.mockito.Mockito.withSettings;
 @ExtendWith(MockitoExtension.class)
 class CaseBundleTriggerTest {
 
-    private static final String[] DOCUMENT_PROPERTIES = {"description", "fileName", "removed"};
+    private static final String[] DOCUMENT_PROPERTIES = {"description", "fileName", "removedAt"};
 
     @Mock
     private EntityManagerFactory entityManagerFactory;
@@ -77,7 +79,7 @@ class CaseBundleTriggerTest {
     }
 
     @Test
-    void shouldListenForInsertsAndUpdates() {
+    void shouldListenForInsertsUpdatesAndDeletes() {
         SessionFactoryImplementor sessionFactory = mock(SessionFactoryImplementor.class);
         ServiceRegistryImplementor serviceRegistry = mock(ServiceRegistryImplementor.class);
         EventListenerRegistry listenerRegistry = mock(EventListenerRegistry.class);
@@ -89,6 +91,7 @@ class CaseBundleTriggerTest {
 
         verify(listenerRegistry).appendListeners(EventType.POST_INSERT, underTest);
         verify(listenerRegistry).appendListeners(EventType.POST_UPDATE, underTest);
+        verify(listenerRegistry).appendListeners(EventType.POST_DELETE, underTest);
         assertThat(underTest.requiresPostCommitHandling(mock(EntityPersister.class))).isFalse();
     }
 
@@ -132,11 +135,36 @@ class CaseBundleTriggerTest {
         DocumentEntity bundle = document(pcsCase());
         bundle.setType(DocumentType.CASE_BUNDLE);
         DocumentEntity removed = document(pcsCase());
-        removed.setRemoved(true);
+        removed.setRemovedAt(LocalDateTime.now());
 
         underTest.onPostInsert(inserted(bundle));
         underTest.onPostInsert(inserted(removed));
         underTest.onPostInsert(inserted(new GenAppEntity()));
+
+        verifyNoInteractions(actionQueue);
+    }
+
+    @Test
+    void shouldRegenerateTheBundleWhenADocumentIsDeleted() {
+        PcsCaseEntity pcsCase = pcsCase();
+        DocumentEntity removed = document(pcsCase);
+        removed.setRemovedAt(LocalDateTime.now());
+
+        underTest.onPostDelete(new PostDeleteEvent(removed, removed.getId(), null, null, session));
+        beforeCompletion().doBeforeTransactionCompletion(null);
+
+        verify(bundleJobs).submitCoalesced(eq(CaseBundleScope.coalesceKey(pcsCase.getId())), any(), any());
+    }
+
+    @Test
+    void shouldIgnoreDeletionOfDocumentsOutsideTheBundle() {
+        DocumentEntity bundle = document(pcsCase());
+        bundle.setType(DocumentType.CASE_BUNDLE);
+        DocumentEntity accessCode = document(pcsCase());
+        accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
+
+        underTest.onPostDelete(new PostDeleteEvent(bundle, bundle.getId(), null, null, session));
+        underTest.onPostDelete(new PostDeleteEvent(accessCode, accessCode.getId(), null, null, session));
 
         verifyNoInteractions(actionQueue);
     }

@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.CaseBundleRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "org";
 
@@ -50,6 +51,8 @@ class DocumentsViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock
     private CaseBundleRepository caseBundleRepository;
+    @Mock
+    private SecurityContextService securityContextService;
 
     private PCSCase pcsCase;
 
@@ -64,7 +67,7 @@ class DocumentsViewTest {
         pcsCase = PCSCase.builder().build();
 
         underTest = new DocumentsView(userRoleService, genAppVisibilityService, new UploadTimestampProvider(),
-                                      caseBundleRepository);
+                                      caseBundleRepository, securityContextService);
     }
 
     @Test
@@ -151,6 +154,24 @@ class DocumentsViewTest {
 
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename()).isEqualTo("claim.pdf"));
+    }
+
+    @Test
+    void shouldShowAccessCodeLettersToTheSystemUser() {
+        DocumentEntity accessCodeLetter = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("access-code-letter.pdf")
+            .url("pin-url")
+            .type(DocumentType.DEFENDANT_ACCESS_CODE)
+            .build();
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(accessCodeLetter));
+        when(securityContextService.isIdamSystemUser()).thenReturn(true);
+
+        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
+
+        assertThat(pcsCase.getAllDocuments()).singleElement()
+            .satisfies(document -> assertThat(document.getValue().getFilename())
+                .isEqualTo("access-code-letter.pdf"));
     }
 
     @Test

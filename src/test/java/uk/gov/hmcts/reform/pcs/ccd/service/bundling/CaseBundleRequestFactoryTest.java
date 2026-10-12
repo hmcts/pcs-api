@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
+import java.time.LocalDateTime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ class CaseBundleRequestFactoryTest {
     void shouldLeaveOutRemovedAccessCodeAndBundleDocuments() {
         final DocumentEntity kept = document("kept.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         DocumentEntity removed = document("removed.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
-        removed.setRemoved(true);
+        removed.setRemovedAt(LocalDateTime.now());
         DocumentEntity accessCode = document("code.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
         DocumentEntity bundle = document("bundle.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));

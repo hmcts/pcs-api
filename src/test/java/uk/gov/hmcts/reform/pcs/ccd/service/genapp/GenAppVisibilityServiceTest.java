@@ -35,7 +35,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppState.GEN_APP_ISSU
 @ExtendWith(MockitoExtension.class)
 class GenAppVisibilityServiceTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final String ORG_ID = "org";
 
     @Mock(strictness = Mock.Strictness.LENIENT)
@@ -81,7 +81,7 @@ class GenAppVisibilityServiceTest {
 
     @ParameterizedTest
     @MethodSource("withoutNoticeScenarios")
-    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(UUID applicantUserId,
+    void shouldBaseVisibilityOfWithoutNoticeGenAppsOnUserIds(String applicantUserId,
                                                              String organisationId,
                                                              boolean isLegalRepresentativeLinkedToPartyAndActive,
                                                              boolean expectedIsVisible) {
@@ -209,7 +209,7 @@ class GenAppVisibilityServiceTest {
             GEN_APP_ISSUED,
             VerticalYesNo.YES,
             LocalDateTime.of(2026, 6, 2, 10, 0),
-            PartyEntity.builder().idamId(UUID.randomUUID()).build()
+            PartyEntity.builder().idamId(UUID.randomUUID().toString()).build()
         );
         GenAppEntity pendingGenApp = createGenApp(
             GenAppState.PENDING_GEN_APP_ISSUED,
@@ -264,7 +264,7 @@ class GenAppVisibilityServiceTest {
     }
 
     private static Stream<Arguments> withoutNoticeScenarios() {
-        UUID differentUserId = UUID.randomUUID();
+        String differentUserId = UUID.randomUUID().toString();
         String differentOrganisationId = UUID.randomUUID().toString();
 
         return Stream.of(

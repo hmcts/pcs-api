@@ -149,6 +149,33 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("queues a regeneration on soft deletion and excludes the deleted document")
+    void queuesARegenerationWhenADocumentIsRemoved() {
+        UUID caseId = newCase();
+        DocumentEntity witness = document("witness.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 10));
+        tx.executeWithoutResult(status -> addDocuments(caseId, witness));
+        jdbc.update("delete from bundling.bundle_job where coalesce_key = :key",
+                    Map.of("key", CaseBundleScope.coalesceKey(caseId)));
+
+        UUID documentId = tx.execute(status -> pcsCaseRepository.findById(caseId).orElseThrow()
+            .getDocuments().getFirst().getId());
+
+        tx.executeWithoutResult(status -> {
+            documentRepository.deleteById(documentId);
+            status.setRollbackOnly();
+        });
+        assertThat(jobCount(caseId)).isZero();
+        assertThat(documentRepository.findById(documentId)).isPresent();
+
+        tx.executeWithoutResult(status -> documentRepository.deleteById(documentId));
+
+        assertThat(jobCount(caseId)).isEqualTo(1);
+        assertThat(documentRepository.findById(documentId)).isEmpty();
+        tx.executeWithoutResult(status -> assertThat(pcsCaseRepository.findById(caseId).orElseThrow()
+            .getDocuments()).isEmpty());
+    }
+
+    @Test
     @DisplayName("ignores documents that never go in the bundle")
     void ignoresDocumentsOutsideTheBundle() {
         final UUID caseId = newCase();

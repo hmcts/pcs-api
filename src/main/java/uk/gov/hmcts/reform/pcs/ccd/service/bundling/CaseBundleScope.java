@@ -39,7 +39,8 @@ public final class CaseBundleScope {
 
     /** Whether the case bundle includes this document. */
     public static boolean belongsInBundle(DocumentEntity document) {
-        return !document.isRemoved() && isBundleable(document);
+        // Hibernate filters soft-deleted rows; also exclude removals still in the current collection.
+        return document.getRemovedAt() == null && isBundleable(document);
     }
 
     /**

@@ -82,7 +82,9 @@ public class DefendantResponseEntity {
 
     // Link to the generated defence PDF. The document is owned by PcsCaseEntity.documents,
     // so no cascade here; the FK is SET NULL on delete.
-    @OneToOne(fetch = FetchType.LAZY)
+    // Eager, as the other to-one document references are: Hibernate refuses a lazy to-one to a
+    // soft-deleted entity.
+    @OneToOne
     @JoinColumn(name = "submission_document_id")
     private DocumentEntity submissionDocument;
 

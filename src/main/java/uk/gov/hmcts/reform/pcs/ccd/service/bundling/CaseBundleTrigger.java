@@ -10,6 +10,8 @@ import org.hibernate.action.spi.BeforeTransactionCompletionProcess;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostDeleteEventListener;
 import org.hibernate.event.spi.PostInsertEvent;
 import org.hibernate.event.spi.PostInsertEventListener;
 import org.hibernate.event.spi.PostUpdateEvent;
@@ -51,12 +53,12 @@ import java.util.WeakHashMap;
 @Slf4j
 @Component
 @ConditionalOnProperty(prefix = "ccd.bundling.job", name = "enabled")
-public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEventListener {
+public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEventListener, PostDeleteEventListener {
 
     static final String INITIATOR = "case-document-change";
     // DocumentEntity properties that change what the bundle contains or how it is laid out.
     private static final Set<String> BUNDLE_PROPERTIES = Set.of(
-        "removed", "type", "categoryId", "fileName", "issueDate", "documentId", "generalApplication",
+        "removedAt", "type", "categoryId", "fileName", "issueDate", "documentId", "generalApplication",
         "counterClaim", "contentType", "binaryUrl");
     // Issuing these makes their documents visible in case file view, and so in the bundle.
     private static final Set<String> GEN_APP_PROPERTIES = Set.of("state", "withoutNotice");
@@ -81,6 +83,7 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
             .requireService(EventListenerRegistry.class);
         registry.appendListeners(EventType.POST_INSERT, this);
         registry.appendListeners(EventType.POST_UPDATE, this);
+        registry.appendListeners(EventType.POST_DELETE, this);
     }
 
     @Override
@@ -104,6 +107,13 @@ public class CaseBundleTrigger implements PostInsertEventListener, PostUpdateEve
         } else if (entity instanceof CounterClaimEntity counterClaim
             && changed(event, COUNTER_CLAIM_PROPERTIES)) {
             queue(event.getSession(), counterClaim.getPcsCase());
+        }
+    }
+
+    @Override
+    public void onPostDelete(PostDeleteEvent event) {
+        if (event.getEntity() instanceof DocumentEntity document && CaseBundleScope.isBundleable(document)) {
+            queue(event.getSession(), document.getPcsCase());
         }
     }
 

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEntity;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ class CaseBundleScopeTest {
     @Test
     void shouldLeaveOutARemovedDocument() {
         DocumentEntity removed = document();
-        removed.setRemoved(true);
+        removed.setRemovedAt(LocalDateTime.now());
 
         assertThat(CaseBundleScope.isBundleable(removed)).isTrue();
         assertThat(CaseBundleScope.belongsInBundle(removed)).isFalse();
