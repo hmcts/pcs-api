@@ -6,9 +6,10 @@ export class RemoveFileAction implements IAction {
 
     const button = page.getByRole('button', { name: 'Remove Add document' })
     const count = await button.count();
-    for (let i = 0; i < count; i++) {
-      await this.removeFile(page, button.first());
-
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        await this.removeFile(page, button.first());
+      }
     }
   }
 
@@ -17,5 +18,6 @@ export class RemoveFileAction implements IAction {
     await button.click();
     await expect(removeButton).toBeVisible({ timeout: 5000 });
     await removeButton.click();
+    await page.waitForTimeout(5000);
   }
 }

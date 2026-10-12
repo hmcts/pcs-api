@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.CounterClaimEnt
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ public class DocumentsView {
     private final UserRoleService userRoleService;
     private final GenAppVisibilityService genAppVisibilityService;
     private final UploadTimestampProvider uploadTimestampProvider;
+    private final SecurityContextService securityContextService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, String organisationId) {
         pcsCase.setAllDocuments(mapAndWrapDocuments(pcsCaseEntity, organisationId));
@@ -88,17 +90,15 @@ public class DocumentsView {
     }
 
     private boolean isExcludedFromCaseFile(DocumentEntity documentEntity) {
+        // Access code letters are only for bulk print, which downloads them through CDAM as PCS's IDAM system
+        // account. CDAM only serves a document attached to a case to a user who can see it in the case.
         return documentEntity.getType() == DocumentType.DEFENDANT_ACCESS_CODE
-            || documentEntity.isRemoved();
+            && !securityContextService.isIdamSystemUser();
     }
 
     public static boolean isDescriptionEmpty(DocumentEntity documentEntity) {
         return ObjectUtils.isEmpty(documentEntity.getDescription())
                 || documentEntity.getDescription().trim().isEmpty();
-    }
-
-    public static boolean isNotRemoved(DocumentEntity documentEntity) {
-        return !documentEntity.isRemoved();
     }
 
     public static boolean isNotGenAppDocument(DocumentEntity documentEntity) {
