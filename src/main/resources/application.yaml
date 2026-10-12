@@ -173,6 +173,11 @@ notify:
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
 
+sdp:
+  export:
+    environment: ${SDP_EXPORT_ENVIRONMENT:local}
+    output-directory: ${SDP_EXPORT_OUTPUT_DIR:./build/sdp-export}
+
 access-code-form:
   respond-online-url: ${RESPOND_ONLINE_URL:http://localhost:3209/access-your-case}
 
