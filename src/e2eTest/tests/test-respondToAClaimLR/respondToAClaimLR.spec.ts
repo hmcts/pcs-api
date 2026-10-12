@@ -100,6 +100,6 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
           elementType: 'text',
           text: 'Respond to the claim.',
         });
-    await performAction('validateTabAccess', { user: user, tabs: ['Amend representative`s details', 'Make an application', 'Manage support', 'Request support', 'Respond to claim', 'Upload additional documents'] });
+    await performAction('validateTabAccess', { user: user, tabs: ['Amend representative`s details', 'Make an application', 'Manage support', 'Request support', 'Upload additional documents'] });
   });
 });
