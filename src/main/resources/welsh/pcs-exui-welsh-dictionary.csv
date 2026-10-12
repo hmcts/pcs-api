@@ -6323,3 +6323,25 @@ Your request was rate limited. Please wait a few seconds before retrying your do
 <p class=""govuk-body-m govuk-!-margin-bottom-1"">
  Dylech ddarparu cyfeirnod
 </p>"
+"---
+<h2 class=""govuk-heading-m"">Notifications</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-2"">
+ You’ll receive updates about the claim by email. For example when a hearing
+ has been scheduled or when a document is ready to view.
+</p>
+<p class=""govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold"">
+ Your registered email address is:
+</p>","---
+<h2 class=""govuk-heading-m"">Hysbysiadau</h2>
+<p class=""govuk-body-m govuk-!-margin-bottom-2"">
+ Byddwch yn cael diweddariadau am eich hawliad drwy e-bost. Er enghraifft, pan fydd gwrandawiad
+ wedi'i drefnu neu pan fydd dogfen yn barod i'w gweld.
+</p>
+<p class=""govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold"">
+ Eich cyfeiriad e-bost cofrestredig yw:
+</p>"
+"<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
+ Your registered address is:
+</h3>","<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
+ Eich cyfeiriad cofrestredig yw:
+</h3>"
