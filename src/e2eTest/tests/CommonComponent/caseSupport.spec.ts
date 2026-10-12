@@ -55,7 +55,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('navigateToCaseSummary');
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
-    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performAction('When the user selects an event', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
       optionToSelect: reviewSupport.whoIsTheSupportForOption,
@@ -108,7 +108,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('navigateToCaseSummary');
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
-    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performAction('When the user selects an event', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
       optionToSelect: reviewSupport.whoIsTheSupportForOption,
@@ -168,7 +168,7 @@ test.describe('Create and Manage Support Events @nightly @CC @supportEvents', as
 
     await performAction('navigateToCaseSummary');
     await performAction('validateTabAccess', { user: user, tabs: ['Case Parties', 'Case Details', 'Case File View', 'Summary', 'Service Request', 'Support'] });
-    await performAction('selectAnEvent', { eventType: caseSummary.requestSupport });
+    await performAction('When the user selects an event', { eventType: caseSummary.requestSupport });
     await performValidation('mainHeader', reviewSupport.mainHeader);
     await performAction('selectRadioButtonInYourSupport', {
       optionToSelect: reviewSupport.whoIsTheSupportForOption,

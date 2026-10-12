@@ -76,7 +76,7 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
   if (action === 'selectClaimantType' || action === 'selectClaimantName' || action === 'addCaseNotes' || action === 'verifyDocumentRelatesToApplication' || action === 'selectDocumentRelatingTo' || action === 'uploadAdditionalDocsLR') {
     captureDataForCYAPage = true;
   }
-  
+
   if (action === 'selectClaimantName') {
     cyaStore.clearAll();
   }
@@ -102,7 +102,7 @@ export async function performAction(action: string, fieldName?: actionData | act
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
     displayFieldName = displayValue;
   } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
-    const obj = fieldName as Record<string, any>;    
+    const obj = fieldName as Record<string, any>;
     displayValue = Object.fromEntries(
       Object.entries(obj).map(([key, value]) =>
         key.includes('Payload')
@@ -139,7 +139,7 @@ export async function performValidation(validation: string, inputFieldName?: val
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed action group: ${groupName}`, async () => {
+  await test.step(`${groupName}`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
       await performAction(actionName, fieldName, value);
@@ -149,7 +149,7 @@ export async function performActions(groupName: string, ...actions: actionTuple[
 
 export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed validation group: ${groupName}`, async () => {
+  await test.step(`${groupName}`, async () => {
     for (const validation of validations) {
       const [validationType, fieldName, data] = validation;
       await performValidation(validationType, fieldName, data);

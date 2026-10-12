@@ -5,7 +5,7 @@ import {
   addHearing, cancelHearing,
   addReviewDates, changeCaseState, enterGenappApplication, enterGenAppapplicationFee,
   enterGenAppConsentAndNotice, enterGenAppHearingDate, manageHearing, selectDocument, uploadADocument,
-  enterGenAppUploadGeneralApplication
+  enterGenAppUploadGeneralApplication, addJudicialNotes
 } from '@data/page-data-figma/page-data-caseManagement-figma';
 import { allPartyDetails } from './caseManagement.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
@@ -27,6 +27,8 @@ export class ErrorValidationAction implements IAction {
       ['errorValidationManageHearing', () => this.errorValidationManageHearing(errorFlag as string)],
       ['errorValidationCancelHearing', () => this.errorValidationCancelHearing(errorFlag as string)],
       ['errorValidationUploadGenAppsFile', () => this.errorValidationUploadGenAppsFile(errorFlag as string)],
+      ['Then the user performs error validation for Add Judicial Notes'
+, () => this.errorValidationAddJudicialNotes(errorFlag as string)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -336,6 +338,18 @@ export class ErrorValidationAction implements IAction {
         validationType: enterGenAppUploadGeneralApplication.errorValidationType.eight,
         inputArray: enterGenAppUploadGeneralApplication.errorValidationField.errorUploadADocument,
         button: enterGenAppUploadGeneralApplication.continueButton
+      });
+    }
+  }
+
+  private async errorValidationAddJudicialNotes(validationReq: string) {
+    if (validationReq === 'YES') {
+      await performAction('inputErrorValidation', {
+        validationType: addJudicialNotes.errorValidationType.one,
+        inputArray: addJudicialNotes.errorValidationField.errorTextField,
+        header: addJudicialNotes.eventCouldNotBeCreatedErrorMessageHeader,
+        label: addJudicialNotes.notesAboutThisCaseTextLabel,
+        button: addJudicialNotes.continueButton
       });
     }
   }
