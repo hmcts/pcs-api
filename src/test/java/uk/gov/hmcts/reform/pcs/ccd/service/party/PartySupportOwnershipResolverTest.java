@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PartySupportOwnershipResolverTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final String ORG_ID = "ORG-1";
     private static final String CLAIMANT_FIRM = "CLAIMANT-FIRM";
     private static final String DEFENDANT_FIRM = "DEFENDANT-FIRM";
@@ -318,7 +318,7 @@ class PartySupportOwnershipResolverTest {
     private PartyEntity claimantRepresentedBy(String organisationId) {
         return PartyEntity.builder()
             .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
+            .idamId(UUID.randomUUID().toString())
             .organisationId(organisationId)
             .claimPartyOrganisationList(new ArrayList<>())
             .build();
@@ -327,7 +327,7 @@ class PartySupportOwnershipResolverTest {
     private PartyEntity unrepresentedParty() {
         return PartyEntity.builder()
             .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
+            .idamId(UUID.randomUUID().toString())
             .claimPartyOrganisationList(new ArrayList<>())
             .build();
     }
@@ -345,7 +345,7 @@ class PartySupportOwnershipResolverTest {
 
         return PartyEntity.builder()
             .id(UUID.randomUUID())
-            .idamId(UUID.randomUUID())
+            .idamId(UUID.randomUUID().toString())
             .claimPartyOrganisationList(new ArrayList<>(List.of(claimPartyOrganisation)))
             .build();
     }

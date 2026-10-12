@@ -70,7 +70,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
-    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
+    private static final String USER_ID = "123e4567-e89b-12d3-a456-426614174001";
 
     @Autowired
     private MockMvc mockMvc;
@@ -134,7 +134,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldPersistReviewedSupportDecisionAgainstRequestedFlagOnly() {
         long caseReference = 98765L;
         PcsCaseEntity caseEntity =
-            caseCreationHelper.createTestCaseWithParty(caseReference, UUID.randomUUID(), PartyRole.DEFENDANT);
+            caseCreationHelper.createTestCaseWithParty(
+                caseReference, UUID.randomUUID().toString(), PartyRole.DEFENDANT);
         PartyEntity party = caseEntity.getParties().iterator().next();
 
         FlagRefDataEntity refData = flagRefDataRepository.save(FlagRefDataEntity.builder()
@@ -174,7 +175,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldNotAllowAnActiveFlagToBeChangedThroughTheReviewEvent() {
         long caseReference = 98766L;
         PcsCaseEntity caseEntity =
-            caseCreationHelper.createTestCaseWithParty(caseReference, UUID.randomUUID(), PartyRole.DEFENDANT);
+            caseCreationHelper.createTestCaseWithParty(
+                caseReference, UUID.randomUUID().toString(), PartyRole.DEFENDANT);
         PartyEntity party = caseEntity.getParties().iterator().next();
 
         FlagRefDataEntity refData = flagRefDataRepository.save(FlagRefDataEntity.builder()
@@ -487,7 +489,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Capture the initial state before the failed operation
         PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow();
-        UUID initialIdamUserId = caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId();
+        String initialIdamUserId = caseCreationHelper.getDefendants(caseBefore).getFirst().getIdamId();
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
@@ -503,7 +505,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Then - Verify transaction rolled back: database state unchanged
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow();
-        UUID finalIdamUserId = caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId();
+        String finalIdamUserId = caseCreationHelper.getDefendants(caseAfter).getFirst().getIdamId();
 
         // The idamUserId should remain unchanged (transaction rolled back)
         assertThat(finalIdamUserId).isEqualTo(initialIdamUserId);
@@ -547,7 +549,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     // Helper methods
 
-    private PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
+    private PcsCaseEntity createTestCaseWithParty(long caseReference, String idamUserId, PartyRole partyRole) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
@@ -568,7 +570,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     private PcsCaseEntity createTestCaseWithMultipleDefendants(
-            long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
+            long caseReference, String firstIdamUserId, String secondIdamUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
