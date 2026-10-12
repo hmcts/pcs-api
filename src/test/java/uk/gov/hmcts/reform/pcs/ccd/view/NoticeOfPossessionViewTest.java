@@ -7,6 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CanUploadNoticeServedDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -15,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -25,8 +28,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -41,6 +44,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_
 @ExtendWith(MockitoExtension.class)
 class NoticeOfPossessionViewTest {
 
+    private static final LocalDateTime UPLOAD_TIMESTAMP = LocalDateTime.of(2026, 5, 14, 9, 30);
+
     @Mock
     private PCSCase pcsCase;
     @Mock
@@ -49,6 +54,8 @@ class NoticeOfPossessionViewTest {
     private ClaimEntity mainClaimEntity;
     @Mock(strictness = LENIENT)
     private NoticeOfPossessionEntity noticeOfPossessionEntity;
+    @Mock
+    private UploadTimestampProvider uploadTimestampProvider;
     @Captor
     private ArgumentCaptor<NoticeServedDetails> noticeServedDetailsCaptor;
 
@@ -59,7 +66,7 @@ class NoticeOfPossessionViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
         when(mainClaimEntity.getNoticeOfPossession()).thenReturn(noticeOfPossessionEntity);
 
-        underTest = new NoticeOfPossessionView();
+        underTest = new NoticeOfPossessionView(uploadTimestampProvider);
     }
 
     @Test
@@ -142,7 +149,9 @@ class NoticeOfPossessionViewTest {
 
         assertThat(noticeServedDetails)
             .usingRecursiveComparison()
-            .isEqualTo(NoticeServedDetails.builder().build());
+            .isEqualTo(NoticeServedDetails.builder()
+                    .documents(List.of())
+                    .build());
     }
 
     @Test
@@ -270,14 +279,15 @@ class NoticeOfPossessionViewTest {
     }
 
     @Test
-    void shouldNotSetNoticeDocumentIfPresent() {
+    void shouldSetNoticeDocumentIfPresent() {
         // Given
         LocalDate postedDate = mock(LocalDate.class);
         UUID noticeDocumentId = UUID.randomUUID();
 
         when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
         when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
-        lenient().when(pcsCaseEntity.getDocuments()).thenReturn(
+        when(uploadTimestampProvider.uploadTimestamp(any())).thenReturn(UPLOAD_TIMESTAMP);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
             List.of(
                 DocumentEntity.builder()
                     .id(noticeDocumentId)
@@ -285,7 +295,7 @@ class NoticeOfPossessionViewTest {
                     .build()
             )
         );
- 
+
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
 
@@ -295,7 +305,10 @@ class NoticeOfPossessionViewTest {
         NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
         assertThat(noticeServedDetails.getServiceMethod()).isEqualTo(FIRST_CLASS_POST);
         assertThat(noticeServedDetails.getPostedDate()).isSameAs(postedDate);
-        assertThat(noticeServedDetails.getDocuments()).isNull();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
+        assertThat(noticeDocuments).hasSize(1);
+        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
+        assertThat(noticeDocuments.getFirst().getValue().getUploadTimestamp()).isEqualTo(UPLOAD_TIMESTAMP);
     }
 
     @Test
@@ -332,4 +345,66 @@ class NoticeOfPossessionViewTest {
         assertThat(noticeServedDetails.getUnableToUploadReason()).isEqualTo("some reason");
     }
 
+    @Test
+    void shouldHandleNullDocument() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(null);
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
+        assertThat(noticeDocuments).isEmpty();
+    }
+
+    @Test
+    void shouldNotIncludeAdditionalDocumentUploaded() {
+        // Given
+        LocalDate postedDate = mock(LocalDate.class);
+        UUID noticeDocumentId = UUID.randomUUID();
+
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(FIRST_CLASS_POST);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(postedDate);
+        when(pcsCaseEntity.getDocuments()).thenReturn(
+                List.of(
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(noticeDocumentId)
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .generalApplication(GenAppEntity.builder().build())
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.POSSESSION_NOTICE)
+                                .description("Additional document uploaded")
+                                .build(),
+                        DocumentEntity.builder()
+                                .id(UUID.randomUUID())
+                                .type(DocumentType.WITNESS_STATEMENT)
+                                .build()
+                )
+        );
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+        List<ListValue<Document>> noticeDocuments = noticeServedDetails.getDocuments();
+        assertThat(noticeDocuments).hasSize(1);
+        assertThat(noticeDocuments.getFirst().getId()).isEqualTo(noticeDocumentId.toString());
+    }
 }
