@@ -384,6 +384,14 @@ export class ErrorValidationAction implements IAction {
         label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruth.continueButton
       });
+      await performAction('inputErrorValidation', {
+
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField2,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruth.continueButton
+      });
     }
   }
 
