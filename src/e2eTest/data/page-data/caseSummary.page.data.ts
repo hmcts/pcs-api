@@ -14,6 +14,8 @@ export const caseSummary = {
   addCaseNote: 'Add a case note',
   go: "Go",
   HistoryTab: 'History',
+  linkedCasesTab: 'Linked Cases',
+  linkedCasesHeader: 'Linked cases',
   serviceRequestTab: 'Service Request',
   summaryTab: 'Summary',
   requestSupport: 'Request support',
