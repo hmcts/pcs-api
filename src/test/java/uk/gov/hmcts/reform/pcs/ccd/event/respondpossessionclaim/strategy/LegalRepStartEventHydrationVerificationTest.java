@@ -62,7 +62,7 @@ class LegalRepStartEventHydrationVerificationTest {
             legalRepPartySelectionService,
             organisationService,
             new TenancyLicenceView(uploadTimestampProvider),
-            new NoticeOfPossessionView(uploadTimestampProvider),
+            new NoticeOfPossessionView(),
             new RentArrearsView(uploadTimestampProvider)
         );
     }

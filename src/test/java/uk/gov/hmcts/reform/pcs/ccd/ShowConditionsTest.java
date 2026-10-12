@@ -107,6 +107,13 @@ class ShowConditionsTest {
         assertThat(actualShowCondition).isEqualTo(expectedShowCondition);
     }
 
+    @Test
+    void shouldCreateShowConditionForDisabledFeatureFlag() {
+        String actualShowCondition = ShowConditions.featureFlagsDisabled(RELEASE_1_DOT_4);
+
+        assertThat(actualShowCondition).isEqualTo("featureFlags.release1dot4Enabled=\"NO\"");
+    }
+
     @ParameterizedTest
     @EnumSource(value = FeatureFlag.class,
         names = {"RELEASE_1_DOT_2", "RELEASE_1_DOT_3", "RELEASE_1_DOT_4", "CASEWORKER_EVENTS", "WALES_MAKE_A_CLAIM",
