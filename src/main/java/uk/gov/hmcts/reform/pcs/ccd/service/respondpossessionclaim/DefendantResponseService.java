@@ -216,11 +216,8 @@ public class DefendantResponseService {
             return;
         }
 
-        List<DocumentEntity> documents = responseDocuments.stream()
-            .filter(document -> !document.isRemoved())
-            .toList();
-
-        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
+        translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty,
+                                                                           responseDocuments);
     }
 
     private UUID requireCurrentUserId() {

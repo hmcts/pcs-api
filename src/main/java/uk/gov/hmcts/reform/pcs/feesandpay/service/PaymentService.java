@@ -126,7 +126,7 @@ public class PaymentService {
 
         CardPaymentServiceRequestDTO paymentRequest = CardPaymentServiceRequestDTO.builder()
             .amount(createCardPaymentRequest.getAmount())
-            .language(createCardPaymentRequest.getLanguage())
+            .language(toGovPayLanguage(createCardPaymentRequest.getLanguage()))
             .returnUrl(createCardPaymentRequest.getReturnUrl())
             .build();
 
@@ -143,6 +143,13 @@ public class PaymentService {
             .status(govPayCardPaymentResponse.getStatus())
             .nextUrl(govPayCardPaymentResponse.getNextUrl())
             .build();
+    }
+
+    /**
+     * Payments API only switches GOV.UK Pay to Welsh for an exact "cy"; anything else falls back to English.
+     */
+    private static String toGovPayLanguage(String language) {
+        return "cy".equalsIgnoreCase(language) || "welsh".equalsIgnoreCase(language) ? "cy" : "en";
     }
 
     public CardPaymentStatusResponse getPaymentStatus(String internalReference) {
