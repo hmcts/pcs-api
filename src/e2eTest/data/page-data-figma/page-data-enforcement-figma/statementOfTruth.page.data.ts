@@ -40,15 +40,15 @@ export const statementOfTruth = {
       { type: `none`, input: ``, errMessage: `Completed by is required` }
     ],
     errorTextField1: [
-      { type: `moreThanMax`, input: 60, errMessage: `Full name exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Full name exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Full name is required` },
     ],
     errorTextField2: [
-      { type: `moreThanMax`, input: 60, errMessage: `Name of firm exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Name of firm exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Name of firm is required` },
     ],
     errorTextField3: [
-      { type: `moreThanMax`, input: 60, errMessage: `Position or office held exceeds the maximum length` },
+      { type: `moreThanMax`, input: 100, errMessage: `Position or office held exceeds the maximum length` },
       { type: `empty`, input: `EMPTY`, errMessage: `Position or office held is required` },
     ]
   },
