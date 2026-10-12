@@ -69,7 +69,7 @@ test.beforeEach(async ({ page }, testInfo) => {
     await performAction('getDefendantDetails', {
       defendant1NameKnown: submitCaseApiData.submitCasePayload().defendant1.nameKnown,
       additionalDefendants: submitCaseApiData.submitCasePayload().addAnotherDefendant,
-      payLoad: submitCaseApiData.submitCasePayload
+      payLoad: submitCaseApiData.submitCasePayload()
     });
   }
   await performAction('updatePaymentAPI');
@@ -136,12 +136,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('enterDefendantsDOB', {
         label: knownDefendantsDOBInformation.defendantsDOBQuestion,
         input: defendantDetails,
-        nextPage: peopleWhoWillBeEvicted.mainHeader
-      });
-      await performAction('errorValidationPeopleWhoWillBeEvictedPage', peopleWhoWillBeEvicted.errorValidation);
-      await performAction('selectPeopleWhoWillBeEvicted', {
-        question: peopleWhoWillBeEvicted.evictEveryOneQuestion,
-        option: peopleWhoWillBeEvicted.yesRadioOption,
         nextPage: livingInTheProperty.mainHeader
       });
       await performAction('selectEveryoneLivingAtTheProperty', {
@@ -158,7 +152,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           evictionRisksPosed.criminalOrAntisocialBehaviourCheckbox,
           evictionRisksPosed.verbalOrWrittenThreatsCheckbox,
           evictionRisksPosed.protestGroupCheckbox,
-          evictionRisksPosed.policeOrSocialServiceCheckbox,
+          evictionRisksPosed.policeVisitsCheckbox,
           evictionRisksPosed.aggressiveAnimalsCheckbox,
         ],
         nextPage: violentAggressiveRisk.mainHeader
@@ -190,8 +184,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: policeOrSocialServicesRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
-        input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
+        label: policeOrSocialServicesRisk.whyDidThePoliceVisitThePropertyQuestion,
+        input: policeOrSocialServicesRisk.whyDidThePoliceVisitThePropertyTextInput,
         nextPage: aggressiveAnimalsRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
@@ -221,37 +215,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: additionalInformation.yesRadioOption,
         label: additionalInformation.tellUsAnythingElseTextLabelHidden,
         input: additionalInformation.tellUsAnythingElseTextInput,
-        nextPage: moneyOwed.mainHeader
-      });
-      await performAction('errorValidationMoneyOwedPage', moneyOwed.errorValidation);
-      await performAction('provideMoneyOwed', {
-        label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput,
-        nextPage: legalCosts.mainHeader
-      });
-      await performAction('errorValidationLegalCostsPage', legalCosts.errorValidation);
-      await performAction('provideLegalCosts', {
-        question: legalCosts.reclaimLegalCostsQuestion,
-        option: legalCosts.yesRadioOption,
-        label: legalCosts.howMuchYouWantToReclaimTextLabelHidden,
-        input: legalCosts.howMuchYouWantToReclaimTextInputHidden,
-        nextPage: landRegistryFees.mainHeader
-      });
-      await performAction('errorValidationLandRegistryFeePage', landRegistryFees.errorValidation);
-      await performAction('provideLandRegistryFees', {
-        question: landRegistryFees.landRegistryFeeQuestion,
-        option: landRegistryFees.yesRadioOption,
-        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabelHidden,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
-        nextPage: repayments.mainHeader
-      });
-      await performAction('validateAmountToRePayTable', { headerName: repayments.mainHeader });
-      await performAction('errorValidationRepaymentsPage', repayments.errorValidation);
-      await performAction('provideAmountToRePay', {
-        question: repayments.rePaymentQuestion,
-        option: repayments.someRadioOptions,
-        label: repayments.enterTheAmountTextLabelHidden,
-        input: repayments.enterTheAmountTextInputHidden,
         nextPage: languageUsed.mainHeader
       });
       await performAction('errorValidationLanguageUsedPage', languageUsed.errorValidation);
@@ -594,7 +557,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         question: evictionRisksPosed.kindOfRiskQuestion,
         option: [
           evictionRisksPosed.protestGroupCheckbox,
-          evictionRisksPosed.policeOrSocialServiceCheckbox,
+          evictionRisksPosed.policeVisitsCheckbox,
         ],
         nextPage: protestorGroupRisk.mainHeader
       });
@@ -604,8 +567,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: policeOrSocialServicesRisk.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyQuestion,
-        input: policeOrSocialServicesRisk.whyDidThePoliceOrSSVisitThePropertyTextInput,
+        label: policeOrSocialServicesRisk.whyDidThePoliceVisitThePropertyQuestion,
+        input: policeOrSocialServicesRisk.whyDidThePoliceVisitThePropertyTextInput,
         nextPage: vulnerableAdultsChildren.mainHeader
       });
       await performAction('selectVulnerablePeopleInTheProperty', {
