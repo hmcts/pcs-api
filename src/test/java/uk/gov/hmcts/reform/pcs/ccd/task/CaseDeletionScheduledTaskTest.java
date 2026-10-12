@@ -264,7 +264,6 @@ class CaseDeletionScheduledTaskTest {
         int docControlSize = 2;
         underTest = createTask(10, docControlSize, 10);
         List<Long> cases = LongStream.rangeClosed(1, 6).boxed().toList();
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         when(ccdCaseDataDeletionService.findExpiredDraftCasesBatch(DISCARD_AFTER_DAYS, SQL_LIMIT)).thenReturn(cases);
         when(pcsCaseService.getDocumentUrls(cases.get(0))).thenReturn(List.of(url, url2));
         when(pcsCaseService.getDocumentUrls(cases.get(1))).thenReturn(List.of(url, url2));
@@ -272,6 +271,7 @@ class CaseDeletionScheduledTaskTest {
         when(pcsCaseService.getDocumentUrls(cases.get(3))).thenReturn(List.of(url, url2));
         when(pcsCaseService.getDocumentUrls(cases.get(4))).thenReturn(List.of(url, url2));
         when(pcsCaseService.getDocumentUrls(cases.get(5))).thenReturn(List.of(url, url2));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(true);
         doAnswer(inv -> trackConcurrencyWithLatency()).when(documentImportService)
             .deleteDocument(anyString());
 
