@@ -59,9 +59,9 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     <p class="govuk-body-m govuk-!-margin-bottom-1 govuk-!-font-weight-bold">
                         Your registered email address is:
                     </p>
-                    <p class="govuk-body-m govuk-!-margin-bottom-2">
-                       ${originalEmailAddress}
-                    </p>
+                    """)
+            .label("legalRepresentativeDetails-email-value", """
+                    <p class="govuk-body-m govuk-!-margin-bottom-2">${originalEmailAddress}</p>
                     """)
             .mandatory(LegalRepresentativeDetails::getUseEmailAddress)
             .mandatory(LegalRepresentativeDetails::getEmailAddress, "useEmailAddress=\"NO\"")
@@ -83,9 +83,9 @@ public class LegalRepresentativeContactDetailsPage implements CcdPageConfigurati
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your registered address is:
                     </h3>
-                    <p class="govuk-body-s govuk-!-margin-top-1">
-                        ${formattedContactAddress}
-                    </p>
+                    """, ORG_ADDRESS_FOUND)
+            .label("legalRepresentativeDetails-address-registered-value", """
+                    <p class="govuk-body-s govuk-!-margin-top-1">${formattedContactAddress}</p>
                     """, ORG_ADDRESS_FOUND)
 
             // Address not found
