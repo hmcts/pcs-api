@@ -110,7 +110,7 @@ class PaymentControllerTest {
             .build();
 
         UserInfo userDetails = mock(UserInfo.class);
-        when(userDetails.getUid()).thenReturn(idamUserId.toString());
+        when(userDetails.getUid()).thenReturn(idamUserId);
         User user = mock(User.class);
         when(user.getUserDetails()).thenReturn(userDetails);
         when(idamAuthenticator.validateAuthToken(AUTHORIZATION)).thenReturn(user);
