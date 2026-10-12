@@ -60,7 +60,6 @@ test.describe('Case management - Add Judicial Notes @nightly', async () => {
       nextPage: checkYourAnswersJudicialNotes.mainHeader
     });
     await performAction('clickButton', checkYourAnswersJudicialNotes.submitButton);
-   // await performAction('clickButtonAndVerifyPageNavigation', checkYourAnswersJudicialNotes.submitButton,  confirmJudicialNotes.judicialNotesAddedParagraph);
     await performAction('Then the user confirms Add Judicial Notes');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Add a judicial note');
     await performActions(
