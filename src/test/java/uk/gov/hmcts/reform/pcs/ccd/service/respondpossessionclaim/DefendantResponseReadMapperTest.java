@@ -21,8 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularExpenseE
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.respondpossessionclaim.RegularIncomeItemEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
-import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IncomeType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PartyAttributeType;
@@ -269,22 +267,6 @@ class DefendantResponseReadMapperTest {
             .build();
 
         PossessionClaimResponse response = mapper(mock(AddressMapper.class))
-            .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
-
-        assertThat(response.getCounterclaimDocumentId()).isNull();
-    }
-
-    @Test
-    void shouldNotMapCounterclaimDocumentIdWhenRelease14IsDisabled() {
-        UUID partyId = UUID.randomUUID();
-        PartyEntity party = partyWithId(partyId);
-        CounterClaimEntity counterClaim = issuedCounterClaim(UUID.randomUUID(), party);
-        PcsCaseEntity pcsCase = PcsCaseEntity.builder()
-            .counterClaims(List.of(counterClaim))
-            .documents(List.of(counterclaimForm(UUID.randomUUID(), counterClaim)))
-            .build();
-
-        PossessionClaimResponse response = mapper(mock(AddressMapper.class), false)
             .toPossessionClaimResponse(responseEntity(party, pcsCase), List.of());
 
         assertThat(response.getCounterclaimDocumentId()).isNull();
@@ -578,13 +560,7 @@ class DefendantResponseReadMapperTest {
     }
 
     private static DefendantResponseReadMapper mapper(AddressMapper addressMapper) {
-        return mapper(addressMapper, true);
-    }
-
-    private static DefendantResponseReadMapper mapper(AddressMapper addressMapper, boolean release14Enabled) {
-        FeatureToggleService featureToggleService = mock(FeatureToggleService.class);
-        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)).thenReturn(release14Enabled);
-        return new DefendantResponseReadMapper(addressMapper, featureToggleService);
+        return new DefendantResponseReadMapper(addressMapper);
     }
 
     private static PartyEntity partyWithId(UUID partyId) {
