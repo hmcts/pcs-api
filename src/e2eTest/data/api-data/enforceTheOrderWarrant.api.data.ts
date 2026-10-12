@@ -22,7 +22,7 @@ export const enforceWarrantApiData = {
       ],
       valueCode: "WARRANT"
     },
-    warrantFeeAmount: "£148",
+    warrantFeeAmount: "£152",
     writFeeAmount: "£82",
     warrantCorrectNameAndAddress: "YES",
     warrantDefendantsDOBKnown: "YES",
@@ -90,7 +90,7 @@ export const enforceWarrantApiData = {
       ],
       valueCode: "WARRANT"
     },
-    warrantFeeAmount: "£148",
+    warrantFeeAmount: "£152",
     writFeeAmount: "£82",
     warrantCorrectNameAndAddress: "YES",
     warrantDefendantsDOBKnown: "NO",
