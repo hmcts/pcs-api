@@ -132,21 +132,34 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("keeps a draft with the hearing it was started for, recording nothing until it is sent")
-    void keepsADraftWithItsHearing() {
+    @DisplayName("records the hearing's facts and note when the judge saves a draft, and keeps the draft with it")
+    void recordsADraftsFactsForItsHearing() {
         forHearing(firstJudge, firstHearing)
             .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), "draft note"));
 
-        assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing().id())
-            .isEqualTo(firstHearing);
+        Hearing reopened = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
+        assertThat(reopened.id()).isEqualTo(firstHearing);
+        assertThat(reopened.caseFacts().currentRent()).isEqualByComparingTo("900.00");
+        assertThat(reopened.note()).isEqualTo("draft note");
         assertThat(forHearing(firstJudge, secondHearing).start().hearing().id())
             .as("a link to another hearing opens the draft, for its own hearing").isEqualTo(firstHearing);
-        Hearing next = forHearing(secondJudge, secondHearing).start().hearing();
-        assertThat(next.recorded()).isNull();
-        assertThat(next.earlierNotes()).isEmpty();
         assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
                 change(SAVE_DRAFT, secondHearing)).errors())
             .containsExactly("The order is for a different hearing");
+    }
+
+    @Test
+    @DisplayName("shows a judge reopening their draft the facts another judge has since recorded")
+    void reopensADraftWithTheLatestFacts() {
+        forHearing(firstJudge, secondHearing)
+            .submitExpectingSuccess(submission(SAVE_DRAFT, secondHearing, null, facts("900.00"), null));
+        Hearing seen = forHearing(secondJudge, secondHearing).start().hearing();
+        submitForReview(secondJudge, secondHearing, seen.version(), facts("950.00"), null);
+
+        Hearing reopened = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
+
+        assertThat(reopened.caseFacts().currentRent()).isEqualByComparingTo("950.00");
+        assertThat(reopened.recorded().by()).isEqualTo("Second Judge");
     }
 
     @Test

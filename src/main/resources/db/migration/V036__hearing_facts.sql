@@ -7,8 +7,7 @@ ALTER TABLE user_name ADD PRIMARY KEY (id);
 ALTER TABLE orders ADD COLUMN hearing_id INTEGER REFERENCES hearing(id);
 
 -- What a judge recorded at a hearing: the case's facts as they stood then, which the next hearing starts
--- from, and the hearing's judicial note. Written when the hearing's order is sent for review, and replaced
--- if it is sent again.
+-- from, and the hearing's judicial note. Written whenever a judge saves the hearing's order.
 CREATE TABLE hearing_facts (
     hearing_id INTEGER PRIMARY KEY REFERENCES hearing(id) ON DELETE CASCADE,
     version BIGINT NOT NULL DEFAULT 0,

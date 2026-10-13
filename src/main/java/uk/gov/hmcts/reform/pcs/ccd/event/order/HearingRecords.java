@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 
 /**
  * What judges record at a case's hearings: the case's facts as they stood at each hearing, which the
- * next hearing starts from, and each hearing's judicial note. A hearing's record is written when its
- * order is sent for review, and a judge who started from an older record than the one now stored is
+ * next hearing starts from, and each hearing's judicial note. A hearing's record is written whenever a
+ * judge saves its order, and a judge who started from an older record than the one now stored is
  * refused, rather than overwriting it.
  */
 @Component

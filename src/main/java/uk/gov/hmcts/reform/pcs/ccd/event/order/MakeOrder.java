@@ -48,7 +48,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_
  * A judge makes an order in pcs-frontend. Each judge has one working draft per case, which a change
  * with no id starts. An order a caseworker returned is the judge's to change and resubmit, opened from
  * the task its return gave them. An order made for a hearing records the case's facts and the judge's
- * note for that hearing when it is sent for review.
+ * note for that hearing whenever the judge saves it.
  */
 @Component
 @AllArgsConstructor
@@ -131,7 +131,11 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge)
             : workingDraft(caseReference, judge, change);
-        HearingEntity hearing = forHearing(order, request.hearing());
+        if (request.hearing() != null) {
+            // The hearing's facts and note are recorded whenever the judge saves, so the order holds no copy
+            // a later save could bring back over another judge's.
+            hearingRecords.record(order.getPcsCase(), forHearing(order, request.hearing()), request.hearing());
+        }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
         final OrderStepEntity step = orderSteps.append(order, to, judge, OrderStepEntity.builder()
@@ -140,9 +144,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .docweaveSnapshot(change.docweaveSnapshot()));
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
-        }
-        if (request.hearing() != null) {
-            hearingRecords.record(order.getPcsCase(), hearing, request.hearing());
         }
         // Only a returned order comes with a task, the one its return gave the judge.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
@@ -153,9 +154,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     /** The hearing the order is for, which a change can give an order that has none. */
     private HearingEntity forHearing(OrderEntity order, HearingChange change) {
-        if (change == null) {
-            return order.getHearing();
-        }
         HearingEntity hearing = hearingRecords.hearing(order.getPcsCase(), change.id());
         if (order.getHearing() == null) {
             order.setHearing(hearing);
