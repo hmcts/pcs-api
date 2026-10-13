@@ -1677,16 +1677,13 @@ export class CreateCaseAction implements IAction {
         break;
 
       case 'Uncategorised documents':
-        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
+        this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad?.additionalDocuments, 'Other document');
         if (ccPayload) {
           this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
         }
         if (file) {
           userInputFiles.push(file as string);
         }
-        if (caseFile.caseWorkerAmend) {
-          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
-        } 
         break;
 
       case 'Applications':
@@ -1702,7 +1699,7 @@ export class CreateCaseAction implements IAction {
       default:
         break;
     }
-    
+
     let folder = page
       .locator('button.node')
       .filter({ hasText: folderName });
