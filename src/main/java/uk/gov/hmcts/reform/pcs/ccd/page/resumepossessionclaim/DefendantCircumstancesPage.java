@@ -32,7 +32,7 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .page("defendantCircumstances", this::midEvent)
             .pageLabel("Defendants’ circumstances")
             .complex(PCSCase::getDefendantCircumstances)
-            .mandatory(DefendantCircumstances::getDefendantTermPossessive,NEVER_SHOW)
+            .readonly(DefendantCircumstances::getDefendantTermPossessive, NEVER_SHOW, true)
             .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel, SINGLE_DEFENDANT)
             .readonlyNoSummary(DefendantCircumstances::getDefendantsCircumstancesLabel, MULTIPLE_DEFENDANTS)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)

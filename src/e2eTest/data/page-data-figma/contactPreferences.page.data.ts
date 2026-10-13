@@ -3,7 +3,7 @@ export const contactPreferences = {
   mainHeader: `Contact preferences`,
   notificationsSubHeader: `Notifications`,
   youllReceiveUpdatesAboutParagraph: `You’ll receive updates about your claim by email. For example, when a hearing has been scheduled or when a document is ready to view.`,
-  yourMyHmctsRegisteredEmailSubHeader: `Your My HMCTS registered email address is:`,
+  yourMyHmctsRegisteredEmailParagraph: `Your My HMCTS registered email address is:`,
   //Address data below can't be matched due to HDPI-3554
   //registeredEmailParagraph:`pcs-solicitor-automation@test.com`,
   doYouWantToUseQuestion: `Do you want to use this email address for notifications?`,
@@ -14,7 +14,7 @@ export const contactPreferences = {
   serviceAddressSubHeader: `Service address`,
   courtDocumentsLikeOrdersAndParagraph: `Court documents like orders and notices will be sent by post to the address registered with My HMCTS.`,
   youCanChangeParagraph:`You can change this service address if, for example, you work in a different office from the address registered with My HMCTS.`,
-  yourMyHmctsRegisteredAddressSubHeader: `Your organisation’s My HMCTS registered address is:`,
+  yourMyHmctsRegisteredAddressParagraph: `Your organisation’s My HMCTS registered address is:`,
   //registeredAddressParagraph: `Ministry Of Justice`,
   //registeredAddressLineParagraph:`Seventh Floor 102 Petty France`,
   //registeredAddressCityParagraph:`London`,
