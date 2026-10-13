@@ -157,7 +157,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_12wstqg">
-          <text>"ReviewGenApp","ConfirmOrderReview","ReviewOrderQuery","DecideGenApp"</text>
+          <text>"ReviewGenApp","ConfirmOrderReview","ReviewOrderQuery","DecideGenApp","MakeOrder"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1rnyri8">
           <text>"majorPriority"</text>
@@ -357,7 +357,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_0v6pdjr">
-          <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag","ReviewOrderQuery","DecideGenApp"</text>
+          <text>"NewClaimCreateNewHearing","ReviewCaseFlagRequest","ReviewCaseFlag","ReviewOrderQuery","DecideGenApp","MakeOrder"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1p8y8wb">
           <text>"workType"</text>
@@ -417,7 +417,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_055g5ba">
-          <text>not("ReviewOrderQuery","DecideGenApp")</text>
+          <text>not("ReviewOrderQuery","DecideGenApp","MakeOrder")</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ubz0s5">
           <text>"roleCategory"</text>
@@ -437,7 +437,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_gcr15ti">
-          <text>"ReviewOrderQuery","DecideGenApp"</text>
+          <text>"ReviewOrderQuery","DecideGenApp","MakeOrder"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_sa3s2nd">
           <text>"roleCategory"</text>
@@ -517,7 +517,7 @@ Short name</description>
           <text></text>
         </inputEntry>
         <inputEntry id="UnaryTests_1tvak6q">
-          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument", "ConfirmOrderReview", "ReviewOrderQuery", "DecideGenApp"</text>
+          <text>"NewClaimCreateNewHearing", "ReviewDefendantResponseAndCounterclaim", "ReviewAdditionalDocumentsClaim", "ReviewAdditionalDocumentsGenApp", "ReviewAdditionalDocumentsCounterclaim", "ReviewCaseFlagRequest", "ReviewCaseFlag", "ReviewFailedPayment", "ReviewDateDue", "TranslateDefendantSubmittedDocument", "TranslateClaimantSubmittedDocument", "TranslateCaseworkerUploadedDocument", "ConfirmOrderReview", "ReviewOrderQuery", "DecideGenApp","MakeOrder"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_14ewc8f">
           <text>"dueDateIntervalDays"</text>
