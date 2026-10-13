@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.OrdersTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.OrdersTableRenderer;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -19,11 +21,16 @@ public class OrdersTabView {
 
     private final UploadTimestampProvider uploadTimestampProvider;
     private final OrdersTableRenderer ordersTableRenderer;
+    private final FeatureToggleService featureToggleService;
 
     public void setCaseFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         pcsCase.setOrdersTab(null);
 
-        getPossessionOrder(pcsCaseEntity)
+        if (!featureToggleService.isEnabled(FeatureFlag.ENFORCEMENT)) {
+            return;
+        }
+
+        findPosessionOrderDocument(pcsCaseEntity)
             .ifPresent(documentEntity -> setOrdersTabFields(pcsCase, documentEntity));
     }
 
@@ -39,7 +46,7 @@ public class OrdersTabView {
         pcsCase.setOrdersTab(ordersTab);
     }
 
-    private static Optional<DocumentEntity> getPossessionOrder(PcsCaseEntity pcsCaseEntity) {
+    private static Optional<DocumentEntity> findPosessionOrderDocument(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getDocuments().stream()
             .filter(OrdersTabView::isPossessionOrder)
             .findFirst();

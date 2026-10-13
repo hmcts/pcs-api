@@ -7,9 +7,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.OrdersTab;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.OrdersTableRenderer;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
+
+import static org.mockito.Mockito.verifyNoInteractions;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.ENFORCEMENT;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +34,8 @@ class OrdersTabViewTest {
     @Mock
     private UploadTimestampProvider uploadTimestampProvider;
     @Mock
+    private FeatureToggleService featureToggleService;
+    @Mock
     private OrdersTableRenderer ordersTableRenderer;
 
     @InjectMocks
@@ -37,6 +44,7 @@ class OrdersTabViewTest {
     @Test
     void shouldPopulateOrdersTabWhenPossessionOrderExists() {
         // Given
+        when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(true);
         LocalDateTime uploadedDate =
             LocalDateTime.of(2026, 10, 6, 12, 30);
 
@@ -84,6 +92,8 @@ class OrdersTabViewTest {
     @Test
     void shouldNotPopulateOrdersTabWhenPossessionOrderDoesNotExist() {
         // Given
+        when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(true);
+
         DocumentEntity document = DocumentEntity.builder()
             .type(DocumentType.CLAIM)
             .fileName("claim.pdf")
@@ -105,6 +115,8 @@ class OrdersTabViewTest {
     @Test
     void shouldIgnoreOtherDocumentsAndUsePossessionOrder() {
         // Given
+        when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(true);
+
         DocumentEntity otherDocument = DocumentEntity.builder()
             .type(DocumentType.CLAIM)
             .fileName("claim.pdf")
@@ -133,6 +145,38 @@ class OrdersTabViewTest {
                        .getPossessionOrder()
                        .getFilename())
             .isEqualTo("Possession order.pdf");
+    }
+
+    @Test
+    void shouldClearOrdersTabWhenEnforcementDisabled() {
+        // Given
+        when(featureToggleService.isEnabled(ENFORCEMENT)).thenReturn(false);
+
+        DocumentEntity possessionOrder = DocumentEntity.builder()
+            .type(DocumentType.POSSESSION_ORDER)
+            .fileName("Possession order.pdf")
+            .url(DOCUMENT_URL)
+            .binaryUrl(BINARY_URL)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .documents(List.of(possessionOrder))
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .ordersTab(OrdersTab.builder()
+                           .tableMarkup("Previously populated orders")
+                           .build())
+            .build();
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        assertThat(pcsCase.getOrdersTab()).isNull();
+
+        verifyNoInteractions(uploadTimestampProvider, ordersTableRenderer);
+
     }
 
 
