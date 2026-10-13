@@ -16,21 +16,26 @@ export const submitPossessionClaimResponseApiDataForLR = {
 
   submitPossessionClaimResponseApiEndPoint: (): string => `/cases/${process.env.CASE_NUMBER}/events`,
 
-  submitPossessionClaimResponsePayload: (RESPONDCLAIM_EVENT_TOKEN: any, draftVersion?: number) => {
+  submitPossessionClaimResponsePayload: (RESPONDCLAIM_EVENT_TOKEN: any, defendantID : string, draftVersion?: number) => {
     const defendantId = process.env.Defendant_ID;
 
     return {
       data: {
-        currentRepresentedPartyId: defendantId,
+        currentRepresentedPartyId: defendantID,
         possessionClaimResponse: {
-          ...(draftVersion !== undefined && draftVersion !== null && { draftVersion }),
-          defendantResponses: {
-            dateOfBirth: '1974-02-28',
-          },
-          claimantOrganisations: [{}],
-          defendantContactDetails: {
-            party: {},
-          },
+          //...(draftVersion !== undefined && draftVersion !== null && { draftVersion }),
+          draftVersion: draftVersion,
+          // defendantResponses: {
+          //   //dateOfBirth: '',
+          // },
+          // claimantOrganisations: [{}],
+          // defendantContactDetails: {
+          //   party: {},
+          // },
+          statementOfTruthBelief: 'yes',
+          fullName : 'Peter Parker',
+          nameOfFirm: 'GD',
+          positionHeld: 'Officer'
         },
       },
       event: {

@@ -68,7 +68,7 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
     void documentRolledBackWhenActivityLogWriteFails() {
         long caseReference = 1781000000000011L;
         final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
-            caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
+            caseReference, UUID.randomUUID().toString(), PartyRole.CLAIMANT);
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
             .thenReturn(importedDocument());
         doThrow(new RuntimeException("activity log write failed"))
@@ -87,7 +87,7 @@ class ClaimFormPersistenceServiceIT extends AbstractPostgresContainerIT {
     void attachesDocumentAndRecordsGenerationSuccess() {
         long caseReference = 1781000000000012L;
         final PcsCaseEntity caseEntity = caseCreationHelper.createTestCaseWithParty(
-            caseReference, UUID.randomUUID(), PartyRole.CLAIMANT);
+            caseReference, UUID.randomUUID().toString(), PartyRole.CLAIMANT);
         when(documentImportService.addDocumentToCase(eq(caseReference), anyString(), any()))
             .thenReturn(importedDocument());
 
