@@ -305,7 +305,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldPopulatePossessionClaimResponseWhenUserIsMatchingDefendant_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         AddressUK expectedAddress = AddressUK.builder()
             .addressLine1("123 Test Street")
@@ -362,7 +362,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -390,7 +390,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldThrowCaseAccessExceptionWhenNoDefendantsFound_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         ClaimEntity claimEntity = ClaimEntity.builder()
             .build();
 
@@ -414,7 +414,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldThrowCaseAccessExceptionWhenNoClaimExists_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .claims(Collections.emptyList())
             .build();
@@ -435,8 +435,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
-        UUID differentUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
+        String differentUserId = UUID.randomUUID().toString();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -475,7 +475,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldNotSaveDraftWhenPossessionClaimResponseIsNull_ForCitizenUser() {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(defendantResponseService.saveDefendantResponse(anyLong(), any(), any(), any()))
             .thenReturn(new DefendantResponseEntity());
@@ -495,7 +495,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("456 Property Street")
@@ -546,7 +546,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -566,7 +566,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldCreatePartyObjectEvenWhenDefendantHasNoData_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -616,7 +616,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .thenReturn(false); // No draft exists yet - should seed
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         PCSCase caseData = PCSCase.builder().build();
@@ -645,7 +645,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldNotOverwriteDraftWhenDraftAlreadyExists_ForCitizenUser() {
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantId = UUID.randomUUID();
 
         AddressEntity addressEntity = AddressEntity.builder()
@@ -713,7 +713,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                             .build());
         doNothing().when(tenancyLicenceView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
         doNothing().when(rentArrearsView).setCaseFields(any(PCSCase.class), any(PcsCaseEntity.class));
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), any(Boolean.class)))
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
             .thenReturn(new CaseDetailsTab());
 
         callStartHandler(caseData);
@@ -739,7 +739,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(possessionClaimResponse)
             .build();
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
@@ -776,7 +776,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID().toString());
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(Optional.of(caseData));
@@ -1001,7 +1001,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldSubmitLegalRepresentativeDraftForSelectedParty_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
+        String legalRepUserId = UUID.randomUUID().toString();
         UUID representedPartyId = UUID.randomUUID();
         PartyEntity representedParty = PartyEntity.builder().id(representedPartyId).build();
 
@@ -1088,7 +1088,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldThrowExceptionForNoSelectedParty_ForLegalRepresentativeUser() {
         // given
-        UUID legalRepUserId = UUID.randomUUID();
+        String legalRepUserId = UUID.randomUUID().toString();
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(null)
             .build();

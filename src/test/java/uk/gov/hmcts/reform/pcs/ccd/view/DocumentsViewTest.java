@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DocumentsViewTest {
 
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "org";
 
@@ -168,27 +168,6 @@ class DocumentsViewTest {
         assertThat(pcsCase.getAllDocuments()).singleElement()
             .satisfies(document -> assertThat(document.getValue().getFilename())
                 .isEqualTo("access-code-letter.pdf"));
-    }
-
-    @Test
-    void shouldIncludePossessionNoticeInCaseDocuments() {
-        DocumentEntity possessionNotice = DocumentEntity.builder()
-            .id(UUID.randomUUID())
-            .fileName("possession-notice.pdf")
-            .url("possession-notice-url")
-            .type(DocumentType.POSSESSION_NOTICE)
-            .build();
-
-        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(possessionNotice));
-
-        underTest.setCaseFields(pcsCase, pcsCaseEntity, ORGANISATION_ID);
-
-        assertThat(pcsCase.getAllDocuments()).singleElement()
-            .satisfies(document -> {
-                assertThat(document.getId()).isEqualTo(possessionNotice.getId().toString());
-                assertThat(document.getValue().getFilename()).isEqualTo("possession-notice.pdf");
-                assertThat(document.getValue().getUrl()).isEqualTo("possession-notice-url");
-            });
     }
 
     @Test

@@ -102,14 +102,14 @@ class CitizenStartEventStrategyTest {
             rentArrearsView
         );
 
-        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(PcsCaseEntity.class), 
-            any(Boolean.class))).thenReturn(CaseDetailsTab.builder().build());
+        lenient().when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), any(Boolean.class)))
+            .thenReturn(CaseDetailsTab.builder().build());
     }
 
     @Test
     void shouldBuildInitialResponseAndInitializeDraftWhenNoDraftExists() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PCSCase caseData = PCSCase.builder().build();
         List<ListValue<Document>> tenancyDocuments = List.of(
             ListValue.<Document>builder()
@@ -153,8 +153,7 @@ class CitizenStartEventStrategyTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
-            .thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -174,7 +173,7 @@ class CitizenStartEventStrategyTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
@@ -183,7 +182,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldLoadExistingDraftWhenDraftAlreadyExists() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder().build();
 
@@ -238,8 +237,7 @@ class CitizenStartEventStrategyTest {
             .thenReturn(PCSCase.builder()
                             .possessionClaimResponse(draftResponse)
                             .build());
-        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(pcsCaseEntity), eq(false)))
-            .thenReturn(builtCaseDetailsTab);
+        when(caseDetailsTabView.buildCaseDetailsTab(any(PCSCase.class), eq(false))).thenReturn(builtCaseDetailsTab);
 
         // When
         PCSCase result = underTest.loadDraft(CASE_REFERENCE, caseData);
@@ -257,13 +255,13 @@ class CitizenStartEventStrategyTest {
         verify(possessionClaimDraftBuilder).buildCaseWithDraft(caseData, draftResponse);
         verify(tenancyLicenceView).setCaseFields(result, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(result, pcsCaseEntity);
-        verify(caseDetailsTabView).buildCaseDetailsTab(result, pcsCaseEntity, false);
+        verify(caseDetailsTabView).buildCaseDetailsTab(result, false);
     }
 
     @Test
     void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -293,7 +291,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldUseDefendantAddressWhenAddressSameAsPropertyIsNotYes() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -324,7 +322,7 @@ class CitizenStartEventStrategyTest {
     @MethodSource("caseAccessExceptionScenarios")
     void shouldThrowCaseAccessExceptionForInvalidAccess(String scenario, String exceptionMessage) {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
         PCSCase caseData = PCSCase.builder().build();
 
@@ -350,7 +348,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldCreatePartyWithNullFieldsWhenDefendantDataIsNull() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -385,7 +383,7 @@ class CitizenStartEventStrategyTest {
         String lastName
     ) {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -426,7 +424,7 @@ class CitizenStartEventStrategyTest {
         // Given
         String orgName = "org";
         UUID claimantPartyId = UUID.randomUUID();
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         UUID defendantId = UUID.randomUUID();
         Party claimantParty = Party.builder().orgName(orgName).build();
         ListValue<Party> claimantPartyListValue = ListValue.<Party>builder().id(claimantPartyId.toString())
@@ -492,7 +490,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldThrowExceptionWhenNoDraft() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PCSCase caseData = PCSCase.builder().build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
@@ -516,7 +514,7 @@ class CitizenStartEventStrategyTest {
     @Test
     void shouldReturnSubmittedStatusWhenResponseAlreadySubmitted() {
         // Given
-        UUID defendantUserId = UUID.randomUUID();
+        String defendantUserId = UUID.randomUUID().toString();
         PartyEntity defendantEntity = PartyEntity.builder().idamId(defendantUserId).build();
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 

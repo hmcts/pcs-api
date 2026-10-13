@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -73,7 +72,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         return responseCase;
     }
 
-    private boolean hasSubmittedResponse(long caseReference, UUID userId) {
+    private boolean hasSubmittedResponse(long caseReference, String userId) {
         return userId != null
             && defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(caseReference, userId);
     }
@@ -125,8 +124,7 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
 
         var existingCaseDetailsTab = pcsCase.getCaseDetailsTab();
-        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, caseEntity, 
-            pcsCase.getDateSubmitted() != null);
+        var builtCaseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, pcsCase.getDateSubmitted() != null);
         var caseDetailsTab = existingCaseDetailsTab == null ? new CaseDetailsTab() : existingCaseDetailsTab;
 
         caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
