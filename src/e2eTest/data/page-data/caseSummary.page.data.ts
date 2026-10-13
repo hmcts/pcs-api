@@ -30,5 +30,4 @@ export const caseSummary = {
   manageParties: 'Manage parties',
   manageHearing: 'Manage hearing',
   deleteDraftApplicationEvent: 'Delete draft application',
-  resumeDraftApplicationEvent: 'Resume draft application'
 }
