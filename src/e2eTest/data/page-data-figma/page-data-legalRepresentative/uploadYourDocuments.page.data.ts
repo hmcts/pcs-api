@@ -2,7 +2,7 @@ export const uploadYourDocuments = {
   mainHeader: `Upload additional documents`,
   youShouldOnlyUploadDocumentsParagraph: `You should only upload documents that are relevant to the claim.`,
   beforeYouUploadTheDocumentParagraph: `Before you upload the document, give it a name that tells the court what it is, for example ‘witness statement’, or ‘tenancy agreement’.`,
-  youCanUploadFollowingParagraph: `You can upload the following file types: DOC/DOCX (Word), XLS/XLSM (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.`,
+  youCanUploadFollowingParagraph: `You can upload the following file types: DOC/DOCX (Word), XLS/XLSX (Excel), PPT/PPTX (PowerPoint), PDF, RTF, TXT, CSV, JPG/JPEG, PNG, BMP, TIF/TIFF.`,
   beforeYouUploadParagraph: `Before you upload your documents`,
   giveYourDocumentParagraph: `Give your document a name that explains what it is.`,
   addDocumentSubHeader: `Add document`,
