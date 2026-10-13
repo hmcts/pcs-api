@@ -9,6 +9,14 @@
 # there's only ever one values file supplying these keys and no Helm merge ordering ambiguity
 # between the two label overlays.
 global:
+  ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
+  ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
+  ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
+  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
+  idamApiUrl: https://idam-api.aat.platform.hmcts.net
+  idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
+  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresUsername: "hmcts"
@@ -79,8 +87,6 @@ ccd:
         maxReplicas: 1
       environment:
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
-        IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
-        IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_HOST: "{{ .Release.Name }}-es-master"
@@ -92,7 +98,6 @@ ccd:
         ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
         ENABLE_CASE_GROUP_ACCESS: true
         DEFINITION_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_admin,jui_webapp,pui_webapp,aac_manage_case_assignment,xui_webapp,am_org_role_mapping_service,am_role_assignment_service,pcs_api"
-        USER_PROFILE_HOST: "http://ccd-user-profile-api-aat.service.core-compute-aat.internal"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -109,8 +114,6 @@ ccd:
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
-        IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-        IDAM_USER_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
         ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
@@ -212,8 +215,6 @@ ccd:
         # Default list (see am-role-assignment-service chart) plus pcs_api, so pcs-api can call RAS
         # without a 403.
         ROLE_ASSIGNMENT_S2S_AUTHORISED_SERVICES: "ccd_gw,am_role_assignment_service,am_org_role_mapping_service,am_role_assignment_refresh_batch,wa_task_management_api,wa_task_configuration_api,xui_webapp,aac_manage_case_assignment,ccd_data,wa_workflow_api,wa_task_monitor,wa_case_event_handler,iac,hmc_cft_hearing_service,ccd_case_disposer,sscs,fis_hmc_api,fpl_case_service,disposer-idam-user,civil_service,prl_cos_api,wa_reporting_frontend,pcs_api"
-        IDAM_S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-        IDAM_USER_URL: https://idam-api.aat.platform.hmcts.net
       devmemoryRequests: 1024Mi
       devcpuRequests: 250m
       devmemoryLimits: 2048Mi
