@@ -29,6 +29,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Civil Possession";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possession Jurisdiction";
+    private static final String NEXT_STEPS_RESUME_CLAIM = "nextStepsResumeClaim=\"Yes\"";
+    private static final String NEXT_STEPS_PROVIDE_DETAILS = "nextStepsResumeClaim=\"No\"";
     static final AccessProfile[] PARTY_VISIBLE_TAB_ROLES = {
         AccessProfile.CITIZEN,
         AccessProfile.DEFENDANT,
@@ -155,8 +157,21 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
-            .field("nextStepsMarkdown", NEVER_SHOW);
+            .field("nextStepsResumeClaim", NEVER_SHOW)
+            .label("nextStepsResumeClaimHeading", NEXT_STEPS_RESUME_CLAIM,
+                   "<h2 class=\"govuk-heading-m\">Resume claim</h2>")
+            .label("nextStepsResumeClaimText", NEXT_STEPS_RESUME_CLAIM,
+                   "You’ve already answered some questions about this claim.")
+            .label("nextStepsProvideDetailsHeading", NEXT_STEPS_PROVIDE_DETAILS,
+                   "<h2 class=\"govuk-heading-m\">Provide more details about your claim</h2>")
+            .label("nextStepsProvideDetailsText", NEXT_STEPS_PROVIDE_DETAILS,
+                   "Your answers will be saved from this point so you can return to your draft later.")
+            .label("nextStepsContinue", null,
+                   "<a href=\"/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim\" "
+                       + "role=\"button\" class=\"govuk-button govuk-link govuk-link--no-visited-state\">Continue</a>")
+            .label("nextStepsCancel", null,
+                   "<p class=\"govuk-body govuk-!-font-size-19\">"
+                       + "<a class=\"govuk-link--no-visited-state\" href=\"/cases\">Cancel</a></p>");
 
         buildCasePartiesTab(builder);
 

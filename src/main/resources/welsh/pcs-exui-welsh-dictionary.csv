@@ -2175,9 +2175,9 @@ Give details of previous steps taken to recover rent arrears,Rhowch fanylion cam
 Include any case numbers if there were previous court proceedings. You can enter up to 500 characters.,Rhowch unrhyw rifau achos os oedd yna achos(ion) llys blaenorol.  Gallwch ddefnyddio hyd at 500 o nodau.
 Cancel upload,Canslo’r uwchlwytho
 Uploading...,Uwchlwytho...
-Is there any information you want to provide about ${claimantNamePossessiveForm} circumstances?,A oes yna unrhyw wybodaeth yr hoffech ei darparu am amgylchiadau ${claimantNamePossessiveForm}?
+Is there any information you want to provide about ${claimantNamePossessiveForm} circumstances?,A oes yna unrhyw wybodaeth yr hoffech ei darparu am amgylchiadau ${claimantCircumstancesName}?
 This can be any information about your financial or general situation that you want the court to consider when making its decision whether or not to grant a possession order,Gall hyn fod yn unrhyw wybodaeth am eich sefyllfa ariannol neu gyffredinol yr hoffech i'r llys ei hystyried wrth wneud ei benderfyniad i ganiatáu gorchymyn meddiannu neu beidio
-Give details about ${claimantNamePossessiveForm} circumstances,Rhowch fanylion am amgylchiadau ${claimantNamePossessiveForm}
+Give details about ${claimantNamePossessiveForm} circumstances,Rhowch fanylion am amgylchiadau ${claimantCircumstancesName}
 "Is there any information you’re required to provide, or you want to provide, about the ${defendantTermPossessive} circumstances?","A oes yna unrhyw wybodaeth sy'n ofynnol i chi ei darparu, neu yr ydych am ei darparu am amgylchiadau ${defendantTermPossessive}?"
 "Is there any information you’re required to provide, or you want to provide, about the defendant’s circumstances?","A oes yna unrhyw wybodaeth sy'n ofynnol i chi ei darparu, neu yr ydych am ei darparu am amgylchiadau'r diffynnydd?"
 Give details about the defendant’s circumstances,Rhowch fanylion am amgylchiadau'r diffynnydd
@@ -4230,7 +4230,7 @@ This service is currently only available for registered providers of social hous
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span class=""govuk-visually-hidden"">Warning</span>
  <span id=""warning-message"">
  To exit to the case list, select ‘Cancel’
  </span>
@@ -4261,7 +4261,7 @@ Mae'r gwasanaeth hwn ar gael i ddarparwyr cofrestredig tai cymdeithasol yn unig 
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Rhybudd</span>
+ <span class=""govuk-visually-hidden"">Rhybudd</span>
  <span id=""warning-message"">
  I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
  </span>
@@ -4283,7 +4283,7 @@ Use form N5 and the correct particulars of claim form.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span class=""govuk-visually-hidden"">Warning</span>
  <span id=""warning-message"">
  To exit to the case list, select ‘Cancel’
  </span>
@@ -4304,7 +4304,7 @@ Defnyddiwch ffurflen N5 a'r ffurflen manylion yr hawliad gywir.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Rhybudd</span>
+ <span class=""govuk-visually-hidden"">Rhybudd</span>
  <span id=""warning-message"">
  I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
  </span>
@@ -4480,7 +4480,7 @@ Use form N5 Wales and the correct particulars of claim form.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span class=""govuk-visually-hidden"">Warning</span>
  <span id=""warning-message"">
  To exit to the case list, select ‘Cancel’
  </span>
@@ -4501,7 +4501,7 @@ Defnyddiwch ffurflen N5 Cymru a'r ffurflen manylion yr hawliad gywir.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
   <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
   <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Rhybudd</span>
+    <span class=""govuk-visually-hidden"">Rhybudd</span>
     <span id=""warning-message"">
       I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
     </span>
@@ -4523,7 +4523,7 @@ Use form N5 Wales and the correct particulars of claim form.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
  <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
  <strong class=""govuk-warning-text__text"">
- <span class=""govuk-warning-text__assistive"">Warning</span>
+ <span class=""govuk-visually-hidden"">Warning</span>
  <span id=""warning-message"">
  To exit to the case list, select ‘Cancel’
  </span>
@@ -4544,7 +4544,7 @@ Defnyddiwch ffurflen N5 Cymru a'r ffurflen manylion yr hawliad gywir.
 <div class=""govuk-warning-text"" role=""alert"" aria-labelledby=""warning-message"">
   <span class=""govuk-warning-text__icon"" aria-hidden=""true"">!</span>
   <strong class=""govuk-warning-text__text"">
-    <span class=""govuk-warning-text__assistive"">Rhybudd</span>
+    <span class=""govuk-visually-hidden"">Rhybudd</span>
     <span id=""warning-message"">
       I adael a mynd yn ôl i'r rhestr achosion, dewiswch 'Canslo'
     </span>
@@ -7447,3 +7447,16 @@ os ydych angen.</p>
 Make an application,Gwneud cais
 Community landlord,Landlord cymunedol
 Rent amount,Swm y rhent
+"<h2 class=""govuk-heading-m"">Resume claim</h2>","<h2 class=""govuk-heading-m"">Parhau â'r hawliad</h2>"
+You’ve already answered some questions about this claim.,Rydych chi eisoes wedi ateb rhai cwestiynau am yr hawliad hwn.
+"<h2 class=""govuk-heading-m"">Provide more details about your claim</h2>","<h2 class=""govuk-heading-m"">Rhowch fwy o fanylion am eich hawliad</h2>"
+Your answers will be saved from this point so you can return to your draft later.,Bydd eich atebion yn cael eu cadw o'r pwynt hwn fel y gallwch ddychwelyd i'ch drafft yn ddiweddarach
+"<a href=""/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim"" role=""button"" class=""govuk-button govuk-link govuk-link--no-visited-state"">Continue</a>","<a href=""/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim"" role=""button"" class=""govuk-button govuk-link govuk-link--no-visited-state"">Parhau</a>"
+"<p class=""govuk-body govuk-!-font-size-19""><a class=""govuk-link--no-visited-state"" href=""/cases"">Cancel</a></p>","<p class=""govuk-body govuk-!-font-size-19""><a class=""govuk-link--no-visited-state"" href=""/cases"">Canslo</a></p>"
+"---
+<div class=""govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3"">
+<span class=""govuk-panel__title govuk-!-font-size-36"">You have updated a defendant’s legal representative’s information</span>
+</div>","---
+<div class=""govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3"">
+<span class=""govuk-panel__title govuk-!-font-size-36"">Rydych wedi diweddaru gwybodaeth cynrychiolydd cyfreithiol y diffynnydd</span>
+</div>"
