@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -24,14 +26,21 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.FIRST_CLASS_POST;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod.PERSONALLY_HANDED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.HearingRecords.CHANGED_BY_ANOTHER_JUDGE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.MakeOrder.MAKE_ORDER;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 /**
  * A judge making an order for a hearing records the case's facts and their note for that hearing, which
@@ -56,9 +65,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
 
     @BeforeEach
     void setUp() {
-        PCSCase claim = cases.claim(ENGLAND);
-        claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
-        caseReference = cases.issue(claim);
+        caseReference = cases.issue();
         firstHearing = cases.hearing(caseReference, FIRST_HEARING, false);
         secondHearing = cases.hearing(caseReference, SECOND_HEARING, false);
         firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
@@ -68,16 +75,58 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     @Test
     @DisplayName("starts the first hearing's order from the claim's facts")
     void startsFromTheClaimsFacts() {
-        Hearing hearing = forHearing(firstJudge, firstHearing).start().hearing();
+        PCSCase claim = cases.claim(ENGLAND);
+        claim.getTenancyLicenceDetails().setTypeOfTenancyLicence(SECURE_TENANCY);
+        claim.getTenancyLicenceDetails().setTenancyLicenceDate(LocalDate.of(2020, 2, 3));
+        claim.setNoticeServed(YesOrNo.YES);
+        claim.setNoticeServedDetails(NoticeServedDetails.builder()
+            .serviceMethod(FIRST_CLASS_POST)
+            .postedDate(LocalDate.of(2026, 8, 10))
+            .build());
+        claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
+        claim.getSecureOrFlexiblePossessionGrounds()
+            .setSecureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY));
 
-        assertThat(hearing.id()).isEqualTo(firstHearing);
+        Hearing hearing = firstHearingOf(claim);
+
         assertThat(hearing.date()).isEqualTo(FIRST_HEARING);
-        assertThat(hearing.caseFacts().currentRent()).isEqualByComparingTo("750.00");
-        assertThat(hearing.caseFacts().rentFrequency()).isEqualTo("MONTHLY");
+        CaseFacts facts = hearing.caseFacts();
+        assertThat(facts.tenancyType()).isEqualTo("SECURE_TENANCY");
+        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2020, 2, 3));
+        assertThat(facts.noticeDate()).isEqualTo(LocalDate.of(2026, 8, 10));
+        assertThat(facts.currentRent()).isEqualByComparingTo("750.00");
+        assertThat(facts.rentFrequency()).isEqualTo("MONTHLY");
+        assertThat(facts.groundsPleaded()).contains("Rent arrears");
         assertThat(hearing.recorded()).as("the claim's facts were recorded by no judge").isNull();
         assertThat(hearing.version()).isNull();
         assertThat(hearing.note()).isNull();
         assertThat(hearing.earlierNotes()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("takes the day a notice handed over in person was served from the claim")
+    void takesTheDayANoticeWasHandedOver() {
+        PCSCase claim = cases.claim(ENGLAND);
+        claim.setNoticeServed(YesOrNo.YES);
+        claim.setNoticeServedDetails(NoticeServedDetails.builder()
+            .serviceMethod(PERSONALLY_HANDED)
+            .handedOverDateTime(LocalDateTime.of(2026, 8, 11, 16, 30))
+            .build());
+
+        assertThat(firstHearingOf(claim).caseFacts().noticeDate()).isEqualTo(LocalDate.of(2026, 8, 11));
+    }
+
+    @Test
+    @DisplayName("takes a Welsh claim's occupation contract as the tenancy")
+    void takesTheWelshOccupationContractAsTheTenancy() {
+        PCSCase claim = cases.claim(WALES);
+        claim.getOccupationLicenceDetailsWales().setOccupationLicenceTypeWales(STANDARD_CONTRACT);
+        claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
+
+        CaseFacts facts = firstHearingOf(claim).caseFacts();
+
+        assertThat(facts.tenancyType()).isEqualTo("STANDARD_CONTRACT");
+        assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2024, 4, 5));
     }
 
     @Test
@@ -184,6 +233,14 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             .containsExactly("The hearing is not one of this case's hearings");
         assertThat(forHearing(firstJudge, cancelledHearing).startExpectingRejection())
             .containsExactly("The hearing is not one of this case's hearings");
+    }
+
+    /** The claim issued with one hearing listed, as the judge starts an order for that hearing. */
+    private Hearing firstHearingOf(PCSCase claim) {
+        long reference = cases.issue(claim);
+        int hearingId = cases.hearing(reference, FIRST_HEARING, false);
+        return events.external(reference, MAKE_ORDER).as(firstJudge)
+            .withClientContext(Map.of("hearingId", String.valueOf(hearingId))).start().hearing();
     }
 
     private ExternalEvent<OrderStart, MakeOrderRequest> forHearing(Actor judge, int hearingId) {

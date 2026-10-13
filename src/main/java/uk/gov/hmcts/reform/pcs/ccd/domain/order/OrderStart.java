@@ -51,7 +51,6 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                               AddressUK propertyAddress,
                               List<Party> claimants,
                               List<Party> defendants,
-                              CaseFacts caseFacts,
                               boolean openCounterclaim,
                               boolean openApplication) {
     }

@@ -111,9 +111,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         HearingEntity hearing = order.map(OrderEntity::getHearing)
             .or(() -> clientContextRetriever.getHearingId().map(id -> hearingRecords.hearing(pcsCase, id)))
             .orElse(null);
-        OrderStart.CaseContext caseContext = orderCaseContext.of(pcsCase);
-        return ExternalStartResponse.started(new OrderStart(workingOrder, caseContext,
-            hearing == null ? null : hearingRecords.start(pcsCase, hearing, caseContext.caseFacts())));
+        return ExternalStartResponse.started(new OrderStart(workingOrder, orderCaseContext.of(pcsCase),
+            hearing == null ? null : hearingRecords.start(pcsCase, hearing)));
     }
 
     /** A returned order the judge's task links to. */

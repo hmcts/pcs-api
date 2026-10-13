@@ -3,13 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.JudicialNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Recorded;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.JudicialNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingFactsEntity;
@@ -20,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserNameService;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -59,7 +65,7 @@ class HearingRecords {
     }
 
     /** The hearing as a judge starts an order for it, falling back to the claim's facts. */
-    OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing, CaseFacts claimFacts) {
+    OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing) {
         List<HearingFactsEntity> recorded = hearingFactsRepository.findByHearingPcsCaseId(pcsCase.getId());
         Optional<HearingFactsEntity> own = recorded.stream()
             .filter(facts -> facts.getHearingId().equals(hearing.getId()))
@@ -71,7 +77,7 @@ class HearingRecords {
             hearing.getId(),
             hearing.getHearingDate(),
             own.map(HearingFactsEntity::getVersion).orElse(null),
-            startFrom.map(HearingRecords::caseFacts).orElse(claimFacts),
+            startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
             startFrom.map(facts -> new Recorded(
                 facts.getUser().getName(), facts.getHearing().getHearingDate(), facts.getUpdatedOn())).orElse(null),
             own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
@@ -141,6 +147,44 @@ class HearingRecords {
 
     private static LocalDateTime madeAt(JudicialNote note) {
         return note.hearingDate() != null ? note.hearingDate() : LocalDateTime.ofInstant(note.createdOn(), UK);
+    }
+
+    /** The facts the case's main claim gives, which a case's first hearing starts from. */
+    private static CaseFacts claimFacts(PcsCaseEntity pcsCase) {
+        TenancyLicenceEntity tenancy = pcsCase.getTenancyLicence();
+        ClaimEntity claim = pcsCase.getClaims().stream().findFirst().orElse(null);
+        NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
+        return new CaseFacts(
+            tenancy == null ? null : tenancy.getStartDate(),
+            tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
+            noticeDate(notice),
+            tenancy == null ? null : tenancy.getRentAmount(),
+            tenancy == null || tenancy.getRentFrequency() == null ? null : tenancy.getRentFrequency().name(),
+            claim == null ? null : groundsPleaded(claim),
+            null, null, null, null, null
+        );
+    }
+
+    /** The day the notice was served, whether the claimant recorded a date or a moment. */
+    private static LocalDate noticeDate(NoticeOfPossessionEntity notice) {
+        if (notice == null) {
+            return null;
+        }
+        if (notice.getNoticeDate() != null) {
+            return notice.getNoticeDate();
+        }
+        return notice.getNoticeDateTime() == null ? null : notice.getNoticeDateTime().toLocalDate();
+    }
+
+    private static String groundsPleaded(ClaimEntity claim) {
+        String grounds = claim.getClaimGrounds().stream()
+            .map(ground -> ClaimGroundSummary.resolveGround(ground.getCategory(), ground.getCode()))
+            .filter(Objects::nonNull)
+            .map(PossessionGroundEnum::getLabel)
+            .distinct()
+            .sorted()
+            .collect(Collectors.joining(", "));
+        return grounds.isEmpty() ? null : grounds;
     }
 
     private static CaseFacts caseFacts(HearingFactsEntity facts) {
