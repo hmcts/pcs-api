@@ -91,11 +91,11 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     });
     await performAction('clickButton', 'Close and Return to case details');
     await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
-    //enabled
+
     await performAction('midEventRespondPossessionClaimLRAPI');
     await performAction('submitPossessionClaimResponseLRAPI');
     await performAction('clickTab', caseSummary.summaryTab);
-    //disabled
+
     await performValidation('elementNotToBeVisible', {
           elementType: 'text',
           text: 'Respond to the claim.',
