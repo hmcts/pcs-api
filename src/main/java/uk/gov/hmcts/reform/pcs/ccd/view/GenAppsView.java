@@ -11,12 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.UserRoleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UserRoles;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppVisibilityService;
 
-import java.util.Comparator;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -75,17 +75,13 @@ public class GenAppsView {
 
     private Party mapToSimpleParty(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getParty())
-            .map(partyEntity -> {
-                UUID idamId = partyEntity.getIdamId();
-
-                return Party.builder()
-                    .id(partyEntity.getId().toString())
-                    .idamId(idamId != null ? idamId.toString() : null)
-                    .firstName(partyEntity.getFirstName())
-                    .lastName(partyEntity.getLastName())
-                    .orgName(partyEntity.getOrgName())
-                    .build();
-            })
+            .map(partyEntity -> Party.builder()
+                .id(partyEntity.getId().toString())
+                .idamId(partyEntity.getIdamId())
+                .firstName(partyEntity.getFirstName())
+                .lastName(partyEntity.getLastName())
+                .orgName(partyEntity.getOrgName())
+                .build())
             .orElse(null);
     }
 
