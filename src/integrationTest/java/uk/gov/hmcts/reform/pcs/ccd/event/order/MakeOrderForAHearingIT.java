@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Hearing;
-import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.JudicialNote;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
@@ -116,7 +115,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         assertThat(first.caseFacts().currentRent()).isEqualByComparingTo("900.00");
         assertThat(first.recorded().by()).isEqualTo("First Judge");
         assertThat(first.note()).isEqualTo("first hearing's note");
-        assertThat(first.earlierNotes()).extracting(JudicialNote::note).containsExactly("second hearing's note");
+        assertThat(first.earlierNotes()).as("a later hearing's note is not an earlier one").isEmpty();
         assertThat(forHearing(secondJudge, secondHearing).start().hearing().caseFacts().currentRent())
             .isEqualByComparingTo("950.00");
     }
@@ -137,28 +136,21 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("records nothing for the hearing while the order is a draft")
-    void recordsNothingForADraft() {
+    @DisplayName("keeps a draft with the hearing it was started for, recording nothing until it is sent")
+    void keepsADraftWithItsHearing() {
         forHearing(firstJudge, firstHearing)
             .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), "draft note"));
 
-        Hearing next = forHearing(secondJudge, secondHearing).start().hearing();
-
-        assertThat(next.recorded()).isNull();
-        assertThat(next.earlierNotes()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("keeps a draft with the hearing it was started for")
-    void keepsADraftWithItsHearing() {
-        forHearing(firstJudge, firstHearing)
-            .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), null));
-
-        var reopened = events.external(caseReference, MAKE_ORDER).as(firstJudge).start();
-
-        assertThat(reopened.hearing().id()).isEqualTo(firstHearing);
+        assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing().id())
+            .isEqualTo(firstHearing);
         assertThat(forHearing(firstJudge, secondHearing).start().hearing().id())
             .as("a link to another hearing opens the draft, for its own hearing").isEqualTo(firstHearing);
+        Hearing next = forHearing(secondJudge, secondHearing).start().hearing();
+        assertThat(next.recorded()).isNull();
+        assertThat(next.earlierNotes()).isEmpty();
+        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
+                change(SAVE_DRAFT, secondHearing)).errors())
+            .containsExactly("The order is for a different hearing");
     }
 
     @Test
@@ -185,12 +177,6 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             .containsExactly("The hearing is not one of this case's hearings");
     }
 
-    @Test
-    @DisplayName("makes an order without a hearing as before")
-    void makesAnOrderWithoutAHearing() {
-        assertThat(events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing()).isNull();
-    }
-
     private ExternalEvent<OrderStart, MakeOrderRequest> forHearing(Actor judge, int hearingId) {
         return events.external(caseReference, MAKE_ORDER).as(judge)
             .withClientContext(Map.of("hearingId", String.valueOf(hearingId)));
@@ -207,6 +193,14 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         return new MakeOrderRequest(action,
             new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null), null,
             new HearingChange(hearingId, version, facts, note));
+    }
+
+    /** The judge's saved draft, changed as if it were for another hearing. */
+    private MakeOrderRequest change(MakeOrderRequest.Action action, int hearingId) {
+        OrderStart.Order draft = forHearing(firstJudge, firstHearing).start().order();
+        return new MakeOrderRequest(action,
+            new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), null), null,
+            new HearingChange(hearingId, null, facts("900.00"), null));
     }
 
     private static CaseFacts facts(String currentRent) {

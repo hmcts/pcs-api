@@ -68,20 +68,14 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                             LocalDate lastPaymentDate,
                             BigDecimal lastPayment,
                             BigDecimal arrearsToday) {
-
-        public static CaseFacts fromClaim(LocalDate tenancyStartDate, String tenancyType, LocalDate noticeDate,
-                                          BigDecimal currentRent, String rentFrequency, String groundsPleaded) {
-            return new CaseFacts(tenancyStartDate, tenancyType, noticeDate, currentRent, rentFrequency,
-                groundsPleaded, null, null, null, null, null);
-        }
     }
 
     /**
      * The hearing an order is made for. The facts are this hearing's if they have been recorded,
      * otherwise the latest earlier hearing's, otherwise the claim's; recorded says who recorded them,
      * and is null for the claim's. The version is null until this hearing's facts are recorded, and
-     * goes back with the judge's change to them. The earlier notes are the case's other judicial
-     * notes, newest first.
+     * goes back with the judge's change to them. The earlier notes are the case's judicial notes made
+     * before this hearing, newest first.
      */
     public record Hearing(int id,
                           LocalDateTime date,

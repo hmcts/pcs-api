@@ -141,7 +141,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        if (hearing != null && request.hearing() != null) {
+        if (request.hearing() != null) {
             hearingRecords.record(order.getPcsCase(), hearing, request.hearing());
         }
         // Only a returned order comes with a task, the one its return gave the judge.

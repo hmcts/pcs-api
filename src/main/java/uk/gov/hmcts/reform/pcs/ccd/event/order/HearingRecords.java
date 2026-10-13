@@ -21,12 +21,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UserNameService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +42,7 @@ class HearingRecords {
     static final String CHANGED_BY_ANOTHER_JUDGE =
         "The case facts for this hearing have been changed by another judge. Reload the order and try again";
     private static final int NOTE_LIMIT = 30000;
+    private static final ZoneId UK = ZoneId.of("Europe/London");
 
     private final HearingRepository hearingRepository;
     private final HearingFactsRepository hearingFactsRepository;
@@ -59,11 +60,13 @@ class HearingRecords {
 
     /** The hearing as a judge starts an order for it, falling back to the claim's facts. */
     OrderStart.Hearing start(PcsCaseEntity pcsCase, HearingEntity hearing, CaseFacts claimFacts) {
-        Optional<HearingFactsEntity> own = hearingFactsRepository.findById(hearing.getId());
-        Optional<HearingFactsEntity> startFrom = own.or(() -> hearingFactsRepository
-            .findFirstByHearingPcsCaseIdAndHearingIdNotOrderByHearingHearingDateDescHearingIdDesc(
-                pcsCase.getId(), hearing.getId()));
-        JudicialNoteEntity ownNote = own.map(HearingFactsEntity::getJudicialNote).orElse(null);
+        List<HearingFactsEntity> recorded = hearingFactsRepository.findByHearingPcsCaseId(pcsCase.getId());
+        Optional<HearingFactsEntity> own = recorded.stream()
+            .filter(facts -> facts.getHearingId().equals(hearing.getId()))
+            .findFirst();
+        Optional<HearingFactsEntity> startFrom = own.or(() -> recorded.stream()
+            .filter(facts -> facts.getHearing().getHearingDate().isBefore(hearing.getHearingDate()))
+            .max(Comparator.comparing(facts -> facts.getHearing().getHearingDate())));
         return new OrderStart.Hearing(
             hearing.getId(),
             hearing.getHearingDate(),
@@ -71,8 +74,8 @@ class HearingRecords {
             startFrom.map(HearingRecords::caseFacts).orElse(claimFacts),
             startFrom.map(facts -> new Recorded(
                 facts.getUser().getName(), facts.getHearing().getHearingDate(), facts.getUpdatedOn())).orElse(null),
-            ownNote == null ? null : ownNote.getNote(),
-            earlierNotes(pcsCase.getId(), pcsCase.getJudicialNotes(), ownNote)
+            own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
+            earlierNotes(pcsCase.getJudicialNotes(), recorded, hearing.getHearingDate())
         );
     }
 
@@ -118,18 +121,26 @@ class HearingRecords {
         return judicialNoteRepository.save(created);
     }
 
-    /** The case's judicial notes other than this hearing's, newest first, with the hearing each was made at. */
-    private List<JudicialNote> earlierNotes(UUID caseId, List<JudicialNoteEntity> notes, JudicialNoteEntity own) {
-        Map<Integer, LocalDateTime> hearingDates = hearingFactsRepository.findByHearingPcsCaseId(caseId).stream()
+    /**
+     * The case's judicial notes made before this hearing, newest first: at an earlier hearing, or between
+     * hearings, with the hearing each was made at.
+     */
+    private static List<JudicialNote> earlierNotes(List<JudicialNoteEntity> notes, List<HearingFactsEntity> recorded,
+                                                   LocalDateTime before) {
+        Map<Integer, LocalDateTime> hearingDates = recorded.stream()
             .filter(facts -> facts.getJudicialNote() != null)
             .collect(Collectors.toMap(facts -> facts.getJudicialNote().getId(),
                 facts -> facts.getHearing().getHearingDate()));
         return notes.stream()
-            .filter(note -> own == null || !note.getId().equals(own.getId()))
-            .sorted(Comparator.comparing(JudicialNoteEntity::getCreatedOn).reversed())
             .map(note -> new JudicialNote(note.getUser() == null ? null : note.getUser().getName(),
                 note.getCreatedOn(), hearingDates.get(note.getId()), note.getNote()))
+            .filter(note -> madeAt(note).isBefore(before))
+            .sorted(Comparator.comparing(HearingRecords::madeAt).reversed())
             .toList();
+    }
+
+    private static LocalDateTime madeAt(JudicialNote note) {
+        return note.hearingDate() != null ? note.hearingDate() : LocalDateTime.ofInstant(note.createdOn(), UK);
     }
 
     private static CaseFacts caseFacts(HearingFactsEntity facts) {
@@ -138,8 +149,10 @@ class HearingRecords {
             facts.getArrearsAtIssue(), facts.getLastPaymentDate(), facts.getLastPayment(), facts.getArrearsToday());
     }
 
-    private static void copy(CaseFacts from, HearingFactsEntity to) {
-        CaseFacts facts = from == null ? CaseFacts.fromClaim(null, null, null, null, null, null) : from;
+    private static void copy(CaseFacts facts, HearingFactsEntity to) {
+        if (facts == null) {
+            return;
+        }
         to.setTenancyStartDate(facts.tenancyStartDate());
         to.setTenancyType(facts.tenancyType());
         to.setNoticeDate(facts.noticeDate());
