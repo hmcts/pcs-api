@@ -43,13 +43,11 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
-    private final ChooseAnApplication chooseAnApplication;
 
     public MakeAnApplication(@Qualifier("genAppStartEventHandler") StartEventHandler startEventHandler,
-                             @Qualifier("genAppSubmitEventHandler") SubmitEventHandler submitEventHandler, ChooseAnApplication chooseAnApplication) {
+                             @Qualifier("genAppSubmitEventHandler") SubmitEventHandler submitEventHandler) {
         this.startEventHandler = startEventHandler;
         this.submitEventHandler = submitEventHandler;
-        this.chooseAnApplication = chooseAnApplication;
     }
 
     @Override
@@ -66,7 +64,7 @@ public class MakeAnApplication implements CCDConfig<PCSCase, State, UserRole> {
             .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(chooseAnApplication)
+            .add(new ChooseAnApplication())
             .add(new StartSuspend())
             .add(new StartAdjourn())
             .add(new StartSetAside())
