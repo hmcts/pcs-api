@@ -70,7 +70,7 @@ public class HearingNoticeSelector {
             && !Boolean.TRUE.equals(hearing.getCancelled());
     }
 
-    // Only unrepresented defendants who opted in to post are posted.
+    // Only unrepresented defendants who have not opted out of post are posted.
     private boolean isPostableDefendant(PartyEntity party, Set<UUID> defendantIds) {
         return party != null
             && defendantIds.contains(party.getId())
@@ -86,6 +86,9 @@ public class HearingNoticeSelector {
 
     private boolean wantsPost(PartyEntity party) {
         ContactPreferencesEntity preferences = party.getContactPreferences();
-        return preferences != null && preferences.getContactByPost() == VerticalYesNo.YES;
+        if (preferences == null || preferences.getContactByPost() == null) {
+            return true;
+        }
+        return preferences.getContactByPost() != VerticalYesNo.NO;
     }
 }

@@ -120,11 +120,11 @@ class HearingNoticeSelectorTest {
     }
 
     @Test
-    @DisplayName("Skips a defendant who has not chosen post")
-    void shouldSkipDefendantWithoutPostPreference() {
+    @DisplayName("Posts to a defendant who has not responded yet")
+    void shouldPostDefendantWithoutPostPreference() {
         defendant.setContactPreferences(null);
 
-        assertThat(select(notice(hearing, defendant))).isEmpty();
+        assertThat(select(notice(hearing, defendant))).hasSize(1);
     }
 
     private List<HearingNoticePackCandidate> select(DocumentEntity... documents) {
