@@ -76,7 +76,7 @@ import static org.mockito.Mockito.when;
 class DefendantResponseServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final JourneyType JOURNEY_TYPE = JourneyType.CITIZEN;
 
@@ -1278,10 +1278,9 @@ class DefendantResponseServiceTest {
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
-        DocumentEntity removedDocument = DocumentEntity.builder().fileName("removed.pdf").removed(true).build();
         when(documentService.createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
-            .thenReturn(List.of(activeDocument, removedDocument));
+            .thenReturn(List.of(activeDocument));
         when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
 
         // When

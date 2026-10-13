@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {LONG_TIMEOUT} from "../playwright.config";
 import { dismissCookieBanner } from '@config/cookie-banner';
+import { uploadTestDocuments } from '@utils/common/uploadDocument.utils';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -38,6 +39,7 @@ async function globalSetupConfig(): Promise<void> {
   await getAccessToken();
   await getS2SToken();
   await authenticateAndSaveState();
+  await uploadTestDocuments();
 }
 
 async function authenticateAndSaveState(): Promise<string> {

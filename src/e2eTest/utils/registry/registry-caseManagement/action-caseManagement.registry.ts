@@ -35,6 +35,9 @@ export class ActionCMRegistry {
     ['linkSolicitorAPI', new LinkSolicitorAPIAction()],
     ['makeAnApplicationAPI', new CreateCaseAPIAction()],
     ['manageHearingAPI', new CreateCaseAPIAction()],
+    ['fetchCurrentUserAPI', new CreateCaseAPIAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['validateCaseFileViewFolders', new CreateCaseAction()],
     ['validateCaseFileViewIndividualFolder', new CreateCaseAction()],
     ['validateDefendantDetails', new CaseManagementAction()],
@@ -90,6 +93,7 @@ export class ActionCMRegistry {
     ['selectParty', new CaseManagementAction()],
     ['updatePartyDetails', new CaseManagementAction()],
     ['confirmPartyDetailsUpdated', new CaseManagementAction()],
+    ['validateCaseNotesDetails', new CaseManagementAction()],
 
   ]);
 
