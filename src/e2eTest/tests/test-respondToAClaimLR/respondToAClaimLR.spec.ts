@@ -6,10 +6,11 @@ import { user } from '@data/user-data';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { VERY_LONG_TIMEOUT } from '../../playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo, defendantUserDetails } from '@utils/actions/custom-actions';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {contactDetailsLR} from '@data/page-data-figma';
 import {startNow} from "@data/page-data-figma/page-data-legalRepresentative/startNow.page.data";
+import { midEventLRRespondPossessionClaimApiData } from '@data/api-data/respondPossessionClaimMidEventLR.api.data';
 
 test.beforeEach(async ({ page, context }, testInfo) => {
   await context.clearCookies();
@@ -80,7 +81,7 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     await performValidation('bannerAlert', `Case #.* has been updated with event: ${caseSummary.amendRepresentativeDetails}`);
   });
 
-  test('Respond to a claim - Verify respond to claim link @verifyLink', async () => {
+  test('As a Defendant Solicitor I should not see the Respond to a claim event from event drop down after successful response submission @verifyLink @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.amendRepresentativeDetails);
     await performAction('clickButton', caseSummary.go);
     await performAction('selectRespondToClaimContactPreferences', {
@@ -91,11 +92,10 @@ test.describe('XUI - Respond to a claim - e2e Journey @nightly', () => {
     });
     await performAction('clickButton', 'Close and Return to case details');
     await performAction('select', caseSummary.nextStepEventList, 'Respond to claim');
-
-    await performAction('midEventRespondPossessionClaimLRAPI');
-    await performAction('submitPossessionClaimResponseLRAPI');
+    await performAction('midEventRespondPossessionClaimLRAPI', { data: midEventLRRespondPossessionClaimApiData.midEventLRCounterClaimClaimPaymentPayload(), defendantID: defendantUserDetails[0].id })
+    await performAction('submitPossessionClaimResponseLRAPI', { defendantID: defendantUserDetails[0].id })
+    
     await performAction('clickTab', caseSummary.summaryTab);
-
     await performValidation('elementNotToBeVisible', {
           elementType: 'text',
           text: 'Respond to the claim.',

@@ -207,8 +207,8 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
-    ['submitPossessionClaimResponseLRAPI', new RespondToAClaimAction()],
-    ['midEventRespondPossessionClaimLRAPI', new RespondToAClaimAction()],
+    ['submitPossessionClaimResponseLRAPI', new CreateCaseAPIAction()],
+    ['midEventRespondPossessionClaimLRAPI', new CreateCaseAPIAction()],
     ['removeFile', new RemoveFileAction()],    
   ]);
 
