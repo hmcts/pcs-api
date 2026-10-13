@@ -12,7 +12,7 @@ import java.util.Arrays;
 @AllArgsConstructor
 public enum ApplicationOutcome {
     GRANTED("grant"),
-    REFUSED("refuse"),
+    DISMISSED("dismiss"),
     STRUCK_OUT("strike-out"),
     LISTED("list"),
     OTHER("other");
