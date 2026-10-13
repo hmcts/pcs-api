@@ -803,7 +803,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 });
 
 test.describe('[Enforcement - Delete Draft Application]', () => {
-  test('Delete the draft application @enforcement @rerun', async ({ page }) => {
+  test('Delete the draft application @enforcement', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
