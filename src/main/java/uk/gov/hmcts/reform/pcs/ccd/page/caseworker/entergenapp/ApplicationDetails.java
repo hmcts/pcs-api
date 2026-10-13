@@ -16,6 +16,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Component
@@ -28,7 +29,7 @@ public class ApplicationDetails implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
 
     public ApplicationDetails(@Qualifier("ukClock") Clock ukClock,
-                                     TextAreaValidationService textAreaValidationService) {
+                              TextAreaValidationService textAreaValidationService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
     }
@@ -42,10 +43,11 @@ public class ApplicationDetails implements CcdPageConfiguration {
             .mandatory(PCSCase::getPartyRadioList)
             .complex(PCSCase::getEnterGenAppRequest)
             .mandatory(EnterGenAppRequest::getDateReceived)
-            .mandatory(EnterGenAppRequest::getApplicationTypeOption)
+            .mandatory(EnterGenAppRequest::getApplicationTypeOptionList)
+            .readonly(EnterGenAppRequest::getApplicationTypeOption, NEVER_SHOW, true)
             .mandatory(
                 EnterGenAppRequest::getSomethingElseDetails,
-                fieldEquals("enter_genapp_ApplicationTypeOption", EnterGenAppType.SOMETHING_ELSE)
+                fieldEquals("enter_genapp_ApplicationTypeOptionList", EnterGenAppType.SOMETHING_ELSE)
             )
             .done();
     }
@@ -53,6 +55,8 @@ public class ApplicationDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        setApplicationTypeOption(caseData);
+
         LocalDate dateReceived = caseData.getEnterGenAppRequest().getDateReceived();
         LocalDate currentDate = LocalDate.now(ukClock);
 
@@ -65,6 +69,12 @@ public class ApplicationDetails implements CcdPageConfiguration {
         List<String> validationErrors = validateSomethingElseDetails(caseData);
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private void setApplicationTypeOption(PCSCase caseData) {
+        EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
+        String selectedApplicationType = enterGenAppRequest.getApplicationTypeOptionList().getValueCode();
+        enterGenAppRequest.setApplicationTypeOption(EnterGenAppType.valueOf(selectedApplicationType));
     }
 
     private List<String> validateSomethingElseDetails(PCSCase caseData) {

@@ -27,6 +27,10 @@ public class ShowConditions {
         return "%s=\"%s\"".formatted(fieldId, value.name());
     }
 
+    public static String fieldNotEquals(String fieldId, Enum<?> value) {
+        return "%s!=\"%s\"".formatted(fieldId, value.name());
+    }
+
     public static String fieldContains(String fieldId, Enum<?> value) {
         return "%sCONTAINS\"%s\"".formatted(fieldId, value.name());
     }
@@ -52,6 +56,7 @@ public class ShowConditions {
         return switch (featureFlag) {
             case RELEASE_1_DOT_2 -> "release1dot2Enabled";
             case RELEASE_1_DOT_3 -> "release1dot3Enabled";
+            case RELEASE_1B -> "release1bEnabled";
             case RELEASE_1_DOT_4 -> "release1dot4Enabled";
             case CASEWORKER_EVENTS -> "caseWorkerEventsEnabled";
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";

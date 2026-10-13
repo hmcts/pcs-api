@@ -56,7 +56,7 @@ public class TaskDescriptionService {
         String templateName = switch (genAppEntity.getType()) {
             case ADJOURN -> "review-adjourn-gen-app";
             case SET_ASIDE -> "review-set-aside-gen-app";
-            case SOMETHING_ELSE -> "review-gen-app";
+            case SUSPEND, SOMETHING_ELSE -> "review-gen-app";
         };
 
         return renderTemplate(templateName, context);
@@ -96,7 +96,11 @@ public class TaskDescriptionService {
     }
 
     public String createTranslateClaimantDocumentDescription(long caseReference,
+                                                              ClaimEntity mainClaim,
+                                                              PartyEntity partyEntity,
                                                               List<DocumentEntity> documentEntities) {
+
+        String partyLabel = partyService.getPartyLabel(mainClaim, partyEntity.getId());
 
         List<String> filenames = documentEntities.stream()
             .map(DocumentEntity::getFileName)
@@ -104,6 +108,7 @@ public class TaskDescriptionService {
 
         Map<String, Object> context = Map.of(
             "caseReference", caseReference,
+            "partyLabel", partyLabel,
             "filenames", filenames
         );
 

@@ -55,6 +55,7 @@ public class ConfirmationScreenFactory {
         GenAppType applicationType = genAppRequest.getApplicationType();
 
         String receivedRequestMessage = switch (applicationType) {
+            case SUSPEND -> "We have received your request to suspend the eviction.";
             case ADJOURN -> "We have received your request to adjourn (delay) the court hearing.";
             case SET_ASIDE -> "We have received your request to set aside (cancel) the order.";
             case SOMETHING_ELSE -> "We have received your request to ask the court to make an order.";

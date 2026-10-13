@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.EnterGenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -22,7 +23,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.caseworker.entergenapp.ApplicationDetail
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.util.List;
 import java.util.UUID;
@@ -50,11 +54,13 @@ class EnterGenAppTest extends BaseEventTest {
     private GenAppService genAppService;
     @Mock
     private AddressFormatter addressFormatter;
+    @Mock
+    private FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setUp() {
         EnterGenApp enterGenApp = new EnterGenApp(pcsCaseService, partyService, genAppService, applicationDetails,
-                                                  addressFormatter);
+                                                  addressFormatter, featureToggleService);
         setEventUnderTest(enterGenApp);
     }
 
@@ -105,6 +111,7 @@ class EnterGenAppTest extends BaseEventTest {
         when(partyService.getPartyLabel(claimEntity, claimantId)).thenReturn("Claimant 1");
         when(partyService.getPartyLabel(claimEntity, defendant1Id)).thenReturn("Defendant 1");
         when(partyService.getPartyLabel(claimEntity, defendant2Id)).thenReturn("Defendant 2");
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
 
         PCSCase caseData = PCSCase.builder()
             .enterGenAppRequest(EnterGenAppRequest.builder().build())
@@ -121,6 +128,51 @@ class EnterGenAppTest extends BaseEventTest {
             DynamicListElement.builder().code(defendant1Id).label("Jane Doe - Defendant 1").build(),
             DynamicListElement.builder().code(defendant2Id).label("Person unknown - Defendant 2").build()
         );
+    }
+
+    @Test
+    void shouldExcludeSuspendApplicationTypeWhenRelease1bIsDisabled() {
+        // Given
+        givenCaseWithClaimParties(List.of());
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(false);
+
+        // When
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getEnterGenAppRequest().getApplicationTypeOptionList().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(
+                EnterGenAppType.ADJOURN.name(),
+                EnterGenAppType.SET_ASIDE.name(),
+                EnterGenAppType.SOMETHING_ELSE.name()
+            );
+    }
+
+    @Test
+    void shouldIncludeSuspendApplicationTypeWhenRelease1bIsEnabled() {
+        // Given
+        givenCaseWithClaimParties(List.of());
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1B)).thenReturn(true);
+
+        // When
+        PCSCase result = callStartHandler(PCSCase.builder().build());
+
+        // Then
+        assertThat(result.getEnterGenAppRequest().getApplicationTypeOptionList().getListItems())
+            .extracting(DynamicStringListElement::getCode)
+            .containsExactly(
+                EnterGenAppType.SUSPEND.name(),
+                EnterGenAppType.ADJOURN.name(),
+                EnterGenAppType.SET_ASIDE.name(),
+                EnterGenAppType.SOMETHING_ELSE.name()
+            );
+    }
+
+    private void givenCaseWithClaimParties(List<ClaimPartyEntity> claimParties) {
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getClaimParties()).thenReturn(claimParties);
     }
 
     @Test

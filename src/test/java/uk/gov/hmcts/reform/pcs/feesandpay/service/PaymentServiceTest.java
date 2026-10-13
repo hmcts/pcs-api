@@ -227,7 +227,7 @@ class PaymentServiceTest {
                 .paymentCallbackHandlerType(CLAIM)
                 .build();
 
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -236,7 +236,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
             verify(feePaymentRepository).save(feePaymentCaptor.capture());
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
@@ -255,13 +255,14 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
+                .thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -276,7 +277,7 @@ class PaymentServiceTest {
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
                 .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
@@ -300,7 +301,7 @@ class PaymentServiceTest {
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
                 .paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
