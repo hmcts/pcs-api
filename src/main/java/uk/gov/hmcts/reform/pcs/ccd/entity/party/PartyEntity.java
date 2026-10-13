@@ -22,7 +22,6 @@ import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -31,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.CasePartyFlagEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
-import uk.gov.hmcts.reform.pcs.idam.IdamUserIdUuidConverter;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -69,7 +67,6 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    @Type(IdamUserIdUuidConverter.class)
     private String idamId;
 
     private String firstName;
