@@ -114,12 +114,11 @@ class DecideApplicationIT extends OrderEventIT {
         OrderStart start = asJudgeDeciding(refer()).start();
 
         Application application = start.caseContext().application();
-        assertThat(start.order().genAppId()).isEqualTo(application.id());
         assertThat(application.reference()).isEqualTo("GA1");
         assertThat(application.type()).isEqualTo("Adjourn the hearing");
         assertThat(application.applicant()).isEqualTo(IssuedCases.DEFENDANT + " (Defendant 1)");
         assertThat(application.submittedOn()).isEqualTo(LocalDate.of(2026, 10, 1));
-        assertThat(application.within14Days()).isEqualTo("YES");
+        assertThat(application.within14Days()).isEqualTo(VerticalYesNo.YES);
         assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
         assertThat(application.referralNote()).isEqualTo(NOTE);
         assertThat(application.referredOn()).isNotNull();

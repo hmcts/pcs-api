@@ -33,7 +33,6 @@ import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -104,7 +103,8 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseGet(() -> {
                 UUID genAppId = clientContextRetriever.getGenAppId()
                     .map(id -> openGenApp(pcsCase, id).getId()).orElse(null);
-                return findDraft(caseReference, judge, genAppId)
+                return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
+                        caseReference, judge, DRAFT, genAppId)
                     .map(draft -> OrderStart.Order.of(draft, orderSteps.latest(draft), null))
                     .orElseGet(() -> OrderStart.Order.none(genAppId));
             });
@@ -166,11 +166,6 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
         orderSteps.latest(draft, change.version());
         return draft;
-    }
-
-    private Optional<OrderEntity> findDraft(long caseReference, String judge, UUID genAppId) {
-        return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
-            caseReference, judge, DRAFT, genAppId);
     }
 
     /** The case's application, which an order can only be made on while it is open. */

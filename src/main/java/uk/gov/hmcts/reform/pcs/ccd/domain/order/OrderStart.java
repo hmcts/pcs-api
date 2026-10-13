@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.order;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 
@@ -60,15 +61,14 @@ public record OrderStart(Order order, CaseContext caseContext) {
      * by whom, the applicant's answers, the order they asked for, their documents, and what court staff
      * said when they referred it.
      */
-    public record Application(UUID id,
-                              String reference,
+    public record Application(String reference,
                               String type,
                               String somethingElseDetails,
                               String applicant,
                               LocalDate submittedOn,
-                              String within14Days,
-                              String otherPartiesAgreed,
-                              String withoutNotice,
+                              VerticalYesNo within14Days,
+                              VerticalYesNo otherPartiesAgreed,
+                              VerticalYesNo withoutNotice,
                               String withoutNoticeReason,
                               String whatOrderWanted,
                               List<ApplicationDocument> documents,

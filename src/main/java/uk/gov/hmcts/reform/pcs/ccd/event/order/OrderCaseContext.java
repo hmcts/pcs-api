@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
@@ -59,16 +58,15 @@ class OrderCaseContext {
 
     private OrderStart.Application application(GenAppEntity genApp, ClaimEntity claim) {
         return new OrderStart.Application(
-            genApp.getId(),
             "GA" + genApp.getRank(),
             genApp.getType().getShortName(),
             genApp.getSomethingElseDetails(),
             applicant(genApp, claim),
             genApp.getApplicationSubmittedDate() != null
                 ? genApp.getApplicationSubmittedDate().toLocalDate() : genApp.getApplicationReceivedDate(),
-            yesNo(genApp.getWithin14Days()),
-            yesNo(genApp.getOtherPartiesAgreed()),
-            yesNo(genApp.getWithoutNotice()),
+            genApp.getWithin14Days(),
+            genApp.getOtherPartiesAgreed(),
+            genApp.getWithoutNotice(),
             genApp.getWithoutNoticeReason(),
             genApp.getWhatOrderWanted(),
             applicationDocuments(genApp),
@@ -101,10 +99,6 @@ class OrderCaseContext {
             .forEach(document -> documents.putIfAbsent(document.getDocumentId(),
                 new OrderStart.ApplicationDocument(document.getDocumentId(), document.getFileName())));
         return List.copyOf(documents.values());
-    }
-
-    private static String yesNo(VerticalYesNo answer) {
-        return answer == null ? null : answer.name();
     }
 
     private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
