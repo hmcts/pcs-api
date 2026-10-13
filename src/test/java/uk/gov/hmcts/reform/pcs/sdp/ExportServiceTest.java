@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +54,9 @@ class ExportServiceTest {
     @Mock
     private ClaimActivityLogRepository claimActivityLogRepository;
 
+    @Mock
+    private BlobUploader blobUploader;
+
     private ExportService exportService;
 
     @BeforeEach
@@ -63,6 +67,7 @@ class ExportServiceTest {
             claimActivityLogRepository,
             new SnapshotMapper(),
             new FileWriter(objectMapper),
+            blobUploader,
             FIXED_CLOCK,
             "local",
             tempDir.toString()
@@ -135,5 +140,6 @@ class ExportServiceTest {
         assertThat(json).contains("\"claim_type\" : \"AAA3-SLD\"");
         assertThat(json).contains("\"name\" : \"Jane Doe\"");
         assertThat(json).contains("\"environment\" : \"local\"");
+        verify(blobUploader).upload(result.outputPath());
     }
 }
