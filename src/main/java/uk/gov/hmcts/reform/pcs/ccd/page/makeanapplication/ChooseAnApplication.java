@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -12,11 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Slf4j
+@Component
 @AllArgsConstructor
 public class ChooseAnApplication implements CcdPageConfiguration {
 
@@ -71,11 +72,10 @@ public class ChooseAnApplication implements CcdPageConfiguration {
             xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.YES);
         } else {
             xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.NO);
-            genAppFeeCalculator.getApplicationFeeDetails(xuiGenAppRequest)
-                .orElse(null);
         }
 
-
+        genAppFeeCalculator.getApplicationFeeDetails(xuiGenAppRequest)
+            .orElse(null);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

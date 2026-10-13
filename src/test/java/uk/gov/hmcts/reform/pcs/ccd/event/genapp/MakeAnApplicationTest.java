@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventStates;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication.ChooseAnApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -24,13 +25,15 @@ class MakeAnApplicationTest extends BaseEventTest {
     private StartEventHandler startEventHandler;
     @Mock
     private SubmitEventHandler submitEventHandler;
+    @Mock
+    private ChooseAnApplication chooseAnApplication;
     @Captor
     private ArgumentCaptor<EventPayload<PCSCase, State>> eventPayloadCaptor;
 
     @BeforeEach
     void setUp() {
         MakeAnApplication underTest = new MakeAnApplication(
-            startEventHandler, submitEventHandler);
+            startEventHandler, submitEventHandler,chooseAnApplication);
 
         setEventUnderTest(underTest);
     }
