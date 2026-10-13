@@ -69,7 +69,7 @@ test.afterEach(async () => {
 });
 // Skipping this test case as the feature is not part of Release 1 to save execution time.
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - As a Claimant I complete Writ of Possession Application with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Eviction Details, HCEO Information, Language Selection and Statement of Truth @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -123,7 +123,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
     });
 
-  test('Writ - As a Claimant I complete Writ of Possession Application with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, Welsh Language and Legal Representative Statement of Truth @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -175,7 +175,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
   });
 
-  test('Writ - As a Claimant I complete Writ of Possession Application with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
+  test('Writ - As a Claimant I complete "Writ of Possession Application" with Fee Validation, Without HCEO, English and Welsh Language, and Claimant Statement of Truth @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -226,7 +226,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
   });
 
-  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a Writ of Possession Application @enforcement', async () => {
+  test('Writ - As a Claimant I receive an error message when the claim is not transferred to the High Court for a "Writ of Possession Application" @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -247,7 +247,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
-  test('Writ - As a Claimant I apply for a Writ of Possession through the General Application journey', {
+  test('Writ - As a Claimant I apply for a "Writ of Possession" through the General Application journey', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
