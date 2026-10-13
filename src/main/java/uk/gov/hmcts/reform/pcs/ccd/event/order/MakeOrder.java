@@ -130,6 +130,9 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge)
             : workingDraft(caseReference, judge, change);
+        if (order.getHearing() != null && request.hearing() == null) {
+            throw ExternalRejection.because("The order's hearing record is missing");
+        }
         if (request.hearing() != null) {
             // The hearing's facts and note are recorded whenever the judge saves, so the order holds no copy
             // a later save could bring back over another judge's.

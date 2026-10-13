@@ -85,8 +85,8 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
                           List<JudicialNote> earlierNotes) {
     }
 
-    /** Who recorded a hearing's facts, at which hearing, and when. */
-    public record Recorded(String by, LocalDateTime hearingDate, Instant on) {
+    /** Who recorded a hearing's facts, and at which hearing. */
+    public record Recorded(String by, LocalDateTime hearingDate) {
     }
 
     /** A judicial note, with the hearing it was made at if it was made at one. */

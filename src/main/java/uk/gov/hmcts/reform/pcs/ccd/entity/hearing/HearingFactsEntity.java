@@ -9,10 +9,7 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.entity.JudicialNoteEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UserNameEntity;
@@ -28,9 +25,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "hearing_facts")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class HearingFactsEntity {
 
     @Id

@@ -181,7 +181,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("records the hearing's facts and note when the judge saves a draft, and keeps the draft with it")
+    @DisplayName("records the hearing's facts and note when a judge saves a draft, which reopens with the latest")
     void recordsADraftsFactsForItsHearing() {
         forHearing(firstJudge, firstHearing)
             .submitExpectingSuccess(submission(SAVE_DRAFT, firstHearing, null, facts("900.00"), "draft note"));
@@ -193,22 +193,17 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         assertThat(forHearing(firstJudge, secondHearing).start().hearing().id())
             .as("a link to another hearing opens the draft, for its own hearing").isEqualTo(firstHearing);
         assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
-                change(SAVE_DRAFT, secondHearing)).errors())
+                change(firstHearing, secondHearing)).errors())
             .containsExactly("The order is for a different hearing");
-    }
+        assertThat(forHearing(firstJudge, firstHearing).submitExpectingRejection(
+                change(firstHearing, null)).errors())
+            .containsExactly("The order's hearing record is missing");
 
-    @Test
-    @DisplayName("shows a judge reopening their draft the facts another judge has since recorded")
-    void reopensADraftWithTheLatestFacts() {
-        forHearing(firstJudge, secondHearing)
-            .submitExpectingSuccess(submission(SAVE_DRAFT, secondHearing, null, facts("900.00"), null));
-        Hearing seen = forHearing(secondJudge, secondHearing).start().hearing();
-        submitForReview(secondJudge, secondHearing, seen.version(), facts("950.00"), null);
-
-        Hearing reopened = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
-
-        assertThat(reopened.caseFacts().currentRent()).isEqualByComparingTo("950.00");
-        assertThat(reopened.recorded().by()).isEqualTo("Second Judge");
+        // Another judge records newer facts for the hearing; the draft reopens with them.
+        submitForReview(secondJudge, firstHearing, reopened.version(), facts("950.00"), "draft note");
+        Hearing latest = events.external(caseReference, MAKE_ORDER).as(firstJudge).start().hearing();
+        assertThat(latest.caseFacts().currentRent()).isEqualByComparingTo("950.00");
+        assertThat(latest.recorded().by()).isEqualTo("Second Judge");
     }
 
     @Test
@@ -261,12 +256,13 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             new HearingChange(hearingId, version, facts, note));
     }
 
-    /** The judge's saved draft, changed as if it were for another hearing. */
-    private MakeOrderRequest change(MakeOrderRequest.Action action, int hearingId) {
-        OrderStart.Order draft = forHearing(firstJudge, firstHearing).start().order();
-        return new MakeOrderRequest(action,
+    /** The first judge's saved draft for its hearing, changed as if for this hearing, or with none. */
+    private MakeOrderRequest change(int draftsHearing, Integer hearingId) {
+        Hearing hearing = forHearing(firstJudge, draftsHearing).start().hearing();
+        OrderStart.Order draft = forHearing(firstJudge, draftsHearing).start().order();
+        return new MakeOrderRequest(SAVE_DRAFT,
             new OrderChange(draft.id(), draft.version(), draft.orderType(), Map.of(), null), null,
-            new HearingChange(hearingId, null, facts("900.00"), null));
+            hearingId == null ? null : new HearingChange(hearingId, hearing.version(), facts("900.00"), null));
     }
 
     private static CaseFacts facts(String currentRent) {

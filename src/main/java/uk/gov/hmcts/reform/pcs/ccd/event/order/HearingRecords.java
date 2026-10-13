@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
@@ -78,8 +79,8 @@ class HearingRecords {
             hearing.getHearingDate(),
             own.map(HearingFactsEntity::getVersion).orElse(null),
             startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
-            startFrom.map(facts -> new Recorded(
-                facts.getUser().getName(), facts.getHearing().getHearingDate(), facts.getUpdatedOn())).orElse(null),
+            startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getHearing().getHearingDate()))
+                .orElse(null),
             own.map(HearingFactsEntity::getJudicialNote).map(JudicialNoteEntity::getNote).orElse(null),
             earlierNotes(pcsCase.getJudicialNotes(), recorded, hearing.getHearingDate())
         );
@@ -87,8 +88,11 @@ class HearingRecords {
 
     /** Records the judge's facts and note for the hearing, unless another judge recorded newer ones. */
     void record(PcsCaseEntity pcsCase, HearingEntity hearing, HearingChange change) {
-        HearingFactsEntity facts = hearingFactsRepository.findById(hearing.getId())
-            .orElseGet(() -> HearingFactsEntity.builder().hearing(hearing).build());
+        HearingFactsEntity facts = hearingFactsRepository.findById(hearing.getId()).orElseGet(() -> {
+            HearingFactsEntity first = new HearingFactsEntity();
+            first.setHearing(hearing);
+            return first;
+        });
         Long recordedVersion = facts.getHearingId() == null ? null : facts.getVersion();
         if (!Objects.equals(recordedVersion, change.version())) {
             throw ExternalRejection.because(CHANGED_BY_ANOTHER_JUDGE);
@@ -99,13 +103,19 @@ class HearingRecords {
         facts.setUpdatedOn(now);
         copy(change.caseFacts(), facts);
         facts.setJudicialNote(note(pcsCase, facts.getJudicialNote(), judge, now, change.note()));
-        hearingFactsRepository.save(facts);
+        try {
+            hearingFactsRepository.saveAndFlush(facts);
+        } catch (DataIntegrityViolationException e) {
+            // Another judge recorded the hearing's first facts at the same moment.
+            throw ExternalRejection.because(CHANGED_BY_ANOTHER_JUDGE);
+        }
     }
 
     /** The hearing's note as the judge left it: a blank note removes the one they recorded before. */
     private JudicialNoteEntity note(PcsCaseEntity pcsCase, JudicialNoteEntity recorded, UserNameEntity judge,
                                     Instant now, String text) {
-        String note = text == null || text.isBlank() ? null : text.strip();
+        // A line break counts once, as the judge's browser counts it.
+        String note = text == null || text.isBlank() ? null : text.strip().replace("\r\n", "\n");
         if (note != null && note.length() > NOTE_LIMIT) {
             throw ExternalRejection.because("Hearing notes must be 30,000 characters or fewer");
         }
@@ -194,9 +204,6 @@ class HearingRecords {
     }
 
     private static void copy(CaseFacts facts, HearingFactsEntity to) {
-        if (facts == null) {
-            return;
-        }
         to.setTenancyStartDate(facts.tenancyStartDate());
         to.setTenancyType(facts.tenancyType());
         to.setNoticeDate(facts.noticeDate());
