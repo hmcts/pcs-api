@@ -29,7 +29,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
             .pageLabel("Statement of truth")
             .label("statementOfTruth-lineSeparator", "---")
             .label("statementOfTruth-info", INFO_MARKDOWN)
-            .readonly(PCSCase::getCurrentRepresentedPartyName)
+            .readonlyNoSummary(PCSCase::getCurrentRepresentedPartyName)
             .label("statementOfTruth-completedBy", COMPLETED_BY_MARKDOWN)
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getAgreementDefendantLegalRep)

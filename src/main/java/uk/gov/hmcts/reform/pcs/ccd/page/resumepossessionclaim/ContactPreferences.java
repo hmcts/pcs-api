@@ -49,7 +49,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         has been scheduled or when a document is ready to view.
                     </p>
                     """)
-            .readonly(ClaimantContactPreferences::getClaimantContactEmail)
+            .readonlyNoSummary(ClaimantContactPreferences::getClaimantContactEmail)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
             .mandatory(ClaimantContactPreferences::getOverriddenClaimantContactEmail,
         "isCorrectClaimantContactEmail=\"NO\""
@@ -71,7 +71,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, ORG_ADDRESS_FOUND)
+            .readonlyNoSummary(ClaimantContactPreferences::getFormattedClaimantContactAddress, ORG_ADDRESS_FOUND)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
 
             // Address not found
