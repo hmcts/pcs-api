@@ -123,7 +123,7 @@ public class DefendantResponseService {
                                       PartyEntity defendantParty,
                                       JourneyType journeyType) {
 
-        UUID userId = requireCurrentUserId();
+        String userId = requireCurrentUserId();
 
         if (defendantParty == null) {
             throw new IllegalStateException("Defendant party is null for case: " + caseReference);
@@ -234,8 +234,8 @@ public class DefendantResponseService {
         translationWAService.createTranslateDefendantSubmittedDocumentTask(pcsCaseEntity, defendantParty, documents);
     }
 
-    private UUID requireCurrentUserId() {
-        UUID userId = securityContextService.getCurrentUserId();
+    private String requireCurrentUserId() {
+        String userId = securityContextService.getCurrentUserId();
 
         if (userId == null) {
             log.error("Cannot save defendant response: current user IDAM ID is null");
@@ -362,7 +362,7 @@ public class DefendantResponseService {
     }
 
     public boolean hasSubmittedResponse(long caseReference) {
-        UUID userId = securityContextService.getCurrentUserId();
+        String userId = securityContextService.getCurrentUserId();
         if (userId == null) {
             return false;
         }
@@ -371,7 +371,7 @@ public class DefendantResponseService {
 
     @Transactional(readOnly = true)
     public PossessionClaimResponse getSubmittedResponse(long caseReference) {
-        UUID userId = securityContextService.getCurrentUserId();
+        String userId = securityContextService.getCurrentUserId();
         if (userId == null) {
             throw new IllegalStateException("No submitted defendant response for case " + caseReference);
         }
