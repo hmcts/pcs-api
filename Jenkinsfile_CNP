@@ -88,12 +88,11 @@ withPipeline(type, product, component) {
     } else {
       env.CCD_ENABLED = "false"
     }
-    // Work Allocation preview (pr-values:wa) — WA pods and Camunda
+    // Work Allocation preview (pr-values:wa or pr-values:ccd-am-wa) — WA pods and Camunda
     env.CAMUNDA_BASE_URL = "https://camunda-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MONITOR_API_URL = "https://wa-task-monitor-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.TASK_MANAGEMENT_API_URL = "https://wa-task-management-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-    def waPRLabels = githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:wa")
-    if (waPRLabels.contains("pr-values:wa")) {
+    if (hasLabel(githubApi, "pr-values:wa") || hasLabel(githubApi, "pr-values:ccd-am-wa")) {
       env.WA_FUNCTIONAL_TESTS_ENABLED = true
     }
     if (hasLabel(githubApi, "enable_e2e_full_regression")) {
