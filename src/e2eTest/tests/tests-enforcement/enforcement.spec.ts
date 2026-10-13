@@ -852,12 +852,9 @@ test.describe('[Enforcement - Delete Draft Application]', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
     await performAction('clickButton', caseSummary.go);
-
-  //   await performValidation('mainHeader', resumeDraftApplication.mainHeader);
-  //   await performAction('clickRadioButton', {
-  //     question: resumeDraftApplication.resumeDraftApplicationQuestion,
-  //     option: resumeDraftApplication.yesRadioOption,
-  //  });
-  //   await performAction('clickButton', resumeDraftApplication.continueButton);
+    await expect(page.locator(
+      '#content > exui-case-details-home > ccd-case-event-trigger > div > ccd-case-edit > ccd-case-edit-page > span'
+    )).toHaveText('Resume draft application');
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
   });
 });
