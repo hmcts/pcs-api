@@ -72,6 +72,7 @@ test.beforeEach(async ({ page }, testInfo) => {
       payLoad: submitCaseApiData.submitCasePayload()
     });
   }
+  await performAction('updatePaymentAPI');
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${getCaseTypeId()}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
