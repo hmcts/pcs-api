@@ -35,3 +35,5 @@ export * from '@data/page-data-figma/page-data-enforcement-figma/explainHowDefen
 export * from '@data/page-data-figma/page-data-enforcement-figma/shareEvidenceWithJudge.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/confirmEvictionDetails.page.data';
 export * from '@data/page-data-figma/page-data-enforcement-figma/evictionDate.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/missedPayments.page.data';
+export * from '@data/page-data-figma/page-data-enforcement-figma/defendantInBreathingSpace.page.data';

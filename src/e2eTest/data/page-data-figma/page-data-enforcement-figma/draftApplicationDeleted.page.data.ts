@@ -1,4 +1,4 @@
 export const draftApplicationDeleted = {
-    mainHeader: 'Draft application deleted',
-    closeAndReturnToCaseListButton: 'Close and return to case list',
+    mainHeader: 'Delete draft application',
+    closeAndReturnToCaseListButton: 'Close and Return to case details',
 }

@@ -29,7 +29,9 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer
+  confirmHCEOfficer,
+  defendantInBreathingSpace,
+  missedPayments
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -77,6 +79,8 @@ export class EnforcementAction implements IAction {
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
       ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
+      ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
+      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -116,6 +120,32 @@ export class EnforcementAction implements IAction {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
+  }
+
+  private async isDefendantInBreathingSpace(data: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseInfo.fid}` });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
+    });
+    await performAction('clickRadioButton', {
+      question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion,
+      option: data.option,
+    });
+    await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, data.nextPage as string);
+  }
+
+  private async missedPayments(data: actionRecord): Promise<void> {
+    await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseInfo.fid}` });
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
+    });
+    await performAction('clickRadioButton', {
+      question: missedPayments.haveDefendantsMissedPaymentsQuestion,
+      option: data.option,
+    });
+    await performAction('reTryOnCallBackError', missedPayments.continueButton, data.nextPage as string);
   }
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
@@ -404,7 +434,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -421,7 +451,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
-      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
