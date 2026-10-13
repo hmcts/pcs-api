@@ -5,7 +5,6 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundles;
 import uk.gov.hmcts.ccd.sdk.bundling.managed.CaseBundleView;
-import uk.gov.hmcts.ccd.sdk.bundling.api.BundleDocument;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobReport;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.JudgeBundleAccess;
@@ -75,17 +74,9 @@ public class BundleTabView {
     }
 
     private static List<ListValue<MissingBundleDocument>> missingDocuments(BundleJobReport report) {
-        return report.missingDocuments().stream().map(missing -> {
-            var section = report.request().root().sections().stream()
-                .filter(folder -> folder.documents().stream()
-                    .anyMatch(document -> document.id().equals(missing.documentId())))
-                .findFirst();
-            String title = section.stream().flatMap(folder -> folder.documents().stream())
-                .filter(document -> document.id().equals(missing.documentId()))
-                .map(BundleDocument::title).findFirst().orElse(missing.documentId());
-            return ListValue.<MissingBundleDocument>builder().id(missing.documentId())
-                .value(new MissingBundleDocument(title, section.map(folder -> folder.title()).orElse(null),
-                    missing.startPage(), missing.reason().message())).build();
-        }).toList();
+        return report.missingDocuments().stream().map(missing -> ListValue.<MissingBundleDocument>builder()
+            .id(missing.documentId()).value(new MissingBundleDocument(missing.title(),
+                String.join(" / ", missing.sectionPath()), missing.startPage(), missing.reason().message()))
+            .build()).toList();
     }
 }

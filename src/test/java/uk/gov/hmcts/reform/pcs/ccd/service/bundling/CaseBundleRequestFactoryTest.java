@@ -66,14 +66,17 @@ class CaseBundleRequestFactoryTest {
     }
 
     @Test
-    void shouldLeaveOutRemovedDocumentsAndAccessCodeLetters() {
+    void shouldLeaveOutRemovedAccessCodeAndNonCdamDocuments() {
         final DocumentEntity kept = document("kept.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         DocumentEntity removed = document("removed.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         removed.setRemovedAt(LocalDateTime.now());
         DocumentEntity accessCode = document("code.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
         accessCode.setType(DocumentType.DEFENDANT_ACCESS_CODE);
 
-        BundleRequest request = underTest.build(JOB_ID, caseWith(kept, removed, accessCode));
+        DocumentEntity nonCdam = document("external.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
+        nonCdam.setDocumentId(null);
+
+        BundleRequest request = underTest.build(JOB_ID, caseWith(kept, removed, accessCode, nonCdam));
 
         assertThat(request.allDocuments()).extracting(BundleDocument::title).containsExactly("kept.pdf");
     }

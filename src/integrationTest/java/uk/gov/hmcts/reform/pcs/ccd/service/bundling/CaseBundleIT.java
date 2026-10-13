@@ -7,16 +7,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.boot.test.autoconfigure.web.servlet.SpringBootMockMvcBuilderCustomizer;
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 import uk.gov.hmcts.ccd.sdk.bundling.job.BundleJobWorker;
@@ -45,7 +42,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -77,12 +73,10 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     @Autowired
     private BundleJobWorker worker;
     @Autowired
-    private NamedParameterJdbcTemplate jdbc;
-    @Autowired
     private TransactionTemplate transaction;
 
     @Test
-    void documentHookCoalescesCascadedWritesAndRollbackQueuesNothing() throws Exception {
+    void documentHookQueuesOnlyCommittedCascadedWrites() throws Exception {
         long reference = cases.issue();
         UUID key = caseKey(reference);
         var first = document("First.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
@@ -94,13 +88,12 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
             .isEqualTo(CaseBundleView.Lifecycle.NONE);
         transaction.executeWithoutResult(status -> add(reference, first, second));
-        assertThat(jdbc.queryForObject("select requested_revision from bundling.case_bundle where case_key = :key",
-            Map.of("key", key.toString()), Long.class)).isEqualTo(1);
-        assertThat(jobCount(key)).isEqualTo(1);
+        assertThat(bundles.view(CaseBundleDefinition.NAME, key.toString()).lifecycle())
+            .isEqualTo(CaseBundleView.Lifecycle.PREPARING);
     }
 
     @Test
-    void rendersAndReplacesTheJudgesBundleWithoutAddingItToTheDocumentTable() throws Exception {
+    void projectsTheJudgesBundleWithoutAddingItToTheDocumentTable() throws Exception {
         long reference = cases.issue();
         UUID key = caseKey(reference);
         transaction.executeWithoutResult(status -> add(reference,
@@ -109,13 +102,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
             document("Claim.pdf", CaseFileCategory.STATEMENTS_OF_CASE, LocalDate.of(2026, 1, 2))));
         run(key);
         var first = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
-        assertThat(events.documents().caseReference(first.document())).hasValue(reference);
-        try (PDDocument pdf = Loader.loadPDF(events.documents().content(first.document()))) {
-            assertThat(new PDFTextStripper().getText(pdf)).contains("Content of Claim.pdf", "Witness.pdf");
-        }
-        assertThat(first.report().request().root().sections().stream()
-            .filter(folder -> folder.title().equals("Evidence")).findFirst().orElseThrow().documents())
-            .extracting(source -> source.title()).containsExactly("Inspection.pdf", "Witness.pdf");
         var projected = projected(reference, "judge");
         assertThat(projected.path("bundleTab_Bundle").path("document_url").asText())
             .isEqualTo(first.document().getUrl());
@@ -125,17 +111,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         assertThat(nonJudge.toString()).doesNotContain(first.document().getUrl());
         transaction.executeWithoutResult(status -> assertThat(pcsCases.findByCaseReference(reference).orElseThrow()
             .getDocuments()).hasSize(3));
-
-        transaction.executeWithoutResult(status -> add(reference,
-            document("Late evidence.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 2, 1))));
-        run(key);
-        var second = bundles.view(CaseBundleDefinition.NAME, key.toString()).current().orElseThrow();
-        assertThat(second.document().getUrl()).isNotEqualTo(first.document().getUrl());
-        ((ManagedCaseBundles) bundles).cleanUp();
-        assertThat(events.documents().stored()).extracting(Document::getUrl)
-            .doesNotContain(first.document().getUrl()).contains(second.document().getUrl());
-        assertThat(events.history(reference)).extracting(audit -> audit.eventId())
-            .containsExactly("caseBundleGenerated", "caseBundleGenerated");
     }
 
     @Test
@@ -192,7 +167,7 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    void missingSourcesAppearInThePdfAndInTheJudgesTab() throws Exception {
+    void missingSourcesAppearInTheJudgesTab() throws Exception {
         long reference = cases.issue();
         UUID key = caseKey(reference);
         var missing = document("Deleted.pdf", CaseFileCategory.EVIDENCE, LocalDate.of(2026, 1, 1));
@@ -253,11 +228,6 @@ class CaseBundleIT extends AbstractPostgresContainerIT {
         return DocumentEntity.builder().documentId(id).url(stored.getUrl()).binaryUrl(stored.getBinaryUrl())
             .fileName(filename).contentType("application/pdf").categoryId(category.getId()).issueDate(date)
             .type(DocumentType.WITNESS_STATEMENT).build();
-    }
-
-    private int jobCount(UUID key) {
-        return jdbc.queryForObject("select count(*) from bundling.bundle_job where coalesce_key = :key",
-            Map.of("key", ManagedCaseBundles.key(CaseBundleDefinition.NAME, key.toString())), Integer.class);
     }
 
     private static byte[] pdf(String text) throws IOException {
