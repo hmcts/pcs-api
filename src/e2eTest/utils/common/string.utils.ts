@@ -151,6 +151,25 @@ export function formatDateTimeBST(dataTime: string): string {
     .replace(' pm', 'PM');
 }
 
+export function formatDateTimeNonBST(dataTime: string): string {
+  const date = new Date(dataTime);
+
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  })
+    .format(date)
+    .replace(' at ', ', ')
+    .replace(' am', 'AM')
+    .replace(' pm', 'PM');
+}
+
 export const getFormattedDate = (date = new Date()): string =>
   new Intl.DateTimeFormat('en-GB', {
     weekday: 'long',
