@@ -1,20 +1,8 @@
 pluginManagement {
-    // Optionally build against a local SDK checkout with -PccdSdkLocalPath=... or CCD_SDK_LOCAL_PATH.
-    def ccdSdkLocalPath = settings.providers.gradleProperty('ccdSdkLocalPath')
-        .orElse(settings.providers.environmentVariable('CCD_SDK_LOCAL_PATH')).getOrNull()
-    if (ccdSdkLocalPath) {
-        includeBuild(ccdSdkLocalPath)
-    }
     repositories {
         gradlePluginPortal()
         maven {
             url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
         }
     }
-}
-
-def ccdSdkLocalPath = providers.gradleProperty('ccdSdkLocalPath')
-    .orElse(providers.environmentVariable('CCD_SDK_LOCAL_PATH')).getOrNull()
-if (ccdSdkLocalPath) {
-    includeBuild(ccdSdkLocalPath)
 }
