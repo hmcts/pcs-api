@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
+import uk.gov.hmcts.reform.pcs.ccd.service.genapp.GenAppFeeCalculator;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -18,6 +20,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 public class ChooseAnApplication implements CcdPageConfiguration {
 
+    private final GenAppFeeCalculator genAppFeeCalculator;
     private static final String INFO_MARKDOWN = """
         <p class="govuk-body">You cannot apply to suspend (stop or delay) an eviction online.</p>
         <p class="govuk-body govuk-!-margin-bottom-1">You must apply by post:</p>
@@ -61,13 +64,18 @@ public class ChooseAnApplication implements CcdPageConfiguration {
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                  CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        GenAppType genAppType = caseData.getXuiGenAppRequest().getApplicationType();
+        XuiGenAppRequest xuiGenAppRequest = caseData.getXuiGenAppRequest();
+        GenAppType genAppType = xuiGenAppRequest.getApplicationType();
 
         if (genAppType != GenAppType.SUSPEND) {
-            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.YES);
+            xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.YES);
         } else {
-            caseData.getXuiGenAppRequest().setShowNoticeScreens(VerticalYesNo.NO);
+            xuiGenAppRequest.setShowNoticeScreens(VerticalYesNo.NO);
+            genAppFeeCalculator.getApplicationFeeDetails(xuiGenAppRequest)
+                .orElse(null);
         }
+
+
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
