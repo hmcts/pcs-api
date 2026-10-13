@@ -67,7 +67,7 @@ import {formatCaseStateText, formatCurrency, formatDate, formatDateTime, formatU
 import {noc} from "@data/page-data-figma/page-data-legalRepresentative/noc.page.data";
 import {clientDetails} from "@data/page-data-figma/page-data-legalRepresentative/clientDetails.page.data";
 import {checkAndSubmit} from "@data/page-data-figma/page-data-legalRepresentative/checkAndSubmit.page.data";
-import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data"; 
+import {somethingWentWrong} from "@data/page-data-figma/page-data-legalRepresentative/somethingWentWrong.page.data";
 import {
   noticeOfChangeSuccessful
 } from "@data/page-data-figma/page-data-legalRepresentative/noticeOfChangeSuccessful.page.data";
@@ -154,7 +154,9 @@ export class CreateCaseAction implements IAction {
       ['validateErrorPage', () => this.validateErrorPage(fieldName as actionRecord)],
       ['noticeOfChangeSuccessful', () => this.noticeOfChangeSuccessful( page, fieldName as actionRecord)],
       ['createPartialClaimDetails', () => this.createPartialClaimDetails()],   
-      ['resumePartialClaim', () => this.resumePartialClaim()],   
+      ['resumePartialClaim', () => this.resumePartialClaim()],
+      ['selectAnEvent', () => this.selectAnEvent(fieldName as actionRecord)],
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -165,7 +167,7 @@ export class CreateCaseAction implements IAction {
     await performAction('select', caseSummary.nextStepEventList, event.eventType);
     await performAction('clickButton', caseSummary.go);
   }
-  
+
   private async housingPossessionClaim() {
     /* The performValidation call below needs to be updated to:
    await performValidation('mainHeader', housingPossessionClaim.mainHeader);
@@ -182,9 +184,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent(page: Page) {
-    console.log ("get value:" );
-    console.log (createCase.caseType.civilPossessions);
-    console.log (" value printed" );
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
@@ -398,11 +397,6 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
         if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
@@ -478,8 +472,7 @@ export class CreateCaseAction implements IAction {
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
-          }
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.estateManagementGroundsHiddenQuestion, option: possessionGrounds.discretionaryEstateGrounds});          }
           break;
         case 'mandatory':
           await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
@@ -756,6 +749,7 @@ export class CreateCaseAction implements IAction {
   private async uploadAdditionalDocs(documentsData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performAction('removeFile');
     if (Array.isArray(documentsData.documents)) {
       for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
         const document = documentsData.documents[fileIndex]; await performActions(
@@ -897,11 +891,11 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        await performAction('clickRadioButton', {
-          question: nameQuestion,
-          option: nameOption,
-          index,
-        });
+        // await performAction('clickRadioButton', {
+        //   question: nameQuestion,
+        //   option: nameOption,
+        //   index,
+        // });
         if (nameOption === underlesseeMortgageeDetails.yesRadioOption) {
           await performAction('inputText', {text: underlesseeMortgageeDetails.whatIsTheirNameHiddenTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
         }
@@ -1117,7 +1111,8 @@ export class CreateCaseAction implements IAction {
     let caseSummary = new Map<string, string>();
     let submitPayLoad = caseSummarySection.submitPayload as Record<string, any>;
     let createPayLoad = caseSummarySection.createPayload as Record<string, any>;
-    const dateSubmitted = page.locator(`//th[@id="case-viewer-field-label"]/following-sibling::td`);
+    const dateSubmitted = page.locator('th', { hasText: 'Date claim Submitted' })
+                         .locator('xpath=following-sibling::td[1]');
     expect(await dateSubmitted.textContent()).toEqual(process.env.Submission_TIME);
 
 
@@ -1504,21 +1499,21 @@ export class CreateCaseAction implements IAction {
 
       case 'Required Documents':
         caseSummary.set(`Can the claimant upload a copy of the energy performance certificate?`, formatWord(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate));
-        if(submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO'){
+        if (submitPayLoad.walesDocs_HasEnergyPerformanceCertificate === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the energy performance certificate?`, submitPayLoad.walesDocs_NoEpcReason);
         } else {
           caseSummary.set(`Energy performance certificate`, formatUploadDocName(submitPayLoad.walesDocs_EnergyPerformance?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the current gas safety report?`, formatWord(submitPayLoad.walesDocs_HasGasSafetyReport));
-        if(submitPayLoad.walesDocs_HasGasSafetyReport === 'NO'){
+        if (submitPayLoad.walesDocs_HasGasSafetyReport === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the current gas safety report?`, submitPayLoad.walesDocs_NoGasReportReason);
-        }else {
-          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport  ?.[0]?.value?.document_filename));
+        } else {
+          caseSummary.set(`Gas safety report`, formatUploadDocName(submitPayLoad.walesDocs_GasSafetyReport?.[0]?.value?.document_filename));
         }
         caseSummary.set(`Can the claimant upload a copy of the Electrical Installation Condition Report (EICR)?`, formatWord(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport));
-        if(submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO'){
+        if (submitPayLoad.walesDocs_HasElectricalInstallationConditionReport === 'NO') {
           caseSummary.set(`Why can the claimant not upload a copy of the Electrical Installation Condition Report (EICR)?`, submitPayLoad.walesDocs_NoEicrReason);
-        }else {
+        } else {
           caseSummary.set(`Electrical Installation Condition Report (EICR)`, formatUploadDocName(submitPayLoad.walesDocs_ElectricalInstallation?.[0]?.value?.document_filename));
         }
 
@@ -1560,7 +1555,7 @@ export class CreateCaseAction implements IAction {
         /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
         /ancestor::div[1]
-        //table[@aria-describedby="complex field table"]`;
+        //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1610,7 +1605,7 @@ export class CreateCaseAction implements IAction {
   }
 
   public async validateCaseFileViewFolders(page: Page, caseFileView: actionData){
-    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    let folderLocator = page.locator('button.node').filter({ visible: true })
     await expect(async () => {
       expect(await folderLocator.count()).toBeGreaterThan(0)
     }).toPass({
@@ -1627,7 +1622,13 @@ export class CreateCaseAction implements IAction {
 
     const folderName = caseFile.folder as string;
     let submitPayLoad = caseFile.submitPayload as Record<string, any>;
+    let ccPayload = caseFile.ccPayload as Record<string, any>;
     let userInputFiles:string[]= [];
+    const file =
+      caseFile.caseWorkerUpload ??
+      caseFile.caseWorkerAmend ??
+      caseFile.genApp;    
+
     switch (folderName) {
       case 'Property documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.tenancy_TenancyLicenceDocuments);
@@ -1642,6 +1643,12 @@ export class CreateCaseAction implements IAction {
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+         } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.claimantLRUpload as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+          //userInputFiles = userInputFiles.filter(file => file === caseFile.defendantLRUpload as string);
         }
         break;
 
@@ -1651,11 +1658,15 @@ export class CreateCaseAction implements IAction {
 
       case 'Evidence':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Inspection or report');
-        if(caseFile.caseWorkerUpload){
+        if (caseFile.caseWorkerUpload) {
           userInputFiles.push(caseFile.caseWorkerUpload as string);
         } else if (caseFile.caseWorkerAmend) {
           userInputFiles.push(caseFile.caseWorkerAmend as string);
           userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        } else if (caseFile.defendantLRUpload) {
+          userInputFiles.push(caseFile.defendantLRUpload as string);
+        } else if (caseFile.claimantLRUpload) {
+          userInputFiles.push(caseFile.claimantLRUpload as string);
         }
         break;
 
@@ -1665,20 +1676,19 @@ export class CreateCaseAction implements IAction {
 
       case 'Uncategorised documents':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.additionalDocuments, 'Other document');
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        if (ccPayload) {
+          this.readDocFilesFromPayLoad(userInputFiles, ccPayload.event_data.possessionClaimResponse?.defendantResponses?.defendantDocuments);
+        }
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
       case 'Applications':
         this.readDocFilesFromPayLoad(userInputFiles, submitPayLoad.xui_genapp_UploadedDocuments, 'All Files');
-        userInputFiles=this.cleanGenAppFilesArray(userInputFiles,defendantUserDetails.length);
-        if(caseFile.caseWorkerUpload){
-          userInputFiles.push(caseFile.caseWorkerUpload as string);
-        } else if (caseFile.caseWorkerAmend) {
-          userInputFiles.push(caseFile.caseWorkerAmend as string);
+        userInputFiles = this.cleanGenAppFilesArray(userInputFiles, Number(caseFile.defendantIndex ?? defendantUserDetails.length));
+        if (file) {
+          userInputFiles.push(file as string);
         }
         break;
 
@@ -1687,13 +1697,35 @@ export class CreateCaseAction implements IAction {
     }
 
     const folder = page
-      .locator('button[role="treeitem"]')
+      .locator('button.node')
       .filter({ hasText: folderName });
     let fileLocator = page.locator('button.node.case-file__node').filter({ visible: true })
     const text = await folder.innerText();
-    const fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+    let fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
 
-    if (fileCount === 0) {
+    if (caseFile.allowEmptyFolder) {
+      if (fileCount > 0) {
+        throw new Error(
+          `Expected folder "${folderName}" to be empty, but found ${fileCount} file(s)`
+        );
+      }
+      return;
+    }
+
+    if (!caseFile.allowEmptyFolder && fileCount === 0) {
+      await expect(async () => {        
+        await performAction('clickTab', home.caseSummary);
+        await performAction('clickTab', home.caseFileView);        
+        await this.checkFolderCount(page);
+        const text = await folder.innerText();
+        fileCount = Number(text.match(/^\d+/)?.[0] ?? 0);
+        expect(fileCount).toBeGreaterThan(0);
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
+    }
+
+    if (fileCount === 0) {      
       throw new Error(`For folder "${folderName}" files are not present`);
     }
     await folder.click();
@@ -1726,15 +1758,19 @@ export class CreateCaseAction implements IAction {
       subArray.forEach(doc => {
         if (multiDocsLabel && multiDocsLabel !== 'All Files') {
           const valueLabel = doc.value?.documentType?.valueLabel;
-          const filename = doc.value?.document?.document_filename;
+          const filename = doc.value?.document?.document_filename ?? doc.value?.document_filename;
+
           if (multiDocsLabel === valueLabel && filename) {
             mainArray.push(filename);
           }
-        } else if (multiDocsLabel && multiDocsLabel === 'All Files') {
-          mainArray.push(doc.value.document.document_filename)
-        }
-        else if (doc.value?.document_filename) {
-          mainArray.push(doc.value.document_filename);
+        } else {
+          const filename =
+            doc.value?.document?.document_filename ??
+            doc.value?.document_filename;
+
+          if (filename) {
+            mainArray.push(filename);
+          }
         }
       });
     }
@@ -2038,5 +2074,13 @@ export class CreateCaseAction implements IAction {
     await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
 
+  }
+  private async checkFolderCount(page:Page){
+    let folderLocator = page.locator('button[role="treeitem"]').filter({ visible: true })
+    await expect(async () => {
+      expect(await folderLocator.count()).toBeGreaterThan(0)
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT,
+    });
   }
 }

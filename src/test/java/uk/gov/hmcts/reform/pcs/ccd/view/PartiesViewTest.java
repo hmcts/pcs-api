@@ -80,7 +80,7 @@ class PartiesViewTest {
 
     @Test
     void shouldMapPartyForCitizenOwnParty()  {
-        UUID currentUserId = UUID.randomUUID();
+        String currentUserId = UUID.randomUUID().toString();
         stubCitizenUser(currentUserId);
 
         PartyEntity currentUserParty = buildParty(currentUserId, "Jane", "Doe", "Org A",
@@ -102,10 +102,10 @@ class PartiesViewTest {
 
     @Test
     void shouldMapPartialPartyOfOtherCitizenUsers() {
-        UUID currentUserId = UUID.randomUUID();
+        String currentUserId = UUID.randomUUID().toString();
         stubCitizenUser(currentUserId);
 
-        PartyEntity otherParty = buildParty(UUID.randomUUID(), "John", "Smith", "Org B",
+        PartyEntity otherParty = buildParty(UUID.randomUUID().toString(), "John", "Smith", "Org B",
                                             "john@example.com", "07700000002");
         otherParty.setDateOfBirth(LocalDate.of(1985, 7, 20));
         AddressEntity addressEntity = AddressEntity.builder().addressLine1("1 Other Street").build();
@@ -139,12 +139,12 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
-        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
-        PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
-        PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
-        PartyEntity litigationFriend = buildParty(UUID.randomUUID(), "Frank", "F", null, null, null);
+        PartyEntity claimant = buildParty(UUID.randomUUID().toString(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 = buildParty(UUID.randomUUID().toString(), "Carol", "C", null, null, null);
+        PartyEntity underlessee1 = buildParty(UUID.randomUUID().toString(), "Dave", "D", null, null, null);
+        PartyEntity underlessee2 = buildParty(UUID.randomUUID().toString(), "Eve", "E", null, null, null);
+        PartyEntity litigationFriend = buildParty(UUID.randomUUID().toString(), "Frank", "F", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
@@ -238,7 +238,7 @@ class PartiesViewTest {
                 .organisation(organisationEntity)
                 .active(YesOrNo.YES)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
@@ -263,7 +263,7 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
         ));
@@ -296,7 +296,7 @@ class PartiesViewTest {
                 .organisation(organisationEntity)
                 .active(YesOrNo.YES)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
@@ -331,7 +331,7 @@ class PartiesViewTest {
                 .organisation(organisationEntity)
                 .active(YesOrNo.YES)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setPcsCase(PcsCaseEntity.builder().build());
         defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
@@ -363,7 +363,7 @@ class PartiesViewTest {
                 .organisation(organisationEntity)
                 .active(YesOrNo.YES)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
@@ -397,7 +397,7 @@ class PartiesViewTest {
                 .organisation(organisationEntity)
                 .active(YesOrNo.NO)
                 .build();
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setClaimPartyOrganisationList(List.of(claimPartyOrganisationEntity));
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(defendant, PartyRole.DEFENDANT)
@@ -449,7 +449,7 @@ class PartiesViewTest {
                 .active(YesOrNo.YES)
                 .build();
 
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
         defendant.setClaimPartyOrganisationList(
             List.of(claimPartyOrganisationEntity, claimPartyOrganisationEntity2)
         );
@@ -476,8 +476,10 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, "alice@example.com", "07700000001");
-        PartyEntity defendant = buildParty(UUID.randomUUID(), "Bob", "B", null, "bob@example.com", "07700000002");
+        PartyEntity claimant = buildParty(UUID.randomUUID().toString(),
+                                         "Alice", "A", null, "alice@example.com", "07700000001");
+        PartyEntity defendant = buildParty(UUID.randomUUID().toString(),
+                                         "Bob", "B", null, "bob@example.com", "07700000002");
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
@@ -500,11 +502,11 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
-        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
-        PartyEntity underlessee1 = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
-        PartyEntity underlessee2 = buildParty(UUID.randomUUID(), "Eve", "E", null, null, null);
+        PartyEntity claimant = buildParty(UUID.randomUUID().toString(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 = buildParty(UUID.randomUUID().toString(), "Carol", "C", null, null, null);
+        PartyEntity underlessee1 = buildParty(UUID.randomUUID().toString(), "Dave", "D", null, null, null);
+        PartyEntity underlessee2 = buildParty(UUID.randomUUID().toString(), "Eve", "E", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT),
@@ -526,13 +528,13 @@ class PartiesViewTest {
             .containsOnlyNulls();
     }
 
-    private void stubCitizenUser(UUID userId) {
+    private void stubCitizenUser(String userId) {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of(UserRole.CITIZEN.getRole()));
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
     }
 
-    private PartyEntity buildParty(UUID idamId, String firstName, String lastName,
+    private PartyEntity buildParty(String idamId, String firstName, String lastName,
                                    String orgName, String email, String phone) {
         return PartyEntity.builder()
             .id(UUID.randomUUID())

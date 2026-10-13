@@ -7,18 +7,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.User;
 
-import java.util.UUID;
 
 @Service
 public class SecurityContextService {
 
     private final String systemUserId;
+    private final String idamSystemUsername;
 
     public SecurityContextService(
-        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId) {
+        @Value("${ccd.decentralised-runtime.system-user.id}") String systemUserId,
+        @Value("${idam.system-user.username}") String idamSystemUsername) {
         this.systemUserId = systemUserId;
+        this.idamSystemUsername = idamSystemUsername;
     }
 
     /**
@@ -34,13 +37,28 @@ public class SecurityContextService {
     }
 
     /**
+     * True when the current principal is PCS's IDAM system account (idam.system-user.username), which background
+     * tasks such as bulk print use to call other services. Unlike {@link #isSystemUser()} it is a real IDAM user.
+     */
+    public boolean isIdamSystemUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+            && authentication.getPrincipal() instanceof User user
+            && idamSystemUsername.equalsIgnoreCase(user.getUserDetails().getSub());
+    }
+
+    /**
      * Gets the current user ID from the {@link SecurityContext}.
      * @return The user ID for the user making the current request
      * @throws SecurityContextException if the security principal is not set or is not a {@link User} type
      */
-    public UUID getCurrentUserId() {
+    public String getCurrentUserId() {
         UserInfo userDetails = getCurrentUserDetails();
-        return userDetails != null ? UUID.fromString(userDetails.getUid()) : null;
+        return userDetails != null ? toUserId(userDetails.getUid()) : null;
+    }
+
+    public String toUserId(String uid) {
+        return IdamUserIds.normalise(uid);
     }
 
     public String getCurrentUserAuthToken() {

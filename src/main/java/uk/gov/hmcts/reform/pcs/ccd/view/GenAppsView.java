@@ -75,22 +75,17 @@ public class GenAppsView {
 
     private Party mapToSimpleParty(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getParty())
-            .map(partyEntity -> {
-                UUID idamId = partyEntity.getIdamId();
-
-                return Party.builder()
-                    .id(partyEntity.getId().toString())
-                    .idamId(idamId != null ? idamId.toString() : null)
-                    .firstName(partyEntity.getFirstName())
-                    .lastName(partyEntity.getLastName())
-                    .build();
-            })
+            .map(partyEntity -> Party.builder()
+                .id(partyEntity.getId().toString())
+                .idamId(partyEntity.getIdamId())
+                .firstName(partyEntity.getFirstName())
+                .lastName(partyEntity.getLastName())
+                .build())
             .orElse(null);
     }
 
     private DocumentWithId getSubmissionDocument(GenAppEntity genAppEntity) {
         return Optional.ofNullable(genAppEntity.getSubmissionDocument())
-            .filter(documentEntity -> !documentEntity.isRemoved())
             .map(documentEntity -> DocumentWithId.builder()
                 .id(documentEntity.getId().toString())
                 .document(mapDocument(documentEntity))
@@ -103,7 +98,6 @@ public class GenAppsView {
         addDocumentReferences(genAppEntity.getSubmissionDocument(), seenDocumentReferences);
 
         return genAppEntity.getDocuments().stream()
-            .filter(documentEntity -> !documentEntity.isRemoved())
             .filter(documentEntity -> isNewDocument(documentEntity, seenDocumentReferences))
             .map(documentEntity -> {
                 return ListValue.<Document>builder()
