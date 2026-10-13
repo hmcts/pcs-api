@@ -103,7 +103,6 @@ public class GenAppDocumentGenerator {
         importedDocumentEntity.setType(DocumentType.GENERAL_APPLICATION);
         importedDocumentEntity.setGeneralApplication(genAppEntity);
         genAppEntity.setSubmissionDocument(importedDocumentEntity);
-        genAppEntity.getDocuments().add(importedDocumentEntity);
         claimActivityLogService.logGenerationSuccess(pcsCaseService.loadCase(caseReference), applicantParty);
     }
 
