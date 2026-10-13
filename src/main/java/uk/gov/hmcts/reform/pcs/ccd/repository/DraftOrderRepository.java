@@ -11,8 +11,8 @@ public interface DraftOrderRepository extends JpaRepository<DraftOrderEntity, UU
 
     /** A judge has at most one draft per case, which the database enforces. */
     Optional<DraftOrderEntity> findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-        long caseReference, UUID authorIdamUserId, DraftOrderState state);
+        long caseReference, String authorIdamUserId, DraftOrderState state);
 
     Optional<DraftOrderEntity> findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-        UUID id, long caseReference, UUID authorIdamUserId, DraftOrderState state);
+        UUID id, long caseReference, String authorIdamUserId, DraftOrderState state);
 }
