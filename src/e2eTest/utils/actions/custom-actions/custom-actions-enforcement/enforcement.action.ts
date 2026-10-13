@@ -29,9 +29,7 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   statementOfTruth,
-  confirmHCEOfficer,
-  defendantInBreathingSpace,
-  missedPayments
+  confirmHCEOfficer
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 export const addressInfo = {
@@ -78,9 +76,7 @@ export class EnforcementAction implements IAction {
       ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['uploadEvidenceThatDefendantsAreAtProperty', () => this.uploadEvidenceThatDefendantsAreAtProperty(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
-      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)],
-      ['isDefendantInBreathingSpace', () => this.isDefendantInBreathingSpace(fieldName as actionRecord)],
-      ['missedPayments', () => this.missedPayments(fieldName as actionRecord)],
+      ['validatePrePopulatedData', () => this.validatePrePopulatedData(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -120,32 +116,6 @@ export class EnforcementAction implements IAction {
       await performAction('reTryOnCallBackError', enforcementApplication.continueButton, applicationType.nextPage as string);
     }
 
-  }
-
-  private async isDefendantInBreathingSpace(data: actionRecord): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseInfo.fid}` });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
-    });
-    await performAction('clickRadioButton', {
-      question: defendantInBreathingSpace.isDefendantCurrentlyInBreathingSpaceQuestion,
-      option: data.option,
-    });
-    await performAction('reTryOnCallBackError', defendantInBreathingSpace.continueButton, data.nextPage as string);
-  }
-
-  private async missedPayments(data: actionRecord): Promise<void> {
-    await performValidation('text', { elementType: 'paragraph', text: `Case number: ${caseInfo.fid}` });
-    await performValidation('text', {
-      elementType: 'paragraph',
-      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`,
-    });
-    await performAction('clickRadioButton', {
-      question: missedPayments.haveDefendantsMissedPaymentsQuestion,
-      option: data.option,
-    });
-    await performAction('reTryOnCallBackError', missedPayments.continueButton, data.nextPage as string);
   }
 
   private async checkClaimTransferredToHighCourt(question1: string, question2: string) {
