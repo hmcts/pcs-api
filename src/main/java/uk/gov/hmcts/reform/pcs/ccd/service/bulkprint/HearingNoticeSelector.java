@@ -56,16 +56,14 @@ public class HearingNoticeSelector {
             .toList();
     }
 
-    // An issued notice for a postable defendant that has not been posted yet.
     private boolean isPostableNotice(DocumentEntity notice, Set<UUID> defendantIds, Set<String> sent) {
         PartyEntity party = notice.getParty();
-        return isIssuedNotice(notice, notice.getHearing())
+        return isActiveHearingNotice(notice, notice.getHearing())
             && isPostableDefendant(party, defendantIds)
             && !sent.contains(key(party.getId(), notice.getId()));
     }
 
-    // A generated notice of hearing for a live hearing that issues a notice.
-    private boolean isIssuedNotice(DocumentEntity document, HearingEntity hearing) {
+    private boolean isActiveHearingNotice(DocumentEntity document, HearingEntity hearing) {
         return document.getType() == DocumentType.NOTICE_OF_HEARING
             && hearing != null
             && hearing.getIssueNotice() == VerticalYesNo.YES

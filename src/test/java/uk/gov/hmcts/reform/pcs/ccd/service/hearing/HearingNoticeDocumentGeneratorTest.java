@@ -100,25 +100,12 @@ class HearingNoticeDocumentGeneratorTest {
             documentImportService, documentNameService, claimActivityLogService, new CaseReferenceFormatter(),
             recipientAddressResolver, defenceCorrespondenceAddressResolver, addressMapper, notificationService,
             PORTAL_URL);
-
-        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
-            ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
-            ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build()
-        )).build();
-        pcsCase = PcsCaseEntity.builder().caseReference(CASE_REFERENCE).claims(List.of(claim))
-            .baseLocation(BASE_LOCATION).documents(new ArrayList<>()).build();
+        pcsCase = caseWith(claimant, defendant1, defendant2);
 
         CourtVenue courtVenue = mock(CourtVenue.class);
         lenient().when(courtVenue.courtName()).thenReturn(COURT_NAME);
         lenient().when(locationReferenceService.getCourtVenues(List.of(BASE_LOCATION)))
             .thenReturn(List.of(courtVenue));
-
-        lenient().when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Acme Ltd");
-        lenient().when(recipientAddressResolver.resolveDisplayName(defendant1)).thenReturn("Bob Tenant");
-        lenient().when(recipientAddressResolver.resolveDisplayName(defendant2)).thenReturn("Jo Tenant");
-        lenient().when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(any(), any()))
-            .thenReturn(defendantAddress);
         lenient().when(documentNameService.appendPartyPostfix(anyString(), any(), any()))
             .thenAnswer(invocation -> invocation.getArgument(0));
         lenient().when(docAssemblyService.generateDocument(any(), any(), any(), any())).thenReturn("document url");
@@ -203,6 +190,9 @@ class HearingNoticeDocumentGeneratorTest {
 
     @Test
     void shouldBuildDefendantNoticePayload() {
+        stubDisplayNames();
+        when(defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(defendant2, null))
+            .thenReturn(defendantAddress);
         HearingEntity hearing = hearing(VerticalYesNo.YES, VerticalYesNo.YES);
         hearing.addParty(defendant2);
 
@@ -225,6 +215,7 @@ class HearingNoticeDocumentGeneratorTest {
 
     @Test
     void shouldBuildClaimantNoticePayload() {
+        stubDisplayNames();
         AddressEntity claimantAddress = AddressEntity.builder().addressLine1("1 Firm Street").build();
         when(recipientAddressResolver.resolvePostalAddress(claimant, PartyRole.CLAIMANT, null))
             .thenReturn(claimantAddress);
@@ -269,6 +260,22 @@ class HearingNoticeDocumentGeneratorTest {
     private void generateNotices(HearingEntity hearing) {
         when(hearingRepository.findById(HEARING_ID)).thenReturn(Optional.of(hearing));
         underTest.generateNotices(HEARING_ID);
+    }
+
+    private void stubDisplayNames() {
+        when(recipientAddressResolver.resolveDisplayName(claimant)).thenReturn("Acme Ltd");
+        when(recipientAddressResolver.resolveDisplayName(defendant1)).thenReturn("Bob Tenant");
+        when(recipientAddressResolver.resolveDisplayName(defendant2)).thenReturn("Jo Tenant");
+    }
+
+    private static PcsCaseEntity caseWith(PartyEntity claimant, PartyEntity defendant1, PartyEntity defendant2) {
+        ClaimEntity claim = ClaimEntity.builder().claimParties(List.of(
+            ClaimPartyEntity.builder().party(claimant).role(PartyRole.CLAIMANT).rank(1).build(),
+            ClaimPartyEntity.builder().party(defendant1).role(PartyRole.DEFENDANT).rank(1).build(),
+            ClaimPartyEntity.builder().party(defendant2).role(PartyRole.DEFENDANT).rank(2).build()
+        )).build();
+        return PcsCaseEntity.builder().caseReference(CASE_REFERENCE).claims(List.of(claim))
+            .baseLocation(BASE_LOCATION).documents(new ArrayList<>()).build();
     }
 
     private HearingEntity hearing(VerticalYesNo issueNotice, VerticalYesNo isWithoutNotice) {

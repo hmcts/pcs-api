@@ -4,6 +4,8 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.HearingNoticeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.task.HearingNoticeGenerationComponent;
+import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
+import uk.gov.hmcts.reform.pcs.service.FeatureToggleService;
 
 import java.time.Instant;
 
@@ -11,12 +13,17 @@ import java.time.Instant;
 public class HearingNoticeScheduler {
 
     private final SchedulerClient schedulerClient;
+    private final FeatureToggleService featureToggleService;
 
-    public HearingNoticeScheduler(SchedulerClient schedulerClient) {
+    public HearingNoticeScheduler(SchedulerClient schedulerClient, FeatureToggleService featureToggleService) {
         this.schedulerClient = schedulerClient;
+        this.featureToggleService = featureToggleService;
     }
 
     public void scheduleHearingNoticeGeneration(long caseReference, Integer hearingId) {
+        if (!featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)) {
+            return;
+        }
         HearingNoticeTaskData taskData = HearingNoticeTaskData.builder()
             .caseReference(caseReference)
             .hearingId(hearingId)

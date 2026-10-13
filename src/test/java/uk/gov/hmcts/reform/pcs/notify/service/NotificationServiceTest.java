@@ -1729,7 +1729,8 @@ class NotificationServiceTest {
                 .thenReturn(HearingNoticePersonalisation.builder().loginUrl("https://pcs.example").build());
             lenient().when(templateConfiguration.getTemplateId(EmailTemplate.NOTICE_OF_HEARING))
                 .thenReturn(HEARING_TEMPLATE_ID);
-            lenient().when(notificationRepository.save(any())).thenReturn(mock(CaseNotification.class));
+            CaseNotification savedNotification = createCaseNotification();
+            lenient().when(notificationRepository.save(any())).thenReturn(savedNotification);
         }
 
         @Test

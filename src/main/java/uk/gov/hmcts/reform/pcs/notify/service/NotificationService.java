@@ -322,15 +322,14 @@ public class NotificationService {
                 NotificationClaimType.HEARING,
                 personalisation
             );
-            return;
+        } else {
+            sendEmail(
+                new NotificationRecipient(recipient.getEmailAddress(), recipient, pcsCase, claim, role),
+                EmailTemplate.NOTICE_OF_HEARING,
+                NotificationClaimType.HEARING,
+                personalisation
+            );
         }
-
-        sendEmail(
-            new NotificationRecipient(recipient.getEmailAddress(), recipient, pcsCase, claim, role),
-            EmailTemplate.NOTICE_OF_HEARING,
-            NotificationClaimType.HEARING,
-            personalisation
-        );
     }
 
     private static OrganisationEntity activeLegalRep(PartyEntity party) {

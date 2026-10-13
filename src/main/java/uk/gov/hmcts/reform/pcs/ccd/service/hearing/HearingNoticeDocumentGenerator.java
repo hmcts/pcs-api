@@ -39,10 +39,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.FormFieldFormatter.format
 import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partiesByRole;
 
 /**
- * Generates one notice of hearing per recipient and stores each in Case File View, linked to its hearing and
- * party. With-notice hearings go to every claimant and defendant; without-notice hearings only to the parties
- * selected on the hearing. Each issue gets the next number on the case, shared by every recipient's copy,
- * plus the recipient's label, e.g. "Notice of hearing 1 - Claimant 1", "Notice of hearing 1 - Defendant 1".
+ * Generates a notice of hearing for each recipient, e.g. "Notice of hearing 1 - Defendant 1".
+ * Recipients are every claimant and defendant, or only the selected parties for a without notice hearing.
+ * Each notice is added to the case file, linked to the hearing and recipient, and the recipients are
+ * emailed once every notice has been generated.
  */
 @Service
 public class HearingNoticeDocumentGenerator {
@@ -105,14 +105,14 @@ public class HearingNoticeDocumentGenerator {
         String allDefendantNames = joinNames(defendants);
         int noticeNumber = hearing.getNoticeNumber();
 
-        List<PartyEntity> recipients = recipientsOf(hearing, claimants, defendants);
+        List<PartyEntity> recipients = resolveRecipients(hearing, claimants, defendants);
         for (PartyEntity recipient : recipients) {
             boolean isClaimant = claimants.contains(recipient);
             String recipientName = recipientAddressResolver.resolveDisplayName(recipient);
             // The recipient alone on their own side of the heading, every party on the other side.
             String claimantName = isClaimant ? recipientName : allClaimantNames;
             String defendantName = isClaimant ? allDefendantNames : recipientName;
-            HearingNoticePayload payload = buildPayload(pcsCase, hearing, recipientAddress(pcsCase, recipient,
+            HearingNoticePayload payload = buildPayload(pcsCase, hearing, resolveRecipientAddress(pcsCase, recipient,
                 isClaimant), recipientName, claimantName, defendantName, courtName);
 
             String filename = documentNameService.appendPartyPostfix(
@@ -152,8 +152,8 @@ public class HearingNoticeDocumentGenerator {
     }
 
     // Without notice: only the parties selected on the hearing. With notice: every claimant and defendant.
-    private List<PartyEntity> recipientsOf(HearingEntity hearing, List<PartyEntity> claimants,
-                                           List<PartyEntity> defendants) {
+    private List<PartyEntity> resolveRecipients(HearingEntity hearing, List<PartyEntity> claimants,
+                                                List<PartyEntity> defendants) {
         if (hearing.getIsWithoutNotice() == VerticalYesNo.YES) {
             return hearing.getHearingNoticeParties().stream()
                 .map(HearingNoticePartyEntity::getParty)
@@ -188,7 +188,7 @@ public class HearingNoticeDocumentGenerator {
             .build();
     }
 
-    private AddressUK recipientAddress(PcsCaseEntity pcsCase, PartyEntity recipient, boolean isClaimant) {
+    private AddressUK resolveRecipientAddress(PcsCaseEntity pcsCase, PartyEntity recipient, boolean isClaimant) {
         if (!isClaimant) {
             return defenceCorrespondenceAddressResolver.resolveCorrespondenceAddress(
                 recipient, pcsCase.getPropertyAddress());
