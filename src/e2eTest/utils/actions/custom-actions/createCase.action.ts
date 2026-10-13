@@ -1682,6 +1682,9 @@ export class CreateCaseAction implements IAction {
         if (file) {
           userInputFiles.push(file as string);
         }
+        if (caseFile.caseWorkerAmend) {
+          userInputFiles = userInputFiles.filter(file => file === caseFile.caseWorkerAmend as string);
+        } 
         break;
 
       case 'Applications':
