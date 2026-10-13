@@ -74,7 +74,13 @@ public class ApplicationDetails implements CcdPageConfiguration {
     private void setApplicationTypeOption(PCSCase caseData) {
         EnterGenAppRequest enterGenAppRequest = caseData.getEnterGenAppRequest();
         String selectedApplicationType = enterGenAppRequest.getApplicationTypeOptionList().getValueCode();
-        enterGenAppRequest.setApplicationTypeOption(EnterGenAppType.valueOf(selectedApplicationType));
+        EnterGenAppType applicationType = EnterGenAppType.valueOf(selectedApplicationType);
+        enterGenAppRequest.setApplicationTypeOption(applicationType);
+
+        if (applicationType == EnterGenAppType.SUSPEND) {
+            enterGenAppRequest.setAllPartiesAgree(null);
+            enterGenAppRequest.setWithoutNotice(null);
+        }
     }
 
     private List<String> validateSomethingElseDetails(PCSCase caseData) {
