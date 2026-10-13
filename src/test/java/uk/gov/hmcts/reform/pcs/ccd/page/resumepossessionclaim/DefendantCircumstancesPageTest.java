@@ -24,6 +24,7 @@ import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("DefendantCircumstancesPage Integration Tests")
@@ -59,8 +60,8 @@ class DefendantCircumstancesPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .defendantCircumstances(DefendantCircumstances.builder()
-                    .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
-                    .defendantCircumstancesInfo("Defendant circumstances details")
+                    .hasSingleDefendantCircumstancesInfo(VerticalYesNo.YES)
+                    .singleDefendantCircumstancesInfo("Defendant circumstances details")
                     .defendantTermPossessive("tenant’s")
                     .build())
                 .build();
@@ -71,6 +72,56 @@ class DefendantCircumstancesPageTest extends BasePageTest {
             // Then
             assertThat(response.getData()).isEqualTo(caseData);
             assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should save the answers from the one-defendant fields")
+        void shouldSaveAnswersFromSingleDefendantFields() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .addAnotherDefendant(VerticalYesNo.NO)
+                .defendantCircumstances(DefendantCircumstances.builder()
+                    .hasSingleDefendantCircumstancesInfo(VerticalYesNo.YES)
+                    .singleDefendantCircumstancesInfo("One defendant details")
+                    .hasMultipleDefendantsCircumstancesInfo(VerticalYesNo.NO)
+                    .build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            DefendantCircumstances result = response.getData().getDefendantCircumstances();
+            assertThat(result.getHasDefendantCircumstancesInfo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(result.getDefendantCircumstancesInfo()).isEqualTo("One defendant details");
+            verify(textAreaValidationService).validateSingleTextArea(
+                "One defendant details", "Give details about the defendant’s circumstances",
+                TextAreaValidationService.LONG_TEXT_LIMIT);
+        }
+
+        @Test
+        @DisplayName("Should save the answers from the several-defendants fields")
+        void shouldSaveAnswersFromMultipleDefendantsFields() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .addAnotherDefendant(VerticalYesNo.YES)
+                .defendantCircumstances(DefendantCircumstances.builder()
+                    .hasSingleDefendantCircumstancesInfo(VerticalYesNo.NO)
+                    .hasMultipleDefendantsCircumstancesInfo(VerticalYesNo.YES)
+                    .multipleDefendantsCircumstancesInfo("Several defendants details")
+                    .build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            DefendantCircumstances result = response.getData().getDefendantCircumstances();
+            assertThat(result.getHasDefendantCircumstancesInfo()).isEqualTo(VerticalYesNo.YES);
+            assertThat(result.getDefendantCircumstancesInfo()).isEqualTo("Several defendants details");
+            verify(textAreaValidationService).validateSingleTextArea(
+                "Several defendants details", "Give details about the defendants’ circumstances",
+                TextAreaValidationService.LONG_TEXT_LIMIT);
         }
 
         @Test
@@ -95,8 +146,8 @@ class DefendantCircumstancesPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .defendantCircumstances(DefendantCircumstances.builder()
-                    .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
-                    .defendantCircumstancesInfo(null)
+                    .hasSingleDefendantCircumstancesInfo(VerticalYesNo.YES)
+                    .singleDefendantCircumstancesInfo(null)
                     .defendantTermPossessive("tenant’s")
                     .build())
                 .build();

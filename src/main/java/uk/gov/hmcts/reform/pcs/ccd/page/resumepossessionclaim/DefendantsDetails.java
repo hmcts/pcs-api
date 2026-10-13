@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -95,13 +96,21 @@ public class DefendantsDetails implements CcdPageConfiguration {
                 .build();
         }
 
-        caseData.getDefendantCircumstances()
-            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
+        DefendantCircumstances defendantCircumstances = caseData.getDefendantCircumstances();
+        defendantCircumstances.setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
+        showSavedCircumstancesForEitherDefendantCount(defendantCircumstances);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
 
+    }
+
+    private static void showSavedCircumstancesForEitherDefendantCount(DefendantCircumstances circumstances) {
+        circumstances.setHasSingleDefendantCircumstancesInfo(circumstances.getHasDefendantCircumstancesInfo());
+        circumstances.setSingleDefendantCircumstancesInfo(circumstances.getDefendantCircumstancesInfo());
+        circumstances.setHasMultipleDefendantsCircumstancesInfo(circumstances.getHasDefendantCircumstancesInfo());
+        circumstances.setMultipleDefendantsCircumstancesInfo(circumstances.getDefendantCircumstancesInfo());
     }
 
 }
