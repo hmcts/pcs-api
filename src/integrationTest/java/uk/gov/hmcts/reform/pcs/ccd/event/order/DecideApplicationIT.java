@@ -22,8 +22,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Application;
+import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.ApplicationDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Order;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
@@ -35,6 +38,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -59,6 +63,8 @@ class DecideApplicationIT extends OrderEventIT {
 
     private static final String WHAT_ORDER_WANTED = "The hearing on 14 October is adjourned to the first open date.";
     private static final String NOTE = "The hearing is next week";
+    private static final UUID FORM_ID = UUID.randomUUID();
+    private static final UUID WITNESS_STATEMENT_ID = UUID.randomUUID();
 
     @Autowired
     private CcdEventTestSupport<PCSCase, State> events;
@@ -75,10 +81,16 @@ class DecideApplicationIT extends OrderEventIT {
         cases.update(caseReference, pcsCase -> {
             PartyEntity defendant = pcsCase.getParties().stream()
                 .filter(party -> party.getOrgName() == null).findFirst().orElseThrow();
-            pcsCase.addGenApp(GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
+            GenAppEntity genApp = GenAppEntity.builder().party(defendant).type(ADJOURN).state(GEN_APP_ISSUED)
                 .within14Days(VerticalYesNo.YES).otherPartiesAgreed(VerticalYesNo.NO)
                 .withoutNotice(VerticalYesNo.NO).whatOrderWanted(WHAT_ORDER_WANTED)
-                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 1, 9, 30)).build());
+                .applicationSubmittedDate(LocalDateTime.of(2026, 10, 1, 9, 30)).build();
+            // The application form is the submission document and filed with the application.
+            DocumentEntity form = document(pcsCase, genApp, FORM_ID, "application-form.pdf");
+            genApp.setSubmissionDocument(form);
+            genApp.getDocuments().add(form);
+            genApp.getDocuments().add(document(pcsCase, genApp, WITNESS_STATEMENT_ID, "witness-statement.pdf"));
+            pcsCase.addGenApp(genApp);
         });
         judge = events.registerActor("A", "Judge", "caseworker-pcs");
         caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
@@ -111,6 +123,10 @@ class DecideApplicationIT extends OrderEventIT {
         assertThat(application.whatOrderWanted()).isEqualTo(WHAT_ORDER_WANTED);
         assertThat(application.referralNote()).isEqualTo(NOTE);
         assertThat(application.referredOn()).isNotNull();
+        assertThat(application.documents()).extracting(ApplicationDocument::id, ApplicationDocument::fileName)
+            .containsExactly(
+                tuple(FORM_ID, "application-form.pdf"),
+                tuple(WITNESS_STATEMENT_ID, "witness-statement.pdf"));
     }
 
     @Test
@@ -219,6 +235,12 @@ class DecideApplicationIT extends OrderEventIT {
         return new ConfirmOrderReviewRequest(ISSUE, submitted.id(), submitted.version(), "staff-review", null,
             new Issue(new IssuedOrder(APPLICATION_DECISION, submitted.formData(), null, "the order"), List.of(),
                 COUNTY_COURT));
+    }
+
+    private static DocumentEntity document(PcsCaseEntity pcsCase, GenAppEntity genApp, UUID documentId,
+                                           String fileName) {
+        return DocumentEntity.builder().pcsCase(pcsCase).generalApplication(genApp).documentId(documentId)
+            .url("http://dm-store/documents/" + documentId).fileName(fileName).build();
     }
 
     private String outcome(UUID genAppId) {

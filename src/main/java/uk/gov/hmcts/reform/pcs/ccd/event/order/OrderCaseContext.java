@@ -95,22 +95,12 @@ class OrderCaseContext {
 
     /** The application form, then the documents filed with it; the form is also one of them, so each is once. */
     private static List<OrderStart.ApplicationDocument> applicationDocuments(GenAppEntity genApp) {
-        Map<String, OrderStart.ApplicationDocument> documents = new LinkedHashMap<>();
+        Map<UUID, OrderStart.ApplicationDocument> documents = new LinkedHashMap<>();
         Stream.concat(Stream.ofNullable(genApp.getSubmissionDocument()), genApp.getDocuments().stream())
-            .map(document -> new OrderStart.ApplicationDocument(documentId(document.getUrl()),
-                document.getFileName()))
-            .filter(document -> document.id() != null)
-            .forEach(document -> documents.putIfAbsent(document.id(), document));
+            .filter(document -> document.getDocumentId() != null)
+            .forEach(document -> documents.putIfAbsent(document.getDocumentId(),
+                new OrderStart.ApplicationDocument(document.getDocumentId(), document.getFileName())));
         return List.copyOf(documents.values());
-    }
-
-    /** The document store's id for a document, the last part of its URL. */
-    private static String documentId(String url) {
-        if (url == null || !url.contains("/documents/")) {
-            return null;
-        }
-        String id = url.substring(url.lastIndexOf("/documents/") + "/documents/".length());
-        return id.contains("/") ? id.substring(0, id.indexOf('/')) : id;
     }
 
     private static String yesNo(VerticalYesNo answer) {

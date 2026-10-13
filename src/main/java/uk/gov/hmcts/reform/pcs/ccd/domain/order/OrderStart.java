@@ -77,7 +77,7 @@ public record OrderStart(Order order, CaseContext caseContext) {
     }
 
     /** A document filed with an application; the id is the document's id in the document store. */
-    public record ApplicationDocument(String id, String fileName) {
+    public record ApplicationDocument(UUID id, String fileName) {
     }
 
     public record CaseFacts(LocalDate tenancyStartDate,
