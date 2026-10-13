@@ -1,0 +1,8 @@
+### Decide application
+
+{{referrerName}} has referred {{applicant}}'s application {{reference}} to {{applicationType | lower}} to you.
+{% if note %}
+<div class="govuk-inset-text">{{note}}</div>
+{% endif %}
+<a href="{{decideUrl}}">Decide the application</a> by making an order on it. The task will close when you send the order
+to court staff for review.

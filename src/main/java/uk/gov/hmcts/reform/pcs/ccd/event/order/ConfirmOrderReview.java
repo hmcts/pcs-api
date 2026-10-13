@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ReviewDate;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.ApplicationOutcome;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.Issue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.ConfirmOrderReviewRequest.ReviewDateEntry;
@@ -52,7 +53,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.task.OrderDocumentGenerationComponent.
 /**
  * A caseworker reviews an order a judge submitted, opened from their Work Allocation task, and either
  * returns it to the judge with a query or issues it, with any changes they made. Issuing fixes what the
- * order's document says and schedules its generation; serving it is not built yet.
+ * order's document says and schedules its generation; serving it is not built yet. Issuing an order
+ * on a general application records what it decided about the application.
  */
 @Component
 @AllArgsConstructor
@@ -98,7 +100,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("Open the order to review from its task"));
         OrderEntity order = orderAwaitingReview(orderId, start.caseReference());
         return ExternalStartResponse.started(new OrderStart(
-            OrderStart.Order.of(order, orderSteps.latest(order), null), orderCaseContext.of(order.getPcsCase())));
+            OrderStart.Order.of(order, orderSteps.latest(order), null),
+            orderCaseContext.of(order.getPcsCase(), order.getGenAppId())));
     }
 
     private ExternalSubmitResponse<State> submit(ExternalSubmitRequest<ConfirmOrderReviewRequest> submit) {
@@ -140,6 +143,10 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
                 caseworker.getUid(), caseworker.getGivenName(), caseworker.getFamilyName(),
                 orderDocumentService.payload(order, issued)))
             .scheduledTo(Instant.now()));
+        if (order.getGenAppId() != null) {
+            order.getPcsCase().findGenApp(order.getGenAppId()).orElseThrow()
+                .setOutcome(ApplicationOutcome.of(issue.order().formData().get(ApplicationOutcome.DECISION_FIELD)));
+        }
         if (!issue.reviewDates().isEmpty()) {
             caseReviewDateService.addCaseReviewDates(order.getPcsCase().getCaseReference(),
                 issue.reviewDates().stream().map(ConfirmOrderReview::toReviewDate).toList());

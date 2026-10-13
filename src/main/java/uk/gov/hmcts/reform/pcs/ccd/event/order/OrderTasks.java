@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.camunda.CamundaService;
 import uk.gov.hmcts.reform.pcs.camunda.TaskType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.workallocation.TaskDescriptionService;
@@ -14,7 +15,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.Locale;
 
 /**
- * The Work Allocation tasks an order passes between court staff and its judge. XUI fills in each task
+ * The Work Allocation tasks an order passes between court staff and its judge, and the task asking the
+ * judges to decide a general application with an order on it. XUI fills in each task
  * link: {@code ${[EXPECTED_SUB]}} with the user's IDAM id, which the frontend's handover checks, and
  * {@code ${[id]}} with the task's id, which the next step sends back so the task can be completed.
  */
@@ -54,6 +56,15 @@ public class OrderTasks {
             eventUrl(caseReference, "ext:makeOrder", order));
         camundaService.createTask(caseReference, TaskType.REVIEW_ORDER_QUERY, description,
             order.getAuthorIdamUserId());
+    }
+
+    /** Asks the judges to decide an application court staff referred, starting an order on it from the task. */
+    public void askJudgeToDecide(long caseReference, GenAppEntity genApp, String applicant, String note) {
+        String decideUrl = "%s/cases/%d/event/ext:makeOrder?expected_sub=${[EXPECTED_SUB]}&genAppId=%s&taskId=${[id]}"
+            .formatted(frontendUrl, caseReference, genApp.getId());
+        String description = taskDescriptionService.createDecideGenAppDescription(currentUserName(COURT_STAFF),
+            applicant, "GA" + genApp.getRank(), genApp.getType().getShortName(), note, decideUrl);
+        camundaService.createTask(caseReference, TaskType.DECIDE_GEN_APP, description);
     }
 
     private String eventUrl(long caseReference, String event, OrderEntity order) {

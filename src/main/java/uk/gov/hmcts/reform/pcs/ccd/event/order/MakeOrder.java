@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -45,6 +46,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState.SUBMITTED_FOR_
  * A judge makes an order in pcs-frontend. Each judge has one working draft per case, which a change
  * with no id starts. An order a caseworker returned is the judge's to change and resubmit, opened from
  * the task its return gave them.
+ *
+ * <p>A judge decides a general application court staff referred to them with an order on it. Their task
+ * names the application, and their order on it is a draft of its own beside their draft for the case.
  */
 @Component
 @AllArgsConstructor
@@ -93,14 +97,19 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
         String judge = IdamUserIds.normalise(start.user().id());
+        PcsCaseEntity pcsCase = findCase(caseReference);
         OrderStart.Order workingOrder = clientContextRetriever.getOrderId()
             .map(orderId -> chosenOrder(orderId, caseReference, judge))
-            .orElseGet(() -> orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
-                    caseReference, judge, DRAFT)
-                .map(draft -> OrderStart.Order.of(draft, orderSteps.latest(draft), null))
-                .orElse(OrderStart.Order.NONE));
+            .orElseGet(() -> {
+                UUID genAppId = clientContextRetriever.getGenAppId()
+                    .map(id -> openGenApp(pcsCase, id).getId()).orElse(null);
+                return orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateAndGenAppId(
+                        caseReference, judge, DRAFT, genAppId)
+                    .map(draft -> OrderStart.Order.of(draft, orderSteps.latest(draft), null))
+                    .orElseGet(() -> OrderStart.Order.none(genAppId));
+            });
         return ExternalStartResponse.started(
-            new OrderStart(workingOrder, orderCaseContext.of(findCase(caseReference))));
+            new OrderStart(workingOrder, orderCaseContext.of(pcsCase, workingOrder.genAppId())));
     }
 
     /** A returned order the judge's task links to, with its query. */
@@ -117,7 +126,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = submit.caseReference();
         String judge = IdamUserIds.normalise(submit.user().id());
         OrderEntity order = change.id() == null
-            ? newDraft(caseReference, judge)
+            ? newDraft(caseReference, judge, change.genAppId())
             : workingDraft(caseReference, judge, change);
         boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();
@@ -128,17 +137,22 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         if (request.action() != SUBMIT_FOR_REVIEW) {
             return ExternalSubmitResponse.accepted("Order draft saved", "Saved an order as a draft");
         }
-        // Only a returned order comes with a task, the one its return gave the judge.
+        // The task the judge opened the order from: its return, or the application it decides.
         submit.afterCommit(taskCompletionService.complete(request.taskId()));
         orderTasks.askStaffToReview(caseReference, step, resubmitted);
         return ExternalSubmitResponse.accepted(
             "Order submitted for review", "Submitted an order for caseworker review");
     }
 
-    /** A judge has one draft per case, which the database enforces. */
-    private OrderEntity newDraft(long caseReference, String judge) {
+    /**
+     * A judge has one draft per case, and one per application on it, which the database enforces. A draft
+     * on an application needs it to be open.
+     */
+    private OrderEntity newDraft(long caseReference, String judge, UUID genAppId) {
+        PcsCaseEntity pcsCase = findCase(caseReference);
         return OrderEntity.builder()
-            .pcsCase(findCase(caseReference))
+            .pcsCase(pcsCase)
+            .genAppId(genAppId == null ? null : openGenApp(pcsCase, genAppId).getId())
             .authorIdamUserId(judge)
             .authorName(securityContextService.getCurrentUserDetails().getName())
             .state(DRAFT)
@@ -152,6 +166,16 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .orElseThrow(() -> ExternalRejection.because("The order draft does not exist for this case"));
         orderSteps.latest(draft, change.version());
         return draft;
+    }
+
+    /** The case's application, which an order can only be made on while it is open. */
+    private static GenAppEntity openGenApp(PcsCaseEntity pcsCase, UUID genAppId) {
+        GenAppEntity genApp = pcsCase.findGenApp(genAppId)
+            .orElseThrow(() -> ExternalRejection.because("The application is not on this case"));
+        if (!genApp.isOpen()) {
+            throw ExternalRejection.because("The application has already been decided");
+        }
+        return genApp;
     }
 
     private PcsCaseEntity findCase(long caseReference) {

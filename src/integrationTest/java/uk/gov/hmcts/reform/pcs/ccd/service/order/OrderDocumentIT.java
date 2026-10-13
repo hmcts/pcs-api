@@ -65,10 +65,10 @@ class OrderDocumentIT extends OrderEventIT {
         Actor caseworker = events.registerActor("Tom", "Baker", "caseworker-pcs");
         ExternalEvent<OrderStart, MakeOrderRequest> asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SAVE_DRAFT,
-            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null), null));
+            new OrderChange(null, 0, OrderType.OUTRIGHT_POSSESSION, Map.of(), null, null), null));
         Order draft = asJudge.start().order();
         asJudge.submitExpectingSuccess(new MakeOrderRequest(SUBMIT_FOR_REVIEW, new OrderChange(
-            draft.id(), draft.version(), draft.orderType(), draft.formData(), null), null));
+            draft.id(), draft.version(), draft.orderType(), draft.formData(), null, null), null));
         var asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker)
             .withClientContext(Map.of("orderId", draft.id().toString()));
         Order submitted = asCaseworker.start().order();

@@ -1212,6 +1212,50 @@ else
           <text>"JUDICIAL"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_h0ue4et">
+        <inputEntry id="UnaryTests_e1paqb5">
+          <text>"referGenAppToJudge"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_62fo4ya">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_9s8ctsp">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_7fv4l98">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1rkmx06">
+          <text>Caseworker refers a general application to a judge</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_56w4wdq">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_933elyo">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_6i0ynlg">
+          <text>"DecideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_176p1ky">
+          <text>"Decide application"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_xx668f1">
+          <text></text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_r8i4y9r">
+          <text>5</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_d03t0gs">
+          <text>"DecideGenApp"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_7lh2cw8">
+          <text>"decision_making_work"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_yfkvfek">
+          <text>"JUDICIAL"</text>
+        </outputEntry>
+      </rule>
     </decisionTable>
   </decision>
   <dmndi:DMNDI>

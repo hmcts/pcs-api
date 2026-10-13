@@ -11,7 +11,8 @@ public enum OrderType {
     SUSPENDED_POSSESSION("Suspended possession", "Order for possession (suspended)"),
     ADJOURNMENT("Adjournment", "Order (adjournment)"),
     STRIKE_OUT_DISMISSAL("Strike out or dismissal", "Order (strike out or dismissal)"),
-    FREE_FORM("Free form", "Order");
+    FREE_FORM("Free form", "Order"),
+    APPLICATION_DECISION("Application decision", "Order (application)");
 
     private final String label;
     private final String documentTitle;
