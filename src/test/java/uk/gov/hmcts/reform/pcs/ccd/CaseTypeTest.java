@@ -176,7 +176,8 @@ class CaseTypeTest {
         assertThat(ordersTab.getFields()).extracting(TabField::getShowCondition)
             .containsExactly(null, ShowConditions.NEVER_SHOW);
         assertThat(ordersTab.getShowCondition())
-            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
+            .isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\""
+                            + " AND featureFlags.enforcementEnabled=\"YES\"");
         assertThat(caseDetailsTab.getFields()).extracting(TabField::getId).contains("detailsTab_ClaimDetails");
         assertThat(summaryTab.getFields()).extracting(TabField::getId)
             .contains("summaryTab_OccupationContractOrLicenceDetails");
