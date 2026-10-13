@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.hmcts.ccd.sdk.testing.ActorDetails;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport;
 import uk.gov.hmcts.ccd.sdk.testing.CcdEventTestSupport.Actor;
 import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
@@ -73,9 +74,12 @@ class ConfirmOrderReviewIT extends OrderEventIT {
     @BeforeEach
     void setUp() {
         caseReference = cases.issue();
-        judge = events.registerActor("A", "Judge", "caseworker-pcs");
+        // Legacy IDAM accounts have numeric ids; review and return must work for them too.
+        judge = events.registerActor(new ActorDetails(
+            "123456", "judge@example.com", "A", "Judge", List.of("caseworker-pcs")));
         asJudge = events.external(caseReference, MAKE_ORDER).as(judge);
-        caseworker = events.registerActor("A", "Caseworker", "caseworker-pcs");
+        caseworker = events.registerActor(new ActorDetails(
+            "654321", "caseworker@example.com", "A", "Caseworker", List.of("caseworker-pcs")));
         asCaseworker = events.external(caseReference, CONFIRM_ORDER_REVIEW).as(caseworker);
     }
 
@@ -126,7 +130,7 @@ class ConfirmOrderReviewIT extends OrderEventIT {
             .containsExactly("The order is no longer waiting for review");
         verify(taskManagementApi).completeTask(any(), any(), eq("staff-review"), any());
         verify(camundaService).createTask(eq(caseReference), eq(TaskType.REVIEW_ORDER_QUERY), contains(QUERY),
-            eq(UUID.fromString(judge.uid())));
+            eq(judge.uid()));
 
         // The judge opens the order from their task, seeing the query, and can save changes to it.
         var asAuthor = asJudge.withClientContext(Map.of("orderId", order.id().toString()));

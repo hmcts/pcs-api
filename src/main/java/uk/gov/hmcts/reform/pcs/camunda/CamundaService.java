@@ -83,12 +83,12 @@ public class CamundaService {
     }
 
     /** Creates a task assigned to one user. */
-    public void createTask(long caseId, TaskType taskType, String taskDescription, UUID assignee) {
+    public void createTask(long caseId, TaskType taskType, String taskDescription, String assignee) {
         createTask(caseId, taskType, taskDescription, Instant.now(utcClock), assignee);
     }
 
     private void createTask(long caseId, TaskType taskType, String taskDescription, Instant scheduledTo,
-                            UUID assignee) {
+                            String assignee) {
         CamundaRequestTaskData taskData = CamundaRequestTaskData.builder()
             .action(Action.CREATE)
             .caseReference(caseId)
@@ -140,7 +140,7 @@ public class CamundaService {
     }
 
     private void requestTaskCreation(long caseId, TaskType taskType, String taskDescription, UUID idempotencyKey,
-                                     UUID assignee) {
+                                     String assignee) {
         if (!featureToggleService.isEnabled(FeatureFlag.CASEWORKER_WA)) {
             log.info("Skipped creating task for {}", caseId);
             return;
@@ -176,7 +176,7 @@ public class CamundaService {
         }
         // Not "assignee", which wa-task-monitor drops: the configuration DMN makes it the task's assignee.
         if (assignee != null) {
-            processVariables.put("assigneeId", dmnStringValue(assignee.toString()));
+            processVariables.put("assigneeId", dmnStringValue(assignee));
         }
 
         // Default values - WA task due date is configured in configuration dmn

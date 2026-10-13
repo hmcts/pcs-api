@@ -7,7 +7,7 @@ DROP TABLE draft_orders;
 CREATE TABLE orders (
     id UUID PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES pcs_case(id) ON DELETE CASCADE,
-    author_idam_user_id UUID NOT NULL,
+    author_idam_user_id TEXT NOT NULL,
     -- The judge's name, for the order's document.
     author_name TEXT,
     state TEXT NOT NULL CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED')),
@@ -26,7 +26,7 @@ CREATE TABLE order_steps (
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     state TEXT NOT NULL CHECK (state IN ('DRAFT', 'SUBMITTED_FOR_REVIEW', 'RETURNED_TO_JUDGE', 'ISSUED')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    actor_idam_user_id UUID NOT NULL,
+    actor_idam_user_id TEXT NOT NULL,
     order_type TEXT NOT NULL,
     form_data JSONB NOT NULL,
     docweave_snapshot JSONB,

@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.OrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.OrderStepRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Every change to an order is a step appended to it, leaving the order in a state. The latest step
@@ -44,7 +43,7 @@ public class OrderSteps {
             .map(returned -> returned.getNote().getNote());
     }
 
-    public OrderStepEntity append(OrderEntity order, OrderState to, UUID actor,
+    public OrderStepEntity append(OrderEntity order, OrderState to, String actor,
                                   OrderStepEntity.OrderStepEntityBuilder step) {
         order.moveTo(to);
         orderRepository.save(order);

@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseReviewDateService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
@@ -114,7 +115,8 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
     /** The order goes back as the judge submitted it, with the query the judge will read. */
     private ExternalSubmitResponse<State> returnToJudge(OrderEntity order, OrderStepEntity submitted, String query,
                                                         UserInfo caseworker) {
-        OrderStepEntity returned = orderSteps.append(order, RETURNED_TO_JUDGE, UUID.fromString(caseworker.getUid()),
+        OrderStepEntity returned = orderSteps.append(
+            order, RETURNED_TO_JUDGE, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(submitted.getOrderType())
                 .formData(submitted.getFormData())
@@ -126,7 +128,7 @@ public class ConfirmOrderReview implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalSubmitResponse<State> issue(OrderEntity order, Issue issue, UserInfo caseworker) {
         order.setSeal(issue.seal());
-        OrderStepEntity issued = orderSteps.append(order, ISSUED, UUID.fromString(caseworker.getUid()),
+        OrderStepEntity issued = orderSteps.append(order, ISSUED, IdamUserIds.normalise(caseworker.getUid()),
             OrderStepEntity.builder()
                 .orderType(issue.order().orderType())
                 .formData(issue.order().formData())

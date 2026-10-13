@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.order.OrderSteps;
 import uk.gov.hmcts.reform.pcs.ccd.util.ClientContextRetriever;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.service.FeatureFlag;
 
@@ -91,7 +92,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private ExternalStartResponse<OrderStart> start(ExternalStartRequest start) {
         long caseReference = start.caseReference();
-        UUID judge = UUID.fromString(start.user().id());
+        String judge = IdamUserIds.normalise(start.user().id());
         OrderStart.Order workingOrder = clientContextRetriever.getOrderId()
             .map(orderId -> chosenOrder(orderId, caseReference, judge))
             .orElseGet(() -> orderRepository.findByPcsCaseCaseReferenceAndAuthorIdamUserIdAndState(
@@ -103,7 +104,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /** A returned order the judge's task links to, with its query. */
-    private OrderStart.Order chosenOrder(UUID orderId, long caseReference, UUID judge) {
+    private OrderStart.Order chosenOrder(UUID orderId, long caseReference, String judge) {
         OrderEntity order = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(orderId, caseReference, judge, CHANGEABLE)
             .orElseThrow(() -> ExternalRejection.because(NO_LONGER_CHANGEABLE));
@@ -114,7 +115,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
         MakeOrderRequest request = submit.payload();
         OrderChange change = request.order();
         long caseReference = submit.caseReference();
-        UUID judge = UUID.fromString(submit.user().id());
+        String judge = IdamUserIds.normalise(submit.user().id());
         OrderEntity order = change.id() == null
             ? newDraft(caseReference, judge)
             : workingDraft(caseReference, judge, change);
@@ -135,7 +136,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     /** A judge has one draft per case, which the database enforces. */
-    private OrderEntity newDraft(long caseReference, UUID judge) {
+    private OrderEntity newDraft(long caseReference, String judge) {
         return OrderEntity.builder()
             .pcsCase(findCase(caseReference))
             .authorIdamUserId(judge)
@@ -144,7 +145,7 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    private OrderEntity workingDraft(long caseReference, UUID judge, OrderChange change) {
+    private OrderEntity workingDraft(long caseReference, String judge, OrderChange change) {
         OrderEntity draft = orderRepository
             .findByIdAndPcsCaseCaseReferenceAndAuthorIdamUserIdAndStateIn(
                 change.id(), caseReference, judge, CHANGEABLE)

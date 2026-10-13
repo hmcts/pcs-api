@@ -46,7 +46,7 @@ public class OrderEntity {
     private PcsCaseEntity pcsCase;
 
     @Column(nullable = false, updatable = false)
-    private UUID authorIdamUserId;
+    private String authorIdamUserId;
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

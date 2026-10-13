@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -56,7 +55,7 @@ public class OrderStepEntity {
     private Instant createdAt;
 
     @Column(nullable = false)
-    private UUID actorIdamUserId;
+    private String actorIdamUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
