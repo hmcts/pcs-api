@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GenAppsViewTest {
 
-    private static final UUID CURRENT_USER_IDAM_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_IDAM_ID = UUID.randomUUID().toString();
     private static final long TEST_CASE_REFERENCE = 123456789L;
     private static final String ORGANISATION_ID = "organisation";
 
@@ -169,7 +169,7 @@ class GenAppsViewTest {
         // Given
         PartyEntity currentParty = createPartyEntity();
         currentParty.setId(UUID.randomUUID());
-        currentParty.setIdamId(UUID.randomUUID());
+        currentParty.setIdamId(UUID.randomUUID().toString());
         currentParty.setOrganisationId(ORGANISATION_ID + 1);
         currentParty.setFirstName("Current party first name");
         currentParty.setLastName("Current party last name");
@@ -205,7 +205,7 @@ class GenAppsViewTest {
         Party genApp2Party = genApps.get(1).getValue().getParty();
 
         assertThat(genApp1Party.getId()).isEqualTo(currentParty.getId().toString());
-        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId().toString());
+        assertThat(genApp1Party.getIdamId()).isEqualTo(currentParty.getIdamId());
         assertThat(genApp1Party.getFirstName()).isEqualTo("Current party first name");
         assertThat(genApp1Party.getLastName()).isEqualTo("Current party last name");
 
