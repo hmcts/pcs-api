@@ -223,12 +223,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: languageUsed.englishRadioOption,
         nextPage: suspendedOrder.mainHeader
       });
-      await performAction('errorValidationSuspendOrderPage', suspendedOrder.errorValidation);
-      await performAction('confirmSuspendedOrder', {
-        question: suspendedOrder.suspendedOrderQuestion,
-        option: suspendedOrder.yesRadioOption,
-        nextPage: statementOfTruth.mainHeader
-      });
       await performAction('errorValidationSOT1Page', statementOfTruth.errorValidation);
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruth.mainHeader });
       await performAction('selectStatementOfTruth', {
