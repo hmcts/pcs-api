@@ -20,9 +20,11 @@ public class CounterClaimFormDocumentGenerator {
     private final FeatureToggleService featureToggleService;
 
     public String generate(CounterClaimFormPayload payload, int counterClaimRank, int defendantNumber) {
-        String filename = featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4)
-            ? String.format(OUTPUT_FILENAME_TEMPLATE, counterClaimRank, defendantNumber)
-            : OUTPUT_FILENAME_PREFIX + defendantNumber;
+        String filename = counterClaimFormFilename(
+            featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4),
+            counterClaimRank,
+            defendantNumber
+        );
         return docAssemblyService.generateDocument(
             payload,
             getTemplateId(payload),
@@ -33,6 +35,20 @@ public class CounterClaimFormDocumentGenerator {
 
     private static String getTemplateId(CounterClaimFormPayload payload) {
         return payload.isCompletedByLegalRepresentative() ? LR_TEMPLATE_ID : LIP_TEMPLATE_ID;
+    }
+
+    /**
+     * Name of the counterclaim form PDF. Translation looks the form up by this name before the file exists,
+     * so the generator and those lookups must use this method.
+     */
+    public static String counterClaimFormFilename(boolean release14Enabled,
+                                                  Integer counterClaimRank,
+                                                  int defendantNumber) {
+        if (release14Enabled) {
+            int rank = counterClaimRank != null ? counterClaimRank : 1;
+            return String.format(OUTPUT_FILENAME_TEMPLATE, rank, defendantNumber);
+        }
+        return expectedCounterClaimFormFilename(defendantNumber);
     }
 
     public static String expectedCounterClaimFormFilename(int defendantNumber) {
