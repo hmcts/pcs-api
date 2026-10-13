@@ -195,7 +195,7 @@ test.describe('[Create Case - England]', async () => {
   });
 
   //This test must be run only in the Nightly/Release jobs as it contains an exhaustive test sceanrio for 'Upload additional documents' page
-  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Nightly/Release only (Contains exhaustive test scenario)', async () => {
+  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds - Nightly/Release only (Contains exhaustive test scenario) @rerun', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex

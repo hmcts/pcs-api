@@ -85,7 +85,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - With resume claim options] @nightly @MAC', async () => {
-  test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
+  test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question @rerun', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -101,7 +101,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
@@ -199,7 +199,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears @MAC @rerun', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -215,7 +215,7 @@ test.describe('[Create Case - With resume claim options] @nightly @MAC', async (
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.localAuthorityOrg1Usr1);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);

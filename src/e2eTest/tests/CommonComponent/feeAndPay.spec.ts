@@ -125,7 +125,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
     });
   });
 
-  test('Fee And Pay - Cancel Payment from You Card Details Page', async ({ page, context }) => {
+  test('Fee And Pay - Cancel Payment from You Card Details Page @rerun', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentByCard', {
       amountLabel: serviceRequest.amountToPayLabel,
@@ -194,7 +194,7 @@ test.describe('[Common Component Fee And Pay] @nightly @CC @feeAndPay' , async (
   });
 });
 
-test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay' , async () => {
+test.describe('[Common Component Fee And Pay Refund and Remission] @release @CC @feeAndPay @rerun' , async () => {
   test('Fee And Pay - Remission Process', async ({ page, context }) => {
     await performAction('clickPayNowLink', serviceRequest.payNowLink);
     await performAction('selectPaymentTypePBA', {

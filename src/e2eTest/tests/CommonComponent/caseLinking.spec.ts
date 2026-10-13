@@ -135,7 +135,7 @@ test.describe('[Common Component Case Linking - Access Management] @nightly @cas
     await performAction('canViewLinkedCases', 'yes');
   });
 
-  test('Solicitor user cannot view, create or manage case linking @CC @nightly @caseLinking', async ({ page, context }) => {
+  test('Solicitor user cannot view, create or manage case linking @CC @nightly @caseLinking @rerun', async ({ page, context }) => {
     const { email, password } = user.claimantSolicitor;
     await performAction('login', { email, password });
     await dismissCookieBanner(page, 'analytics');
