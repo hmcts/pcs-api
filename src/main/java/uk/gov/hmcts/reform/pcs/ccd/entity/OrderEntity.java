@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderSeal;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderState;
+import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 
 import java.util.UUID;
 
@@ -47,6 +48,11 @@ public class OrderEntity {
 
     @Column(nullable = false, updatable = false)
     private String authorIdamUserId;
+
+    /** The hearing the judge made the order for, if they made it for one. */
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "hearing_id")
+    private HearingEntity hearing;
 
     /** The judge's name as IDAM had it when they started the order, for the order's document. */
     @Column(updatable = false)

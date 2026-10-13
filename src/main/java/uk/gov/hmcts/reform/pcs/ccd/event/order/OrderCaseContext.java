@@ -49,7 +49,7 @@ class OrderCaseContext {
 
     private static CaseFacts caseFacts(TenancyLicenceEntity tenancy, ClaimEntity claim) {
         NoticeOfPossessionEntity notice = claim == null ? null : claim.getNoticeOfPossession();
-        return new CaseFacts(
+        return CaseFacts.fromClaim(
             tenancy == null ? null : tenancy.getStartDate(),
             tenancy == null || tenancy.getType() == null ? null : tenancy.getType().name(),
             noticeDate(notice),

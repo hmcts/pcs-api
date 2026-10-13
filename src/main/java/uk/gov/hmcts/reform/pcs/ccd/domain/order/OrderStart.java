@@ -7,13 +7,22 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.OrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.OrderStepEntity;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** What the frontend is sent when an order event starts: the order, and the case it is made on. */
-public record OrderStart(Order order, CaseContext caseContext) {
+/**
+ * What the frontend is sent when an order event starts: the order, the case it is made on, and the
+ * hearing it is made for, if any.
+ */
+public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) {
+
+    public OrderStart(Order order, CaseContext caseContext) {
+        this(order, caseContext, null);
+    }
 
     /**
      * No id means the judge has no draft on the case yet. The version is the latest step's id, sent back
@@ -47,12 +56,48 @@ public record OrderStart(Order order, CaseContext caseContext) {
                               boolean openApplication) {
     }
 
+    /** The claim gives the first six; a judge records the rest at a hearing. */
     public record CaseFacts(LocalDate tenancyStartDate,
                             String tenancyType,
                             LocalDate noticeDate,
                             BigDecimal currentRent,
                             String rentFrequency,
-                            String groundsPleaded) {
+                            String groundsPleaded,
+                            BigDecimal arrearsAtNotice,
+                            BigDecimal arrearsAtIssue,
+                            LocalDate lastPaymentDate,
+                            BigDecimal lastPayment,
+                            BigDecimal arrearsToday) {
+
+        public static CaseFacts fromClaim(LocalDate tenancyStartDate, String tenancyType, LocalDate noticeDate,
+                                          BigDecimal currentRent, String rentFrequency, String groundsPleaded) {
+            return new CaseFacts(tenancyStartDate, tenancyType, noticeDate, currentRent, rentFrequency,
+                groundsPleaded, null, null, null, null, null);
+        }
+    }
+
+    /**
+     * The hearing an order is made for. The facts are this hearing's if they have been recorded,
+     * otherwise the latest earlier hearing's, otherwise the claim's; recorded says who recorded them,
+     * and is null for the claim's. The version is null until this hearing's facts are recorded, and
+     * goes back with the judge's change to them. The earlier notes are the case's other judicial
+     * notes, newest first.
+     */
+    public record Hearing(int id,
+                          LocalDateTime date,
+                          Long version,
+                          CaseFacts caseFacts,
+                          Recorded recorded,
+                          String note,
+                          List<JudicialNote> earlierNotes) {
+    }
+
+    /** Who recorded a hearing's facts, at which hearing, and when. */
+    public record Recorded(String by, LocalDateTime hearingDate, Instant on) {
+    }
+
+    /** A judicial note, with the hearing it was made at if it was made at one. */
+    public record JudicialNote(String by, Instant createdOn, LocalDateTime hearingDate, String note) {
     }
 
     public record Party(String id, String name) {
