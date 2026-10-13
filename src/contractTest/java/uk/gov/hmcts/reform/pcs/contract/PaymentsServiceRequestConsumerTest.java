@@ -41,7 +41,6 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = ALL)
 
-@Disabled("until pact test fixed on fee and pay side - HDPI-9487")
 public class PaymentsServiceRequestConsumerTest {
     private final PaymentsApi paymentsApi;
 
