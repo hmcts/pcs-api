@@ -803,7 +803,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 });
 
 test.describe('[Enforcement - Delete Draft Application]', () => {
-  test('Delete the draft application @enforcement @rerun', async () => {
+  test('Delete the draft application @enforcement @rerun', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
@@ -829,6 +829,20 @@ test.describe('[Enforcement - Delete Draft Application]', () => {
     await performAction('clickButton', deleteThisDraftApplication.continueButton);
     await performValidation('mainHeader', reviewSupport.casePartiesHeader);
     await performAction('clickTab', home.caseSummary);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', deleteThisDraftApplication.mainHeader);
+    await performAction('clickRadioButton', {
+      question: deleteThisDraftApplication.deleteDraftApplicationQuestion,
+      option: deleteThisDraftApplication.yesRadioOption,
+    });
+    await performAction('clickButton', deleteThisDraftApplication.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('clickButton', enforcementApplication.cancelLink);
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.deleteDraftApplicationEvent);
     await performAction('clickButton', caseSummary.go);
