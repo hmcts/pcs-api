@@ -14,7 +14,7 @@ export const enforcementApplication = {
   youCanUseParagraphHiddenHidden: `You can use either a warrant or a writ to evict someone.`,
   ifYouChooseParagraphHidden: `If you choose a warrant of possession`,
   warrantFeeValidationLabelHidden: `If you apply for a warrant:`,
-  warrantFeeValidationTextHidden: `it costs £148 to apply`,
+  warrantFeeValidationTextHidden: `it costs £152 to apply`,
   itsFreeListHidden: `it's free to hire a County Court bailiff`,
   youMayHaveToWaitListHidden: `you may have to wait longer for the eviction (this depends on the court you apply to)`,
   ifyouAskJudgeForAWritParagraphHidden: `If you ask the judge for a writ of possession`,
@@ -25,7 +25,7 @@ export const enforcementApplication = {
   askJudgeForWritListHidden: `ask the judge for a writ (you’ll need additional evidence for this and the judge could still refuse your request)`,
   hireAPrivateListHidden: `hire a private High Court Enforcement Officer (bailiff) to carry out the eviction`,
   writFeeValidationLabelHidden: `If you apply for a writ:`,
-  writFeeValidationTextHidden: `it costs £80 to apply`,
+  writFeeValidationTextHidden: `it costs £82 to apply`,
   quoteFromBailiffLinkHidden: `you can get a quote from a bailiff to find out how much it will cost`,
   itsUsuallyFasterListHidden: `it’s usually faster (6 to 12 weeks, depending on the court you apply to)`,
   theAdditionalEvidenceParagraphHidden: `The additional evidence you’ll need to apply for a writ`,
@@ -44,7 +44,7 @@ export const enforcementApplication = {
   errorValidationField: {
     errorRadioOption: [
         //updated the error message from `What do you want to apply for? is required`  to Field is required as per current application behaviour and reported the mismatch in HDPI-5199 scenario 6
-      { type: `none`, input: ``, errMessage: `Field is required` }, 
+      { type: `none`, input: ``, errMessage: `Field is required` },
     ],
   },
   yesRadioOptionHidden: `Yes`,
