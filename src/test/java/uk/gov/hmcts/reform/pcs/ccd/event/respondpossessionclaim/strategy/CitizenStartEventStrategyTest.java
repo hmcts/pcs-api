@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.NoticeTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.TenancyLicenceTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.shared.RentArrearsTabDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -131,9 +132,15 @@ class CitizenStartEventStrategyTest {
             .rentAmount("1200")
             .rentStatement(rentStatements)
             .build();
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeServed("Yes")
+            .noticeMethod("By email")
+            .noticeDate("11 May 2026, 5:02:00PM")
+            .build();
         CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .rentArrearsDetails(rentArrearsDetails)
+            .noticeDetails(noticeDetails)
             .build();
 
         PartyEntity defendantEntity = PartyEntity.builder()
@@ -165,6 +172,7 @@ class CitizenStartEventStrategyTest {
         assertThat(result.getCaseDetailsTab()).isNotNull();
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
             .isEqualTo(tenancyDocuments);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())
@@ -207,9 +215,15 @@ class CitizenStartEventStrategyTest {
             .rentAmount("800")
             .rentStatement(rentStatements)
             .build();
+        NoticeTabDetails noticeDetails = NoticeTabDetails.builder()
+            .noticeServed("Yes")
+            .noticeMethod("First class post")
+            .noticeDate("10 May 2026")
+            .build();
         CaseDetailsTab builtCaseDetailsTab = CaseDetailsTab.builder()
             .tenancyLicenceDetails(tenancyLicenceDetails)
             .rentArrearsDetails(rentArrearsDetails)
+            .noticeDetails(noticeDetails)
             .build();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
@@ -249,6 +263,7 @@ class CitizenStartEventStrategyTest {
         assertThat(result.getCaseDetailsTab()).isNotNull();
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails()).isEqualTo(tenancyLicenceDetails);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails()).isEqualTo(rentArrearsDetails);
+        assertThat(result.getCaseDetailsTab().getNoticeDetails()).isEqualTo(noticeDetails);
         assertThat(result.getCaseDetailsTab().getTenancyLicenceDetails().getTenancyLicenceDocuments())
             .isEqualTo(tenancyDocuments);
         assertThat(result.getCaseDetailsTab().getRentArrearsDetails().getRentStatement())

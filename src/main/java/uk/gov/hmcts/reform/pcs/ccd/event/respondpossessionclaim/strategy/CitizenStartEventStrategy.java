@@ -130,7 +130,8 @@ public class CitizenStartEventStrategy implements RespondPossessionClaimStartEve
 
         caseDetailsTab.setTenancyLicenceDetails(builtCaseDetailsTab.getTenancyLicenceDetails());
         caseDetailsTab.setRentArrearsDetails(builtCaseDetailsTab.getRentArrearsDetails());
-        caseDetailsTab.setOccupationContractLicenceDetails(builtCaseDetailsTab.getOccupationContractLicenceDetails()); 
+        caseDetailsTab.setOccupationContractLicenceDetails(builtCaseDetailsTab.getOccupationContractLicenceDetails());
+        caseDetailsTab.setNoticeDetails(builtCaseDetailsTab.getNoticeDetails());
         
         pcsCase.setCaseDetailsTab(caseDetailsTab);
         return pcsCase;
