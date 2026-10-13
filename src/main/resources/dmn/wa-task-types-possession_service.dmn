@@ -196,6 +196,17 @@
           <text>"Review order query"</text>
         </outputEntry>
       </rule>
+      <rule id="DecisionRule_mko7ty1">
+        <inputEntry id="UnaryTests_mko7ty2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_mko7ty3">
+          <text>"MakeOrder"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_mko7ty4">
+          <text>"Make an order"</text>
+        </outputEntry>
+      </rule>
       <rule id="DecisionRule_5ujno82">
         <inputEntry id="UnaryTests_psjwsn5">
           <text></text>
