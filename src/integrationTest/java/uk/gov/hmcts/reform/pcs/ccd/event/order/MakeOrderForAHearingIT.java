@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.testing.ExternalEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.HearingChange;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.OrderChange;
@@ -18,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.CaseFacts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderStart.Hearing;
 import uk.gov.hmcts.reform.pcs.ccd.domain.order.OrderType;
-import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingEntity;
 import uk.gov.hmcts.reform.pcs.config.IssuedCases;
 import uk.gov.hmcts.reform.pcs.config.OrderEventIT;
 
@@ -29,8 +27,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency.MONTHLY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingNoticeWording.TPL;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.hearing.HearingType.POSSESSION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SAVE_DRAFT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.order.MakeOrderRequest.Action.SUBMIT_FOR_REVIEW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.order.HearingRecords.CHANGED_BY_ANOTHER_JUDGE;
@@ -63,8 +59,8 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         PCSCase claim = cases.claim(ENGLAND);
         claim.setRentDetails(RentDetails.builder().currentRent(new BigDecimal("750.00")).frequency(MONTHLY).build());
         caseReference = cases.issue(claim);
-        firstHearing = addHearing(caseReference, FIRST_HEARING, false);
-        secondHearing = addHearing(caseReference, SECOND_HEARING, false);
+        firstHearing = cases.hearing(caseReference, FIRST_HEARING, false);
+        secondHearing = cases.hearing(caseReference, SECOND_HEARING, false);
         firstJudge = events.registerActor("First", "Judge", "caseworker-pcs");
         secondJudge = events.registerActor("Second", "Judge", "caseworker-pcs");
     }
@@ -168,8 +164,8 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     @Test
     @DisplayName("only makes orders for the case's own hearings that have not been cancelled")
     void refusesAnotherCasesOrACancelledHearing() {
-        int otherCasesHearing = addHearing(cases.issue(), FIRST_HEARING, false);
-        int cancelledHearing = addHearing(caseReference, SECOND_HEARING.plusDays(7), true);
+        int otherCasesHearing = cases.hearing(cases.issue(), FIRST_HEARING, false);
+        int cancelledHearing = cases.hearing(caseReference, SECOND_HEARING.plusDays(7), true);
 
         assertThat(forHearing(firstJudge, otherCasesHearing).startExpectingRejection())
             .containsExactly("The hearing is not one of this case's hearings");
@@ -207,22 +203,5 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         return new CaseFacts(LocalDate.of(2020, 2, 3), "SECURE_TENANCY", null, new BigDecimal(currentRent),
             "MONTHLY", "Rent arrears", null, null, LocalDate.of(2026, 8, 1), new BigDecimal("100.00"),
             new BigDecimal("1200.00"));
-    }
-
-    private int addHearing(long reference, LocalDateTime date, boolean cancelled) {
-        cases.update(reference, pcsCase -> pcsCase.addHearing(HearingEntity.builder()
-            .type(POSSESSION)
-            .noticeWording(TPL)
-            .hearingDate(date)
-            .durationDays(0)
-            .durationHours(1)
-            .durationMinutes(0)
-            .issueNotice(VerticalYesNo.NO)
-            .cancelled(cancelled)
-            .build()));
-        return jdbcTemplate.queryForObject(
-            "SELECT h.id FROM hearing h JOIN pcs_case c ON c.id = h.case_id"
-                + " WHERE c.case_reference = ? AND h.hearing_date = ?",
-            Integer.class, reference, date);
     }
 }
