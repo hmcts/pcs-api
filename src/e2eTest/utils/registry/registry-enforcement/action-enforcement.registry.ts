@@ -101,7 +101,8 @@ export class ActionEnforcementRegistry {
     ['errorValidationMissedPayments', new EnforcementAction()],
     ['verifyPermissionScreen', new EnforcementAction()],
     ['verifyMissedPaymentsPrePopulated', new EnforcementAction()],
-    ]);
+    ['verifyMissedPaymentsPage', new EnforcementAction()],
+        ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);

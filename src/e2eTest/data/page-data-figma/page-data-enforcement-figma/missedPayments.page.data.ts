@@ -8,6 +8,6 @@ export const missedPayments = {
   saveAndReturnText: 'If you want to save your application and return to it later',
   errorMessage: 'Have the defendants missed any payments? is required',
   permissionScreenHeader: 'You need permission from a judge to apply for the warrant of possession',
-  permissionExplanationText: 'You need permission from a judge before you can apply for the warrant of possession',
-  permissionLinkText: 'Ask the judge for permission to apply for a warrant of possession',
+  permissionExplanationText: 'You need permission from a judge to apply for the warrant of possession',
+  permissionLinkText: 'Ask the judge for permission to apply for a warrant of possession (opens in a new tab, GOV.UK).'
 };

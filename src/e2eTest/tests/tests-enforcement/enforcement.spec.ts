@@ -300,63 +300,45 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
-      // nextPage: nameAndAddressForEviction.mainHeader
       nextPage: 'Is the defendant in a breathing space moratorium?'
     });
-   
-     // AC01: choose a breathing space option, Continue, Missed payments screen shown
-  await performAction('selectBreathingSpace', {
+
+    await performAction('selectBreathingSpace', {
     question: 'Is the defendant currently in a breathing space?',
     option: 'No',
     nextPage: missedPayments.mainHeader
-  });
+        });
+    await performAction('verifyMissedPaymentsPage', {
+      question: missedPayments.missedPaymentsQuestion,
+      options: [missedPayments.yesRadioOption, missedPayments.noRadioOption],
+      label: missedPayments.saveAndReturnLabel,
+      hideLabel: missedPayments.saveAndReturnHideLabel,
+      text: missedPayments.saveAndReturnText
+    });
+    await performAction('clickButton', enforcementApplication.continueButton);
+    await performAction('errorValidationMissedPayments', {
+      errorMessage: missedPayments.errorMessage
+    });
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.permissionScreenHeader
+    });
+    await performAction('verifyPermissionScreen', {
+      text: missedPayments.permissionExplanationText,
+      linkName: missedPayments.permissionLinkText
+    });
+    await performAction('verifyMissedPaymentsPrePopulated', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.noRadioOption,
+      nextPage: missedPayments.mainHeader
+    });
 
-  // AC03: exactly two options, Yes and No (nothing selected yet)
-  await performAction('verifyRadioOptions', {
-    question: missedPayments.missedPaymentsQuestion,
-    options: [missedPayments.yesRadioOption, missedPayments.noRadioOption]
-  });
-
-  // AC11: save and return link expands, hide link collapses
-  await performAction('verifySaveAndReturnToggle', {
-    label: missedPayments.saveAndReturnLabel,
-    hideLabel: missedPayments.saveAndReturnHideLabel,
-    text: missedPayments.saveAndReturnText
-  });
-
-  // AC10: Continue with no option selected
-  await performAction('clickButton', enforcementApplication.continueButton);
-  await performAction('errorValidationMissedPayments', {
-    errorMessage: missedPayments.errorMessage
-  });
-
-  // AC04: select No, Continue, permission screen
-  await performAction('selectMissedPayments', {
-    question: missedPayments.missedPaymentsQuestion,
-    option: missedPayments.noRadioOption,
-    nextPage: missedPayments.permissionScreenHeader
-  });
-
-  // AC05: explanation text, placeholder link present and does nothing
-  await performAction('verifyPermissionScreen', {
-    text: missedPayments.permissionExplanationText,
-    linkName: missedPayments.permissionLinkText
-  });
-
-  // AC12: go back, the saved answer (No) is pre-populated
-  await performAction('verifyMissedPaymentsPrePopulated', {
-    question: missedPayments.missedPaymentsQuestion,
-    option: missedPayments.noRadioOption,
-    nextPage: missedPayments.mainHeader
-  });
-
-  // AC06: change to Yes, Continue, Name and address
-  await performAction('selectMissedPayments', {
-    question: missedPayments.missedPaymentsQuestion,
-    option: missedPayments.yesRadioOption,
-    nextPage: nameAndAddressForEviction.mainHeader
-  });
-
+    await performAction('selectMissedPayments', {
+      question: missedPayments.missedPaymentsQuestion,
+      option: missedPayments.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
+    });
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
