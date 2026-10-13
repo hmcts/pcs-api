@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.idam.IdamUserIds;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -32,7 +33,7 @@ public class PartyAccessCodeLinkService {
             String accessCode,
             UserInfo userInfo
     ) {
-        UUID idamUserId = UUID.fromString(userInfo.getUid());
+        String idamUserId = IdamUserIds.normalise(userInfo.getUid());
 
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
@@ -61,7 +62,7 @@ public class PartyAccessCodeLinkService {
 
         partyEntity.setIdamId(idamUserId);
 
-        caseRoleAssignmentService.assignRasRole(caseReference, idamUserId.toString(), UserRole.DEFENDANT);
+        caseRoleAssignmentService.assignRasRole(caseReference, idamUserId, UserRole.DEFENDANT);
     }
 
 }
