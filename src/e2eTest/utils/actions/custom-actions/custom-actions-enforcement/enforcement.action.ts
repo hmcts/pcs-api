@@ -51,14 +51,12 @@ export class EnforcementAction implements IAction {
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
       ['verifyMissedPaymentsPage', () => this.verifyMissedPaymentsPage(fieldName as actionRecord, page)],
-    //  ['verifyRadioOptions', () => this.verifyRadioOptions(fieldName as actionRecord, page)],
-    //   ['verifySaveAndReturnToggle', () => this.verifySaveAndReturnToggle(fieldName as actionRecord, page)],
       ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord)],
       ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord)],
       ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
       ['selectBreathingSpace', () => this.selectBreathingSpace(fieldName as actionRecord, page)],
       ['selectMissedPayments', () => this.selectMissedPayments(fieldName as actionRecord, page)],
-      ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord, page)],
+      ['errorValidationMissedPayments', () => this.errorValidationMissedPayments(fieldName as actionRecord)],
       ['verifyPermissionScreen', () => this.verifyPermissionScreen(fieldName as actionRecord)],
       ['verifyMissedPaymentsPrePopulated', () => this.verifyMissedPaymentsPrePopulated(fieldName as actionRecord, page)],
       ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
@@ -143,7 +141,7 @@ private async selectApplicationType(applicationType: actionRecord, page: Page) {
 
 }
 private async errorValidationMissedPayments(data: actionRecord) {
-  await performValidation('text', { elementType: ':is(h1, h2, h3, h4)', text: 'There is a problem' });
+  await performValidation('text', { elementType: 'errorSummaryHeader', text: 'There is a problem' });
   await performValidation('text', { elementType: 'span.error-message', text: data.errorMessage as string });
 }
 private async verifyPermissionScreen(data: actionRecord) {
@@ -151,22 +149,21 @@ private async verifyPermissionScreen(data: actionRecord) {
   await performValidation('text', { elementType: 'link', text: data.linkName as string }); 
 }
 private async verifyRadioOptions(data: actionRecord) {
-  await performValidation('text', { elementType: 'span', text: data.question as string });
+  await performValidation('text', { elementType: 'inlineText', text: data.question as string });
   for (const option of data.options as string[]) {
     await performValidation('text', { elementType: 'label', text: option });
   }
 }
+
 private async verifySaveAndReturnToggle(data: actionRecord, page: Page) {
-  await performValidation('text', { elementType: '.govuk-details__summary-text', text: data.label as string });
   await performAction('expandSummary', data.label as string);
-  await expect(page.locator('.govuk-details__text')).toContainText(data.text as string, { ignoreCase: true });
-  await performValidation('text', { elementType: '.govuk-details__summary-text', text: data.hideLabel as string });
+  await performValidation('text', { elementType: 'expandableText', text: data.text as string });
   await performAction('expandSummary', data.hideLabel as string);
-  await expect(page.locator('.govuk-details__text')).toBeHidden();
+  await performValidation('elementNotToBeVisible', { elementType: 'expandableText', text: data.text as string });
 }
 private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
-  await performAction('clickButton', enforcementApplication.previousButton); // confirm constant name
-  await performValidation('text', { elementType: 'heading', text: data.nextPage as string }); // confirm 'heading'
+  await performAction('clickButton', enforcementApplication.previousButton); 
+  await performValidation('text', { elementType: 'heading', text: data.nextPage as string }); 
   await expect(
     page.getByRole('group', { name: data.question as string })
       .getByRole('radio', { name: data.option as string, exact: true })
@@ -605,7 +602,6 @@ private async verifyMissedPaymentsPrePopulated(data: actionRecord, page: Page) {
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
-
             case 'addDocument':
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);

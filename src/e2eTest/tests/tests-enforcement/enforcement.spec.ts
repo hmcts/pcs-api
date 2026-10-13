@@ -39,7 +39,8 @@ import {
   knownDefendantsDOBInformation,
   suspendedOrder,
   missedPayments,
-  statementOfTruth
+  statementOfTruth,
+  defendantInBreathingSpace
 } from '@data/page-data-figma/page-data-enforcement-figma';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -300,14 +301,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: enforcementApplication.typeOfApplicationQuestion,
       option: enforcementApplication.warrantOfPossessionRadioOption,
-      nextPage: 'Is the defendant in a breathing space moratorium?'
+      nextPage: defendantInBreathingSpace.mainHeader
     });
-
     await performAction('selectBreathingSpace', {
-    question: 'Is the defendant currently in a breathing space?',
-    option: 'No',
-    nextPage: missedPayments.mainHeader
-        });
+      question: defendantInBreathingSpace.breathingSpaceQuestion, // use the real key name from your file
+      option: defendantInBreathingSpace.noRadioOption,            // or 'No' if there is no key
+      nextPage: missedPayments.mainHeader
+    });
     await performAction('verifyMissedPaymentsPage', {
       question: missedPayments.missedPaymentsQuestion,
       options: [missedPayments.yesRadioOption, missedPayments.noRadioOption],
