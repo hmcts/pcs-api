@@ -28,7 +28,7 @@ class CitizenClaimListServiceTest {
     @InjectMocks
     private CitizenClaimListService underTest;
 
-    private static final UUID IDAM_ID = UUID.randomUUID();
+    private static final String IDAM_ID = UUID.randomUUID().toString();
 
     @Test
     void shouldReturnMappedClaimSummariesWhenClaimsExist() {
