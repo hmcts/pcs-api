@@ -24,7 +24,7 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
         AND p.pcsCase.caseReference = :caseReference
         AND p.removed = false
         """)
-    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") UUID idamId,
+    Optional<PartyEntity> queryPartyByIdamId(@Param("idamId") String idamId,
                                              @Param("caseReference") long caseReference);
 
     @Query("""
@@ -33,7 +33,7 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
         AND cp.role = :role
         AND cp.party.removed = false
         """)
-    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") UUID idamId, @Param("role") PartyRole role);
+    List<ClaimEntity> findClaimsByIdamIdAndRole(@Param("idamId") String idamId, @Param("role") PartyRole role);
 
     Optional<PartyEntity> findByIdAndPcsCaseCaseReference(UUID id, long caseReference);
 

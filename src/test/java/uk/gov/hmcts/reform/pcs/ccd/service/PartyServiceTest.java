@@ -132,7 +132,7 @@ class PartyServiceTest {
         @Test
         void shouldGetPartyEntityByIdamId() {
             // Given
-            UUID idamId = UUID.randomUUID();
+            String idamId = UUID.randomUUID().toString();
 
             PartyEntity expectedPartyEntity = mock(PartyEntity.class);
             when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE))
@@ -148,7 +148,7 @@ class PartyServiceTest {
         @Test
         void shouldThrowExceptionWhenNoPartyEntityByIdamId() {
             // Given
-            UUID idamId = UUID.randomUUID();
+            String idamId = UUID.randomUUID().toString();
 
             when(partyRepository.queryPartyByIdamId(idamId, CASE_REFERENCE)).thenReturn(Optional.empty());
 

@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.documentamend;
+package uk.gov.hmcts.reform.pcs.ccd.page.caseworker.documentamend;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.caseworker.CaseworkerDocumentListService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAmendService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentAssociationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentNameService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentSelectionService;
 import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;

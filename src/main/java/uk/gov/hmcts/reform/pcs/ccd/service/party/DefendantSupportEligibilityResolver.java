@@ -23,7 +23,7 @@ public class DefendantSupportEligibilityResolver {
 
     private final PartySupportOwnershipResolver partySupportOwnershipResolver;
 
-    public Set<UUID> resolveEligibleDefendantPartyIds(PcsCaseEntity pcsCaseEntity, UUID authenticatedUserId) {
+    public Set<UUID> resolveEligibleDefendantPartyIds(PcsCaseEntity pcsCaseEntity, String authenticatedUserId) {
         if (pcsCaseEntity == null || authenticatedUserId == null) {
             return Set.of();
         }
