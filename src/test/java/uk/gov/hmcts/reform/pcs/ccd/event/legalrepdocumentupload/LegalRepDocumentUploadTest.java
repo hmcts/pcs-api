@@ -55,6 +55,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -391,7 +393,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
             .thenReturn(List.of(partyEntity));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, id)).thenReturn(false);
+            TEST_CASE_REFERENCE, id)).thenReturn(true);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -418,9 +420,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
         when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
             .thenReturn(List.of(firstPartyEntity, secondPartyEntity));
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, firstId)).thenReturn(false);
+            TEST_CASE_REFERENCE, firstId)).thenReturn(true);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-            TEST_CASE_REFERENCE, secondId)).thenReturn(false);
+            TEST_CASE_REFERENCE, secondId)).thenReturn(true);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
         PCSCase result = callStartHandler(PCSCase.builder().build());
@@ -476,9 +478,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(respondedDefendant, awaitingDefendant));
             when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-                TEST_CASE_REFERENCE, respondedPartyId)).thenReturn(true);
+                TEST_CASE_REFERENCE, respondedPartyId)).thenReturn(false);
             when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
-                TEST_CASE_REFERENCE, awaitingPartyId)).thenReturn(false);
+                TEST_CASE_REFERENCE, awaitingPartyId)).thenReturn(true);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
@@ -506,6 +508,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(defendantParty, mock(PartyEntity.class)));
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                anyLong(), any())).thenReturn(true);
 
             PCSCase pcsCase = PCSCase.builder().build();
 
@@ -561,6 +565,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
             when(primaryClaimantParty.getOrganisationId())
                 .thenReturn(isDefendantLrScenario ? "different org ID" : ORGANISATION_ID);
+            when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyId(
+                anyLong(), any())).thenReturn(true);
 
             PCSCase pcsCase = PCSCase.builder()
                 .legalRepDocumentUploadDetails(legalRepDocumentUploadDetails)
@@ -624,6 +630,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnErrorWhenAtLeastOneLegalRepDocumentIsNull() {
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+                     .getOrganisationId()).thenReturn(ORGANISATION_ID);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument nullLegalRepDocument = null;
@@ -649,6 +657,8 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
 
         @Test
         void shouldReturnErrorWhenAtLeastOneLegalRepDocumentHasNoDocument() {
+            when(partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity)
+                     .getOrganisationId()).thenReturn(ORGANISATION_ID);
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
 
             LegalRepDocument legalRepDocumentWithoutDocument = LegalRepDocument.builder().build();
@@ -679,6 +689,9 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);
             when(legalRepForDefendantAccessValidator.validateAndGetDefendants(pcsCaseEntity, ORGANISATION_ID))
                 .thenReturn(List.of(expectedParty));
+            when(defendantResponseRepository
+                     .existsByClaimPcsCaseCaseReferenceAndPartyId(anyLong(), eq(targetPartyId)))
+                .thenReturn(true);
 
             LegalRepDocument legalRepDocument = LegalRepDocument.builder()
                 .document(mock(Document.class))

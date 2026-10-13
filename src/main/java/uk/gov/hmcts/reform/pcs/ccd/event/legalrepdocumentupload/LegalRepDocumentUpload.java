@@ -130,7 +130,8 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         legalRepDocumentUploadDetails.setPartyType(partyType);
 
         if (partyType == PartyType.DEFENDANT) {
-            List<PartyEntity> defendantPartyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            List<PartyEntity> defendantPartyEntities =
+                loadAndValidateDefendantsWithResponse(pcsCaseEntity, organisationId);
 
             List<DynamicListElement> listItems = defendantPartyEntities.stream()
                 .map(partyEntity -> DynamicListElement.builder()
@@ -271,9 +272,10 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
             .orElse(null);
     }
 
-    private List<PartyEntity> loadAndValidateDefendants(PcsCaseEntity pcsCaseEntity, String organisationId) {
+    private List<PartyEntity> loadAndValidateDefendantsWithResponse(PcsCaseEntity pcsCaseEntity,
+                                                                    String organisationId) {
 
-        return legalRepPartySelectionService.getDefendantsAwaitingResponse(
+        return legalRepPartySelectionService.getDefendantsWithResponse(
             pcsCaseEntity,
             organisationId
         );
@@ -319,7 +321,7 @@ public class LegalRepDocumentUpload implements CCDConfig<PCSCase, State, UserRol
         if (isClaimantSolicitor) {
             return partyService.getPrimaryClaimantPartyEntity(pcsCaseEntity);
         } else {
-            List<PartyEntity> partyEntities = loadAndValidateDefendants(pcsCaseEntity, organisationId);
+            List<PartyEntity> partyEntities = loadAndValidateDefendantsWithResponse(pcsCaseEntity, organisationId);
             String currentRepresentedPartyId = caseData.getCurrentRepresentedPartyId();
 
             if (currentRepresentedPartyId != null) {
