@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event.caseworker.manageparty;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -12,8 +13,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
@@ -34,6 +37,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
@@ -149,6 +153,7 @@ class SubmitEventHandlerTest {
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(partyDetails)
             .removePartyDetails(removePartyDetails)
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
             .propertyAddress(propertyAddress)
             .caseNameHmctsInternal("Smith v Jones")
             .build();
@@ -164,6 +169,27 @@ class SubmitEventHandlerTest {
             .contains("Case number: " + TEST_CASE_REFERENCE)
             .contains("1 Test Street, Test Town")
             .contains("Smith v Jones");
+    }
+
+    @Test
+    void shouldNotRemovePartyWhenRelease14IsDisabled() {
+        // Given
+        AddPartyDetails partyDetails = AddPartyDetails.builder()
+            .managePartyOptions(ManagePartyOptions.REMOVE_PARTY)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .addPartyDetails(partyDetails)
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.NO).build())
+            .build();
+        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(TEST_CASE_REFERENCE, caseData, null);
+
+        // When
+        SubmitResponse<State> response = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(response.getConfirmationBody()).isNull();
+        verifyNoInteractions(removePartyService);
     }
 
     private static Stream<Arguments> removeConfirmationPageScenarios() {

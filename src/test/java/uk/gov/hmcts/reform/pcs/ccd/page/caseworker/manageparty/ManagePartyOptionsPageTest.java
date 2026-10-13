@@ -10,12 +10,12 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.FeatureFlags;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.AddPartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
-import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions13;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.PartyType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.UpdatePartyDetails;
@@ -78,7 +78,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldGateManagePartyOptionFieldsByRelease14() {
+    void shouldKeepManagePartyOptionsVisibleAndGateRemovePartyFieldsByRelease14() {
         List<Field> fields = event.getFields().getFields().stream()
             .map(Field.FieldBuilder::build)
             .toList();
@@ -88,24 +88,30 @@ class ManagePartyOptionsPageTest extends BasePageTest {
             .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition()).isEqualTo("[STATE]=\"NEVER_SHOW\""));
         assertThat(fields)
-            .filteredOn(field -> "addParty_ManagePartyOptions_1_3".equals(field.getId()))
-            .singleElement()
-            .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.release1dot4Enabled=\"NO\""));
-        assertThat(fields)
             .filteredOn(field -> "addParty_ManagePartyOptions".equals(field.getId()))
             .singleElement()
+            .satisfies(field -> assertThat(field.getShowCondition()).isNullOrEmpty());
+        assertThat(fields)
+            .filteredOn(field -> "removeParty_PartyToRemove".equals(field.getId()))
+            .singleElement()
             .satisfies(field -> assertThat(field.getShowCondition())
-                .isEqualTo("featureFlags.release1dot4Enabled=\"YES\""));
+                .isEqualTo("addParty_ManagePartyOptions=\"REMOVE_PARTY\" "
+                               + "AND featureFlags.release1dot4Enabled=\"YES\" "
+                               + "AND removeParty_CanSelectParty=\"Yes\""));
     }
 
     @Test
-    void shouldMapRelease13ManagePartyOptionToCurrentField() {
+    void shouldNotPrepopulateRemovePartyDetailsWhenRelease14IsDisabled() {
         // Given
+        UUID partyId = UUID.randomUUID();
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder()
-                                 .managePartyOptions13(ManagePartyOptions13.ADD_PARTY)
+                                 .managePartyOptions(ManagePartyOptions.REMOVE_PARTY)
                                  .build())
+            .removePartyDetails(RemovePartyDetails.builder()
+                                    .partyToRemove(buildPartyRadioList(partyId))
+                                    .build())
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.NO).build())
             .updatePartyDetails(UpdatePartyDetails.builder().build())
             .build();
 
@@ -113,8 +119,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getAddPartyDetails().getManagePartyOptions()).isEqualTo(ManagePartyOptions.ADD_PARTY);
-        verifyNoInteractions(partyService, addressMapper);
+        verifyNoInteractions(partyService, addressMapper, addressFormatter, pcsCaseService, removePartyService);
     }
 
     @Test
@@ -251,6 +256,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
             .removePartyDetails(removePartyDetails)
             .build();
 
@@ -297,6 +303,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
             .removePartyDetails(removePartyDetails)
             .build();
 
@@ -345,6 +352,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
             .removePartyDetails(removePartyDetails)
             .build();
 
@@ -371,6 +379,7 @@ class ManagePartyOptionsPageTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .addPartyDetails(AddPartyDetails.builder().managePartyOptions(ManagePartyOptions.REMOVE_PARTY).build())
+            .featureFlags(FeatureFlags.builder().release1dot4Enabled(VerticalYesNo.YES).build())
             .removePartyDetails(RemovePartyDetails.builder().build())
             .build();
 

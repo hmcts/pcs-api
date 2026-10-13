@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.ManagePartyOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.caseworker.RemovePartyDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.service.caseworker.manageparty.RemovePartyService.PARTY_CANNOT_BE_REMOVED_ERROR;
+import static uk.gov.hmcts.reform.pcs.service.FeatureFlag.RELEASE_1_DOT_4;
 
 @Component
 public class RemovePartyDetailsPage implements CcdPageConfiguration {
@@ -27,7 +28,9 @@ public class RemovePartyDetailsPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("removePartyDetails", this::midEvent)
-            .showCondition(ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.REMOVE_PARTY))
+            .showCondition(ShowConditions.and(
+                ShowConditions.fieldEquals("addParty_ManagePartyOptions", ManagePartyOptions.REMOVE_PARTY),
+                ShowConditions.featureFlagsEnabled(RELEASE_1_DOT_4)))
             .pageLabel("Check full party details")
             .label("removePartyDetails-separator", "---")
             .label("removePartyDetails-partyDetails", "## Party details")
