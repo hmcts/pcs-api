@@ -8,7 +8,7 @@ Component Launcher (for displaying Linked Cases data),Component Launcher (ar gyf
 Search Criteria,Meini Prawf Chwilio
 Give details about your reasons for claiming possession (Absolute grounds),Rhowch fanylion am eich rhesymau dros wneud hawliad i feddiannu (Seiliau absoliwt) 
 Give details about your reasons for claiming possession (Adapted accommodation (ground 13)),Rhowch fanylion am eich rhesymau dros wneud hawliad i feddiannu (Llety wedi'i addasu (sail 13))
-Do you need to add another underlessee or mortgagee?,A ydych angen ychwanegu is-brydleswr neu ddeilydd morgais arall?
+Do you need to add another underlessee or mortgagee?,A oes angen ychwanegu is-brydleswr neu ddeilydd morgais arall?
 Do you need to add another defendant?,A ydych angen ychwanegu diffynnydd arall?
 Add additional defendant,Ychwanegu diffynnydd ychwanegol
 Add document,Ychwanegu dogfen
@@ -233,7 +233,7 @@ Give details about your reasons for claiming possession (Charitable landlords (g
 </section>
 "
 What do you want to apply for?,Beth ydych chi eisiau gwneud cais amdano?
-Do your grounds for possession include rent arrears?,A yw eich seiliau dros feddiannu yn cynnwys ôl-ddyledion rhent?,true,,
+Do your grounds for possession include rent arrears?,A yw eich seiliau dros feddiannu yn cynnwys ôl-ddyledion rhent?,true,Ydyn,Nac ydyn
 Enter phone number,Nodwch rif ffôn
 "<h3 class=""govuk-heading-m govuk-!-margin-bottom-1"">
  We could not retrieve the claimant name linked to your My HMCTS account
@@ -468,7 +468,7 @@ Give details about your reasons for claiming possession (Deterioration of furnit
     <a href=""https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html"" class=""govuk-link"" rel=""noreferrer noopener"" target=""_blank"">Mwy o wybodaeth am seiliau meddiant (yn agor mewn tab newydd)</a>.
   </p>
 "
-Do you have any other additional grounds for possession?,A oes gennych unrhyw seiliau eraill ar gyfer meddiannu?,true,,
+Do you have any other additional grounds for possession?,A oes gennych unrhyw seiliau eraill ar gyfer meddiannu?,true,Oes,Nac oes
 Is there an underlessee or mortgagee entitled to claim relief against forfeiture?,A oes yna is-brydleswr neu godwr morgais sydd â hawl i wneud cais am ryddhad yn erbyn fforffediad?
 Give details about your reasons for claiming possession (Housing association special circumstances accommodation (ground 14)),Rhowch fanylion am eich rhesymau dros hawlio meddiant (Llety amgylchiadau arbennig cymdeithas dai (sail 14))
 Do you have grounds for possession?,A oes gennych chi seiliau ar gyfer meddiannu?
@@ -577,7 +577,7 @@ os ydych angen.</p>
 </p>"
 Discretionary grounds,Seiliau dewisol
 Mandatory grounds,Seiliau gorfodol
-Have you served notice to the defendants?,A ydych wedi cyflwyno hysbysiad i'r diffynnydd?,true,,
+Have you served notice to the defendants?,A ydych wedi cyflwyno hysbysiad i'r diffynnydd?,true,Do,Naddo
 Date the document was delivered,Dyddiad cyflwyno'r ddogfen
 Date and time the document was handed over,Dyddiad ac amser y danfonwyd y ddogfen
 Date and time the document was served,Dyddiad am amser y cyflwynwyd y ddogfen 
@@ -1579,12 +1579,12 @@ TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?,PRAWF 
 Have you hired a High Court enforcement officer?,A ydych wedi llogi swyddog gorfodi yr Uchel Lys?
 Name of your High Court enforcement officer,Enw eich swyddog gorfodi yr Uchel Lys
 You’ll be able to upload documents to support or further explain your reasons later on. You can enter up to 500 characters,Gallwch uwchlwytho dogfennau i gefnogi neu i egluro eich rhesymau ymhellach yn nes ymlaen. Gallwch nodi hyd at 500 o nodau.
-Add an additional defendant to the case,Ychwanegu diffynnydd ychwanegol i'r achos
+Add an additional defendant to the case,Ychwanegu diffynnydd i'r achos
 Upload a document to the system,Uwchlwytho dogfen i'r system
 Add an underlessee or mortgagee to the case,Ychwanegu is-brydleswr neu godwr morgais i'r achos
 Select all that apply,Dewiswch bob un sy'n berthnasol
 "After you’ve submitted your claim, there will be instructions on how to make an application","Ar ôl i chi gyflwyno eich hawliad, bydd yna gyfarwyddiadau ar sut i wneud cais"
-You’ll be able to add additional grounds later if you select yes,Byddwch yn gallu ychwanegu seiliau ychwanegol yn hwyrach ymlaen os ydych yn dewis 'oes'.
+You’ll be able to add additional grounds later if you select yes,Byddwch yn gallu ychwanegu seiliau ychwanegol yn hwyrach ymlaen os ydych yn dewis 'Ydyn'.
 "If you’re a legal representative, you should select the type of claimant you’re representing","Os ydych yn gynrychiolydd cyfreithiol, dylech ddewis y math o hawlydd rydych yn ei gynrychioli"
 "You do not need to provide the exact amount at this stage, but a judge will request a schedule of costs at the hearing","Nid oes angen i chi roi'r union swm ar hyn o bryd, ond bydd barnwr yn gofyn am restr o gostau yn y gwrandawiad"
 You can enter up to 950 characters,Gallwch nodi hyd at 950 o nodau.
@@ -1625,14 +1625,14 @@ You cannot use this online service,Ni allwch ddefnyddio'r gwasanaeth ar-lein hwn
 Language used,Iaith a ddefnyddiwyd
 Statement of truth,Datganiad gwirionedd
 Respond To Claim Event Page,Tudalen Digwyddiad Ymateb i Hawliad
-Occupation contract or licence details,Manylion y gontract meddiannaeth neu drwydded
+Occupation contract or licence details,Manylion y contract meddiannaeth neu drwydded
 Underlessee or mortgagee details,Manylion is-brydleswr neu godwr morgais
 Defendant details,Manylion y diffynnydd
 Upload additional documents,Uwchlwytho dogfennau ychwanegol
 Additional reasons for possession,Rhesymau ychwanegol dros feddiannu
 Alternatives to possession,Dewis arall yn lle meddiannu 
 Applications,Ceisiadau
-Money judgment,Dyfarniad arian 
+Money judgment,Dyfarniad ariannol
 Antisocial behaviour and illegal or prohibited conduct,Ymddygiad gwrthgymdeithasol ac anghyfreithlon neu ymddygiad gwaharddedig
 Notice of your intention to begin possession proceedings,Hysbysiad o'ch bwriad i ddechrau achos meddiannu
 Claim type,Math o hawliad
@@ -1758,11 +1758,11 @@ Landlord’s notice in connection with end of fixed term given (section 186),Hys
 Landlord’s notice given in relation to periodic standard contract (section 178),Hysbysiad landlord a roddwyd mewn perthynas â chontract cyfnodol safonol (adran 178)
 Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187),Deilydd contract o dan gontract safonol cyfnod penodol gydag ôl-ddyledion rhent difrifol (adran 187)
 Contract-holder under a periodic standard contract seriously in arrears with rent (section 181),Deilydd contract o dan gontract cyfnodol safonol gydag ôl-ddyledion rhent difrifol (adran 181)
-By delivering it to or leaving it at a permitted place,Drwy ei danfon i neu ei adael mewn man a ganiateir
+By delivering it to or leaving it at a permitted place,Drwy ei ddanfon neu ei adael mewn man a ganiateir
 By email,Trwy e-bost
 By first class post or other service which provides for delivery on the next business day,Drwy bost dosbarth cyntaf neu wasanaeth arall sy'n danfon erbyn y diwrnod busnes nesaf
 By other electronic method,Drwy ddull electronig arall
-By personally handing it to or leaving it with someone,Drwy ei danfon yn bersonol neu ei gadael gyda rhywun
+By personally handing it to or leaving it with someone,Drwy ei ddanfon yn bersonol neu ei adael gyda rhywun
 Secure contract,Contract diogel
 Standard contract,Contract safonol
 Monthly,Pob mis
@@ -1795,7 +1795,7 @@ Under occupying after succession (ground 15A),Tan feddiannu yn dilyn olyniaeth (
 Charitable landlords (ground 11),Landlordiaid elusennol (sail 11)
 Landlord’s works (ground 10),Gwaith y landlord (sail 10)
 Overcrowding (ground 9),Eiddo gorlawn (sail 9)
-Property sold for redevelopment (ground 10A),Eiddo wedi'i werthu ar gyfer ailddatblygu
+Property sold for redevelopment (ground 10A),Eiddo wedi'i werthu ar gyfer ailddatblygu (sail 10A)
 Warrant of possession,Gwarant i feddiannu
 Warrant of restitution,Gwarant adfer 
 Writ of possession,Writ meddiant 
@@ -1865,7 +1865,7 @@ Settlement attempted?,Setliad wedi'i geisio?
 # Case details,# Manylion yr achos
 Claimant contact details,Manylion cyswllt yr hawlydd
 Claimant address for service,Cyfeiriad yr Hawlydd ar gyfer cyflwyno
-Actions already taken,Camau Gweithredu sydd eisoes wedi'i cymryd
+Actions already taken,Camau gweithredu sydd eisoes wedi'u cymryd
 Section of the Housing Act suspension of right to buy claim made under,O dan pa adran o'r Ddeddf Tai a wneir yr hawliad ar gyfer atal yr hawl i brynu?
 ## Underlessee or mortgagee entitled to claim relief against forfeiture,## Is-brydleswr neu godwr morgais â hawl i wneud cais am ryddhad yn erbyn fforffediad
 Reasons for claiming possession under ground 2,Rhesymau dros hawlio meddiant o dan sail 2
@@ -1926,8 +1926,8 @@ Town or City,Tref neu Ddinas
 addresses found,cyfeiriadau a ddarganfuwyd
 No address found,Heb ganfod cyfeiriad
 Change,Newid
-Case Parties,Partïon achos
-Add new,Ychwanegu dogfen newydd
+Case Parties,Partïon yr Achos
+Add new,Ychwanegu
 Month,Mis
 Year,Blwyddyn
 Remove,Dileu
@@ -2024,7 +2024,7 @@ Faint yw'r cyfanswm ôl-ddyledion rhent fel y dangosir ar y datganiad rhent?</h3
 <h2 class=""govuk-heading-m"">Dyddiad dechrau'r denantiaeth neu'r drwydded</h2>"
 "---
 <h2 class=""govuk-heading-m"">Tenancy or licence type</h2>","---
-<h2 class=govuk-heading-m"">Math o denantiaeth neu drwydded</h2>"""
+<h2 class=""govuk-heading-m"">Math o denantiaeth neu drwydded</h2>"
 "---
 <h2 class=""govuk-heading-m"">Additional underlessees or mortgagees</h2>","---
 <h2 class=""govuk-heading-m"">Is-brydleswyr neu godwyr morgais ychwanegol</h2>"
@@ -2078,7 +2078,7 @@ Why are some cases unselectable?,Pam na ellir dewis rhai achosion?
 results,canlyniadau
 Sort Case number,Didoli Rhif Achosion
 Start,Dechrau
-Select a value,Dewiswch werth
+Select a value,Dewiswch opsiwn
 Make a claim,Gwneud hawliad
 Cancel,Canslo
 "<p class=""govuk-body"">Your claim will be saved as you answer the questions, so you’ll be able to close and return to your draft. Before you submit, you must complete a statement of truth. This certifies that you believe the information you’ve provided is true.</p><h2 class=""govuk-heading-m govuk-!-padding-top-0"">What you’ll need</h2><p class=""govuk-body"">Before you start, make sure you have the following information:</p><ul><li class=""govuk-list govuk-!-font-size-19"">details of the tenancy, contract, licence or mortgage agreement</li><li class=""govuk-list govuk-!-font-size-19"">the defendants’ details (the people you’re making the claim against)</li><li class=""govuk-list govuk-!-font-size-19"">your reasons for making a possession claim</li><li class=""govuk-list govuk-!-font-size-19"">copies of any relevant documents. You can either upload documents now or closer to the hearing date. Any documents you upload now will be included in the pack of documents that a judge will receive before the hearing (the bundle)</li></ul><h2 class=""govuk-heading-m"">Completing your claim</h2><p class=""govuk-body"">Once you’ve finished answering the questions, you can either:</p><ul><li class=""govuk-list govuk-!-font-size-19"">sign, submit and pay for your claim now, or</li><li class=""govuk-list govuk-!-font-size-19"">save it as a draft. You or someone else can then return to sign, submit and pay at a later date</li></ul>","<p class=""govuk-body"">Bydd eich hawliad yn cael ei gadw wrth i chi ateb y cwestiynau, felly gallwch ei gau a dychwelyd at eich drafft. Cyn ei gyflwyno, mae'n rhaid ichi gwblhau datganiad gwirionedd. Mae hyn yn tystio eich bod yn credu bod yr wybodaeth a ddarperir gennych yn wir.</p><h2 class=""govuk-heading-m govuk-!-padding-top-0"">Yr hyn fyddwch ei angen</h2><p class=""govuk-body"">Cyn dechrau, gwnewch yn siŵr fod gennych yr wybodaeth ganlynol:</p><ul><li class=""govuk-list govuk-!-font-size-19"">manylion y denantiaeth, contract, trwydded neu gytundeb morgais</li><li class=""govuk-list govuk-!-font-size-19"">manylion y diffynyddion (y bobl rydych yn gwneud yr hawliad yn eu herbyn)</li><li class=""govuk-list govuk-!-font-size-19"">eich rhesymau dros wneud hawliad meddiannu</li><li class=""govuk-list govuk-!-font-size-19"">copïau o unrhyw ddogfennau perthnasol. Gallwch naill ai uwchlwytho dogfennau nawr neu'n agosach at ddyddiad y gwrandawiad. Caiff unrhyw ddogfennau y byddwch yn eu huwchlwytho nawr eu cynnwys yn y pecyn o ddogfennau y bydd barnwr yn ei gael cyn y gwrandawiad (y bwndel)</li></ul><h2 class=""govuk-heading-m"">Cwblhau eich hawliad</h2><p class=""govuk-body"">Unwaith y byddwch wedi gorffen ateb y cwestiynau, gallwch naill ai:</p><ul><li class=""govuk-list govuk-!-font-size-19"">llofnodi, cyflwyno a thalu am eich hawliad nawr, neu</li><li class=""govuk-list govuk-!-font-size-19"">ei gadw fel drafft. Yna, gallwch chi neu rywun arall ddychwelyd i lofnodi, cyflwyno a thalu yn nes ymlaen</li></ul>"
@@ -2187,7 +2187,7 @@ Why are you requesting a demotion of tenancy?,Pam ydych chi'n gofyn am israddio 
 Reasons for requesting a suspension of right to buy and demotion of tenancy,Rhesymau dros ofyn am atal hawl i brynu ac is-raddio tenantiaeth
 Is there any other information you want to provide about your reasons for possession?,A oes yna unrhyw wybodaeth arall yr hoffech ei darparu am eich rhesymau dros feddiannu?
 This can be any information that you have not had the chance to share yet,Gall hyn fod yn unrhyw wybodaeth nad ydych wedi cael cyfle i'w rhannu eto
-"You can enter up to 6,400 characters","Gallwch ddefnyddio hyd at 6,400 o nodau."
+"You can enter up to 6,400 characters","Gallwch ddefnyddio hyd at 6,400 o nodau"
 What is their name?,Beth yw eu henw?
 "---
 <h2 class=""govuk-heading-m""> Underlessee or mortgagee name </h2>","---
@@ -7445,3 +7445,5 @@ os ydych angen.</p>
 </p>
 "
 Make an application,Gwneud cais
+Community landlord,Landlord cymunedol
+Rent amount,Swm y rhent
