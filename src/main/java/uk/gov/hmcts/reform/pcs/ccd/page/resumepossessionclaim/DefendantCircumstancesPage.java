@@ -23,8 +23,8 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
-    private static final String SINGLE_DEFENDANT = "defendantTermPossessive=\"defendant’s\"";
-    private static final String MULTIPLE_DEFENDANTS = "defendantTermPossessive=\"defendants’\"";
+    private static final String SINGLE_DEFENDANT = "addAnotherDefendant=\"NO\"";
+    private static final String MULTIPLE_DEFENDANTS = "addAnotherDefendant=\"YES\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
