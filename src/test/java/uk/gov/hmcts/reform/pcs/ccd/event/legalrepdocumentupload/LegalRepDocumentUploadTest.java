@@ -362,7 +362,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
     void shouldReturnEmptyForUnmappedCategory() {
         assertThat(legalRepDocumentUpload.findGenAppsForCategory(
             PcsCaseEntity.builder().build(),
-            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
             ORGANISATION_ID,
             DocumentUploadCategory.MAIN_CLAIM_OR_COUNTERCLAIM))
             .isEmpty();
@@ -554,7 +554,7 @@ class LegalRepDocumentUploadTest extends BaseEventTest {
             Set<GenAppEntity> allGenApps = Set.of(mock(GenAppEntity.class), mock(GenAppEntity.class));
             List<GenAppEntity> visibleGenApps = List.of(visibleGenApp1, visibleGenApp2);
 
-            UUID currentUserId = UUID.randomUUID();
+            String currentUserId = UUID.randomUUID().toString();
             when(securityContextService.getCurrentUserId()).thenReturn(currentUserId);
 
             when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(ORGANISATION_ID);

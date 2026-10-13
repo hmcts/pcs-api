@@ -25,7 +25,7 @@ public class CaseCreationHelper {
     private PartyAccessCodeRepository partyAccessCodeRepository;
     private PartyAccessCodeHashingService hashingService;
 
-    PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
+    PcsCaseEntity createTestCaseWithParty(long caseReference, String idamUserId, PartyRole partyRole) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
@@ -47,7 +47,7 @@ public class CaseCreationHelper {
     }
 
     PcsCaseEntity createTestCaseWithMultipleDefendants(
-        long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
+        long caseReference, String firstIdamUserId, String secondIdamUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
