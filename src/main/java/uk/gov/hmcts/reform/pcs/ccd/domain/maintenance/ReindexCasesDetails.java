@@ -28,6 +28,6 @@ public class ReindexCasesDetails {
         label = "Estimated matching cases count",
         access = {SuperUserAccess.class}
     )
-    private Long matchingCount;
+    private String matchingCount;
 
 }

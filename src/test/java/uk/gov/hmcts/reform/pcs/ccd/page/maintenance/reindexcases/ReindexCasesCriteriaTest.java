@@ -51,6 +51,6 @@ class ReindexCasesCriteriaTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getReindexCases().getMatchingCount())
-            .isEqualTo(expectedModifiedCaseCount);
+            .isEqualTo(Long.toString(expectedModifiedCaseCount));
     }
 }

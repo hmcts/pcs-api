@@ -44,7 +44,7 @@ public class ReindexCasesCriteria implements CcdPageConfiguration {
         LocalDate since = reindexCases.getModifiedSince();
 
         long matching = caseReindexingService.countCasesModifiedSince(since);
-        reindexCases.setMatchingCount(matching);
+        reindexCases.setMatchingCount(Long.toString(matching)); // Use String as 0L is sometimes not shown in ExUI
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
