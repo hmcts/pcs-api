@@ -33,6 +33,7 @@ class HearingSummaryRendererTest {
             .type(HearingType.OTHER)
             .otherHearingType("some other hearing type")
             .hearingDate(LocalDateTime.parse("2026-07-10T09:00:00"))
+            .durationDays(2)
             .durationHours(1)
             .durationMinutes(30)
             .notes("some notes")
@@ -40,7 +41,7 @@ class HearingSummaryRendererTest {
 
         String hearingLocation = "some hearing location";
 
-        when(durationFormatter.format(1, 30)).thenReturn("formatted duration");
+        when(durationFormatter.format(2, 1, 30)).thenReturn("formatted duration");
 
         // When
         String hearingSummary = underTest.renderMarkdown(hearingEntity, hearingLocation);
