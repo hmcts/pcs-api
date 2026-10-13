@@ -419,8 +419,6 @@ export class EnforcementAction implements IAction {
   private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
     await this.addFieldsToMap(claimantSOT);
     await performAction('check', claimantSOT.option1);
-
-    //await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     await performAction('clickRadioButton', { option:claimantSOT.option } );
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);

@@ -357,7 +357,7 @@ export class ErrorValidationAction implements IAction {
         validationType: statementOfTruth.errorValidationType.three,
         inputArray: statementOfTruth.errorValidationField.errorRadioOption,
         question: statementOfTruth.claimantRadioOption,
-        option: statementOfTruth.claimantRadioOption,
+        option: statementOfTruth.claimantLegalRepresentativeRadioOption,
         button: statementOfTruth.continueButton
       });
       await performAction('inputErrorValidation', {
@@ -384,14 +384,14 @@ export class ErrorValidationAction implements IAction {
         label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruth.continueButton
       });
-      // await performAction('inputErrorValidation', {
+      await performAction('inputErrorValidation', {
 
-      //   validationType: statementOfTruth.errorValidationType.two,
-      //   inputArray: statementOfTruth.errorValidationField.errorTextField2,
-      //   header: statementOfTruth.thereIsAProblemErrorMessageHeader,
-      //   label: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
-      //   button: statementOfTruth.continueButton
-      // });
+        validationType: statementOfTruth.errorValidationType.two,
+        inputArray: statementOfTruth.errorValidationField.errorTextField2,
+        header: statementOfTruth.thereIsAProblemErrorMessageHeader,
+        label: statementOfTruth.nameOfFirmHiddenTextLabel,
+        button: statementOfTruth.continueButton
+      });
     }
   }
 
