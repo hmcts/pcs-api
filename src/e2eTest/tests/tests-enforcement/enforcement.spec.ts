@@ -852,9 +852,8 @@ test.describe('[Enforcement - Delete Draft Application]', () => {
     await performValidation('mainHeader', caseSummary.mainHeader);
     await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
     await performAction('clickButton', caseSummary.go);
-    await expect(page.locator(
-      '#content > exui-case-details-home > ccd-case-event-trigger > div > ccd-case-edit > ccd-case-edit-page > span'
-    )).toHaveText('Resume draft application');
+    await expect(page.getByText('Resume draft application', { exact: true }))
+      .toBeVisible();
     await performValidation('mainHeader', enforcementApplication.mainHeader);
   });
 });
