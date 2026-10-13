@@ -244,6 +244,9 @@ xui-webapp:
     devmemoryLimits: 4Gi
     devcpuLimits: 1
     environment:
+      SERVICES_WA_WORKFLOW_API_URL: http://{{ .Release.Name }}-wa-workflow-api
+      HEALTH_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api/health
+      SERVICES_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api
       SERVICES_DOCUMENTS_API_V2: http://${SERVICE_NAME}-cdam
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
       HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
@@ -411,76 +414,81 @@ aac-manage-case-assignment:
           - name: notify-mca-api-key-secret
             alias: NOTIFY_MCA_API_KEY
 
-  wa:
-    enabled: true
+wa:
+  enabled: true
 
-    camunda-bpm:
-      java:
-        image: hmctsprod.azurecr.io/camunda/bpm:latest
-        environment:
-          SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
-          SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
-          CAMUNDA_BPM_JOB_EXECUTION_CORE_POOL_SIZE: "1"
-          CAMUNDA_BPM_JOB_EXECUTION_MAX_POOL_SIZE: "2"
+  camunda-bpm:
+    java:
+      image: hmctsprod.azurecr.io/camunda/bpm:latest
+      environment:
+        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
+        SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
+        CAMUNDA_BPM_JOB_EXECUTION_CORE_POOL_SIZE: "1"
+        CAMUNDA_BPM_JOB_EXECUTION_MAX_POOL_SIZE: "2"
 
-    wa-task-management-api:
-      java:
-        ingressHost: wa-task-management-api-${SERVICE_FQDN}
-        environment:
-          ALLOWED_CASE_TYPES: pcs
-          ALLOWED_JURISDICTIONS: pcs
-          ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
-          SPRING_DATASOURCE_MAXIMUM_POOL_SIZE: "4"
-          SPRING_DATASOURCE_MINIMUM_IDLE: "1"
-        keyVaults:
-          wa:
-            secrets:
-              - name: app-insights-connection-string
-                alias: app-insights-connection-string
-              - name: wa-system-username
-                alias: WA_SYSTEM_USERNAME
-              - name: wa-system-password
-                alias: WA_SYSTEM_PASSWORD
-              - name: wa-idam-client-secret
-                alias: WA_IDAM_CLIENT_SECRET
-              - name: s2s-secret-task-management-api
-                alias: S2S_SECRET_TASK_MANAGEMENT_API
-              - name: ld-secret
-                alias: LAUNCH_DARKLY_SDK_KEY
+  wa-task-management-api:
+    java:
+      ingressHost: wa-task-management-api-${SERVICE_FQDN}
+      environment:
+        ALLOWED_CASE_TYPES: pcs
+        ALLOWED_JURISDICTIONS: pcs
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
+        SPRING_DATASOURCE_MAXIMUM_POOL_SIZE: "4"
+        SPRING_DATASOURCE_MINIMUM_IDLE: "1"
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+            - name: s2s-secret-task-management-api
+              alias: S2S_SECRET_TASK_MANAGEMENT_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
 
-    wa-task-monitor:
-      java:
-        ingressHost: wa-task-monitor-${SERVICE_FQDN}
-        keyVaults:
-          wa:
-            secrets:
-              - name: app-insights-connection-string
-                alias: app-insights-connection-string
-              - name: s2s-secret-task-monitor
-                alias: S2S_SECRET_TASK_MONITOR
-              - name: wa-system-username
-                alias: WA_SYSTEM_USERNAME
-              - name: wa-system-password
-                alias: WA_SYSTEM_PASSWORD
-              - name: wa-idam-client-secret
-                alias: WA_IDAM_CLIENT_SECRET
+  wa-task-configuration-api:
+    java:
+      environment:
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
 
-    wa-workflow-api:
-      java:
-        environment:
-          DB_READER_USERNAME: "hmcts"
-          SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
-          SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
-          WA_S2S_AUTHORIZED_SERVICES: "wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,pcs_api"
-        keyVaults:
-          wa:
-            secrets:
-              - name: app-insights-connection-string
-                alias: app-insights-connection-string
-              - name: s2s-secret-workflow-api
-                alias: S2S_SECRET_WORKFLOW_API
-              - name: ld-secret
-                alias: LAUNCH_DARKLY_SDK_KEY
+  wa-task-monitor:
+    java:
+      ingressHost: wa-task-monitor-${SERVICE_FQDN}
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-task-monitor
+              alias: S2S_SECRET_TASK_MONITOR
+            - name: wa-system-username
+              alias: WA_SYSTEM_USERNAME
+            - name: wa-system-password
+              alias: WA_SYSTEM_PASSWORD
+            - name: wa-idam-client-secret
+              alias: WA_IDAM_CLIENT_SECRET
+
+  wa-workflow-api:
+    java:
+      environment:
+        DB_READER_USERNAME: "hmcts"
+        SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "4"
+        SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
+        WA_S2S_AUTHORIZED_SERVICES: "wa_workflow_api,wa_case_event_handler,camunda-bpm,xui_webapp,wa_task_management_api,pcs_api"
+      keyVaults:
+        wa:
+          secrets:
+            - name: app-insights-connection-string
+              alias: app-insights-connection-string
+            - name: s2s-secret-workflow-api
+              alias: S2S_SECRET_WORKFLOW_API
+            - name: ld-secret
+              alias: LAUNCH_DARKLY_SDK_KEY
 
   wa-message-cron-service:
     job:
