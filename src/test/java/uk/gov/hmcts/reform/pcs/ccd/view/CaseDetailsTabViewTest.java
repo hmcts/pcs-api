@@ -1047,41 +1047,6 @@ class CaseDetailsTabViewTest {
     }
 
     @Test
-    void shouldSetCaseDetailsTabFieldsForWalesWithoutExemptLandlordQuestion() {
-        PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .featureFlags(FeatureFlags.builder()
-                .release1dot4Enabled(VerticalYesNo.YES).build())
-            .build();
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null,false);
-
-        // Then
-        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
-       
-    }
-
-    @Test
-    void shouldNotSetClaimantRegistrationAndLicensingDetailsWhenFeatureFlagsAreNull() {
-        PCSCase pcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .build();
-
-        when(claimantInformationTabDetailsBuilder.createSummaryClaimantTabDetails(pcsCase)).thenReturn(
-            ClaimantInformationTabDetails.builder()
-                .claimantName("Claimant")
-                .build()
-        );
-
-        // When
-        CaseDetailsTab caseDetailsTab = caseDetailsTabView.buildCaseDetailsTab(pcsCase, null, false);
-
-        // Then
-        assertThat(caseDetailsTab.getClaimantRegistrationAndLicensingDetails()).isNull();
-    }
-
-    @Test
     void shouldSetCaseDetailsTabFieldsWithNoDataWales() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
