@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.oauth2.client.ClientAuthorizationException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -19,6 +21,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IdamTokenProviderTest {
@@ -28,12 +32,15 @@ class IdamTokenProviderTest {
 
     @Mock
     private OAuth2AuthorizedClientManager authorizedClientManager;
+    @Mock
+    private OAuth2AuthorizedClientService authorizedClientService;
 
     private IdamTokenProvider underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new IdamTokenProvider(authorizedClientManager, "system-user", SYSTEM_USERNAME, SYSTEM_PASSWORD);
+        underTest = new IdamTokenProvider(authorizedClientManager, authorizedClientService, "system-user",
+                                          SYSTEM_USERNAME, SYSTEM_PASSWORD);
     }
 
     @Test
@@ -89,6 +96,40 @@ class IdamTokenProviderTest {
             .isInstanceOf(IdamException.class)
             .hasMessage("Unable to get access token response")
             .hasCause(oauthException);
+    }
+
+    @Test
+    @DisplayName("Should retry once when a cached token cannot be refreshed")
+    void shouldRetryOnceWhenRefreshFails() {
+        ClientAuthorizationException refreshFailed =
+            new ClientAuthorizationException(new OAuth2Error("Bad Request", null, null), "system-user");
+        OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
+        OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
+        given(authorizedClient.getAccessToken()).willReturn(accessToken);
+        given(accessToken.getTokenValue()).willReturn("fresh token");
+        given(authorizedClientService.loadAuthorizedClient("system-user", SYSTEM_USERNAME))
+            .willReturn(mock(OAuth2AuthorizedClient.class));
+        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class)))
+            .willThrow(refreshFailed)
+            .willReturn(authorizedClient);
+
+        String authToken = underTest.getAuthToken();
+
+        assertThat(authToken).isEqualTo("Bearer fresh token");
+    }
+
+    @Test
+    @DisplayName("Should not retry a failed password login")
+    void shouldNotRetryFailedPasswordLogin() {
+        // Spring's password grant reports a failed login as a ClientAuthorizationException too.
+        ClientAuthorizationException loginFailed =
+            new ClientAuthorizationException(new OAuth2Error("invalid_grant", null, null), "system-user");
+        given(authorizedClientManager.authorize(any(OAuth2AuthorizeRequest.class))).willThrow(loginFailed);
+
+        Throwable throwable = catchThrowable(() -> underTest.getAuthToken());
+
+        assertThat(throwable).isInstanceOf(IdamException.class);
+        verify(authorizedClientManager, times(1)).authorize(any(OAuth2AuthorizeRequest.class));
     }
 
     @Test

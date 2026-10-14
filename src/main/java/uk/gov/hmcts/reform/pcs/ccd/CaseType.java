@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AccessProfile;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.service.bundling.CaseBundleScope;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -167,6 +168,8 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
+        buildBundleTab(builder);
+
         buildSummaryTab(builder);
 
         builder.tab("CaseHistory", "History")
@@ -221,6 +224,11 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
                 .displayOrder(category.getDisplayOrder())
                 .build();
         }
+        builder.categories(AccessProfile.GA_CLAIMANT_SOLICITOR)
+            .categoryID(CaseBundleScope.BUNDLES_CATEGORY_ID)
+            .categoryLabel(CaseBundleScope.BUNDLES_CATEGORY_LABEL)
+            .displayOrder(CaseFileCategory.values().length + 1)
+            .build();
     }
 
     private void buildSupportTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
@@ -236,6 +244,17 @@ public class CaseType implements CCDConfig<PCSCase, State, AccessProfile> {
             .forRoles(CASE_NOTE_TAB_ROLES)
             .field(PCSCase::getCaseReviewDates)
             .field(PCSCase::getCaseNotes);
+    }
+
+    private void buildBundleTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {
+        builder.tab("bundle", "Bundle")
+            .forRoles(INTERNAL_TAB_ROLES)
+            .showCondition("bundleTab_Status=\"*\"")
+            .field("bundleTab_Status")
+            .field("bundleTab_Bundle")
+            .field("bundleTab_LastUpdated")
+            .field("bundleTab_Pages")
+            .field("bundleTab_MissingDocuments");
     }
 
     private void buildCasePartiesTab(ConfigBuilder<PCSCase, State, AccessProfile> builder) {

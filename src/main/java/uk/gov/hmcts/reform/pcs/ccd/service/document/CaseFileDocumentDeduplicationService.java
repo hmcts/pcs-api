@@ -54,6 +54,9 @@ public class CaseFileDocumentDeduplicationService {
         );
         addDocumentReferencesFromGenApps(pcsCase.getGenApps(), documentReferences);
         addDocumentReferencesFromCaseDetailsTab(pcsCase.getCaseDetailsTab(), documentReferences);
+        if (pcsCase.getBundleTab() != null) {
+            addDocumentReferences(pcsCase.getBundleTab().getBundle(), documentReferences);
+        }
         return documentReferences;
     }
 

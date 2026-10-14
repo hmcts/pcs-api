@@ -23,6 +23,8 @@ import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.AcaSystemUserAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseBundleAttachmentAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseDetailsTabAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseNoteAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseRoleID;
@@ -67,6 +69,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.ManageHearingOption;
 import uk.gov.hmcts.reform.pcs.ccd.domain.legalrepdocumentupload.LegalRepDocumentUploadDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.bundle.BundleTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.details.CaseDetailsTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.parties.CasePartiesTab;
 import uk.gov.hmcts.reform.pcs.ccd.domain.tabs.summary.SummaryTab;
@@ -665,6 +668,11 @@ public class PCSCase {
     @CCD(access = DocumentAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    // Carries a generated case bundle into the attachCaseBundle event, so that the data store
+    // attaches it to the case in CDAM. Never stored or shown.
+    @CCD(label = "Case bundle", access = CaseBundleAttachmentAccess.class)
+    private Document caseBundleAttachment;
+
     @CCD(
         label = "Case file view",
         access = {DocumentAccess.class}
@@ -767,8 +775,12 @@ public class PCSCase {
     private SummaryTab summaryTab;
 
     @JsonUnwrapped(prefix = "detailsTab_")
-    @CCD(access = {PartyVisibleTabAccess.class})
+    @CCD(access = {CaseDetailsTabAccess.class})
     private CaseDetailsTab caseDetailsTab;
+
+    @JsonUnwrapped(prefix = "bundleTab_")
+    @CCD(searchable = false, access = {InternalTabAccess.class})
+    private BundleTab bundleTab;
 
     @CCD(
         label = NOTE_LABEL,

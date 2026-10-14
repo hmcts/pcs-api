@@ -1,8 +1,21 @@
 pluginManagement {
+    // document-bundling is not published yet: point this at a dtsse-ccd-config-generator checkout's
+    // sdk directory (-PccdSdkLocalPath=... or CCD_SDK_LOCAL_PATH) to build the SDK from source.
+    def ccdSdkLocalPath = settings.providers.gradleProperty('ccdSdkLocalPath')
+        .orElse(settings.providers.environmentVariable('CCD_SDK_LOCAL_PATH')).getOrNull()
+    if (ccdSdkLocalPath) {
+        includeBuild(ccdSdkLocalPath)
+    }
     repositories {
         gradlePluginPortal()
         maven {
             url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
         }
     }
+}
+
+def ccdSdkLocalPath = providers.gradleProperty('ccdSdkLocalPath')
+    .orElse(providers.environmentVariable('CCD_SDK_LOCAL_PATH')).getOrNull()
+if (ccdSdkLocalPath) {
+    includeBuild(ccdSdkLocalPath)
 }

@@ -1,0 +1,51 @@
+# A real document store for local cftlib, so documents uploaded in XUI (and generated case bundles)
+# can be opened and downloaded. Started alongside WireMock by bootWithCCD when
+# LOCAL_DOCUMENT_STORE=true; cftlib's in-JVM CDAM fronts it. Adapted from et-ccd-callbacks.
+services:
+  dm-store:
+    image: hmctspublic.azurecr.io/dm/store:latest
+    container_name: pcs-dm-store
+    # The evidence database is created by cftlib once it boots, after this container starts.
+    restart: unless-stopped
+    # ... so it cannot be healthy yet when bootWithCCD's composeUp checks it.
+    healthcheck:
+      disable: true
+    environment:
+      # Drops the image's App Insights agent, which needs a mounted Key Vault secret.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=65.0 -Dfile.encoding=UTF-8"
+      SERVER_PORT: 5005
+      IDAM_SUPERUSER_EMAIL:
+      IDAM_SECRET_KEY: AAAAAAAAAAAAAAAA
+      GOV_NOTIFY_API_KEY:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:6432/evidence
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      ENABLE_AZURE_STORAGE_CONTAINER: "true"
+      ENABLE_POSTGRES_BLOB_STORAGE: "false"
+      STORAGEACCOUNT_PRIMARY_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://pcs-azurite:10000/devstoreaccount1"
+      STORAGE_CONTAINER_DOCUMENT_CONTAINER_NAME: hmctstestcontainer
+      SPRING_PROFILES_ACTIVE: dev
+      IDAM_TESTING_SUPPORT_ENABLED: "true"
+      LOGGING_LEVEL_UK_GOV_HMCTS_IDAM: WARN
+      IDAM_USER_BASE_URI: http://host.docker.internal:5062
+      IDAM_S2S_BASE_URI: http://host.docker.internal:8489
+      S2S_NAMES_WHITELIST: ccd_case_document_am_api,ccd_data,ccd_gw,xui_webapp,dg_docassembly_api,pcs_api
+      ENABLE_DB_MIGRATE: "true"
+    ports:
+      - "5005:5005"
+    depends_on:
+      - azurite
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: pcs-azurite
+    # dm-store's Azure SDK is newer than Azurite's supported API version; without the skip every
+    # request (including dm-store creating its own container at startup) is rejected with a 400.
+    command: azurite-blob --blobHost 0.0.0.0 --location /data --skipApiVersionCheck --loose
+    ports:
+      - "10000:10000"
+    volumes:
+      - pcs-dm-store-blobs:/data
+
+volumes:
+  pcs-dm-store-blobs:
