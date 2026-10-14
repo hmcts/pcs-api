@@ -3,3 +3,5 @@ export * from './confirmIfTheseDocumentsRelateToAnApplication.page.data';
 export * from './uploadYourDocuments.page.data';
 export * from './checkYourAnswersUploadAdditionalDocs.page.data';
 export * from './documentsUploadConfirm.page.data';
+export * from './deleteDraftResponse.page.data'
+export * from './confirmDeleteDraftResponse.page.data'

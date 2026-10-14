@@ -17,4 +17,5 @@ export const home =
     caseFileFolders: ['Appeals','Applications','Orders and Notice of Hearings','Hearing documents','Property documents','Evidence','Statements of case','Correspondence','Uncategorised documents'],
     caseListTableHeader: ['Case number','Date issued','Claimant names','Defendant names','Postcode','State'],
     signOutButton: 'Sign out',
+    saveForLater: 'Save For Later',
   };
