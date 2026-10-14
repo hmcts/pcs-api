@@ -37,6 +37,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
+
 /**
  * What judges record at a case's hearings: the case's facts as they stood at each hearing, which the
  * next hearing starts from, and each hearing's judicial note. A hearing's record is written when a judge
@@ -78,6 +80,7 @@ class HearingRecords {
         return new OrderStart.Hearing(
             hearing.getId(),
             hearing.getHearingDate(),
+            pcsCase.getLegislativeCountry() == WALES,
             own.map(HearingFactsEntity::getVersion).orElse(null),
             startFrom.map(HearingRecords::caseFacts).orElseGet(() -> claimFacts(pcsCase)),
             startFrom.map(facts -> new Recorded(facts.getUser().getName(), facts.getUpdatedOn()))

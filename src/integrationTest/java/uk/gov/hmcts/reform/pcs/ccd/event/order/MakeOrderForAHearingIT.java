@@ -91,6 +91,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         Hearing hearing = firstHearingOf(claim);
 
         assertThat(hearing.date()).isEqualTo(FIRST_HEARING);
+        assertThat(hearing.inWales()).isFalse();
         CaseFacts facts = hearing.caseFacts();
         assertThat(facts.tenancyType()).isEqualTo("SECURE_TENANCY");
         assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2020, 2, 3));
@@ -124,8 +125,10 @@ class MakeOrderForAHearingIT extends OrderEventIT {
         claim.getOccupationLicenceDetailsWales().setOccupationLicenceTypeWales(STANDARD_CONTRACT);
         claim.getOccupationLicenceDetailsWales().setLicenceStartDate(LocalDate.of(2024, 4, 5));
 
-        CaseFacts facts = firstHearingOf(claim).caseFacts();
+        Hearing hearing = firstHearingOf(claim);
 
+        assertThat(hearing.inWales()).isTrue();
+        CaseFacts facts = hearing.caseFacts();
         assertThat(facts.tenancyType()).isEqualTo("STANDARD_CONTRACT");
         assertThat(facts.tenancyStartDate()).isEqualTo(LocalDate.of(2024, 4, 5));
     }

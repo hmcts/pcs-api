@@ -74,10 +74,11 @@ public record OrderStart(Order order, CaseContext caseContext, Hearing hearing) 
      * otherwise the latest earlier hearing's, otherwise the claim's; recorded says who recorded them,
      * and is null for the claim's. The version is null until this hearing's facts are recorded, and
      * goes back with the judge's change to them. The earlier notes are the case's judicial notes made
-     * before this hearing, newest first.
+     * before this hearing, newest first. A case in Wales has contracts where one in England has tenancies.
      */
     public record Hearing(int id,
                           LocalDateTime date,
+                          boolean inWales,
                           Long version,
                           CaseFacts caseFacts,
                           Recorded recorded,
