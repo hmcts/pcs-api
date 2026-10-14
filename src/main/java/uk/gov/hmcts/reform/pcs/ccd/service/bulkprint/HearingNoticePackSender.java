@@ -1,23 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class HearingNoticePackSender {
 
     private final PackRecipientResolver packRecipientResolver;
     private final BulkPrintService bulkPrintService;
     private final PackSendRecorder packSendRecorder;
-
-    public HearingNoticePackSender(PackRecipientResolver packRecipientResolver,
-                                   BulkPrintService bulkPrintService,
-                                   PackSendRecorder packSendRecorder) {
-        this.packRecipientResolver = packRecipientResolver;
-        this.bulkPrintService = bulkPrintService;
-        this.packSendRecorder = packSendRecorder;
-    }
 
     public void sendHearingNoticePacks(UUID caseId) {
         packRecipientResolver.resolveHearingNoticeRecipients(caseId).forEach(this::post);

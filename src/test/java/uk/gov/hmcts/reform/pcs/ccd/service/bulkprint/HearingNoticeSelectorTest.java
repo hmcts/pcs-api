@@ -127,6 +127,14 @@ class HearingNoticeSelectorTest {
         assertThat(select(notice(hearing, defendant))).hasSize(1);
     }
 
+    @Test
+    @DisplayName("Posts to a defendant if they haven't responded yet")
+    void shouldPostDefendantWithNullContactByPost() {
+        defendant.setContactPreferences(ContactPreferencesEntity.builder().contactByPost(null).build());
+
+        assertThat(select(notice(hearing, defendant))).hasSize(1);
+    }
+
     private List<HearingNoticePackCandidate> select(DocumentEntity... documents) {
         return underTest.findHearingNoticePackCandidates(caseWith(documents));
     }

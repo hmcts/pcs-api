@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.bulkprint;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
@@ -27,16 +28,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.form.PartyDisplayMapper.partie
  * (their legal representative is notified digitally), as are parties who opted out of post
  */
 @Service
+@AllArgsConstructor
 public class HearingNoticeSelector {
 
     private final ClaimActivityLogRepository claimActivityLogRepository;
     private final SentPackDocuments sentPackDocuments;
-
-    public HearingNoticeSelector(ClaimActivityLogRepository claimActivityLogRepository,
-                                 SentPackDocuments sentPackDocuments) {
-        this.claimActivityLogRepository = claimActivityLogRepository;
-        this.sentPackDocuments = sentPackDocuments;
-    }
 
     public List<HearingNoticePackCandidate> findHearingNoticePackCandidates(PcsCaseEntity pcsCase) {
         if (pcsCase.getClaims().isEmpty()) {

@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.HearingNoticeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeService;
 
 import java.time.Duration;
 
@@ -33,18 +33,18 @@ public class HearingNoticeGenerationComponent {
     public static final TaskDescriptor<HearingNoticeTaskData> HEARING_NOTICE_TASK_DESCRIPTOR =
         TaskDescriptor.of(HEARING_NOTICE_GENERATION_TASK_NAME, HearingNoticeTaskData.class);
 
-    private final HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator;
+    private final HearingNoticeService hearingNoticeService;
     private final ClaimActivityLogService claimActivityLogService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public HearingNoticeGenerationComponent(
-        HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator,
+        HearingNoticeService hearingNoticeService,
         ClaimActivityLogService claimActivityLogService,
         @Value("${hearing-notice.request.max-retries}") int maxRetries,
         @Value("${hearing-notice.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
-        this.hearingNoticeDocumentGenerator = hearingNoticeDocumentGenerator;
+        this.hearingNoticeService = hearingNoticeService;
         this.claimActivityLogService = claimActivityLogService;
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
@@ -53,10 +53,9 @@ public class HearingNoticeGenerationComponent {
     @Bean
     public CustomTask<HearingNoticeTaskData> hearingNoticeGenerationTask() {
         return Tasks.custom(HEARING_NOTICE_TASK_DESCRIPTOR)
-            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
-            ))
+            .onFailure(FailureHandler.<HearingNoticeTaskData>maxRetries(maxRetries)
+                           .withBackoff(backoffDelay)
+                           .thenRemove())
             .execute((taskInstance, executionContext) -> {
                 HearingNoticeTaskData data = taskInstance.getData();
                 Integer hearingId = data.getHearingId();
@@ -65,7 +64,7 @@ public class HearingNoticeGenerationComponent {
                 MDC.put(MDC_TASK_NAME, HEARING_NOTICE_GENERATION_TASK_NAME);
 
                 try {
-                    hearingNoticeDocumentGenerator.generateNotices(hearingId);
+                    hearingNoticeService.generateAndAttach(hearingId);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (Exception e) {
                     int attempt = executionContext.getExecution().consecutiveFailures + 1;

@@ -104,4 +104,9 @@ public class HearingEntity {
         party.getHearingNoticeParties().add(hearingNoticePartyEntity);
     }
 
+    public void addNoticeDocument(DocumentEntity document) {
+        noticeDocuments.add(document);
+        document.setHearing(this);
+    }
+
 }

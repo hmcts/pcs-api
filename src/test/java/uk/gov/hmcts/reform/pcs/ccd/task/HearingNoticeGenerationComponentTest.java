@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.GenerationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.HearingNoticeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.claimform.ClaimActivityLogService;
-import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeDocumentGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingNoticeService;
 
 import java.time.Duration;
 import java.util.List;
@@ -48,7 +48,7 @@ class HearingNoticeGenerationComponentTest {
     private HearingNoticeGenerationComponent component;
 
     @Mock
-    private HearingNoticeDocumentGenerator hearingNoticeDocumentGenerator;
+    private HearingNoticeService hearingNoticeService;
 
     @Mock
     private ClaimActivityLogService claimActivityLogService;
@@ -70,7 +70,7 @@ class HearingNoticeGenerationComponentTest {
 
     @BeforeEach
     void setUp() {
-        component = new HearingNoticeGenerationComponent(hearingNoticeDocumentGenerator, claimActivityLogService,
+        component = new HearingNoticeGenerationComponent(hearingNoticeService, claimActivityLogService,
             maxRetries, backoffDelay);
 
         componentLogger = (Logger) LoggerFactory.getLogger(HearingNoticeGenerationComponent.class);
@@ -101,7 +101,7 @@ class HearingNoticeGenerationComponentTest {
         CustomTask<HearingNoticeTaskData> task = component.hearingNoticeGenerationTask();
         CompletionHandler<HearingNoticeTaskData> result = task.execute(taskInstance, executionContext);
 
-        verify(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+        verify(hearingNoticeService).generateAndAttach(HEARING_ID);
         assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
     }
 
@@ -111,7 +111,7 @@ class HearingNoticeGenerationComponentTest {
         when(taskInstance.getData()).thenReturn(taskData());
         execution.consecutiveFailures = maxRetries - 1;
         when(executionContext.getExecution()).thenReturn(execution);
-        doThrow(new RuntimeException("transient")).when(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+        doThrow(new RuntimeException("transient")).when(hearingNoticeService).generateAndAttach(HEARING_ID);
 
         CustomTask<HearingNoticeTaskData> task = component.hearingNoticeGenerationTask();
 
@@ -130,7 +130,7 @@ class HearingNoticeGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500"))
-            .when(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+            .when(hearingNoticeService).generateAndAttach(HEARING_ID);
 
         CustomTask<HearingNoticeTaskData> task = component.hearingNoticeGenerationTask();
 
@@ -160,7 +160,7 @@ class HearingNoticeGenerationComponentTest {
     void firstAttemptRecordsNonTerminalFailure() {
         when(taskInstance.getData()).thenReturn(taskData());
         when(executionContext.getExecution()).thenReturn(execution); // consecutiveFailures = 0 -> attempt 1
-        doThrow(new RuntimeException("transient")).when(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+        doThrow(new RuntimeException("transient")).when(hearingNoticeService).generateAndAttach(HEARING_ID);
 
         CustomTask<HearingNoticeTaskData> task = component.hearingNoticeGenerationTask();
 
@@ -178,7 +178,7 @@ class HearingNoticeGenerationComponentTest {
         execution.consecutiveFailures = maxRetries;
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("docassembly 500"))
-            .when(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+            .when(hearingNoticeService).generateAndAttach(HEARING_ID);
 
         CustomTask<HearingNoticeTaskData> task = component.hearingNoticeGenerationTask();
 
@@ -194,7 +194,7 @@ class HearingNoticeGenerationComponentTest {
         when(taskInstance.getData()).thenReturn(taskData());
         when(executionContext.getExecution()).thenReturn(execution);
         doThrow(new RuntimeException("generation failed"))
-            .when(hearingNoticeDocumentGenerator).generateNotices(HEARING_ID);
+            .when(hearingNoticeService).generateAndAttach(HEARING_ID);
         doThrow(new RuntimeException("log write failed"))
             .when(claimActivityLogService).logGenerationFailure(anyLong(), any(), any());
 
