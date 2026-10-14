@@ -186,10 +186,10 @@ class PartiesViewTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(userInfo.getRoles()).thenReturn(List.of("caseworker-pcs"));
 
-        PartyEntity claimant = buildParty(UUID.randomUUID(), "Alice", "A", null, null, null);
-        PartyEntity defendant1 = buildParty(UUID.randomUUID(), "Bob", "B", null, null, null);
-        PartyEntity defendant2 = buildParty(UUID.randomUUID(), "Carol", "C", null, null, null);
-        PartyEntity underlessee = buildParty(UUID.randomUUID(), "Dave", "D", null, null, null);
+        PartyEntity claimant = buildParty(UUID.randomUUID().toString(), "Alice", "A", null, null, null);
+        PartyEntity defendant1 = buildParty(UUID.randomUUID().toString(), "Bob", "B", null, null, null);
+        PartyEntity defendant2 = buildParty(UUID.randomUUID().toString(), "Carol", "C", null, null, null);
+        PartyEntity underlessee = buildParty(UUID.randomUUID().toString(), "Dave", "D", null, null, null);
 
         when(claimEntity.getClaimParties()).thenReturn(List.of(
             buildClaimPartyEntity(claimant, PartyRole.CLAIMANT, 1, null),
