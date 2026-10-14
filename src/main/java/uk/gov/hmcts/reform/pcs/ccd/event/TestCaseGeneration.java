@@ -43,7 +43,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     static final String EVENT_NAME = "Test Support Case Creation";
     static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Case";
     static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement";
-    static final String POSSESSION_ORDER_CASE_GENERATOR = "Create Case With Possession Order";
 
     private final ResumePossessionClaim resumePossessionClaim;
     private final EnforceTheOrder enforceTheOrder;

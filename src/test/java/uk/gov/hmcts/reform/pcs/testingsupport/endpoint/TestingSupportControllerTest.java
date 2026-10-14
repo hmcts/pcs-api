@@ -133,7 +133,8 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService,documentImportService,documentRepository,caseDocumentClientApi, documentIdExtractor
+                                                 featureToggleService,documentImportService,documentRepository,
+                                                 caseDocumentClientApi, documentIdExtractor
         );
     }
 

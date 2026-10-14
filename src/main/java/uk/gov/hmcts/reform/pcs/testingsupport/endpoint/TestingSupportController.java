@@ -70,7 +70,15 @@ import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -402,7 +410,7 @@ public class TestingSupportController {
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
     }
 
-    @PostMapping("/cases/{caseReference}/possession-order-document")
+    @PostMapping("/cases/{caseReference}/possession-order-doc")
     @Transactional
     public ResponseEntity<UploadResponse> addPossessionOrderDocument(
         @PathVariable long caseReference,
@@ -410,9 +418,13 @@ public class TestingSupportController {
         @RequestHeader(AUTHORIZATION) String authorization,
         @RequestHeader("ServiceAuthorization") String serviceAuthorization
     ) {
-        DocumentUploadRequest documentUploadRequest = new DocumentUploadRequest("PUBLIC", CaseType.getCaseType(), CaseType.getJurisdictionId(),
-                                                                                Collections.singletonList(file) );
-        UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(authorization, serviceAuthorization, documentUploadRequest);
+        DocumentUploadRequest documentUploadRequest = new DocumentUploadRequest("PUBLIC",
+                                                                                CaseType.getCaseType(),
+                                                                                CaseType.getJurisdictionId(),
+                                                                                Collections.singletonList(file));
+        UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(authorization,
+                                                                                   serviceAuthorization,
+                                                                                   documentUploadRequest);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
