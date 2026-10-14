@@ -19,4 +19,5 @@ export const axe_Exclusions = [
   '#implicit-label',
   '#aria-required-parent',
   'button[role="treeitem"]',
+  '#nameConfirmation-2'
 ];

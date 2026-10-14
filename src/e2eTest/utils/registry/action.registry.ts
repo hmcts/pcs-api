@@ -144,6 +144,10 @@ export class ActionRegistry {
     ['validateCaseListTable', new CreateCaseAction()],
     ['validateTabAccess', new CreateCaseAction()],
     ['selectRespondToClaimContactPreferences', new RespondToAClaimAction()],
+    ['navigateToSummaryPage', new RespondToAClaimAction()],
+    ['deleteDraftResponseOption', new RespondToAClaimAction()],
+    ['confirmDeleteDraftResponse', new RespondToAClaimAction()],
+    ['getAddressInfo', new RespondToAClaimAction()],
     ['selectPaymentTypePBA', new FeeAndPayAction()],
     ['selectPaymentByCard', new FeeAndPayAction()],
     ['enterPaymentDetails', new FeeAndPayAction()],
@@ -207,7 +211,7 @@ export class ActionRegistry {
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['confirmStatusForFlag', new CaseFlagAction()],
     ['selectRadioButtonInYourSupport', new YourSupportAction()],
-    ['removeFile', new RemoveFileAction()],    
+    ['removeFile', new RemoveFileAction()],
   ]);
 
   static getAction(actionName: string): IAction {
