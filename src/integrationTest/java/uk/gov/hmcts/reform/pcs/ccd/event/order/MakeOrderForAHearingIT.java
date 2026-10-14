@@ -168,7 +168,7 @@ class MakeOrderForAHearingIT extends OrderEventIT {
     }
 
     @Test
-    @DisplayName("refuses facts started from an older record than another judge has since made")
+    @DisplayName("refuses changed facts started from an older record than another judge has since made")
     void refusesAStaleRecord() {
         Hearing seenByBoth = forHearing(firstJudge, secondHearing).start().hearing();
         submitForReview(firstJudge, secondHearing, seenByBoth.version(), facts("900.00"), "first judge's note");
@@ -177,9 +177,12 @@ class MakeOrderForAHearingIT extends OrderEventIT {
             submission(SUBMIT_FOR_REVIEW, secondHearing, seenByBoth.version(), facts("1.00"), "overwritten"));
 
         assertThat(refused.errors()).containsExactly(CHANGED_BY_ANOTHER_JUDGE);
+        // A judge who left the facts and note alone saves their order regardless.
+        submitForReview(secondJudge, secondHearing, seenByBoth.version(), null, null);
         Hearing recorded = forHearing(secondJudge, secondHearing).start().hearing();
         assertThat(recorded.caseFacts().currentRent()).isEqualByComparingTo("900.00");
         assertThat(recorded.note()).isEqualTo("first judge's note");
+        assertThat(recorded.recorded().by()).isEqualTo("First Judge");
     }
 
     @Test

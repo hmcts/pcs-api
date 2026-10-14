@@ -35,6 +35,7 @@ public record MakeOrderRequest(Action action, OrderChange order, String taskId, 
      * The hearing the order is for, with the case's facts and the hearing's note as the judge left them,
      * and the version of the hearing's facts the judge started from (null if none were recorded).
      */
+    /** The hearing the order is for, with its facts and note only if the judge changed them. */
     public record HearingChange(int id, Long version, OrderStart.CaseFacts caseFacts, String note) {
     }
 }

@@ -134,9 +134,12 @@ public class MakeOrder implements CCDConfig<PCSCase, State, UserRole> {
             throw ExternalRejection.because("The order's hearing record is missing");
         }
         if (request.hearing() != null) {
-            // The hearing's facts and note are recorded whenever the judge saves, so the order holds no copy
-            // a later save could bring back over another judge's.
-            hearingRecords.record(order.getPcsCase(), forHearing(order, request.hearing()), request.hearing());
+            HearingEntity hearing = forHearing(order, request.hearing());
+            // The order holds no copy of the hearing's facts and note, which are recorded only when the judge
+            // changed them, so another judge's are not refused or overwritten by a save that left them alone.
+            if (request.hearing().caseFacts() != null) {
+                hearingRecords.record(order.getPcsCase(), hearing, request.hearing());
+            }
         }
         final boolean resubmitted = order.getState() == RETURNED_TO_JUDGE;
         OrderState to = request.action() == SUBMIT_FOR_REVIEW ? SUBMITTED_FOR_REVIEW : order.getState();

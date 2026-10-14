@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.order;
 
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.external.ExternalRejection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
@@ -38,9 +39,9 @@ import java.util.stream.Collectors;
 
 /**
  * What judges record at a case's hearings: the case's facts as they stood at each hearing, which the
- * next hearing starts from, and each hearing's judicial note. A hearing's record is written whenever a
- * judge saves its order, and a judge who started from an older record than the one now stored is
- * refused, rather than overwriting it.
+ * next hearing starts from, and each hearing's judicial note. A hearing's record is written when a judge
+ * saves its order with them changed, and a judge who started from an older record than the one now
+ * stored is refused, rather than overwriting it.
  */
 @Component
 @AllArgsConstructor
@@ -105,8 +106,8 @@ class HearingRecords {
         facts.setJudicialNote(note(pcsCase, facts.getJudicialNote(), judge, now, change.note()));
         try {
             hearingFactsRepository.saveAndFlush(facts);
-        } catch (DataIntegrityViolationException e) {
-            // Another judge recorded the hearing's first facts at the same moment.
+        } catch (DataIntegrityViolationException | OptimisticLockingFailureException e) {
+            // Another judge recorded the hearing's facts at the same moment.
             throw ExternalRejection.because(CHANGED_BY_ANOTHER_JUDGE);
         }
     }
