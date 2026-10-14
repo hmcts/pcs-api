@@ -2,12 +2,15 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 
 @Slf4j
@@ -34,6 +37,18 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
         </ul>
         """;
 
+    private static final String INFO_MARKDOWN_SUSPEND = """
+        <p class="govuk-body govuk-!-margin-bottom-1">It costs ${xui_genapp_SuspendFee} to apply.</p>
+
+        <p class="govuk-body govuk-!-margin-bottom-1">The defendant may be able to get help paying the fee
+        if they (one or more of the following):</p>
+        <ul class="govuk-list govuk-list--bullet">
+            <li class="govuk-!-font-size-19">are on certain benefits</li>
+            <li class="govuk-!-font-size-19">have little or no savings</li>
+            <li class="govuk-!-font-size-19">have low income</li>
+        </ul>
+        """;
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -41,8 +56,14 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
             .pageLabel("Confirm if the defendant needs help paying fees")
             .showCondition(fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES))
             .label("helpWithFeesNeeded-lineSeparator", "---")
-            .label("helpWithFeesNeeded-info", INFO_MARKDOWN)
+            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND, "xui_genapp_ApplicationType\"SUSPEND\"")
+            .label("helpWithFeesNeeded-info", INFO_MARKDOWN, ShowConditions.and(
+                fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN),
+                fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE),
+                fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE)
+                ))
             .complex(PCSCase::getXuiGenAppRequest)
+            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
             .mandatory(XuiGenAppRequest::getNeedHwf)
             .done();
     }
