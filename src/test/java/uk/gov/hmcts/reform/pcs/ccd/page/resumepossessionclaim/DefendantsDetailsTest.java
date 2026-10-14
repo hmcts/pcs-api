@@ -125,6 +125,31 @@ class DefendantsDetailsTest extends BasePageTest {
                        .getDefendantCircumstances().getDefendantTermPossessive()).isEqualTo(expectedTermPossessive);
     }
 
+    @Test
+    void shouldShowSavedCircumstancesInBothDefendantCountFields() {
+        // Given
+        DefendantCircumstances defendantCircumstances = DefendantCircumstances.builder()
+            .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
+            .defendantCircumstancesInfo("Saved details")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendant1(mock(DefendantDetails.class))
+            .defendantCircumstances(defendantCircumstances)
+            .addAnotherDefendant(VerticalYesNo.NO)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        DefendantCircumstances result = response.getData().getDefendantCircumstances();
+        assertThat(result.getHasSingleDefendantCircumstancesInfo()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getSingleDefendantCircumstancesInfo()).isEqualTo("Saved details");
+        assertThat(result.getHasMultipleDefendantsCircumstancesInfo()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getMultipleDefendantsCircumstancesInfo()).isEqualTo("Saved details");
+    }
+
     private static Stream<Arguments> defendantTermScenarios() {
         return Stream.of(
             argumentSet("No additional defendants", VerticalYesNo.NO, "defendant’s"),

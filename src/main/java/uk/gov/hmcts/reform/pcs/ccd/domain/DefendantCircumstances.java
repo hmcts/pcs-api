@@ -55,17 +55,37 @@ public class DefendantCircumstances {
 
     @CCD(
         label = "Is there any information you’re required to provide, or you want to provide, "
-            + "about the ${defendantTermPossessive} circumstances?",
+            + "about the defendant’s circumstances?",
         hint = "This can be any known details or any attempts made to obtain details"
     )
-    private VerticalYesNo hasDefendantCircumstancesInfo;
+    private VerticalYesNo hasSingleDefendantCircumstancesInfo;
 
     @CCD(
-        label = "Give details about the ${defendantTermPossessive} circumstances",
+        label = "Give details about the defendant’s circumstances",
         hint = "You can enter up to 950 characters",
         typeOverride = TextArea
     )
+    private String singleDefendantCircumstancesInfo;
+
+    @CCD(
+        label = "Is there any information you’re required to provide, or you want to provide, "
+            + "about the defendants’ circumstances?",
+        hint = "This can be any known details or any attempts made to obtain details"
+    )
+    private VerticalYesNo hasMultipleDefendantsCircumstancesInfo;
+
+    @CCD(
+        label = "Give details about the defendants’ circumstances",
+        hint = "You can enter up to 950 characters",
+        typeOverride = TextArea
+    )
+    private String multipleDefendantsCircumstancesInfo;
+
+    private VerticalYesNo hasDefendantCircumstancesInfo;
+
+    @CCD(typeOverride = TextArea)
     private String defendantCircumstancesInfo;
 
     private String defendantTermPossessive;
+
 }

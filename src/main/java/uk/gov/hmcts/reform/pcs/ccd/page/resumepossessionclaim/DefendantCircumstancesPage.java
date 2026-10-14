@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -35,9 +36,14 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .readonly(DefendantCircumstances::getDefendantTermPossessive, NEVER_SHOW, true)
             .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel, SINGLE_DEFENDANT)
             .readonlyNoSummary(DefendantCircumstances::getDefendantsCircumstancesLabel, MULTIPLE_DEFENDANTS)
-            .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
-            .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
-                       "hasDefendantCircumstancesInfo=\"YES\"")
+            .mandatory(DefendantCircumstances::getHasSingleDefendantCircumstancesInfo, SINGLE_DEFENDANT)
+            .mandatory(DefendantCircumstances::getSingleDefendantCircumstancesInfo,
+                       SINGLE_DEFENDANT + " AND hasSingleDefendantCircumstancesInfo=\"YES\"")
+            .mandatory(DefendantCircumstances::getHasMultipleDefendantsCircumstancesInfo, MULTIPLE_DEFENDANTS)
+            .mandatory(DefendantCircumstances::getMultipleDefendantsCircumstancesInfo,
+                       MULTIPLE_DEFENDANTS + " AND hasMultipleDefendantsCircumstancesInfo=\"YES\"")
+            .readonly(DefendantCircumstances::getHasDefendantCircumstancesInfo, NEVER_SHOW, true)
+            .readonly(DefendantCircumstances::getDefendantCircumstancesInfo, NEVER_SHOW, true)
             .done()
             .label("defendantCircumstances-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -50,21 +56,30 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
 
         DefendantCircumstances defendantCircumstances = caseData.getDefendantCircumstances();
         if (defendantCircumstances != null) {
-            // Use fallback if defendantTermPossessive is not set
-            String defendantTerm = defendantCircumstances.getDefendantTermPossessive();
-            if (defendantTerm == null || defendantTerm.trim().isEmpty()) {
-                defendantTerm = "defendants’";
-            }
+            boolean multipleDefendants = caseData.getAddAnotherDefendant() == VerticalYesNo.YES;
+            saveAnswersFromShownFields(defendantCircumstances, multipleDefendants);
 
-            String dynamicLabel = "Give details about the " + defendantTerm + " circumstances";
+            String detailsLabel = multipleDefendants
+                ? "Give details about the defendants’ circumstances"
+                : "Give details about the defendant’s circumstances";
 
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 defendantCircumstances.getDefendantCircumstancesInfo(),
-                dynamicLabel,
+                detailsLabel,
                 TextAreaValidationService.LONG_TEXT_LIMIT
             ));
         }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private static void saveAnswersFromShownFields(DefendantCircumstances circumstances, boolean multipleDefendants) {
+        if (multipleDefendants) {
+            circumstances.setHasDefendantCircumstancesInfo(circumstances.getHasMultipleDefendantsCircumstancesInfo());
+            circumstances.setDefendantCircumstancesInfo(circumstances.getMultipleDefendantsCircumstancesInfo());
+        } else {
+            circumstances.setHasDefendantCircumstancesInfo(circumstances.getHasSingleDefendantCircumstancesInfo());
+            circumstances.setDefendantCircumstancesInfo(circumstances.getSingleDefendantCircumstancesInfo());
+        }
     }
 }
