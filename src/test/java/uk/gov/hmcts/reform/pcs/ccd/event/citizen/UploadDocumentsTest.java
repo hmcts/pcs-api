@@ -382,9 +382,9 @@ class UploadDocumentsTest extends BaseEventTest {
         }
 
         @ParameterizedTest
-        @MethodSource("GenAppTypeScenarios")
+        @MethodSource("genAppTypeScenarios")
         void shouldIncludeCorrectCategoryWhenGenAppTypeExists(GenAppType genAppType,
-                                                                 DocumentUploadCategory documentUploadCategory ) {
+                                                                 DocumentUploadCategory documentUploadCategory) {
             LocalDateTime submittedDate = LocalDateTime.now();
             GenAppEntity genApp = stubGenApp(genAppType, submittedDate);
 
@@ -401,7 +401,7 @@ class UploadDocumentsTest extends BaseEventTest {
             assertThat(details.getShowRelatedApplicationsPage()).isEqualTo(YesOrNo.YES);
         }
 
-        private static Stream<Arguments> GenAppTypeScenarios() {
+        private static Stream<Arguments> genAppTypeScenarios() {
             return Stream.of(
                 Arguments.of(GenAppType.ADJOURN, DocumentUploadCategory.ADJOURN_HEARING_APPLICATION),
                 Arguments.of(GenAppType.SUSPEND, DocumentUploadCategory.SUSPEND_EVICTION_APPLICATION),
