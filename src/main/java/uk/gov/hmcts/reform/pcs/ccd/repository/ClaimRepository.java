@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,4 +28,15 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
         LEFT JOIN FETCH c.noticeOfPossession
         """)
     List<ClaimEntity> findAllForSdpSnapshotExport();
+
+    @Query("""
+        SELECT DISTINCT c FROM ClaimEntity c
+        JOIN FETCH c.pcsCase pc
+        LEFT JOIN FETCH pc.tenancyLicence
+        LEFT JOIN FETCH c.noticeOfPossession
+        WHERE c.claimSubmittedDate >= :from
+        AND c.claimSubmittedDate < :to
+        """)
+    List<ClaimEntity> findForSdpSnapshotExportBetween(@Param("from") LocalDateTime from,
+                                                      @Param("to") LocalDateTime to);
 }

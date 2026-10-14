@@ -73,15 +73,32 @@ public class ExportService {
      */
     @Transactional(readOnly = true)
     public ExportResult exportAllClaims() {
-        List<ClaimEntity> claims = claimRepository.findAllForSdpSnapshotExport();
-        String extractDate = LocalDate.now(utcClock).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        return writeExport(claimRepository.findAllForSdpSnapshotExport(), LocalDate.now(utcClock));
+    }
+
+    /**
+     * Exports claims submitted during the previous UTC day.
+     */
+    @Transactional(readOnly = true)
+    public ExportResult exportDeltaClaims() {
+        LocalDate toDate = LocalDate.now(utcClock);
+        LocalDate fromDate = toDate.minusDays(1);
+        List<ClaimEntity> claims = claimRepository.findForSdpSnapshotExportBetween(
+            fromDate.atStartOfDay(),
+            toDate.atStartOfDay()
+        );
+        return writeExport(claims, fromDate);
+    }
+
+    private ExportResult writeExport(List<ClaimEntity> claims, LocalDate extractDate) {
+        String extractDateValue = extractDate.format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         List<ClaimSnapshotRecord> records = new ArrayList<>();
         for (ClaimEntity claim : claims) {
-            records.add(mapClaim(claim, extractDate));
+            records.add(mapClaim(claim, extractDateValue));
         }
 
-        String filename = "claim_snapshot_export_" + extractDate + ".json";
+        String filename = "claim_snapshot_export_" + extractDateValue + ".json";
         Path outputPath = outputDirectory.resolve(filename);
         claimSnapshotFileWriter.write(records, outputPath);
         blobUploader.upload(outputPath);

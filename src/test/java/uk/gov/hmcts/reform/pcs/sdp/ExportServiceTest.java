@@ -142,4 +142,18 @@ class ExportServiceTest {
         assertThat(json).contains("\"environment\" : \"local\"");
         verify(blobUploader).upload(result.outputPath());
     }
+
+    @Test
+    void shouldExportClaimsSubmittedOnThePreviousDay() {
+        LocalDateTime from = LocalDateTime.of(2026, 3, 8, 0, 0);
+        LocalDateTime to = LocalDateTime.of(2026, 3, 9, 0, 0);
+        when(claimRepository.findForSdpSnapshotExportBetween(from, to)).thenReturn(List.of());
+
+        ExportResult result = exportService.exportDeltaClaims();
+
+        assertThat(result.recordCount()).isZero();
+        assertThat(result.outputPath().getFileName().toString())
+            .isEqualTo("claim_snapshot_export_2026-03-08.json");
+        verify(blobUploader).upload(result.outputPath());
+    }
 }

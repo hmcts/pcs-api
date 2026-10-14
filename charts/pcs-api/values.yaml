@@ -66,6 +66,7 @@ java:
       {"PCS": {"webUrl": "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net", "nocBaseUrl": "http://pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"}}
     PCS_FRONTEND_URL: "https://pcs.{{ .Values.global.environment }}.platform.hmcts.net"
     MANAGE_CASE_BASE_URL: "https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net"
+    SDP_EXPORT_ENVIRONMENT: "{{ .Values.global.environment }}"
 servicebus:
   enabled: false
 ccd:
