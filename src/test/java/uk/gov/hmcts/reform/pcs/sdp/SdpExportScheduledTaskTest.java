@@ -29,25 +29,36 @@ class SdpExportScheduledTaskTest {
     }
 
     @Test
-    void shouldRunExportWhenEnabled() {
-        runTask(true);
+    void shouldRunFullExportWhenEnabledAndFullLoad() {
+        runTask(true, true);
 
         verify(exportService).exportAllClaims();
     }
 
     @Test
     void shouldNotRunExportWhenDisabled() {
-        runTask(false);
+        runTask(false, true);
 
         verifyNoInteractions(exportService);
     }
 
-    private void runTask(boolean enabled) {
-        RecurringTask<Void> task = component("DAILY|02:00", enabled).sdpExportTask();
+    @Test
+    void shouldRunDeltaExportWhenEnabledWithoutFullLoad() {
+        runTask(true, false);
+
+        verify(exportService).exportDeltaClaims();
+    }
+
+    private void runTask(boolean enabled, boolean fullLoad) {
+        RecurringTask<Void> task = component("DAILY|02:00", enabled, fullLoad).sdpExportTask();
         task.execute(null, null);
     }
 
     private SdpExportScheduledTask component(String schedule, boolean enabled) {
-        return new SdpExportScheduledTask(exportService, schedule, enabled);
+        return component(schedule, enabled, false);
+    }
+
+    private SdpExportScheduledTask component(String schedule, boolean enabled, boolean fullLoad) {
+        return new SdpExportScheduledTask(exportService, schedule, enabled, fullLoad);
     }
 }

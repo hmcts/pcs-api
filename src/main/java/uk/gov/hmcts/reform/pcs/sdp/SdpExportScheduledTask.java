@@ -15,13 +15,16 @@ public class SdpExportScheduledTask {
     private final ExportService exportService;
     private final String schedule;
     private final boolean enabled;
+    private final boolean fullLoad;
 
     public SdpExportScheduledTask(ExportService exportService,
                                   @Value("${sdp.export.schedule}") String schedule,
-                                  @Value("${sdp.export.enabled}") boolean enabled) {
+                                  @Value("${sdp.export.enabled}") boolean enabled,
+                                  @Value("${sdp.export.full-load}") boolean fullLoad) {
         this.exportService = exportService;
         this.schedule = schedule;
         this.enabled = enabled;
+        this.fullLoad = fullLoad;
     }
 
     @Bean
@@ -31,8 +34,13 @@ public class SdpExportScheduledTask {
     }
 
     private void runExport() {
-        if (enabled) {
+        if (!enabled) {
+            return;
+        }
+        if (fullLoad) {
             exportService.exportAllClaims();
+        } else {
+            exportService.exportDeltaClaims();
         }
     }
 }

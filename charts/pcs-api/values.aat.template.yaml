@@ -5,4 +5,14 @@ java:
   environment:
     ENABLE_TESTING_SUPPORT: true
     CASE_TYPE_SUFFIX: "staging"
+<<<<<<< HEAD
     LAUNCHDARKLY_ENV: "staging"
+=======
+    BULK_PRINT_SCHEDULE: "FIXED_DELAY|3600s"
+    BULK_PRINT_LOOKBACK_HOURS: "1"
+    SDP_EXPORT_ENABLED: true
+    SDP_EXPORT_FULL_LOAD: true
+    SDP_EXPORT_UPLOAD_ENABLED: true
+    SDP_EXPORT_STORAGE_ENDPOINT: https://pcssdpaat.blob.core.windows.net
+    SDP_EXPORT_CONTAINER_NAME: sdp-export
+>>>>>>> d39cc5d6ca (add delta export and helm config)
