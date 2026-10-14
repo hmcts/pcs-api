@@ -88,31 +88,31 @@ const runGlobalSearchScenarios = () => {
     await performValidation('mainHeader', globalSearch.mainHeader);
   });
 
-  test('Valid case reference using Mortgage and Landlord Possession Claim Service @rerun', async () => {
+  test('Valid case reference using Mortgage and Landlord Possession Claim Service', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption2);
     await performAction('validateResults');
   });
 
-  test('Valid case reference using All Services @rerun', async () => {
+  test('Valid case reference using All Services', async () => {
     await performAction('accessingTheSearch');
     await performAction('searchByCaseReference', process.env.CASE_NUMBER, globalSearch.servicesDropdownOption1);
     await performAction('validateResults');
   });
 
-  test('Search by postcode @rerun', async () => {
+  test('Search by postcode', async () => {
     await runFieldSearch(globalSearch.postCodeLabel, globalSearchTestData.postcode);
   });
 
-  test('Search by email address @rerun', async () => {
+  test('Search by email address', async () => {
     await runFieldSearch(globalSearch.emailAddressLabel, globalSearchTestData.email);
   });
 
-  test('first line of address @rerun', async () => {
+  test('first line of address', async () => {
     await runFieldSearch(globalSearch.firstLineOfAddressLabel, globalSearchTestData.addressLine1);
   });
 
-  test('Search by party name @rerun', async () => {
+  test('Search by party name', async () => {
     await runFieldSearch(globalSearch.nameLabel, globalSearchTestData.name);
   });
 
