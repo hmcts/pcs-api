@@ -16,6 +16,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 @AllArgsConstructor
 public class HelpWithFeesNeeded implements CcdPageConfiguration {
 
+    private static final String APPLICATION_TYPE = "xui_genapp_ApplicationType";
     private static final String INFO_MARKDOWN = """
         <p class="govuk-body govuk-!-margin-bottom-1">It usually costs ${xui_genapp_StandardFee} to apply. The fee will
         increase to ${xui_genapp_MaxFee} if:</p>
@@ -56,11 +57,11 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
             .showCondition(fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES))
             .label("helpWithFeesNeeded-lineSeparator", "---")
             .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND,
-                   fieldEquals("xui_genapp_ApplicationType", GenAppType.SUSPEND))
+                   fieldEquals(APPLICATION_TYPE, GenAppType.SUSPEND))
             .label("helpWithFeesNeeded-info", INFO_MARKDOWN, or(
-                fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN),
-                fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE),
-                fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE)
+                fieldEquals(APPLICATION_TYPE, GenAppType.ADJOURN),
+                fieldEquals(APPLICATION_TYPE, GenAppType.SET_ASIDE),
+                fieldEquals(APPLICATION_TYPE, GenAppType.SOMETHING_ELSE)
                 ))
             .complex(PCSCase::getXuiGenAppRequest)
             .mandatory(XuiGenAppRequest::getNeedHwf)
