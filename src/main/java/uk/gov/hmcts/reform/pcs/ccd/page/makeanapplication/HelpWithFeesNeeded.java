@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.GenAppType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 
@@ -64,7 +63,6 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE)
                 ))
             .complex(PCSCase::getXuiGenAppRequest)
-            .readonly(XuiGenAppRequest::getApplicationType, NEVER_SHOW, true)
             .mandatory(XuiGenAppRequest::getNeedHwf)
             .done();
     }
