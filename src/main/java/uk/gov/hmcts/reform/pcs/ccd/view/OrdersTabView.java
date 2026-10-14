@@ -30,7 +30,7 @@ public class OrdersTabView {
             return;
         }
 
-        findPosessionOrderDocument(pcsCaseEntity)
+        findPossessionOrderDocument(pcsCaseEntity)
             .ifPresent(documentEntity -> setOrdersTabFields(pcsCase, documentEntity));
     }
 
@@ -46,7 +46,7 @@ public class OrdersTabView {
         pcsCase.setOrdersTab(ordersTab);
     }
 
-    private static Optional<DocumentEntity> findPosessionOrderDocument(PcsCaseEntity pcsCaseEntity) {
+    private static Optional<DocumentEntity> findPossessionOrderDocument(PcsCaseEntity pcsCaseEntity) {
         return pcsCaseEntity.getDocuments().stream()
             .filter(OrdersTabView::isPossessionOrder)
             .findFirst();
