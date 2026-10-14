@@ -93,7 +93,6 @@ class CounterClaimFormPersistenceServiceTest {
     void defendantNumberFallsBackToOneWhenRankMissing() {
         PartyEntity defendant = PartyEntity.builder().id(UUID.randomUUID()).build();
         CounterClaimEntity counterClaim = counterClaimFor(defendant, null);
-        counterClaim.setRank(1);
         when(counterClaimRepository.findById(COUNTER_CLAIM_ID)).thenReturn(Optional.of(counterClaim));
         when(documentRepository.existsByCounterClaim_IdAndType(COUNTER_CLAIM_ID, DocumentType.COUNTERCLAIM))
             .thenReturn(false);
@@ -102,7 +101,7 @@ class CounterClaimFormPersistenceServiceTest {
         Optional<CounterClaimFormRenderContext> context = underTest.buildContextIfNotAttached(COUNTER_CLAIM_ID);
 
         assertThat(context).isPresent();
-        assertThat(context.get().counterClaimRank()).isEqualTo(1);
+        assertThat(context.get().counterClaimRank()).isNull();
         assertThat(context.get().defendantNumber()).isOne();
     }
 

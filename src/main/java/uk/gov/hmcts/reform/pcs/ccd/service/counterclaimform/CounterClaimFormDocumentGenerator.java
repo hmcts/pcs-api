@@ -19,7 +19,7 @@ public class CounterClaimFormDocumentGenerator {
     private final DocAssemblyService docAssemblyService;
     private final FeatureToggleService featureToggleService;
 
-    public String generate(CounterClaimFormPayload payload, int counterClaimRank, int defendantNumber) {
+    public String generate(CounterClaimFormPayload payload, Integer counterClaimRank, int defendantNumber) {
         String filename = counterClaimFormFilename(
             featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_4),
             counterClaimRank,
@@ -44,9 +44,8 @@ public class CounterClaimFormDocumentGenerator {
     public static String counterClaimFormFilename(boolean release14Enabled,
                                                   Integer counterClaimRank,
                                                   int defendantNumber) {
-        if (release14Enabled) {
-            int rank = counterClaimRank != null ? counterClaimRank : 1;
-            return String.format(OUTPUT_FILENAME_TEMPLATE, rank, defendantNumber);
+        if (release14Enabled && counterClaimRank != null) {
+            return String.format(OUTPUT_FILENAME_TEMPLATE, counterClaimRank, defendantNumber);
         }
         return expectedCounterClaimFormFilename(defendantNumber);
     }

@@ -3,5 +3,5 @@ package uk.gov.hmcts.reform.pcs.ccd.service.counterclaimform;
 import uk.gov.hmcts.reform.pcs.document.model.counterclaimform.CounterClaimFormPayload;
 
 public record CounterClaimFormRenderContext(
-        CounterClaimFormPayload payload, int counterClaimRank, int defendantNumber) {
+        CounterClaimFormPayload payload, Integer counterClaimRank, int defendantNumber) {
 }

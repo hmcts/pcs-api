@@ -96,7 +96,7 @@ class CounterClaimFormDocumentGeneratorTest {
         assertThat(CounterClaimFormDocumentGenerator.counterClaimFormFilename(true, 3, 2))
             .isEqualTo("Counterclaim CC3 - Defendant 2");
         assertThat(CounterClaimFormDocumentGenerator.counterClaimFormFilename(true, null, 2))
-            .isEqualTo("Counterclaim CC1 - Defendant 2");
+            .isEqualTo("Counterclaim - Defendant 2");
     }
 
     @Test
