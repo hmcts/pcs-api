@@ -17,6 +17,7 @@ export const caseSummary = {
   linkedCasesTab: 'Linked Cases',
   linkedCasesHeader: 'Linked cases',
   serviceRequestTab: 'Service Request',
+  summaryTab: 'Summary',
   requestSupport: 'Request support',
   manageSupport: 'Manage support',
   reviewSupport: 'Review support request',
