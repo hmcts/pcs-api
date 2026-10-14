@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -226,7 +227,7 @@ class PaymentServiceTest {
                 .paymentCallbackHandlerType(CLAIM)
                 .build();
 
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(any(PaymentCallbackHandlerType.class)))
                 .thenReturn(mock(MakeAClaimPaymentCallbackHandler.class));
@@ -235,7 +236,7 @@ class PaymentServiceTest {
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             ArgumentCaptor<FeePaymentEntity> feePaymentCaptor = ArgumentCaptor.forClass(FeePaymentEntity.class);
             verify(feePaymentRepository).save(feePaymentCaptor.capture());
             FeePaymentEntity paymentEntity = feePaymentCaptor.getValue();
@@ -254,13 +255,14 @@ class PaymentServiceTest {
                 .serviceRequestStatus(PaymentStatus.PAID.getValue())
                 .payment(Payment.builder().paymentReference(UUID.randomUUID().toString()).build())
                 .build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference)).thenReturn(Optional.empty());
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
+                .thenReturn(Optional.empty());
 
             // When
             underTest.processPaymentResponse(paymentStatusCallback);
 
             // Then
-            verify(feePaymentRepository).findByServiceRequestReference(requestReference);
+            verify(feePaymentRepository).findByServiceRequestReferenceForUpdate(requestReference);
             verify(feePaymentRepository, never()).save(any(FeePaymentEntity.class));
         }
 
@@ -275,7 +277,7 @@ class PaymentServiceTest {
                 .payment(payment).build();
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder().paymentStatus(PaymentStatus.PAID)
                 .serviceRequestReference(requestReference).paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             PaymentCallbackStrategy strategy = mock(PaymentCallbackStrategy.class);
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(strategy);
@@ -299,7 +301,7 @@ class PaymentServiceTest {
             FeePaymentEntity feePaymentEntity = FeePaymentEntity.builder()
                 .paymentStatus(PaymentStatus.PAID).serviceRequestReference(requestReference)
                 .paymentCallbackHandlerType(CLAIM).build();
-            when(feePaymentRepository.findByServiceRequestReference(requestReference))
+            when(feePaymentRepository.findByServiceRequestReferenceForUpdate(requestReference))
                 .thenReturn(Optional.of(feePaymentEntity));
             when(paymentCallbackStrategyFactory.getStrategy(CLAIM)).thenReturn(null);
 
@@ -368,7 +370,7 @@ class PaymentServiceTest {
             final String serviceRequestReference = "SR-1234";
 
             final BigDecimal expectedAmount = new BigDecimal("10.99");
-            final String expectedLanguage = "some language";
+            final String expectedLanguage = "en";
             final String expectedReturnUrl = "some return URL";
 
             final String expectedPaymentReference = "some payment reference";
@@ -415,6 +417,39 @@ class PaymentServiceTest {
             assertThat(cardPaymentResponse.getPaymentReference()).isEqualTo(expectedPaymentReference);
             assertThat(cardPaymentResponse.getStatus()).isEqualTo(expectedPaymentStatus);
             assertThat(cardPaymentResponse.getNextUrl()).isEqualTo(expectedNextUrl);
+        }
+
+        @ParameterizedTest
+        @CsvSource(nullValues = "null", value = {
+            "cy, cy", "CY, cy", "Welsh, cy", "welsh, cy",
+            "en, en", "English, en", "some language, en", "null, en"
+        })
+        void shouldSendGovPayLanguageCode(String requestLanguage, String expectedLanguage) {
+            // Given
+            final String serviceRequestReference = "SR-1234";
+
+            CreateCardPaymentRequest cardPaymentRequest = CreateCardPaymentRequest.builder()
+                .amount(new BigDecimal("10.99"))
+                .language(requestLanguage)
+                .returnUrl("some return URL")
+                .build();
+
+            when(paymentsClient.createGovPayCardPaymentRequest(anyString(),
+                                                               anyString(),
+                                                               any(CardPaymentServiceRequestDTO.class)))
+                .thenReturn(CardPaymentServiceRequestResponse.builder().build());
+
+            when(feePaymentRepository.findByServiceRequestReference(serviceRequestReference))
+                .thenReturn(Optional.of(mock(FeePaymentEntity.class)));
+
+            // When
+            underTest.createPaymentRequest(serviceRequestReference, cardPaymentRequest);
+
+            // Then
+            verify(paymentsClient).createGovPayCardPaymentRequest(eq(serviceRequestReference),
+                                                                  eq(SYSTEM_USER_BEARER),
+                                                                  cardPaymentRequestCaptor.capture());
+            assertThat(cardPaymentRequestCaptor.getValue().getLanguage()).isEqualTo(expectedLanguage);
         }
 
         @Test

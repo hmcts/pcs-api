@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.model.defenceform;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -134,5 +135,9 @@ public class DefenceFormPayload implements FormPayload {
 
     // ---------- Statement of truth ----------
     private String sotFullName;
+    private String sotFirmName;
+    private String sotPositionHeld;
+    @JsonIgnore
+    private boolean completedByLegalRepresentative;
 
 }

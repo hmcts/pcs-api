@@ -29,6 +29,7 @@ public class ManageFlags implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(configBuilder
                             .decentralisedEvent(EventId.amendFlags.name(), this::submit)
                             .forStates(EventStates.amendFlags())
+                            .nonConcurrent()
                             .name("Manage case flags")
                             .description("To manage flags")
                             .showSummary()

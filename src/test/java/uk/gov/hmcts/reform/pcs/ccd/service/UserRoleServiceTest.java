@@ -9,11 +9,15 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignment;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentApi;
+import uk.gov.hmcts.reform.pcs.am.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.pcs.idam.UserInfo;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -25,7 +29,8 @@ import static org.mockito.Mockito.when;
 class UserRoleServiceTest {
 
     private static final long CASE_REFERENCE = 123456789L;
-    private static final UUID CURRENT_USER_ID = UUID.randomUUID();
+    private static final String CURRENT_USER_ID = UUID.randomUUID().toString();
+    private static final String LEGACY_UID = "7667";
     private static final String USER_AUTH_HEADER = "Bearer user-token";
     private static final String S2S_AUTH_HEADER = "Bearer s2s-token";
 
@@ -35,16 +40,73 @@ class UserRoleServiceTest {
     private AuthTokenGenerator authTokenGenerator;
     @Mock
     private CaseAssignmentApi caseAssignmentApi;
+    @Mock
+    private RoleAssignmentApi roleAssignmentApi;
 
     private UserRoleService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new UserRoleService(securityContextService, authTokenGenerator, caseAssignmentApi);
+        underTest
+            = new UserRoleService(securityContextService, authTokenGenerator, caseAssignmentApi, roleAssignmentApi);
     }
 
     @Test
     void shouldReturnCurrentUserIdAndCombinedIdamAndRasRoles() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs"));
+        stubRasRoles("[DEFENDANT]", "caseworker-pcs");
+        stubRoleAssignmentRoles("hearing-centre-admin");
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "[DEFENDANT]", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldCacheRasRolesForCurrentUserAndCase() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs"));
+        stubRasRoles("[DEFENDANT]");
+        stubRoleAssignmentRoles("hearing-centre-admin");
+
+        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        verify(caseAssignmentApi, times(1)).getUserRoles(
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
+            List.of(String.valueOf(CASE_REFERENCE)),
+            List.of(CURRENT_USER_ID)
+        );
+
+        verify(roleAssignmentApi, times(1)).getRoles(
+            S2S_AUTH_HEADER,
+            USER_AUTH_HEADER,
+            CURRENT_USER_ID
+        );
+    }
+
+    @Test
+    void shouldHandleMissingIdamAndRasRoles() {
+        stubAuth();
+        stubCurrentUserDetails(null);
+        when(caseAssignmentApi.getUserRoles(
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
+            List.of(String.valueOf(CASE_REFERENCE)),
+            List.of(CURRENT_USER_ID)
+        )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.roles()).isEmpty();
+    }
+
+    @Test
+    void shouldHandleNoUserRoleAssignments() {
+        stubAuth();
         stubCurrentUserDetails(List.of("caseworker-pcs"));
         stubRasRoles("[DEFENDANT]", "caseworker-pcs");
 
@@ -55,36 +117,68 @@ class UserRoleServiceTest {
     }
 
     @Test
-    void shouldCacheRasRolesForCurrentUserAndCase() {
+    void shouldHandleNoCaseLevelRasRoles() {
+        stubAuth();
         stubCurrentUserDetails(List.of("caseworker-pcs"));
+        stubRoleAssignmentRoles("hearing-centre-admin");
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldHandleMissingRoleAssignmentData() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker-pcs"));
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
+            .thenReturn(RoleAssignmentResponse.builder().build());
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs");
+    }
+
+    @Test
+    void shouldReturnIdamAndOrganisationalRolesWithoutACaseInScope() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
+        stubRoleAssignmentRoles("claimant-solicitor");
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.userId()).isEqualTo(CURRENT_USER_ID);
+        assertThat(userRoles.roles()).containsExactly("caseworker", "claimant-solicitor");
+        verifyNoInteractions(caseAssignmentApi);
+    }
+
+    @Test
+    void shouldShareTheOrganisationalRoleLookupBetweenBothEntryPoints() {
+        stubAuth();
+        stubCurrentUserDetails(List.of("caseworker"));
         stubRasRoles("[DEFENDANT]");
+        stubRoleAssignmentRoles("claimant-solicitor");
 
-        underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        underTest.getCurrentUserOrganisationalRoles();
         underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
 
-        verify(caseAssignmentApi, times(1)).getUserRoles(
-            USER_AUTH_HEADER,
+        verify(roleAssignmentApi, times(1)).getRoles(
             S2S_AUTH_HEADER,
-            List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
+            USER_AUTH_HEADER,
+            CURRENT_USER_ID
         );
     }
 
     @Test
-    void shouldHandleMissingIdamAndRasRoles() {
-        stubCurrentUserDetails(null);
-        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
-        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
-        when(caseAssignmentApi.getUserRoles(
-            USER_AUTH_HEADER,
-            S2S_AUTH_HEADER,
-            List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
-        )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
+    void shouldSkipTheOrganisationalRoleLookupForTheSystemUser() {
+        stubCurrentUserDetails(List.of("system"));
+        when(securityContextService.isSystemUser()).thenReturn(true);
 
-        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
 
-        assertThat(userRoles.roles()).isEmpty();
+        assertThat(userRoles.roles()).containsExactly("system");
+        verifyNoInteractions(roleAssignmentApi);
     }
 
     @Test
@@ -99,29 +193,87 @@ class UserRoleServiceTest {
         verifyNoInteractions(caseAssignmentApi);
     }
 
-    private void stubCurrentUserDetails(List<String> roles) {
+    @Test
+    void shouldKeepNonUuidIdamUidOnCaseRoles() {
+        stubAuth();
         when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
-            .uid(CURRENT_USER_ID.toString())
-            .roles(roles)
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker-pcs"))
             .build());
-    }
-
-    private void stubRasRoles(String... roles) {
-        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
-        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(LEGACY_UID);
         when(caseAssignmentApi.getUserRoles(
             USER_AUTH_HEADER,
             S2S_AUTH_HEADER,
             List.of(String.valueOf(CASE_REFERENCE)),
-            List.of(CURRENT_USER_ID.toString())
+            List.of(LEGACY_UID)
+        )).thenReturn(CaseAssignmentUserRolesResource.builder().build());
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder()
+                .roleAssignment(List.of(RoleAssignment.builder().roleName("hearing-centre-admin").build()))
+                .build());
+
+        UserRoles userRoles = underTest.getCurrentUserCaseRoles(CASE_REFERENCE);
+
+        assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
+        assertThat(userRoles.roles()).containsExactly("caseworker-pcs", "hearing-centre-admin");
+    }
+
+    @Test
+    void shouldKeepNonUuidIdamUidOnOrganisationalRoles() {
+        stubAuth();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(LEGACY_UID)
+            .roles(List.of("caseworker"))
+            .build());
+        when(securityContextService.toUserId(LEGACY_UID)).thenReturn(LEGACY_UID);
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, LEGACY_UID))
+            .thenReturn(RoleAssignmentResponse.builder().build());
+
+        UserRoles userRoles = underTest.getCurrentUserOrganisationalRoles();
+
+        assertThat(userRoles.userId()).isEqualTo(LEGACY_UID);
+        assertThat(userRoles.roles()).containsExactly("caseworker");
+    }
+
+    private void stubCurrentUserDetails(List<String> roles) {
+        when(securityContextService.getCurrentUserDetails()).thenReturn(UserInfo.builder()
+            .uid(CURRENT_USER_ID)
+            .roles(roles)
+            .build());
+        when(securityContextService.toUserId(CURRENT_USER_ID)).thenReturn(CURRENT_USER_ID);
+    }
+
+    private void stubAuth() {
+        when(securityContextService.getCurrentUserAuthToken()).thenReturn(USER_AUTH_HEADER);
+        when(authTokenGenerator.generate()).thenReturn(S2S_AUTH_HEADER);
+    }
+
+    private void stubRasRoles(String... roles) {
+        when(caseAssignmentApi.getUserRoles(
+            USER_AUTH_HEADER,
+            S2S_AUTH_HEADER,
+            List.of(String.valueOf(CASE_REFERENCE)),
+            List.of(CURRENT_USER_ID)
         )).thenReturn(CaseAssignmentUserRolesResource.builder()
-            .caseAssignmentUserRoles(List.of(roles).stream()
+            .caseAssignmentUserRoles(Stream.of(roles)
                 .map(role -> CaseAssignmentUserRole.builder()
                     .caseDataId(String.valueOf(CASE_REFERENCE))
-                    .userId(CURRENT_USER_ID.toString())
+                    .userId(CURRENT_USER_ID)
                     .caseRole(role)
                     .build())
                 .toList())
             .build());
+    }
+
+    private void stubRoleAssignmentRoles(String... roles) {
+        when(roleAssignmentApi.getRoles(S2S_AUTH_HEADER, USER_AUTH_HEADER, CURRENT_USER_ID))
+            .thenReturn(
+                RoleAssignmentResponse.builder()
+                    .roleAssignment(
+                        Stream.of(roles)
+                            .map(role -> RoleAssignment.builder().roleName(role).build())
+                            .toList())
+                    .build()
+            );
     }
 }

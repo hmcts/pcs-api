@@ -89,14 +89,20 @@ public class CaseFlagsView {
                        caseFlagEntity.getFlagRefData().getHearingRelevant()))
                    .availableExternally(YesOrNoConverter.toYesOrNo(
                        caseFlagEntity.getFlagRefData().getAvailableExternally()))
-                   .path(getPaths(caseFlagEntity.getPaths()))
+                   .path(parsePaths(caseFlagEntity.getPaths()))
                    .build())
                 .build())
             .toList();
     }
 
-    // The limit of 2 keeps a value containing the path delimiter intact
-    private List<ListValue<String>> getPaths(String entityPaths) {
+    /**
+     * Parses the delimited {@code paths} column of a stored flag back into the CCD path list.
+     * The limit of 2 keeps a value containing the path delimiter intact.
+     */
+    public static List<ListValue<String>> parsePaths(String entityPaths) {
+        if (entityPaths == null) {
+            return List.of();
+        }
 
         return Arrays.stream(entityPaths.split(PATHS_DELIMITER))
                 .map(pathPairs -> pathPairs.split(PATH_DELIMITER, 2))
@@ -178,7 +184,7 @@ public class CaseFlagsView {
     }
 
     private Set<UUID> resolveRepresentedPartyIds(PcsCaseEntity pcsCaseEntity) {
-        UUID authenticatedUserId = authenticatedUserIdOrNoneRepresented();
+        String authenticatedUserId = authenticatedUserIdOrNoneRepresented();
         if (authenticatedUserId == null) {
             return Set.of();
         }
@@ -187,7 +193,7 @@ public class CaseFlagsView {
                                                                        authenticatedUserId);
     }
 
-    private UUID authenticatedUserIdOrNoneRepresented() {
+    private String authenticatedUserIdOrNoneRepresented() {
         try {
             return securityContextService.getCurrentUserId();
         } catch (SecurityContextException ex) {

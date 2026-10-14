@@ -45,9 +45,9 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       const executor = getExecutor();
       const currentUrl = executor.page.url();
 
-      // Skip accessibility audit for login/auth and Case List pages
+      // Skip accessibility audit for login/auth and Case List ,confirm case saved pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Next%20steps') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases` || currentUrl.includes('case-details')) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -73,8 +73,12 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'selectClaimantType' || action === 'addCaseNotes') {
+  if (action === 'selectClaimantType' || action === 'selectClaimantName' || action === 'addCaseNotes' || action === 'verifyDocumentRelatesToApplication' || action === 'selectDocumentRelatingTo' || action === 'uploadAdditionalDocsLR') {
     captureDataForCYAPage = true;
+  }
+  
+  if (action === 'selectClaimantName') {
+    cyaStore.clearAll();
   }
 
   if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {

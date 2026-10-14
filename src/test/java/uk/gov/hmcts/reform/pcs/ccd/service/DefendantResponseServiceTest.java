@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -76,7 +77,7 @@ import static org.mockito.Mockito.when;
 class DefendantResponseServiceTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final UUID CLAIM_ID = UUID.randomUUID();
     private static final JourneyType JOURNEY_TYPE = JourneyType.CITIZEN;
 
@@ -113,6 +114,8 @@ class DefendantResponseServiceTest {
 
     @Captor
     private ArgumentCaptor<DefendantResponseEntity> responseCaptor;
+    @Captor
+    private ArgumentCaptor<List<DocumentEntity>> documentsCaptor;
     private static final Clock FIXED_UTC_CLOCK = Clock.fixed(
         Instant.parse("2026-04-22T21:00:00Z"), ZoneOffset.UTC);
 
@@ -772,28 +775,6 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotSaveDocumentsWhenUploadedDocumentsIsNull() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        stubClaimLookup();
-        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
-            .thenAnswer(inv -> inv.getArgument(0));
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .defendantResponses(responses)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
-
-        // Then
-        verify(documentService, never()).createDefendantUploadedDocuments(any(), any(), any(), any());
-    }
-
-    @Test
     void shouldNotPersistCounterClaimWhenSavingDefendantResponse() {
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -988,7 +969,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldSetCompletedByToLegalRepresentativeWhenHasLegalRepresentationIsYes() {
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourney() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -999,7 +980,6 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1007,7 +987,7 @@ class DefendantResponseServiceTest {
             .defendantResponses(responses)
             .build();
 
-        // When — legal rep path (passes party ID explicitly)
+        // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
                                         JourneyType.LEGAL_REPRESENTATIVE);
 
@@ -1026,7 +1006,7 @@ class DefendantResponseServiceTest {
     }
 
     @Test
-    void shouldNotSetCompletedByWhenHasLegalRepresentationIsAbsent() {
+    void shouldNotSetCompletedByOnCitizenJourneyEvenWhenPayloadClaimsLegalRepresentation() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1037,7 +1017,7 @@ class DefendantResponseServiceTest {
                 .fullName("Jane Smith")
                 .nameOfFirm("Smith & Co Solicitors")
                 .positionHeld("Solicitor")
-                // hasLegalRepresentation intentionally omitted
+                .hasLegalRepresentation(VerticalYesNo.YES)
                 .build())
             .build();
 
@@ -1054,6 +1034,55 @@ class DefendantResponseServiceTest {
 
         assertThat(saved.getStatementOfTruth()).isNotNull();
         assertThat(saved.getStatementOfTruth().getCompletedBy()).isNull();
+    }
+
+    @Test
+    void shouldSetCompletedByToLegalRepresentativeOnLegalRepJourneyWithoutSignedStatementOfTruth() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        when(partyEntity.getFirstName()).thenReturn("Test");
+        when(partyEntity.getLastName()).thenReturn("Defendant");
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruthCompletedBy("DEFENDANT")
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity,
+                                        JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy())
+            .isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+    }
+
+    @Test
+    void shouldNotSetCompletedByForCaseworkerPaperResponse() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .statementOfTruth(RTCStatementOfTruth.builder()
+                .accepted(VerticalYesNo.YES)
+                .fullName("Jane Smith")
+                .build())
+            .build();
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        assertThat(responseCaptor.getValue().getStatementOfTruth().getCompletedBy()).isNull();
     }
 
     @Test
@@ -1159,11 +1188,35 @@ class DefendantResponseServiceTest {
 
         // Then - the persisted response id and party id are carried to the scheduler.
         verify(defenceFormScheduler)
-            .scheduleDefenceFormGeneration(eq(CASE_REFERENCE), eq(responseId), eq(partyId));
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
     }
 
     @Test
-    void shouldNotScheduleDefenceFormGenerationOnLegalRepPath() {
+    void shouldScheduleDefenceFormGenerationOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+        UUID partyId = UUID.randomUUID();
+        when(partyEntity.getId()).thenReturn(partyId);
+        Integer responseId = 7;
+        when(defendantResponseRepository.save(any(DefendantResponseEntity.class)))
+            .thenReturn(DefendantResponseEntity.builder().id(responseId).party(partyEntity).build());
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(DefendantResponses.builder().build())
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then - the LR response generates the defence form just like a citizen one.
+        verify(defenceFormScheduler)
+            .scheduleDefenceFormGeneration(CASE_REFERENCE, responseId, partyId);
+    }
+
+    @Test
+    void shouldNotScheduleDefenceFormGenerationForCaseworkerPaperResponse() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1174,14 +1227,15 @@ class DefendantResponseServiceTest {
 
         // When
         underTest.saveDefendantResponse(
-            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.CASEWORKER);
 
-        // Then
+        // Then - the paper form is uploaded by the caseworker, nothing is generated.
         verify(defenceFormScheduler, never()).scheduleDefenceFormGeneration(anyLong(), any(), any());
     }
 
-    @Test
-    void shouldCreateTranslateTaskWhenLanguageIsEnglishAndWelsh() {
+    @ParameterizedTest
+    @EnumSource(value = LanguageUsed.class, names = {"WELSH", "ENGLISH_AND_WELSH"})
+    void shouldCreateTranslateTaskWhenLanguageIsNotEnglish(LanguageUsed languageUsed) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         stubClaimLookup();
@@ -1198,7 +1252,7 @@ class DefendantResponseServiceTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .defendantDocuments(uploadedDocs)
-            .languageUsed(LanguageUsed.ENGLISH_AND_WELSH)
+            .languageUsed(languageUsed)
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -1206,18 +1260,63 @@ class DefendantResponseServiceTest {
             .build();
 
         DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
-        DocumentEntity removedDocument = DocumentEntity.builder().fileName("removed.pdf").removed(true).build();
         when(documentService.createDefendantUploadedDocuments(
             eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
-            .thenReturn(List.of(activeDocument, removedDocument));
-        when(translationWAService.isTranslationRequired(LanguageUsed.ENGLISH_AND_WELSH)).thenReturn(true);
+            .thenReturn(List.of(activeDocument));
+        when(translationWAService.isTranslationRequired(languageUsed)).thenReturn(true);
 
         // When
         underTest.saveDefendantResponse(CASE_REFERENCE, possessionClaimResponse, partyEntity, JOURNEY_TYPE);
 
         // Then
         verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
-            pcsCaseEntity, partyEntity, List.of(activeDocument));
+            eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
+    }
+
+    @Test
+    void shouldCreateTranslateTaskWithGeneratedDefenceDocumentOnLegalRepPath() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        stubClaimLookup();
+
+        UploadedDocument defDoc = UploadedDocument.builder()
+            .document(Document.builder()
+                          .url("url1").filename("evidence.pdf").binaryUrl("bin1").categoryId("cat1").build())
+            .contentType("application/pdf")
+            .sizeInBytes(135529L)
+            .build();
+        List<ListValue<UploadedDocument>> uploadedDocs = List.of(
+            ListValue.<UploadedDocument>builder().id("1").value(defDoc).build()
+        );
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .defendantDocuments(uploadedDocs)
+            .languageUsed(LanguageUsed.WELSH)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .defendantResponses(responses)
+            .build();
+
+        DocumentEntity activeDocument = DocumentEntity.builder().fileName("evidence.pdf").build();
+        when(documentService.createDefendantUploadedDocuments(
+            eq(uploadedDocs), any(DefendantResponseEntity.class), eq(pcsCaseEntity), eq(partyEntity)))
+            .thenReturn(List.of(activeDocument));
+        when(translationWAService.isTranslationRequired(LanguageUsed.WELSH)).thenReturn(true);
+
+        // When
+        underTest.saveDefendantResponse(
+            CASE_REFERENCE, possessionClaimResponse, partyEntity, JourneyType.LEGAL_REPRESENTATIVE);
+
+        // Then
+        verify(translationWAService).createTranslateDefendantSubmittedDocumentTask(
+            eq(pcsCaseEntity), eq(partyEntity), documentsCaptor.capture());
+        assertThat(documentsCaptor.getValue())
+            .extracting(DocumentEntity::getFileName)
+            .containsExactly("Defence - Defendant 1.pdf", "evidence.pdf");
     }
 
     @Test

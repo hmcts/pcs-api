@@ -109,7 +109,9 @@ class LegalRepStartEventHydrationVerificationTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(organisationService.getOrganisationIdForCurrentUser()).thenReturn("test-org-id");
-        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, "test-org-id", true))
+        when(legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, "test-org-id"))
+            .thenReturn(List.of(defendant));
+        when(legalRepPartySelectionService.filterDefendantsAwaitingResponse(CASE_REFERENCE, List.of(defendant)))
             .thenReturn(List.of(defendant));
         when(legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(CASE_REFERENCE))
             .thenReturn(false);

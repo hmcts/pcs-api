@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -20,10 +21,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.claimactivitylog.PackDocumentRef;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponseStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimActivityLogEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.legalrepresentative.ClaimPartyOrganisationEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -389,6 +393,147 @@ class DefencePackSelectorTest {
         assertThat(underTest.findDefencePackCandidates(pcsCase)).isEmpty();
     }
 
+    @Test
+    @DisplayName("AC01: legal rep defence and counterclaim go to postal co-defendants, not the represented defendant")
+    void shouldSendLegalRepDefenceAndCounterClaimToCoDefendantsOnly() {
+        PartyEntity representedDefendant = party();
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant, postalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
+            assertThat(candidate.documents()).containsExactly(lrDefence, lrCounterClaim);
+        });
+    }
+
+    @Test
+    @DisplayName("AC02: legal rep defence without a generated counterclaim goes to postal co-defendants only")
+    void shouldSendLegalRepDefenceOnlyToCoDefendants() {
+        PartyEntity representedDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PartyEntity nonPostalCoDefendant = partyWithPostPreference(VerticalYesNo.NO);
+        PcsCaseEntity pcsCase =
+            caseWith(List.of(), claimant, representedDefendant, postalCoDefendant, nonPostalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
+            assertThat(candidate.documents()).containsExactly(lrDefence);
+        });
+    }
+
+    @Test
+    @DisplayName("AC03: a late legal rep counterclaim goes alone to co-defendants already sent the defence")
+    void shouldSendLateLegalRepCounterClaimOnlyToCoDefendants() {
+        PartyEntity representedDefendant = party();
+        PartyEntity postalCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, representedDefendant, postalCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        DocumentEntity lrCounterClaim = legalRepCounterClaim(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(lrDefence, lrCounterClaim));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID))
+            .thenReturn(List.of(sent(postalCoDefendant, lrDefence)));
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(postalCoDefendant);
+            assertThat(candidate.documents()).containsExactly(lrCounterClaim);
+        });
+    }
+
+    @Test
+    @DisplayName("Still sends a citizen's defence to the citizen alongside a legal rep defence for a co-defendant")
+    void shouldKeepCitizenOwnCopyWhenCoDefendantRespondedByLegalRep() {
+        PartyEntity citizenDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PartyEntity representedDefendant = party();
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, citizenDefendant, representedDefendant);
+        DocumentEntity citizenDefence = defenceForm(citizenDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, representedDefendant);
+        pcsCase.setDocuments(List.of(citizenDefence, lrDefence));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).hasSize(2);
+        assertThat(candidateFor(result, citizenDefendant).documents()).containsExactly(citizenDefence, lrDefence);
+        assertThat(candidateFor(result, representedDefendant).documents()).containsExactly(citizenDefence);
+    }
+
+    @Test
+    @DisplayName("Does not post a legal rep defence to a co-defendant who has their own legal representative")
+    void shouldNotPostToRepresentedCoDefendant() {
+        PartyEntity respondingDefendant = party();
+        PartyEntity representedCoDefendant = representedParty(YesOrNo.YES);
+        PartyEntity citizenCoDefendant = partyWithPostPreference(VerticalYesNo.YES);
+        PcsCaseEntity pcsCase =
+            caseWith(List.of(), claimant, respondingDefendant, representedCoDefendant, citizenCoDefendant);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, respondingDefendant);
+        pcsCase.setDocuments(List.of(lrDefence));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(citizenCoDefendant);
+            assertThat(candidate.documents()).containsExactly(lrDefence);
+        });
+    }
+
+    @Test
+    @DisplayName("Posts both legal rep defences only to the unrepresented citizen when two defendants are represented")
+    void shouldPostOnlyToCitizenWhenTwoDefendantsAreRepresented() {
+        PartyEntity firstRepresented = representedParty(YesOrNo.YES);
+        PartyEntity secondRepresented = representedParty(YesOrNo.YES);
+        PartyEntity citizen = partyWithPostPreference(VerticalYesNo.YES);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, firstRepresented, secondRepresented, citizen);
+        DocumentEntity firstDefence = legalRepDefenceForm(pcsCase, firstRepresented);
+        DocumentEntity secondDefence = legalRepDefenceForm(pcsCase, secondRepresented);
+        DocumentEntity citizenDefence = defenceForm(citizen);
+        pcsCase.setDocuments(List.of(firstDefence, secondDefence, citizenDefence));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement().satisfies(candidate -> {
+            assertThat(candidate.recipient()).isEqualTo(citizen);
+            assertThat(candidate.documents()).containsExactlyInAnyOrder(firstDefence, secondDefence, citizenDefence);
+        });
+    }
+
+    @Test
+    @DisplayName("Posts to a defendant whose legal representative is no longer active")
+    void shouldPostToDefendantWithInactiveLegalRepresentative() {
+        PartyEntity respondingDefendant = party();
+        PartyEntity formerlyRepresented = representedParty(YesOrNo.NO);
+        PcsCaseEntity pcsCase = caseWith(List.of(), claimant, respondingDefendant, formerlyRepresented);
+        DocumentEntity lrDefence = legalRepDefenceForm(pcsCase, respondingDefendant);
+        pcsCase.setDocuments(List.of(lrDefence));
+        when(featureToggleService.isEnabled(FeatureFlag.RELEASE_1_DOT_3)).thenReturn(true);
+        when(claimActivityLogRepository.findAllByPcsCase_Id(CASE_ID)).thenReturn(List.of());
+
+        List<DefencePackCandidate> result = underTest.findDefencePackCandidates(pcsCase);
+
+        assertThat(result).singleElement()
+            .satisfies(candidate -> assertThat(candidate.recipient()).isEqualTo(formerlyRepresented));
+    }
+
     private DefendantResponseEntity submittedDefence(PartyEntity party, LanguageUsed languageUsed) {
         return DefendantResponseEntity.builder()
             .party(party)
@@ -453,6 +598,45 @@ class DefencePackSelectorTest {
     private DocumentEntity counterClaim(PartyEntity owner) {
         return DocumentEntity.builder()
             .id(UUID.randomUUID()).type(DocumentType.COUNTERCLAIM).party(owner).build();
+    }
+
+    private DocumentEntity legalRepDefenceForm(PcsCaseEntity pcsCase, PartyEntity owner) {
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.DEFENDANT_RESPONSE)
+            .defendantResponse(legalRepResponse(pcsCase, owner))
+            .build();
+    }
+
+    private DocumentEntity legalRepCounterClaim(PcsCaseEntity pcsCase, PartyEntity owner) {
+        legalRepResponse(pcsCase, owner);
+        return DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .type(DocumentType.COUNTERCLAIM)
+            .party(owner)
+            .counterClaim(CounterClaimEntity.builder().party(owner).pcsCase(pcsCase).build())
+            .build();
+    }
+
+    private DefendantResponseEntity legalRepResponse(PcsCaseEntity pcsCase, PartyEntity owner) {
+        return pcsCase.getDefendantResponses().stream()
+            .filter(response -> response.getParty().getId().equals(owner.getId()))
+            .findFirst()
+            .orElseGet(() -> {
+                DefendantResponseEntity response = DefendantResponseEntity.builder()
+                    .party(owner)
+                    .statementOfTruth(StatementOfTruthEntity.builder()
+                        .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE).build())
+                    .build();
+                pcsCase.getDefendantResponses().add(response);
+                return response;
+            });
+    }
+
+    private PartyEntity representedParty(YesOrNo active) {
+        PartyEntity party = partyWithPostPreference(VerticalYesNo.YES);
+        party.getClaimPartyOrganisationList().add(ClaimPartyOrganisationEntity.builder().active(active).build());
+        return party;
     }
 
     private PartyEntity party() {

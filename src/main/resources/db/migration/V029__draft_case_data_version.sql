@@ -1,0 +1,1 @@
+ALTER TABLE draft.draft_case_data ADD COLUMN IF NOT EXISTS version BIGINT DEFAULT 0 NOT NULL;

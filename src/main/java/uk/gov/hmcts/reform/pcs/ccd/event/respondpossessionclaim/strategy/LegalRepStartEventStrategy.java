@@ -39,24 +39,25 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
     public PCSCase loadDraft(long caseReference, PCSCase pcsCase) {
         String organisationId = organisationService.getOrganisationIdForCurrentUser();
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+
+        List<PartyEntity> representedDefendants =
+            legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId);
+        List<PartyEntity> defendantsAwaitingResponse =
+            legalRepPartySelectionService.filterDefendantsAwaitingResponse(caseReference, representedDefendants);
+
         PCSCase responseCase;
 
-        if (legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
-            List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(
-                caseEntity, organisationId, false);
+        if (defendantsAwaitingResponse.isEmpty()
+            || legalRepPartySelectionService.hasSubmittedResponseForCurrentlySelectedParty(caseReference)) {
             responseCase = legalRepPartySelectionService.buildSubmittedResponseCase(
-                pcsCase, defendantPartiesLinkedAndActive);
+                pcsCase, representedDefendants);
+        } else if (defendantsAwaitingResponse.size() == 1) {
+            PartyEntity defendant = defendantsAwaitingResponse.getFirst();
+            responseCase = legalRepPartySelectionService.getDraftCaseData(
+                caseReference, pcsCase, defendant, defendantsAwaitingResponse, organisationId);
         } else {
-            List<PartyEntity> defendantPartiesLinkedAndActive = loadAndValidateDefendants(
-                caseEntity, organisationId, true);
-            if (defendantPartiesLinkedAndActive.size() == 1) {
-                PartyEntity defendant = defendantPartiesLinkedAndActive.getFirst();
-                responseCase = legalRepPartySelectionService.getDraftCaseData(
-                    caseReference, pcsCase, defendant, defendantPartiesLinkedAndActive, organisationId);
-            } else {
-                responseCase = legalRepPartySelectionService.getDraft(
-                    pcsCase, defendantPartiesLinkedAndActive, caseReference, organisationId);
-            }
+            responseCase = legalRepPartySelectionService.getDraft(
+                pcsCase, defendantsAwaitingResponse, caseReference, organisationId);
         }
 
         return hydrateClaimantProvidedCaseFields(caseEntity, responseCase);
@@ -68,11 +69,6 @@ public class LegalRepStartEventStrategy implements RespondPossessionClaimStartEv
         rentArrearsView.setCaseFields(pcsCase, caseEntity);
         pcsCase.setLegislativeCountry(caseEntity.getLegislativeCountry());
         return pcsCase;
-    }
-
-    private List<PartyEntity> loadAndValidateDefendants(
-        PcsCaseEntity caseEntity, String organisationId, boolean validate) {
-        return legalRepForDefendantAccessValidator.validateAndGetDefendants(caseEntity, organisationId, validate);
     }
 
 }

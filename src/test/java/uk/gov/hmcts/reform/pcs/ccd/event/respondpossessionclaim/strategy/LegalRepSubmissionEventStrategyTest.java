@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.RespondToClaimCallbackError;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -56,7 +57,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 class LegalRepSubmissionEventStrategyTest {
 
     private static final long CASE_REFERENCE = 1234567890L;
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final String USER_ID = UUID.randomUUID().toString();
     private static final UUID REPRESENTED_PARTY_ID = UUID.randomUUID();
     private static final String HWF_REFERENCE_NUMBER = "myHwfReferenceNumber";
 
@@ -347,7 +348,7 @@ class LegalRepSubmissionEventStrategyTest {
             .thenReturn(Optional.of(caseData));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
-        when(securityContextService.getCurrentUserId()).thenReturn(representedPartyId);
+        when(securityContextService.getCurrentUserId()).thenReturn(representedPartyId.toString());
         when(partyService.getPartyEntityById(representedPartyId, CASE_REFERENCE)).thenReturn(defendantResponse);
         when(respondPossessionClaimSubmitService.persistFinalSubmit(CASE_REFERENCE, possessionClaimResponse,
                                                                     defendantResponse,
@@ -460,5 +461,41 @@ class LegalRepSubmissionEventStrategyTest {
                                .build())
                     .build()))
             .build();
+    }
+
+    // ----- HDPI-8866 W05: the declaration must be bound to the reviewed draft -----
+
+    @Test
+    void shouldRejectSubmitWhenDraftChangedSinceReview() {
+        // given - stored draft moved to version 5 after the review page rendered version 4
+        String organisationId = "org";
+        PCSCase posted = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder().draftVersion(4L).build())
+            .build();
+        PCSCase storedDraft = PCSCase.builder()
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                                         .defendantResponses(DefendantResponses.builder().build())
+                                         .draftVersion(5L)
+                                         .build())
+            .build();
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(posted);
+        when(selectedPartyRetriever.getCurrentRepresentedPartyId(posted)).thenReturn(Optional.of(REPRESENTED_PARTY_ID));
+        when(organisationService.getOrganisationIdForCurrentUser()).thenReturn(organisationId);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim, REPRESENTED_PARTY_ID,
+                                                         organisationId)).thenReturn(Optional.of(storedDraft));
+        when(submitResponseFactory
+                 .validateDraftVersionNotChanged(eventPayload, storedDraft.getPossessionClaimResponse()))
+            .thenReturn(Optional.of(SubmitResponse.<State>builder()
+                                        .errors(List.of(RespondToClaimCallbackError.DRAFT_CHANGED))
+                                        .build()));
+
+        // when
+        SubmitResponse<State> result = underTest.process(eventPayload);
+
+        // then - nothing persisted
+        assertThat(result.getErrors()).containsExactly(RespondToClaimCallbackError.DRAFT_CHANGED);
+        verify(respondPossessionClaimSubmitService, never()).persistFinalSubmit(anyLong(), any(), any(), any());
     }
 }

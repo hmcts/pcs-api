@@ -5,7 +5,7 @@ import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { performAction, performValidation } from '@utils/controller-caseManagement';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { caseSummary, home } from '@data/page-data';
-import { generateRandomString } from "@utils/common/string.utils";
+import {formatDateTimeBST, generateRandomString} from "@utils/common/string.utils";
 import { performActions } from "@utils/controller";
 import {
   addReviewDates,
@@ -36,6 +36,7 @@ import { caseInfo } from '../createCaseAPI.action';
 import { CaseManagementCommonUtils } from './caseManagementUtils.action';
 import path from 'path';
 import { compareMaps } from '@utils/common/compareMaps.util';
+import {manageHearingApiData} from "@data/api-data";
 export let addressInfo: { buildingStreet: string; addressLine2: string; townCity: string; country: string; engOrWalPostcode: string; };
 
 export let allPartyDetails: string[] = [];
@@ -81,6 +82,7 @@ export class CaseManagementAction implements IAction {
       ['confirmAddHearing', () => this.confirmAddHearing(fieldName as actionRecord)],
       ['cancelHearing', () => this.cancelHearing(fieldName as actionRecord)],
       ['confirmHearingCancelled', () => this.confirmHearingCancelled(fieldName as actionRecord)],
+      ['validateCaseNotesDetails', () => this.validateCaseNotesDetails(page, fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -144,15 +146,7 @@ export class CaseManagementAction implements IAction {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
-    const userInput =
-      typeof reviewDateData.input === 'number'
-        ? generateRandomString(reviewDateData.input)
-        : (reviewDateData.input as string);
-    let date = CaseManagementCommonUtils.getRandomDate(reviewDateData.dateType as string);
-    await performActions('Date of Review',
-      ['inputText', reviewDateData.day, date.split('/')[0]],
-      ['inputText', reviewDateData.month, date.split('/')[1]],
-      ['inputText', reviewDateData.year, date.split('/')[2]]);
+    await performAction('inputDate', reviewDateData.reviewDateLabel as string, reviewDateData.date);
     await performAction('clickRadioButton', { question: reviewDateData.question, option: reviewDateData.option });
     await performAction('inputText', reviewDateData.label, reviewDateData.userInput);
     await performAction('reTryOnCallBackError', addReviewDates.continueButton, reviewDateData.nextPage as string);
@@ -425,11 +419,49 @@ export class CaseManagementAction implements IAction {
   }
 
   private async cancelHearing(cancelHearingData: actionRecord) {
+    const hearingInfo = manageHearingApiData.AddHearingPayload;
+    const formattedHearingDate = formatDateTimeBST(hearingInfo.hearing_Date)
+      .replace(':00:00AM', ':00am')
+      .replace(':00:00PM', ':00pm');
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid});
     await performValidation('text', {
       elementType: 'paragraph',
       text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
+    const validations = [
+      {
+        heading: cancelHearing.hearingLocationHeader,
+        value: `${hearingInfo.hearingLocation}`,
+      },
+      {
+        heading: cancelHearing.hearingTypeHeader,
+        value: 'Application hearing',
+      },
+      {
+        heading: cancelHearing.hearingDateHeader,
+        value: formattedHearingDate,
+      },
+      {
+        heading: cancelHearing.hearingDurationHeader,
+        value: `${hearingInfo.hearing_DurationDays} days ${hearingInfo.hearing_DurationHours} hour ${hearingInfo.hearing_DurationMinutes} minutes`,
+      },
+      {
+        heading: cancelHearing.hearingNotesHeader,
+        value: hearingInfo.hearing_Notes,
+      },
+    ];
+
+    for (const validation of validations) {
+      await performValidation('text', {
+        elementType: 'subHeader',
+        text: validation.heading,
+      });
+
+      await performValidation('text', {
+        elementType: 'paragraph',
+        text: validation.value,
+      });
+    }
     await performAction('inputText', cancelHearingData.label, CaseManagementCommonUtils.generateRandomString(cancelHearingData.input as number));
     await performAction('reTryOnCallBackError', cancelHearing.continueButton, cancelHearingData.nextPage as string);
   }
@@ -946,7 +978,7 @@ export class CaseManagementAction implements IAction {
         expect(await this.getTableDataValue(page, `Defendant’s first name`, 'last')).toEqual(`${defendantsDetails.firstName}`);
         expect(await this.getTableDataValue(page, `Defendant’s last name`, 'last')).toEqual(`${defendantsDetails.lastName}`);
         break;
-      
+
       case 'Litigation friend-Service address':
         defendant.set(`Building and Street`, addressInfo.buildingStreet);
         defendant.set(`Address Line 2`, addressInfo.addressLine2);
@@ -989,7 +1021,7 @@ export class CaseManagementAction implements IAction {
 
   private async validateClaimantDetails(page: Page, claimantDetails: actionRecord) {
 
-    const claimant = new Map<string, string>();  
+    const claimant = new Map<string, string>();
 
     claimant.set(`Name`, claimantDetails.orgName as string);
     claimant.set(`Email address`, claimantDetails.email as string);
@@ -1034,7 +1066,7 @@ export class CaseManagementAction implements IAction {
           /ancestor::dl/following-sibling::table[1]`
       : `//span[normalize-space()="${mainTable}"]
           /ancestor::div[1]
-          //table[@aria-describedby="complex field table"]`;
+          //table[@class="complex-panel-table"]`;
 
 
     const tables = page.locator(tableLocator);
@@ -1067,7 +1099,7 @@ export class CaseManagementAction implements IAction {
         const keyText = (await keyQns.first().innerText()).trim();
         let valText = (await valAns.first().innerText()).trim().replace(/\r?\n+/g, ',');
 
-        if (keyText === "Created on") {
+        if (keyText === "Created on" || keyText === "Created date") {
           valText = valText.replace(/:\d{2} /, " ");
         }
 
@@ -1083,5 +1115,39 @@ export class CaseManagementAction implements IAction {
     let ct = await tdLocator.count();
     const locator = ct > 1 && index ? tdLocator.last() : tdLocator.first();
     return ((await locator.textContent()) || '').trim();
+  }
+
+  private async validateCaseNotesDetails(page: Page, caseNotes: actionRecord) {
+
+    const caseNote = new Map<string, string>();
+    caseNote.set(`Created by`, process.env.Display_NAME as string);
+    caseNote.set(`Created date`, caseNotes.createdDate as string);
+    caseNote.set(`Date of review`, caseNotes.reviewDate as string);
+    caseNote.set(`Reason`, caseNotes.reviewReason as string);
+    caseNote.set(`Description of review`, caseNotes.reviewDescription as string);
+
+    await this.caseTabTableData(page, caseNotes.table as string);
+
+    const misMatchMap = compareMaps(caseNote, caseTabMap, {
+      name1: 'CaseNote',
+      name2: 'CaseNotesTab',
+    })
+
+    if (misMatchMap.size > 0) {
+      console.log(`\n❌ Differences found: ${misMatchMap.size}`);
+      for (const [key, val] of misMatchMap) {
+        const expectedValue = val.a === undefined ? '<missing>' : String(val.a);
+        const actualValue = val.b === undefined ? '<missing>' : String(val.b);
+        console.log('============================================================');
+        console.log(`• key: "${String(key)}" → Expected: ${expectedValue} | Actual: ${actualValue}`);
+      }
+      console.log(`\n**********  END OF FAILURE LIST. ***************`);
+      throw new Error(`Case Notes validations failed for ${misMatchMap.size} ${misMatchMap.size === 1 ? 'item' : 'items'}`);
+    } else {
+      console.log('\n✅ Case Notes VALIDATION PASSED!\n');
+    }
+
+    caseTabMap.clear();
+
   }
 }
