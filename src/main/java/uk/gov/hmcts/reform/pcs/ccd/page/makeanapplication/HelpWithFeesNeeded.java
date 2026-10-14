@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeanapplication;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -12,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.genapp.XuiGenAppRequest;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.fieldEquals;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.or;
 
 @Slf4j
 @AllArgsConstructor
@@ -56,8 +56,9 @@ public class HelpWithFeesNeeded implements CcdPageConfiguration {
             .pageLabel("Confirm if the defendant needs help paying fees")
             .showCondition(fieldEquals("xui_genapp_ShowHwfScreens", VerticalYesNo.YES))
             .label("helpWithFeesNeeded-lineSeparator", "---")
-            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND, fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN))
-            .label("helpWithFeesNeeded-info", INFO_MARKDOWN, ShowConditions.and(
+            .label("helpWithFeesNeeded-info-suspend", INFO_MARKDOWN_SUSPEND,
+                   fieldEquals("xui_genapp_ApplicationType", GenAppType.SUSPEND))
+            .label("helpWithFeesNeeded-info", INFO_MARKDOWN, or(
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.ADJOURN),
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.SET_ASIDE),
                 fieldEquals("xui_genapp_ApplicationType", GenAppType.SOMETHING_ELSE)
