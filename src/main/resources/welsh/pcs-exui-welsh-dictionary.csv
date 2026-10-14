@@ -1648,7 +1648,7 @@ Housing Act,Deddf Tai
 Statement of express terms,Datganiad o'r telerau datganedig
 What are your additional grounds for possession?,Beth yw eich seiliau ychwanegol dros feddiannu?
 Underlessee or mortgagee entitled to claim relief against forfeiture,Is-brydleswr neu godwr morgais â hawl i wneud cais am ryddhad yn erbyn fforffediad
-Resume claim,Parhau â hawliad
+Resume claim,Parhau â'r cais
 Mediation and settlement,Cyfryngu a setliad 
 Notice details,Manylion yr hysbysiad
 Prohibited conduct standard contract,Contract safonol ymddygiad gwaharddedig
@@ -4899,7 +4899,7 @@ fyddant, mae'n bosib y bydd angen i chi dalu ffi uwch.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
    (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
@@ -5062,7 +5062,7 @@ talu ${xui_genapp_StandardFee}.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 <h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
 <p class=""govuk-body"">Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Rhaid i chi wneud cais drwy'r post:</p>
@@ -5159,7 +5159,7 @@ cynyddu i ${xui_genapp_MaxFee} os:</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Os byddai'n well gennych ymateb drwy'r post:</p>
@@ -5316,7 +5316,7 @@ atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Os byddai'n well gennych ymateb drwy'r post:</p>
@@ -5421,7 +5421,7 @@ cynyddu i ${xui_genapp_MaxFee} os:</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <p class=""govuk-body govuk-!-margin-bottom-1"">Efallai gall y diffynnydd gael help i dalu'r ffi
 os ydynt (os yw un neu fwy o’r canlynol yn berthnasol):</p>
@@ -5508,7 +5508,7 @@ fyddant yn cytuno, mae'n bosib y bydd rhaid i'r diffynnydd dalu ffi uwch.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
    (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
@@ -5681,7 +5681,7 @@ talu ${xui_genapp_StandardFee}.</p>
  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
 <p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
@@ -5798,7 +5798,7 @@ cynyddu i ${xui_genapp_MaxFee} os:</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
 <p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
@@ -5971,7 +5971,7 @@ atebion fel y gallwch ddychwelyd atynt nes ymlaen.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
 <p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
@@ -6492,7 +6492,7 @@ but the other party did not respond, select ‘No’.</p>","<ul class=""govuk-li
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
    (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
@@ -6603,7 +6603,7 @@ talu £126.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 <h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
 <p class=""govuk-body"">Ni allwch wneud cais i atal (stopio neu ohirio) y troi allan ar-lein.</p>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Rhaid i chi wneud cais drwy'r post:</p>
@@ -6701,7 +6701,7 @@ cynyddu i £321 os:</p>"
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Gwneud cais drwy’r post</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Os byddai'n well gennych ymateb drwy'r post:</p>
@@ -6851,7 +6851,7 @@ if they (one or more of the following):</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <p class=""govuk-body govuk-!-margin-bottom-1"">Efallai gall y diffynnydd gael help i dalu'r ffi
 os ydynt (os yw un neu fwy o’r canlynol yn berthnasol):</p>
@@ -6892,7 +6892,7 @@ fyddant yn cytuno, mae'n bosib y bydd rhaid i'r diffynnydd dalu ffi uwch.</p>
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
    (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Beth sydd angen i chi ei wneud</h2>
 <p class=""govuk-body govuk-!-margin-bottom-1"">Bydd angen i chi uwchlwytho tystiolaeth i'r llys i ddangos:</p>
@@ -7013,7 +7013,7 @@ We will ask you if they want to do this when you apply.
  <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
  (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
 <p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
@@ -7125,7 +7125,7 @@ We will ask you if they want to do this when you apply.
   <li class=""govuk-!-font-size-19"">ni wnaeth y parti arall gytuno iddo
   (mae hyn yn golygu eu bod wedi ei wrthwynebu)</li>
 </ul>
-<p class=""govuk-body"">Byddwch yn gweld y ffi gwneud cais terfynol cyn i chi dalu.</p>
+<p class=""govuk-body"">Byddwch yn gweld y ffi derfynol ar gyfer gwneud cais cyn i chi dalu.</p>
 
 <h2 class=""govuk-heading-m"">Os ydych chi'n poeni am y diffynnydd yn talu ffioedd</h2>
 <p class=""govuk-body"">Efallai y byddant yn gymwys i wneud cais am
@@ -7480,3 +7480,6 @@ Judgment requested for the outstanding arrears?,Cais am ddyfarniad am yr ôl-ddy
 <p class=""govuk-body"">Rydym wedi derbyn y dogfennau rydych wedi’u huwchlwytho.</p>
  <h3>Beth sy’n digwydd nesaf</h3>
 <p class=""govuk-body"">Nid oes angen i chi wneud unrhyw beth arall. Byddwn yn edrych ar y dogfennau.</p>"
+This will affect the fee you will pay. You will not need to pay a fee if your court hearing is (at least) 14 days away.,Bydd hyn yn effeithio ar y ffi y byddwch yn ei thalu. Ni fydd arnoch angen talu ffi os yw eich gwrandawiad llys (o leiaf) 14 diwrnod i ffwrdd.
+"Explain what you want the court to do, and why","Eglurwch beth yr hoffech i'r llys ei wneud, a pham."
+Your payment reference is,Cyfeirnod eich taliad yw.
