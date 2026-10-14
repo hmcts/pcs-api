@@ -57,6 +57,7 @@ public class ShowConditions {
             case WALES_MAKE_A_CLAIM -> "walesMakeAClaimEnabled";
             case CUI_RESPOND_TO_CLAIM_LR -> "cuiRespondToClaimLrEnabled";
             case MAKE_ORDER -> "makeOrderEnabled";
+            case ENFORCEMENT -> "enforcementEnabled";
             default -> throw new IllegalArgumentException("Flag %s does not have a CCD field yet"
                                                               .formatted(featureFlag.name()));
         };
