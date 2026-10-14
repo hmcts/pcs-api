@@ -43,7 +43,6 @@ import {
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
-
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
@@ -839,5 +838,22 @@ test.describe('[Enforcement - Delete Draft Application]', () => {
     await performValidation('mainHeader', draftApplicationDeleted.mainHeader);
     await performAction('clickButton', draftApplicationDeleted.closeAndReturnToCaseListButton);
     await performValidation('mainHeader', reviewSupport.casePartiesHeader);
+  });
+  test ('Resume the draft application @enforcement @rerun', async ({ page }) => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: enforcementApplication.typeOfApplicationQuestion,
+      option: enforcementApplication.warrantOfPossessionRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader,
+    });
+    await performAction('clickButton', nameAndAddressForEviction.cancelLink);
+    await performValidation('mainHeader', caseSummary.mainHeader);
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.resumeDraftApplicationEvent);
+    await performAction('clickButton', caseSummary.go);
+    await expect(page.getByText('Resume draft application', { exact: true }))
+      .toBeVisible();
+    await performValidation('mainHeader', enforcementApplication.mainHeader);
   });
 });
