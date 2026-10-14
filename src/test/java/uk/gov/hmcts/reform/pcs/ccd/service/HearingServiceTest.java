@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
@@ -20,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.hearing.HearingService;
@@ -62,6 +64,9 @@ public class HearingServiceTest {
     @Mock
     private PartyService partyService;
 
+    @Mock
+    private DocumentRepository documentRepository;
+
     private HearingService hearingService;
 
     @BeforeEach
@@ -71,6 +76,7 @@ public class HearingServiceTest {
             hearingRepository,
             partyRepository,
             partyService,
+            documentRepository,
             FIXED_UK_CLOCK
         );
     }
@@ -1169,6 +1175,7 @@ public class HearingServiceTest {
             .build();
         long caseReference = 12345L;
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(documentRepository.existsByHearing_IdAndType(1, DocumentType.NOTICE_OF_HEARING)).thenReturn(true);
 
         // When
         hearingService.updateHearing(caseReference, pcsCase);
@@ -1176,5 +1183,37 @@ public class HearingServiceTest {
         // Then
         assertThat(editedHearing.getNoticeNumber()).isEqualTo(3);
         assertThat(otherHearing.getNoticeNumber()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldKeepNoticeNumberWhenEditedBeforeNoticeIsGenerated() {
+        // Given
+        Hearing hearing = Hearing.builder()
+            .type(HearingType.POSSESSION)
+            .date(LocalDateTime.of(2026, 3, 4, 10, 15, 0))
+            .durationDays(0)
+            .durationHours(1f)
+            .durationMinutes(0f)
+            .issueNotice(VerticalYesNo.YES)
+            .isWithoutNotice(VerticalYesNo.NO)
+            .build();
+        PCSCase pcsCase = PCSCase.builder()
+            .selectedHearingId("1")
+            .hearing(hearing)
+            .build();
+
+        HearingEntity editedHearing = HearingEntity.builder().id(1).noticeNumber(1).build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .hearings(List.of(editedHearing))
+            .build();
+        long caseReference = 12345L;
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
+        when(documentRepository.existsByHearing_IdAndType(1, DocumentType.NOTICE_OF_HEARING)).thenReturn(false);
+
+        // When
+        hearingService.updateHearing(caseReference, pcsCase);
+
+        // Then
+        assertThat(editedHearing.getNoticeNumber()).isEqualTo(1);
     }
 }

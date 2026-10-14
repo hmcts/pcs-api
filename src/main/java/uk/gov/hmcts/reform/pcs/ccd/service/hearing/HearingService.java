@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.hearing;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.hearing.Hearing;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.hearing.HearingNoticePartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.HearingRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -42,17 +44,20 @@ public class HearingService {
     private final HearingRepository hearingRepository;
     private final PartyRepository partyRepository;
     private final PartyService partyService;
+    private final DocumentRepository documentRepository;
     private final Clock ukClock;
 
     public HearingService(PcsCaseService pcsCaseService,
                           HearingRepository hearingRepository,
                           PartyRepository partyRepository,
                           PartyService partyService,
+                          DocumentRepository documentRepository,
                           @Qualifier("ukClock") Clock ukClock) {
         this.pcsCaseService = pcsCaseService;
         this.hearingRepository = hearingRepository;
         this.partyRepository = partyRepository;
         this.partyService = partyService;
+        this.documentRepository = documentRepository;
         this.ukClock = ukClock;
     }
 
@@ -79,7 +84,11 @@ public class HearingService {
             ));
 
         populateHearingEntity(hearingEntity, pcsCase);
-        assignNoticeNumber(pcsCaseEntity, hearingEntity);
+        // Edits before the notice is generated keep the same notice number and later edits get the next number
+        if (hearingEntity.getNoticeNumber() == null
+            || documentRepository.existsByHearing_IdAndType(hearingEntity.getId(), DocumentType.NOTICE_OF_HEARING)) {
+            assignNoticeNumber(pcsCaseEntity, hearingEntity);
+        }
         return hearingRepository.save(hearingEntity);
     }
 
