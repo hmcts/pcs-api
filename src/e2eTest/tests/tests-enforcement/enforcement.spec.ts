@@ -39,9 +39,7 @@ import {
   confirmDefendantsDOB,
   knownDefendantsDOBInformation,
   suspendedOrder,
-  statementOfTruth,
-  defendantInBreathingSpace,
-  missedPayments
+  statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
 import { deleteThisDraftApplication } from '@data/page-data-figma/page-data-enforcement-figma/deleteThisDraftApplication.page.data';
 import { draftApplicationDeleted } from '@data/page-data-figma/page-data-enforcement-figma/draftApplicationDeleted.page.data';
@@ -803,7 +801,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
 });
 
 test.describe('[Enforcement - Delete Draft Application]', () => {
-  test('Delete the draft application @enforcement @rerun', async ({ page }) => {
+  test('Claimant user can delete the draft claim from the system @enforcement', async ({ page }) => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', enforcementApplication.mainHeader);
