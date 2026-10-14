@@ -155,7 +155,6 @@ export function formatDateTimeNonBST(dataTime: string): string {
   const date = new Date(dataTime);
 
   return new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/London',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
