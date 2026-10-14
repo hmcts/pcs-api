@@ -291,59 +291,6 @@ class TestCaseGenerationTest {
 
     }
 
-    @Test
-    void shouldAddPossessionOrderPlaceholderForPossessionOrderTestCase() {
-        // Given
-        String label =
-            TestCaseGeneration.POSSESSION_ORDER_CASE_GENERATOR;
-
-        long caseReference = 123456L;
-
-        AddressUK address = AddressUK.builder()
-            .addressLine1("102")
-            .postCode("SW1 1AA")
-            .build();
-
-        PCSCase loadedCase = PCSCase.builder()
-            .propertyAddress(address)
-            .legislativeCountry(ENGLAND)
-            .build();
-
-        TestCaseGeneration spyUnderTest = spy(underTest);
-
-        doReturn(loadedCase)
-            .when(spyUnderTest)
-            .loadTestPcsCase(label);
-
-        // When
-        spyUnderTest.makeAClaimTestCreation(
-            label,
-            caseReference
-        );
-
-        // Then
-        InOrder inOrder = inOrder(
-            pcsCaseService,
-            resumePossessionClaim,
-            testCaseDocumentService
-        );
-
-        inOrder.verify(pcsCaseService)
-            .createCase(
-                caseReference,
-                address,
-                ENGLAND
-            );
-
-        inOrder.verify(resumePossessionClaim)
-            .submitClaim(
-                caseReference,
-                loadedCase
-            );
-
-        inOrder.verify(testCaseDocumentService)
-            .addPossessionOrderPlaceholder(caseReference);
-    }
 
 
     @Disabled

@@ -19,16 +19,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseRoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -106,6 +110,14 @@ class TestingSupportControllerTest {
     private AccessCodeGenerationService accessCodeGenerationService;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private DocumentImportService documentImportService;
+    @Mock
+    private DocumentRepository documentRepository;
+    @Mock
+    private CaseDocumentClientApi caseDocumentClientApi;
+    @Mock
+    private DocumentIdExtractor documentIdExtractor;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -121,7 +133,7 @@ class TestingSupportControllerTest {
                                                  organisationDetailsService,
                                                  pcsCaseService,
                                                  accessCodeGenerationService,
-                                                 featureToggleService
+                                                 featureToggleService,documentImportService,documentRepository,caseDocumentClientApi, documentIdExtractor
         );
     }
 

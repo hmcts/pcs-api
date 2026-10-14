@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class OrdersTableRenderer {
                 ? "Not available"
                 : UPLOADED_DATE_FORMAT.format(uploadedDate)
         );
-        context.put("documentUrl", documentEntity.getBinaryUrl());
+        context.put("documentUrl", documentLink(documentEntity));
         context.put("documentName", documentEntity.getFileName());
 
         try {
@@ -44,5 +45,41 @@ public class OrdersTableRenderer {
         }
 
         return writer.toString();
+    }
+
+    private String documentLink(DocumentEntity documentEntity) {
+        if (documentEntity == null) {
+            return null;
+        }
+        UUID documentId = documentEntity.getDocumentId();
+        if (documentId == null) {
+            documentId = extractDocumentId(documentEntity.getUrl());
+        }
+        if (documentId == null) {
+            documentId = extractDocumentId(documentEntity.getBinaryUrl());
+        }
+        if (documentId == null) {
+            return null;
+        }
+        return "/documents/%s/binary".formatted(documentId);
+    }
+
+    private UUID extractDocumentId(String documentUrl) {
+        if (documentUrl == null) {
+            return null;
+        }
+
+        int documentPathStart = documentUrl.indexOf("/documents/");
+        if (documentPathStart < 0) {
+            return null;
+        }
+
+        String documentPath = documentUrl.substring(documentPathStart + "/documents/".length());
+        String documentId = documentPath.split("/")[0];
+        try {
+            return UUID.fromString(documentId);
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
     }
 }

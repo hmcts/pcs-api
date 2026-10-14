@@ -24,6 +24,8 @@ class OrdersTableRendererTest {
 
     private static final String DOCUMENT_URL =
         "http://dm-store/documents/11111111-1111-1111-1111-111111111111";
+    private static final String XUI_DOCUMENT_URL =
+        "/documents/11111111-1111-1111-1111-111111111111/binary";
     private static final String BINARY_URL = DOCUMENT_URL + "/binary";
     private static final LocalDateTime UPLOADED_DATE =
         LocalDateTime.of(2026, 10, 6, 12, 30);
@@ -40,7 +42,7 @@ class OrdersTableRendererTest {
         assertThat(html)
             .contains("<td class=\"govuk-table__cell\">Possession order</td>")
             .contains("<td class=\"govuk-table__cell\">06 October 2026</td>")
-            .contains("href=\"" + BINARY_URL + "\">Possession order.pdf</a>")
+            .contains("href=\"" + XUI_DOCUMENT_URL + "\">Possession order.pdf</a>")
             .doesNotContain("Not available", "Document unavailable");
     }
 
@@ -52,7 +54,7 @@ class OrdersTableRendererTest {
 
         assertThat(html)
             .contains("<td class=\"govuk-table__cell\">Not available</td>")
-            .contains("href=\"" + BINARY_URL + "\">Possession order.pdf</a>");
+            .contains("href=\"" + XUI_DOCUMENT_URL + "\">Possession order.pdf</a>");
     }
 
     @Test

@@ -26,7 +26,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.ccd.document.am.model.Document;
+import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
+import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -38,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentIdExtractor;
 import uk.gov.hmcts.reform.pcs.exception.PartyNotFoundException;
 import uk.gov.hmcts.reform.pcs.idam.IdamAuthenticator;
 import uk.gov.hmcts.reform.pcs.idam.User;
@@ -53,18 +60,17 @@ import uk.gov.hmcts.reform.pcs.service.LegalRepresentativePartyLinkService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.PartyEmail;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.TestingSupportAccessCode;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
+import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CaseFileCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.document.DocumentImportService;
 
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,6 +100,10 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final FeatureToggleService featureToggleService;
+    private final DocumentImportService documentImportService;
+    private final DocumentRepository documentRepository;
+    private final CaseDocumentClientApi caseDocumentClientApi;
+    private final DocumentIdExtractor documentIdExtractor;
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -390,6 +400,36 @@ public class TestingSupportController {
         pcsCaseService.allocateCaseManagementLocation(caseReference);
         pcsCaseService.setCaseIssuedDate(caseReference);
         accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference), true);
+    }
+
+    @PostMapping("/cases/{caseReference}/possession-order-document")
+    @Transactional
+    public ResponseEntity<UploadResponse> addPossessionOrderDocument(
+        @PathVariable long caseReference,
+        @RequestParam("file") MultipartFile file,
+        @RequestHeader(AUTHORIZATION) String authorization,
+        @RequestHeader("ServiceAuthorization") String serviceAuthorization
+    ) {
+        DocumentUploadRequest documentUploadRequest = new DocumentUploadRequest("PUBLIC", CaseType.getCaseType(), CaseType.getJurisdictionId(),
+                                                                                Collections.singletonList(file) );
+        UploadResponse uploadResponse = this.caseDocumentClientApi.uploadDocuments(authorization, serviceAuthorization, documentUploadRequest);
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        Document document = uploadResponse.getDocuments().getFirst();
+        DocumentEntity possessionOrder = DocumentEntity.builder()
+            .documentId(documentIdExtractor.extractDocumentId(document.links.self.href))
+            .fileName(document.originalDocumentName)
+            .url(document.links.self.href)
+            .binaryUrl(document.links.binary.href)
+            .type(DocumentType.POSSESSION_ORDER)
+            .categoryId(CaseFileCategory.ORDERS_AND_NOTICE_OF_HEARINGS.getId())
+            .contentType(document.mimeType)
+            .build();
+
+        pcsCaseEntity.addDocument(possessionOrder);
+        documentRepository.save(possessionOrder);
+        return ResponseEntity.ok(uploadResponse);
     }
 
     @PostMapping(

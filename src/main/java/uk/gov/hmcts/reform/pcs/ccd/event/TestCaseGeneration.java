@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseDocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
@@ -50,7 +49,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     private final EnforceTheOrder enforceTheOrder;
 
     private final TestCaseSupportHelper testCaseSupportHelper;
-    private final TestCaseDocumentService testCaseDocumentService;
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
@@ -109,9 +107,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             loadedCase.getLegislativeCountry());
 
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
-        if (POSSESSION_ORDER_CASE_GENERATOR.equals(label)) {
-            testCaseDocumentService.addPossessionOrderPlaceholder(caseReference);
-        }
     }
 
     PCSCase loadTestPcsCase(String label) {

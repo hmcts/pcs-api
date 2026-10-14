@@ -47,7 +47,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.ENFORCEMENT_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.NO_NON_PROD_CASE_AVAILABLE;
-import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.POSSESSION_ORDER_CASE_GENERATOR;
 
 /**
  * This is based on the test json sitting in src/main/java/resources/test-case-generation
@@ -141,22 +140,6 @@ public class TestCaseGenerationIT extends AbstractPostgresContainerIT {
         assertThatThrownBy(() -> underTest.submit(eventPayload))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage(NO_NON_PROD_CASE_AVAILABLE);
-    }
-
-    @Test
-    @Transactional
-    void shouldSubmitCaseWithPossessionOrder() {
-        // Given
-        String label = selectLabelStartingWith(POSSESSION_ORDER_CASE_GENERATOR);
-        EventPayload<PCSCase, State> eventPayload = buildEventPayload(label);
-
-        // When
-        SubmitResponse<State> response = underTest.submit(eventPayload);
-
-        // Then
-        assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo(PENDING_CASE_ISSUED);
-
     }
 
     private EventPayload<PCSCase, State> buildEventPayload(String label) {
