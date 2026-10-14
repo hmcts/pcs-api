@@ -36,7 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
 
-@Disabled("Temporarily disabled until DTSPO-34578 is done")
 public class ServiceAuthorisationConsumerTest {
 
     private static final String AUTHORISATION_TOKEN = "Bearer someAuthorisationToken";
