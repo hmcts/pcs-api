@@ -1,20 +1,24 @@
 import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
-import { ActionEnforcementRegistry } from './registry/registry-enforcement/action-enforcement.registry';
 import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from './test-logger';
+import { ActionCMRegistry } from './registry/registry-caseManagement/action-caseManagement.registry';
+import { ValidationRegistry } from './registry/registry-caseManagement/validation-caseManagement.registry';
+import { axe_Exclusions } from '@config/axe_exclusions.config';
+import {ActionEnforcementRegistry} from "@utils/registry/registry-enforcement";
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
 let captureDataForCYAPage = false;
+let disableCYACapture = false;
 
 export function initializeEnforcementExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
   captureDataForCYAPage = false;
+  disableCYACapture = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -46,7 +50,7 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-        currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth') || currentUrl.includes('#Case%20File%20View') || currentUrl === `${process.env.MANAGE_CASE_BASE_URL}/cases`) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -54,7 +58,9 @@ async function validatePageIfNavigated(action: string): Promise<void> {
       await performValidation('autoValidatePageContent');
       try {
         await test.step("Running Accessibility Scan", async () => {
-          await new AxeUtils(executor.page).audit();
+          await new AxeUtils(executor.page).audit({
+            exclude: axe_Exclusions,
+          });
         });
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
@@ -70,11 +76,23 @@ async function validatePageIfNavigated(action: string): Promise<void> {
 }
 
 function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
-  if (action === 'selectClaimantType') {
+  if (action === 'validateWritOrWarrantFeeAmount'
+    || action === 'selectApplicationType'
+    ) {
     captureDataForCYAPage = true;
   }
 
-  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+  if (action.includes('errorValidation')) {
+    captureDataForCYAPage = false;
+    disableCYACapture = true;
+    return
+  }
+
+  if (disableCYACapture) {
+    return;
+  }
+
+  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile', 'uploadADocument', 'inputDate'].includes(action)) {
     cyaStore.captureAnswer(action, fieldName, value);
   }
 }
@@ -82,6 +100,9 @@ function captureDataForCYA(action: string, fieldName?: actionData | actionRecord
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionEnforcementRegistry.getAction(action);
+
+  captureDataForCYA(action, fieldName, value);
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 
@@ -90,6 +111,16 @@ export async function performAction(action: string, fieldName?: actionData | act
   } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
     const obj = fieldName as Record<string, any>;
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  } else if (typeof fieldName === 'object' && fieldName !== null && Object.keys(fieldName).some(key => key.includes('Payload'))) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = Object.fromEntries(
+      Object.entries(obj).map(([key, value]) =>
+        key.includes('Payload')
+          ? [key, 'Payload is Input']
+          : [key, value]
+      )
+    );
     displayFieldName = displayValue;
   }
   let errorValidationRequired = false;

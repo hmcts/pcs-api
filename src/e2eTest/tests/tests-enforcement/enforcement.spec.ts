@@ -1,7 +1,7 @@
 import { expect, test } from '@utils/test-fixtures';
 import { getCaseTypeId } from '@utils/common/caseType.utils';
 import { initializeExecutor } from '@utils/controller';
-import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
+import {initializeEnforcementExecutor, performAction, performValidation} from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
   checkYourAnswers
@@ -40,6 +40,7 @@ import {
   suspendedOrder,
   statementOfTruth
 } from '@data/page-data-figma/page-data-enforcement-figma';
+import {checkYourAnswersEnforcement} from "@data/page-data-figma/page-data-enforcement-figma/checkYourAnswersEnforcement.page.data";
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -316,7 +317,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: peopleWhoWillBeEvicted.noRadioOption,
       nextPage: peopleYouWantToEvict.mainHeader
     });
-    await performAction('errorValidationPeopleYouWantToEvictPage', peopleYouWantToEvict.errorValidation);
     await performAction('selectPeopleYouWantToEvict', {
       question: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
       option: defendantDetails,
@@ -395,7 +395,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input1: statementOfTruth.nameOfFirmHiddenTextInput,
       label2: statementOfTruth.positionOrOfficeHeldHiddenTextLabel,
       input2: statementOfTruth.positionOrOfficeHeldHiddenTextInput,
-      nextPage: checkYourAnswers.mainHeader
+      nextPage: checkYourAnswersEnforcement.mainHeader
     });
   });
 

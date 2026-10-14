@@ -404,7 +404,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload().claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
@@ -421,7 +421,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
     if (claimantSOT.option === statementOfTruth.claimantRadioOption) {
       await performAction('check', claimantSOT.option1);
-      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload().claimantName : claimantSOT.input);
       await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
     if (claimantSOT.option === statementOfTruth.claimantLegalRepresentativeRadioOption) {
