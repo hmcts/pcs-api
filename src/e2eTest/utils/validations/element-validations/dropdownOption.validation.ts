@@ -10,8 +10,9 @@ export class DropdownOptionValidation implements IValidation {
   ): Promise<void> {
     const dropdown = page.getByLabel(fieldName);
 
-    const option = dropdown.locator('option', {
-      hasText: String(data.text)
+    const option = dropdown.getByRole('option', {
+      name: String(data.text),
+      exact: true
     });
 
     if (data.shouldBeAvailable) {
